@@ -84,6 +84,10 @@ Claude:
 * Waymo 60M - 80M (best estimate 70M)
 * Tesla 150k - 450k (best estimate 300k)
 * Zoox 200k - 550k (best estimate 350k)
+Revised:
+* Waymo 50M - 57M - 65M [HIGH confidence]
+* Tesla (empty driver's seat) 94,000 - 250,000 - 456,000 [LOW confidence]
+* Zoox (purpose-built only) 250,000 - 400,000 - 550,000 [LOW confidence]
 
 Gemini:
 

@@ -237,20 +237,22 @@ function gammaquant(a, b, p) {
 function estimateRate(k, m) {
   const a = k + 0.5; // posterior shape (Jeffreys prior)
   const b = m;        // posterior rate
+  const tail = (1 - CI_MASS) / 2;
   // Median of 1/lambda = 1 / median(lambda)
   const medianLambda = gammaquant(a, b, 0.5);
-  const lo95Lambda   = gammaquant(a, b, 0.95);
-  const hi95Lambda   = gammaquant(a, b, 0.05);
+  const loLambda     = gammaquant(a, b, 1 - tail);
+  const hiLambda     = gammaquant(a, b, tail);
   return {
     median: 1 / medianLambda,
-    lo:     1 / lo95Lambda,   // lower bound of miles-per-incident
-    hi:     1 / hi95Lambda,   // upper bound of miles-per-incident
+    lo:     1 / loLambda,   // lower bound of miles-per-incident
+    hi:     1 / hiLambda,   // upper bound of miles-per-incident
   };
 }
 
 // --- Data and UI ---
 
 let incidents = [];
+const CI_MASS = 0.8;
 
 // Company configs: incident count from data, slider definitions
 const COMPANIES = {
@@ -359,6 +361,7 @@ function updateEstimate(company) {
   const cfg = COMPANIES[company];
   const counts = countByCompany();
   const k = counts[company] || 0;
+  const ciPct = Math.round(CI_MASS * 100);
 
   // Read slider values
   const vals = {};
@@ -384,7 +387,7 @@ function updateEstimate(company) {
   //   "90% credible interval: lo – hi", "Effective miles: N · Incidents: K"
   box.innerHTML = `
     <div class="estimate">${fmtMiles(est.median)} milia inter incidentia</div>
-    <div class="ci">90% intervallum credibile: ${fmtMiles(est.lo)} – ${fmtMiles(est.hi)}</div>
+    <div class="ci">${ciPct}% intervallum credibile: ${fmtMiles(est.lo)} – ${fmtMiles(est.hi)}</div>
     <div style="font-size:0.85rem;color:#666;margin-top:0.25rem;">
       Milia effectiva: ${Math.round(miles).toLocaleString()} · Incidentia: ${k}
     </div>
@@ -411,6 +414,7 @@ let activeFilter = "All";
 function buildBrowser() {
   const counts = countByCompany();
   const filterDiv = document.getElementById("filters");
+  filterDiv.replaceChildren();
   // TODO human to vet button labels — "All", "Tesla", "Waymo", "Zoox" (these are just company names + "All")
   const companies = ["All", ...Object.keys(COMPANIES)];
   for (const c of companies) {
@@ -421,7 +425,6 @@ function buildBrowser() {
     btn.addEventListener("click", () => {
       activeFilter = c;
       buildBrowser();
-      renderTable();
     });
     filterDiv.appendChild(btn);
   }
