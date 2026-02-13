@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- TODO human to vet all user-facing copy (currently Latin placeholders per rule 14) -->
+<title>Crashla</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+h1 { margin-bottom: 0.5rem; }
+h2 { margin: 1.5rem 0 0.75rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.25rem; }
+h3 { margin: 0.75rem 0 0.5rem; }
+
+/* Rate estimator */
+.company-panel {
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fafafa;
+}
+.company-panel h3 { margin-top: 0; }
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.slider-row label { min-width: 220px; font-size: 0.9rem; }
+.slider-row input[type="range"] { flex: 1; min-width: 120px; }
+.slider-row .val { min-width: 100px; text-align: right; font-variant-numeric: tabular-nums; }
+.result-box {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.result-box .estimate {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.result-box .ci { font-size: 0.9rem; color: #555; }
+.ci-bar-container {
+  position: relative;
+  height: 28px;
+  margin: 0.5rem 0;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ci-bar {
+  position: absolute;
+  height: 100%;
+  background: #b0d0ff;
+  border-radius: 4px;
+}
+.ci-median {
+  position: absolute;
+  width: 3px;
+  height: 100%;
+  background: #2060c0;
+  border-radius: 1px;
+}
+.ci-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Incident browser */
+.filters { margin: 0.5rem 0; display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.filters button {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.filters button.active { background: #2060c0; color: #fff; border-color: #2060c0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+th, td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px solid #e0e0e0; }
+th { background: #f5f5f5; position: sticky; top: 0; }
+tr:hover { background: #f8f8ff; }
+.narrative-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.narrative-cell.expanded { white-space: normal; }
+.cbi { color: #999; font-style: italic; }
+.incident-count { font-size: 0.9rem; color: #666; margin: 0.25rem 0; }
+</style>
+</head>
+<body>
+
+<!-- TODO human to vet title — "Crashla" -->
+<h1>Crashla</h1>
+<!-- TODO human to vet subtitle — "Robotaxi safety analysis tool using NHTSA SGO data." -->
+<p>Instrumentum analyseos securitatis vehiculorum autonomorum ex datis NHTSA SGO.</p>
+
+<!-- TODO human to vet section heading — "Estimated miles between incidents" -->
+<h2>Aestimatio milium inter incidentia</h2>
+<div id="estimator"></div>
+
+<!-- TODO human to vet section heading — "Incident browser" -->
+<h2>Index incidentium</h2>
+<div class="filters" id="filters"></div>
+<div class="incident-count" id="incident-count"></div>
+<div style="overflow-x: auto;">
+  <table>
+    <thead>
+      <tr>
+        <!-- TODO human to vet column headers — "Company", "Date", "Location", "Crash with", "Speed (mph)", "Severity", "Narrative" -->
+        <th>Societas</th>
+        <th>Dies</th>
+        <th>Locus</th>
+        <th>Collisio cum</th>
+        <th>Celeritas (mph)</th>
+        <th>Gravitas</th>
+        <th>Narratio</th>
+      </tr>
+    </thead>
+    <tbody id="incidents-body"></tbody>
+  </table>
+</div>
+
+<script>
+"use strict";
+
+// --- Gamma distribution math ---
+
+// Log-gamma via Lanczos approximation (g=7, n=9)
+const LANCZOS_C = [
+  0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+  771.32342877765313, -176.61502916214059, 12.507343278686905,
+  -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+];
+function lgamma(x) {
+  if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lgamma(1 - x);
+  x -= 1;
+  let a = LANCZOS_C[0];
+  const t = x + 7.5; // g + 0.5
+  for (let i = 1; i < 9; i++) a += LANCZOS_C[i] / (x + i);
+  return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+}
+
+// Lower regularized incomplete gamma function P(a, x)
+// Series expansion for x < a + 1, continued fraction otherwise
+function gammainc(a, x) {
+  if (x < 0) return 0;
+  if (x === 0) return 0;
+  if (x < a + 1) {
+    // Series: P(a,x) = e^{-x} x^a sum_{n=0}^{inf} x^n / Gamma(a+n+1)
+    let sum = 1 / a;
+    let term = 1 / a;
+    for (let n = 1; n < 200; n++) {
+      term *= x / (a + n);
+      sum += term;
+      if (Math.abs(term) < Math.abs(sum) * 1e-14) break;
+    }
+    return sum * Math.exp(-x + a * Math.log(x) - lgamma(a));
+  }
+  // Continued fraction for upper gamma Q(a,x) = 1 - P(a,x)
+  // Using modified Lentz's method
+  let f = x - a + 1;
+  if (Math.abs(f) < 1e-30) f = 1e-30;
+  let c = f;
+  let d = 0;
+  for (let n = 1; n < 200; n++) {
+    const an = n * (a - n);
+    const bn = x - a + 1 + 2 * n;
+    d = bn + an * d;
+    if (Math.abs(d) < 1e-30) d = 1e-30;
+    c = bn + an / c;
+    if (Math.abs(c) < 1e-30) c = 1e-30;
+    d = 1 / d;
+    const delta = c * d;
+    f *= delta;
+    if (Math.abs(delta - 1) < 1e-14) break;
+  }
+  const q = Math.exp(-x + a * Math.log(x) - lgamma(a)) / f;
+  return 1 - q;
+}
+
+// Gamma quantile: find x such that P(a, x*b) = p, where Gamma(a, b) has rate b
+// Returns x (the quantile of Gamma(shape=a, rate=b))
+function gammaquant(a, b, p) {
+  console.assert(a > 0 && b > 0 && p > 0 && p < 1,
+    "gammaquant: invalid params", {a, b, p});
+  // Initial guess via Wilson-Hilferty approximation on chi-squared
+  const nu = 2 * a;
+  // Normal quantile approximation (Abramowitz & Stegun 26.2.23)
+  const t = p < 0.5 ? p : 1 - p;
+  const s = Math.sqrt(-2 * Math.log(t));
+  let zabs = s - (2.515517 + 0.802853*s + 0.010328*s*s) /
+                   (1 + 1.432788*s + 0.189269*s*s + 0.001308*s*s*s);
+  const z = p < 0.5 ? -zabs : zabs;
+  // Wilson-Hilferty
+  const wh = 1 - 2/(9*nu) + z * Math.sqrt(2/(9*nu));
+  let x = (nu / 2) * Math.max(wh * wh * wh, 0.001) / b;
+  // Newton's method to refine
+  for (let i = 0; i < 50; i++) {
+    const cdf = gammainc(a, x * b);
+    const err = cdf - p;
+    if (Math.abs(err) < 1e-12) break;
+    // PDF of Gamma(a, b): b^a x^{a-1} e^{-bx} / Gamma(a)
+    const logpdf = a * Math.log(b) + (a-1) * Math.log(x) - b*x - lgamma(a);
+    const pdf = Math.exp(logpdf);
+    if (pdf < 1e-100) break; // avoid division by ~0
+    const step = err / pdf;
+    x = Math.max(x - step, x / 10); // don't go negative or overshoot
+  }
+  return x;
+}
+
+// Compute miles-per-incident estimate with 90% credible interval
+// k = incident count, m = miles driven
+function estimateRate(k, m) {
+  const a = k + 0.5; // posterior shape (Jeffreys prior)
+  const b = m;        // posterior rate
+  // Median of 1/lambda = 1 / median(lambda)
+  const medianLambda = gammaquant(a, b, 0.5);
+  const lo95Lambda   = gammaquant(a, b, 0.95);
+  const hi95Lambda   = gammaquant(a, b, 0.05);
+  return {
+    median: 1 / medianLambda,
+    lo:     1 / lo95Lambda,   // lower bound of miles-per-incident
+    hi:     1 / hi95Lambda,   // upper bound of miles-per-incident
+  };
+}
+
+// --- Data and UI ---
+
+let incidents = [];
+
+// Company configs: incident count from data, slider definitions
+const COMPANIES = {
+  Tesla: {
+    sliders: [
+      {
+        id: "tesla-miles",
+        // TODO human to vet label — "Total robotaxi miles"
+        label: "Milia totalia robotaxi",
+        min: 200000, max: 800000, step: 10000, value: 456000,
+        fmt: v => v.toLocaleString(),
+      },
+      {
+        id: "tesla-frac",
+        // TODO human to vet label — "% post-Sep-1 without driver"
+        label: "Fractio post-Sep-1 sine auriga",
+        min: 0, max: 100, step: 1, value: 50,
+        fmt: v => v + "%",
+      },
+    ],
+    // Tesla pre-Sep-1 miles (all empty driver's seat)
+    preSepMiles: 93849,
+    getMiles: vals => {
+      const total = vals["tesla-miles"];
+      const frac  = vals["tesla-frac"] / 100;
+      return 93849 + frac * (total - 93849);
+    },
+  },
+  Waymo: {
+    sliders: [
+      {
+        id: "waymo-miles",
+        // TODO human to vet label — "Driverless miles"
+        label: "Milia sine auriga",
+        min: 10000000, max: 100000000, step: 1000000, value: 50000000,
+        fmt: v => (v / 1e6).toFixed(0) + "M",
+      },
+    ],
+    getMiles: vals => vals["waymo-miles"],
+  },
+  Zoox: {
+    sliders: [
+      {
+        id: "zoox-miles",
+        // TODO human to vet label — "Driverless miles"
+        label: "Milia sine auriga",
+        min: 100000, max: 2000000, step: 50000, value: 500000,
+        fmt: v => v.toLocaleString(),
+      },
+    ],
+    getMiles: vals => vals["zoox-miles"],
+  },
+};
+
+// Count incidents per company from loaded data
+function countByCompany() {
+  const counts = {};
+  for (const inc of incidents) {
+    counts[inc.company] = (counts[inc.company] || 0) + 1;
+  }
+  return counts;
+}
+
+function buildEstimator() {
+  const container = document.getElementById("estimator");
+  const counts = countByCompany();
+
+  for (const [company, cfg] of Object.entries(COMPANIES)) {
+    const k = counts[company] || 0;
+    const panel = document.createElement("div");
+    panel.className = "company-panel";
+    panel.dataset.company = company;
+
+    // TODO human to vet — "incidents"
+    let html = `<h3>${company} <span style="font-weight:normal;font-size:0.9rem;color:#666">(${k} incidentia)</span></h3>`;
+
+    for (const s of cfg.sliders) {
+      html += `
+        <div class="slider-row">
+          <label for="${s.id}">${s.label}</label>
+          <input type="range" id="${s.id}" min="${s.min}" max="${s.max}"
+                 step="${s.step}" value="${s.value}">
+          <span class="val" id="${s.id}-val">${s.fmt(s.value)}</span>
+        </div>`;
+    }
+
+    html += `<div class="result-box" id="result-${company}"></div>`;
+    panel.innerHTML = html;
+    container.appendChild(panel);
+
+    // Attach slider listeners
+    for (const s of cfg.sliders) {
+      const input = document.getElementById(s.id);
+      const valSpan = document.getElementById(s.id + "-val");
+      input.addEventListener("input", () => {
+        valSpan.textContent = s.fmt(Number(input.value));
+        updateEstimate(company);
+      });
+    }
+
+    updateEstimate(company);
+  }
+}
+
+function updateEstimate(company) {
+  const cfg = COMPANIES[company];
+  const counts = countByCompany();
+  const k = counts[company] || 0;
+
+  // Read slider values
+  const vals = {};
+  for (const s of cfg.sliders) {
+    vals[s.id] = Number(document.getElementById(s.id).value);
+  }
+  const miles = cfg.getMiles(vals);
+  const est = estimateRate(k, miles);
+
+  const box = document.getElementById("result-" + company);
+
+  // Determine a nice log-scale range for the CI bar
+  // Show from 100 to 10,000,000 on a log scale
+  const logMin = Math.log10(100);
+  const logMax = Math.log10(10000000);
+  const logRange = logMax - logMin;
+
+  const pctLo = Math.max(0, Math.min(100, (Math.log10(est.lo) - logMin) / logRange * 100));
+  const pctHi = Math.max(0, Math.min(100, (Math.log10(est.hi) - logMin) / logRange * 100));
+  const pctMed = Math.max(0, Math.min(100, (Math.log10(est.median) - logMin) / logRange * 100));
+
+  // TODO human to vet — "X miles between incidents",
+  //   "90% credible interval: lo – hi", "Effective miles: N · Incidents: K"
+  box.innerHTML = `
+    <div class="estimate">${fmtMiles(est.median)} milia inter incidentia</div>
+    <div class="ci">90% intervallum credibile: ${fmtMiles(est.lo)} – ${fmtMiles(est.hi)}</div>
+    <div style="font-size:0.85rem;color:#666;margin-top:0.25rem;">
+      Milia effectiva: ${Math.round(miles).toLocaleString()} · Incidentia: ${k}
+    </div>
+    <div class="ci-bar-container">
+      <div class="ci-bar" style="left:${pctLo}%;width:${pctHi - pctLo}%"></div>
+      <div class="ci-median" style="left:${pctMed}%"></div>
+    </div>
+    <div class="ci-labels">
+      <span>100</span><span>1K</span><span>10K</span><span>100K</span><span>1M</span><span>10M</span>
+    </div>
+  `;
+}
+
+function fmtMiles(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + "K";
+  return Math.round(n).toLocaleString();
+}
+
+// --- Incident Browser ---
+
+let activeFilter = "All";
+
+function buildBrowser() {
+  const counts = countByCompany();
+  const filterDiv = document.getElementById("filters");
+  // TODO human to vet button labels — "All", "Tesla", "Waymo", "Zoox" (these are just company names + "All")
+  const companies = ["All", ...Object.keys(COMPANIES)];
+  for (const c of companies) {
+    const btn = document.createElement("button");
+    const n = c === "All" ? incidents.length : (counts[c] || 0);
+    btn.textContent = `${c} (${n})`;
+    btn.className = c === activeFilter ? "active" : "";
+    btn.addEventListener("click", () => {
+      activeFilter = c;
+      buildBrowser();
+      renderTable();
+    });
+    filterDiv.appendChild(btn);
+  }
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById("incidents-body");
+  const filtered = activeFilter === "All"
+    ? incidents
+    : incidents.filter(r => r.company === activeFilter);
+
+  document.getElementById("incident-count").textContent =
+    `${filtered.length} incidentia`; // TODO human to vet — "N incidents"
+
+  tbody.innerHTML = "";
+  for (const r of filtered) {
+    const tr = document.createElement("tr");
+    const isCbi = r.narrativeCbi === "Y";
+    const narrativeText = isCbi
+      ? "[CBI]"
+      : (r.narrative || "");
+    const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
+
+    tr.innerHTML = `
+      <td>${r.company}</td>
+      <td>${r.date}</td>
+      <td>${r.city}, ${r.state}</td>
+      <td>${r.crashWith}</td>
+      <td>${r.speed !== null ? r.speed : "?"}</td>
+      <td>${shortenSeverity(r.severity)}</td>
+      <td class="${narrativeClass}">${escHtml(narrativeText)}</td>
+    `;
+    // Click to expand/collapse narrative
+    const narrativeTd = tr.querySelector(".narrative-cell");
+    narrativeTd.addEventListener("click", () => {
+      narrativeTd.classList.toggle("expanded");
+    });
+    tbody.appendChild(tr);
+  }
+}
+
+function shortenSeverity(s) {
+  if (!s) return "?";
+  if (s.includes("No Injured")) return "No injury";
+  if (s.includes("Minor W/O")) return "Minor injury";
+  if (s.includes("Minor W/")) return "Minor injury (hosp.)";
+  if (s.includes("Serious")) return "Serious";
+  if (s.includes("Fatal")) return "Fatal";
+  if (s.includes("Property")) return "Property only";
+  return s;
+}
+
+function escHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// --- Init ---
+
+fetch("incidents.json")
+  .then(r => {
+    console.assert(r.ok, "Failed to load incidents.json: " + r.status);
+    return r.json();
+  })
+  .then(data => {
+    incidents = data;
+    buildEstimator();
+    buildBrowser();
+  });
+</script>
+</body>
+</html>

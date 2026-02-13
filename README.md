@@ -1,4 +1,9 @@
-# Are Tesla Robotaxis Subhumanly Safe?
+# How safe are robotaxis other than Waymo?
+
+We know Waymos are much safer than human drivers:
+https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos
+
+What about Tesla robotaxis and Zooxes?
 
 Electrek claims Tesla robotaxis crash more than human drivers:
 https://electrek.co/2026/01/29/teslas-own-robotaxi-data-confirms-crash-rate-3x-worse-than-humans-even-with-monitor/
@@ -58,6 +63,34 @@ I.e., explaining why it totally wasn’t their fault, with only things that coul
 
 Those guesses, especially the fault percents, are pulled out of my butt. Except the collisions with stationary objects, which are necessarily 100% Tesla’s fault. But if we run with those guesses, that’s 3.45 at-fault accidents. Over how many miles? More guessing required! I believe that for a while, all Tesla robotaxi rides had an empty driver’s seat. But starting in September, Tesla added back driver’s-seat safety drivers for rides involving highways. Or more than just those? We have no idea. We do know of cases of Tesla putting the safety driver back when the weather was questionable. In any case, only accidents without a safety driver in the driver’s seat are included in this dataset, so we do need to subtract those miles when estimating Tesla’s incident rate.
 
+## Finding the Denominators
+
+For each of these self-driving car companies, we need a lower bound and upper bound on the total miles they drove in the US at SAE level 3+ from 2025-06-15 thru 2025-12-15:
+
+1. Waymo
+2. Tesla
+3. Zoox
+
+Tesla is a very unusual case. They've had in-car supervision for most rides with their passenger-seat safety monitors. But, per the NHTSA incident database, Tesla is averring to NHTSA that those rides have no operator, ie, that they count as SAE level 3+. So that's what we're going with here. That means we need to estimate Tesla's robotaxi mileage for the subset of rides that had an empty driver's seat. Whether a human was in the passenger seat is not relevant here.
+
+ChatGPT:
+
+* Waymo: 53M - 96M (best estimate ~80M)
+* Tesla: 0.30M - 0.55M (best estimate ~0.39M)
+* Zoox: 0.05M - 0.60M (best estimate ~0.25M)
+
+Claude:
+
+* Waymo 60M - 80M (best estimate 70M)
+* Tesla 150k - 450k (best estimate 300k)
+* Zoox 200k - 550k (best estimate 350k)
+
+Gemini:
+
+* Waymo 50M - 60M
+* Tesla 0.5M - 3M
+* Zoox 0.8M - 1.2M
+
 
 # Spec
 
@@ -70,6 +103,13 @@ For each company, we want sliders for the uncertain parameters and then we want 
 
 Having a nice way to browse the data would also be nice.
 
+We need to carefully de-dup/consolidate the incidents. 
+Sometime an entry is actually an update to a previous entry. 
+For example, there are 10 entries for Tesla corresponding to 9 distinct incidents.
+
 Note that we only care about incidents in this dataset where the "Driver / Operator Type" field is "None".
 
-Note: be careful to de-dup/consolidate the incidents. Sometime an entry is actually an update to a previous entry. For example, there are 10 entries for Tesla corresponding to 9 distinct incidents.
+All 9 of the Tesla incidents have this designation, so Tesla is averring to NHTSA that their passenger-seat safety monitors do not count as supervised autonomy, and same for any tele-operation they may have. We'll give Tesla the benefit of the doubt on this, even though they have not exactly earned it.
+For the denominator mileage we need justifiable lower and upper bounds on the mileage for which there was no driver/operator.
+
+
