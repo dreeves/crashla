@@ -78,6 +78,10 @@ ChatGPT:
 * Waymo: 53M - 96M (best estimate ~80M)
 * Tesla: 0.30M - 0.55M (best estimate ~0.39M)
 * Zoox: 0.05M - 0.60M (best estimate ~0.25M)
+Revised:
+* Waymo 57M - 66M (best estimate 61M) [0.70 confidence]
+* Tesla (empty driver’s seat only) 0.094M - 0.60M (best estimate 0.45M) [0.35 confidence]
+* Zoox 0.05M - 1.0M (best estimate 0.30M) [0.20 confidence]
 
 Claude:
 

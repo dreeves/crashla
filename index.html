@@ -146,6 +146,21 @@ tr:hover { background: #f8f8ff; }
 <script>
 "use strict";
 
+function fail(msg, details) {
+  const suffix = details === undefined ? "" : " " + JSON.stringify(details);
+  throw new Error(msg + suffix);
+}
+
+function must(cond, msg, details) {
+  cond || fail(msg, details);
+}
+
+function byId(id) {
+  const node = document.getElementById(id);
+  must(node !== null, "Missing required DOM node", {id});
+  return node;
+}
+
 // --- Gamma distribution math ---
 
 // Log-gamma via Lanczos approximation (g=7, n=9)
@@ -204,7 +219,7 @@ function gammainc(a, x) {
 // Gamma quantile: find x such that P(a, x*b) = p, where Gamma(a, b) has rate b
 // Returns x (the quantile of Gamma(shape=a, rate=b))
 function gammaquant(a, b, p) {
-  console.assert(a > 0 && b > 0 && p > 0 && p < 1,
+  must(a > 0 && b > 0 && p > 0 && p < 1,
     "gammaquant: invalid params", {a, b, p});
   // Initial guess via Wilson-Hilferty approximation on chi-squared
   const nu = 2 * a;
@@ -317,7 +332,8 @@ function countByCompany() {
 }
 
 function buildEstimator() {
-  const container = document.getElementById("estimator");
+  const container = byId("estimator");
+  container.replaceChildren();
   const counts = countByCompany();
 
   for (const [company, cfg] of Object.entries(COMPANIES)) {
@@ -345,8 +361,8 @@ function buildEstimator() {
 
     // Attach slider listeners
     for (const s of cfg.sliders) {
-      const input = document.getElementById(s.id);
-      const valSpan = document.getElementById(s.id + "-val");
+      const input = byId(s.id);
+      const valSpan = byId(s.id + "-val");
       input.addEventListener("input", () => {
         valSpan.textContent = s.fmt(Number(input.value));
         updateEstimate(company);
@@ -359,6 +375,7 @@ function buildEstimator() {
 
 function updateEstimate(company) {
   const cfg = COMPANIES[company];
+  must(cfg !== undefined, "Unknown company config", {company});
   const counts = countByCompany();
   const k = counts[company] || 0;
   const ciPct = Math.round(CI_MASS * 100);
@@ -366,12 +383,12 @@ function updateEstimate(company) {
   // Read slider values
   const vals = {};
   for (const s of cfg.sliders) {
-    vals[s.id] = Number(document.getElementById(s.id).value);
+    vals[s.id] = Number(byId(s.id).value);
   }
   const miles = cfg.getMiles(vals);
   const est = estimateRate(k, miles);
 
-  const box = document.getElementById("result-" + company);
+  const box = byId("result-" + company);
 
   // Determine a nice log-scale range for the CI bar
   // Show from 100 to 10,000,000 on a log scale
@@ -413,7 +430,7 @@ let activeFilter = "All";
 
 function buildBrowser() {
   const counts = countByCompany();
-  const filterDiv = document.getElementById("filters");
+  const filterDiv = byId("filters");
   filterDiv.replaceChildren();
   // TODO human to vet button labels — "All", "Tesla", "Waymo", "Zoox" (these are just company names + "All")
   const companies = ["All", ...Object.keys(COMPANIES)];
@@ -432,12 +449,12 @@ function buildBrowser() {
 }
 
 function renderTable() {
-  const tbody = document.getElementById("incidents-body");
+  const tbody = byId("incidents-body");
   const filtered = activeFilter === "All"
     ? incidents
     : incidents.filter(r => r.company === activeFilter);
 
-  document.getElementById("incident-count").textContent =
+  byId("incident-count").textContent =
     `${filtered.length} incidentia`; // TODO human to vet — "N incidents"
 
   tbody.innerHTML = "";
@@ -450,16 +467,17 @@ function renderTable() {
     const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
 
     tr.innerHTML = `
-      <td>${r.company}</td>
-      <td>${r.date}</td>
-      <td>${r.city}, ${r.state}</td>
-      <td>${r.crashWith}</td>
-      <td>${r.speed !== null ? r.speed : "?"}</td>
-      <td>${shortenSeverity(r.severity)}</td>
+      <td>${escHtml(r.company)}</td>
+      <td>${escHtml(r.date)}</td>
+      <td>${escHtml(r.city)}, ${escHtml(r.state)}</td>
+      <td>${escHtml(r.crashWith)}</td>
+      <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
+      <td>${escHtml(shortenSeverity(r.severity))}</td>
       <td class="${narrativeClass}">${escHtml(narrativeText)}</td>
     `;
     // Click to expand/collapse narrative
     const narrativeTd = tr.querySelector(".narrative-cell");
+    must(narrativeTd !== null, "Missing narrative cell");
     narrativeTd.addEventListener("click", () => {
       narrativeTd.classList.toggle("expanded");
     });
@@ -468,14 +486,16 @@ function renderTable() {
 }
 
 function shortenSeverity(s) {
-  if (!s) return "?";
-  if (s.includes("No Injured")) return "No injury";
-  if (s.includes("Minor W/O")) return "Minor injury";
-  if (s.includes("Minor W/")) return "Minor injury (hosp.)";
-  if (s.includes("Serious")) return "Serious";
-  if (s.includes("Fatal")) return "Fatal";
-  if (s.includes("Property")) return "Property only";
-  return s;
+  const rules = [
+    ["No Injured", "No injury"],
+    ["Minor W/O", "Minor injury"],
+    ["Minor W/", "Minor injury (hosp.)"],
+    ["Serious", "Serious"],
+    ["Fatal", "Fatal"],
+    ["Property", "Property only"],
+  ];
+  const hit = (s || "") && rules.find(([needle]) => s.includes(needle));
+  return hit ? hit[1] : (s || "?");
 }
 
 function escHtml(s) {
@@ -487,11 +507,15 @@ function escHtml(s) {
 // --- Init ---
 
 fetch("incidents.json")
-  .then(r => {
-    console.assert(r.ok, "Failed to load incidents.json: " + r.status);
-    return r.json();
-  })
+  .then(r => (must(r.ok, "Failed to load incidents.json", {status: r.status}), r.json()))
   .then(data => {
+    must(Array.isArray(data), "incidents.json must be an array");
+    for (const inc of data) {
+      must(inc !== null && typeof inc === "object", "incident must be an object");
+      must(typeof inc.company === "string", "incident missing company");
+      must(COMPANIES[inc.company] !== undefined,
+        "incidents.json has unknown company", {company: inc.company});
+    }
     incidents = data;
     buildEstimator();
     buildBrowser();
