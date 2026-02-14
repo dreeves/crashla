@@ -89,7 +89,7 @@ h3 { margin: 0.75rem 0 0.5rem; }
 }
 .graph-tick {
   fill: #5b6475;
-  font-size: 10px;
+  font-size: 9px;
 }
 .graph-label {
   fill: #334;
@@ -319,13 +319,13 @@ const INCIDENT_MODEL_COMPANIES = ["Tesla", "Waymo", "Zoox"];
 const AXIS_MIN_DEFAULT_PCT = 0;
 const AXIS_MAX_DEFAULT_PCT = 100;
 // TO-DO human to vet axis-slider copy.
-const AXIS_MIN_LABEL = "Terminus axis X minimus";
+const AXIS_MIN_LABEL = "X-axis minimum";
 // TO-DO human to vet axis-slider copy.
-const AXIS_MAX_LABEL = "Terminus axis X maximus";
+const AXIS_MAX_LABEL = "X-axis maximum";
 // TO-DO human to vet axis-slider copy.
-const AXIS_MIN_TIP = "Eligere terminum inferiorem axis X huius graphici.";
+const AXIS_MIN_TIP = "Choose the lower x-axis bound for this graph.";
 // TO-DO human to vet axis-slider copy.
-const AXIS_MAX_TIP = "Eligere terminum superiorem axis X huius graphici.";
+const AXIS_MAX_TIP = "Choose the upper x-axis bound for this graph.";
 // Tesla pre-Sep-1 miles (all empty driver's seat)
 const TESLA_PRE_SEP_MILES = 93849;
 
@@ -340,8 +340,10 @@ function deadheadMultiplier(deadheadPct) {
   return 1 / (1 - deadheadFrac);
 }
 
-function factorizedParts(baseMiles, deadheadPct, nonePct, scopePct) {
-  const baseNoneMiles = baseMiles * pct(nonePct);
+function factorizedParts(baseMiles, deadheadPct) {
+  const nonePct = 100;
+  const scopePct = 100;
+  const baseNoneMiles = baseMiles;
   const mDeadhead = deadheadMultiplier(deadheadPct);
   return {
     baseMiles,
@@ -350,7 +352,7 @@ function factorizedParts(baseMiles, deadheadPct, nonePct, scopePct) {
     nonePct,
     scopePct,
     deadheadMultiplier: mDeadhead,
-    miles: baseNoneMiles * mDeadhead * pct(scopePct),
+    miles: baseNoneMiles * mDeadhead,
   };
 }
 
@@ -379,8 +381,8 @@ const COMPANIES = {
         // TODO human to vet label — "Total robotaxi miles"
         // TO-DO human to vet tooltip text.
         label: "Total robotaxi miles",
-        tip: "Base robotaxi miles in this window before applying scope and non-service factors.",
-        min: 400000, max: 650000, step: 10000, value: 500000,
+        tip: "Base robotaxi miles in this window before applying non-service factors.",
+        min: 94000, max: 600000, step: 1000, value: 450000,
         fmt: v => v.toLocaleString(),
       },
       {
@@ -401,15 +403,6 @@ const COMPANIES = {
         min: 0, max: 40, step: 1, value: 20,
         fmt: v => v + "%",
       },
-      {
-        id: "tesla-scope",
-        // TO-DO human to vet label — "Scope fraction (US/public/ADS)"
-        // TO-DO human to vet tooltip text.
-        label: "Scope fraction (US/public/ADS)",
-        tip: "Fraction remaining after filtering to US public-road ADS-engaged miles.",
-        min: 90, max: 100, step: 1, value: 100,
-        fmt: v => v + "%",
-      },
     ],
     getParts: vals => {
       const baseMiles = vals["tesla-miles"];
@@ -419,16 +412,15 @@ const COMPANIES = {
       const postSepMiles = baseMiles - TESLA_PRE_SEP_MILES;
       const baseNoneMiles = TESLA_PRE_SEP_MILES + pct(nonePostPct) * postSepMiles;
       const deadheadPct = vals["tesla-deadhead"];
-      const scopePct = vals["tesla-scope"];
       const mDeadhead = deadheadMultiplier(deadheadPct);
       return {
         baseMiles,
         baseNoneMiles,
         deadheadPct,
         nonePct: nonePostPct,
-        scopePct,
+        scopePct: 100,
         deadheadMultiplier: mDeadhead,
-        miles: baseNoneMiles * mDeadhead * pct(scopePct),
+        miles: baseNoneMiles * mDeadhead,
       };
     },
   },
@@ -439,8 +431,8 @@ const COMPANIES = {
         // TODO human to vet label — "Driverless miles"
         // TO-DO human to vet tooltip text.
         label: "Driverless miles",
-        tip: "Waymo base miles in this window before additional factors.",
-        min: 35000000, max: 65000000, step: 1000000, value: 43000000,
+        tip: "Waymo base miles in this window before non-service adjustment.",
+        min: 57000000, max: 66000000, step: 1000000, value: 61000000,
         fmt: v => (v / 1e6).toFixed(0) + "M",
       },
       {
@@ -448,34 +440,14 @@ const COMPANIES = {
         // TO-DO human to vet label — "Non-service share (deadhead)"
         // TO-DO human to vet tooltip text.
         label: "Non-service share",
-        tip: "Share of miles without a passenger; fixed at zero here because base miles are treated as total miles.",
-        min: 0, max: 1, step: 1, value: 0,
-        fmt: v => v + "%",
-      },
-      {
-        id: "waymo-none",
-        // TO-DO human to vet label — "Operator=none fraction"
-        // TO-DO human to vet tooltip text.
-        label: "Operator=none fraction",
-        tip: "Fraction of miles corresponding to Driver/Operator Type = None.",
-        min: 99, max: 100, step: 1, value: 100,
-        fmt: v => v + "%",
-      },
-      {
-        id: "waymo-scope",
-        // TO-DO human to vet label — "Scope fraction (US/public/ADS)"
-        // TO-DO human to vet tooltip text.
-        label: "Scope fraction (US/public/ADS)",
-        tip: "Fraction remaining after filtering to US public-road ADS-engaged miles.",
-        min: 99, max: 100, step: 1, value: 100,
+        tip: "Share of ADS miles with no passenger in the car; used for the non-service multiplier.",
+        min: 0, max: 50, step: 1, value: 0,
         fmt: v => v + "%",
       },
     ],
     getParts: vals => factorizedParts(
       vals["waymo-miles"],
       vals["waymo-deadhead"],
-      vals["waymo-none"],
-      vals["waymo-scope"],
     ),
   },
   Zoox: {
@@ -485,8 +457,8 @@ const COMPANIES = {
         // TODO human to vet label — "Driverless miles"
         // TO-DO human to vet tooltip text.
         label: "Driverless miles",
-        tip: "Zoox base miles in this window before non-service and scope factors.",
-        min: 150000, max: 700000, step: 25000, value: 300000,
+        tip: "Zoox base miles in this window before non-service adjustment.",
+        min: 50000, max: 1000000, step: 25000, value: 300000,
         fmt: v => v.toLocaleString(),
       },
       {
@@ -498,30 +470,10 @@ const COMPANIES = {
         min: 0, max: 40, step: 1, value: 20,
         fmt: v => v + "%",
       },
-      {
-        id: "zoox-none",
-        // TO-DO human to vet label — "Operator=none fraction"
-        // TO-DO human to vet tooltip text.
-        label: "Operator=none fraction",
-        tip: "Fraction of ADS miles with no in-vehicle operator under the SGO definition.",
-        min: 70, max: 100, step: 1, value: 100,
-        fmt: v => v + "%",
-      },
-      {
-        id: "zoox-scope",
-        // TO-DO human to vet label — "Scope fraction (US/public/ADS)"
-        // TO-DO human to vet tooltip text.
-        label: "Scope fraction (US/public/ADS)",
-        tip: "Fraction remaining after exclusions outside US, outside public roads, or outside ADS-engaged miles.",
-        min: 90, max: 100, step: 1, value: 100,
-        fmt: v => v + "%",
-      },
     ],
     getParts: vals => factorizedParts(
       vals["zoox-miles"],
       vals["zoox-deadhead"],
-      vals["zoox-none"],
-      vals["zoox-scope"],
     ),
   },
   Humans: {
@@ -548,20 +500,16 @@ function countByCompany() {
   return counts;
 }
 
-function denominatorBounds(cfg) {
-  let corners = [{}];
-  for (const s of cfg.sliders) {
-    const next = [];
-    for (const corner of corners) {
-      next.push({...corner, [s.id]: s.min});
-      next.push({...corner, [s.id]: s.max});
-    }
-    corners = next;
-  }
-  const denoms = corners.map(vals => cfg.getParts(vals).miles);
+function primarySliderBounds(cfg, vals) {
+  const primary = cfg.sliders[0];
+  must(primary !== undefined, "missing primary slider for bounds");
+  const loVals = {...vals, [primary.id]: primary.min};
+  const hiVals = {...vals, [primary.id]: primary.max};
+  const lo = cfg.getParts(loVals).miles;
+  const hi = cfg.getParts(hiVals).miles;
   return {
-    min: Math.min(...denoms),
-    max: Math.max(...denoms),
+    min: Math.min(lo, hi),
+    max: Math.max(lo, hi),
   };
 }
 
@@ -692,7 +640,7 @@ function summaryFromIncidentModel(company, counts, valsByCompany) {
     miles,
     est: estAtMiles(miles),
     estAtMiles,
-    bounds: denominatorBounds(cfg),
+    bounds: primarySliderBounds(cfg, vals),
   };
 }
 
@@ -861,6 +809,7 @@ function updateEstimate(company) {
   const pointX = mapX(miles);
   const pointY = mapY(est.median);
   const xTicks = [xMin, (xMin + xMax) / 2, xMax];
+  const xTickAnchors = ["start", "middle", "end"];
   const yTicks = [yMin, (yMin + yMax) / 2, yMax];
   const band = bandPath(samples, mapX, mapY);
   const path = medianPath(samples, mapX, mapY);
@@ -872,9 +821,9 @@ function updateEstimate(company) {
   // TO-DO human to vet graph axis copy.
   box.innerHTML = `
     <svg class="graph-svg" viewBox="0 0 ${svgW} ${svgH}">
-      ${xTicks.map(x => `
+      ${xTicks.map((x, i) => `
         <line class="graph-grid" x1="${mapX(x)}" y1="${mTop}" x2="${mapX(x)}" y2="${mTop + pH}"></line>
-        <text class="graph-tick" x="${mapX(x)}" y="${svgH - 16}" text-anchor="middle">${Math.round(x).toLocaleString()}</text>
+        <text class="graph-tick" x="${mapX(x)}" y="${svgH - 16}" text-anchor="${xTickAnchors[i]}">${Math.round(x).toLocaleString()}</text>
       `).join("")}
       ${yTicks.map(y => `
         <line class="graph-grid" x1="${mLeft}" y1="${mapY(y)}" x2="${mLeft + pW}" y2="${mapY(y)}"></line>

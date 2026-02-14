@@ -81,15 +81,10 @@ incidents = [
 document.getElementById("tesla-miles").value = "456000";
 document.getElementById("tesla-frac").value = "50";
 document.getElementById("tesla-deadhead").value = "20";
-document.getElementById("tesla-scope").value = "100";
 document.getElementById("waymo-miles").value = "57000000";
 document.getElementById("waymo-deadhead").value = "0";
-document.getElementById("waymo-none").value = "100";
-document.getElementById("waymo-scope").value = "100";
 document.getElementById("zoox-miles").value = "300000";
 document.getElementById("zoox-deadhead").value = "20";
-document.getElementById("zoox-none").value = "100";
-document.getElementById("zoox-scope").value = "100";
 document.getElementById("humans-waymo-divisor").value = "5";
 document.getElementById("result-Tesla");
 `, ctx);
@@ -101,8 +96,7 @@ const expectedDenom = vm.runInContext(`
 Math.round(COMPANIES.Tesla.getParts({
   "tesla-miles": 456000,
   "tesla-frac": 50,
-  "tesla-deadhead": 20,
-  "tesla-scope": 100
+  "tesla-deadhead": 20
 }).miles).toLocaleString()
 `, ctx);
 const expectedHeader = vm.runInContext(`
@@ -110,8 +104,7 @@ const expectedHeader = vm.runInContext(`
   const miles = COMPANIES.Tesla.getParts({
     "tesla-miles": 456000,
     "tesla-frac": 50,
-    "tesla-deadhead": 20,
-    "tesla-scope": 100
+    "tesla-deadhead": 20
   }).miles;
   const mpi = fmtMiles(estimateRate(1, miles).median);
   return "Tesla: 1 incidents in " + Math.round(miles).toLocaleString() + " miles \u21D2 " + mpi + " miles per incident";

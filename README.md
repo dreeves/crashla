@@ -12,7 +12,7 @@ NHTSA data source:
 https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
 (2025 June 15 through 2025 December 15)
 https://docs.google.com/spreadsheets/d/1r4hEVKOzE9sLLWmbB0Tzwzpo7aoUadmhxDY1imd5tb8/edit?usp=sharing
-481 incidents?
+416 incidents after deduping and filtering to operator=none
 
 https://www.austintexas.gov/page/autonomous-vehicles
 

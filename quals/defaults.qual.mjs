@@ -33,12 +33,6 @@ const defaults = vm.runInContext(`
 `, ctx);
 
 const plainDefaults = JSON.parse(JSON.stringify(defaults));
-const waymoScopeRange = JSON.parse(JSON.stringify(vm.runInContext(`
-(() => {
-  const s = COMPANIES.Waymo.sliders.find(x => x.id === "waymo-scope");
-  return {min: s.min, max: s.max, value: s.value};
-})()
-`, ctx)));
 const keyRanges = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
   const pick = (company, id) => {
@@ -48,14 +42,10 @@ const keyRanges = JSON.parse(JSON.stringify(vm.runInContext(`
   return {
     teslaMiles: pick("Tesla", "tesla-miles"),
     teslaDeadhead: pick("Tesla", "tesla-deadhead"),
-    teslaScope: pick("Tesla", "tesla-scope"),
     waymoMiles: pick("Waymo", "waymo-miles"),
     waymoDeadhead: pick("Waymo", "waymo-deadhead"),
-    waymoNone: pick("Waymo", "waymo-none"),
     zooxMiles: pick("Zoox", "zoox-miles"),
     zooxDeadhead: pick("Zoox", "zoox-deadhead"),
-    zooxNone: pick("Zoox", "zoox-none"),
-    zooxScope: pick("Zoox", "zoox-scope"),
     humansWaymoDivisor: pick("Humans", "humans-waymo-divisor"),
   };
 })()
@@ -65,22 +55,17 @@ assert.deepEqual(
   plainDefaults,
   {
     Tesla: {
-      "tesla-miles": 500000,
+      "tesla-miles": 450000,
       "tesla-frac": 70,
       "tesla-deadhead": 20,
-      "tesla-scope": 100,
     },
     Waymo: {
-      "waymo-miles": 43000000,
+      "waymo-miles": 61000000,
       "waymo-deadhead": 0,
-      "waymo-none": 100,
-      "waymo-scope": 100,
     },
     Zoox: {
       "zoox-miles": 300000,
       "zoox-deadhead": 20,
-      "zoox-none": 100,
-      "zoox-scope": 100,
     },
     Humans: {
       "humans-waymo-divisor": 5,
@@ -92,26 +77,14 @@ Expectata: defaults match the README-derived settings for denominator estimates.
 );
 
 assert.deepEqual(
-  waymoScopeRange,
-  {min: 99, max: 100, value: 100},
-  `Replicata: inspect Waymo scope slider bounds.
-Expectata: waymo-scope range is 99..100 with default 100.
-Resultata: got ${JSON.stringify(waymoScopeRange)}.`,
-);
-
-assert.deepEqual(
   keyRanges,
   {
-    teslaMiles: {min: 400000, max: 650000, step: 10000, value: 500000},
+    teslaMiles: {min: 94000, max: 600000, step: 1000, value: 450000},
     teslaDeadhead: {min: 0, max: 40, step: 1, value: 20},
-    teslaScope: {min: 90, max: 100, step: 1, value: 100},
-    waymoMiles: {min: 35000000, max: 65000000, step: 1000000, value: 43000000},
-    waymoDeadhead: {min: 0, max: 1, step: 1, value: 0},
-    waymoNone: {min: 99, max: 100, step: 1, value: 100},
-    zooxMiles: {min: 150000, max: 700000, step: 25000, value: 300000},
+    waymoMiles: {min: 57000000, max: 66000000, step: 1000000, value: 61000000},
+    waymoDeadhead: {min: 0, max: 50, step: 1, value: 0},
+    zooxMiles: {min: 50000, max: 1000000, step: 25000, value: 300000},
     zooxDeadhead: {min: 0, max: 40, step: 1, value: 20},
-    zooxNone: {min: 70, max: 100, step: 1, value: 100},
-    zooxScope: {min: 90, max: 100, step: 1, value: 100},
     humansWaymoDivisor: {min: 2, max: 10, step: 0.1, value: 5},
   },
   `Replicata: inspect tightened slider ranges in COMPANIES.

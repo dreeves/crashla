@@ -30,15 +30,10 @@ const set = (id, v) => { getNode(id).value = String(v); };
 set("tesla-miles", 500000);
 set("tesla-frac", 70);
 set("tesla-deadhead", 20);
-set("tesla-scope", 100);
 set("waymo-miles", 43000000);
 set("waymo-deadhead", 0);
-set("waymo-none", 100);
-set("waymo-scope", 100);
 set("zoox-miles", 300000);
 set("zoox-deadhead", 20);
-set("zoox-none", 100);
-set("zoox-scope", 100);
 set("humans-waymo-divisor", 4);
 
 vm.runInContext(`

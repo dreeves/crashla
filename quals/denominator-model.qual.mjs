@@ -24,26 +24,23 @@ const tesla = vm.runInContext(`
 COMPANIES.Tesla.getParts({
   "tesla-miles": 456000,
   "tesla-frac": 50,
-  "tesla-deadhead": 20,
-  "tesla-scope": 90
+  "tesla-deadhead": 20
 })
 `, ctx);
 const teslaExpectedBaseNone = 93849 + 0.5 * (456000 - 93849);
-const teslaExpectedMiles = teslaExpectedBaseNone * (1 / (1 - 0.2)) * 0.9;
+const teslaExpectedMiles = teslaExpectedBaseNone * (1 / (1 - 0.2));
 assert.ok(
   Math.abs(tesla.baseNoneMiles - teslaExpectedBaseNone) < 1e-9 &&
   Math.abs(tesla.miles - teslaExpectedMiles) < 1e-9,
   `Replicata: compute Tesla denominator parts from configured sliders.
-Expectata: pre-Sep miles always count as none, then apply deadhead and scope multipliers.
+Expectata: pre-Sep miles always count as none, then apply deadhead multiplier with scope fixed to 100%.
 Resultata: baseNone=${tesla.baseNoneMiles}, expectedBaseNone=${teslaExpectedBaseNone}, miles=${tesla.miles}, expectedMiles=${teslaExpectedMiles}.`,
 );
 
 const waymo = vm.runInContext(`
 COMPANIES.Waymo.getParts({
   "waymo-miles": 50000000,
-  "waymo-deadhead": 0,
-  "waymo-none": 100,
-  "waymo-scope": 100
+  "waymo-deadhead": 0
 })
 `, ctx);
 assert.equal(
@@ -57,16 +54,14 @@ Resultata: denominator was ${waymo.miles}.`,
 const zoox = vm.runInContext(`
 COMPANIES.Zoox.getParts({
   "zoox-miles": 500000,
-  "zoox-deadhead": 20,
-  "zoox-none": 80,
-  "zoox-scope": 90
+  "zoox-deadhead": 20
 })
 `, ctx);
-const zooxExpected = 500000 * 0.8 * (1 / (1 - 0.2)) * 0.9;
+const zooxExpected = 500000 * (1 / (1 - 0.2));
 assert.ok(
   Math.abs(zoox.miles - zooxExpected) < 1e-9,
   `Replicata: compute Zoox denominator parts from configured sliders.
-Expectata: denominator equals B * f_none * m_deadhead * f_scope.
+Expectata: denominator equals B * m_deadhead with operator=none and scope fixed to 100%.
 Resultata: denominator was ${zoox.miles}, expected ${zooxExpected}.`,
 );
 

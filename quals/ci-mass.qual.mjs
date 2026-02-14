@@ -78,15 +78,10 @@ incidents = [
 document.getElementById("tesla-miles").value = "456000";
 document.getElementById("tesla-frac").value = "50";
 document.getElementById("tesla-deadhead").value = "0";
-document.getElementById("tesla-scope").value = "100";
 document.getElementById("waymo-miles").value = "57000000";
 document.getElementById("waymo-deadhead").value = "0";
-document.getElementById("waymo-none").value = "100";
-document.getElementById("waymo-scope").value = "100";
 document.getElementById("zoox-miles").value = "300000";
 document.getElementById("zoox-deadhead").value = "20";
-document.getElementById("zoox-none").value = "100";
-document.getElementById("zoox-scope").value = "100";
 document.getElementById("humans-waymo-divisor").value = "5";
 document.getElementById("result-Tesla");
 `, ctx);
