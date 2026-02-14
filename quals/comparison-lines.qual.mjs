@@ -81,42 +81,37 @@ incidents = [
   { company: "Zoox", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }
 ];
 document.getElementById("tesla-miles").value = "456000";
-document.getElementById("tesla-frac").value = "50";
+document.getElementById("tesla-frac").value = "60";
 document.getElementById("tesla-deadhead").value = "20";
 document.getElementById("tesla-scope").value = "100";
-document.getElementById("waymo-miles").value = "50000000";
+document.getElementById("waymo-miles").value = "57000000";
 document.getElementById("waymo-deadhead").value = "0";
 document.getElementById("waymo-none").value = "100";
 document.getElementById("waymo-scope").value = "100";
-document.getElementById("zoox-miles").value = "500000";
+document.getElementById("zoox-miles").value = "300000";
 document.getElementById("zoox-deadhead").value = "20";
 document.getElementById("zoox-none").value = "100";
 document.getElementById("zoox-scope").value = "100";
-buildEstimator();
-buildEstimator();
+document.getElementById("result-Tesla");
 `, ctx);
 
-const expectedPanels = vm.runInContext("Object.keys(COMPANIES).length", ctx);
-const estimatorChildren = getNode("estimator").children.length;
+vm.runInContext(`updateEstimate("Tesla")`, ctx);
+const rendered = getNode("result-Tesla").innerHTML;
+
+const refLineCount = (rendered.match(/class="graph-refline"/g) || []).length;
 assert.equal(
-  estimatorChildren,
-  expectedPanels,
-  `Replicata: call buildEstimator() twice.
-Expectata: estimator panel count remains ${expectedPanels}.
-Resultata: panel count was ${estimatorChildren}.`,
+  refLineCount,
+  2,
+  `Replicata: render Tesla graph with all company sliders set.
+Expectata: two horizontal peer reference lines appear (Waymo and Zoox).
+Resultata: found ${refLineCount} reference lines in rendered HTML ${JSON.stringify(rendered)}.`,
 );
 
-let threw = false;
-try {
-  vm.runInContext("gammaquant(1, 1, 1)", ctx);
-} catch (err) {
-  threw = true;
-}
 assert.ok(
-  threw,
-  `Replicata: call gammaquant with p=1.
-Expectata: immediate throw for invalid parameters.
-Resultata: no throw.`,
+  rendered.includes("Waymo:") && rendered.includes("Zoox:"),
+  `Replicata: render Tesla graph with all company sliders set.
+Expectata: peer line labels include both Waymo and Zoox.
+Resultata: rendered HTML was ${JSON.stringify(rendered)}.`,
 );
 
-console.log("qual pass: fail-loud invariants and idempotent estimator rendering");
+console.log("qual pass: graphs include two color-coded peer reference lines");

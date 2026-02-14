@@ -74,31 +74,33 @@ For each of these self-driving car companies, we need a lower bound and upper bo
 Tesla is a very unusual case. They've had in-car supervision for most rides with their passenger-seat safety monitors. But, per the NHTSA incident database, Tesla is averring to NHTSA that those rides have no operator, ie, that they count as SAE level 3+. So that's what we're going with here. That means we need to estimate Tesla's robotaxi mileage for the subset of rides that had an empty driver's seat. Whether a human was in the passenger seat is not relevant here.
 
 ChatGPT:
-
-* Waymo: 53M - 96M (best estimate ~80M)
-* Tesla: 0.30M - 0.55M (best estimate ~0.39M)
-* Zoox: 0.05M - 0.60M (best estimate ~0.25M)
-Revised:
-* Waymo 57M - 66M (best estimate 61M) [0.70 confidence]
-* Tesla (empty driver’s seat only) 0.094M - 0.60M (best estimate 0.45M) [0.35 confidence]
-* Zoox 0.05M - 1.0M (best estimate 0.30M) [0.20 confidence]
+* Waymo: 53M - 96M (~80M)
+* Tesla: 0.30M - 0.55M (~0.39M)
+* Zoox: 0.05M - 0.60M (~0.25M)
+ChatGPT Revised:
+* Waymo 57M - 66M (~61M) [confidence 0.7]
+* Tesla 0.094M - 0.60M (~0.45M) [confidence 0.35]
+* Zoox 0.05M - 1.0M (~0.30M) [confidence 0.2]
 
 Claude:
-
-* Waymo 60M - 80M (best estimate 70M)
-* Tesla 150k - 450k (best estimate 300k)
-* Zoox 200k - 550k (best estimate 350k)
-Revised:
-* Waymo 50M - 57M - 65M [HIGH confidence]
-* Tesla (empty driver's seat) 94,000 - 250,000 - 456,000 [LOW confidence]
-* Zoox (purpose-built only) 250,000 - 400,000 - 550,000 [LOW confidence]
+* Waymo 60M - 80M (~70M)
+* Tesla 150k - 450k (~300k)
+* Zoox 200k - 550k (~350k)
+Claude Revised:
+* Waymo 50M - 65M (~57M) [confidence high]
+* Tesla 94,000 - 456,000 (~250,000) [confidence low]
+* Zoox 250,000 - 550,000 (~400,000) [confidence low]
 
 Gemini:
-
 * Waymo 50M - 60M
 * Tesla 0.5M - 3M
 * Zoox 0.8M - 1.2M
+Gemini Revised:
+* Waymo 80M - 120M
+* Tesla 300,000 - 500,000
+* Zoox 0.8M - 1.0M
 
+For Vehicle Miles Traveled (VMT) we also need to include miles traveled with no customer in the car...
 
 # Spec
 

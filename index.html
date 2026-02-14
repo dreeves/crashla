@@ -50,6 +50,48 @@ h3 { margin: 0.75rem 0 0.5rem; }
   font-weight: 600;
 }
 .result-box .ci { font-size: 0.9rem; color: #555; }
+.graph-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.graph-grid {
+  stroke: #e8ecf5;
+  stroke-width: 1;
+}
+.graph-axis {
+  stroke: #a7afbf;
+  stroke-width: 1;
+}
+.graph-line {
+  fill: none;
+  stroke: #2060c0;
+  stroke-width: 2;
+}
+.graph-band {
+  fill: rgba(32, 96, 192, 0.18);
+}
+.graph-point {
+  fill: #d13b2d;
+  stroke: #fff;
+  stroke-width: 2;
+}
+.graph-refline {
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+.graph-reflabel {
+  font-size: 10px;
+  font-weight: 600;
+}
+.graph-tick {
+  fill: #5b6475;
+  font-size: 10px;
+}
+.graph-label {
+  fill: #334;
+  font-size: 11px;
+}
 .ci-bar-container {
   position: relative;
   height: 28px;
@@ -112,17 +154,12 @@ tr:hover { background: #f8f8ff; }
 </head>
 <body>
 
-<!-- TODO human to vet title — "Crashla" -->
-<h1>Crashla</h1>
-<!-- TODO human to vet subtitle — "Robotaxi safety analysis tool using NHTSA SGO data." -->
-<p>Instrumentum analyseos securitatis vehiculorum autonomorum ex datis NHTSA SGO.</p>
+<h1>Tesla vs Waymo vs Zoox vs Humans</h1>
 
-<!-- TODO human to vet section heading — "Estimated miles between incidents" -->
-<h2>Aestimatio milium inter incidentia</h2>
 <div id="estimator"></div>
 
 <!-- TODO human to vet section heading — "Incident browser" -->
-<h2>Index incidentium</h2>
+<h2>Incident browser</h2>
 <div class="filters" id="filters"></div>
 <div class="incident-count" id="incident-count"></div>
 <div style="overflow-x: auto;">
@@ -130,13 +167,13 @@ tr:hover { background: #f8f8ff; }
     <thead>
       <tr>
         <!-- TODO human to vet column headers — "Company", "Date", "Location", "Crash with", "Speed (mph)", "Severity", "Narrative" -->
-        <th>Societas</th>
-        <th>Dies</th>
-        <th>Locus</th>
-        <th>Collisio cum</th>
-        <th>Celeritas (mph)</th>
-        <th>Gravitas</th>
-        <th>Narratio</th>
+        <th>Company</th>
+        <th>Date</th>
+        <th>Location</th>
+        <th>Crash with</th>
+        <th>Speed (mph)</th>
+        <th>Severity</th>
+        <th>Narrative</th>
       </tr>
     </thead>
     <tbody id="incidents-body"></tbody>
@@ -268,6 +305,38 @@ function estimateRate(k, m) {
 
 let incidents = [];
 const CI_MASS = 0.8;
+const COMPANY_COLORS = {
+  Tesla: "#d13b2d",
+  Waymo: "#2a8f57",
+  Zoox: "#b7771a",
+};
+// Tesla pre-Sep-1 miles (all empty driver's seat)
+const TESLA_PRE_SEP_MILES = 93849;
+
+function pct(v) {
+  return v / 100;
+}
+
+function deadheadMultiplier(deadheadPct) {
+  const deadheadFrac = pct(deadheadPct);
+  must(deadheadFrac >= 0 && deadheadFrac < 1,
+    "deadhead share out of range", {deadheadPct});
+  return 1 / (1 - deadheadFrac);
+}
+
+function factorizedParts(baseMiles, deadheadPct, nonePct, scopePct) {
+  const baseNoneMiles = baseMiles * pct(nonePct);
+  const mDeadhead = deadheadMultiplier(deadheadPct);
+  return {
+    baseMiles,
+    baseNoneMiles,
+    deadheadPct,
+    nonePct,
+    scopePct,
+    deadheadMultiplier: mDeadhead,
+    miles: baseNoneMiles * mDeadhead * pct(scopePct),
+  };
+}
 
 // Company configs: incident count from data, slider definitions
 const COMPANIES = {
@@ -276,24 +345,59 @@ const COMPANIES = {
       {
         id: "tesla-miles",
         // TODO human to vet label — "Total robotaxi miles"
-        label: "Milia totalia robotaxi",
-        min: 200000, max: 800000, step: 10000, value: 456000,
+        // TO-DO human to vet tooltip text.
+        label: "Total robotaxi miles",
+        tip: "Base robotaxi miles in this window before applying scope and non-service factors.",
+        min: 400000, max: 650000, step: 10000, value: 500000,
         fmt: v => v.toLocaleString(),
       },
       {
         id: "tesla-frac",
         // TODO human to vet label — "% post-Sep-1 without driver"
-        label: "Fractio post-Sep-1 sine auriga",
-        min: 0, max: 100, step: 1, value: 50,
+        // TO-DO human to vet tooltip text.
+        label: "% post-Sep-1 without driver",
+        tip: "Share of post-Sep-1 miles where the driver seat is empty.",
+        min: 0, max: 100, step: 1, value: 70,
+        fmt: v => v + "%",
+      },
+      {
+        id: "tesla-deadhead",
+        // TO-DO human to vet label — "Non-service share (deadhead)"
+        // TO-DO human to vet tooltip text.
+        label: "Non-service share",
+        tip: "Share of ADS miles with no passenger in the car; used for the non-service multiplier.",
+        min: 0, max: 40, step: 1, value: 20,
+        fmt: v => v + "%",
+      },
+      {
+        id: "tesla-scope",
+        // TO-DO human to vet label — "Scope fraction (US/public/ADS)"
+        // TO-DO human to vet tooltip text.
+        label: "Scope fraction (US/public/ADS)",
+        tip: "Fraction remaining after filtering to US public-road ADS-engaged miles.",
+        min: 90, max: 100, step: 1, value: 100,
         fmt: v => v + "%",
       },
     ],
-    // Tesla pre-Sep-1 miles (all empty driver's seat)
-    preSepMiles: 93849,
-    getMiles: vals => {
-      const total = vals["tesla-miles"];
-      const frac  = vals["tesla-frac"] / 100;
-      return 93849 + frac * (total - 93849);
+    getParts: vals => {
+      const baseMiles = vals["tesla-miles"];
+      must(baseMiles >= TESLA_PRE_SEP_MILES,
+        "tesla base miles below pre-Sep-1 miles", {baseMiles});
+      const nonePostPct = vals["tesla-frac"];
+      const postSepMiles = baseMiles - TESLA_PRE_SEP_MILES;
+      const baseNoneMiles = TESLA_PRE_SEP_MILES + pct(nonePostPct) * postSepMiles;
+      const deadheadPct = vals["tesla-deadhead"];
+      const scopePct = vals["tesla-scope"];
+      const mDeadhead = deadheadMultiplier(deadheadPct);
+      return {
+        baseMiles,
+        baseNoneMiles,
+        deadheadPct,
+        nonePct: nonePostPct,
+        scopePct,
+        deadheadMultiplier: mDeadhead,
+        miles: baseNoneMiles * mDeadhead * pct(scopePct),
+      };
     },
   },
   Waymo: {
@@ -301,24 +405,92 @@ const COMPANIES = {
       {
         id: "waymo-miles",
         // TODO human to vet label — "Driverless miles"
-        label: "Milia sine auriga",
-        min: 10000000, max: 100000000, step: 1000000, value: 50000000,
+        // TO-DO human to vet tooltip text.
+        label: "Driverless miles",
+        tip: "Waymo base miles in this window before additional factors.",
+        min: 35000000, max: 65000000, step: 1000000, value: 43000000,
         fmt: v => (v / 1e6).toFixed(0) + "M",
       },
+      {
+        id: "waymo-deadhead",
+        // TO-DO human to vet label — "Non-service share (deadhead)"
+        // TO-DO human to vet tooltip text.
+        label: "Non-service share",
+        tip: "Share of miles without a passenger; fixed at zero here because base miles are treated as total miles.",
+        min: 0, max: 0, step: 1, value: 0,
+        fmt: v => v + "%",
+      },
+      {
+        id: "waymo-none",
+        // TO-DO human to vet label — "Operator=none fraction"
+        // TO-DO human to vet tooltip text.
+        label: "Operator=none fraction",
+        tip: "Fraction of miles corresponding to Driver/Operator Type = None.",
+        min: 100, max: 100, step: 1, value: 100,
+        fmt: v => v + "%",
+      },
+      {
+        id: "waymo-scope",
+        // TO-DO human to vet label — "Scope fraction (US/public/ADS)"
+        // TO-DO human to vet tooltip text.
+        label: "Scope fraction (US/public/ADS)",
+        tip: "Fraction remaining after filtering to US public-road ADS-engaged miles.",
+        min: 99, max: 100, step: 1, value: 100,
+        fmt: v => v + "%",
+      },
     ],
-    getMiles: vals => vals["waymo-miles"],
+    getParts: vals => factorizedParts(
+      vals["waymo-miles"],
+      vals["waymo-deadhead"],
+      vals["waymo-none"],
+      vals["waymo-scope"],
+    ),
   },
   Zoox: {
     sliders: [
       {
         id: "zoox-miles",
         // TODO human to vet label — "Driverless miles"
-        label: "Milia sine auriga",
-        min: 100000, max: 2000000, step: 50000, value: 500000,
+        // TO-DO human to vet tooltip text.
+        label: "Driverless miles",
+        tip: "Zoox base miles in this window before non-service and scope factors.",
+        min: 150000, max: 700000, step: 25000, value: 300000,
         fmt: v => v.toLocaleString(),
       },
+      {
+        id: "zoox-deadhead",
+        // TO-DO human to vet label — "Non-service share (deadhead)"
+        // TO-DO human to vet tooltip text.
+        label: "Non-service share",
+        tip: "Share of ADS miles with no passenger; converts service miles to total VMT.",
+        min: 0, max: 40, step: 1, value: 20,
+        fmt: v => v + "%",
+      },
+      {
+        id: "zoox-none",
+        // TO-DO human to vet label — "Operator=none fraction"
+        // TO-DO human to vet tooltip text.
+        label: "Operator=none fraction",
+        tip: "Fraction of ADS miles with no in-vehicle operator under the SGO definition.",
+        min: 70, max: 100, step: 1, value: 100,
+        fmt: v => v + "%",
+      },
+      {
+        id: "zoox-scope",
+        // TO-DO human to vet label — "Scope fraction (US/public/ADS)"
+        // TO-DO human to vet tooltip text.
+        label: "Scope fraction (US/public/ADS)",
+        tip: "Fraction remaining after exclusions outside US, outside public roads, or outside ADS-engaged miles.",
+        min: 90, max: 100, step: 1, value: 100,
+        fmt: v => v + "%",
+      },
     ],
-    getMiles: vals => vals["zoox-miles"],
+    getParts: vals => factorizedParts(
+      vals["zoox-miles"],
+      vals["zoox-deadhead"],
+      vals["zoox-none"],
+      vals["zoox-scope"],
+    ),
   },
 };
 
@@ -329,6 +501,79 @@ function countByCompany() {
     counts[inc.company] = (counts[inc.company] || 0) + 1;
   }
   return counts;
+}
+
+function denominatorBounds(cfg) {
+  let corners = [{}];
+  for (const s of cfg.sliders) {
+    const next = [];
+    for (const corner of corners) {
+      next.push({...corner, [s.id]: s.min});
+      next.push({...corner, [s.id]: s.max});
+    }
+    corners = next;
+  }
+  const denoms = corners.map(vals => cfg.getParts(vals).miles);
+  return {
+    min: Math.min(...denoms),
+    max: Math.max(...denoms),
+  };
+}
+
+function scaleLinear(v, d0, d1, r0, r1) {
+  const span = (d1 - d0) || 1;
+  return r0 + (v - d0) * (r1 - r0) / span;
+}
+
+function sampledEstimates(k, xMin, xMax, n) {
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const x = xMin + (xMax - xMin) * i / n;
+    out.push({x, est: estimateRate(k, x)});
+  }
+  return out;
+}
+
+function medianPath(samples, mapX, mapY) {
+  let d = "";
+  for (let i = 0; i < samples.length; i++) {
+    const s = samples[i];
+    d += `${i ? " L " : "M "}${mapX(s.x).toFixed(2)} ${mapY(s.est.median).toFixed(2)}`;
+  }
+  return d;
+}
+
+function bandPath(samples, mapX, mapY) {
+  let d = "";
+  for (let i = 0; i < samples.length; i++) {
+    const s = samples[i];
+    d += `${i ? " L " : "M "}${mapX(s.x).toFixed(2)} ${mapY(s.est.hi).toFixed(2)}`;
+  }
+  for (let i = samples.length - 1; i >= 0; i--) {
+    const s = samples[i];
+    d += ` L ${mapX(s.x).toFixed(2)} ${mapY(s.est.lo).toFixed(2)}`;
+  }
+  return d + " Z";
+}
+
+function sliderVals(cfg) {
+  const vals = {};
+  for (const s of cfg.sliders) vals[s.id] = Number(byId(s.id).value);
+  return vals;
+}
+
+function companySummaries(counts) {
+  return Object.keys(COMPANIES).map(company => {
+    const cfg = COMPANIES[company];
+    const vals = sliderVals(cfg);
+    const miles = cfg.getParts(vals).miles;
+    const k = counts[company] || 0;
+    return {company, k, miles, est: estimateRate(k, miles)};
+  });
+}
+
+function updateAllEstimates() {
+  for (const company of Object.keys(COMPANIES)) updateEstimate(company);
 }
 
 function buildEstimator() {
@@ -343,14 +588,17 @@ function buildEstimator() {
     panel.dataset.company = company;
 
     // TODO human to vet — "incidents"
-    let html = `<h3>${company} <span style="font-weight:normal;font-size:0.9rem;color:#666">(${k} incidentia)</span></h3>`;
+    let html = `<h3 id="header-stats-${company}">${company}: ${k} incidents in 0 miles ⇒ ? miles per incident</h3>`;
 
     for (const s of cfg.sliders) {
+      must(typeof s.tip === "string" && s.tip.length > 0,
+        "slider missing tooltip", {company, sliderId: s.id});
+      const tip = escAttr(s.tip);
       html += `
         <div class="slider-row">
-          <label for="${s.id}">${s.label}</label>
+          <label for="${s.id}" title="${tip}">${s.label}</label>
           <input type="range" id="${s.id}" min="${s.min}" max="${s.max}"
-                 step="${s.step}" value="${s.value}">
+                 step="${s.step}" value="${s.value}" title="${tip}">
           <span class="val" id="${s.id}-val">${s.fmt(s.value)}</span>
         </div>`;
     }
@@ -365,56 +613,77 @@ function buildEstimator() {
       const valSpan = byId(s.id + "-val");
       input.addEventListener("input", () => {
         valSpan.textContent = s.fmt(Number(input.value));
-        updateEstimate(company);
+        updateAllEstimates();
       });
     }
-
-    updateEstimate(company);
   }
+  updateAllEstimates();
 }
 
 function updateEstimate(company) {
   const cfg = COMPANIES[company];
   must(cfg !== undefined, "Unknown company config", {company});
   const counts = countByCompany();
-  const k = counts[company] || 0;
-  const ciPct = Math.round(CI_MASS * 100);
-
-  // Read slider values
-  const vals = {};
-  for (const s of cfg.sliders) {
-    vals[s.id] = Number(byId(s.id).value);
-  }
-  const miles = cfg.getMiles(vals);
-  const est = estimateRate(k, miles);
+  const summaries = companySummaries(counts);
+  const thisSummary = summaries.find(s => s.company === company);
+  must(thisSummary !== undefined, "Missing summary for company", {company});
+  const peers = summaries.filter(s => s.company !== company);
+  const k = thisSummary.k;
+  const miles = thisSummary.miles;
+  const est = thisSummary.est;
+  byId("header-stats-" + company).textContent =
+    `${company}: ${k} incidents in ${Math.round(miles).toLocaleString()} miles ⇒ ${fmtMiles(est.median)} miles per incident`;
 
   const box = byId("result-" + company);
-
-  // Determine a nice log-scale range for the CI bar
-  // Show from 100 to 10,000,000 on a log scale
-  const logMin = Math.log10(100);
-  const logMax = Math.log10(10000000);
-  const logRange = logMax - logMin;
-
-  const pctLo = Math.max(0, Math.min(100, (Math.log10(est.lo) - logMin) / logRange * 100));
-  const pctHi = Math.max(0, Math.min(100, (Math.log10(est.hi) - logMin) / logRange * 100));
-  const pctMed = Math.max(0, Math.min(100, (Math.log10(est.median) - logMin) / logRange * 100));
+  const bounds = denominatorBounds(cfg);
+  const xMin = bounds.min;
+  const xMax = bounds.max;
+  const samples = sampledEstimates(k, xMin, xMax, 40);
+  const yMin = Math.min(...samples.map(s => s.est.lo), ...peers.map(p => p.est.median));
+  const yMax = Math.max(...samples.map(s => s.est.hi), ...peers.map(p => p.est.median));
+  const svgW = 520;
+  const svgH = 220;
+  const mLeft = 56;
+  const mRight = 12;
+  const mTop = 10;
+  const mBot = 40;
+  const pW = svgW - mLeft - mRight;
+  const pH = svgH - mTop - mBot;
+  const mapX = x => scaleLinear(x, xMin, xMax, mLeft, mLeft + pW);
+  const mapY = y => scaleLinear(y, yMin, yMax, mTop + pH, mTop);
+  const pointX = mapX(miles);
+  const pointY = mapY(est.median);
+  const xTicks = [xMin, (xMin + xMax) / 2, xMax];
+  const yTicks = [yMin, (yMin + yMax) / 2, yMax];
+  const band = bandPath(samples, mapX, mapY);
+  const path = medianPath(samples, mapX, mapY);
 
   // TODO human to vet — "X miles between incidents",
   //   "90% credible interval: lo – hi", "Effective miles: N · Incidents: K"
+  // TO-DO human to vet denominator component copy.
+  // TO-DO human to vet graph axis copy.
   box.innerHTML = `
-    <div class="estimate">${fmtMiles(est.median)} milia inter incidentia</div>
-    <div class="ci">${ciPct}% intervallum credibile: ${fmtMiles(est.lo)} – ${fmtMiles(est.hi)}</div>
-    <div style="font-size:0.85rem;color:#666;margin-top:0.25rem;">
-      Milia effectiva: ${Math.round(miles).toLocaleString()} · Incidentia: ${k}
-    </div>
-    <div class="ci-bar-container">
-      <div class="ci-bar" style="left:${pctLo}%;width:${pctHi - pctLo}%"></div>
-      <div class="ci-median" style="left:${pctMed}%"></div>
-    </div>
-    <div class="ci-labels">
-      <span>100</span><span>1K</span><span>10K</span><span>100K</span><span>1M</span><span>10M</span>
-    </div>
+    <svg class="graph-svg" viewBox="0 0 ${svgW} ${svgH}">
+      ${xTicks.map(x => `
+        <line class="graph-grid" x1="${mapX(x)}" y1="${mTop}" x2="${mapX(x)}" y2="${mTop + pH}"></line>
+        <text class="graph-tick" x="${mapX(x)}" y="${svgH - 16}" text-anchor="middle">${Math.round(x).toLocaleString()}</text>
+      `).join("")}
+      ${yTicks.map(y => `
+        <line class="graph-grid" x1="${mLeft}" y1="${mapY(y)}" x2="${mLeft + pW}" y2="${mapY(y)}"></line>
+        <text class="graph-tick" x="${mLeft - 8}" y="${mapY(y) + 4}" text-anchor="end">${fmtMiles(y)}</text>
+      `).join("")}
+      <line class="graph-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${mTop + pH}"></line>
+      <line class="graph-axis" x1="${mLeft}" y1="${mTop + pH}" x2="${mLeft + pW}" y2="${mTop + pH}"></line>
+      <path class="graph-band" d="${band}"></path>
+      <path class="graph-line" d="${path}"></path>
+      ${peers.map(p => `
+        <line class="graph-refline" x1="${mLeft}" y1="${mapY(p.est.median)}" x2="${mLeft + pW}" y2="${mapY(p.est.median)}" style="stroke:${COMPANY_COLORS[p.company]}"></line>
+        <text class="graph-reflabel" x="${mLeft + pW - 4}" y="${mapY(p.est.median) - 4}" text-anchor="end" style="fill:${COMPANY_COLORS[p.company]}">${p.company}: ${fmtMiles(p.est.median)}</text>
+      `).join("")}
+      <circle class="graph-point" cx="${pointX}" cy="${pointY}" r="5"></circle>
+      <text class="graph-label" x="${mLeft + pW / 2}" y="${svgH - 2}" text-anchor="middle">Total Autonomous Miles</text>
+      <text class="graph-label" x="12" y="${mTop + pH / 2}" transform="rotate(-90 12 ${mTop + pH / 2})" text-anchor="middle">Miles per incident</text>
+    </svg>
   `;
 }
 
@@ -455,14 +724,15 @@ function renderTable() {
     : incidents.filter(r => r.company === activeFilter);
 
   byId("incident-count").textContent =
-    `${filtered.length} incidentia`; // TODO human to vet — "N incidents"
+    `${filtered.length} incidents`; // TODO human to vet — "N incidents"
 
   tbody.innerHTML = "";
   for (const r of filtered) {
     const tr = document.createElement("tr");
     const isCbi = r.narrativeCbi === "Y";
     const narrativeText = isCbi
-      ? "[CBI]"
+      // TO-DO human to vet acronym expansion copy.
+      ? "[\"Confidential Business Information\"]"
       : (r.narrative || "");
     const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
 
@@ -502,6 +772,10 @@ function escHtml(s) {
   const d = document.createElement("div");
   d.textContent = s;
   return d.innerHTML;
+}
+
+function escAttr(s) {
+  return escHtml(s).replace(/"/g, "&quot;");
 }
 
 // --- Init ---
