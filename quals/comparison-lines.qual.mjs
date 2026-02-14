@@ -92,6 +92,7 @@ document.getElementById("zoox-miles").value = "300000";
 document.getElementById("zoox-deadhead").value = "20";
 document.getElementById("zoox-none").value = "100";
 document.getElementById("zoox-scope").value = "100";
+document.getElementById("humans-waymo-divisor").value = "5";
 document.getElementById("result-Tesla");
 `, ctx);
 
@@ -101,17 +102,17 @@ const rendered = getNode("result-Tesla").innerHTML;
 const refLineCount = (rendered.match(/class="graph-refline"/g) || []).length;
 assert.equal(
   refLineCount,
-  2,
+  3,
   `Replicata: render Tesla graph with all company sliders set.
-Expectata: two horizontal peer reference lines appear (Waymo and Zoox).
+Expectata: three horizontal peer reference lines appear (Waymo, Zoox, and Humans).
 Resultata: found ${refLineCount} reference lines in rendered HTML ${JSON.stringify(rendered)}.`,
 );
 
 assert.ok(
-  rendered.includes("Waymo:") && rendered.includes("Zoox:"),
+  rendered.includes("Waymo:") && rendered.includes("Zoox:") && rendered.includes("Humans:"),
   `Replicata: render Tesla graph with all company sliders set.
-Expectata: peer line labels include both Waymo and Zoox.
+Expectata: peer line labels include Waymo, Zoox, and Humans.
 Resultata: rendered HTML was ${JSON.stringify(rendered)}.`,
 );
 
-console.log("qual pass: graphs include two color-coded peer reference lines");
+console.log("qual pass: graphs include three color-coded peer reference lines");

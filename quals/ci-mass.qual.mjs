@@ -87,6 +87,7 @@ document.getElementById("zoox-miles").value = "300000";
 document.getElementById("zoox-deadhead").value = "20";
 document.getElementById("zoox-none").value = "100";
 document.getElementById("zoox-scope").value = "100";
+document.getElementById("humans-waymo-divisor").value = "5";
 document.getElementById("result-Tesla");
 `, ctx);
 
@@ -111,9 +112,9 @@ vm.runInContext(`updateEstimate("Tesla")`, ctx);
 const rendered = getNode("result-Tesla").innerHTML;
 assert.ok(
   rendered.includes("<svg") && rendered.includes("graph-band") && rendered.includes("Total Autonomous Miles") &&
-    rendered.includes("Waymo:") && rendered.includes("Zoox:"),
+    rendered.includes("Waymo:") && rendered.includes("Zoox:") && rendered.includes("Humans:"),
   `Replicata: render company estimate.
-Expectata: rendered estimate uses graph output with CI band, updated x-axis label, and peer reference lines.
+Expectata: rendered estimate uses graph output with CI band, updated x-axis label, and peer reference lines for all non-selected entities.
 Resultata: rendered HTML was ${JSON.stringify(rendered)}.`,
 );
 

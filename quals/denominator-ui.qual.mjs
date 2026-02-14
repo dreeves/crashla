@@ -90,6 +90,7 @@ document.getElementById("zoox-miles").value = "300000";
 document.getElementById("zoox-deadhead").value = "20";
 document.getElementById("zoox-none").value = "100";
 document.getElementById("zoox-scope").value = "100";
+document.getElementById("humans-waymo-divisor").value = "5";
 document.getElementById("result-Tesla");
 `, ctx);
 
@@ -124,6 +125,7 @@ assert.ok(
   rendered.includes("Total Autonomous Miles") &&
   rendered.includes("Waymo:") &&
   rendered.includes("Zoox:") &&
+  rendered.includes("Humans:") &&
   headerText === expectedHeader &&
   headerText.includes(expectedDenom),
   `Replicata: render Tesla estimate after setting denominator sliders.

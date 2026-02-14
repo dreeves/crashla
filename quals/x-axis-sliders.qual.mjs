@@ -80,44 +80,54 @@ incidents = [
   { company: "Waymo", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
   { company: "Zoox", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }
 ];
-document.getElementById("tesla-miles").value = "456000";
-document.getElementById("tesla-frac").value = "50";
+document.getElementById("tesla-miles").value = "500000";
+document.getElementById("tesla-frac").value = "70";
 document.getElementById("tesla-deadhead").value = "20";
 document.getElementById("tesla-scope").value = "100";
-document.getElementById("waymo-miles").value = "50000000";
+document.getElementById("waymo-miles").value = "43000000";
 document.getElementById("waymo-deadhead").value = "0";
 document.getElementById("waymo-none").value = "100";
 document.getElementById("waymo-scope").value = "100";
-document.getElementById("zoox-miles").value = "500000";
+document.getElementById("zoox-miles").value = "300000";
 document.getElementById("zoox-deadhead").value = "20";
 document.getElementById("zoox-none").value = "100";
 document.getElementById("zoox-scope").value = "100";
 document.getElementById("humans-waymo-divisor").value = "5";
-buildEstimator();
-buildEstimator();
+document.getElementById("x-min-Tesla").value = "10";
+document.getElementById("x-max-Tesla").value = "60";
+document.getElementById("result-Tesla");
+document.getElementById("x-min-Tesla-val");
+document.getElementById("x-max-Tesla-val");
 `, ctx);
 
-const expectedPanels = vm.runInContext("Object.keys(COMPANIES).length", ctx);
-const estimatorChildren = getNode("estimator").children.length;
-assert.equal(
-  estimatorChildren,
-  expectedPanels,
-  `Replicata: call buildEstimator() twice.
-Expectata: estimator panel count remains ${expectedPanels}.
-Resultata: panel count was ${estimatorChildren}.`,
-);
+vm.runInContext(`updateEstimate("Tesla")`, ctx);
+const rendered = getNode("result-Tesla").innerHTML;
+const minLabel = getNode("x-min-Tesla-val").textContent;
+const maxLabel = getNode("x-max-Tesla-val").textContent;
+const expected = vm.runInContext(`
+(() => {
+  const s = companySummaries(countByCompany()).Tesla;
+  const span = s.bounds.max - s.bounds.min;
+  const xMin = s.bounds.min + span * 0.10;
+  const xMax = s.bounds.min + span * 0.60;
+  const xMid = (xMin + xMax) / 2;
+  return {
+    xMinTick: Math.round(xMin).toLocaleString(),
+    xMidTick: Math.round(xMid).toLocaleString(),
+    xMaxTick: Math.round(xMax).toLocaleString(),
+  };
+})()
+`, ctx);
 
-let threw = false;
-try {
-  vm.runInContext("gammaquant(1, 1, 1)", ctx);
-} catch (err) {
-  threw = true;
-}
 assert.ok(
-  threw,
-  `Replicata: call gammaquant with p=1.
-Expectata: immediate throw for invalid parameters.
-Resultata: no throw.`,
+  rendered.includes(expected.xMinTick) &&
+    rendered.includes(expected.xMidTick) &&
+    rendered.includes(expected.xMaxTick) &&
+    minLabel === expected.xMinTick &&
+    maxLabel === expected.xMaxTick,
+  `Replicata: set Tesla x-axis sliders to 10% and 60%, then render estimate graph.
+Expectata: x-axis ticks and slider value labels reflect the selected x-axis window.
+Resultata: expected=${JSON.stringify(expected)} minLabel=${JSON.stringify(minLabel)} maxLabel=${JSON.stringify(maxLabel)} rendered=${JSON.stringify(rendered)}.`,
 );
 
-console.log("qual pass: fail-loud invariants and idempotent estimator rendering");
+console.log("qual pass: per-panel x-axis sliders drive tick window and displayed bounds");

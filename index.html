@@ -83,6 +83,9 @@ h3 { margin: 0.75rem 0 0.5rem; }
 .graph-reflabel {
   font-size: 10px;
   font-weight: 600;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
 }
 .graph-tick {
   fill: #5b6475;
@@ -309,7 +312,20 @@ const COMPANY_COLORS = {
   Tesla: "#d13b2d",
   Waymo: "#2a8f57",
   Zoox: "#b7771a",
+  Humans: "#5b6475",
 };
+const COMPANY_ORDER = ["Tesla", "Waymo", "Zoox", "Humans"];
+const INCIDENT_MODEL_COMPANIES = ["Tesla", "Waymo", "Zoox"];
+const AXIS_MIN_DEFAULT_PCT = 0;
+const AXIS_MAX_DEFAULT_PCT = 100;
+// TO-DO human to vet axis-slider copy.
+const AXIS_MIN_LABEL = "Terminus axis X minimus";
+// TO-DO human to vet axis-slider copy.
+const AXIS_MAX_LABEL = "Terminus axis X maximus";
+// TO-DO human to vet axis-slider copy.
+const AXIS_MIN_TIP = "Eligere terminum inferiorem axis X huius graphici.";
+// TO-DO human to vet axis-slider copy.
+const AXIS_MAX_TIP = "Eligere terminum superiorem axis X huius graphici.";
 // Tesla pre-Sep-1 miles (all empty driver's seat)
 const TESLA_PRE_SEP_MILES = 93849;
 
@@ -336,6 +352,22 @@ function factorizedParts(baseMiles, deadheadPct, nonePct, scopePct) {
     deadheadMultiplier: mDeadhead,
     miles: baseNoneMiles * mDeadhead * pct(scopePct),
   };
+}
+
+function scaleEstimate(est, factor) {
+  return {
+    median: est.median * factor,
+    lo: est.lo * factor,
+    hi: est.hi * factor,
+  };
+}
+
+function axisInputId(company, edge) {
+  return `x-${edge}-${company}`;
+}
+
+function axisValueId(company, edge) {
+  return `x-${edge}-${company}-val`;
 }
 
 // Company configs: incident count from data, slider definitions
@@ -417,7 +449,7 @@ const COMPANIES = {
         // TO-DO human to vet tooltip text.
         label: "Non-service share",
         tip: "Share of miles without a passenger; fixed at zero here because base miles are treated as total miles.",
-        min: 0, max: 0, step: 1, value: 0,
+        min: 0, max: 1, step: 1, value: 0,
         fmt: v => v + "%",
       },
       {
@@ -426,7 +458,7 @@ const COMPANIES = {
         // TO-DO human to vet tooltip text.
         label: "Operator=none fraction",
         tip: "Fraction of miles corresponding to Driver/Operator Type = None.",
-        min: 100, max: 100, step: 1, value: 100,
+        min: 99, max: 100, step: 1, value: 100,
         fmt: v => v + "%",
       },
       {
@@ -492,6 +524,19 @@ const COMPANIES = {
       vals["zoox-scope"],
     ),
   },
+  Humans: {
+    sliders: [
+      {
+        id: "humans-waymo-divisor",
+        // TO-DO human to vet label — "Humans as 1/x of Waymo miles per incident"
+        // TO-DO human to vet tooltip text.
+        label: "Humans as 1/x of Waymo miles per incident",
+        tip: "Set humans to one-over-x of Waymo miles per incident; range is 1/2 to 1/10.",
+        min: 2, max: 10, step: 0.1, value: 5,
+        fmt: v => "1/" + Number(v).toFixed(1).replace(/\\.0$/, "") + "x",
+      },
+    ],
+  },
 };
 
 // Count incidents per company from loaded data
@@ -525,11 +570,11 @@ function scaleLinear(v, d0, d1, r0, r1) {
   return r0 + (v - d0) * (r1 - r0) / span;
 }
 
-function sampledEstimates(k, xMin, xMax, n) {
+function sampledEstimates(estAtMiles, xMin, xMax, n) {
   const out = [];
   for (let i = 0; i <= n; i++) {
     const x = xMin + (xMax - xMin) * i / n;
-    out.push({x, est: estimateRate(k, x)});
+    out.push({x, est: estAtMiles(x)});
   }
   return out;
 }
@@ -556,24 +601,154 @@ function bandPath(samples, mapX, mapY) {
   return d + " Z";
 }
 
-function sliderVals(cfg) {
-  const vals = {};
-  for (const s of cfg.sliders) vals[s.id] = Number(byId(s.id).value);
-  return vals;
-}
+function layoutRefLabels(peers, mapY, top, height) {
+  const minGap = 12;
+  const yMin = top + 10;
+  const yMax = top + height - 4;
+  const laid = peers
+    .map(peer => ({
+      ...peer,
+      lineY: mapY(peer.est.median),
+      labelY: 0,
+    }))
+    .sort((a, b) => a.lineY - b.lineY)
+    .map(peer => ({
+      ...peer,
+      labelY: Math.min(Math.max(peer.lineY - 4, yMin), yMax),
+    }));
 
-function companySummaries(counts) {
-  return Object.keys(COMPANIES).map(company => {
-    const cfg = COMPANIES[company];
-    const vals = sliderVals(cfg);
-    const miles = cfg.getParts(vals).miles;
-    const k = counts[company] || 0;
-    return {company, k, miles, est: estimateRate(k, miles)};
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 1; i < laid.length; i++) {
+      laid[i].labelY = Math.max(laid[i].labelY, laid[i - 1].labelY + minGap);
+    }
+    for (let i = laid.length - 2; i >= 0; i--) {
+      laid[i].labelY = Math.min(laid[i].labelY, laid[i + 1].labelY - minGap);
+    }
+    for (const peer of laid) {
+      peer.labelY = Math.min(Math.max(peer.labelY, yMin), yMax);
+    }
+  }
+
+  return peers.map(peer => {
+    const hit = laid.find(candidate => candidate.company === peer.company);
+    must(hit !== undefined, "missing laid-out peer label", {company: peer.company});
+    return hit;
   });
 }
 
+function axisWindow(company, bounds) {
+  const minRaw = byId(axisInputId(company, "min")).value;
+  const maxRaw = byId(axisInputId(company, "max")).value;
+  const minPct = minRaw === "" ? AXIS_MIN_DEFAULT_PCT : Number(minRaw);
+  const maxPct = maxRaw === "" ? AXIS_MAX_DEFAULT_PCT : Number(maxRaw);
+  must(Number.isFinite(minPct) && Number.isFinite(maxPct),
+    "axis slider values must be finite", {company, minRaw, maxRaw});
+  must(minPct >= 0 && minPct <= 99 && maxPct >= 1 && maxPct <= 100,
+    "axis slider values out of range", {company, minPct, maxPct});
+  must(minPct < maxPct,
+    "axis min must be lower than axis max", {company, minPct, maxPct});
+  const span = bounds.max - bounds.min;
+  return {
+    minPct,
+    maxPct,
+    xMin: bounds.min + span * (minPct / 100),
+    xMax: bounds.min + span * (maxPct / 100),
+  };
+}
+
+function syncAxisSliderBounds(company) {
+  const minInput = byId(axisInputId(company, "min"));
+  const maxInput = byId(axisInputId(company, "max"));
+  const minPct = minInput.value === "" ? AXIS_MIN_DEFAULT_PCT : Number(minInput.value);
+  const maxPct = maxInput.value === "" ? AXIS_MAX_DEFAULT_PCT : Number(maxInput.value);
+  must(Number.isFinite(minPct) && Number.isFinite(maxPct),
+    "axis slider values must be finite", {company, minPct, maxPct});
+  must(minPct < maxPct,
+    "axis min must be lower than axis max", {company, minPct, maxPct});
+  minInput.max = String(maxPct - 1);
+  maxInput.min = String(minPct + 1);
+}
+
+function sliderVals(cfg) {
+  const vals = {};
+  for (const s of cfg.sliders) {
+    const raw = byId(s.id).value;
+    const parsed = raw === "" ? s.value : Number(raw);
+    must(Number.isFinite(parsed), "slider value must be finite", {id: s.id, raw});
+    vals[s.id] = parsed;
+  }
+  return vals;
+}
+
+function summaryFromIncidentModel(company, counts, valsByCompany) {
+  const cfg = COMPANIES[company];
+  const vals = valsByCompany[company];
+  const miles = cfg.getParts(vals).miles;
+  const k = counts[company] || 0;
+  const estAtMiles = x => estimateRate(k, x);
+  return {
+    company,
+    k,
+    miles,
+    est: estAtMiles(miles),
+    estAtMiles,
+    bounds: denominatorBounds(cfg),
+  };
+}
+
+function companySummaries(counts) {
+  const valsByCompany = {};
+  for (const company of COMPANY_ORDER) {
+    valsByCompany[company] = sliderVals(COMPANIES[company]);
+  }
+
+  const summaries = {};
+  for (const company of INCIDENT_MODEL_COMPANIES) {
+    summaries[company] = summaryFromIncidentModel(company, counts, valsByCompany);
+  }
+
+  const waymo = summaries.Waymo;
+  must(waymo !== undefined, "Humans summary requires Waymo summary");
+  const waymoDivisor = valsByCompany.Humans["humans-waymo-divisor"];
+  must(waymoDivisor >= 2 && waymoDivisor <= 10,
+    "Humans/Waymo divisor out of range", {waymoDivisor});
+  const humanFactor = 1 / waymoDivisor;
+  const estAtMiles = miles => scaleEstimate(waymo.estAtMiles(miles), humanFactor);
+  summaries.Humans = {
+    company: "Humans",
+    k: waymo.k,
+    miles: waymo.miles,
+    est: estAtMiles(waymo.miles),
+    estAtMiles,
+    bounds: waymo.bounds,
+    waymoDivisor,
+  };
+  return summaries;
+}
+
+function fmtDivisor(divisor) {
+  return "1/" + Number(divisor).toFixed(1).replace(/\\.0$/, "");
+}
+
+function summaryHeader(summary) {
+  // TO-DO human to vet header copy for the Humans panel.
+  const formatters = {
+    Tesla: s =>
+      `${s.company}: ${s.k} incidents in ${Math.round(s.miles).toLocaleString()} miles ⇒ ${fmtMiles(s.est.median)} miles per incident`,
+    Waymo: s =>
+      `${s.company}: ${s.k} incidents in ${Math.round(s.miles).toLocaleString()} miles ⇒ ${fmtMiles(s.est.median)} miles per incident`,
+    Zoox: s =>
+      `${s.company}: ${s.k} incidents in ${Math.round(s.miles).toLocaleString()} miles ⇒ ${fmtMiles(s.est.median)} miles per incident`,
+    Humans: s =>
+      `Humans: ${fmtMiles(s.est.median)} miles per incident (${fmtDivisor(s.waymoDivisor)} of Waymo)`,
+  };
+  const fn = formatters[summary.company];
+  must(typeof fn === "function", "Missing summary header formatter", {company: summary.company});
+  return fn(summary);
+}
+
 function updateAllEstimates() {
-  for (const company of Object.keys(COMPANIES)) updateEstimate(company);
+  for (const company of COMPANY_ORDER) updateEstimate(company);
 }
 
 function buildEstimator() {
@@ -581,7 +756,8 @@ function buildEstimator() {
   container.replaceChildren();
   const counts = countByCompany();
 
-  for (const [company, cfg] of Object.entries(COMPANIES)) {
+  for (const company of COMPANY_ORDER) {
+    const cfg = COMPANIES[company];
     const k = counts[company] || 0;
     const panel = document.createElement("div");
     panel.className = "company-panel";
@@ -603,6 +779,26 @@ function buildEstimator() {
         </div>`;
     }
 
+    const axisMinTip = escAttr(AXIS_MIN_TIP);
+    const axisMaxTip = escAttr(AXIS_MAX_TIP);
+    const axisMinInput = axisInputId(company, "min");
+    const axisMaxInput = axisInputId(company, "max");
+    const axisMinValue = axisValueId(company, "min");
+    const axisMaxValue = axisValueId(company, "max");
+    html += `
+      <div class="slider-row">
+        <label for="${axisMinInput}" title="${axisMinTip}">${AXIS_MIN_LABEL}</label>
+        <input type="range" id="${axisMinInput}" min="0" max="99" step="1"
+               value="${AXIS_MIN_DEFAULT_PCT}" title="${axisMinTip}">
+        <span class="val" id="${axisMinValue}">0</span>
+      </div>
+      <div class="slider-row">
+        <label for="${axisMaxInput}" title="${axisMaxTip}">${AXIS_MAX_LABEL}</label>
+        <input type="range" id="${axisMaxInput}" min="1" max="100" step="1"
+               value="${AXIS_MAX_DEFAULT_PCT}" title="${axisMaxTip}">
+        <span class="val" id="${axisMaxValue}">0</span>
+      </div>`;
+
     html += `<div class="result-box" id="result-${company}"></div>`;
     panel.innerHTML = html;
     container.appendChild(panel);
@@ -616,6 +812,17 @@ function buildEstimator() {
         updateAllEstimates();
       });
     }
+    const axisMinNode = byId(axisInputId(company, "min"));
+    const axisMaxNode = byId(axisInputId(company, "max"));
+    syncAxisSliderBounds(company);
+    axisMinNode.addEventListener("input", () => {
+      syncAxisSliderBounds(company);
+      updateAllEstimates();
+    });
+    axisMaxNode.addEventListener("input", () => {
+      syncAxisSliderBounds(company);
+      updateAllEstimates();
+    });
   }
   updateAllEstimates();
 }
@@ -625,20 +832,20 @@ function updateEstimate(company) {
   must(cfg !== undefined, "Unknown company config", {company});
   const counts = countByCompany();
   const summaries = companySummaries(counts);
-  const thisSummary = summaries.find(s => s.company === company);
+  const thisSummary = summaries[company];
   must(thisSummary !== undefined, "Missing summary for company", {company});
-  const peers = summaries.filter(s => s.company !== company);
-  const k = thisSummary.k;
+  const peers = COMPANY_ORDER.filter(name => name !== company).map(name => summaries[name]);
   const miles = thisSummary.miles;
   const est = thisSummary.est;
-  byId("header-stats-" + company).textContent =
-    `${company}: ${k} incidents in ${Math.round(miles).toLocaleString()} miles ⇒ ${fmtMiles(est.median)} miles per incident`;
+  byId("header-stats-" + company).textContent = summaryHeader(thisSummary);
 
   const box = byId("result-" + company);
-  const bounds = denominatorBounds(cfg);
-  const xMin = bounds.min;
-  const xMax = bounds.max;
-  const samples = sampledEstimates(k, xMin, xMax, 40);
+  const axis = axisWindow(company, thisSummary.bounds);
+  const xMin = axis.xMin;
+  const xMax = axis.xMax;
+  byId(axisValueId(company, "min")).textContent = Math.round(xMin).toLocaleString();
+  byId(axisValueId(company, "max")).textContent = Math.round(xMax).toLocaleString();
+  const samples = sampledEstimates(thisSummary.estAtMiles, xMin, xMax, 40);
   const yMin = Math.min(...samples.map(s => s.est.lo), ...peers.map(p => p.est.median));
   const yMax = Math.max(...samples.map(s => s.est.hi), ...peers.map(p => p.est.median));
   const svgW = 520;
@@ -657,6 +864,7 @@ function updateEstimate(company) {
   const yTicks = [yMin, (yMin + yMax) / 2, yMax];
   const band = bandPath(samples, mapX, mapY);
   const path = medianPath(samples, mapX, mapY);
+  const peerLabels = layoutRefLabels(peers, mapY, mTop, pH);
 
   // TODO human to vet — "X miles between incidents",
   //   "90% credible interval: lo – hi", "Effective miles: N · Incidents: K"
@@ -676,9 +884,9 @@ function updateEstimate(company) {
       <line class="graph-axis" x1="${mLeft}" y1="${mTop + pH}" x2="${mLeft + pW}" y2="${mTop + pH}"></line>
       <path class="graph-band" d="${band}"></path>
       <path class="graph-line" d="${path}"></path>
-      ${peers.map(p => `
-        <line class="graph-refline" x1="${mLeft}" y1="${mapY(p.est.median)}" x2="${mLeft + pW}" y2="${mapY(p.est.median)}" style="stroke:${COMPANY_COLORS[p.company]}"></line>
-        <text class="graph-reflabel" x="${mLeft + pW - 4}" y="${mapY(p.est.median) - 4}" text-anchor="end" style="fill:${COMPANY_COLORS[p.company]}">${p.company}: ${fmtMiles(p.est.median)}</text>
+      ${peerLabels.map(p => `
+        <line class="graph-refline" x1="${mLeft}" y1="${p.lineY}" x2="${mLeft + pW}" y2="${p.lineY}" style="stroke:${COMPANY_COLORS[p.company]}"></line>
+        <text class="graph-reflabel" x="${mLeft + pW - 4}" y="${p.labelY}" text-anchor="end" style="fill:${COMPANY_COLORS[p.company]}">${p.company}: ${fmtMiles(p.est.median)}</text>
       `).join("")}
       <circle class="graph-point" cx="${pointX}" cy="${pointY}" r="5"></circle>
       <text class="graph-label" x="${mLeft + pW / 2}" y="${svgH - 2}" text-anchor="middle">Total Autonomous Miles</text>
@@ -702,7 +910,7 @@ function buildBrowser() {
   const filterDiv = byId("filters");
   filterDiv.replaceChildren();
   // TODO human to vet button labels — "All", "Tesla", "Waymo", "Zoox" (these are just company names + "All")
-  const companies = ["All", ...Object.keys(COMPANIES)];
+  const companies = ["All", ...COMPANY_ORDER];
   for (const c of companies) {
     const btn = document.createElement("button");
     const n = c === "All" ? incidents.length : (counts[c] || 0);

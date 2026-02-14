@@ -11,6 +11,10 @@ https://electrek.co/2026/01/29/teslas-own-robotaxi-data-confirms-crash-rate-3x-w
 NHTSA data source:
 https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
 (2025 June 15 through 2025 December 15)
+https://docs.google.com/spreadsheets/d/1r4hEVKOzE9sLLWmbB0Tzwzpo7aoUadmhxDY1imd5tb8/edit?usp=sharing
+481 incidents?
+
+https://www.austintexas.gov/page/autonomous-vehicles
 
 Key dates for Tesla robotaxi 
 * 2025-06-27: Launch in Austin with empty driver's seat

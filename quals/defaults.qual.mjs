@@ -27,6 +27,7 @@ const defaults = vm.runInContext(`
     Tesla: byId(COMPANIES.Tesla.sliders),
     Waymo: byId(COMPANIES.Waymo.sliders),
     Zoox: byId(COMPANIES.Zoox.sliders),
+    Humans: byId(COMPANIES.Humans.sliders),
   };
 })()
 `, ctx);
@@ -49,10 +50,13 @@ const keyRanges = JSON.parse(JSON.stringify(vm.runInContext(`
     teslaDeadhead: pick("Tesla", "tesla-deadhead"),
     teslaScope: pick("Tesla", "tesla-scope"),
     waymoMiles: pick("Waymo", "waymo-miles"),
+    waymoDeadhead: pick("Waymo", "waymo-deadhead"),
+    waymoNone: pick("Waymo", "waymo-none"),
     zooxMiles: pick("Zoox", "zoox-miles"),
     zooxDeadhead: pick("Zoox", "zoox-deadhead"),
     zooxNone: pick("Zoox", "zoox-none"),
     zooxScope: pick("Zoox", "zoox-scope"),
+    humansWaymoDivisor: pick("Humans", "humans-waymo-divisor"),
   };
 })()
 `, ctx)));
@@ -78,6 +82,9 @@ assert.deepEqual(
       "zoox-none": 100,
       "zoox-scope": 100,
     },
+    Humans: {
+      "humans-waymo-divisor": 5,
+    },
   },
   `Replicata: read slider default values from COMPANIES.
 Expectata: defaults match the README-derived settings for denominator estimates.
@@ -99,10 +106,13 @@ assert.deepEqual(
     teslaDeadhead: {min: 0, max: 40, step: 1, value: 20},
     teslaScope: {min: 90, max: 100, step: 1, value: 100},
     waymoMiles: {min: 35000000, max: 65000000, step: 1000000, value: 43000000},
+    waymoDeadhead: {min: 0, max: 1, step: 1, value: 0},
+    waymoNone: {min: 99, max: 100, step: 1, value: 100},
     zooxMiles: {min: 150000, max: 700000, step: 25000, value: 300000},
     zooxDeadhead: {min: 0, max: 40, step: 1, value: 20},
     zooxNone: {min: 70, max: 100, step: 1, value: 100},
     zooxScope: {min: 90, max: 100, step: 1, value: 100},
+    humansWaymoDivisor: {min: 2, max: 10, step: 0.1, value: 5},
   },
   `Replicata: inspect tightened slider ranges in COMPANIES.
 Expectata: ranges and defaults match source-backed denominator assumptions.
