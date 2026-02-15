@@ -289,9 +289,10 @@ function gammaquant(a, b, p) {
 
 // Compute miles-per-incident estimate with 90% credible interval
 // k = incident count, m = miles driven
-function estimateRate(k, m) {
-  const a = k + 0.5; // posterior shape (Jeffreys prior)
-  const b = m;        // posterior rate
+function estimateRate(k, m, phi = 1) {
+  must(phi >= 1, "phi must be at least 1", {phi});
+  const a = (k + 0.5) / phi; // posterior shape, deflated by VIF
+  const b = m / phi;          // posterior rate, deflated by VIF
   const tail = (1 - CI_MASS) / 2;
   // Median of 1/lambda = 1 / median(lambda)
   const medianLambda = gammaquant(a, b, 0.5);
@@ -307,7 +308,7 @@ function estimateRate(k, m) {
 // --- Data and UI ---
 
 let incidents = [];
-const CI_MASS = 0.8;
+const CI_MASS = 0.95;
 const COMPANY_COLORS = {
   Tesla: "#d13b2d",
   Waymo: "#2a8f57",
@@ -341,16 +342,12 @@ function deadheadMultiplier(deadheadPct) {
 }
 
 function factorizedParts(baseMiles, deadheadPct) {
-  const nonePct = 100;
-  const scopePct = 100;
   const baseNoneMiles = baseMiles;
   const mDeadhead = deadheadMultiplier(deadheadPct);
   return {
     baseMiles,
     baseNoneMiles,
     deadheadPct,
-    nonePct,
-    scopePct,
     deadheadMultiplier: mDeadhead,
     miles: baseNoneMiles * mDeadhead,
   };
@@ -403,6 +400,15 @@ const COMPANIES = {
         min: 0, max: 40, step: 1, value: 20,
         fmt: v => v + "%",
       },
+      {
+        id: "tesla-vif",
+        // TO-DO human to vet label — "Superdispersio (φ)"
+        // TO-DO human to vet tooltip text.
+        label: "Overdispersion (φ)",
+        tip: "Variance inflation factor: 1× = Poisson; higher values widen intervals for rate variability.",
+        min: 1, max: 5, step: 0.5, value: 1,
+        fmt: v => v.toFixed(1).replace(/\.0$/, "") + "×",
+      },
     ],
     getParts: vals => {
       const baseMiles = vals["tesla-miles"];
@@ -417,8 +423,6 @@ const COMPANIES = {
         baseMiles,
         baseNoneMiles,
         deadheadPct,
-        nonePct: nonePostPct,
-        scopePct: 100,
         deadheadMultiplier: mDeadhead,
         miles: baseNoneMiles * mDeadhead,
       };
@@ -443,6 +447,15 @@ const COMPANIES = {
         tip: "Share of ADS miles with no passenger in the car; used for the non-service multiplier.",
         min: 0, max: 50, step: 1, value: 0,
         fmt: v => v + "%",
+      },
+      {
+        id: "waymo-vif",
+        // TO-DO human to vet label — "Superdispersio (φ)"
+        // TO-DO human to vet tooltip text.
+        label: "Overdispersion (φ)",
+        tip: "Variance inflation factor: 1× = Poisson; higher values widen intervals for rate variability.",
+        min: 1, max: 5, step: 0.5, value: 1,
+        fmt: v => v.toFixed(1).replace(/\.0$/, "") + "×",
       },
     ],
     getParts: vals => factorizedParts(
@@ -469,6 +482,15 @@ const COMPANIES = {
         tip: "Share of ADS miles with no passenger; converts service miles to total VMT.",
         min: 0, max: 40, step: 1, value: 20,
         fmt: v => v + "%",
+      },
+      {
+        id: "zoox-vif",
+        // TO-DO human to vet label — "Superdispersio (φ)"
+        // TO-DO human to vet tooltip text.
+        label: "Overdispersion (φ)",
+        tip: "Variance inflation factor: 1× = Poisson; higher values widen intervals for rate variability.",
+        min: 1, max: 5, step: 0.5, value: 1,
+        fmt: v => v.toFixed(1).replace(/\.0$/, "") + "×",
       },
     ],
     getParts: vals => factorizedParts(
@@ -633,7 +655,8 @@ function summaryFromIncidentModel(company, counts, valsByCompany) {
   const vals = valsByCompany[company];
   const miles = cfg.getParts(vals).miles;
   const k = counts[company] || 0;
-  const estAtMiles = x => estimateRate(k, x);
+  const phi = vals[company.toLowerCase() + "-vif"];
+  const estAtMiles = x => estimateRate(k, x, phi);
   return {
     company,
     k,

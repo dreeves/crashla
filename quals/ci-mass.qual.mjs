@@ -89,18 +89,19 @@ document.getElementById("result-Tesla");
 const metrics = vm.runInContext(`
 (() => {
   const est = estimateRate(9, 456000);
-  const lo80 = 1 / gammaquant(9.5, 456000, 0.9);
-  const hi80 = 1 / gammaquant(9.5, 456000, 0.1);
-  return { est, lo80, hi80 };
+  // TODO: don't hardcode this; it's a parameter now
+  const lo95 = 1 / gammaquant(9.5, 456000, 0.975);
+  const hi95 = 1 / gammaquant(9.5, 456000, 0.025);
+  return { est, lo95, hi95 };
 })()
 `, ctx);
 
 const relErr = (a, b) => Math.abs(a - b) / b;
 assert.ok(
-  relErr(metrics.est.lo, metrics.lo80) < 1e-12 && relErr(metrics.est.hi, metrics.hi80) < 1e-12,
+  relErr(metrics.est.lo, metrics.lo95) < 1e-12 && relErr(metrics.est.hi, metrics.hi95) < 1e-12,
   `Replicata: compute estimateRate(9, 456000).
-Expectata: CI bounds use 80% tails (10th/90th posterior percentiles).
-Resultata: lo=${metrics.est.lo}, expected_lo=${metrics.lo80}, hi=${metrics.est.hi}, expected_hi=${metrics.hi80}.`,
+Expectata: CI bounds use 95% tails (2.5th/97.5th posterior percentiles).
+Resultata: lo=${metrics.est.lo}, expected_lo=${metrics.lo95}, hi=${metrics.est.hi}, expected_hi=${metrics.hi95}.`,
 );
 
 vm.runInContext(`updateEstimate("Tesla")`, ctx);
@@ -113,4 +114,4 @@ Expectata: rendered estimate uses graph output with CI band, updated x-axis labe
 Resultata: rendered HTML was ${JSON.stringify(rendered)}.`,
 );
 
-console.log("qual pass: estimator uses 80% CI math and graph rendering");
+console.log("qual pass: estimator uses 95% CI math and graph rendering");

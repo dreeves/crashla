@@ -1,0 +1,7 @@
+{
+  "name": "crashla",
+  "private": true,
+  "scripts": {
+    "quals": "set -eu; for f in quals/*.qual.mjs; do node \"$f\"; done"
+  }
+}

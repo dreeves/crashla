@@ -1,4 +1,17 @@
-# How safe are robotaxis other than Waymo?
+# How safe are robotaxis?
+
+https://agifriday.substack.com/p/crashla
+
+## Running quals
+
+From the repo root:
+
+```bash
+npm run quals
+```
+
+This runs every `quals/*.qual.mjs` file and stops on the first failure.
+
 
 We know Waymos are much safer than human drivers:
 https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos
@@ -31,41 +44,6 @@ UNKNOWN: fraction of the Sep 1+ rides with empty driver's seat.
 
 (Note: We're not worrying about the distinction between rides with a passenger-seat safety monitor and the unsupervised rides with no safety monitor in the car at all. As long as the driver's seat is empty, those miles count for the denominator we want for determining how often robotaxis have incidents in the NHTSA database.)
 
-Here's what I've learned from the NHTSA data:
-
-* Tesla reported 9 robotaxi incidents in the period for which NHTSA provides data (2025 Jun 16 to Dec 15)
-* For 4 of those, the robotaxi was going 2mph or less
-* Only 1 involved injuries (minor)
-
-Here are what I believe to be the most complete characterizations of the incidents we can get from the NHTSA data:
-
-1. July, daytime, an SUV’s front right side contacted the robotaxi’s rear right side with the robotaxi going 2mph while both cars were making a right turn in an intersection; property damage, no injuries
-2. July, daytime, robotaxi hit a fixed object with its front right side on a normal street at 8mph; had to be towed and passenger had minor injuries, no hospitalization
-3. July, nighttime, in a construction zone, an SUV going straight had its front right side contact the stationary robotaxi’s rear right side; property damage, no injuries
-4. September, nighttime, a robotaxi making a left turn in a parking lot at 6mph hit a fixed object with the front ride side of the car, no injuries
-5. September, nighttime, a passenger car backing up in an intersection had its rear right side contact the right side of a robotaxi, with the robotaxi going straight at 6mph; no injuries
-6. September, nighttime, a cyclist traveling alongside the roadway contacted the right side of a stopped robotaxi; property damage, no injuries
-7.  September, daytime, a stopped robotaxi traveling 27mph [sic!] hit an animal with the robotaxi’s front left side, no injuries [presumably “stopped” is a data entry error]
-8. October, nighttime, the front right side of an unknown entity contacted the robotaxi’s right side with the robotaxi traveling 18mph under unusual roadway conditions; no injuries
-9. November, nighttime, front right of an unknown entity contacted the rear left and rear right of a stopped robotaxi; no injuries
-
-All the other details are redacted. I guess Tesla feel like they have a lot to hide? The law allows them to redact details by calling them “confidential business information” and they’re the only company doing that, out of roughly 10 of them. Typically the details are things like this from Avride:
-
-> Our car was stopped at the intersection of [XXX] and [XXX], behind a red Ford Fusion. The Fusion suddenly reversed, struck our front bumper, and then left the scene in a hit-and-run.
-
-I.e., explaining why it totally wasn’t their fault, with only things that could conceivably be confidential, like the exact location, redacted. So I don’t think Tesla deserves the benefit of the doubt here but if I try to give it anyway, here are my guesses on severity and fault:
-
-1.  Minor fender bender, 30% Tesla’s fault (2mph)
-2.  Egregious fender bender, 100% Tesla’s fault (8mph)
-3.  Fender bender, 0% Tesla’s fault (0mph)
-4.  Minor fender bender, 100% Tesla’s fault (6mph)
-5.  Minor fender bender, 20% Tesla’s fault (6mph)
-6.  Fender bender, 10% Tesla’s fault (0mph)
-7.  Sad or dead animal, 30% Tesla’s fault (27mph)
-8.  Fender bender, 50% Tesla’s fault (18mph)
-9.  Fender bender, 5% Tesla’s fault (0mph)
-
-Those guesses, especially the fault percents, are pulled out of my butt. Except the collisions with stationary objects, which are necessarily 100% Tesla’s fault. But if we run with those guesses, that’s 3.45 at-fault accidents. Over how many miles? More guessing required! I believe that for a while, all Tesla robotaxi rides had an empty driver’s seat. But starting in September, Tesla added back driver’s-seat safety drivers for rides involving highways. Or more than just those? We have no idea. We do know of cases of Tesla putting the safety driver back when the weather was questionable. In any case, only accidents without a safety driver in the driver’s seat are included in this dataset, so we do need to subtract those miles when estimating Tesla’s incident rate.
 
 ## Finding the Denominators
 
@@ -104,7 +82,24 @@ Gemini Revised:
 * Tesla 300,000 - 500,000
 * Zoox 0.8M - 1.0M
 
-For Vehicle Miles Traveled (VMT) we also need to include miles traveled with no customer in the car...
+For Vehicle Miles Traveled (VMT) we also need to include miles traveled with no customer in the car.
+But if we're consistent about paid miles for all companies, that's hopefully an apples-to-apples comparison, scaling the true VMT by the same amount for everyone.
+
+Zoox mileage in California from CPUC data:
+https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting
+* Jun 2025: 4,232.30 (multiply by 16/30 for Jun 15+)
+* Jul: 7,685.90
+* Aug: 16,533.52
+* Sep: 21,392.90
+* Oct: 27,854.76
+* Nov: 42,347.31
+* Dec 2025: 36,481.55 (multiply by 15/31 to end at Dec 15)
+Total VMT (Jun 15 - Dec 15, 2025) ≈ 135,723.98 miles
+
+Zoox mileage in Nevada:
+https://techcrunch.com/2025/09/10/zoox-opens-its-las-vegas-robotaxi-service-to-the-public/
+https://apnews.com/article/amazon-zoox-robotaxis-las-vegas-bd5cb24602fb16243efcba05c7fe518f
+
 
 # Spec
 
@@ -125,5 +120,4 @@ Note that we only care about incidents in this dataset where the "Driver / Opera
 
 All 9 of the Tesla incidents have this designation, so Tesla is averring to NHTSA that their passenger-seat safety monitors do not count as supervised autonomy, and same for any tele-operation they may have. We'll give Tesla the benefit of the doubt on this, even though they have not exactly earned it.
 For the denominator mileage we need justifiable lower and upper bounds on the mileage for which there was no driver/operator.
-
 
