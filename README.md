@@ -2,17 +2,6 @@
 
 https://agifriday.substack.com/p/crashla
 
-## Running quals
-
-From the repo root:
-
-```bash
-npm run quals
-```
-
-This runs every `quals/*.qual.mjs` file and stops on the first failure.
-
-
 We know Waymos are much safer than human drivers:
 https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos
 

@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- TODO human to vet all user-facing copy (currently Latin placeholders per rule 14) -->
 <title>Crashla</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -159,9 +158,18 @@ tr:hover { background: #f8f8ff; }
 
 <h1>Tesla vs Waymo vs Zoox vs Humans</h1>
 
+<div class="company-panel">
+  <div class="slider-row">
+    <label for="ci-mass"
+title="The higher this is, the wider the confidence intervals">Confidence intervals</label>
+    <input type="range" id="ci-mass" min="50" max="99.9" step="0.1" value="95"
+title="The higher this is, the wider the confidence intervals">
+    <span class="val" id="ci-mass-val">95.0%</span>
+  </div>
+</div>
+
 <div id="estimator"></div>
 
-<!-- TODO human to vet section heading — "Incident browser" -->
 <h2>Incident browser</h2>
 <div class="filters" id="filters"></div>
 <div class="incident-count" id="incident-count"></div>
@@ -169,7 +177,6 @@ tr:hover { background: #f8f8ff; }
   <table>
     <thead>
       <tr>
-        <!-- TODO human to vet column headers — "Company", "Date", "Location", "Crash with", "Speed (mph)", "Severity", "Narrative" -->
         <th>Company</th>
         <th>Date</th>
         <th>Location</th>
@@ -289,11 +296,10 @@ function gammaquant(a, b, p) {
 
 // Compute miles-per-incident estimate with 90% credible interval
 // k = incident count, m = miles driven
-function estimateRate(k, m, phi = 1) {
-  must(phi >= 1, "phi must be at least 1", {phi});
-  const a = (k + 0.5) / phi; // posterior shape, deflated by VIF
-  const b = m / phi;          // posterior rate, deflated by VIF
-  const tail = (1 - CI_MASS) / 2;
+function estimateRate(k, m) {
+  const a = k + 0.5; // posterior shape (Jeffreys prior)
+  const b = m;       // posterior rate
+  const tail = (1 - ciMass()) / 2;
   // Median of 1/lambda = 1 / median(lambda)
   const medianLambda = gammaquant(a, b, 0.5);
   const loLambda     = gammaquant(a, b, 1 - tail);
@@ -308,7 +314,10 @@ function estimateRate(k, m, phi = 1) {
 // --- Data and UI ---
 
 let incidents = [];
-const CI_MASS = 0.95;
+const CI_MASS_MIN_PCT = 50;
+const CI_MASS_MAX_PCT = 99.9;
+const CI_MASS_STEP_PCT = 0.1;
+const CI_MASS_DEFAULT_PCT = 95;
 const COMPANY_COLORS = {
   Tesla: "#d13b2d",
   Waymo: "#2a8f57",
@@ -319,19 +328,45 @@ const COMPANY_ORDER = ["Tesla", "Waymo", "Zoox", "Humans"];
 const INCIDENT_MODEL_COMPANIES = ["Tesla", "Waymo", "Zoox"];
 const AXIS_MIN_DEFAULT_PCT = 0;
 const AXIS_MAX_DEFAULT_PCT = 100;
-// TO-DO human to vet axis-slider copy.
-const AXIS_MIN_LABEL = "X-axis minimum";
-// TO-DO human to vet axis-slider copy.
-const AXIS_MAX_LABEL = "X-axis maximum";
-// TO-DO human to vet axis-slider copy.
-const AXIS_MIN_TIP = "Choose the lower x-axis bound for this graph.";
-// TO-DO human to vet axis-slider copy.
-const AXIS_MAX_TIP = "Choose the upper x-axis bound for this graph.";
+const AXIS_MIN_LABEL = "X-axis min";
+const AXIS_MAX_LABEL = "X-axis max";
+const AXIS_MIN_TIP = "Lower x-axis bound for this graph.";
+const AXIS_MAX_TIP = "Upper x-axis bound for this graph.";
 // Tesla pre-Sep-1 miles (all empty driver's seat)
 const TESLA_PRE_SEP_MILES = 93849;
 
 function pct(v) {
   return v / 100;
+}
+
+function ciMassPct() {
+  const raw = byId("ci-mass").value;
+  const massPct = raw === "" ? CI_MASS_DEFAULT_PCT : Number(raw);
+  must(Number.isFinite(massPct), "ci mass percent must be finite", {raw});
+  must(massPct >= CI_MASS_MIN_PCT && massPct <= CI_MASS_MAX_PCT,
+    "ci mass percent out of range", {massPct});
+  return massPct;
+}
+
+function ciMass() {
+  return ciMassPct() / 100;
+}
+
+function renderCiMassValue() {
+  byId("ci-mass-val").textContent = ciMassPct().toFixed(1) + "%";
+}
+
+function initCiMassControl() {
+  const input = byId("ci-mass");
+  input.min = String(CI_MASS_MIN_PCT);
+  input.max = String(CI_MASS_MAX_PCT);
+  input.step = String(CI_MASS_STEP_PCT);
+  input.value = String(CI_MASS_DEFAULT_PCT);
+  renderCiMassValue();
+  input.addEventListener("input", () => {
+    renderCiMassValue();
+    updateAllEstimates();
+  });
 }
 
 function deadheadMultiplier(deadheadPct) {
@@ -375,17 +410,13 @@ const COMPANIES = {
     sliders: [
       {
         id: "tesla-miles",
-        // TODO human to vet label — "Total robotaxi miles"
-        // TO-DO human to vet tooltip text.
         label: "Total robotaxi miles",
-        tip: "Base robotaxi miles in this window before applying non-service factors.",
+        tip: "Base robotaxi miles in this window before applying deadhead adjustment.",
         min: 94000, max: 600000, step: 1000, value: 450000,
         fmt: v => v.toLocaleString(),
       },
       {
         id: "tesla-frac",
-        // TODO human to vet label — "% post-Sep-1 without driver"
-        // TO-DO human to vet tooltip text.
         label: "% post-Sep-1 without driver",
         tip: "Share of post-Sep-1 miles where the driver seat is empty.",
         min: 0, max: 100, step: 1, value: 70,
@@ -393,21 +424,10 @@ const COMPANIES = {
       },
       {
         id: "tesla-deadhead",
-        // TO-DO human to vet label — "Non-service share (deadhead)"
-        // TO-DO human to vet tooltip text.
-        label: "Non-service share",
-        tip: "Share of ADS miles with no passenger in the car; used for the non-service multiplier.",
+        label: "Deadhead fraction",
+        tip: "Share of ADS miles with no passenger in the car; used for the deadhead multiplier.",
         min: 0, max: 40, step: 1, value: 20,
         fmt: v => v + "%",
-      },
-      {
-        id: "tesla-vif",
-        // TO-DO human to vet label — "Superdispersio (φ)"
-        // TO-DO human to vet tooltip text.
-        label: "Overdispersion (φ)",
-        tip: "Variance inflation factor: 1× = Poisson; higher values widen intervals for rate variability.",
-        min: 1, max: 5, step: 0.5, value: 1,
-        fmt: v => v.toFixed(1).replace(/\.0$/, "") + "×",
       },
     ],
     getParts: vals => {
@@ -432,30 +452,17 @@ const COMPANIES = {
     sliders: [
       {
         id: "waymo-miles",
-        // TODO human to vet label — "Driverless miles"
-        // TO-DO human to vet tooltip text.
         label: "Driverless miles",
-        tip: "Waymo base miles in this window before non-service adjustment.",
+        tip: "Waymo base miles in this window before deadhead adjustment.",
         min: 57000000, max: 66000000, step: 1000000, value: 61000000,
         fmt: v => (v / 1e6).toFixed(0) + "M",
       },
       {
         id: "waymo-deadhead",
-        // TO-DO human to vet label — "Non-service share (deadhead)"
-        // TO-DO human to vet tooltip text.
-        label: "Non-service share",
-        tip: "Share of ADS miles with no passenger in the car; used for the non-service multiplier.",
+        label: "Deadhead fraction",
+        tip: "Share of ADS miles with no passenger in the car; used for the deadhead multiplier.",
         min: 0, max: 50, step: 1, value: 0,
         fmt: v => v + "%",
-      },
-      {
-        id: "waymo-vif",
-        // TO-DO human to vet label — "Superdispersio (φ)"
-        // TO-DO human to vet tooltip text.
-        label: "Overdispersion (φ)",
-        tip: "Variance inflation factor: 1× = Poisson; higher values widen intervals for rate variability.",
-        min: 1, max: 5, step: 0.5, value: 1,
-        fmt: v => v.toFixed(1).replace(/\.0$/, "") + "×",
       },
     ],
     getParts: vals => factorizedParts(
@@ -467,30 +474,17 @@ const COMPANIES = {
     sliders: [
       {
         id: "zoox-miles",
-        // TODO human to vet label — "Driverless miles"
-        // TO-DO human to vet tooltip text.
         label: "Driverless miles",
-        tip: "Zoox base miles in this window before non-service adjustment.",
+        tip: "Zoox base miles in this window before deadhead adjustment.",
         min: 50000, max: 1000000, step: 25000, value: 300000,
         fmt: v => v.toLocaleString(),
       },
       {
         id: "zoox-deadhead",
-        // TO-DO human to vet label — "Non-service share (deadhead)"
-        // TO-DO human to vet tooltip text.
-        label: "Non-service share",
-        tip: "Share of ADS miles with no passenger; converts service miles to total VMT.",
+        label: "Deadhead fraction",
+        tip: "Share of ADS miles with no passenger; converts non-deadhead miles to total Vehicle Miles Traveled (VMT).",
         min: 0, max: 40, step: 1, value: 20,
         fmt: v => v + "%",
-      },
-      {
-        id: "zoox-vif",
-        // TO-DO human to vet label — "Superdispersio (φ)"
-        // TO-DO human to vet tooltip text.
-        label: "Overdispersion (φ)",
-        tip: "Variance inflation factor: 1× = Poisson; higher values widen intervals for rate variability.",
-        min: 1, max: 5, step: 0.5, value: 1,
-        fmt: v => v.toFixed(1).replace(/\.0$/, "") + "×",
       },
     ],
     getParts: vals => factorizedParts(
@@ -502,8 +496,6 @@ const COMPANIES = {
     sliders: [
       {
         id: "humans-waymo-divisor",
-        // TO-DO human to vet label — "Humans as 1/x of Waymo miles per incident"
-        // TO-DO human to vet tooltip text.
         label: "Humans as 1/x of Waymo miles per incident",
         tip: "Set humans to one-over-x of Waymo miles per incident; range is 1/2 to 1/10.",
         min: 2, max: 10, step: 0.1, value: 5,
@@ -655,8 +647,7 @@ function summaryFromIncidentModel(company, counts, valsByCompany) {
   const vals = valsByCompany[company];
   const miles = cfg.getParts(vals).miles;
   const k = counts[company] || 0;
-  const phi = vals[company.toLowerCase() + "-vif"];
-  const estAtMiles = x => estimateRate(k, x, phi);
+  const estAtMiles = x => estimateRate(k, x);
   return {
     company,
     k,
@@ -702,7 +693,6 @@ function fmtDivisor(divisor) {
 }
 
 function summaryHeader(summary) {
-  // TO-DO human to vet header copy for the Humans panel.
   const formatters = {
     Tesla: s =>
       `${s.company}: ${s.k} incidents in ${Math.round(s.miles).toLocaleString()} miles ⇒ ${fmtMiles(s.est.median)} miles per incident`,
@@ -734,7 +724,6 @@ function buildEstimator() {
     panel.className = "company-panel";
     panel.dataset.company = company;
 
-    // TODO human to vet — "incidents"
     let html = `<h3 id="header-stats-${company}">${company}: ${k} incidents in 0 miles ⇒ ? miles per incident</h3>`;
 
     for (const s of cfg.sliders) {
@@ -838,10 +827,6 @@ function updateEstimate(company) {
   const path = medianPath(samples, mapX, mapY);
   const peerLabels = layoutRefLabels(peers, mapY, mTop, pH);
 
-  // TODO human to vet — "X miles between incidents",
-  //   "90% credible interval: lo – hi", "Effective miles: N · Incidents: K"
-  // TO-DO human to vet denominator component copy.
-  // TO-DO human to vet graph axis copy.
   box.innerHTML = `
     <svg class="graph-svg" viewBox="0 0 ${svgW} ${svgH}">
       ${xTicks.map((x, i) => `
@@ -881,7 +866,6 @@ function buildBrowser() {
   const counts = countByCompany();
   const filterDiv = byId("filters");
   filterDiv.replaceChildren();
-  // TODO human to vet button labels — "All", "Tesla", "Waymo", "Zoox" (these are just company names + "All")
   const companies = ["All", ...COMPANY_ORDER];
   for (const c of companies) {
     const btn = document.createElement("button");
@@ -904,14 +888,13 @@ function renderTable() {
     : incidents.filter(r => r.company === activeFilter);
 
   byId("incident-count").textContent =
-    `${filtered.length} incidents`; // TODO human to vet — "N incidents"
+    `${filtered.length} incidents`;
 
   tbody.innerHTML = "";
   for (const r of filtered) {
     const tr = document.createElement("tr");
     const isCbi = r.narrativeCbi === "Y";
     const narrativeText = isCbi
-      // TO-DO human to vet acronym expansion copy.
       ? "[\"Confidential Business Information\"]"
       : (r.narrative || "");
     const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
@@ -971,6 +954,7 @@ fetch("incidents.json")
         "incidents.json has unknown company", {company: inc.company});
     }
     incidents = data;
+    initCiMassControl();
     buildEstimator();
     buildBrowser();
   });

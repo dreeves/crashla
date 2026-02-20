@@ -1,0 +1,9 @@
+## Running quals
+
+In the root directory:
+
+```bash
+npm run quals
+```
+
+This runs every `quals/*.qual.mjs` file and stops on the first failure.

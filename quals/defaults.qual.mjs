@@ -42,14 +42,17 @@ const keyRanges = JSON.parse(JSON.stringify(vm.runInContext(`
   return {
     teslaMiles: pick("Tesla", "tesla-miles"),
     teslaDeadhead: pick("Tesla", "tesla-deadhead"),
-    teslaVif: pick("Tesla", "tesla-vif"),
     waymoMiles: pick("Waymo", "waymo-miles"),
     waymoDeadhead: pick("Waymo", "waymo-deadhead"),
-    waymoVif: pick("Waymo", "waymo-vif"),
     zooxMiles: pick("Zoox", "zoox-miles"),
     zooxDeadhead: pick("Zoox", "zoox-deadhead"),
-    zooxVif: pick("Zoox", "zoox-vif"),
     humansWaymoDivisor: pick("Humans", "humans-waymo-divisor"),
+    ciMass: {
+      min: CI_MASS_MIN_PCT,
+      max: CI_MASS_MAX_PCT,
+      step: CI_MASS_STEP_PCT,
+      value: CI_MASS_DEFAULT_PCT,
+    },
   };
 })()
 `, ctx)));
@@ -61,17 +64,14 @@ assert.deepEqual(
       "tesla-miles": 450000,
       "tesla-frac": 70,
       "tesla-deadhead": 20,
-      "tesla-vif": 1,
     },
     Waymo: {
       "waymo-miles": 61000000,
       "waymo-deadhead": 0,
-      "waymo-vif": 1,
     },
     Zoox: {
       "zoox-miles": 300000,
       "zoox-deadhead": 20,
-      "zoox-vif": 1,
     },
     Humans: {
       "humans-waymo-divisor": 5,
@@ -87,14 +87,12 @@ assert.deepEqual(
   {
     teslaMiles: {min: 94000, max: 600000, step: 1000, value: 450000},
     teslaDeadhead: {min: 0, max: 40, step: 1, value: 20},
-    teslaVif: {min: 1, max: 5, step: 0.5, value: 1},
     waymoMiles: {min: 57000000, max: 66000000, step: 1000000, value: 61000000},
     waymoDeadhead: {min: 0, max: 50, step: 1, value: 0},
-    waymoVif: {min: 1, max: 5, step: 0.5, value: 1},
     zooxMiles: {min: 50000, max: 1000000, step: 25000, value: 300000},
     zooxDeadhead: {min: 0, max: 40, step: 1, value: 20},
-    zooxVif: {min: 1, max: 5, step: 0.5, value: 1},
     humansWaymoDivisor: {min: 2, max: 10, step: 0.1, value: 5},
+    ciMass: {min: 50, max: 99.9, step: 0.1, value: 95},
   },
   `Replicata: inspect tightened slider ranges in COMPANIES.
 Expectata: ranges and defaults match source-backed denominator assumptions.
