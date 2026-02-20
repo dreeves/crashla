@@ -8,23 +8,31 @@ def estimate_fault(narrative):
     
     narrative_lower = narrative.lower()
     
-    # AV hit stationary object/debris/animal/pavement/wire
-    if re.search(r'av made contact with.*(debris|speed bump|fallen|animal|dog|deer|pole|gate|barrier|cone|sign|pavement|wire)', narrative_lower) or re.search(r'striking.*wire', narrative_lower):
-        return 1.0, "AV hit a stationary object/debris/animal/pavement/wire"
+    # AV hit stationary object/debris/animal/pavement/wire/water/chain/pothole/flagger/dumbbell
+    if re.search(r'av made contact with.*(debris|speed bump|fallen|animal|dog|deer|pole|gate|barrier|cone|sign|pavement|wire|water|chain|pothole|flagger|dumbbell)', narrative_lower) or re.search(r'striking.*wire', narrative_lower) or re.search(r'contact with a hanging chain', narrative_lower) or re.search(r'traveled through.*water', narrative_lower) or re.search(r'contact with.*flagger', narrative_lower):
+        return 1.0, "AV hit a stationary object/debris/animal/pavement/wire/water/chain/pothole/flagger/dumbbell"
+        
+    # AV wheel separated
+    if re.search(r'wheel separat(ed|e)', narrative_lower):
+        return 1.0, "AV wheel separated"
+        
+    # Object fell from trailer/vehicle
+    if re.search(r'fell from.*(trailer|vehicle|truck)', narrative_lower):
+        return 0.0, "Object fell from another vehicle"
         
     # Object rolled into AV
-    if re.search(r'(basketball|ball|object).*rolled into.*av', narrative_lower) or re.search(r'(basketball|ball|object).*made contact with.*av', narrative_lower):
+    if re.search(r'(basketball|ball|object|tire).*rolled into.*av', narrative_lower) or re.search(r'(basketball|ball|object|tire).*made contact with.*av', narrative_lower):
         return 0.0, "Object rolled into AV"
         
     # Passenger exited moving AV
-    if re.search(r'passenger.*exited.*moving', narrative_lower) or re.search(r'passenger.*exited.*while.*motion', narrative_lower) or re.search(r'passenger.*exited.*slowing', narrative_lower):
+    if re.search(r'passenger.*exited', narrative_lower) or re.search(r'passenger.*opened.*door', narrative_lower):
         return 0.0, "Passenger exited moving AV"
         
     # AV is stationary/stopped and gets hit
-    if re.search(r'av was (stationary|stopped|parked)', narrative_lower) and re.search(r'(rear ended|struck|made contact with|hit).*av', narrative_lower):
+    if (re.search(r'av was (stationary|stopped|parked)', narrative_lower) or re.search(r'(stationary|stopped|parked).*av', narrative_lower)) and re.search(r'(rear ended|struck|made contact with|hit).*av', narrative_lower):
         return 0.0, "AV was stationary and was struck by another vehicle"
         
-    if re.search(r'av was (stationary|stopped|parked)', narrative_lower):
+    if re.search(r'av was (stationary|stopped|parked)', narrative_lower) or re.search(r'(stationary|stopped|parked).*av', narrative_lower):
         return 0.0, "AV was stationary/stopped"
         
     # AV rear-ended someone
@@ -43,7 +51,7 @@ def estimate_fault(narrative):
             return 0.0, "Other vehicle ran a red light/stop sign"
             
     # Other vehicle reversed into AV
-    if re.search(r'(other vehicle|vehicle 2|truck|car|van|suv).*revers(ed|ing).*av', narrative_lower) or re.search(r'backed into.*av', narrative_lower):
+    if re.search(r'(other vehicle|vehicle 2|truck|car|van|suv).*revers.*av', narrative_lower) or re.search(r'backed into.*av', narrative_lower):
         return 0.0, "Other vehicle reversed into AV"
         
     # AV reversed into something
@@ -51,8 +59,8 @@ def estimate_fault(narrative):
         return 1.0, "AV reversed into another vehicle/object"
         
     # Other vehicle changed lanes into AV
-    if re.search(r'(other vehicle|vehicle 2|truck|car|van|suv).*(changed lanes|merged).*into.*av', narrative_lower):
-        return 0.0, "Other vehicle changed lanes/merged into AV"
+    if re.search(r'(other vehicle|vehicle 2|truck|car|van|suv).*(changed lanes|merged|veered).*into.*av', narrative_lower):
+        return 0.0, "Other vehicle changed lanes/merged/veered into AV"
         
     # AV changed lanes into something
     if re.search(r'av.*(changed lanes|merged).*into', narrative_lower):

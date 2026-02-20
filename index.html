@@ -139,7 +139,9 @@ table {
   margin-top: 0.5rem;
 }
 th, td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px solid #e0e0e0; }
-th { background: #f5f5f5; position: sticky; top: 0; }
+th { background: #f5f5f5; position: sticky; top: 0; cursor: pointer; user-select: none; }
+th:hover { background: #e8e8e8; }
+th .sort-arrow { font-size: 0.7em; margin-left: 0.2em; }
 tr:hover { background: #f8f8ff; }
 .narrative-cell {
   max-width: 300px;
@@ -151,6 +153,37 @@ tr:hover { background: #f8f8ff; }
 .narrative-cell.expanded { white-space: normal; }
 .cbi { color: #999; font-style: italic; }
 .incident-count { font-size: 0.9rem; color: #666; margin: 0.25rem 0; }
+.fault-cell {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+  cursor: help;
+}
+.fault-bar {
+  display: inline-block;
+  height: 14px;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.weight-panel {
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  background: #fafafa;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+.weight-panel h4 { margin: 0 0 0.4rem; font-size: 0.9rem; }
+.weight-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.3rem 0;
+}
+.weight-row label { min-width: 70px; }
+.weight-row input[type="range"] { flex: 1; min-width: 80px; }
+.weight-row .val { min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Monthly views */
 .month-panel {
@@ -325,16 +358,35 @@ title="The higher this is, the wider the confidence intervals">
 
 <h2>Incident browser</h2>
 <div class="filters" id="filters"></div>
+<div class="weight-panel">
+  <h4>Fault estimate weights</h4>
+  <div class="weight-row">
+    <label for="w-claude">Claude</label>
+    <input type="range" id="w-claude" min="0" max="10" step="1" value="3">
+    <span class="val" id="w-claude-val">3</span>
+  </div>
+  <div class="weight-row">
+    <label for="w-codex">Codex</label>
+    <input type="range" id="w-codex" min="0" max="10" step="1" value="3">
+    <span class="val" id="w-codex-val">3</span>
+  </div>
+  <div class="weight-row">
+    <label for="w-gemini">Gemini</label>
+    <input type="range" id="w-gemini" min="0" max="10" step="1" value="3">
+    <span class="val" id="w-gemini-val">3</span>
+  </div>
+</div>
 <div class="incident-count" id="incident-count"></div>
 <div style="overflow-x: auto;">
   <table>
-    <thead>
+    <thead id="incidents-head">
       <tr>
         <th>Company</th>
         <th>Date</th>
         <th>Location</th>
         <th>Crash with</th>
         <th>Speed (mph)</th>
+        <th>Fault</th>
         <th>Severity</th>
         <th>Narrative</th>
       </tr>
@@ -468,6 +520,7 @@ function estimateRate(k, m) {
 
 let incidents = [];
 let vmtRows = [];
+let faultData = {}; // reportId -> {claude, codex, gemini, rclaude, rcodex, rgemini}
 const CI_MASS_MIN_PCT = 50;
 const CI_MASS_MAX_PCT = 99.9;
 const CI_MASS_STEP_PCT = 0.1;
@@ -1378,7 +1431,6 @@ function drawDualMonthAxes(
   const axisY = mTop + pH;
   const rightX = mLeft + pW;
   const midY = mTop + pH / 2;
-  const rightLabelX = svgW - 12;
   return `
     ${months.map((month, i) => `
       <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"></line>
@@ -1388,14 +1440,9 @@ function drawDualMonthAxes(
       <line class="month-grid" x1="${mLeft}" y1="${mapLeftY(y)}" x2="${rightX}" y2="${mapLeftY(y)}"></line>
       <text class="month-tick" x="${mLeft - 8}" y="${mapLeftY(y) + 4}" text-anchor="end">${leftFmt(y)}</text>
     `).join("")}
-    ${rightTicks.map(y => `
-      <text class="month-tick" x="${rightX + 8}" y="${mapRightY(y) + 4}" text-anchor="start">${rightFmt(y)}</text>
-    `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${axisY}"></line>
-    <line class="month-axis-right" x1="${rightX}" y1="${mTop}" x2="${rightX}" y2="${axisY}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${axisY}" x2="${rightX}" y2="${axisY}"></line>
     <text class="month-label" x="12" y="${midY}" transform="rotate(-90 12 ${midY})" text-anchor="middle">${leftLabel}</text>
-    <text class="month-label" x="${rightLabelX}" y="${midY}" transform="rotate(90 ${rightLabelX} ${midY})" text-anchor="middle">${rightLabel}</text>
   `;
 }
 
@@ -1403,7 +1450,7 @@ function renderCompanyMonthlyChart(series, company) {
   const svgW = 900;
   const svgH = 250;
   const mLeft = 68;
-  const mRight = 68;
+  const mRight = 24;
   const mTop = 14;
   const mBot = 48;
   const pW = svgW - mLeft - mRight;
@@ -1413,21 +1460,19 @@ function renderCompanyMonthlyChart(series, company) {
   const incidentMax = Math.max(1, ...rows.map(row => row.incidents.total));
   const leftTicks = linearTicks(0, vmtMax, 4);
   const rightTicks = linearTicks(0, incidentMax, 4);
-  const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft, mLeft + pW);
-  const mapVmtY = y => scaleLinear(y, 0, vmtMax, mTop + pH, mTop);
-  const mapIncidentY = y => scaleLinear(y, 0, incidentMax, mTop + pH, mTop);
   const monthStep = pW / ((series.months.length - 1) || 1);
   const barW = Math.min(30, monthStep * 0.56);
+  const xPad = barW / 2 + 2; // inset so edge bars don't overlap axes
+  const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad);
+  const mapVmtY = y => scaleLinear(y, 0, vmtMax, mTop + pH, mTop);
+  const mapIncidentY = y => scaleLinear(y, 0, incidentMax, mTop + pH, mTop);
   const vmtColor = MONTHLY_COMPANY_COLORS[company];
 
   const bars = [];
   const barCounts = [];
   const barTotals = [];
   for (let i = 0; i < series.points.length; i++) {
-    const x = Math.min(
-      Math.max(mapX(i) - barW / 2, mLeft + 1),
-      mLeft + pW - barW - 1,
-    );
+    const x = mapX(i) - barW / 2;
     const rec = rows[i].incidents;
     let stack = 0;
     for (const bin of SPEED_BINS) {
@@ -1579,9 +1624,125 @@ function buildMonthlyViews() {
   byId("month-summary-box").innerHTML = renderMonthlySummary(series);
 }
 
+// --- Fault fraction data ---
+
+function parseFaultfracCsv(text) {
+  const lines = text.split(/\r?\n/);
+  must(lines.length > 1, "faultfrac.csv must include header and rows");
+  const header = lines[0].trim();
+  must(header === "Report ID,ffclaude,ffcodex,ffgemini,rclaude,rcodex,rgemini",
+    "faultfrac.csv header mismatch", {header});
+  const data = {};
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line === "") continue;
+    // Parse CSV respecting quoted fields
+    const fields = [];
+    let pos = 0;
+    while (pos < line.length) {
+      if (line[pos] === '"') {
+        pos++;
+        let val = "";
+        while (pos < line.length) {
+          if (line[pos] === '"' && line[pos + 1] === '"') {
+            val += '"';
+            pos += 2;
+          } else if (line[pos] === '"') {
+            pos++;
+            break;
+          } else {
+            val += line[pos];
+            pos++;
+          }
+        }
+        if (pos < line.length && line[pos] === ',') pos++;
+        fields.push(val);
+      } else {
+        const next = line.indexOf(',', pos);
+        if (next === -1) {
+          fields.push(line.slice(pos));
+          pos = line.length;
+        } else {
+          fields.push(line.slice(pos, next));
+          pos = next + 1;
+        }
+      }
+    }
+    must(fields.length === 7, "faultfrac.csv row has wrong field count",
+      {lineNo: i + 1, count: fields.length});
+    data[fields[0]] = {
+      claude: Number(fields[1]),
+      codex: Number(fields[2]),
+      gemini: Number(fields[3]),
+      rclaude: fields[4],
+      rcodex: fields[5],
+      rgemini: fields[6],
+    };
+  }
+  return data;
+}
+
+function faultWeights() {
+  const wc = Number(byId("w-claude").value);
+  const wo = Number(byId("w-codex").value);
+  const wg = Number(byId("w-gemini").value);
+  return {claude: wc, codex: wo, gemini: wg};
+}
+
+function weightedFault(reportId) {
+  const fd = faultData[reportId];
+  if (!fd) return null;
+  const w = faultWeights();
+  const total = w.claude + w.codex + w.gemini;
+  if (total === 0) return null;
+  return (w.claude * fd.claude + w.codex * fd.codex + w.gemini * fd.gemini) / total;
+}
+
+function faultColor(frac) {
+  // Green (0) -> Yellow (0.5) -> Red (1)
+  if (frac <= 0.5) {
+    const r = Math.round(255 * (frac / 0.5));
+    return `rgb(${r}, 180, 60)`;
+  }
+  const g = Math.round(180 * (1 - (frac - 0.5) / 0.5));
+  return `rgb(220, ${g}, 50)`;
+}
+
+function faultTooltip(reportId) {
+  const fd = faultData[reportId];
+  if (!fd) return "";
+  return `Claude: ${fd.claude.toFixed(2)} — ${fd.rclaude}\nCodex: ${fd.codex.toFixed(2)} — ${fd.rcodex}\nGemini: ${fd.gemini.toFixed(2)} — ${fd.rgemini}`;
+}
+
+function initWeightSliders() {
+  for (const model of ["claude", "codex", "gemini"]) {
+    const input = byId("w-" + model);
+    const valSpan = byId("w-" + model + "-val");
+    input.addEventListener("input", () => {
+      valSpan.textContent = input.value;
+      renderTable();
+    });
+  }
+}
+
 // --- Incident Browser ---
 
 let activeFilter = "All";
+let sortCol = null;   // column key or null
+let sortAsc = true;
+
+const SORT_COLUMNS = [
+  {key: "company",  val: r => r.company},
+  {key: "date",     val: r => r.date},
+  {key: "location", val: r => (r.city + ", " + r.state)},
+  {key: "crashWith",val: r => r.crashWith},
+  {key: "speed",    val: r => r.speed !== null ? r.speed : -1},
+  {key: "fault",    val: r => { const f = weightedFault(r.reportId); return f !== null ? f : -1; }},
+  {key: "severity", val: r => r.severity || ""},
+  {key: "narrative", val: r => r.narrative || ""},
+];
+
+const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
 
 function buildBrowser() {
   const counts = countByCompany();
@@ -1599,14 +1760,58 @@ function buildBrowser() {
     });
     filterDiv.appendChild(btn);
   }
+  renderHeaders();
   renderTable();
+}
+
+function renderHeaders() {
+  const thead = byId("incidents-head");
+  const tr = document.createElement("tr");
+  for (let i = 0; i < HEADER_LABELS.length; i++) {
+    const th = document.createElement("th");
+    const col = SORT_COLUMNS[i];
+    let label = HEADER_LABELS[i];
+    if (sortCol === col.key) {
+      label += sortAsc ? " \u25B2" : " \u25BC";
+    }
+    th.textContent = label;
+    th.addEventListener("click", () => {
+      if (sortCol === col.key) {
+        sortAsc = !sortAsc;
+      } else {
+        sortCol = col.key;
+        sortAsc = true;
+      }
+      renderHeaders();
+      renderTable();
+    });
+    tr.appendChild(th);
+  }
+  thead.replaceChildren(tr);
 }
 
 function renderTable() {
   const tbody = byId("incidents-body");
-  const filtered = activeFilter === "All"
-    ? incidents
+  let filtered = activeFilter === "All"
+    ? [...incidents]
     : incidents.filter(r => r.company === activeFilter);
+
+  if (sortCol !== null) {
+    const colDef = SORT_COLUMNS.find(c => c.key === sortCol);
+    if (colDef) {
+      filtered.sort((a, b) => {
+        const va = colDef.val(a);
+        const vb = colDef.val(b);
+        let cmp = 0;
+        if (typeof va === "number" && typeof vb === "number") {
+          cmp = va - vb;
+        } else {
+          cmp = String(va).localeCompare(String(vb));
+        }
+        return sortAsc ? cmp : -cmp;
+      });
+    }
+  }
 
   byId("incident-count").textContent =
     `${filtered.length} incidents`;
@@ -1620,12 +1825,19 @@ function renderTable() {
       : (r.narrative || "");
     const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
 
+    const fault = weightedFault(r.reportId);
+    const faultHtml = fault !== null
+      ? `<span class="fault-bar" style="width:${Math.round(fault * 40)}px;background:${faultColor(fault)}"></span>${fault.toFixed(2)}`
+      : "—";
+    const faultTip = escAttr(faultTooltip(r.reportId));
+
     tr.innerHTML = `
       <td>${escHtml(r.company)}</td>
       <td>${escHtml(r.date)}</td>
       <td>${escHtml(r.city)}, ${escHtml(r.state)}</td>
       <td>${escHtml(r.crashWith)}</td>
       <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
+      <td class="fault-cell" title="${faultTip}">${faultHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
       <td class="${narrativeClass}">${escHtml(narrativeText)}</td>
     `;
@@ -1669,8 +1881,10 @@ Promise.all([
     .then(r => (must(r.ok, "Failed to load incidents.json", {status: r.status}), r.json())),
   fetch("quals/vmt.csv")
     .then(r => (must(r.ok, "Failed to load quals/vmt.csv", {status: r.status}), r.text())),
+  fetch("faultfrac.csv")
+    .then(r => (must(r.ok, "Failed to load faultfrac.csv", {status: r.status}), r.text())),
 ])
-  .then(([incidentData, vmtCsvText]) => {
+  .then(([incidentData, vmtCsvText, faultfracCsvText]) => {
     must(Array.isArray(incidentData), "incidents.json must be an array");
     for (const inc of incidentData) {
       must(inc !== null && typeof inc === "object", "incident must be an object");
@@ -1680,7 +1894,9 @@ Promise.all([
     }
     incidents = incidentData;
     vmtRows = parseVmtCsv(vmtCsvText);
+    faultData = parseFaultfracCsv(faultfracCsvText);
     initCiMassControl();
+    initWeightSliders();
     buildEstimator();
     buildMonthlyViews();
     buildBrowser();
