@@ -10,7 +10,7 @@ import csv
 import json
 import sys
 
-INPUT  = "nhtsa-2025-jun-dec.csv"
+INPUT  = "nhtsa-2025-jun-2026-jan.csv"
 OUTPUT = "incidents.json"
 
 # Fields to extract for each incident
@@ -104,7 +104,8 @@ def main():
     # Sort by company then date
     month_order = {
         "JUN-2025": 1, "JUL-2025": 2, "AUG-2025": 3, "SEP-2025": 4,
-        "OCT-2025": 5, "NOV-2025": 6, "DEC-2025": 7, "APR-2025": 0,
+        "OCT-2025": 5, "NOV-2025": 6, "DEC-2025": 7, "JAN-2026": 8,
+        "APR-2025": 0,
     }
     incidents.sort(key=lambda r: (
         r["company"],
