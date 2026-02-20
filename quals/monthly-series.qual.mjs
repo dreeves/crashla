@@ -65,7 +65,7 @@ const ctx = vm.createContext({
 vm.runInContext(appScript, ctx, { filename: "index.html" });
 
 const incidentJson = fs.readFileSync("incidents.json", "utf8");
-const vmtCsv = fs.readFileSync("quals/vmt.csv", "utf8");
+const vmtCsv = fs.readFileSync("vmt.csv", "utf8");
 vm.runInContext(`
 incidents = ${incidentJson};
 vmtRows = parseVmtCsv(${JSON.stringify(vmtCsv)});
@@ -112,7 +112,7 @@ assert.deepEqual(
     "2025-12",
     "2026-01",
   ],
-  `Replicata: aggregate month series from incidents.json + quals/vmt.csv.
+  `Replicata: aggregate month series from incidents.json + vmt.csv.
 Expectata: month axis exactly spans 2025-06 through 2026-01.
 Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 );
@@ -191,12 +191,10 @@ assert.ok(
     rendered.includes("month-inc-count") &&
     rendered.includes("month-inc-total") &&
     rendered.includes("Vehicle Miles Traveled (VMT)") &&
-    rendered.includes("incident count") &&
-    rendered.includes("month-axis-right") &&
     rendered.includes("month-err") &&
     rendered.includes("month-axis"),
   `Replicata: render monthly charts per company.
-Expectata: each company chart renders dual axes, VMT line, stacked incident bars with count labels, and error bars.
+Expectata: each company chart renders a left VMT axis, a VMT line, stacked incident bars with count labels, and error bars.
 Resultata: rendered snippets were ${JSON.stringify(rendered.slice(0, 400))}.`,
 );
 

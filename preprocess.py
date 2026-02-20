@@ -8,10 +8,16 @@ incidents.json.
 
 import csv
 import json
-import sys
+import math
+from collections import Counter
 
 INPUT  = "nhtsa-2025-jun-2026-jan.csv"
 OUTPUT = "incidents.json"
+FAULT_INPUTS = {
+    "claude": "faultfrac-claude.csv",
+    "codex": "faultfrac-codex.csv",
+    "gemini": "faultfrac-gemini.csv",
+}
 
 # Fields to extract for each incident
 FIELDS = [
@@ -69,9 +75,47 @@ COMPANY_SHORT = {
 }
 
 
+def must(cond, msg, **ctx):
+    if not cond:
+        raise AssertionError(f"{msg}: {ctx}")
+
+
+def parse_fault_csv(path):
+    with open(path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    must(len(rows) > 0, "fault csv has no rows", path=path)
+    must({"Report ID", "faultfrac", "reasoning"} <= set(rows[0].keys()),
+         "fault csv header mismatch", path=path, header=list(rows[0].keys()))
+    data = {}
+    for row in rows:
+        rid = row["Report ID"].strip()
+        must(rid != "", "fault row missing Report ID", path=path)
+        faultfrac = float(row["faultfrac"])
+        must(math.isfinite(faultfrac), "faultfrac not finite", path=path, reportId=rid, faultfrac=row["faultfrac"])
+        must(0.0 <= faultfrac <= 1.0, "faultfrac out of range", path=path, reportId=rid, faultfrac=faultfrac)
+        reasoning = row["reasoning"].strip()
+        item = {"faultfrac": faultfrac, "reasoning": reasoning}
+        if rid in data:
+            must(data[rid] == item, "duplicate Report ID with conflicting fault row", path=path, reportId=rid)
+            continue
+        data[rid] = item
+    return data
+
+
+def load_fault_models():
+    models = {}
+    for model, path in FAULT_INPUTS.items():
+        models[model] = parse_fault_csv(path)
+    ids = set(models["claude"])
+    for model in ("codex", "gemini"):
+        must(set(models[model]) == ids, "fault model ID sets must match", model=model)
+    return models, ids
+
+
 def main():
     with open(INPUT, newline="") as f:
         rows = list(csv.DictReader(f))
+    fault_models, fault_ids = load_fault_models()
 
     # Filter to driverless incidents only
     none_rows = [r for r in rows if r["Driver / Operator Type"] == "None"]
@@ -99,7 +143,22 @@ def main():
             rec["speed"] = int(rec["speed"])
         except (ValueError, TypeError):
             rec["speed"] = None
+        rid = rec["reportId"]
+        must(rid in fault_ids, "missing fault estimates for report", reportId=rid)
+        rec["fault"] = {
+            "claude": fault_models["claude"][rid]["faultfrac"],
+            "codex": fault_models["codex"][rid]["faultfrac"],
+            "gemini": fault_models["gemini"][rid]["faultfrac"],
+            "rclaude": fault_models["claude"][rid]["reasoning"],
+            "rcodex": fault_models["codex"][rid]["reasoning"],
+            "rgemini": fault_models["gemini"][rid]["reasoning"],
+        }
         incidents.append(rec)
+
+    incident_ids = {r["reportId"] for r in incidents}
+    must(incident_ids == fault_ids, "incident/fault Report ID sets must match",
+         incidents_only=sorted(incident_ids - fault_ids)[:5],
+         fault_only=sorted(fault_ids - incident_ids)[:5])
 
     # Sort by company then date
     month_order = {
@@ -117,7 +176,6 @@ def main():
         json.dump(incidents, f, indent=2)
 
     # Summary
-    from collections import Counter
     counts = Counter(r["company"] for r in incidents)
     total = len(incidents)
     print(f"Wrote {total} incidents to {OUTPUT}:")

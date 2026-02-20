@@ -243,10 +243,6 @@ tr:hover { background: #f8f8ff; }
   stroke: #95a0b8;
   stroke-width: 1;
 }
-.month-axis-right {
-  stroke: #95a0b8;
-  stroke-width: 1;
-}
 .month-vmt-line {
   fill: none;
   stroke-width: 2;
@@ -344,6 +340,7 @@ tr:hover { background: #f8f8ff; }
   <div id="month-summary-box" class="month-summary"></div>
 </div>
 
+<!--
 <div class="company-panel">
   <div class="slider-row">
     <label for="ci-mass"
@@ -355,6 +352,7 @@ title="The higher this is, the wider the confidence intervals">
 </div>
 
 <div id="estimator"></div>
+-->
 
 <h2>Incident browser</h2>
 <div class="filters" id="filters"></div>
@@ -1426,7 +1424,7 @@ function renderAllCompaniesMpiChart(series) {
 
 function drawDualMonthAxes(
   months, svgW, svgH, mLeft, mTop, pW, pH, mapX,
-  leftTicks, rightTicks, mapLeftY, mapRightY, leftFmt, rightFmt, leftLabel, rightLabel,
+  leftTicks, mapLeftY, leftFmt, leftLabel,
 ) {
   const axisY = mTop + pH;
   const rightX = mLeft + pW;
@@ -1459,7 +1457,6 @@ function renderCompanyMonthlyChart(series, company) {
   const vmtMax = Math.max(1, ...rows.map(row => row.vmt.maxVmt));
   const incidentMax = Math.max(1, ...rows.map(row => row.incidents.total));
   const leftTicks = linearTicks(0, vmtMax, 4);
-  const rightTicks = linearTicks(0, incidentMax, 4);
   const monthStep = pW / ((series.months.length - 1) || 1);
   const barW = Math.min(30, monthStep * 0.56);
   const xPad = barW / 2 + 2; // inset so edge bars don't overlap axes
@@ -1527,9 +1524,8 @@ function renderCompanyMonthlyChart(series, company) {
       <path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>
       ${vmtMarks}
       ${drawDualMonthAxes(
-        series.months, svgW, svgH, mLeft, mTop, pW, pH, mapX,
-        leftTicks, rightTicks, mapVmtY, mapIncidentY,
-        fmtMiles, fmtCount, "Vehicle Miles Traveled (VMT)", "incident count",
+        series.months, svgW, svgH, mLeft, mTop, pW, pH, mapX, leftTicks, mapVmtY, fmtMiles,
+        "Vehicle Miles Traveled (VMT)",
       )}
     </svg>
   `;
@@ -1626,57 +1622,36 @@ function buildMonthlyViews() {
 
 // --- Fault fraction data ---
 
-function parseFaultfracCsv(text) {
-  const lines = text.split(/\r?\n/);
-  must(lines.length > 1, "faultfrac.csv must include header and rows");
-  const header = lines[0].trim();
-  must(header === "Report ID,ffclaude,ffcodex,ffgemini,rclaude,rcodex,rgemini",
-    "faultfrac.csv header mismatch", {header});
+function buildFaultDataFromIncidents(rows) {
   const data = {};
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (line === "") continue;
-    // Parse CSV respecting quoted fields
-    const fields = [];
-    let pos = 0;
-    while (pos < line.length) {
-      if (line[pos] === '"') {
-        pos++;
-        let val = "";
-        while (pos < line.length) {
-          if (line[pos] === '"' && line[pos + 1] === '"') {
-            val += '"';
-            pos += 2;
-          } else if (line[pos] === '"') {
-            pos++;
-            break;
-          } else {
-            val += line[pos];
-            pos++;
-          }
-        }
-        if (pos < line.length && line[pos] === ',') pos++;
-        fields.push(val);
-      } else {
-        const next = line.indexOf(',', pos);
-        if (next === -1) {
-          fields.push(line.slice(pos));
-          pos = line.length;
-        } else {
-          fields.push(line.slice(pos, next));
-          pos = next + 1;
-        }
-      }
-    }
-    must(fields.length === 7, "faultfrac.csv row has wrong field count",
-      {lineNo: i + 1, count: fields.length});
-    data[fields[0]] = {
-      claude: Number(fields[1]),
-      codex: Number(fields[2]),
-      gemini: Number(fields[3]),
-      rclaude: fields[4],
-      rcodex: fields[5],
-      rgemini: fields[6],
+  for (const row of rows) {
+    must(typeof row.reportId === "string" && row.reportId !== "",
+      "incident missing reportId for fault mapping");
+    must(row.fault !== null && typeof row.fault === "object",
+      "incident missing fault object", {reportId: row.reportId});
+    const claude = Number(row.fault.claude);
+    const codex = Number(row.fault.codex);
+    const gemini = Number(row.fault.gemini);
+    must(Number.isFinite(claude) && claude >= 0 && claude <= 1,
+      "incident fault.claude out of range", {reportId: row.reportId, val: row.fault.claude});
+    must(Number.isFinite(codex) && codex >= 0 && codex <= 1,
+      "incident fault.codex out of range", {reportId: row.reportId, val: row.fault.codex});
+    must(Number.isFinite(gemini) && gemini >= 0 && gemini <= 1,
+      "incident fault.gemini out of range", {reportId: row.reportId, val: row.fault.gemini});
+    must(typeof row.fault.rclaude === "string",
+      "incident fault.rclaude invalid", {reportId: row.reportId});
+    must(typeof row.fault.rcodex === "string",
+      "incident fault.rcodex invalid", {reportId: row.reportId});
+    must(typeof row.fault.rgemini === "string",
+      "incident fault.rgemini invalid", {reportId: row.reportId});
+    must(data[row.reportId] === undefined, "duplicate reportId in incidents", {reportId: row.reportId});
+    data[row.reportId] = {
+      claude,
+      codex,
+      gemini,
+      rclaude: row.fault.rclaude,
+      rcodex: row.fault.rcodex,
+      rgemini: row.fault.rgemini,
     };
   }
   return data;
@@ -1879,12 +1854,10 @@ function escAttr(s) {
 Promise.all([
   fetch("incidents.json")
     .then(r => (must(r.ok, "Failed to load incidents.json", {status: r.status}), r.json())),
-  fetch("quals/vmt.csv")
-    .then(r => (must(r.ok, "Failed to load quals/vmt.csv", {status: r.status}), r.text())),
-  fetch("faultfrac.csv")
-    .then(r => (must(r.ok, "Failed to load faultfrac.csv", {status: r.status}), r.text())),
+  fetch("vmt.csv")
+    .then(r => (must(r.ok, "Failed to load vmt.csv", {status: r.status}), r.text())),
 ])
-  .then(([incidentData, vmtCsvText, faultfracCsvText]) => {
+  .then(([incidentData, vmtCsvText]) => {
     must(Array.isArray(incidentData), "incidents.json must be an array");
     for (const inc of incidentData) {
       must(inc !== null && typeof inc === "object", "incident must be an object");
@@ -1894,10 +1867,12 @@ Promise.all([
     }
     incidents = incidentData;
     vmtRows = parseVmtCsv(vmtCsvText);
-    faultData = parseFaultfracCsv(faultfracCsvText);
-    initCiMassControl();
+    faultData = buildFaultDataFromIncidents(incidentData);
+    if (document.getElementById("ci-mass")) {
+      initCiMassControl();
+      buildEstimator();
+    }
     initWeightSliders();
-    buildEstimator();
     buildMonthlyViews();
     buildBrowser();
   });
