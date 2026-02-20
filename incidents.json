@@ -683,10 +683,10 @@
     "fault": {
       "claude": 0.15,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing van",
       "rcodex": "AV passenger opened rear door into passing van",
-      "rgemini": "Passenger opened door into passing traffic while AV was parked"
+      "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
   },
   {
@@ -863,10 +863,10 @@
     "fault": {
       "claude": 0.15,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV's passenger opened rear door into passing bus",
       "rcodex": "AV passenger opened rear door into passing bus",
-      "rgemini": "The AV was parked partially in-lane and its passenger opened a door into the path of a passing bus. Shared fault due to passenger action and AV positioning."
+      "rgemini": "The AV was parked partially in-lane and its passenger opened a door into the path of a passing bus. AV itself not at fault."
     }
   },
   {
@@ -1373,10 +1373,10 @@
     "fault": {
       "claude": 0.15,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing car",
       "rcodex": "AV passenger opened rear door into passing car",
-      "rgemini": "Passenger opened door into passing traffic while AV was parked"
+      "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
   },
   {
@@ -1403,10 +1403,10 @@
     "fault": {
       "claude": 0.5,
       "codex": 0.9,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV passenger opened door while AV in motion, hit parked SUV",
       "rcodex": "AV passenger repeatedly opened door while AV moved past stopped AV",
-      "rgemini": "Passenger in moving AV opened door and hit a stationary AV"
+      "rgemini": "Passenger in moving AV opened door and hit a stationary AV. AV itself not at fault."
     }
   },
   {
@@ -1523,10 +1523,10 @@
     "fault": {
       "claude": 0.15,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing bus",
       "rcodex": "AV passenger opened rear door into passing bus",
-      "rgemini": "Passenger opened door into passing traffic while AV was parked"
+      "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
   },
   {
@@ -1703,10 +1703,10 @@
     "fault": {
       "claude": 0.15,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing cyclist",
       "rcodex": "AV passenger opened front door into passing cyclist",
-      "rgemini": "Passenger opened door into a passing cyclist while AV was parked"
+      "rgemini": "Passenger opened door into a passing cyclist while AV was parked. AV itself not at fault."
     }
   },
   {
@@ -3413,10 +3413,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped at red light, rear-ended",
       "rcodex": "AV passenger opened door into passing scooter",
-      "rgemini": "Waymo passenger opened their door into the path of a passing scooterist."
+      "rgemini": "Waymo passenger opened their door into the path of a passing scooterist. AV itself not at fault."
     }
   },
   {
@@ -3443,10 +3443,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger opened rear door into passing bus",
-      "rgemini": "Passenger opened door into passing traffic while AV was parked"
+      "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
   },
   {
@@ -3563,10 +3563,10 @@
     "fault": {
       "claude": 0.1,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV hit wire suspended across road",
       "rcodex": "AV passenger opened door into passing bus",
-      "rgemini": "The AV was parked but its passenger opened a door into the path of an oncoming bus. Shared fault due to passenger action and potential AV responsibility for safe drop-off."
+      "rgemini": "The AV was parked but its passenger opened a door into the path of an oncoming bus. AV itself not at fault."
     }
   },
   {
@@ -4583,10 +4583,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV going straight, car turned left into AV",
       "rcodex": "AV passenger opened rear door into passing SUV",
-      "rgemini": "Waymo passenger opened their door into the path of an oncoming SUV."
+      "rgemini": "Waymo passenger opened their door into the path of an oncoming SUV. AV itself not at fault."
     }
   },
   {
@@ -5033,10 +5033,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger opened rear door into passing SUV",
-      "rgemini": "Passenger opened door into a passing vehicle while AV was parked"
+      "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
     }
   },
   {
@@ -6293,10 +6293,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV rider opened rear door into passing van",
-      "rgemini": "Waymo passenger opened their door into the path of a passing van."
+      "rgemini": "Waymo passenger opened their door into the path of a passing van. AV itself not at fault."
     }
   },
   {
@@ -7703,10 +7703,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger opened rear door into passing SUV",
-      "rgemini": "Passenger opened door into passing traffic but AV chose the drop-off location."
+      "rgemini": "Passenger opened door into passing traffic. AV itself not at fault."
     }
   },
   {
@@ -8633,10 +8633,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.8,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV parked, car reversed into AV",
       "rcodex": "AV passenger opened rear door into passing SUV during drop-off",
-      "rgemini": "Passenger opened door into a passing vehicle while AV was parked"
+      "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
     }
   },
   {
@@ -11633,10 +11633,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.6,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV parked, struck by car",
       "rcodex": "Open AV passenger door was struck by passing SUV",
-      "rgemini": "Waymo passenger opened door into passing SUV."
+      "rgemini": "Waymo passenger opened door into passing SUV. AV itself not at fault."
     }
   },
   {
@@ -12113,10 +12113,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.6,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "Open AV passenger door was struck by passing car",
-      "rgemini": "Waymo passenger opened door into traffic but other car was passing in opposing lane. Shared fault."
+      "rgemini": "Waymo passenger opened door into traffic but other car was passing in opposing lane. AV itself not at fault."
     }
   },
   {
@@ -14303,10 +14303,10 @@
     "fault": {
       "claude": 0.0,
       "codex": 0.6,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger door opening contributed to motorcycle contact",
-      "rgemini": "AV passenger opened door into the path of a motorcycle passing on the right; shared fault."
+      "rgemini": "AV passenger opened door into the path of a motorcycle passing on the right; AV itself not at fault."
     }
   },
   {

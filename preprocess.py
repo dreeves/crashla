@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """Preprocess NHTSA SGO crash data CSV into a clean JSON file for the web tool.
 
-Reads nhtsa-2025-jun-dec.csv, filters to Driver/Operator Type = "None",
-deduplicates by Same Incident ID (keeping highest Report Version), and writes
-incidents.json.
+Reads nhtsa-2025-jun-2026-jan.csv, filters to Driver/Operator Type = "None",
+deduplicates by Same Incident ID (keeping highest Report Version), and injects
+the data inline into index.html (between marker comments). Also writes
+incidents.json as a side output.
 """
 
 import csv
 import json
 import math
+import re
 from collections import Counter
 
 INPUT  = "nhtsa-2025-jun-2026-jan.csv"
 OUTPUT = "incidents.json"
+HTML   = "index.html"
+VMT    = "vmt.csv"
 FAULT_INPUTS = {
     "claude": "faultfrac-claude.csv",
     "codex": "faultfrac-codex.csv",
@@ -175,10 +179,36 @@ def main():
     with open(OUTPUT, "w") as f:
         json.dump(incidents, f, indent=2)
 
+    # Inject data inline into index.html
+    with open(HTML) as f:
+        html = f.read()
+
+    incident_json = json.dumps(incidents, separators=(",", ":"))
+    with open(VMT) as f:
+        vmt_text = f.read()
+    vmt_escaped = json.dumps(vmt_text)  # properly escapes for JS string
+
+    def inject(html, start_marker, end_marker, payload):
+        """Replace content between marker comments with payload."""
+        si = html.index(start_marker)
+        ei = html.index(end_marker, si)
+        return html[:si] + start_marker + payload + html[ei:]
+
+    html = inject(html,
+                  "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
+                  incident_json)
+    html = inject(html,
+                  "/* VMT_CSV_START */", "/* VMT_CSV_END */",
+                  vmt_escaped)
+
+    with open(HTML, "w") as f:
+        f.write(html)
+
     # Summary
     counts = Counter(r["company"] for r in incidents)
     total = len(incidents)
-    print(f"Wrote {total} incidents to {OUTPUT}:")
+    print(f"Wrote {total} incidents to {OUTPUT}")
+    print(f"Injected data inline into {HTML}")
     for company, n in counts.most_common():
         print(f"  {company}: {n}")
 
