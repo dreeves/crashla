@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Preprocess NHTSA SGO crash data CSV into a clean JSON file for the web tool.
+"""Preprocess NHTSA SGO crash data CSV into inline data for the web tool.
 
 Reads nhtsa-2025-jun-2026-jan.csv, filters to Driver/Operator Type = "None",
 deduplicates by Same Incident ID (keeping highest Report Version), and injects
-the data inline into index.html (between marker comments). Also writes
-incidents.json as a side output.
+the data inline into index.html (between marker comments).
 """
 
 import csv
@@ -14,7 +13,6 @@ import urllib.request
 from collections import Counter
 
 INPUT  = "nhtsa-2025-jun-2026-jan.csv"
-OUTPUT = "incidents.json"
 HTML   = "index.html"
 VMT_SHEET_ID = "1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w"
 VMT_SHEET_GID = "844581871"
@@ -192,14 +190,11 @@ def main():
         r["time"],
     ))
 
-    with open(OUTPUT, "w") as f:
-        json.dump(incidents, f, indent=2)
-
     # Inject data inline into index.html
     with open(HTML) as f:
         html = f.read()
 
-    incident_json = json.dumps(incidents, separators=(",", ":"))
+    incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
     vmt_text = fetch_vmt_sheet_csv()
     vmt_escaped = json.dumps(vmt_text)  # properly escapes for JS string
 
@@ -222,8 +217,7 @@ def main():
     # Summary
     counts = Counter(r["company"] for r in incidents)
     total = len(incidents)
-    print(f"Wrote {total} incidents to {OUTPUT}")
-    print(f"Injected data inline into {HTML}")
+    print(f"Injected {total} incidents inline into {HTML}")
     for company, n in counts.most_common():
         print(f"  {company}: {n}")
 
