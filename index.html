@@ -17,6 +17,32 @@ body {
 h1 { margin-bottom: 0.5rem; }
 h2 { margin: 1.5rem 0 0.75rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.25rem; }
 h3 { margin: 0.75rem 0 0.5rem; }
+.ai-explainer {
+  margin: 0.5rem 0 1rem;
+  padding: 0.9rem 1rem;
+  background: #fff76a;
+  border: 2px dashed #3d2f00;
+  border-radius: 6px;
+  color: #1f1300;
+  font-family: "Courier New", Courier, monospace;
+  line-height: 1.45;
+}
+.ai-explainer h2 {
+  margin: 0 0 0.45rem;
+  border: 0;
+  padding: 0;
+  font-size: 1rem;
+}
+.ai-explainer p {
+  margin: 0 0 0.45rem;
+}
+.ai-explainer ul {
+  margin: 0.25rem 0 0.45rem 1.2rem;
+}
+.ai-explainer a {
+  color: #7a001f;
+  font-weight: 700;
+}
 
 /* Rate estimator */
 .company-panel {
@@ -354,6 +380,19 @@ tr:hover { background: #f8f8ff; }
 <body>
 
 <h1>Tesla vs Waymo vs Zoox vs Humans</h1>
+
+<!-- TO-DO: Human vet all new end-user copy in this AI explainer section. -->
+<section class="ai-explainer">
+  <h2>Explanatory Note (AI-generated text)</h2>
+  <p>This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the NHTSA time window (June 15, 2025 through January 15, 2026).</p>
+  <p>Context: <a href="https://agifriday.substack.com/crashla/">agifriday.substack.com/crashla</a></p>
+  <ul>
+    <li>Top chart: solid line = MPI from all incidents; dashed line = MPI from nonstationary incidents; error bars use <code>vmt_min</code> and <code>vmt_max</code>.</li>
+    <li>Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.</li>
+    <li>Months marked with an asterisk (*) are extrapolated to full-month equivalents in the charts for month-to-month comparability.</li>
+    <li>In the summary table, incidents are observed counts (not extrapolated), while VMT for partial months is scaled down to match the observed incident window.</li>
+  </ul>
+</section>
 
 <!-- TO-DO: Human vet all new end-user copy in this section. -->
 <div class="month-panel">
