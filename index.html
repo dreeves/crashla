@@ -1265,9 +1265,22 @@ function scaledCompanyMonthRows(series, company) {
   });
 }
 
+function observedCompanyMonthRows(series, company) {
+  return series.points.map((point, i) => {
+    const rec = point.companies[company];
+    const factor = monthScale(series.months[i]);
+    return {
+      vmtMin: rec.vmtMin / factor,
+      vmtBest: rec.vmtBest / factor,
+      vmtMax: rec.vmtMax / factor,
+      incidents: rec.incidents,
+    };
+  });
+}
+
 function monthlySummaryRows(series) {
   return ADS_COMPANIES.map(company => {
-    const rows = scaledCompanyMonthRows(series, company);
+    const rows = observedCompanyMonthRows(series, company);
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
     const vmtMax = rows.reduce((sum, row) => sum + row.vmtMax, 0);

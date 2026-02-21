@@ -150,10 +150,10 @@ Expectata: summary rows include Tesla, Waymo, and Zoox.
 Resultata: summary rows were ${JSON.stringify(plain.summaryRows)}.`,
 );
 assert.ok(
-  Math.abs(summaryByCompany.Tesla.incTotal - 18.2666666667) < 1e-6 &&
-    Math.abs(summaryByCompany.Tesla.incNonstationary - 13.2) < 1e-6,
-  `Replicata: compute Tesla scaled summary totals.
-Expectata: partial-month scaling yields Tesla totals of ~18.2667 incidents and ~13.2 nonstationary incidents.
+  Math.abs(summaryByCompany.Tesla.incTotal - 14) < 1e-6 &&
+    Math.abs(summaryByCompany.Tesla.incNonstationary - 10) < 1e-6,
+  `Replicata: compute Tesla summary incident totals.
+Expectata: summary totals report observed-window incidents (14 total, 10 nonstationary) without incident scaling.
 Resultata: Tesla summary was ${JSON.stringify(summaryByCompany.Tesla)}.`,
 );
 assert.ok(
@@ -162,7 +162,7 @@ assert.ok(
     Math.abs(summaryByCompany.Tesla.milesPerNonstationaryIncident -
       (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incNonstationary)) < 1e-6,
   `Replicata: compute Tesla summary miles-per-incident fields.
-Expectata: summary rows include overall miles-per-incident values derived from best-VMT totals and scaled incident totals.
+Expectata: summary rows include overall miles-per-incident values derived from best-VMT totals and observed-window incident totals.
 Resultata: Tesla summary was ${JSON.stringify(summaryByCompany.Tesla)}.`,
 );
 
