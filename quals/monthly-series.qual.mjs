@@ -173,7 +173,7 @@ assert.ok(
     renderedAll.includes("stroke-dasharray:5 4") &&
     renderedAll.includes("2025-06*") &&
     renderedAll.includes("2026-01*") &&
-    renderedAll.includes("miles per incident"),
+    renderedAll.includes("Miles Per Incident (MPI)"),
   `Replicata: render cross-company miles-per-incident chart.
 Expectata: chart includes all-company line traces with dashed nonstationary variants, starred partial-month labels, and the miles-per-incident axis.
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
