@@ -583,9 +583,12 @@ const MONTH_TOKENS = {
 // NHTSA SGO window: Jun 15 through Jan 15.
 // Jun 15-30 = 16 days out of 30; Jan 1-15 = 15 days out of 31.
 // Scale incident counts up to full-month equivalents.
+// NHTSA SGO window: Jun 15 through Jan 15.
+// Jun 15-30 = 16 days out of 30; Jan 1-15 = 15 days out of 31.
+// Scale incident counts up to full-month equivalents.
 const PARTIAL_MONTH_SCALE = {
-  "2025-06": 30 / (30 - 16 + 1),
-  "2026-01": 31 / (15 - 1 + 1),
+  "2025-06": 30 / (30-15+1), // NHTSA data for June 15-30 inclusive
+  "2026-01": 31 / (15-1+1),  // NHTSA data for January 1-15 inclusive
 };
 const YM_RE = /^(\d{4})-(\d{2})$/;
 
