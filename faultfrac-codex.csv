@@ -21,7 +21,7 @@ Report ID,faultfrac,reasoning
 30270-13405,0.15,Counterpart went straight from right-turn-only lane
 30270-13409,0.10,Other SUV crossed dashed line during parallel left turn
 30270-13395,0.00,Passenger car rear-ended stationary AV
-30270-13454,0.70,AV moved left to merge while cable car was passing
+30270-13454,1.00,AV moved left to merge while cable car was passing
 30270-13340,0.00,Pickup reversed from driveway into stationary AV
 30270-13307,0.10,Pickup turned across AV curbside right-turn path
 30270-13489,0.20,Truck continued reversing into AV despite AV reverse attempt
@@ -112,7 +112,7 @@ Report ID,faultfrac,reasoning
 30270-13276,0.05,SUV approached from behind and sideswiped slowing AV
 30270-13255,0.00,Counterpart reversed into AV after entering on red
 30270-13162,0.00,Heavy truck rear-ended stationary AV
-30270-13269,0.80,AV initiated left turn from non-turn lane into occupied turn lane
+30270-13269,1.00,AV initiated left turn from non-turn lane into occupied turn lane
 30270-13091,0.70,"AV moved while tow lift was engaging, causing contact"
 30270-13056,0.00,Third-party rear-end collision occurred behind stopped AV
 30270-13256,0.25,AV contacted fallen utility line after slowing and evasive maneuver

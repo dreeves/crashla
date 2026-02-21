@@ -10,7 +10,7 @@ Report ID,faultfrac,reasoning
 30270-13564,0.0,AV was stopped yielding to pedestrians; rear-ended by a scooter.
 30270-13548,0.0,AV was making a legal right turn; other vehicle made an illegal right turn from the left lane across its path.
 30270-13515,0.0,AV was stationary and honked; vehicle in front reversed into it.
-30270-13510,1.0,Both vehicles were changing lanes simultaneously and collided; shared or ambiguous fault.
+30270-13510,0.0,AV was completing a lane change when another vehicle merged into its lane and hit its rear right side.
 30270-13453,0.0,AV was stationary in a turn lane; bus in front reversed into it.
 30270-13450,0.0,AV was stopped for a passenger drop-off; other vehicle hit it while attempting to pass.
 30270-13451,0.0,AV was stationary yielding on a narrow street; other vehicle hit it while passing.
@@ -96,7 +96,7 @@ Report ID,faultfrac,reasoning
 30270-13407,0.0,Waymo was stationary yielding to a truck which hit it while passing.
 30270-13384,0.0,Waymo was rear-ended while stationary at a red light.
 30270-13371,0.0,Waymo was rear-ended while slowing for a traffic signal.
-13781-11986,1.0,Redacted narrative; sideswipe/ambiguous
+13781-11986,0.5,Redacted narrative; sideswipe/ambiguous
 30270-13372,0.0,Waymo was rear-ended while slowing to avoid an animal in the roadway.
 30270-13370,0.0,Passenger car made an improper right turn into the Waymo AV's lane.
 13781-11375,0.0,Redacted narrative; CP turned into AV's rear right
@@ -104,7 +104,7 @@ Report ID,faultfrac,reasoning
 30270-13364,0.0,Waymo was rear-ended while stationary yielding to a pedestrian.
 30270-13363,0.0,Oncoming vehicle entered the Waymo AV's lane; Waymo took evasive action but was hit.
 30270-13365,0.0,Waymo was stationary when a passing van hit its mirror.
-30610-13376,1.0,AV stopped unexpectedly on green and was rear-ended
+30610-13376,0.5,AV stopped unexpectedly on green and was rear-ended
 30270-13373,0.0,Other car pulled out of driveway into the side of the Waymo.
 30270-13310,0.0,Mail truck pulled away from curb into Waymo's lane.
 30270-13270,1.0,AV hit domestic animal
@@ -114,7 +114,7 @@ Report ID,faultfrac,reasoning
 30270-13162,0.0,Waymo stopped for a sign and was rear-ended by a truck.
 30270-13269,1.0,Waymo turned left from the wrong lane into a vehicle in the dedicated left turn lane.
 30270-13091,1.0,Waymo drove forward while being lifted by a tow truck.
-30270-13056,1.0,AV stopped in travel lane causing chain reaction
+30270-13056,0.0,AV stopped in travel lane but other vehicle rear-ended a stopped car
 30270-13256,1.0,Waymo drove into a fallen utility line.
 30270-13196,0.0,Other car hit a van and swerved into Waymo.
 30270-13195,0.0,Chain reaction rear-end pushed SUV into stationary Waymo.
@@ -138,7 +138,7 @@ Report ID,faultfrac,reasoning
 30270-13247,0.0,Car in front reversed into stationary Waymo.
 30270-13205,0.0,Waymo passenger opened door into passing SUV. AV itself not at fault.
 30270-13204,0.0,Waymo stopped before entering street and was rear-ended.
-30270-13135,1.0,Waymo moved forward while truck was reversing putting itself in the path.
+30270-13135,0.5,Waymo moved forward while truck was reversing putting itself in the path.
 30270-13199,0.0,Waymo was rear-ended while stopped at a red light.
 30270-13312,0.0,SUV hit stationary Waymo while squeezing past.
 30270-13311,0.0,SUV reversed into stationary Waymo.
@@ -149,7 +149,7 @@ Report ID,faultfrac,reasoning
 30270-13085,0.0,Other car ran red light and turned into Waymo.
 30270-13066,0.0,Bus hit stationary Waymo while passing.
 30270-13082,0.0,Bus hit stationary Waymo.
-30270-13084,1.0,Waymo started moving while being passed by SUV.
+30270-13084,0.5,Waymo started moving while being passed by SUV.
 30270-13099,0.0,Chain reaction rear-end into stationary Waymo.
 30270-13325,1.0,Waymo drove onto a raised street/sidewalk and bottomed out.
 30270-13326,0.0,Truck hit stationary Waymo while passing.
@@ -280,7 +280,7 @@ Report ID,faultfrac,reasoning
 30270-11908,0.0,SUV changed lanes into the Waymo AV.
 30270-11925,0.0,Waymo AV was stationary when a passing heavy truck's trailer hit it.
 30270-11924,0.0,Waymo AV was stationary when a passing heavy truck hit it.
-30270-11904,1.0,AV stopped abruptly while straddling lanes
+30270-11904,0.5,AV stopped abruptly while straddling lanes
 30270-11905,0.0,Waymo AV was stationary when a turning heavy truck's trailer hit it.
 30270-11892,0.0,SUV entered the roadway and crossed into the Waymo AV's lane.
 30270-11888,1.0,Waymo AV drove over a curb causing damage to itself.
@@ -290,7 +290,7 @@ Report ID,faultfrac,reasoning
 30270-11853,0.0,Waymo AV was stationary when a passing heavy truck's trailer hit it.
 30270-11761,0.0,Waymo AV was stationary when a reversing bus hit it.
 30270-11840,0.0,Animal darted into the street from behind a parked vehicle unavoidable.
-30270-11759,1.0,AV changed lanes closely in front of another vehicle
+30270-11759,0.5,AV changed lanes closely in front of another vehicle
 30270-11718,0.0,Passenger car made a sudden right turn across the Waymo AV's path.
 30270-11717,0.0,Passenger car made a wide turn into the Waymo AV's lane.
 30270-11715,0.0,Waymo AV was stationary when a heavy truck reversed into it.
@@ -352,11 +352,11 @@ Report ID,faultfrac,reasoning
 30270-11673,0.0,Rear-ended by another vehicle while stopped
 30270-11488,0.0,Rear-ended by another vehicle while stopped to yield
 30270-11672,1.0,AV hit a pothole
-30270-11607,1.0,AV merged into traffic and was hit by a vehicle already in the lane
+30270-11607,0.5,AV merged into traffic and was hit by a vehicle already in the lane
 30270-11594,1.0,AV proceeded forward into a lowered flagger arm
 30270-11622,0.0,Rear-ended by another vehicle while stopped at a red light
 30270-11671,1.0,AV hit a parked vehicle while exiting a parking spot
-30270-11611,1.0,AV was changing lanes when a stopped pickup proceeded forward and hit it
+30270-11611,0.5,AV was changing lanes when a stopped pickup proceeded forward and hit it
 30270-11590,0.0,Hit while parked by a passing vehicle that crossed the double yellow line
 30270-11573,0.0,Hit while parked by a reversing vehicle
 30270-11564,0.0,Hit while stationary by a passing vehicle
@@ -373,7 +373,7 @@ Report ID,faultfrac,reasoning
 30270-11496,0.0,Waymo was stationary when a motorcycle fell into it after striking an open door of another vehicle.
 30270-11502,0.0,Waymo was parked when another vehicle pulled forward into it.
 13781-11687,1.0,Redacted narrative; AV hit fixed object while turning
-30270-11664,1.0,AV proceeded forward while vehicle door was open
+30270-11664,0.5,AV proceeded forward while vehicle door was open
 30270-11637,0.0,Waymo proceeded on a green light when an SUV made an unprotected left turn into it.
 30270-11627,0.0,Waymo passenger opened their door into the path of a passing van. AV itself not at fault.
 30270-11629,1.0,Waymo drove through an exit-only gate and struck one-way traffic spikes.
@@ -439,7 +439,7 @@ Report ID,faultfrac,reasoning
 30270-11490,0.0,The AV was parked and was struck as a secondary impact from a collision between two other vehicles.
 30270-11474,0.0,The AV was rear-ended by another vehicle while stopped at a red light.
 30270-11476,0.0,The AV was rear-ended by another vehicle while traveling normally.
-30270-11469,1.0,The AV made multiple maneuvers around a turning bus and stopped in a position where the bus struck it while completing its turn. Shared fault.
+30270-11469,0.5,The AV made multiple maneuvers around a turning bus and stopped in a position where the bus struck it while completing its turn. Shared fault.
 30270-11456,0.0,The AV was parked and was struck by a motorcycle that was changing lanes.
 30270-11433,0.0,The AV reversed to yield and was stationary at the curb when the other vehicle struck it while turning.
 30270-11450,0.0,The AV was parked and was struck head-on by a vehicle that crossed into the opposing lane at high speed.
