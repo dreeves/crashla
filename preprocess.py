@@ -130,6 +130,10 @@ def fetch_vmt_sheet_csv():
     return text
 
 
+def js_template_literal(text):
+    return text.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
+
+
 def main():
     with open(INPUT, newline="") as f:
         rows = list(csv.DictReader(f))
@@ -195,8 +199,8 @@ def main():
         html = f.read()
 
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
-    vmt_text = fetch_vmt_sheet_csv()
-    vmt_escaped = json.dumps(vmt_text)  # properly escapes for JS string
+    vmt_text = fetch_vmt_sheet_csv().replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
 
     def inject(html, start_marker, end_marker, payload):
         """Replace content between marker comments with payload."""
@@ -209,7 +213,7 @@ def main():
                   incident_json)
     html = inject(html,
                   "/* VMT_CSV_START */", "/* VMT_CSV_END */",
-                  vmt_escaped)
+                  vmt_template)
 
     with open(HTML, "w") as f:
         f.write(html)
