@@ -70,9 +70,14 @@ vm.runInContext(appScript, ctx, { filename: "index.html" });
 
 vm.runInContext(`
 incidents = [
-  { company: "Tesla", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
-  { company: "Waymo", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
-  { company: "Zoox", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }
+  { company: "Tesla", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
+  { company: "Waymo", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
+  { company: "Zoox", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }
+];
+vmtRows = [
+  {company: "Tesla", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
+  {company: "Waymo", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
+  {company: "Zoox", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
 ];
 buildBrowser();
 `, ctx);

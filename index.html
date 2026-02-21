@@ -789,12 +789,18 @@ const COMPANIES = {
 };
 
 // Count incidents per company from loaded data
-function countByCompany() {
+function countByCompany(rows = incidents) {
   const counts = {};
-  for (const inc of incidents) {
+  for (const inc of rows) {
     counts[inc.company] = (counts[inc.company] || 0) + 1;
   }
   return counts;
+}
+
+function incidentsInVmtWindow(rows = incidents) {
+  must(vmtRows.length > 0, "incident browser requires vmtRows");
+  const monthSet = new Set(vmtRows.map(row => row.month));
+  return rows.filter(inc => monthSet.has(monthKeyFromIncidentLabel(inc.date)));
 }
 
 function primarySliderBounds(cfg, vals) {
@@ -1413,7 +1419,10 @@ function renderAllCompaniesMpiChart(series) {
   }
 
   const yTicks = linearTicks(0, yMax, 4);
-  const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft, mLeft + pW);
+  const xPad = 28;
+  const mapX = idx => scaleLinear(
+    idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad,
+  );
   const mapY = y => scaleLinear(y, 0, yMax, mTop + pH, mTop);
 
   const lines = seriesRows.map(row => {
@@ -1773,13 +1782,14 @@ const SORT_COLUMNS = [
 const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
 
 function buildBrowser() {
-  const counts = countByCompany();
+  const rows = incidentsInVmtWindow();
+  const counts = countByCompany(rows);
   const filterDiv = byId("filters");
   filterDiv.replaceChildren();
   const companies = ["All", ...COMPANY_ORDER];
   for (const c of companies) {
     const btn = document.createElement("button");
-    const n = c === "All" ? incidents.length : (counts[c] || 0);
+    const n = c === "All" ? rows.length : (counts[c] || 0);
     btn.textContent = `${c} (${n})`;
     btn.className = c === activeFilter ? "active" : "";
     btn.addEventListener("click", () => {
@@ -1820,9 +1830,10 @@ function renderHeaders() {
 
 function renderTable() {
   const tbody = byId("incidents-body");
+  const rows = incidentsInVmtWindow();
   let filtered = activeFilter === "All"
-    ? [...incidents]
-    : incidents.filter(r => r.company === activeFilter);
+    ? [...rows]
+    : rows.filter(r => r.company === activeFilter);
 
   if (sortCol !== null) {
     const colDef = SORT_COLUMNS.find(c => c.key === sortCol);
