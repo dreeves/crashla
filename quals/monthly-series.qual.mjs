@@ -65,10 +65,9 @@ const ctx = vm.createContext({
 vm.runInContext(appScript, ctx, { filename: "index.html" });
 
 const incidentJson = fs.readFileSync("incidents.json", "utf8");
-const vmtCsv = fs.readFileSync("vmt.csv", "utf8");
 vm.runInContext(`
 incidents = ${incidentJson};
-vmtRows = parseVmtCsv(${JSON.stringify(vmtCsv)});
+vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 `, ctx);
 
 const metrics = vm.runInContext(`
@@ -112,7 +111,7 @@ assert.deepEqual(
     "2025-12",
     "2026-01",
   ],
-  `Replicata: aggregate month series from incidents.json + vmt.csv.
+  `Replicata: aggregate month series from incidents.json + inline VMT sheet CSV.
 Expectata: month axis exactly spans 2025-06 through 2026-01.
 Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 );

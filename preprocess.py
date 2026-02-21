@@ -10,13 +10,18 @@ incidents.json as a side output.
 import csv
 import json
 import math
-import re
+import urllib.request
 from collections import Counter
 
 INPUT  = "nhtsa-2025-jun-2026-jan.csv"
 OUTPUT = "incidents.json"
 HTML   = "index.html"
-VMT    = "vmt.csv"
+VMT_SHEET_ID = "1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w"
+VMT_SHEET_GID = "844581871"
+VMT_SHEET_URL = (
+    f"https://docs.google.com/spreadsheets/d/{VMT_SHEET_ID}/export"
+    f"?format=csv&gid={VMT_SHEET_GID}"
+)
 FAULT_INPUTS = {
     "claude": "faultfrac-claude.csv",
     "codex": "faultfrac-codex.csv",
@@ -116,6 +121,17 @@ def load_fault_models():
     return models, ids
 
 
+def fetch_vmt_sheet_csv():
+    with urllib.request.urlopen(VMT_SHEET_URL, timeout=30) as resp:
+        payload = resp.read()
+    text = payload.decode("utf-8")
+    lines = text.splitlines()
+    must(len(lines) > 1, "VMT sheet CSV must include header and rows")
+    must(lines[0] == "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale",
+         "VMT sheet CSV header mismatch", header=lines[0])
+    return text
+
+
 def main():
     with open(INPUT, newline="") as f:
         rows = list(csv.DictReader(f))
@@ -184,8 +200,7 @@ def main():
         html = f.read()
 
     incident_json = json.dumps(incidents, separators=(",", ":"))
-    with open(VMT) as f:
-        vmt_text = f.read()
+    vmt_text = fetch_vmt_sheet_csv()
     vmt_escaped = json.dumps(vmt_text)  # properly escapes for JS string
 
     def inject(html, start_marker, end_marker, payload):
