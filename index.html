@@ -255,6 +255,13 @@ tr:hover { background: #f8f8ff; }
   align-items: center;
   gap: 0.35rem;
 }
+.month-company-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+.month-company-toggle input[type="checkbox"] {
+  margin: 0 0.2rem 0 0;
+}
 .month-chip {
   width: 12px;
   height: 12px;
@@ -310,9 +317,32 @@ tr:hover { background: #f8f8ff; }
 .month-linekey.dashed {
   border-top-style: dashed;
 }
+.month-linekey.atfault {
+  border-top: 0;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    #4a5264 0 9px,
+    transparent 9px 12px,
+    #4a5264 12px 14px,
+    transparent 14px 17px
+  );
+}
+.month-tri {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 7px solid #4a5264;
+  display: inline-block;
+  transform: translateY(1px);
+}
 .month-err {
   stroke-width: 1.4;
   opacity: 0.9;
+}
+.month-mark-tri {
+  stroke-width: 1.4;
 }
 .month-tick {
   fill: #5b6475;
@@ -386,11 +416,13 @@ tr:hover { background: #f8f8ff; }
   <h2>Explanatory Note (AI-generated text)</h2>
   <p>This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the NHTSA time window (June 15, 2025 through January 15, 2026).</p>
   <p>Context: <a href="https://agifriday.substack.com/crashla/">agifriday.substack.com/crashla</a></p>
+  <p>Raw working sheet: <a href="https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871">Google Sheet (VMT + assumptions)</a></p>
   <ul>
-    <li>Top chart: solid line = MPI from all incidents; dashed line = MPI from nonstationary incidents; error bars use <code>vmt_min</code> and <code>vmt_max</code>.</li>
+    <li>Top chart: solid line = MPI from all incidents; dashed line = MPI from nonstationary incidents; dot-dash line = MPI from at-fault-weighted incidents; error bars use <code>vmt_min</code> and <code>vmt_max</code>.</li>
     <li>Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.</li>
     <li>Months marked with an asterisk (*) are extrapolated to full-month equivalents in the charts for month-to-month comparability.</li>
     <li>In the summary table, incidents are observed counts (not extrapolated), while VMT for partial months is scaled down to match the observed incident window.</li>
+    <li>Tesla mileage assumptions are anchored to tracker sources (<a href="https://robotaxitracker.com/">robotaxitracker.com</a> and <a href="https://robotaxi-safety-tracker.com/">robotaxi-safety-tracker.com</a>) and then aligned to this same NHTSA window for apples-to-apples comparison.</li>
   </ul>
 </section>
 
@@ -584,6 +616,15 @@ function estimateRate(k, m) {
 let incidents = [];
 let vmtRows = [];
 let faultData = {}; // reportId -> {claude, codex, gemini, rclaude, rcodex, rgemini}
+const DEFAULT_FAULT_WEIGHTS = {claude: 3, codex: 3, gemini: 3};
+let faultWeightState = {...DEFAULT_FAULT_WEIGHTS};
+let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true};
+const MONTH_METRIC_DEFS = [
+  {key: "all", label: "Miles per incident", dash: "", marker: "solid-circle", lineKeyClass: "solid"},
+  {key: "nonstationary", label: "Miles per nonstationary incident", dash: "5 4", marker: "hollow-circle", lineKeyClass: "dashed"},
+  {key: "atfault", label: "Miles per at-fault incident", dash: "10 3 2 3", marker: "hollow-triangle", lineKeyClass: "atfault"},
+];
+let monthMetricEnabled = {all: true, nonstationary: true, atfault: true};
 const CI_MASS_MIN_PCT = 50;
 const CI_MASS_MAX_PCT = 99.9;
 const CI_MASS_STEP_PCT = 0.1;
@@ -1280,6 +1321,22 @@ function monthLabel(month) {
   return monthScale(month) === 1 ? month : month + "*";
 }
 
+function monthCompanyToggleId(company) {
+  return "month-company-toggle-" + company.toLowerCase();
+}
+
+function includedAdsCompanies() {
+  return ADS_COMPANIES.filter(company => monthCompanyEnabled[company]);
+}
+
+function monthMetricToggleId(metric) {
+  return "month-metric-toggle-" + metric;
+}
+
+function includedMonthMetrics() {
+  return MONTH_METRIC_DEFS.filter(metric => monthMetricEnabled[metric.key]);
+}
+
 function scaleSpeeds(speeds, factor) {
   return {
     "31+": speeds["31+"] * factor,
@@ -1305,6 +1362,7 @@ function scaledCompanyMonthRows(series, company) {
       incidents: {
         total: rec.incidents.total * factor,
         speeds: scaleSpeeds(rec.incidents.speeds, factor),
+        atFault: rec.incidents.atFault * factor,
       },
     };
   });
@@ -1360,6 +1418,7 @@ function monthSeriesData() {
   }
 
   const incidentsByKey = {};
+  const weights = faultWeights();
   for (const inc of incidents) {
     must(ADS_COMPANIES.includes(inc.company), "incidents.json has unknown ADS company", {company: inc.company});
     const month = monthKeyFromIncidentLabel(inc.date);
@@ -1367,12 +1426,20 @@ function monthSeriesData() {
     const key = inc.company + "|" + month;
     let rec = incidentsByKey[key];
     if (rec === undefined) {
-      rec = {total: 0, speeds: emptySpeedBins()};
+      rec = {total: 0, speeds: emptySpeedBins(), atFault: 0};
       incidentsByKey[key] = rec;
     }
     rec.total += 1;
     const bin = speedBinForIncident(inc.speed);
     rec.speeds[bin] += 1;
+    must(inc.fault !== null && typeof inc.fault === "object",
+      "incident missing fault object for monthly series", {reportId: inc.reportId});
+    const atFaultFrac = weightedFaultFromValues(
+      inc.fault.claude, inc.fault.codex, inc.fault.gemini, weights,
+    );
+    must(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
+      "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
+    rec.atFault += atFaultFrac || 0;
   }
 
   const months = [...monthSet].sort();
@@ -1387,7 +1454,7 @@ function monthSeriesData() {
       must(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
       must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins()};
+      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), atFault: 0};
       companies[company] = {
         vmtMin: vmt.vmtMin,
         vmtBest: vmt.vmtBest,
@@ -1428,20 +1495,25 @@ function renderAllCompaniesMpiChart(series) {
   const mBot = 40;
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
-  const metricDefs = [
-    { key: "all", dash: "", markerFill: "solid" },
-    { key: "nonstationary", dash: "5 4", markerFill: "hollow" },
-  ];
   const countByMetric = {
     all: rec => rec.incidents.total,
     nonstationary: rec => nonstationaryIncidentCount(rec.incidents.speeds),
+    atfault: rec => rec.incidents.atFault,
+  };
+  const markerRenderer = {
+    "solid-circle": (x, y, color) =>
+      `<circle class="month-dot" cx="${x}" cy="${y}" r="3.1" style="fill:${color};stroke:${color}"></circle>`,
+    "hollow-circle": (x, y, color) =>
+      `<circle class="month-dot" cx="${x}" cy="${y}" r="3.1" style="fill:#fff;stroke:${color}"></circle>`,
+    "hollow-triangle": (x, y, color) =>
+      `<path class="month-mark-tri" d="M ${x} ${y - 3.8} L ${x - 3.4} ${y + 2.8} L ${x + 3.4} ${y + 2.8} Z" style="fill:#fff;stroke:${color}"></path>`,
   };
 
   const seriesRows = [];
   let yMax = 1;
-  for (const company of ADS_COMPANIES) {
+  for (const company of includedAdsCompanies()) {
     const rows = scaledCompanyMonthRows(series, company);
-    for (const metric of metricDefs) {
+    for (const metric of includedMonthMetrics()) {
       const countFn = countByMetric[metric.key];
       must(typeof countFn === "function", "missing count fn for metric", {metric: metric.key});
       const vals = rows.map(row => {
@@ -1502,8 +1574,9 @@ function renderAllCompaniesMpiChart(series) {
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
       const color = MONTHLY_COMPANY_COLORS[row.company];
-      const fill = row.metric.markerFill === "solid" ? color : "#fff";
-      return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.1" style="fill:${fill};stroke:${color}"></circle>`;
+      const marker = markerRenderer[row.metric.marker];
+      must(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
+      return marker(x, y, color);
     }).join("")
   ).join("");
 
@@ -1670,20 +1743,35 @@ function renderMonthlySummary(series) {
 
 function renderMonthlyLegends() {
   byId("month-legend-mpi-companies").innerHTML = ADS_COMPANIES.map(company => `
-    <span class="month-legend-item">
+    <label class="month-legend-item month-company-toggle" for="${monthCompanyToggleId(company)}">
+      <input type="checkbox" id="${monthCompanyToggleId(company)}" ${monthCompanyEnabled[company] ? "checked" : ""}>
       <span class="month-chip" style="background:${MONTHLY_COMPANY_COLORS[company]}"></span>${company}
-    </span>
+    </label>
   `).join("");
+  for (const company of ADS_COMPANIES) {
+    const input = byId(monthCompanyToggleId(company));
+    input.addEventListener("change", () => {
+      monthCompanyEnabled[company] = input.checked;
+      buildMonthlyViews();
+    });
+  }
 
   byId("month-legend-mpi-lines").innerHTML = `
-    <span class="month-legend-item">
-      <span class="month-linekey solid"></span>Miles per incident
-    </span>
-    <span class="month-legend-item">
-      <span class="month-linekey dashed"></span>Miles per nonstationary incident
-    </span>
+    ${MONTH_METRIC_DEFS.map(metric => `
+      <label class="month-legend-item month-company-toggle" for="${monthMetricToggleId(metric.key)}">
+        <input type="checkbox" id="${monthMetricToggleId(metric.key)}" ${monthMetricEnabled[metric.key] ? "checked" : ""}>
+        <span class="month-linekey ${metric.lineKeyClass}"></span>${metric.key === "atfault" ? `<span class="month-tri"></span>` : ""}${metric.label}
+      </label>
+    `).join("")}
     <span class="month-legend-item">*: Partial months are scaled to full-month equivalents</span>
   `;
+  for (const metric of MONTH_METRIC_DEFS) {
+    const input = byId(monthMetricToggleId(metric.key));
+    input.addEventListener("change", () => {
+      monthMetricEnabled[metric.key] = input.checked;
+      buildMonthlyViews();
+    });
+  }
 
   byId("month-legend-lines").innerHTML = `
     <span class="month-legend-item">
@@ -1759,19 +1847,31 @@ function buildFaultDataFromIncidents(rows) {
 }
 
 function faultWeights() {
-  const wc = Number(byId("w-claude").value);
-  const wo = Number(byId("w-codex").value);
-  const wg = Number(byId("w-gemini").value);
-  return {claude: wc, codex: wo, gemini: wg};
+  return {...faultWeightState};
+}
+
+function setFaultWeight(model, rawValue) {
+  const value = Number(rawValue);
+  must(Number.isFinite(value) && value >= 0,
+    "fault weight must be a non-negative number", {model, rawValue});
+  faultWeightState[model] = value;
+}
+
+function weightedFaultFromValues(claude, codex, gemini, weights) {
+  const c = Number(claude);
+  const o = Number(codex);
+  const g = Number(gemini);
+  must(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
+  must(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
+  must(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
+  const total = weights.claude + weights.codex + weights.gemini;
+  return total === 0 ? null : (weights.claude * c + weights.codex * o + weights.gemini * g) / total;
 }
 
 function weightedFault(reportId) {
   const fd = faultData[reportId];
   if (!fd) return null;
-  const w = faultWeights();
-  const total = w.claude + w.codex + w.gemini;
-  if (total === 0) return null;
-  return (w.claude * fd.claude + w.codex * fd.codex + w.gemini * fd.gemini) / total;
+  return weightedFaultFromValues(fd.claude, fd.codex, fd.gemini, faultWeights());
 }
 
 function faultColor(frac) {
@@ -1794,8 +1894,11 @@ function initWeightSliders() {
   for (const model of ["claude", "codex", "gemini"]) {
     const input = byId("w-" + model);
     const valSpan = byId("w-" + model + "-val");
+    setFaultWeight(model, input.value);
     input.addEventListener("input", () => {
+      setFaultWeight(model, input.value);
       valSpan.textContent = input.value;
+      buildMonthlyViews();
       renderTable();
     });
   }

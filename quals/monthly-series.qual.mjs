@@ -171,11 +171,12 @@ assert.ok(
   renderedAll.includes("<svg") &&
     renderedAll.includes("month-mpi-all-line") &&
     renderedAll.includes("stroke-dasharray:5 4") &&
+    renderedAll.includes("stroke-dasharray:10 3 2 3") &&
     renderedAll.includes("2025-06*") &&
     renderedAll.includes("2026-01*") &&
     renderedAll.includes("Miles Per Incident (MPI)"),
   `Replicata: render cross-company miles-per-incident chart.
-Expectata: chart includes all-company line traces with dashed nonstationary variants, starred partial-month labels, and the miles-per-incident axis.
+Expectata: chart includes all-company line traces with dashed nonstationary and dot-dash at-fault variants, starred partial-month labels, and the miles-per-incident axis.
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 
@@ -219,8 +220,13 @@ assert.ok(
   plain.legendMpiCompanies.includes("Tesla") &&
   plain.legendMpiCompanies.includes("Waymo") &&
     plain.legendMpiCompanies.includes("Zoox") &&
+  plain.legendMpiCompanies.includes("type=\"checkbox\"") &&
+  plain.legendMpiLines.includes("month-metric-toggle-all") &&
+  plain.legendMpiLines.includes("month-metric-toggle-nonstationary") &&
+  plain.legendMpiLines.includes("month-metric-toggle-atfault") &&
   plain.legendMpiLines.includes("Miles per incident") &&
     plain.legendMpiLines.includes("Miles per nonstationary incident") &&
+  plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendMpiLines.includes("Partial months are scaled to full-month equivalents") &&
   plain.legendLines.includes("VMT (best)") &&
     plain.legendLines.includes("Incidents (stacked)") &&
