@@ -35,7 +35,7 @@ Report ID,faultfrac,reasoning
 30270-13309,0.00,Passing car hit parked AV during maneuver-around
 30270-13323,0.00,SUV reversed into stationary AV
 30270-13322,0.00,E-bike entered stop-controlled intersection and hit stationary AV
-30270-13321,0.60,AV passenger door opening contributed to motorcycle contact
+30270-13321,0.00,AV passenger door opening contributed to motorcycle contact
 30270-13279,0.00,Passenger car rear-ended stationary AV in queue
 30270-13445,0.00,Parallel-parking car reversed into parked AV
 13781-13647,0.90,Redacted narrative and crash with fixed object while AV proceeding
@@ -67,7 +67,7 @@ Report ID,faultfrac,reasoning
 30270-13541,0.35,AV stopped partially across lane during lane-change attempt
 30270-13540,0.05,Stationary AV struck by moving counterpart
 30270-13539,0.05,Counterpart maneuvered into stationary AV
-30270-13538,0.60,Open AV passenger door was struck by passing car
+30270-13538,0.00,Open AV passenger door was struck by passing car
 30270-13514,0.25,AV contacted fallen utility line hanging in lane
 30270-13513,0.00,Counterpart backed into stationary AV
 30270-13512,0.00,Passing heavy truck struck stationary AV on narrow street
@@ -136,7 +136,7 @@ Report ID,faultfrac,reasoning
 30270-13206,0.00,Oncoming heavy truck sideswiped stationary AV while passing narrow segment
 30270-13274,0.00,Passing SUV struck stationary AV while maneuvering around queue
 30270-13247,0.00,Counterpart backed into stationary AV
-30270-13205,0.60,Open AV passenger door was struck by passing SUV
+30270-13205,0.00,Open AV passenger door was struck by passing SUV
 30270-13204,0.05,Counterpart maneuvered into stationary AV
 30270-13135,0.05,Reversing trailer contact with AV after AV repositioned in lot
 30270-13199,0.20,AV stopped straddling lanes and was struck by following pickup
@@ -179,7 +179,7 @@ Report ID,faultfrac,reasoning
 30270-13190,0.00,Passenger car rear-ended stopped AV
 30270-13198,0.00,Passenger car rear-ended stopped AV
 30270-13167,0.05,Rear vehicle struck AV while AV was slowly yielding at stop sign
-30270-13161,0.30,Passenger exited moving vehicle; AV continued rolling onto foot
+30270-13161,0.00,Passenger exited moving vehicle; AV continued rolling onto foot
 30270-13148,0.00,Passenger car rear-ended stopped AV at light
 30270-13159,0.00,Counterpart backed into stationary AV
 30270-13160,1.00,AV undercarriage struck pavement at parking-lot entrance
@@ -217,7 +217,7 @@ Report ID,faultfrac,reasoning
 30270-12019,0.00,Passing heavy truck clipped stopped AV on narrow road
 30270-12046,1.00,AV turned directly into movable traffic barrier
 30270-12000,0.00,Counterpart backed into stationary AV
-30270-11960,0.80,AV passenger opened door into passing car during drop-off
+30270-11960,0.00,AV passenger opened door into passing car during drop-off
 30270-11988,0.00,Counterpart failed to yield to stationary AV
 30270-11999,0.00,Basketball rolled into AV tire path
 30270-11958,0.00,Counterpart backed into stationary AV
@@ -265,9 +265,9 @@ Report ID,faultfrac,reasoning
 30270-11998,0.05,Passenger car rear-ended AV while AV slowed for red light
 30270-11996,1.00,AV drove through standing water and sustained damage
 30270-11997,0.00,Counterpart failed to yield to stationary AV
-30270-11994,0.80,AV passenger opened rear door into passing SUV
+30270-11994,0.00,AV passenger opened rear door into passing SUV
 30270-11995,0.20,Pickup passed from transit lane and both vehicles initiated right turn
-30270-11992,0.75,AV remained stopped with open door and passing SUV hit door
+30270-11992,0.00,AV remained stopped with open door and passing SUV hit door
 30270-11987,0.00,Pickup rear-ended stopped AV at red light
 30270-11962,0.20,Stop-and-go timing conflict led to rear-end from following pickup
 30270-11936,0.00,Passenger car rear-ended AV stopped for inoperative signals
@@ -326,7 +326,7 @@ Report ID,faultfrac,reasoning
 30610-11856,0.00,Counterpart backed into stationary AV
 30270-11841,0.00,Passenger car failed to stop and rear-ended AV at stop sign
 30270-11837,0.00,SUV struck AV after attempting narrow pass while AV yielded
-30270-11842,0.80,AV passenger opened rear door into passing SUV during drop-off
+30270-11842,0.00,AV passenger opened rear door into passing SUV during drop-off
 30270-11836,1.00,AV struck parked flatbed while maneuvering around it
 13781-11787,0.25,Redacted narrative; estimate from CP=NM Crossing Roadway and AV=Stopped
 30270-11821,0.00,Counterpart backed into stationary AV
@@ -345,7 +345,7 @@ Report ID,faultfrac,reasoning
 30270-11742,0.05,SUV emerged across tracks into AV lane
 30270-11739,0.05,Passenger car rear-ended AV while AV slowed for stop sign
 30270-11758,0.05,Stationary AV struck by moving counterpart
-30270-11753,0.80,AV passenger opened rear door into passing SUV
+30270-11753,0.00,AV passenger opened rear door into passing SUV
 30270-11755,0.00,SUV crossed center line from curb and struck stationary AV
 30270-11738,0.10,Motorcycle lane-change/merge into AV rear quarter during AV launch
 30270-11713,0.10,Motorcycle rear-ended slowing AV as AV prepared signed right turn
@@ -375,7 +375,7 @@ Report ID,faultfrac,reasoning
 13781-11687,0.90,Redacted narrative; estimate from fixed-object contact during AV left turn
 30270-11664,0.60,AV moved forward while adjacent SUV door remained open into AV path
 30270-11637,0.05,SUV made unprotected left across AV path
-30270-11627,0.80,AV rider opened rear door into passing van
+30270-11627,0.00,AV rider opened rear door into passing van
 30270-11629,1.00,AV drove over one-way traffic spikes at exit-only gate
 30270-11625,0.05,Motorcycle rear-ended AV after AV slowed to stop
 30270-11623,0.65,AV maneuver around stopped pickup and lane change created merge conflict
@@ -383,7 +383,7 @@ Report ID,faultfrac,reasoning
 30270-11609,0.00,Bus changing lanes struck stopped AV
 30270-11612,0.05,SUV in turn-only lane continued straight into turning AV
 30270-11608,1.00,AV exiting parking spot struck parked flatbed
-30270-11605,0.80,AV passenger opened rear door into passing SUV
+30270-11605,0.00,AV passenger opened rear door into passing SUV
 30270-11589,0.00,Passenger car rear-ended AV stopped at red
 30270-11596,0.00,Passenger car rear-ended AV stopped at red
 30270-11588,0.00,SUV rear-ended AV stopped at stop sign
@@ -402,7 +402,7 @@ Report ID,faultfrac,reasoning
 30270-11501,0.30,Parked pickup door opened into passing AV in narrow gap
 30610-11513,0.10,E-cyclist entered turn path and contacted near-stopped AV rear side
 13781-11507,0.05,Redacted narrative; estimate from CP=Proceeding Straight and AV=Stopped
-30270-11452,0.80,AV passenger opened door into passing scooter
+30270-11452,0.00,AV passenger opened door into passing scooter
 30270-11327,0.00,Passenger car rear-ended stopped AV at red light
 30270-11455,0.00,SUV passing on narrow road struck stopped AV
 30270-11451,0.25,Truck re-entered lane from reverse maneuver; AV had limited clearance
@@ -433,7 +433,7 @@ Report ID,faultfrac,reasoning
 30270-11328,0.10,AV stop-and-go then stop preceded rear-end by following truck
 30270-11334,1.00,AV U-turn maneuver struck raised median pavement
 30270-11500,0.80,AV followed construction path into removed-pavement drop
-30270-11495,0.80,AV passenger opened door into passing bus
+30270-11495,0.00,AV passenger opened door into passing bus
 30270-11475,0.00,Minivan rear-ended AV stopped at red
 30610-11497,0.10,Counterpart backing maneuver caused collision
 30270-11490,0.00,Chain-reaction impact pushed passenger car into parked AV
@@ -465,7 +465,7 @@ Report ID,faultfrac,reasoning
 30270-11291,0.05,Heavy truck turned right from adjacent lane across AV path
 30270-11220,0.70,AV struck unattended bicycle lying in travel lane
 30270-11214,0.10,Passenger car rear-ended AV while AV slowed for queue
-30270-11213,0.80,AV passenger opened rear door into passing bus
+30270-11213,0.00,AV passenger opened rear door into passing bus
 30270-11163,0.00,Turning van passed and struck parked AV in loading zone
 30270-11297,1.00,AV turned into parking-lot entrance chain
 30270-11298,0.00,Passing heavy truck struck stopped AV on narrow street
@@ -492,12 +492,12 @@ Report ID,faultfrac,reasoning
 30270-11172,0.05,SUV turned right across AV lane while AV was passing
 30270-11208,0.00,SUV rear-ended AV stopped at red
 30270-11162,0.05,SUV attempted pass maneuver around stopped AV and clipped rear quarter
-30270-11207,0.80,AV passenger opened rear door into passing car
+30270-11207,0.00,AV passenger opened rear door into passing car
 30270-11161,1.00,AV reversing multi-point maneuver struck trailer hitch
-30270-11171,0.80,AV passenger opened rear door into passing van
+30270-11171,0.00,AV passenger opened rear door into passing van
 30270-11206,0.00,Tires fell from trailer ahead and rolled into AV path
 30270-11284,0.00,Turning SUV struck stationary AV at red
-30270-11281,0.80,AV passenger opened rear door into passing bus
+30270-11281,0.00,AV passenger opened rear door into passing bus
 30270-11282,0.00,Passing bus struck stopped AV in right-turn lane
 30270-11280,0.10,AV stop-and-go for emergency vehicle preceded rear-end by following car
 30270-11279,0.10,Following passenger car clipped AV rear while AV slowed to yield merge
@@ -508,13 +508,13 @@ Report ID,faultfrac,reasoning
 30270-11245,0.05,Stationary AV struck by moving counterpart
 30270-11238,0.00,Lane-changing passenger car sideswiped stopped AV
 30270-11244,0.05,SUV left turn crossed centerline into AV path
-30270-11224,0.90,AV passenger repeatedly opened door while AV moved past stopped AV
-30270-11218,0.80,AV passenger opened rear door into passing bus
+30270-11224,0.00,AV passenger repeatedly opened door while AV moved past stopped AV
+30270-11218,0.00,AV passenger opened rear door into passing bus
 30270-11192,0.00,Passenger car pulled out from parking position into stopped AV
 30270-11204,0.00,Van departed roadway/sidewalk and struck stationary AV
 30270-11190,0.00,Passenger car rear-ended stopped AV at red
 30270-11209,1.00,AV underbody struck elevated gate track
-30270-11205,0.80,AV passenger opened front door into passing cyclist
+30270-11205,0.00,AV passenger opened front door into passing cyclist
 30270-11189,0.00,Passing heavy truck struck stopped AV on narrow street
 30270-11174,1.00,AV underbody struck elevated gate track
 30270-11146,0.40,AV struck debris displaced across lane by vehicle ahead

@@ -682,7 +682,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.15,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing van",
       "rcodex": "AV passenger opened rear door into passing van",
@@ -862,7 +862,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.15,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV's passenger opened rear door into passing bus",
       "rcodex": "AV passenger opened rear door into passing bus",
@@ -1372,7 +1372,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.15,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing car",
       "rcodex": "AV passenger opened rear door into passing car",
@@ -1402,7 +1402,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.5,
-      "codex": 0.9,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV passenger opened door while AV in motion, hit parked SUV",
       "rcodex": "AV passenger repeatedly opened door while AV moved past stopped AV",
@@ -1522,7 +1522,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.15,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing bus",
       "rcodex": "AV passenger opened rear door into passing bus",
@@ -1702,7 +1702,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.15,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV's passenger opened door into passing cyclist",
       "rcodex": "AV passenger opened front door into passing cyclist",
@@ -3412,7 +3412,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped at red light, rear-ended",
       "rcodex": "AV passenger opened door into passing scooter",
@@ -3442,7 +3442,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger opened rear door into passing bus",
@@ -3562,7 +3562,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.1,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV hit wire suspended across road",
       "rcodex": "AV passenger opened door into passing bus",
@@ -4582,7 +4582,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV going straight, car turned left into AV",
       "rcodex": "AV passenger opened rear door into passing SUV",
@@ -5032,7 +5032,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger opened rear door into passing SUV",
@@ -6292,7 +6292,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV rider opened rear door into passing van",
@@ -7432,7 +7432,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.75,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV remained stopped with open door and passing SUV hit door",
@@ -7702,7 +7702,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger opened rear door into passing SUV",
@@ -8512,7 +8512,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger opened door into passing car during drop-off",
@@ -8632,7 +8632,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.8,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV parked, car reversed into AV",
       "rcodex": "AV passenger opened rear door into passing SUV during drop-off",
@@ -9052,7 +9052,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.2,
-      "codex": 0.3,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "Passengers opened door and exited while AV in motion",
       "rcodex": "Passenger exited moving vehicle; AV continued rolling onto foot",
@@ -11632,7 +11632,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.6,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV parked, struck by car",
       "rcodex": "Open AV passenger door was struck by passing SUV",
@@ -12112,7 +12112,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.6,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "Open AV passenger door was struck by passing car",
@@ -14302,7 +14302,7 @@
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.6,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "AV stopped, rear-ended",
       "rcodex": "AV passenger door opening contributed to motorcycle contact",
