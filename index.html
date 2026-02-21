@@ -323,6 +323,32 @@ tr:hover { background: #f8f8ff; }
 .month-summary td:first-child {
   text-align: left;
 }
+.month-summary-scroll {
+  overflow-x: auto;
+}
+.month-summary-scroll table {
+  min-width: 760px;
+}
+@media (max-width: 760px) {
+  body {
+    padding: 0.75rem;
+  }
+  .month-panel {
+    padding: 0.75rem;
+  }
+  .month-tick {
+    font-size: 11px;
+  }
+  .month-label {
+    font-size: 12px;
+  }
+  .month-inc-count {
+    font-size: 8px;
+  }
+  .month-inc-total {
+    font-size: 9px;
+  }
+}
 </style>
 </head>
 <body>
@@ -1337,7 +1363,7 @@ function drawSingleMonthAxes(
 
 function renderAllCompaniesMpiChart(series) {
   const svgW = 900;
-  const svgH = 360;
+  const svgH = 520;
   const mLeft = 68;
   const mRight = 16;
   const mTop = 14;
@@ -1548,34 +1574,36 @@ function renderMonthlySummary(series) {
   const rows = monthlySummaryRows(series);
   return `
     <div class="month-summary-title">Total summary</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Company</th>
-          <th>VMT min</th>
-          <th>VMT best</th>
-          <th>VMT max</th>
-          <th>Total incidents</th>
-          <th>Nonstationary incidents</th>
-          <th>Miles per incident</th>
-          <th>Miles per nonstationary incident</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(row => `
+    <div class="month-summary-scroll">
+      <table>
+        <thead>
           <tr>
-            <td>${row.company}</td>
-            <td>${fmtWhole(row.vmtMin)}</td>
-            <td>${fmtWhole(row.vmtBest)}</td>
-            <td>${fmtWhole(row.vmtMax)}</td>
-            <td>${fmtCount(row.incTotal)}</td>
-            <td>${fmtCount(row.incNonstationary)}</td>
-            <td>${fmtWhole(row.milesPerIncident)}</td>
-            <td>${fmtWhole(row.milesPerNonstationaryIncident)}</td>
+            <th>Company</th>
+            <th>VMT min</th>
+            <th>VMT best</th>
+            <th>VMT max</th>
+            <th>Total incidents</th>
+            <th>Nonstationary incidents</th>
+            <th>Miles per incident</th>
+            <th>Miles per nonstationary incident</th>
           </tr>
-        `).join("")}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${rows.map(row => `
+            <tr>
+              <td>${row.company}</td>
+              <td>${fmtWhole(row.vmtMin)}</td>
+              <td>${fmtWhole(row.vmtBest)}</td>
+              <td>${fmtWhole(row.vmtMax)}</td>
+              <td>${fmtCount(row.incTotal)}</td>
+              <td>${fmtCount(row.incNonstationary)}</td>
+              <td>${fmtWhole(row.milesPerIncident)}</td>
+              <td>${fmtWhole(row.milesPerNonstationaryIncident)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
   `;
 }
 
