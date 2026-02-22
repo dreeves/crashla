@@ -87,6 +87,7 @@ const metrics = vm.runInContext(`
     totalByCompany,
     janTeslaBins: byMonth["2026-01"].companies.Tesla.incidents.speeds,
     janTeslaNonstationary: nonstationaryIncidentCount(byMonth["2026-01"].companies.Tesla.incidents.speeds),
+    janTeslaRoadwayNonstationary: byMonth["2026-01"].companies.Tesla.incidents.roadwayNonstationary,
     summaryRows: monthlySummaryRows(series),
     chartMpiAll: document.getElementById("chart-mpi-all").innerHTML,
     chartCompanySeries: document.getElementById("chart-company-series").innerHTML,
@@ -141,6 +142,14 @@ Expectata: only the three 1-10 mph incidents count toward the nonstationary seri
 Resultata: nonstationary count was ${JSON.stringify(plain.janTeslaNonstationary)}.`,
 );
 
+assert.equal(
+  plain.janTeslaRoadwayNonstationary,
+  1,
+  `Replicata: compute January 2026 Tesla nonstationary-roadway monthly incident count.
+Expectata: only one January Tesla incident is both nonstationary and not in a parking lot.
+Resultata: nonstationary-roadway count was ${JSON.stringify(plain.janTeslaRoadwayNonstationary)}.`,
+);
+
 const summaryByCompany = Object.fromEntries(
   plain.summaryRows.map(row => [row.company, row]),
 );
@@ -152,18 +161,21 @@ Resultata: summary rows were ${JSON.stringify(plain.summaryRows)}.`,
 );
 assert.ok(
   Math.abs(summaryByCompany.Tesla.incTotal - 14) < 1e-6 &&
-    Math.abs(summaryByCompany.Tesla.incNonstationary - 10) < 1e-6,
+    Math.abs(summaryByCompany.Tesla.incNonstationary - 10) < 1e-6 &&
+    Math.abs(summaryByCompany.Tesla.incRoadwayNonstationary - 7) < 1e-6,
   `Replicata: compute Tesla summary incident totals.
-Expectata: summary totals report observed-window incidents (14 total, 10 nonstationary) without incident scaling.
+Expectata: summary totals report observed-window incidents (14 total, 10 nonstationary, 7 nonstationary-roadway) without incident scaling.
 Resultata: Tesla summary was ${JSON.stringify(summaryByCompany.Tesla)}.`,
 );
 assert.ok(
   Math.abs(summaryByCompany.Tesla.milesPerIncident -
     (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incTotal)) < 1e-6 &&
     Math.abs(summaryByCompany.Tesla.milesPerNonstationaryIncident -
-      (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incNonstationary)) < 1e-6,
+      (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incNonstationary)) < 1e-6 &&
+    Math.abs(summaryByCompany.Tesla.milesPerRoadwayNonstationaryIncident -
+      (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incRoadwayNonstationary)) < 1e-6,
   `Replicata: compute Tesla summary miles-per-incident fields.
-Expectata: summary rows include overall miles-per-incident values derived from best-VMT totals and observed-window incident totals.
+Expectata: summary rows include overall, nonstationary, and nonstationary-roadway miles-per-incident values derived from best-VMT totals and observed-window incident totals.
 Resultata: Tesla summary was ${JSON.stringify(summaryByCompany.Tesla)}.`,
 );
 
@@ -182,12 +194,30 @@ Expectata: chart includes all-company line traces with thick/medium/thin stroke-
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 
+assert.ok(
+  html.includes("Monthly VMT:") &&
+    html.includes("Cumulative VMT:"),
+  `Replicata: inspect cross-company MPI datapoint tooltip source.
+Expectata: tooltip source includes monthly and cumulative mileage labels.
+Resultata: labels missing from source.`,
+);
+
+assert.ok(
+  html.includes("Statistical Method") &&
+    html.includes("Monthly VMT range:") &&
+    html.includes("Incidents in bin:"),
+  `Replicata: inspect source for translated methodology text and lower-chart tooltip labels.
+Expectata: source includes translated methodology heading plus lower-chart tooltip labels for VMT range and incident-bin counts.
+Resultata: expected strings missing from source.`,
+);
+
 const rendered = plain.chartCompanySeries;
 assert.ok(
   rendered.includes("<svg") &&
     rendered.includes("Tesla") &&
     rendered.includes("Waymo") &&
     rendered.includes("Zoox") &&
+    rendered.includes("<title>") &&
     rendered.includes("month-vmt-line") &&
     rendered.includes("month-inc-bar") &&
     rendered.includes("month-inc-count") &&
@@ -208,8 +238,10 @@ assert.ok(
     plain.summaryBox.includes("VMT max") &&
     plain.summaryBox.includes("Total incidents") &&
     plain.summaryBox.includes("Nonstationary incidents") &&
+    plain.summaryBox.includes("Nonstationary roadway incidents") &&
     plain.summaryBox.includes("Miles per incident") &&
     plain.summaryBox.includes("Miles per nonstationary incident") &&
+    plain.summaryBox.includes("Miles per nonstationary roadway incident") &&
     plain.summaryBox.includes("Tesla") &&
     plain.summaryBox.includes("Waymo") &&
     plain.summaryBox.includes("Zoox"),
@@ -225,9 +257,11 @@ assert.ok(
   plain.legendMpiCompanies.includes("type=\"checkbox\"") &&
   plain.legendMpiLines.includes("month-metric-toggle-all") &&
   plain.legendMpiLines.includes("month-metric-toggle-nonstationary") &&
+  plain.legendMpiLines.includes("month-metric-toggle-roadwayNonstationary") &&
   plain.legendMpiLines.includes("month-metric-toggle-atfault") &&
   plain.legendMpiLines.includes("Miles per incident") &&
     plain.legendMpiLines.includes("Miles per nonstationary incident") &&
+  plain.legendMpiLines.includes("Miles per nonstationary roadway incident") &&
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendMpiLines.includes("Partial months are scaled to full-month equivalents") &&
   plain.legendLines.includes("VMT (best)") &&

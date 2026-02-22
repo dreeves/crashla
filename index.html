@@ -423,13 +423,13 @@ tr:hover { background: #f8f8ff; }
        thickness-differentiated, and "error bars use vmt_min/vmt_max" which now
        coexists with Bayesian CI bands). -->
 <!--
-       <h2>Methodus statistica</h2>
+       <h2>Statistical Method</h2>
   <ul>
-    <li>Fascia colorata circa quamque lineam MPI est intervallum credibile Bayesianum 95%. Modellum: incidentes ~ Poisson(&lambda; &middot; m), ubi &lambda; est ratio (incidentes per millia passuum) et m est VMT. Prior Jeffreys: &lambda; ~ Gamma(0.5, 0) (improba). Posterior post k incidentes observatos in m millibus passuum: &lambda; | k, m ~ Gamma(k + 0.5, m). MPI = 1/&lambda;; quantilia invertuntur per transformationem monotone decrescentem.</li>
-    <li>Intervallum credibile coniungit incertitudinem ex numero incidentium (Gamma-Poisson) et ex VMT (vmt_min/vmt_max) conservative: limes inferior MPI ex vmt_min cum quantili superiore &lambda;, limes superior ex vmt_max cum quantili inferiore &lambda;. Hoc dat fasciam latissimam possibilem.</li>
-    <li>Pro mensibus partialibus (Iunius 15-30, Ianuarius 1-15), numerus incidentium crudus (non extrapolatus) et VMT pro periodo observata adhibentur ad computandum intervallum credibile, ne magnitudo effectiva amplificetur. Aestimatio punctualis (linea) idem est utro modo.</li>
-    <li>Aestimatio punctualis in linea est mediana posterior Bayesiana 1/&lambda;, non ratio simplex m/k. Pro k parvo (praesertim Tesla), prior trahit aestimationem modice deorsum; pro k magno (Waymo), differentia neglegibilis est.</li>
-    <li>Incidentes ponderati culpa (linea tenuis): quisque incidens confert fractionem culpae suae (media ponderata ex Claude, Codex, Gemini) loco unius integri. Summa fractionum tractatur ut numerus pseudo-Poissonianus — approximatio heuristica sed rationabilis.</li>
+    <li>The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(&lambda; &middot; m), where &lambda; is the rate (incidents per mile) and m is VMT. Jeffreys prior: &lambda; ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: &lambda; | k, m ~ Gamma(k + 0.5, m). MPI = 1/&lambda;; quantiles are inverted via a monotone decreasing transformation.</li>
+    <li>The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper &lambda; quantile, and the upper MPI bound uses vmt_max with the lower &lambda; quantile. This yields the widest possible band.</li>
+    <li>For partial months (June 15-30, January 1-15), raw (non-extrapolated) incident counts and VMT for the observed period are used to compute the credible interval so the effective sample size is not inflated. The point estimate (line) is the same either way.</li>
+    <li>The point estimate shown in the line is the Bayesian posterior median of 1/&lambda;, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.</li>
+    <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (weighted average of Claude, Codex, Gemini) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
   </ul>
 -->
 </section>
@@ -635,9 +635,11 @@ let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true};
 const MONTH_METRIC_DEFS = [
   {key: "all", label: "Miles per incident", marker: "solid-circle"},
   {key: "nonstationary", label: "Miles per nonstationary incident", marker: "hollow-circle"},
+  // TO-DO: Human vet/translate new end-user label.
+  {key: "roadwayNonstationary", label: "Miles per nonstationary roadway incident", marker: "hollow-square"},
   {key: "atfault", label: "Miles per at-fault incident", marker: "hollow-triangle"},
 ];
-let monthMetricEnabled = {all: true, nonstationary: false, atfault: false};
+let monthMetricEnabled = {all: true, nonstationary: false, roadwayNonstationary: false, atfault: false};
 
 function lightenHex(hex, amount) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -649,30 +651,34 @@ function lightenHex(hex, amount) {
 const LINE_STYLE_PRESETS = [
   {
     name: "Thickness + opacity",
-    all:           {width: 2.5, opacity: 1,    dash: "", markerScale: 1},
-    nonstationary: {width: 1.5, opacity: 0.55, dash: "", markerScale: 1},
-    atfault:       {width: 1,   opacity: 0.3,  dash: "", markerScale: 1},
+    all:                {width: 2.5, opacity: 1,    dash: "", markerScale: 1},
+    nonstationary:      {width: 1.5, opacity: 0.55, dash: "", markerScale: 1},
+    roadwayNonstationary: {width: 1.2, opacity: 0.8,  dash: "", markerScale: 1},
+    atfault:            {width: 1,   opacity: 0.3,  dash: "", markerScale: 1},
     colorFn: (color) => color,
   },
   {
     name: "Thickness + dashes",
-    all:           {width: 2.5, opacity: 1, dash: "",    markerScale: 1},
-    nonstationary: {width: 1.5, opacity: 1, dash: "6 4", markerScale: 1},
-    atfault:       {width: 1,   opacity: 1, dash: "2 4", markerScale: 1},
+    all:                {width: 2.5, opacity: 1, dash: "",      markerScale: 1},
+    nonstationary:      {width: 1.5, opacity: 1, dash: "6 4",   markerScale: 1},
+    roadwayNonstationary: {width: 1.2, opacity: 1, dash: "10 4 2 4", markerScale: 1},
+    atfault:            {width: 1,   opacity: 1, dash: "2 4",   markerScale: 1},
     colorFn: (color) => color,
   },
   {
     name: "Color intensity",
-    all:           {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0},
-    nonstationary: {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.45},
-    atfault:       {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.7},
+    all:                {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0},
+    nonstationary:      {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.45},
+    roadwayNonstationary: {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.25},
+    atfault:            {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.7},
     colorFn: (color, lighten) => lighten > 0 ? lightenHex(color, lighten) : color,
   },
   {
     name: "Big markers",
-    all:           {width: 1.2, opacity: 1, dash: "", markerScale: 1},
-    nonstationary: {width: 1.2, opacity: 1, dash: "", markerScale: 1.6},
-    atfault:       {width: 1.2, opacity: 1, dash: "", markerScale: 2.2},
+    all:                {width: 1.2, opacity: 1, dash: "", markerScale: 1},
+    nonstationary:      {width: 1.2, opacity: 1, dash: "", markerScale: 1.6},
+    roadwayNonstationary: {width: 1.2, opacity: 1, dash: "", markerScale: 1.9},
+    atfault:            {width: 1.2, opacity: 1, dash: "", markerScale: 2.2},
     colorFn: (color) => color,
   },
 ];
@@ -1385,6 +1391,10 @@ function nonstationaryIncidentCount(speeds) {
   return speeds["1-10"] + speeds["11-30"] + speeds["31+"];
 }
 
+function roadwayNonstationaryIncidentCount(rec) {
+  return rec.incidents.roadwayNonstationary;
+}
+
 function fmtCount(n) {
   const rounded = Math.round(n * 10) / 10;
   if (Number.isInteger(rounded)) return rounded.toLocaleString();
@@ -1437,9 +1447,11 @@ function scaledCompanyMonthRows(series, company) {
       vmtMin: rec.vmtMin,  // full-month VMT, no scaling needed
       vmtBest: rec.vmtBest,
       vmtMax: rec.vmtMax,
+      vmtCume: rec.vmtCume,
       incidents: {
         total: rec.incidents.total * factor,
         speeds: scaleSpeeds(rec.incidents.speeds, factor),
+        roadwayNonstationary: rec.incidents.roadwayNonstationary * factor,
         atFault: rec.incidents.atFault * factor,
       },
     };
@@ -1454,6 +1466,7 @@ function observedCompanyMonthRows(series, company) {
       vmtMin: rec.vmtMin / factor,
       vmtBest: rec.vmtBest / factor,
       vmtMax: rec.vmtMax / factor,
+      vmtCume: rec.vmtCume,
       incidents: rec.incidents,
     };
   });
@@ -1468,9 +1481,13 @@ function monthlySummaryRows(series) {
     const incTotal = rows.reduce((sum, row) => sum + row.incidents.total, 0);
     const incNonstationary = rows.reduce(
       (sum, row) => sum + nonstationaryIncidentCount(row.incidents.speeds), 0);
+    const incRoadwayNonstationary = rows.reduce(
+      (sum, row) => sum + roadwayNonstationaryIncidentCount(row), 0);
     must(incTotal > 0, "summary total incidents must be positive", {company, incTotal});
     must(incNonstationary > 0,
       "summary nonstationary incidents must be positive", {company, incNonstationary});
+    must(incRoadwayNonstationary > 0,
+      "summary roadway nonstationary incidents must be positive", {company, incRoadwayNonstationary});
     return {
       company,
       vmtMin,
@@ -1478,8 +1495,10 @@ function monthlySummaryRows(series) {
       vmtMax,
       incTotal,
       incNonstationary,
+      incRoadwayNonstationary,
       milesPerIncident: vmtBest / incTotal,
       milesPerNonstationaryIncident: vmtBest / incNonstationary,
+      milesPerRoadwayNonstationaryIncident: vmtBest / incRoadwayNonstationary,
     };
   });
 }
@@ -1504,12 +1523,16 @@ function monthSeriesData() {
     const key = inc.company + "|" + month;
     let rec = incidentsByKey[key];
     if (rec === undefined) {
-      rec = {total: 0, speeds: emptySpeedBins(), atFault: 0};
+      rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0};
       incidentsByKey[key] = rec;
     }
     rec.total += 1;
     const bin = speedBinForIncident(inc.speed);
     rec.speeds[bin] += 1;
+    must(typeof inc.road === "string", "incident road must be string", {reportId: inc.reportId, road: inc.road});
+    rec.roadwayNonstationary += Number(
+      bin !== "0" && inc.road !== "Parking Lot",
+    );
     must(inc.fault !== null && typeof inc.fault === "object",
       "incident missing fault object for monthly series", {reportId: inc.reportId});
     const atFaultFrac = weightedFaultFromValues(
@@ -1532,11 +1555,12 @@ function monthSeriesData() {
       must(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
       must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), atFault: 0};
+      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0};
       companies[company] = {
         vmtMin: vmt.vmtMin,
         vmtBest: vmt.vmtBest,
         vmtMax: vmt.vmtMax,
+        vmtCume: vmt.vmtCume,
         incidents: inc,
       };
     }
@@ -1576,6 +1600,7 @@ function renderAllCompaniesMpiChart(series) {
   const countByMetric = {
     all: rec => rec.incidents.total,
     nonstationary: rec => nonstationaryIncidentCount(rec.incidents.speeds),
+    roadwayNonstationary: rec => roadwayNonstationaryIncidentCount(rec),
     atfault: rec => rec.incidents.atFault,
   };
   const markerRenderer = {
@@ -1586,6 +1611,11 @@ function renderAllCompaniesMpiChart(series) {
     "hollow-circle": (x, y, color, s) => {
       const r = 3.1 * s;
       return `<circle class="month-dot" cx="${x}" cy="${y}" r="${r}" style="fill:#fff;stroke:${color}"></circle>`;
+    },
+    "hollow-square": (x, y, color, s) => {
+      const r = 3.1 * s;
+      const d = 2 * r;
+      return `<rect class="month-dot" x="${(x - r).toFixed(2)}" y="${(y - r).toFixed(2)}" width="${d.toFixed(2)}" height="${d.toFixed(2)}" style="fill:#fff;stroke:${color}"></rect>`;
     },
     "hollow-triangle": (x, y, color, s) => {
       const h = 3.8 * s;
@@ -1625,7 +1655,11 @@ function renderAllCompaniesMpiChart(series) {
         const ciLo = 1 / gammaquant(a, vmtObsMin, 1 - tail);
         const ciHi = 1 / gammaquant(a, vmtObsMax, tail);
         yMax = Math.max(yMax, mpiMax);
-        return {mpiMin, mpiBest, mpiMax, ciLo, ciHi, incidentCount: kRaw};
+        return {
+          mpiMin, mpiBest, mpiMax, ciLo, ciHi, incidentCount: kRaw,
+          vmtMonth: row.vmtBest,
+          vmtCume: row.vmtCume,
+        };
       });
       seriesRows.push({company, metric, vals});
     }
@@ -1678,7 +1712,8 @@ function renderAllCompaniesMpiChart(series) {
       must(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
       const k = mpi.incidentCount;
       const kFmt = Number.isInteger(k) ? String(k) : k.toFixed(1);
-      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(mpi.ciLo)} \u2013 ${fmtMiles(mpi.ciHi)}`;
+      // TO-DO: Human vet new tooltip mileage labels below.
+      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(mpi.ciLo)} \u2013 ${fmtMiles(mpi.ciHi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
       return `<g>${marker(x, y, color, scale)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer"><title>${escHtml(tip)}</title></circle></g>`;
     }).join("")
   ).join("");
@@ -1773,9 +1808,14 @@ function renderCompanyMonthlyChart(series, company) {
   const barCounts = [];
   const barTotals = [];
   const errs = [];
+  // TO-DO: Human vet new lower-chart tooltip labels below.
   for (let i = 0; i < series.points.length; i++) {
+    const row = rows[i];
+    const month = series.months[i];
     const x = mapX(i) - barW / 2;
-    const rec = rows[i].incidents;
+    const rec = row.incidents;
+    const monthVmtBest = fmtWhole(row.vmtBest);
+    const monthVmtCume = fmtWhole(row.vmtCume);
     let stack = 0;
     for (const bin of SPEED_BINS) {
       const count = rec.speeds[bin];
@@ -1785,9 +1825,10 @@ function renderCompanyMonthlyChart(series, company) {
       const h = y0 - y1;
       stack = next;
       if (h <= 0) continue;
+      const barTip = `${company} ${monthLabel(month)} (${SPEED_LABELS[bin]})\nIncidents in bin: ${fmtCount(count)}\nIncidents total: ${fmtCount(rec.total)}\nMonthly VMT (best): ${monthVmtBest}\nCumulative VMT: ${monthVmtCume}`;
       bars.push(`
         <rect class="month-inc-bar" x="${x.toFixed(2)}" y="${y1.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}"
-              fill="${SPEED_BIN_COLORS[company][bin]}" stroke="${vmtColor}" stroke-width="0.8"></rect>
+              fill="${SPEED_BIN_COLORS[company][bin]}" stroke="${vmtColor}" stroke-width="0.8"><title>${escHtml(barTip)}</title></rect>
       `);
       const centerY = y1 + h / 2;
       barCounts.push(`
@@ -1800,10 +1841,11 @@ function renderCompanyMonthlyChart(series, company) {
       barTotals.push(`<text class="month-inc-total" x="${labelX.toFixed(2)}" y="${labelY.toFixed(2)}">${fmtCount(rec.total)}</text>`);
     }
     const cx = mapX(i);
-    const yLo = mapVmtY(rows[i].vmtMin);
-    const yHi = mapVmtY(rows[i].vmtMax);
+    const yLo = mapVmtY(row.vmtMin);
+    const yHi = mapVmtY(row.vmtMax);
+    const vmtTip = `${company} ${monthLabel(month)} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
     errs.push(`
-      <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"><title>${escHtml(vmtTip)}</title></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
     `);
@@ -1818,7 +1860,9 @@ function renderCompanyMonthlyChart(series, company) {
   const vmtMarks = rows.map((row, i) => {
     const x = mapX(i);
     const y = mapVmtY(row.vmtBest);
-    return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}"></circle>`;
+    const rec = row.incidents;
+    const vmtTip = `${company} ${monthLabel(series.months[i])} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+    return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}"><title>${escHtml(vmtTip)}</title></circle>`;
   }).join("");
 
   return `
@@ -1852,8 +1896,10 @@ function renderMonthlySummary(series) {
             <th>VMT max</th>
             <th>Total incidents</th>
             <th>Nonstationary incidents</th>
+            <th>Nonstationary roadway incidents</th>
             <th>Miles per incident</th>
             <th>Miles per nonstationary incident</th>
+            <th>Miles per nonstationary roadway incident</th>
           </tr>
         </thead>
         <tbody>
@@ -1865,8 +1911,10 @@ function renderMonthlySummary(series) {
               <td>${fmtWhole(row.vmtMax)}</td>
               <td>${fmtCount(row.incTotal)}</td>
               <td>${fmtCount(row.incNonstationary)}</td>
+              <td>${fmtCount(row.incRoadwayNonstationary)}</td>
               <td>${fmtWhole(row.milesPerIncident)}</td>
               <td>${fmtWhole(row.milesPerNonstationaryIncident)}</td>
+              <td>${fmtWhole(row.milesPerRoadwayNonstationaryIncident)}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -1899,8 +1947,9 @@ function renderMonthlyLegends() {
       if (s.dash) keyStyle += `;border-top-style:dashed`;
       if (s.opacity < 1) keyStyle += `;opacity:${s.opacity}`;
       const markerScale = s.markerScale;
+      const markerRadius = (metric.marker === "hollow-triangle" || metric.marker === "hollow-square") ? "0" : "50%";
       const markerHtml = markerScale > 1
-        ? `<span style="display:inline-block;width:${6 * markerScale}px;height:${6 * markerScale}px;border:1.5px solid ${color};border-radius:${metric.marker === "hollow-triangle" ? "0" : "50%"};background:#fff;margin-right:2px;vertical-align:middle"></span>`
+        ? `<span style="display:inline-block;width:${6 * markerScale}px;height:${6 * markerScale}px;border:1.5px solid ${color};border-radius:${markerRadius};background:#fff;margin-right:2px;vertical-align:middle"></span>`
         : "";
       return `
       <label class="month-legend-item month-company-toggle" for="${monthMetricToggleId(metric.key)}">
