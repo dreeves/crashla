@@ -21,13 +21,13 @@ Report ID,faultfrac,reasoning
 30270-11161,1.0,AV backed into trailer hitch during multi-point turn
 30270-11204,0.0,"AV stopped yielding, van departed lane into AV"
 30270-11196,0.0,"AV going straight, pickup entered from alley into path"
-30270-11171,0.15,AV's passenger opened door into passing van
+30270-11171,0.0,AV's passenger opened door into passing van (passenger fault not AV fault)
 30270-11174,1.0,AV hit elevated gate track in parking lot
 30270-11189,0.0,"AV stopped to yield, truck scraped AV while passing"
 30270-11209,1.0,AV hit elevated gate track in parking lot
 30270-11291,0.0,"AV going straight, heavy truck turned right across AV's path"
 30270-11170,0.0,"AV parked, other reversed into AV while parallel parking"
-30270-11213,0.15,AV's passenger opened rear door into passing bus
+30270-11213,0.0,AV's passenger opened rear door into passing bus (passenger fault not AV fault)
 30270-11298,0.0,"AV stopped to yield, truck scraped AV while passing"
 30270-11249,0.0,"AV stopped, pickup changing lanes hit AV"
 30270-11219,0.0,"AV stopped to yield, truck scraped AV while passing"
@@ -44,18 +44,18 @@ Report ID,faultfrac,reasoning
 30270-11221,0.0,"AV going straight, pickup reversed into AV's path"
 30270-11162,0.0,"AV stopped to yield, SUV scraped AV while passing"
 30270-11216,0.0,"AV parked, other car's open door struck AV"
-30270-11207,0.15,AV's passenger opened door into passing car
-30270-11224,0.5,"AV passenger opened door while AV in motion, hit parked SUV"
+30270-11207,0.0,AV's passenger opened door into passing car (passenger fault not AV fault)
+30270-11224,0.0,"AV passenger opened door while AV in motion, hit parked SUV (passenger fault not AV fault)"
 30270-11214,0.0,"AV slowing for traffic, rear-ended by following car"
 30270-11247,0.0,"AV stopped to yield, box truck scraped AV passing"
 30270-11195,0.1,AV hit fallen utility line hanging across roadway
-30270-11218,0.15,AV's passenger opened door into passing bus
+30270-11218,0.0,AV's passenger opened door into passing bus (passenger fault not AV fault)
 30270-11245,0.0,"AV stopping at stop sign, rear-ended by SUV"
 30270-11246,0.1,Other crossed into AV's lane during parallel left turn
 30270-11172,0.0,"AV going straight, SUV turned right across AV's path"
 30270-11208,0.0,"AV stopped at red light, rear-ended by SUV"
 30270-11173,0.0,"AV stopped for pickup, rear-ended then hit-and-run"
-30270-11205,0.15,AV's passenger opened door into passing cyclist
+30270-11205,0.0,AV's passenger opened door into passing cyclist (passenger fault not AV fault)
 30270-11212,0.0,"AV stopped at red light, rear-ended by SUV"
 30270-11250,0.0,"AV parked, minivan scraped AV while passing"
 30270-11238,0.0,"AV stopped at red light, car changing lanes hit AV"
@@ -300,7 +300,7 @@ Report ID,faultfrac,reasoning
 30270-13025,0.0,"AV going straight, car turned left into AV"
 30270-12070,0.5,AV hit cat sitting in roadway as AV began moving
 30270-11887,0.1,Other's door opened into AV's path
-30270-13161,0.2,Passengers opened door and exited while AV in motion
+30270-13161,0.0,Passengers opened door and exited while AV in motion (passenger fault not AV fault)
 30270-13197,0.0,"AV stopped, rear-ended"
 30270-13236,0.0,"AV stopped, struck by car"
 30270-13164,0.0,"AV stopped, rear-ended"
