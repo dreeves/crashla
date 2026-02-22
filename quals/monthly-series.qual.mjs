@@ -186,11 +186,11 @@ assert.ok(
     renderedAll.includes("stroke-width:2.5") &&
     renderedAll.includes("stroke-width:1.5") &&
     renderedAll.includes("stroke-width:1") &&
-    renderedAll.includes("2025-06*") &&
-    renderedAll.includes("2026-01*") &&
+    renderedAll.includes("2025-06") &&
+    renderedAll.includes("2026-01") &&
     renderedAll.includes("Miles Per Incident (MPI)"),
   `Replicata: render cross-company miles-per-incident chart.
-Expectata: chart includes all-company line traces with thick/medium/thin stroke-width variants, starred partial-month labels, and the miles-per-incident axis.
+Expectata: chart includes all-company line traces with thick/medium/thin stroke-width variants, month labels, and the miles-per-incident axis.
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 
@@ -263,7 +263,6 @@ assert.ok(
     plain.legendMpiLines.includes("Miles per nonstationary incident") &&
   plain.legendMpiLines.includes("Miles per nonstationary non-parking-lot incident") &&
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
-  plain.legendMpiLines.includes("Partial months are scaled to full-month equivalents") &&
   plain.legendLines.includes("VMT (best)") &&
     plain.legendLines.includes("Incidents (stacked)") &&
   plain.legendSpeed.includes("unknown") &&

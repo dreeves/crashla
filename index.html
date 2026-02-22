@@ -459,8 +459,6 @@ tr:hover { background: #f8f8ff; }
   <ul>
     <li>Top chart: solid line = MPI from all incidents; dashed line = MPI from nonstationary incidents; dot-dash line = MPI from at-fault-weighted incidents; error bars use <code>vmt_min</code> and <code>vmt_max</code>.</li>
     <li>Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.</li>
-    <li>Months marked with an asterisk (*) are extrapolated to full-month equivalents in the charts for month-to-month comparability.</li>
-    <li>In the summary table, incidents are observed counts (not extrapolated), while VMT for partial months is scaled down to match the observed incident window.</li>
     <li>Tesla mileage assumptions are anchored to tracker sources (<a href="https://robotaxitracker.com/">robotaxitracker.com</a> and <a href="https://robotaxi-safety-tracker.com/">robotaxi-safety-tracker.com</a>) and then aligned to this same NHTSA window for apples-to-apples comparison.</li>
   </ul>
   <!-- TO-DO: Human vet/translate all Latin below and update stale bullets above
@@ -471,7 +469,7 @@ tr:hover { background: #f8f8ff; }
   <ul>
     <li>The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(&lambda; &middot; m), where &lambda; is the rate (incidents per mile) and m is VMT. Jeffreys prior: &lambda; ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: &lambda; | k, m ~ Gamma(k + 0.5, m). MPI = 1/&lambda;; quantiles are inverted via a monotone decreasing transformation.</li>
     <li>The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper &lambda; quantile, and the upper MPI bound uses vmt_max with the lower &lambda; quantile. This yields the widest possible band.</li>
-    <li>For partial months (June 15-30, January 1-15), raw (non-extrapolated) incident counts and VMT for the observed period are used to compute the credible interval so the effective sample size is not inflated. The point estimate (line) is the same either way.</li>
+    <li>For partial months (June and January), VMT is pro-rated by the coverage fraction so that VMT and incident counts cover the same observation window.</li>
     <li>The point estimate shown in the line is the Bayesian posterior median of 1/&lambda;, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.</li>
     <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (weighted average of Claude, Codex, Gemini) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
   </ul>
@@ -815,13 +813,6 @@ const SPEED_BIN_COLORS = {
 const MONTH_TOKENS = {
   JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6,
   JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12,
-};
-// NHTSA SGO window: Jun 15 through Jan 15.
-// Jun 15-30 = 16 days out of 30; Jan 1-15 = 15 days out of 31.
-// Scale incident counts up to full-month equivalents.
-const PARTIAL_MONTH_SCALE = {
-  "2025-06": 30 / (30-15+1), // NHTSA data for June 15-30 inclusive
-  "2026-01": 31 / (15-1+1),  // NHTSA data for January 1-15 inclusive
 };
 const YM_RE = /^(\d{4})-(\d{2})$/;
 
@@ -1362,13 +1353,13 @@ function csvUnquote(field) {
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   must(lines.length > 1, "VMT sheet CSV must include header and rows");
-  must(lines[0] === "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale",
+  must(lines[0] === "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,coverage,rationale",
     "VMT sheet CSV header mismatch", {header: lines[0]});
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (line === "") continue;
-    const hit = /^([^,]+),(\d{4}-\d{2}),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(.*)$/.exec(line);
+    const hit = /^([^,]+),(\d{4}-\d{2}),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(.*)$/.exec(line);
     must(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
     const companyRaw = hit[1].trim();
     const company = ADS_COMPANIES.find(c => c.toLowerCase() === companyRaw.toLowerCase());
@@ -1377,6 +1368,7 @@ function parseVmtCsv(text) {
     const vmtCume = Number(hit[4]);
     const vmtMin = Number(hit[5]);
     const vmtMax = Number(hit[6]);
+    const coverage = Number(hit[7]); // fraction of month in NHTSA window
     must(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
       {lineNo: i + 1, vmtBest});
     must(Number.isFinite(vmtCume) && vmtCume >= 0,
@@ -1387,6 +1379,8 @@ function parseVmtCsv(text) {
       {lineNo: i + 1, vmtMax});
     must(vmtMin <= vmtBest && vmtBest <= vmtMax,
       "expected vmt_min <= vmt <= vmt_max", {lineNo: i + 1, vmtMin, vmtBest, vmtMax});
+    must(coverage > 0 && coverage <= 1, "coverage must be in (0, 1]",
+      {lineNo: i + 1, coverage});
     rows.push({
       company,
       month: hit[2],
@@ -1394,7 +1388,8 @@ function parseVmtCsv(text) {
       vmtBest,
       vmtMax,
       vmtCume,
-      rationale: csvUnquote(hit[7]),
+      coverage,
+      rationale: csvUnquote(hit[8]),
     });
   }
   must(rows.length > 0, "VMT sheet CSV has no data rows");
@@ -1444,14 +1439,6 @@ function fmtCount(n) {
   return rounded.toFixed(1);
 }
 
-function monthScale(month) {
-  return PARTIAL_MONTH_SCALE[month] || 1;
-}
-
-function monthLabel(month) {
-  return monthScale(month) === 1 ? month : month + "*";
-}
-
 function monthCompanyToggleId(company) {
   return "month-company-toggle-" + company.toLowerCase();
 }
@@ -1468,56 +1455,17 @@ function includedMonthMetrics() {
   return MONTH_METRIC_DEFS.filter(metric => monthMetricEnabled[metric.key]);
 }
 
-function scaleSpeeds(speeds, factor) {
-  return {
-    "31+": speeds["31+"] * factor,
-    "11-30": speeds["11-30"] * factor,
-    "1-10": speeds["1-10"] * factor,
-    unknown: speeds.unknown * factor,
-    "0": speeds["0"] * factor,
-  };
-}
-
 function fmtWhole(n) {
   return Math.round(n).toLocaleString();
 }
 
-function scaledCompanyMonthRows(series, company) {
-  return series.points.map((point, i) => {
-    const rec = point.companies[company];
-    const factor = monthScale(series.months[i]);
-    return {
-      vmtMin: rec.vmtMin,  // full-month VMT, no scaling needed
-      vmtBest: rec.vmtBest,
-      vmtMax: rec.vmtMax,
-      vmtCume: rec.vmtCume,
-      incidents: {
-        total: rec.incidents.total * factor,
-        speeds: scaleSpeeds(rec.incidents.speeds, factor),
-        roadwayNonstationary: rec.incidents.roadwayNonstationary * factor,
-        atFault: rec.incidents.atFault * factor,
-      },
-    };
-  });
-}
-
-function observedCompanyMonthRows(series, company) {
-  return series.points.map((point, i) => {
-    const rec = point.companies[company];
-    const factor = monthScale(series.months[i]);
-    return {
-      vmtMin: rec.vmtMin / factor,
-      vmtBest: rec.vmtBest / factor,
-      vmtMax: rec.vmtMax / factor,
-      vmtCume: rec.vmtCume,
-      incidents: rec.incidents,
-    };
-  });
+function companyMonthRows(series, company) {
+  return series.points.map(point => point.companies[company]);
 }
 
 function monthlySummaryRows(series) {
   return ADS_COMPANIES.map(company => {
-    const rows = observedCompanyMonthRows(series, company);
+    const rows = companyMonthRows(series, company);
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
     const vmtMax = rows.reduce((sum, row) => sum + row.vmtMax, 0);
@@ -1599,10 +1547,11 @@ function monthSeriesData() {
       must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0};
+      const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       companies[company] = {
-        vmtMin: vmt.vmtMin,
-        vmtBest: vmt.vmtBest,
-        vmtMax: vmt.vmtMax,
+        vmtMin: vmt.vmtMin * c,
+        vmtBest: vmt.vmtBest * c,
+        vmtMax: vmt.vmtMax * c,
         vmtCume: vmt.vmtCume,
         incidents: inc,
       };
@@ -1619,7 +1568,7 @@ function drawSingleMonthAxes(
   return `
     ${months.map((month, i) => `
       <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"></line>
-      <text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${monthLabel(month)}</text>
+      <text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>
     `).join("")}
     ${yTicks.map(y => `
       <line class="month-grid" x1="${mLeft}" y1="${mapY(y)}" x2="${mLeft + pW}" y2="${mapY(y)}"></line>
@@ -1670,36 +1619,23 @@ function renderAllCompaniesMpiChart(series) {
   const seriesRows = [];
   let yMax = 1;
   for (const company of includedAdsCompanies()) {
-    const scaledRows = scaledCompanyMonthRows(series, company);
+    const rows = companyMonthRows(series, company);
     for (const metric of includedMonthMetrics()) {
       const countFn = countByMetric[metric.key];
       must(typeof countFn === "function", "missing count fn for metric", {metric: metric.key});
-      const vals = scaledRows.map((row, idx) => {
-        const kScaled = countFn(row);
-        // Use raw (unscaled) counts for the Bayesian model so partial months
-        // don't inflate apparent sample size and produce overconfident CIs.
-        const scale = monthScale(series.months[idx]);
-        const kRaw = kScaled / scale;
-        const vmtObs = row.vmtBest / scale;
-        const vmtObsMin = row.vmtMin / scale;
-        const vmtObsMax = row.vmtMax / scale;
+      const vals = rows.map(row => {
+        const k = countFn(row);
         const massFrac = CI_MASS_DEFAULT_PCT / 100;
-        // Point estimate: Bayesian posterior median of 1/lambda using
-        // observed (unscaled) data. MPI is a rate so same for any period.
-        const mpiBest = estimateMpi(kRaw, vmtObs, massFrac).median;
-        // VMT-only error bars (simple ratio)
-        const mpiMin = kRaw > 0 ? vmtObsMin / kRaw : mpiBest;
-        const mpiMax = kRaw > 0 ? vmtObsMax / kRaw : mpiBest;
-        // Bayesian CI combining count uncertainty (Gamma-Poisson) with VMT
-        // uncertainty: use vmtMin with high-rate quantile for lo, vmtMax
-        // with low-rate quantile for hi. This is conservative (widest band).
-        const a = kRaw + 0.5;
+        const mpiBest = estimateMpi(k, row.vmtBest, massFrac).median;
+        const mpiMin = k > 0 ? row.vmtMin / k : mpiBest;
+        const mpiMax = k > 0 ? row.vmtMax / k : mpiBest;
+        const a = k + 0.5;
         const tail = (1 - massFrac) / 2;
-        const ciLo = 1 / gammaquant(a, vmtObsMin, 1 - tail);
-        const ciHi = 1 / gammaquant(a, vmtObsMax, tail);
+        const ciLo = 1 / gammaquant(a, row.vmtMin, 1 - tail);
+        const ciHi = 1 / gammaquant(a, row.vmtMax, tail);
         yMax = Math.max(yMax, mpiMax);
         return {
-          mpiMin, mpiBest, mpiMax, ciLo, ciHi, incidentCount: kRaw,
+          mpiMin, mpiBest, mpiMax, ciLo, ciHi, incidentCount: k,
           vmtMonth: row.vmtBest,
           vmtCume: row.vmtCume,
         };
@@ -1814,7 +1750,7 @@ function drawDualMonthAxes(
   return `
     ${months.map((month, i) => `
       <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"></line>
-      <text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${monthLabel(month)}</text>
+      <text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>
     `).join("")}
     ${leftTicks.map(y => `
       <line class="month-grid" x1="${mLeft}" y1="${mapLeftY(y)}" x2="${rightX}" y2="${mapLeftY(y)}"></line>
@@ -1835,7 +1771,7 @@ function renderCompanyMonthlyChart(series, company) {
   const mBot = 48;
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
-  const rows = scaledCompanyMonthRows(series, company);
+  const rows = companyMonthRows(series, company);
   const vmtMax = Math.max(1, ...rows.map(row => row.vmtMax));
   const incidentMax = Math.max(1, ...rows.map(row => row.incidents.total));
   const leftTicks = linearTicks(0, vmtMax, 4);
@@ -1868,7 +1804,7 @@ function renderCompanyMonthlyChart(series, company) {
       const h = y0 - y1;
       stack = next;
       if (h <= 0) continue;
-      const barTip = `${company} ${monthLabel(month)} (${SPEED_LABELS[bin]})\nIncidents in bin: ${fmtCount(count)}\nIncidents total: ${fmtCount(rec.total)}\nMonthly VMT (best): ${monthVmtBest}\nCumulative VMT: ${monthVmtCume}`;
+      const barTip = `${company} ${month} (${SPEED_LABELS[bin]})\nIncidents in bin: ${fmtCount(count)}\nIncidents total: ${fmtCount(rec.total)}\nMonthly VMT (best): ${monthVmtBest}\nCumulative VMT: ${monthVmtCume}`;
       bars.push(`
         <rect class="month-inc-bar" x="${x.toFixed(2)}" y="${y1.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}"
               fill="${SPEED_BIN_COLORS[company][bin]}" stroke="${vmtColor}" stroke-width="0.8"><title>${escHtml(barTip)}</title></rect>
@@ -1886,7 +1822,7 @@ function renderCompanyMonthlyChart(series, company) {
     const cx = mapX(i);
     const yLo = mapVmtY(row.vmtMin);
     const yHi = mapVmtY(row.vmtMax);
-    const vmtTip = `${company} ${monthLabel(month)} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+    const vmtTip = `${company} ${month} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
     errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"><title>${escHtml(vmtTip)}</title></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
@@ -1904,7 +1840,7 @@ function renderCompanyMonthlyChart(series, company) {
     const x = mapX(i);
     const y = mapVmtY(row.vmtBest);
     const rec = row.incidents;
-    const vmtTip = `${company} ${monthLabel(series.months[i])} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+    const vmtTip = `${company} ${series.months[i]} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
     return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}"><title>${escHtml(vmtTip)}</title></circle>`;
   }).join("");
 
@@ -2030,7 +1966,6 @@ function renderMonthlyLegends() {
         <span style="${keyStyle}"></span>${markerHtml}${metric.label}
       </label>`;
     }).join("")}
-    <span class="month-legend-item">*: Partial months are scaled to full-month equivalents</span>
   `;
   for (const metric of MONTH_METRIC_DEFS) {
     const input = byId(monthMetricToggleId(metric.key));
@@ -17908,31 +17843,31 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
 ]
 /* INCIDENT_DATA_END */;
 const VMT_CSV_TEXT = /* VMT_CSV_START */
-`company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale
-tesla,2025-06,1806,1806,1806,1806,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2025-07,16715.5,18521.5,12650,20781,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2025-08,68200,86721.5,68200,68200,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2025-09,90202,176923.5,88550,91854,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2025-10,80061,256984.5,67965,92157,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2025-11,103800,360784.5,103800,103800,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2025-12,146870.5,507655,111351,182390,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2026-01,139318.5,646973.5,92690,185947,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-waymo,2025-06,7055803,7055803,5997433,8114173,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-07,9643781,16699584,8197214,11090348,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-08,11021172,27720756,9367996,12674348,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-09,12991437,40712193,11042721,14940153,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-10,15812060,56524253,11068442,20555678,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
-waymo,2025-11,19245080,75769333,13471556,25018604,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
-waymo,2025-12,23423456,99192789,16396419,30450493,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
-waymo,2026-01,28509017,127701806,19956312,37061722,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
-zoox,2025-06,120000,120000,60000,240000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2025-07,130000,250000,65000,260000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2025-08,145000,395000,72500,290000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2025-09,160000,555000,80000,320000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2025-10,175000,730000,87500,350000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2025-11,190000,920000,95000,380000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2025-12,205000,1125000,102500,410000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2026-01,220000,1345000,110000,440000,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+`company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,coverage,rationale
+tesla,2025-06,1806,1806,1806,1806,0.533,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2025-07,16715.5,18521.5,12650,20781,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2025-08,68200,86721.5,68200,68200,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2025-09,90202,176923.5,88550,91854,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2025-10,80061,256984.5,67965,92157,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2025-11,103800,360784.5,103800,103800,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2025-12,146870.5,507655,111351,182390,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2026-01,139318.5,646973.5,92690,185947,0.484,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+waymo,2025-06,7055803,7055803,5997433,8114173,0.533,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
+waymo,2025-07,9643781,16699584,8197214,11090348,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
+waymo,2025-08,11021172,27720756,9367996,12674348,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
+waymo,2025-09,12991437,40712193,11042721,14940153,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
+waymo,2025-10,15812060,56524253,11068442,20555678,1,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
+waymo,2025-11,19245080,75769333,13471556,25018604,1,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
+waymo,2025-12,23423456,99192789,16396419,30450493,1,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
+waymo,2026-01,28509017,127701806,19956312,37061722,0.484,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
+zoox,2025-06,120000,120000,60000,240000,0.533,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2025-07,130000,250000,65000,260000,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2025-08,145000,395000,72500,290000,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2025-09,160000,555000,80000,320000,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2025-10,175000,730000,87500,350000,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2025-11,190000,920000,95000,380000,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2025-12,205000,1125000,102500,410000,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2026-01,220000,1345000,110000,440000,0.484,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 `
 /* VMT_CSV_END */;
 
