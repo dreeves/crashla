@@ -422,7 +422,6 @@ tr:hover { background: #f8f8ff; }
        (first bullet references "dashed line" and "dot-dash line" which are now
        thickness-differentiated, and "error bars use vmt_min/vmt_max" which now
        coexists with Bayesian CI bands). -->
-<!--
        <h2>Statistical Method</h2>
   <ul>
     <li>The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(&lambda; &middot; m), where &lambda; is the rate (incidents per mile) and m is VMT. Jeffreys prior: &lambda; ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: &lambda; | k, m ~ Gamma(k + 0.5, m). MPI = 1/&lambda;; quantiles are inverted via a monotone decreasing transformation.</li>
@@ -431,7 +430,6 @@ tr:hover { background: #f8f8ff; }
     <li>The point estimate shown in the line is the Bayesian posterior median of 1/&lambda;, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.</li>
     <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (weighted average of Claude, Codex, Gemini) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
   </ul>
--->
 </section>
 
 <!-- TO-DO: Human vet all new end-user copy in this section. -->
@@ -1896,10 +1894,10 @@ function renderMonthlySummary(series) {
             <th>VMT max</th>
             <th>Total incidents</th>
             <th>Nonstationary incidents</th>
-            <th>Nonstationary roadway incidents</th>
+            <th>Nonstationary non-parking-lot incidents</th>
             <th>Miles per incident</th>
             <th>Miles per nonstationary incident</th>
-            <th>Miles per nonstationary roadway incident</th>
+            <th>Miles per nonstationary non-parking-lot incident</th>
           </tr>
         </thead>
         <tbody>
