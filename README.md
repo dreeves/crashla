@@ -89,7 +89,7 @@ Zoox mileage in Nevada:
 https://techcrunch.com/2025/09/10/zoox-opens-its-las-vegas-robotaxi-service-to-the-public/
 https://apnews.com/article/amazon-zoox-robotaxis-las-vegas-bd5cb24602fb16243efcba05c7fe518f
 
-I think we can conclude from the following that the robotaxi numbers in Tesla's Q4
+I think we can conclude from the following that the robotaxi numbers in Tesla's Q4 report do not include Bay Area miles:
 https://www.fool.com/earnings/call-transcripts/2025/10/22/tesla-tsla-q3-2025-earnings-call-transcript/
 
 # Spec

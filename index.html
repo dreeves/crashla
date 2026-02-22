@@ -376,7 +376,52 @@ tr:hover { background: #f8f8ff; }
 .month-summary-scroll table {
   min-width: 760px;
 }
+.mpi-cards {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.6rem 0;
+}
+.mpi-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #dfe4ef;
+  border-radius: 4px;
+  border-left: 3px solid #999;
+  padding: 0.5rem 0.65rem;
+}
+.mpi-card-company {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+.mpi-card-metric {
+  margin-bottom: 0.4rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.mpi-card-metric:last-child {
+  margin-bottom: 0;
+}
+.mpi-card-metric:not(.primary) {
+  color: #5b6475;
+}
+.mpi-card-formula {
+  font-variant-numeric: tabular-nums;
+}
+.mpi-card-mpi {
+  font-weight: 600;
+}
+.mpi-card-metric.primary .mpi-card-mpi {
+  font-size: 0.95rem;
+}
+.mpi-card-ci {
+  font-size: 0.72rem;
+  color: #8090a8;
+}
 @media (max-width: 760px) {
+  .mpi-cards {
+    flex-direction: column;
+  }
   body {
     padding: 0.75rem;
   }
@@ -435,6 +480,7 @@ tr:hover { background: #f8f8ff; }
 <!-- TO-DO: Human vet all new end-user copy in this section. -->
 <div class="month-panel">
   <div id="chart-mpi-all" class="month-chart"></div>
+  <div id="mpi-summary-cards"></div>
   <div class="month-legend" id="month-legend-mpi-companies"></div>
   <div class="month-legend" id="month-legend-mpi-lines"></div>
   <div class="month-legend">
@@ -633,8 +679,7 @@ let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true};
 const MONTH_METRIC_DEFS = [
   {key: "all", label: "Miles per incident", marker: "solid-circle"},
   {key: "nonstationary", label: "Miles per nonstationary incident", marker: "hollow-circle"},
-  // TO-DO: Human vet/translate new end-user label.
-  {key: "roadwayNonstationary", label: "Miles per nonstationary roadway incident", marker: "hollow-square"},
+  {key: "roadwayNonstationary", label: "Miles per nonstationary non-parking-lot incident", marker: "hollow-square"},
   {key: "atfault", label: "Miles per at-fault incident", marker: "hollow-triangle"},
 ];
 let monthMetricEnabled = {all: true, nonstationary: false, roadwayNonstationary: false, atfault: false};
@@ -1921,6 +1966,36 @@ function renderMonthlySummary(series) {
   `;
 }
 
+// TO-DO: Human vet all end-user labels in these summary cards.
+function renderMpiSummaryCards(series) {
+  const rows = monthlySummaryRows(series);
+  const massFrac = CI_MASS_DEFAULT_PCT / 100;
+  const metrics = [
+    {label: "All incidents",                 inc: "incTotal",                primary: true},
+    {label: "Nonstationary",                 inc: "incNonstationary",        primary: false},
+    {label: "Nonstationary non-parking-lot", inc: "incRoadwayNonstationary", primary: false},
+  ];
+  return rows.map(row => `
+    <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
+      <div class="mpi-card-company">${row.company}</div>
+      ${metrics.map(m => {
+        const k = row[m.inc];
+        const a = k + 0.5;
+        const tail = (1 - massFrac) / 2;
+        const ciLo = 1 / gammaquant(a, row.vmtMin, 1 - tail);
+        const ciHi = 1 / gammaquant(a, row.vmtMax, tail);
+        const median = 1 / gammaquant(a, row.vmtBest, 0.5);
+        return `
+        <div class="mpi-card-metric${m.primary ? " primary" : ""}">
+          <div>${m.label}</div>
+          <div class="mpi-card-formula">${fmtWhole(row.vmtBest)} miles \u00f7 ${fmtCount(k)} incidents = <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span></div>
+          <div class="mpi-card-ci">95% CI: ${fmtWhole(ciLo)} \u2013 ${fmtWhole(ciHi)}</div>
+        </div>`;
+      }).join("")}
+    </div>
+  `).join("");
+}
+
 function renderMonthlyLegends() {
   byId("month-legend-mpi-companies").innerHTML = ADS_COMPANIES.map(company => `
     <label class="month-legend-item month-company-toggle" for="${monthCompanyToggleId(company)}">
@@ -1991,6 +2066,7 @@ function renderMonthlyLegends() {
 function buildMonthlyViews() {
   const series = monthSeriesData();
   byId("chart-mpi-all").innerHTML = renderAllCompaniesMpiChart(series);
+  byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(series)}</div>`;
   byId("chart-company-series").innerHTML = ADS_COMPANIES.map(company => `
     <div class="month-chart">
       <h3>${company}</h3>

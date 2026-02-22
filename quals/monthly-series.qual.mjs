@@ -261,7 +261,7 @@ assert.ok(
   plain.legendMpiLines.includes("month-metric-toggle-atfault") &&
   plain.legendMpiLines.includes("Miles per incident") &&
     plain.legendMpiLines.includes("Miles per nonstationary incident") &&
-  plain.legendMpiLines.includes("Miles per nonstationary roadway incident") &&
+  plain.legendMpiLines.includes("Miles per nonstationary non-parking-lot incident") &&
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendMpiLines.includes("Partial months are scaled to full-month equivalents") &&
   plain.legendLines.includes("VMT (best)") &&
