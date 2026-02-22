@@ -238,10 +238,10 @@ assert.ok(
     plain.summaryBox.includes("VMT max") &&
     plain.summaryBox.includes("Total incidents") &&
     plain.summaryBox.includes("Nonstationary incidents") &&
-    plain.summaryBox.includes("Nonstationary roadway incidents") &&
+    plain.summaryBox.includes("Nonstationary non-parking-lot incidents") &&
     plain.summaryBox.includes("Miles per incident") &&
     plain.summaryBox.includes("Miles per nonstationary incident") &&
-    plain.summaryBox.includes("Miles per nonstationary roadway incident") &&
+    plain.summaryBox.includes("Miles per nonstationary non-parking-lot incident") &&
     plain.summaryBox.includes("Tesla") &&
     plain.summaryBox.includes("Waymo") &&
     plain.summaryBox.includes("Zoox"),
