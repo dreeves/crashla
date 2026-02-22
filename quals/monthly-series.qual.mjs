@@ -79,6 +79,8 @@ const metrics = vm.runInContext(`
       series.points.reduce((sum, p) => sum + p.companies[company].incidents.total, 0),
     ]),
   );
+  // Enable all metrics so the chart renders all line variants
+  for (const m of MONTH_METRIC_DEFS) monthMetricEnabled[m.key] = true;
   buildMonthlyViews();
   return {
     months: series.months,
@@ -169,13 +171,14 @@ const renderedAll = plain.chartMpiAll;
 assert.ok(
   renderedAll.includes("<svg") &&
     renderedAll.includes("month-mpi-all-line") &&
-    renderedAll.includes("stroke-dasharray:5 4") &&
-    renderedAll.includes("stroke-dasharray:10 3 2 3") &&
+    renderedAll.includes("stroke-width:2.5") &&
+    renderedAll.includes("stroke-width:1.5") &&
+    renderedAll.includes("stroke-width:1") &&
     renderedAll.includes("2025-06*") &&
     renderedAll.includes("2026-01*") &&
     renderedAll.includes("Miles Per Incident (MPI)"),
   `Replicata: render cross-company miles-per-incident chart.
-Expectata: chart includes all-company line traces with dashed nonstationary and dot-dash at-fault variants, starred partial-month labels, and the miles-per-incident axis.
+Expectata: chart includes all-company line traces with thick/medium/thin stroke-width variants, starred partial-month labels, and the miles-per-incident axis.
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 

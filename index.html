@@ -282,7 +282,6 @@ tr:hover { background: #f8f8ff; }
 }
 .month-mpi-all-line {
   fill: none;
-  stroke-width: 2;
 }
 .month-inc-count {
   fill: #131313;
@@ -308,25 +307,17 @@ tr:hover { background: #f8f8ff; }
 .month-linekey {
   width: 22px;
   height: 0;
-  border-top: 2px solid #4a5264;
+  border-top: 2.5px solid #4a5264;
   display: inline-block;
 }
 .month-linekey.solid {
-  border-top-style: solid;
+  border-top-width: 2.5px;
 }
 .month-linekey.dashed {
-  border-top-style: dashed;
+  border-top-width: 1.5px;
 }
 .month-linekey.atfault {
-  border-top: 0;
-  height: 2px;
-  background: repeating-linear-gradient(
-    to right,
-    #4a5264 0 9px,
-    transparent 9px 12px,
-    #4a5264 12px 14px,
-    transparent 14px 17px
-  );
+  border-top-width: 1px;
 }
 .month-tri {
   width: 0;
@@ -427,6 +418,20 @@ tr:hover { background: #f8f8ff; }
     <li>In the summary table, incidents are observed counts (not extrapolated), while VMT for partial months is scaled down to match the observed incident window.</li>
     <li>Tesla mileage assumptions are anchored to tracker sources (<a href="https://robotaxitracker.com/">robotaxitracker.com</a> and <a href="https://robotaxi-safety-tracker.com/">robotaxi-safety-tracker.com</a>) and then aligned to this same NHTSA window for apples-to-apples comparison.</li>
   </ul>
+  <!-- TO-DO: Human vet/translate all Latin below and update stale bullets above
+       (first bullet references "dashed line" and "dot-dash line" which are now
+       thickness-differentiated, and "error bars use vmt_min/vmt_max" which now
+       coexists with Bayesian CI bands). -->
+<!--
+       <h2>Methodus statistica</h2>
+  <ul>
+    <li>Fascia colorata circa quamque lineam MPI est intervallum credibile Bayesianum 95%. Modellum: incidentes ~ Poisson(&lambda; &middot; m), ubi &lambda; est ratio (incidentes per millia passuum) et m est VMT. Prior Jeffreys: &lambda; ~ Gamma(0.5, 0) (improba). Posterior post k incidentes observatos in m millibus passuum: &lambda; | k, m ~ Gamma(k + 0.5, m). MPI = 1/&lambda;; quantilia invertuntur per transformationem monotone decrescentem.</li>
+    <li>Intervallum credibile coniungit incertitudinem ex numero incidentium (Gamma-Poisson) et ex VMT (vmt_min/vmt_max) conservative: limes inferior MPI ex vmt_min cum quantili superiore &lambda;, limes superior ex vmt_max cum quantili inferiore &lambda;. Hoc dat fasciam latissimam possibilem.</li>
+    <li>Pro mensibus partialibus (Iunius 15-30, Ianuarius 1-15), numerus incidentium crudus (non extrapolatus) et VMT pro periodo observata adhibentur ad computandum intervallum credibile, ne magnitudo effectiva amplificetur. Aestimatio punctualis (linea) idem est utro modo.</li>
+    <li>Aestimatio punctualis in linea est mediana posterior Bayesiana 1/&lambda;, non ratio simplex m/k. Pro k parvo (praesertim Tesla), prior trahit aestimationem modice deorsum; pro k magno (Waymo), differentia neglegibilis est.</li>
+    <li>Incidentes ponderati culpa (linea tenuis): quisque incidens confert fractionem culpae suae (media ponderata ex Claude, Codex, Gemini) loco unius integri. Summa fractionum tractatur ut numerus pseudo-Poissonianus — approximatio heuristica sed rationabilis.</li>
+  </ul>
+-->
 </section>
 
 <!-- TO-DO: Human vet all new end-user copy in this section. -->
@@ -434,6 +439,11 @@ tr:hover { background: #f8f8ff; }
   <div id="chart-mpi-all" class="month-chart"></div>
   <div class="month-legend" id="month-legend-mpi-companies"></div>
   <div class="month-legend" id="month-legend-mpi-lines"></div>
+  <div class="month-legend">
+    <label class="month-legend-item" style="font-size:0.82rem">
+      Line style: <select id="line-style-select" style="font-size:0.82rem;margin-left:0.3rem"></select>
+    </label>
+  </div>
   <div id="chart-company-series" class="month-company-grid"></div>
   <div class="month-legend" id="month-legend-lines"></div>
   <div class="month-legend" id="month-legend-speed"></div>
@@ -597,21 +607,21 @@ function gammaquant(a, b, p) {
   return x;
 }
 
-// Compute miles-per-incident estimate with 90% credible interval
-// k = incident count, m = miles driven
-function estimateRate(k, m) {
+// Compute miles-per-incident estimate with credible interval.
+// k = incident count, m = miles driven, massFrac = CI mass (e.g., 0.95)
+function estimateMpi(k, m, massFrac) {
   const a = k + 0.5; // posterior shape (Jeffreys prior)
-  const b = m;       // posterior rate
-  const tail = (1 - ciMass()) / 2;
-  // Median of 1/lambda = 1 / median(lambda)
-  const medianLambda = gammaquant(a, b, 0.5);
-  const loLambda     = gammaquant(a, b, 1 - tail);
-  const hiLambda     = gammaquant(a, b, tail);
+  const tail = (1 - massFrac) / 2;
   return {
-    median: 1 / medianLambda,
-    lo:     1 / loLambda,   // lower bound of miles-per-incident
-    hi:     1 / hiLambda,   // upper bound of miles-per-incident
+    median: 1 / gammaquant(a, m, 0.5),
+    lo:     1 / gammaquant(a, m, 1 - tail),
+    hi:     1 / gammaquant(a, m, tail),
   };
+}
+
+// DOM-dependent wrapper used by the (currently commented-out) estimator panel
+function estimateRate(k, m) {
+  return estimateMpi(k, m, ciMass());
 }
 
 // --- Data and UI ---
@@ -623,11 +633,79 @@ const DEFAULT_FAULT_WEIGHTS = {claude: 3, codex: 3, gemini: 3};
 let faultWeightState = {...DEFAULT_FAULT_WEIGHTS};
 let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true};
 const MONTH_METRIC_DEFS = [
-  {key: "all", label: "Miles per incident", dash: "", marker: "solid-circle", lineKeyClass: "solid"},
-  {key: "nonstationary", label: "Miles per nonstationary incident", dash: "5 4", marker: "hollow-circle", lineKeyClass: "dashed"},
-  {key: "atfault", label: "Miles per at-fault incident", dash: "10 3 2 3", marker: "hollow-triangle", lineKeyClass: "atfault"},
+  {key: "all", label: "Miles per incident", marker: "solid-circle"},
+  {key: "nonstationary", label: "Miles per nonstationary incident", marker: "hollow-circle"},
+  {key: "atfault", label: "Miles per at-fault incident", marker: "hollow-triangle"},
 ];
-let monthMetricEnabled = {all: true, nonstationary: true, atfault: true};
+let monthMetricEnabled = {all: true, nonstationary: false, atfault: false};
+
+function lightenHex(hex, amount) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgb(${Math.round(r + (255 - r) * amount)},${Math.round(g + (255 - g) * amount)},${Math.round(b + (255 - b) * amount)})`;
+}
+
+const LINE_STYLE_PRESETS = [
+  {
+    name: "Thickness + opacity",
+    all:           {width: 2.5, opacity: 1,    dash: "", markerScale: 1},
+    nonstationary: {width: 1.5, opacity: 0.55, dash: "", markerScale: 1},
+    atfault:       {width: 1,   opacity: 0.3,  dash: "", markerScale: 1},
+    colorFn: (color) => color,
+  },
+  {
+    name: "Thickness + dashes",
+    all:           {width: 2.5, opacity: 1, dash: "",    markerScale: 1},
+    nonstationary: {width: 1.5, opacity: 1, dash: "6 4", markerScale: 1},
+    atfault:       {width: 1,   opacity: 1, dash: "2 4", markerScale: 1},
+    colorFn: (color) => color,
+  },
+  {
+    name: "Color intensity",
+    all:           {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0},
+    nonstationary: {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.45},
+    atfault:       {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.7},
+    colorFn: (color, lighten) => lighten > 0 ? lightenHex(color, lighten) : color,
+  },
+  {
+    name: "Big markers",
+    all:           {width: 1.2, opacity: 1, dash: "", markerScale: 1},
+    nonstationary: {width: 1.2, opacity: 1, dash: "", markerScale: 1.6},
+    atfault:       {width: 1.2, opacity: 1, dash: "", markerScale: 2.2},
+    colorFn: (color) => color,
+  },
+];
+let lineStyleIdx = 0;
+
+function metricLineStyle(company, metricKey) {
+  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
+  const s = preset[metricKey];
+  const color = preset.colorFn(MONTHLY_COMPANY_COLORS[company], s.lighten || 0);
+  let style = `stroke:${color};stroke-width:${s.width}`;
+  if (s.opacity < 1) style += `;opacity:${s.opacity}`;
+  if (s.dash) style += `;stroke-dasharray:${s.dash}`;
+  return style;
+}
+
+function metricMarkerColor(company, metricKey) {
+  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
+  const s = preset[metricKey];
+  return preset.colorFn(MONTHLY_COMPANY_COLORS[company], s.lighten || 0);
+}
+
+function metricMarkerScale(metricKey) {
+  return LINE_STYLE_PRESETS[lineStyleIdx][metricKey].markerScale;
+}
+
+function metricErrStyle(company, metricKey) {
+  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
+  const s = preset[metricKey];
+  const color = preset.colorFn(MONTHLY_COMPANY_COLORS[company], s.lighten || 0);
+  let style = `stroke:${color}`;
+  if (s.opacity < 1) style += `;opacity:${s.opacity}`;
+  return style;
+}
 const CI_MASS_MIN_PCT = 50;
 const CI_MASS_MAX_PCT = 99.9;
 const CI_MASS_STEP_PCT = 0.1;
@@ -1501,29 +1579,53 @@ function renderAllCompaniesMpiChart(series) {
     atfault: rec => rec.incidents.atFault,
   };
   const markerRenderer = {
-    "solid-circle": (x, y, color) =>
-      `<circle class="month-dot" cx="${x}" cy="${y}" r="3.1" style="fill:${color};stroke:${color}"></circle>`,
-    "hollow-circle": (x, y, color) =>
-      `<circle class="month-dot" cx="${x}" cy="${y}" r="3.1" style="fill:#fff;stroke:${color}"></circle>`,
-    "hollow-triangle": (x, y, color) =>
-      `<path class="month-mark-tri" d="M ${x} ${y - 3.8} L ${x - 3.4} ${y + 2.8} L ${x + 3.4} ${y + 2.8} Z" style="fill:#fff;stroke:${color}"></path>`,
+    "solid-circle": (x, y, color, s) => {
+      const r = 3.1 * s;
+      return `<circle class="month-dot" cx="${x}" cy="${y}" r="${r}" style="fill:${color};stroke:${color}"></circle>`;
+    },
+    "hollow-circle": (x, y, color, s) => {
+      const r = 3.1 * s;
+      return `<circle class="month-dot" cx="${x}" cy="${y}" r="${r}" style="fill:#fff;stroke:${color}"></circle>`;
+    },
+    "hollow-triangle": (x, y, color, s) => {
+      const h = 3.8 * s;
+      const w = 3.4 * s;
+      return `<path class="month-mark-tri" d="M ${x} ${y - h} L ${x - w} ${y + (h * 0.74)} L ${x + w} ${y + (h * 0.74)} Z" style="fill:#fff;stroke:${color}"></path>`;
+    },
   };
 
   const seriesRows = [];
   let yMax = 1;
   for (const company of includedAdsCompanies()) {
-    const rows = scaledCompanyMonthRows(series, company);
+    const scaledRows = scaledCompanyMonthRows(series, company);
     for (const metric of includedMonthMetrics()) {
       const countFn = countByMetric[metric.key];
       must(typeof countFn === "function", "missing count fn for metric", {metric: metric.key});
-      const vals = rows.map(row => {
-        const k = countFn(row);
-        if (k <= 0) return null;
-        const mpiMin = row.vmtMin / k;
-        const mpiBest = row.vmtBest / k;
-        const mpiMax = row.vmtMax / k;
+      const vals = scaledRows.map((row, idx) => {
+        const kScaled = countFn(row);
+        // Use raw (unscaled) counts for the Bayesian model so partial months
+        // don't inflate apparent sample size and produce overconfident CIs.
+        const scale = monthScale(series.months[idx]);
+        const kRaw = kScaled / scale;
+        const vmtObs = row.vmtBest / scale;
+        const vmtObsMin = row.vmtMin / scale;
+        const vmtObsMax = row.vmtMax / scale;
+        const massFrac = CI_MASS_DEFAULT_PCT / 100;
+        // Point estimate: Bayesian posterior median of 1/lambda using
+        // observed (unscaled) data. MPI is a rate so same for any period.
+        const mpiBest = estimateMpi(kRaw, vmtObs, massFrac).median;
+        // VMT-only error bars (simple ratio)
+        const mpiMin = kRaw > 0 ? vmtObsMin / kRaw : mpiBest;
+        const mpiMax = kRaw > 0 ? vmtObsMax / kRaw : mpiBest;
+        // Bayesian CI combining count uncertainty (Gamma-Poisson) with VMT
+        // uncertainty: use vmtMin with high-rate quantile for lo, vmtMax
+        // with low-rate quantile for hi. This is conservative (widest band).
+        const a = kRaw + 0.5;
+        const tail = (1 - massFrac) / 2;
+        const ciLo = 1 / gammaquant(a, vmtObsMin, 1 - tail);
+        const ciHi = 1 / gammaquant(a, vmtObsMax, tail);
         yMax = Math.max(yMax, mpiMax);
-        return {mpiMin, mpiBest, mpiMax};
+        return {mpiMin, mpiBest, mpiMax, ciLo, ciHi, incidentCount: kRaw};
       });
       seriesRows.push({company, metric, vals});
     }
@@ -1548,8 +1650,7 @@ function renderAllCompaniesMpiChart(series) {
       d += `${penDown ? " L " : "M "}${mapX(i).toFixed(2)} ${mapY(mpi.mpiBest).toFixed(2)}`;
       penDown = true;
     }
-    const dash = row.metric.dash === "" ? "" : `stroke-dasharray:${row.metric.dash};`;
-    return `<path class="month-mpi-all-line" d="${d}" style="stroke:${MONTHLY_COMPANY_COLORS[row.company]};${dash}"></path>`;
+    return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.company, row.metric.key)}"></path>`;
   }).join("");
 
   const errs = seriesRows.map(row =>
@@ -1558,33 +1659,66 @@ function renderAllCompaniesMpiChart(series) {
       const x = mapX(i);
       const yLo = mapY(mpi.mpiMin);
       const yHi = mapY(mpi.mpiMax);
-      const color = MONTHLY_COMPANY_COLORS[row.company];
-      const dash = row.metric.dash === "" ? "" : `stroke-dasharray:${row.metric.dash};`;
+      const errStyle = metricErrStyle(row.company, row.metric.key);
       return `
-        <line class="month-err" x1="${x.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${x.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${color};${dash}"></line>
-        <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${color};${dash}"></line>
-        <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${color};${dash}"></line>
+        <line class="month-err" x1="${x.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${x.toFixed(2)}" y2="${yHi.toFixed(2)}" style="${errStyle}"></line>
+        <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yLo.toFixed(2)}" style="${errStyle}"></line>
+        <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yHi.toFixed(2)}" style="${errStyle}"></line>
       `;
     }).join("")
   ).join("");
 
   const marks = seriesRows.map(row =>
     row.vals.map((mpi, i) => {
-      if (mpi === null) return "";
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
-      const color = MONTHLY_COMPANY_COLORS[row.company];
+      const color = metricMarkerColor(row.company, row.metric.key);
+      const scale = metricMarkerScale(row.metric.key);
       const marker = markerRenderer[row.metric.marker];
       must(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
-      return marker(x, y, color);
+      const k = mpi.incidentCount;
+      const kFmt = Number.isInteger(k) ? String(k) : k.toFixed(1);
+      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(mpi.ciLo)} \u2013 ${fmtMiles(mpi.ciHi)}`;
+      return `<g>${marker(x, y, color, scale)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer"><title>${escHtml(tip)}</title></circle></g>`;
     }).join("")
   ).join("");
 
+  // Bayesian CI bands (clipped to plot area since bounds can be extreme)
+  const bands = seriesRows.map(row => {
+    const segments = [];
+    let seg = [];
+    for (let i = 0; i < row.vals.length; i++) {
+      if (row.vals[i] === null) {
+        if (seg.length > 0) segments.push(seg);
+        seg = [];
+      } else {
+        seg.push({i, val: row.vals[i]});
+      }
+    }
+    if (seg.length > 0) segments.push(seg);
+    const color = metricMarkerColor(row.company, row.metric.key);
+    const metricOpacity = LINE_STYLE_PRESETS[lineStyleIdx][row.metric.key].opacity;
+    const bandOpacity = (0.12 * metricOpacity).toFixed(3);
+    return segments.map(seg => {
+      let d = "";
+      for (const pt of seg) {
+        d += `${d ? " L " : "M "}${mapX(pt.i).toFixed(2)} ${mapY(pt.val.ciHi).toFixed(2)}`;
+      }
+      for (let j = seg.length - 1; j >= 0; j--) {
+        d += ` L ${mapX(seg[j].i).toFixed(2)} ${mapY(seg[j].val.ciLo).toFixed(2)}`;
+      }
+      d += " Z";
+      return `<path d="${d}" style="fill:${color};opacity:${bandOpacity}" clip-path="url(#mpi-clip)"></path>`;
+    }).join("");
+  }).join("");
+
   return `
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+      <defs><clipPath id="mpi-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${drawSingleMonthAxes(
         series.months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, fmtMiles, "Miles Per Incident (MPI)",
       )}
+      ${bands}
       ${lines}
       ${errs}
       ${marks}
@@ -1756,13 +1890,24 @@ function renderMonthlyLegends() {
     });
   }
 
+  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
   byId("month-legend-mpi-lines").innerHTML = `
-    ${MONTH_METRIC_DEFS.map(metric => `
+    ${MONTH_METRIC_DEFS.map(metric => {
+      const s = preset[metric.key];
+      const color = preset.colorFn("#4a5264", s.lighten || 0);
+      let keyStyle = `width:22px;height:0;display:inline-block;border-top:${s.width}px solid ${color}`;
+      if (s.dash) keyStyle += `;border-top-style:dashed`;
+      if (s.opacity < 1) keyStyle += `;opacity:${s.opacity}`;
+      const markerScale = s.markerScale;
+      const markerHtml = markerScale > 1
+        ? `<span style="display:inline-block;width:${6 * markerScale}px;height:${6 * markerScale}px;border:1.5px solid ${color};border-radius:${metric.marker === "hollow-triangle" ? "0" : "50%"};background:#fff;margin-right:2px;vertical-align:middle"></span>`
+        : "";
+      return `
       <label class="month-legend-item month-company-toggle" for="${monthMetricToggleId(metric.key)}">
         <input type="checkbox" id="${monthMetricToggleId(metric.key)}" ${monthMetricEnabled[metric.key] ? "checked" : ""}>
-        <span class="month-linekey ${metric.lineKeyClass}"></span>${metric.key === "atfault" ? `<span class="month-tri"></span>` : ""}${metric.label}
-      </label>
-    `).join("")}
+        <span style="${keyStyle}"></span>${markerHtml}${metric.label}
+      </label>`;
+    }).join("")}
     <span class="month-legend-item">*: Partial months are scaled to full-month equivalents</span>
   `;
   for (const metric of MONTH_METRIC_DEFS) {
@@ -1807,6 +1952,14 @@ function buildMonthlyViews() {
   `).join("");
   renderMonthlyLegends();
   byId("month-summary-box").innerHTML = renderMonthlySummary(series);
+  const sel = byId("line-style-select");
+  sel.innerHTML = LINE_STYLE_PRESETS.map((p, i) =>
+    `<option value="${i}" ${i === lineStyleIdx ? "selected" : ""}>${p.name}</option>`
+  ).join("");
+  sel.onchange = () => {
+    lineStyleIdx = Number(sel.value);
+    buildMonthlyViews();
+  };
 }
 
 // --- Fault fraction data ---
