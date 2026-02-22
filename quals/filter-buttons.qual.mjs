@@ -82,7 +82,7 @@ vmtRows = [
 buildBrowser();
 `, ctx);
 
-const expectedCount = vm.runInContext("Object.keys(COMPANIES).length + 1", ctx);
+const expectedCount = vm.runInContext("ADS_COMPANIES.length + 1", ctx);
 const filterRoot = getNode("filters");
 const before = filterRoot.children.length;
 filterRoot.children[1].click();
