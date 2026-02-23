@@ -25,7 +25,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped@0, struck by SUV going straight (CBI)",
+      "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative; estimate from CP=Proceeding Straight and AV=Stopped",
       "rgemini": "Redacted narrative; SV speed was 0"
     }
@@ -52,10 +52,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.8,
+      "claude": 0.9,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV unusual movement into fixed object (CBI)",
+      "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative; estimate from fixed-object contact with AV in nonstandard maneuver",
       "rgemini": "Redacted narrative; AV hit fixed object"
     }
@@ -85,7 +85,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.3,
       "codex": 0.4,
       "gemini": 0.0,
-      "rclaude": "Both making right turn, unclear without narrative (CBI)",
+      "rclaude": "Both turning; shared fault likely",
       "rcodex": "Redacted narrative; estimate from CP=Making Right Turn and AV=Making Right Turn",
       "rgemini": "Redacted narrative; CP turned into AV's rear right"
     }
@@ -112,10 +112,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV left turn into fixed object (CBI)",
+      "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative; estimate from fixed-object contact during AV left turn",
       "rgemini": "Redacted narrative; AV hit fixed object while turning"
     }
@@ -145,7 +145,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped@0, cyclist alongside (CBI)",
+      "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative; estimate from cyclist moving alongside stopped AV",
       "rgemini": "Redacted narrative; SV speed was 0"
     }
@@ -175,7 +175,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.5,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "AV vs animal crossing road (CBI)",
+      "rclaude": "Animal crossing; partially avoidable",
       "rcodex": "Redacted narrative; estimate from CP=NM Crossing Roadway and AV=Stopped",
       "rgemini": "Redacted narrative; AV hit animal"
     }
@@ -202,10 +202,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV straight, other vehicle backing (CBI)",
+      "rclaude": "Other vehicle backed into AV",
       "rcodex": "Redacted narrative; estimate from CP=Backing and AV=Proceeding Straight",
       "rgemini": "Redacted narrative; CP backed into AV"
     }
@@ -232,10 +232,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.4,
       "codex": 0.5,
       "gemini": 0.5,
-      "rclaude": "AV straight, other unknown action (CBI)",
+      "rclaude": "AV proceeding; limited info from metadata",
       "rcodex": "Redacted narrative with unknown counterpart action while AV proceeding",
       "rgemini": "Redacted narrative; sideswipe/ambiguous"
     }
@@ -265,7 +265,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped@0, struck by right-turning vehicle (CBI)",
+      "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative; estimate from CP=Making Right Turn and AV=Stopped",
       "rgemini": "Redacted narrative; SV speed was 0"
     }
@@ -292,10 +292,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV straight into fixed object (CBI)",
+      "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative and crash with fixed object while AV proceeding",
       "rgemini": "Redacted narrative; AV hit fixed object (bottom)"
     }
@@ -322,10 +322,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 0.95,
       "gemini": 1.0,
-      "rclaude": "AV backing into fixed object (CBI)",
+      "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative and AV backing into fixed object class",
       "rgemini": "Redacted narrative; AV backed over fixed object"
     }
@@ -355,7 +355,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped@0, struck by right-turning bus (CBI)",
+      "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative with AV stopped and counterpart turning right",
       "rgemini": "Redacted narrative; SV speed was 0"
     }
@@ -382,10 +382,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.8,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV straight into parked heavy truck (CBI)",
+      "rclaude": "AV drove into parked object",
       "rcodex": "Redacted narrative with counterpart parked and AV proceeding",
       "rgemini": "Redacted narrative; SV hit Parked CP"
     }
@@ -412,10 +412,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV backing into pole/tree (CBI)",
+      "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative and AV backing into pole/tree",
       "rgemini": "Redacted narrative; AV backed into pole/tree"
     }
@@ -442,10 +442,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV drove into chain at parking lot entrance",
+      "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV turned into parking-lot entrance chain",
       "rgemini": "AV hit a stationary hanging chain"
     }
@@ -472,10 +472,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, SUV turned left into AV's path",
+      "rclaude": "Other turned left into AV path",
       "rcodex": "SUV left turn crossed centerline into AV path",
       "rgemini": "Other vehicle crossed centerline and hit AV"
     }
@@ -502,10 +502,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV drove into chain in parking lot",
+      "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV turned into parking-lot chain",
       "rgemini": "AV hit a stationary hanging chain"
     }
@@ -532,10 +532,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV drove into chain in parking lot",
+      "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV struck parking-lot chain",
       "rgemini": "AV hit a stationary chain"
     }
@@ -565,7 +565,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stationary at red light, rear-ended",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended stopped AV at red",
       "rgemini": "AV was stopped and rear-ended"
     }
@@ -592,10 +592,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV backed into trailer hitch during multi-point turn",
+      "rclaude": "AV reversed into parked trailer; AV at fault",
       "rcodex": "AV reversing multi-point maneuver struck trailer hitch",
       "rgemini": "AV reversed into a stationary trailer hitch"
     }
@@ -625,7 +625,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped yielding, van departed lane into AV",
+      "rclaude": "AV stationary; struck by other party",
       "rcodex": "Van departed roadway/sidewalk and struck stationary AV",
       "rgemini": "AV was stopped and hit by an erratically driven van"
     }
@@ -652,10 +652,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, pickup entered from alley into path",
+      "rclaude": "Other entered traffic into AV path",
       "rcodex": "Pickup entered from alley into AV lane",
       "rgemini": "Other vehicle entered lane from an alley and hit AV"
     }
@@ -682,10 +682,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV's passenger opened door into passing van (passenger fault not AV fault)",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing van",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
@@ -712,10 +712,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.8,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV hit elevated gate track in parking lot",
+      "rclaude": "AV hit elevated gate track; should detect",
       "rcodex": "AV underbody struck elevated gate track",
       "rgemini": "AV hit a stationary elevated gate track"
     }
@@ -742,10 +742,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped to yield, truck scraped AV while passing",
+      "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Passing heavy truck struck stopped AV on narrow street",
       "rgemini": "AV was stopped and hit by a passing heavy truck"
     }
@@ -772,10 +772,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.8,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV hit elevated gate track in parking lot",
+      "rclaude": "AV hit elevated gate track; should detect",
       "rcodex": "AV underbody struck elevated gate track",
       "rgemini": "AV hit a stationary elevated gate track"
     }
@@ -802,10 +802,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, heavy truck turned right across AV's path",
+      "rclaude": "Other turned right across AV lane",
       "rcodex": "Heavy truck turned right from adjacent lane across AV path",
       "rgemini": "The AV was struck by a heavy truck that made an improper right turn from the left turn lane and crossed into the AVs lane."
     }
@@ -835,7 +835,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, other reversed into AV while parallel parking",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and hit by a reversing car"
     }
@@ -862,10 +862,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV's passenger opened rear door into passing bus (passenger fault not AV fault)",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "The AV was parked partially in-lane and its passenger opened a door into the path of a passing bus. AV itself not at fault."
     }
@@ -892,10 +892,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped to yield, truck scraped AV while passing",
+      "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Passing heavy truck struck stopped AV on narrow street",
       "rgemini": "AV was stopped and hit by a passing heavy truck"
     }
@@ -925,7 +925,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV stopped, pickup changing lanes hit AV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "AV reversed and stopped in lane before passing truck clipped AV",
       "rgemini": "AV was stopped and hit by a passing pickup truck"
     }
@@ -955,7 +955,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped to yield, truck scraped AV while passing",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing heavy truck struck stopped AV on narrow segment",
       "rgemini": "AV was stopped and hit by a passing heavy truck"
     }
@@ -985,7 +985,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, SUV behind hit AV",
+      "rclaude": "AV stationary; struck by other party",
       "rcodex": "SUV rear-ended stopped AV at red",
       "rgemini": "AV was stopped and rear-ended"
     }
@@ -1012,10 +1012,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "Other exited driveway into AV's path",
+      "rclaude": "Both proceeding; other likely at fault",
       "rcodex": "Passenger car entered roadway from driveway into AV side",
       "rgemini": "Other vehicle failed to yield when entering roadway and hit AV"
     }
@@ -1042,10 +1042,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.4,
       "codex": 0.4,
       "gemini": 0.0,
-      "rclaude": "Debris knocked into road by vehicle ahead",
+      "rclaude": "Debris from vehicle ahead; partially avoidable",
       "rcodex": "AV struck debris displaced across lane by vehicle ahead",
       "rgemini": "AV hit unavoidable moving debris from a vehicle ahead"
     }
@@ -1075,7 +1075,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped for hazard, rear-ended by SUV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped to yield blocked lane",
       "rgemini": "AV was stopped and rear-ended"
     }
@@ -1102,10 +1102,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.75,
+      "claude": 0.8,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV drove into closing barrier arm at parking lot exit",
+      "rclaude": "AV hit parking barrier arm; should have stopped",
       "rcodex": "Barrier arm reclosed as AV proceeded through exit",
       "rgemini": "The AV proceeded forward and struck an automatic barrier arm that had closed in its path."
     }
@@ -1135,7 +1135,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, car changing lanes hit AV",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passenger car pulled out from parking position into stopped AV",
       "rgemini": "AV was stopped and hit by a car exiting a parking spot"
     }
@@ -1165,7 +1165,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped in queue, car changing lanes hit AV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Lane-changing passenger car sideswiped stopped AV",
       "rgemini": "AV was stopped and hit by a car changing lanes"
     }
@@ -1195,7 +1195,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked for pickup, van scraped AV while passing",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning van passed and struck parked AV in loading zone",
       "rgemini": "The AV was parked with hazards and was struck by a van that was attempting to pass it while completing a turn."
     }
@@ -1225,7 +1225,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked at curb, car ahead reversed into AV",
+      "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and hit by a reversing car"
     }
@@ -1255,7 +1255,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, SUV passed and scraped AV",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "SUV passing stopped AV clipped rear quarter",
       "rgemini": "AV was stopped and hit by a maneuvering SUV"
     }
@@ -1282,10 +1282,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV going straight, pickup reversed into AV's path",
+      "rclaude": "Other vehicle reversed into AV path",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Other vehicle reversed into the AV"
     }
@@ -1315,7 +1315,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped to yield, SUV scraped AV while passing",
+      "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "SUV attempted pass maneuver around stopped AV and clipped rear quarter",
       "rgemini": "AV was stopped and hit by a passing SUV"
     }
@@ -1345,7 +1345,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, other car's open door struck AV",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing car with open door struck parked AV",
       "rgemini": "AV was parked and hit by a passing car with an open door"
     }
@@ -1372,10 +1372,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV's passenger opened door into passing car (passenger fault not AV fault)",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing car",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
@@ -1402,10 +1402,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV passenger opened door while AV in motion, hit parked SUV (passenger fault not AV fault)",
+      "rclaude": "AV passenger opened door hitting parked vehicle",
       "rcodex": "AV passenger repeatedly opened door while AV moved past stopped AV",
       "rgemini": "Passenger in moving AV opened door and hit a stationary AV. AV itself not at fault."
     }
@@ -1435,7 +1435,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV slowing for traffic, rear-ended by following car",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV while AV slowed for queue",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down for a queue of traffic."
     }
@@ -1462,10 +1462,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped to yield, box truck scraped AV passing",
+      "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Passing box truck struck stopped AV on narrow street",
       "rgemini": "AV was stopped and hit by a passing box truck"
     }
@@ -1492,10 +1492,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.5,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV hit fallen utility line hanging across roadway",
+      "rclaude": "AV hit fallen utility line; hard to detect",
       "rcodex": "AV struck fallen utility line hanging across roadway",
       "rgemini": "AV hit a fallen utility line in the roadway"
     }
@@ -1522,10 +1522,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV's passenger opened door into passing bus (passenger fault not AV fault)",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
@@ -1555,7 +1555,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopping at stop sign, rear-ended by SUV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was slowing for a stop sign and was rear-ended"
     }
@@ -1585,7 +1585,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "Other crossed into AV's lane during parallel left turn",
+      "rclaude": "Other crossed lane line during left turn",
       "rcodex": "Inner-lane pickup crossed turn-lane boundary into AV",
       "rgemini": "Other vehicle crossed lane line during dual turn and hit AV"
     }
@@ -1612,10 +1612,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, SUV turned right across AV's path",
+      "rclaude": "Other turned right across AV lane",
       "rcodex": "SUV turned right across AV lane while AV was passing",
       "rgemini": "Other vehicle crossed lane line and hit AV"
     }
@@ -1645,7 +1645,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, rear-ended by SUV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped at red",
       "rgemini": "AV was stopped and rear-ended"
     }
@@ -1675,7 +1675,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped for pickup, rear-ended then hit-and-run",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Pickup repeatedly struck stationary AV front and rear",
       "rgemini": "AV was stopped and hit twice by a pickup truck"
     }
@@ -1702,10 +1702,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV's passenger opened door into passing cyclist (passenger fault not AV fault)",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened front door into passing cyclist",
       "rgemini": "Passenger opened door into a passing cyclist while AV was parked. AV itself not at fault."
     }
@@ -1735,7 +1735,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, rear-ended by SUV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped in queue",
       "rgemini": "AV was stopped and rear-ended"
     }
@@ -1765,7 +1765,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, minivan scraped AV while passing",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Turning minivan passing parked AV clipped rear quarter",
       "rgemini": "AV was parked and hit by a passing minivan"
     }
@@ -1795,7 +1795,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, car changing lanes hit AV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Lane-changing passenger car sideswiped stopped AV",
       "rgemini": "AV was stopped and hit by a car changing lanes"
     }
@@ -1825,7 +1825,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked at curb, SUV reversed from driveway into AV",
+      "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and hit by a reversing SUV"
     }
@@ -1852,10 +1852,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Tires fell from vehicle ahead into AV's path",
+      "rclaude": "Object fell from other vehicle; hard to avoid",
       "rcodex": "Tires fell from trailer ahead and rolled into AV path",
       "rgemini": "AV hit unavoidable debris falling from a vehicle ahead"
     }
@@ -1882,10 +1882,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.8,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV hit unattended bicycle laying in roadway",
+      "rclaude": "AV hit object in roadway; should detect and avoid",
       "rcodex": "AV struck unattended bicycle lying in roadway at speed",
       "rgemini": "AV hit an unattended bicycle in the roadway"
     }
@@ -1912,10 +1912,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.8,
       "codex": 0.7,
       "gemini": 1.0,
-      "rclaude": "AV hit unattended bicycle laying in roadway",
+      "rclaude": "AV hit object in roadway; should detect and avoid",
       "rcodex": "AV struck unattended bicycle lying in travel lane",
       "rgemini": "The AV failed to avoid and struck an unattended bicycle laying in the middle of the roadway."
     }
@@ -1945,7 +1945,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, rear-ended by car",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped at red",
       "rgemini": "AV was stopped and rear-ended"
     }
@@ -1972,10 +1972,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.8,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV hit small piece of concrete in parking lot",
+      "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV entered driveway and struck concrete/chain obstacle",
       "rgemini": "Waymo drove over a piece of concrete attached to a chain at a parking lot entrance."
     }
@@ -2005,7 +2005,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped@0, struck by car going straight (CBI)",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended stopped AV at red light",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped at a red light."
     }
@@ -2035,7 +2035,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV's path",
+      "rclaude": "Other made unprotected left turn into AV",
       "rcodex": "Oncoming car made unprotected left into AV lane",
       "rgemini": "Waymo was proceeding on a green light when another vehicle made an unprotected left turn into it."
     }
@@ -2065,7 +2065,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, other vehicle traveling wrong way",
+      "rclaude": "Other drove wrong way into AV",
       "rcodex": "Counterpart traveling wrong way",
       "rgemini": "The AV was struck by a wrong-way driver despite taking multiple evasive maneuvers to avoid the collision."
     }
@@ -2095,7 +2095,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, pickup scraped AV while passing",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Pickup passing parked in-lane AV clipped rear quarter",
       "rgemini": "The AV was parked in-lane with hazards and was struck by a pickup truck that was passing it."
     }
@@ -2122,10 +2122,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV hit raised pavement in alley",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Cross-traffic red-light violator struck AV after AV stopped to yield",
       "rgemini": "The AV had a green light and stopped to yield to another vehicle that ran a red light but the other vehicle still struck the AV."
     }
@@ -2155,7 +2155,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, car changing lanes hit AV",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV while AV slowed for queue",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down for a queue of traffic."
     }
@@ -2182,10 +2182,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.8,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV going straight, car entered from alley into AV's path",
+      "rclaude": "AV hit parking barrier arm; should have stopped",
       "rcodex": "AV drove into closed barrier arm",
       "rgemini": "The AV proceeded forward and hit a closed barrier arm."
     }
@@ -2212,10 +2212,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.8,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV contacted parked vehicle on narrow street",
+      "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "The AV was stationary and the vehicle in front of it reversed into it."
     }
@@ -2242,10 +2242,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV hit curb/median",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to traffic when another vehicle changed lanes into it."
     }
@@ -2272,10 +2272,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.2,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV hit fallen sign in roadway",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped at stop sign",
       "rgemini": "Waymo was rear-ended by an SUV while stopped at a stop sign."
     }
@@ -2305,7 +2305,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car entering traffic",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Pickup rear-ended stopped AV at red",
       "rgemini": "Waymo was rear-ended by a pickup truck while stopped at a red light."
     }
@@ -2335,7 +2335,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped in traffic, rear-ended by car",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning SUV struck stationary AV at red",
       "rgemini": "AV was stopped and hit by a turning SUV"
     }
@@ -2365,7 +2365,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended by car",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Box truck struck parked in-lane AV near construction",
       "rgemini": "The AV was parked in-lane yielding to construction and was rear-ended by a box truck."
     }
@@ -2395,7 +2395,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car entering traffic",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped in queue",
       "rgemini": "The AV was rear-ended by another vehicle while stopped in a queue."
     }
@@ -2425,7 +2425,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, rear-ended",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "AV stop-and-go at beacon preceded rear-end by following car",
       "rgemini": "The AV was rear-ended by another vehicle while stopped before a crosswalk."
     }
@@ -2455,7 +2455,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV stationary; struck by other party",
       "rcodex": "AV stop-and-go then stop preceded rear-end by following truck",
       "rgemini": "The AV was rear-ended by a box truck after slowing to a stop to prepare for a turn."
     }
@@ -2485,7 +2485,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Tow truck attempted unauthorized tow of AV",
+      "rclaude": "AV stationary; struck by other party",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "The AV was stationary and the other vehicle reversed into it."
     }
@@ -2512,10 +2512,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV hit raised pavement in alley",
+      "rclaude": "Other changed lanes into AV",
       "rcodex": "Passenger car changed lanes into AV side",
       "rgemini": "The AV was struck by another vehicle that abruptly changed lanes into the AVs lane of travel."
     }
@@ -2545,7 +2545,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.1,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "Other crossed into AV's turn path from wrong position",
+      "rclaude": "Other turned right into AV",
       "rcodex": "Truck turned right from incorrect lane during parallel right-turn",
       "rgemini": "The AV was struck by a semi-truck that made an improper right turn from the entrance lane of the parking lot."
     }
@@ -2575,7 +2575,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing SUV struck stopped AV rear quarter",
       "rgemini": "The AV was stationary yielding to traffic and was struck by an SUV that was passing it."
     }
@@ -2605,7 +2605,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at stop sign, rear-ended",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Fire truck passing narrow lane struck stopped AV",
       "rgemini": "The AV was stationary yielding to a fire truck and the fire truck struck the AV while passing."
     }
@@ -2632,10 +2632,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck encroached into AV lane",
       "rcodex": "Truck re-entered lane from reverse maneuver; AV had limited clearance",
       "rgemini": "Waymo was maneuvering around a truck when the truck pulled forward into its lane and struck it."
     }
@@ -2662,10 +2662,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.5,
       "codex": 0.7,
       "gemini": 1.0,
-      "rclaude": "AV stopped at stop sign, rear-ended",
+      "rclaude": "AV started moving as pedestrian pushed carts nearby",
       "rcodex": "AV moved into path of carts pushed by pedestrian",
       "rgemini": "AV struck shopping carts pushed by pedestrian"
     }
@@ -2692,10 +2692,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, rear-ended",
+      "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Turning bus clipped stopped AV on narrow street",
       "rgemini": "The AV was stationary at a red light and a bus struck it while completing a turn."
     }
@@ -2725,7 +2725,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, SUV turned right into AV",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning passenger car clipped parked AV after drop-off",
       "rgemini": "The AV was parked at the curb and the other vehicle struck it while completing a turn."
     }
@@ -2755,7 +2755,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV turning right, rear-ended by following vehicle",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Following car rear-ended AV while AV slowed to yield pedestrian",
       "rgemini": "The AV was rear-ended by another vehicle while slowing to yield to a pedestrian in a crosswalk."
     }
@@ -2785,7 +2785,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped for red turn arrow",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a red light."
     }
@@ -2812,10 +2812,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "Other crossed into AV's lane during parallel left turn",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Parallel left-turn conflict with following car contacting AV rear quarter",
       "rgemini": "The AV was rear-ended by another vehicle while both were making a protected left turn."
     }
@@ -2842,10 +2842,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.5,
       "codex": 0.7,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "Two Waymo AVs collided in parking lot; shared fault",
       "rcodex": "AV pulled forward while adjacent AV was reversing from stall",
       "rgemini": "The AV proceeded forward and struck another AV that was reversing from an adjacent parking stall."
     }
@@ -2872,10 +2872,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV hit raised pavement/speed bump",
+      "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "SUV passing on narrow road struck stopped AV",
       "rgemini": "Waymo was stationary yielding to an SUV when the SUV struck it while passing."
     }
@@ -2905,7 +2905,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing bus struck stopped AV in right-turn lane",
       "rgemini": "AV was stopped and hit by a passing bus"
     }
@@ -2932,10 +2932,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV hit speed bump",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV while AV slowed for queue",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down for a queue of traffic."
     }
@@ -2965,7 +2965,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by SUV",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Bus with open compartment door struck stopped AV mirror",
       "rgemini": "The AV was stationary and was struck by an open storage compartment door of a passing bus."
     }
@@ -2995,7 +2995,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped in queue",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped in traffic for a red light."
     }
@@ -3025,7 +3025,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped to yield, car scraped AV passing",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Heavy truck parking maneuver struck stationary curbside AV",
       "rgemini": "AV was stopped and hit by a maneuvering truck"
     }
@@ -3055,7 +3055,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Object detached from truck ahead",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing heavy truck bed clipped parked AV",
       "rgemini": "The AV was parked at the curb and was struck by a heavy truck that was passing it."
     }
@@ -3082,10 +3082,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV hit speed bump",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Chain-reaction pickup impact then rear-ended stopped AV",
       "rgemini": "The AV was rear-ended by a pickup truck that had just rear-ended another vehicle behind the AV."
     }
@@ -3115,7 +3115,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entered AV's lane",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped at stop sign",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a stop sign."
     }
@@ -3145,7 +3145,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Following passenger car clipped AV rear while AV slowed to yield merge",
       "rgemini": "AV slowed to yield and was rear-ended"
     }
@@ -3172,10 +3172,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Object fell from other vehicle; hard to avoid",
       "rcodex": "Detached object from oncoming pickup rolled into AV lane",
       "rgemini": "The AV was struck by an object that detached from another vehicle and rolled into its lane."
     }
@@ -3202,10 +3202,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Other's door opened into AV's path",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped for queue",
       "rgemini": "The AV was rear-ended by another vehicle while stopped in a queue."
     }
@@ -3235,7 +3235,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Bus passing around parked AV clipped rear side",
       "rgemini": "The AV was parked in-lane with hazards and was struck by a bus that was maneuvering around it."
     }
@@ -3262,10 +3262,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.7,
       "codex": 0.6,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV hit small object in road; should detect",
       "rcodex": "AV struck roadway object in lane",
       "rgemini": "Waymo drove over a dumbbell in its lane."
     }
@@ -3295,7 +3295,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV as AV slowed behind stopped bus",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down to pass a stopped bus."
     }
@@ -3322,10 +3322,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.2,
+      "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV hit fallen street sign in roadway",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Following car rear-ended AV during stop-and-go turn-lane traffic",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down behind a car waiting to make a turn."
     }
@@ -3355,7 +3355,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "AV stop-and-go for emergency vehicle preceded rear-end by following car",
       "rgemini": "AV was stopped and rear-ended"
     }
@@ -3385,7 +3385,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing bus struck parked curbside AV",
       "rgemini": "The AV was parked at the curb and a bus struck it while passing."
     }
@@ -3412,10 +3412,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, rear-ended",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened door into passing scooter",
       "rgemini": "Waymo passenger opened their door into the path of a passing scooterist. AV itself not at fault."
     }
@@ -3442,10 +3442,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     }
@@ -3475,7 +3475,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV after AV stopped for emergency vehicle",
       "rgemini": "Waymo was rear-ended by an SUV while stopped to yield to an emergency vehicle."
     }
@@ -3502,10 +3502,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV making U-turn, hit raised median",
+      "rclaude": "AV hit median during U-turn; AV at fault",
       "rcodex": "AV U-turn maneuver struck raised median pavement",
       "rgemini": "The AV struck a concrete median while executing a U-turn."
     }
@@ -3535,7 +3535,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Shopping cart pushed into AV's path",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning passenger car crossed center line into stationary AV",
       "rgemini": "The AV was stationary and the other vehicle crossed the center line into its lane."
     }
@@ -3562,10 +3562,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV hit wire suspended across road",
+      "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened door into passing bus",
       "rgemini": "The AV was parked but its passenger opened a door into the path of an oncoming bus. AV itself not at fault."
     }
@@ -3595,7 +3595,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "Basketball rolled into AV's path",
+      "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car changing/straddling lanes clipped AV rear quarter",
       "rgemini": "Waymo was rear-ended by a vehicle splitting lanes while slowing for a red light."
     }
@@ -3622,10 +3622,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped for bird, rear-ended",
+      "rclaude": "Pedestrian pushed shopping cart into AV",
       "rcodex": "Pedestrian pushed shopping cart into AV path",
       "rgemini": "Pedestrian pushed a shopping cart into the AV"
     }
@@ -3655,7 +3655,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV turning right, rear-ended",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passenger car pulled from stall and struck parked AV",
       "rgemini": "Waymo was parked when another vehicle pulled forward into it."
     }
@@ -3685,7 +3685,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped for scooter crossing",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped to yield to a scooterist."
     }
@@ -3715,7 +3715,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped at red",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped at a red light."
     }
@@ -3742,10 +3742,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Turning heavy truck struck AV that had reversed and stopped to yield",
       "rgemini": "The AV reversed to yield and was stationary at the curb when the other vehicle struck it while turning."
     }
@@ -3775,7 +3775,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; other crossed into AV lane",
       "rcodex": "Truck turned right across lane and struck stopped AV",
       "rgemini": "Waymo was stationary yielding to a truck making an illegal right turn from the left lane when the truck struck it."
     }
@@ -3805,7 +3805,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Minivan rear-ended AV stopped at red",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a red light."
     }
@@ -3835,7 +3835,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Wrong-way SUV struck parked AV head-on",
       "rgemini": "The AV was parked and was struck head-on by a vehicle that crossed into the opposing lane at high speed."
     }
@@ -3865,7 +3865,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.1,
       "codex": 0.65,
       "gemini": 0.0,
-      "rclaude": "Other's door opened into AV's path in parking lot",
+      "rclaude": "Other car passenger opened door into AV path",
       "rcodex": "AV maneuvering around stopped car was struck by opening door",
       "rgemini": "Waymo was passing a stopped vehicle when a passenger opened their door into the AV."
     }
@@ -3892,10 +3892,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.2,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car entered traffic into AV",
+      "rclaude": "Heavy truck reversed into AV passing behind it",
       "rcodex": "AV passed behind truck that resumed reversing; shared backing conflict",
       "rgemini": "Waymo was passing a stationary truck when the truck unexpectedly reversed into it."
     }
@@ -3925,7 +3925,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned right into AV",
+      "rclaude": "AV stationary at red light; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV stopped at red",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a red light."
     }
@@ -3952,10 +3952,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.8,
+      "claude": 0.3,
       "codex": 0.3,
       "gemini": 0.0,
-      "rclaude": "AV sideswiped parked pickup while avoiding oncoming bus",
+      "rclaude": "AV sideswiped parked truck's open door while passing",
       "rcodex": "Parked pickup door opened into passing AV in narrow gap",
       "rgemini": "Waymo struck a door that was opened into its path by a parked vehicle's driver."
     }
@@ -3982,10 +3982,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.4,
+      "claude": 0.1,
       "codex": 0.45,
       "gemini": 0.5,
-      "rclaude": "AV making left turn, rear contacted stopped bus",
+      "rclaude": "AV was stationary; bus turned left into stopped AV",
       "rcodex": "AV and bus both repositioned in intersection before bus turn contact",
       "rgemini": "The AV made multiple maneuvers around a turning bus and stopped in a position where the bus struck it while completing its turn. Shared fault."
     }
@@ -4015,7 +4015,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car changed lanes into AV",
+      "rclaude": "AV stopped yielding; garbage truck sideswiped it passing",
       "rcodex": "Passing garbage truck on narrow road struck stopped AV",
       "rgemini": "Waymo was stationary yielding to a garbage truck when the truck struck it while passing."
     }
@@ -4045,7 +4045,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.3,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car passed and hit AV",
+      "rclaude": "AV stationary; passenger car maneuvered into stopped AV",
       "rcodex": "AV stopped partially out of lane while traffic was directed around it",
       "rgemini": "Hit while stationary by a passing vehicle"
     }
@@ -4075,7 +4075,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped at stop sign, rear-ended",
+      "rclaude": "AV stationary at stop sign; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV stopped at stop sign",
       "rgemini": "Waymo was rear-ended by an SUV while stopped at a stop sign."
     }
@@ -4105,7 +4105,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, pickup trailer scraped AV passing",
+      "rclaude": "AV parked for pickup; pickup truck sideswiped it passing",
       "rcodex": "Turning pickup-trailer clipped stopped in-lane AV",
       "rgemini": "Waymo was stationary when a passing pickup truck struck it."
     }
@@ -4135,7 +4135,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, pickup scraped AV while passing",
+      "rclaude": "AV stationary yielding; pickup sideswiped it passing",
       "rcodex": "Passing pickup-trailer struck AV that had stopped to yield",
       "rgemini": "Waymo was stationary yielding to a truck when the truck struck it while attempting to pass."
     }
@@ -4162,10 +4162,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 1.0,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "Wheel separated from truck ahead into AV's path",
+      "rclaude": "AV mechanical failure: rear wheel separated while driving",
       "rcodex": "AV wheel/component separation while proceeding",
       "rgemini": "Waymo's wheel separated from the vehicle while driving indicating a maintenance or hardware failure."
     }
@@ -4195,7 +4195,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "AV parked; chain-reaction pushed car into stationary AV",
       "rcodex": "Chain-reaction impact pushed passenger car into parked AV",
       "rgemini": "The AV was parked and was struck as a secondary impact from a collision between two other vehicles."
     }
@@ -4225,7 +4225,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.8,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV hit vegetation while passing in narrow alley",
+      "rclaude": "AV drove into vegetation extending into alley roadway",
       "rcodex": "AV sideswiped vegetation encroaching into alley during pass",
       "rgemini": "AV hit vegetation extending into the roadway"
     }
@@ -4255,7 +4255,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.4,
       "codex": 0.7,
       "gemini": 0.5,
-      "rclaude": "AV changing lanes, stopped pickup moved forward into contact",
+      "rclaude": "AV changing lanes; pickup in target lane moved forward into AV",
       "rcodex": "AV lane change into occupied right lane led to rear-quarter impact",
       "rgemini": "AV was changing lanes when a stopped pickup proceeded forward and hit it"
     }
@@ -4285,7 +4285,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV parked; SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV crossed center line and clipped parked AV",
       "rgemini": "Hit while parked by a passing vehicle that crossed the double yellow line"
     }
@@ -4315,7 +4315,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV parked; passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was parked when another vehicle reversed into it."
     }
@@ -4342,10 +4342,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV stopped, SUV entering traffic hit AV",
+      "rclaude": "AV drove over removed pavement section in construction zone",
       "rcodex": "AV followed construction path into removed-pavement drop",
       "rgemini": "The AV drove over a section of removed pavement in a construction zone."
     }
@@ -4372,10 +4372,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.5,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "Flagger arm lowered onto AV then AV drove forward into it",
       "rcodex": "AV proceeded into lowered flagger arm causing additional contact",
       "rgemini": "AV proceeded forward into a lowered flagger arm"
     }
@@ -4402,10 +4402,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.7,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV drove through standing water",
+      "rclaude": "AV stationary; motorcycle lane-split and fell into AV",
       "rcodex": "Motorcycle hit door of another car then fell into stationary AV",
       "rgemini": "Waymo was stationary when a motorcycle fell into it after striking an open door of another vehicle."
     }
@@ -4435,7 +4435,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car entered from driveway",
+      "rclaude": "AV stationary at stop sign; rear-ended by SUV",
       "rcodex": "SUV rear-ended stationary AV at stop-sign queue",
       "rgemini": "Rear-ended by another vehicle while stopped"
     }
@@ -4465,7 +4465,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by passing vehicle",
+      "rclaude": "AV stopped in crosswalk; trailer sideswiped it turning",
       "rcodex": "AV remained stopped within crosswalk as turning trailer contacted AV",
       "rgemini": "Waymo was stationary in the intersection when a pickup truck turning left struck it."
     }
@@ -4492,10 +4492,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV drove over one-way traffic spikes",
+      "rclaude": "AV parked; motorcycle changed lanes into stationary AV",
       "rcodex": "Motorcycle lane change into leftmost lane struck parked AV",
       "rgemini": "The AV was parked and was struck by a motorcycle that was changing lanes."
     }
@@ -4525,7 +4525,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped@0, struck by car going straight (CBI)",
+      "rclaude": "AV stationary; rear-ended by passenger car",
       "rcodex": "Following car rear-ended AV after AV stopped to yield vulnerable users",
       "rgemini": "Rear-ended by another vehicle while stopped to yield"
     }
@@ -4552,10 +4552,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Other car ran red light; AV braked but still made contact",
       "rcodex": "Cross-traffic car ran red and AV contacted side after hard braking",
       "rgemini": "Waymo struck a vehicle that ran a red light despite applying hard braking."
     }
@@ -4582,10 +4582,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "AV parked; passenger opened door into path of passing SUV",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Waymo passenger opened their door into the path of an oncoming SUV. AV itself not at fault."
     }
@@ -4612,10 +4612,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.5,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV hit pothole in roadway",
+      "rclaude": "AV stationary yielding; van sideswiped it on narrow street",
       "rcodex": "Passing van on narrow road struck stopped AV",
       "rgemini": "Waymo was stationary yielding to a van when the van struck it while attempting to pass."
     }
@@ -4645,7 +4645,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV parked; SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV clipped parked curbside AV",
       "rgemini": "Waymo was parked when a passing SUV struck it."
     }
@@ -4675,7 +4675,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV parked; SUV sideswiped it while completing right turn",
       "rcodex": "SUV turning right around parked AV clipped AV rear quarter",
       "rgemini": "Hit while parked by a turning vehicle"
     }
@@ -4705,7 +4705,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV parked; SUV reversed out of stall into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit while parked by a reversing vehicle"
     }
@@ -4735,7 +4735,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.5,
       "codex": 0.65,
       "gemini": 0.5,
-      "rclaude": "AV entering traffic from curb, contacted car",
+      "rclaude": "AV merging from parking spot; car hit AV's rear left",
       "rcodex": "AV pulled from curb into moving queue and was struck at rear quarter",
       "rgemini": "AV merged into traffic and was hit by a vehicle already in the lane"
     }
@@ -4762,10 +4762,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.7,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove into fallen utility line hanging in travel lane",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo drove into a fallen utility line hanging in its lane."
     }
@@ -4792,10 +4792,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV hit raised pavement",
+      "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped at red",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped at a red light."
     }
@@ -4825,7 +4825,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped at red light, rear-ended",
+      "rclaude": "Other car changed lanes into AV's lane of travel",
       "rcodex": "Passenger car attempted turn across into AV lane",
       "rgemini": "Waymo was proceeding straight when another vehicle changed lanes into it while attempting a left turn."
     }
@@ -4855,7 +4855,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped at red light",
       "rgemini": "Rear-ended by another vehicle while stopped at a red light"
     }
@@ -4885,7 +4885,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car ran red light into AV",
+      "rclaude": "AV proceeding straight; rear-ended by speeding car",
       "rcodex": "Counterpart struck AV from behind while overtaking",
       "rgemini": "The AV was rear-ended by another vehicle while traveling normally."
     }
@@ -4912,10 +4912,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV drove through standing water causing damage",
       "rcodex": "AV drove through standing water and sustained damage",
       "rgemini": "Waymo drove into standing water causing damage to itself."
     }
@@ -4945,7 +4945,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV parking maneuver, hit parked trailer",
+      "rclaude": "AV hit parked flatbed trailer while exiting parking spot",
       "rcodex": "AV exiting parking spot struck parked flatbed trailer",
       "rgemini": "AV hit a parked vehicle while exiting a parking spot"
     }
@@ -4975,7 +4975,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
     }
@@ -5002,10 +5002,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "AV drove into pothole in roadway",
       "rcodex": "AV struck pothole in lane and sustained damage",
       "rgemini": "AV hit a pothole"
     }
@@ -5032,10 +5032,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped; passenger opened door into path of passing SUV",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
     }
@@ -5065,7 +5065,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary in traffic queue; SUV hit rear from behind",
       "rcodex": "SUV rear-quarter struck stopped AV in queue",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
     }
@@ -5095,7 +5095,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "Other car changed lanes into AV's lane of travel",
       "rcodex": "Adjacent-lane car merged into AV at intersection",
       "rgemini": "Passenger car changed lanes into the Waymo AV."
     }
@@ -5122,10 +5122,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV turning right, motorcycle lane-split from behind",
+      "rclaude": "AV slowing for right turn; motorcycle rear-ended AV",
       "rcodex": "Motorcycle rear-ended slowing AV as AV prepared signed right turn",
       "rgemini": "Rear-ended by a motorcycle while slowing for a right turn"
     }
@@ -5152,10 +5152,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV hit raised pavement",
+      "rclaude": "AV hit parked flatbed truck while exiting parking spot",
       "rcodex": "AV exiting parking spot struck parked flatbed",
       "rgemini": "Waymo struck a parked truck while attempting to exit a parking spot."
     }
@@ -5185,7 +5185,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "Third-party car ran red light causing chain-reaction crash",
       "rcodex": "Third-party red-light violator caused chain collision into AV",
       "rgemini": "Another vehicle ran a red light causing a chain reaction that hit the AV"
     }
@@ -5212,10 +5212,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.6,
       "codex": 0.4,
       "gemini": 0.0,
-      "rclaude": "Animal suddenly emerged from behind parked vehicle",
+      "rclaude": "AV hit domestic animal that emerged from behind parked car",
       "rcodex": "Domestic animal suddenly entered lane from parked-vehicle area",
       "rgemini": "Animal darted into the street from behind a parked vehicle unavoidable."
     }
@@ -5245,7 +5245,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary in traffic; SUV in front reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit by a reversing vehicle while stopped at a red light"
     }
@@ -5275,7 +5275,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV slowing for stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV while AV slowed for stop sign",
       "rgemini": "Rear-ended by another vehicle while slowing for a stop sign"
     }
@@ -5305,7 +5305,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary at red light; rear-ended by SUV",
       "rcodex": "SUV rear-ended stopped AV in turn lane",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
     }
@@ -5335,7 +5335,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, SUV entering traffic hit AV",
+      "rclaude": "Pickup truck reversed into AV's lane during U-turn",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Hit by a reversing pickup truck"
     }
@@ -5365,7 +5365,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped yielding; pickup truck reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when a pickup truck reversed into it."
     }
@@ -5395,7 +5395,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV slowing for emergency siren; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV after AV slowed for emergency siren",
       "rgemini": "Waymo AV was rear-ended while slowing for an emergency vehicle."
     }
@@ -5425,7 +5425,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car entered from driveway",
+      "rclaude": "AV stationary in traffic; SUV crossed center line into AV",
       "rcodex": "SUV crossed center line from curb and struck stationary AV",
       "rgemini": "Hit while stationary by a vehicle crossing the center line"
     }
@@ -5452,10 +5452,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV emerged from behind train into AV's lane",
       "rcodex": "SUV emerged across tracks into AV lane",
       "rgemini": "Another vehicle crossed into the AV's path from behind a stopped train"
     }
@@ -5485,7 +5485,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV stationary in traffic; SUV crossed center line into AV",
       "rcodex": "SUV crossed center line and struck stationary AV",
       "rgemini": "Hit while stationary by a turning vehicle that crossed the center line"
     }
@@ -5515,7 +5515,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "AV stationary; rear-ended by passenger car from behind",
       "rcodex": "Following car struck AV while AV was stopped yielding near work vehicle",
       "rgemini": "Waymo AV was rear-ended while stationary yielding to a forklift."
     }
@@ -5542,10 +5542,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped to yield, struck by passing car",
+      "rclaude": "AV drove into hanging chain at parking lot exit",
       "rcodex": "AV drove into hanging chain barrier in parking lot",
       "rgemini": "Waymo AV drove into a stationary hanging chain."
     }
@@ -5572,10 +5572,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.9,
+      "claude": 0.8,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV entering traffic, hit loading ramp of parked truck",
+      "rclaude": "AV maneuvering around truck hit its loading ramp",
       "rcodex": "AV maneuvered into parked truck loading ramp",
       "rgemini": "AV hit a parked truck's ramp while maneuvering around it"
     }
@@ -5605,7 +5605,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; heavy truck reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when a heavy truck reversed into it."
     }
@@ -5632,10 +5632,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "Car made sudden right turn without signal in front of AV",
       "rcodex": "Counterpart right turn crossed AV path",
       "rgemini": "Passenger car made a sudden right turn across the Waymo AV's path."
     }
@@ -5662,10 +5662,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV making left turn, other changed lanes into AV",
+      "rclaude": "Other car changed lanes into AV's lane during left turn",
       "rcodex": "Adjacent turning car changed lanes into AV during turn",
       "rgemini": "Another vehicle crossed the lane line and hit the AV"
     }
@@ -5695,7 +5695,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "AV stationary; heavy truck sideswiped it on narrow street",
       "rcodex": "Passing heavy-truck trailer clipped stopped AV",
       "rgemini": "Waymo AV was stationary when a passing heavy truck's trailer hit it."
     }
@@ -5725,7 +5725,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV stationary at stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped at stop sign",
       "rgemini": "Waymo AV was rear-ended while stationary at a stop sign."
     }
@@ -5755,7 +5755,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary at red light; heavy truck sideswiped it turning",
       "rcodex": "Turning heavy truck side-swiped stopped AV",
       "rgemini": "Waymo was stationary at a red light when a turning truck struck it."
     }
@@ -5782,10 +5782,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "Cyclist ran stop sign and hit rear of AV from side",
       "rcodex": "Cyclist entered roadway from trail against stop control and hit AV rear side",
       "rgemini": "Cyclist ran a stop sign and hit the AV"
     }
@@ -5815,7 +5815,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV stationary; tow truck reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when a tow truck reversed into it."
     }
@@ -5842,10 +5842,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove through standing water in roadway",
       "rcodex": "AV entered roadway water and sustained damage",
       "rgemini": "AV drove into deep water"
     }
@@ -5872,10 +5872,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 1.0,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove wrong way through exit-only tire spikes",
       "rcodex": "AV drove over one-way traffic spikes at exit-only gate",
       "rgemini": "Waymo drove through an exit-only gate and struck one-way traffic spikes."
     }
@@ -5905,7 +5905,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV stationary at stop sign; bus sideswiped it passing",
       "rcodex": "Bus proceeding through intersection struck stopped AV",
       "rgemini": "Hit while stationary by a passing bus"
     }
@@ -5935,7 +5935,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "AV stop-and-go at red preceded rear-end by following car",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
     }
@@ -5962,10 +5962,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.4,
+      "claude": 0.5,
       "codex": 0.7,
       "gemini": 0.5,
-      "rclaude": "AV changing lanes from parking spot, pickup hit AV",
+      "rclaude": "AV changing lanes; pickup in target lane moved forward into AV",
       "rcodex": "AV merged from curb and changed into occupied turn lane",
       "rgemini": "AV changed lanes closely in front of another vehicle"
     }
@@ -5995,7 +5995,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV stationary; rear-ended by passenger car from behind",
       "rcodex": "Passenger car struck AV from behind while AV yielded stopped",
       "rgemini": "Waymo AV was rear-ended while stopped to yield to another vehicle."
     }
@@ -6025,7 +6025,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; rear-ended by passenger car from behind",
       "rcodex": "Passenger car rear-ended stopped AV at queue",
       "rgemini": "Waymo AV was rear-ended while stationary yielding to traffic."
     }
@@ -6055,7 +6055,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "SUV pulled out of driveway into side of passing AV",
       "rcodex": "Counterpart left turn crossed AV path",
       "rgemini": "SUV pulled out of a driveway into the side of the Waymo AV."
     }
@@ -6085,7 +6085,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV stationary at stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped for pedestrian",
       "rgemini": "Waymo AV was rear-ended while stationary at a stop sign."
     }
@@ -6115,7 +6115,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.4,
       "codex": 0.65,
       "gemini": 0.0,
-      "rclaude": "AV changing lanes around stopped pickup, both moved and contacted",
+      "rclaude": "AV changing lanes; pickup in prior lane moved forward into AV",
       "rcodex": "AV maneuver around stopped pickup and lane change created merge conflict",
       "rgemini": "Waymo was completing a lane change around a stopped truck when the truck pulled forward into it."
     }
@@ -6142,10 +6142,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.5,
+      "claude": 0.1,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "Both vehicles backing simultaneously",
+      "rclaude": "AV was backing but passenger car reversed into AV's front",
       "rcodex": "Both vehicles reversed",
       "rgemini": "Waymo AV was hit by a reversing vehicle despite attempting to reverse out of the way."
     }
@@ -6172,10 +6172,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.2,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "Other went straight from left-turn-only lane into AV",
+      "rclaude": "Both turning left; SUV in left-turn-only lane went straight",
       "rcodex": "SUV in turn-only lane continued straight into turning AV",
       "rgemini": "Waymo was turning left from a valid lane when an SUV in a turn-only lane proceeded straight into it."
     }
@@ -6202,10 +6202,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV made unprotected left turn into AV going straight on green",
       "rcodex": "SUV made unprotected left across AV path",
       "rgemini": "Waymo proceeded on a green light when an SUV made an unprotected left turn into it."
     }
@@ -6235,7 +6235,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV parked; bus reversed and changed lanes into AV",
       "rcodex": "Bus reversing/lane-change maneuver struck parked AV",
       "rgemini": "Waymo AV was stationary when a reversing bus hit it."
     }
@@ -6265,7 +6265,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV stationary in traffic; bus sideswiped it passing",
       "rcodex": "Bus changing lanes struck stopped AV",
       "rgemini": "Waymo was stationary in traffic when a bus struck it while attempting to pass."
     }
@@ -6292,10 +6292,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV parked; passenger opened door into path of passing van",
       "rcodex": "AV rider opened rear door into passing van",
       "rgemini": "Waymo passenger opened their door into the path of a passing van. AV itself not at fault."
     }
@@ -6322,10 +6322,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.2,
       "codex": 0.6,
       "gemini": 0.5,
-      "rclaude": "Other's door opened into AV's path",
+      "rclaude": "AV proceeded forward into SUV's open door after light change",
       "rcodex": "AV moved forward while adjacent SUV door remained open into AV path",
       "rgemini": "AV proceeded forward while vehicle door was open"
     }
@@ -6355,7 +6355,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; passenger car reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when the vehicle in front reversed into it."
     }
@@ -6385,7 +6385,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Other car changed lanes into AV's lane of travel",
       "rcodex": "Passenger car changed lanes into AV rear quarter",
       "rgemini": "Another vehicle changed lanes into the AV"
     }
@@ -6415,7 +6415,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped@0, both stopped, other hit AV (CBI)",
+      "rclaude": "AV stationary; chain-reaction pushed car into stopped AV",
       "rcodex": "Turning car hit second car which then struck stopped AV",
       "rgemini": "AV was stationary and hit in a chain reaction caused by another vehicle crossing the double yellow line."
     }
@@ -6442,10 +6442,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV undercarriage scraped pavement at parking lot entrance",
       "rcodex": "AV undercarriage struck pavement at parking-lot entrance",
       "rgemini": "AV bottomed out on pavement while turning into a parking lot"
     }
@@ -6475,7 +6475,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV nearly stopped; motorcycle rear-ended AV from behind",
       "rcodex": "Motorcycle rear-ended AV after AV slowed to stop",
       "rgemini": "Waymo was rear-ended by a motorcycle while stopped to yield to another vehicle."
     }
@@ -6502,10 +6502,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.6,
       "codex": 0.5,
       "gemini": 0.0,
-      "rclaude": "Animal suddenly emerged from behind parked vehicle",
+      "rclaude": "AV hit cat that emerged from behind parked vehicle",
       "rcodex": "Animal-involved roadway conflict",
       "rgemini": "Animal darted into the street from behind a parked vehicle unavoidable."
     }
@@ -6535,7 +6535,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, pickup scraped AV on narrow street",
+      "rclaude": "AV stationary; pickup sideswiped it on narrow street",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo AV was stationary when a passing pickup truck hit it."
     }
@@ -6565,7 +6565,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, motorcycle lane-split into AV",
+      "rclaude": "AV stopped/slow; motorcycle changed lanes into AV's rear",
       "rcodex": "Motorcycle lane-change/merge into AV rear quarter during AV launch",
       "rgemini": "Motorcycle hit the rear of the AV while changing lanes"
     }
@@ -6592,10 +6592,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car entered from cross street",
+      "rclaude": "Car made wide right turn entering AV's lane of travel",
       "rcodex": "Counterpart made wide turn into AV lane",
       "rgemini": "Passenger car made a wide turn into the Waymo AV's lane."
     }
@@ -6625,7 +6625,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended by SUV",
+      "rclaude": "AV stationary in traffic queue; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Rear-ended by another vehicle in a queue of traffic"
     }
@@ -6655,7 +6655,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; passenger car reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a passenger car."
     }
@@ -6685,7 +6685,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV parked; passenger car sideswiped stationary AV passing",
       "rcodex": "Passing car sideswiped parked AV in alley",
       "rgemini": "AV was parked and hit by a passing car."
     }
@@ -6712,10 +6712,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "AV drove through standing water causing damage",
       "rcodex": "AV drove through standing water and sustained damage",
       "rgemini": "Waymo AV drove into standing water."
     }
@@ -6745,7 +6745,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary yielding; heavy truck sideswiped it passing",
       "rcodex": "Passing truck trailer clipped stopped AV on narrow road",
       "rgemini": "Waymo AV was stationary when a passing heavy truck's trailer hit it."
     }
@@ -6775,7 +6775,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "SUV changed lanes from center into AV's lane of travel",
       "rcodex": "AV stop-and-go before intersection preceded rear-end by following car",
       "rgemini": "Another vehicle turned into the AV's lane and struck it"
     }
@@ -6805,7 +6805,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary yielding; SUV sideswiped it on narrow street",
       "rcodex": "Passing SUV sideswiped stopped AV on narrow street",
       "rgemini": "AV was stationary and hit by a passing SUV."
     }
@@ -6835,7 +6835,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "AV stationary yielding; ambulance sideswiped it passing",
       "rcodex": "Passing ambulance side-swiped AV that had pulled over and stopped",
       "rgemini": "Hit while stationary yielding to an ambulance"
     }
@@ -6865,7 +6865,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV slowing in traffic; rear-ended by pickup truck",
       "rcodex": "Pickup in adjacent lane clipped AV rear while AV slowed in queue",
       "rgemini": "Waymo AV was rear-ended while slowing for traffic."
     }
@@ -6895,7 +6895,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV parked; SUV reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and an SUV reversed into it."
     }
@@ -6925,7 +6925,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped for debris; rear-ended by pickup truck",
       "rcodex": "Pickup rear-ended AV stopped for debris",
       "rgemini": "AV stopped for debris and was rear-ended."
     }
@@ -6955,7 +6955,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV parked; pickup reversed across road into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit while parked by a reversing vehicle"
     }
@@ -6985,7 +6985,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Rear-ended by another vehicle while stopped at a green light"
     }
@@ -7015,7 +7015,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; SUV reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by an SUV."
     }
@@ -7045,7 +7045,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary in traffic; bus reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a bus reversed into it."
     }
@@ -7075,7 +7075,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; chain-reaction rear-end pushed car into AV",
       "rcodex": "Chain-reaction rear-end pushed stopped car into stopped AV",
       "rgemini": "Waymo AV was rear-ended in a chain reaction crash while stopped for an emergency vehicle."
     }
@@ -7105,7 +7105,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended stopped AV in queue",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
     }
@@ -7135,7 +7135,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped in traffic; pickup rear-ended AV from behind",
       "rcodex": "Stop-and-go timing conflict led to rear-end from following pickup",
       "rgemini": "Waymo AV was rear-ended in stop-and-go traffic."
     }
@@ -7165,7 +7165,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV changed lanes into AV's lane of travel",
       "rcodex": "SUV changed lanes into AV rear quarter",
       "rgemini": "SUV changed lanes into the Waymo AV."
     }
@@ -7195,7 +7195,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV slowing for pickup; car tried to pass and hit AV",
       "rcodex": "Passing car clipped AV as AV slowed with signal for pickup",
       "rgemini": "Passenger car hit Waymo while attempting to pass."
     }
@@ -7225,7 +7225,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV parked; heavy truck sideswiped stationary AV passing",
       "rcodex": "Passing heavy truck struck parked curbside AV",
       "rgemini": "Waymo AV was stationary when a passing heavy truck hit it."
     }
@@ -7252,10 +7252,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.15,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped on freeway for 2+ min causing dangerous situation",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "Waymo AV was stopped and not involved in the collision between the SUV and pickup truck."
     }
@@ -7282,10 +7282,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.2,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "Basketball rolled into AV's lane; AV ran over it",
       "rcodex": "Basketball rolled into AV tire path",
       "rgemini": "A basketball rolled into the side of the moving AV."
     }
@@ -7315,7 +7315,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.35,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; heavy truck sideswiped stopped AV passing",
       "rcodex": "AV stopped partially in lane during curb maneuver and was clipped by passing trailer",
       "rgemini": "AV was stationary and hit by a passing heavy truck."
     }
@@ -7345,7 +7345,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary yielding; tow truck sideswiped it passing",
       "rcodex": "Tow truck passing on narrow road struck stopped AV",
       "rgemini": "AV was stationary and hit by a passing tow truck."
     }
@@ -7375,7 +7375,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV stopped for animal; rear-ended by pickup truck",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Rear-ended by another vehicle while slowing for an animal"
     }
@@ -7405,7 +7405,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary yielding; van sideswiped it on narrow street",
       "rcodex": "Van passing on narrow road clipped stopped AV",
       "rgemini": "Waymo was stationary and hit by a passing van."
     }
@@ -7432,10 +7432,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped with door open; SUV passing hit the open door",
       "rcodex": "AV remained stopped with open door and passing SUV hit door",
       "rgemini": "SUV passed on the right and hit the open door of the stationary Waymo AV."
     }
@@ -7465,7 +7465,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "AV stationary at stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car failed to stop and rear-ended AV at stop sign",
       "rgemini": "Rear-ended by another vehicle while stopped at a stop sign"
     }
@@ -7495,7 +7495,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV slowing for yellow light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV while AV slowed for red light",
       "rgemini": "Waymo AV was rear-ended while slowing for a red light."
     }
@@ -7525,7 +7525,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped; car behind failed to stop and rear-ended AV",
       "rcodex": "AV initiated right turn then stopped again and was rear-ended",
       "rgemini": "Waymo AV was rear-ended while stationary."
     }
@@ -7555,7 +7555,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary at red light; rear-ended by pickup truck",
       "rcodex": "Pickup rear-ended stopped AV at red light",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
     }
@@ -7585,7 +7585,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV stationary; heavy truck reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
     }
@@ -7615,7 +7615,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stationary; SUV reversed into stopped AV in parking lot",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and an SUV reversed into it."
     }
@@ -7645,7 +7645,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car parking maneuver hit AV",
+      "rclaude": "AV stationary; heavy truck crossed center line into AV",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "AV was stationary and a heavy truck crossed the double yellow line into it."
     }
@@ -7672,10 +7672,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove over curb in parking lot damaging undercarriage",
       "rcodex": "AV drove over curb partition and later speed bump causing damage",
       "rgemini": "Waymo AV drove over a curb causing damage to itself."
     }
@@ -7702,10 +7702,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV parked; passenger opened door into path of passing SUV",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Passenger opened door into passing traffic. AV itself not at fault."
     }
@@ -7735,7 +7735,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "Pickup reversed from parking into intersection hitting AV",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Pickup truck reversed into the intersection and hit the Waymo AV."
     }
@@ -7765,7 +7765,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV changed lanes into AV's lane without signaling",
       "rcodex": "Counterpart lane change into AV path",
       "rgemini": "SUV changed lanes into the Waymo AV."
     }
@@ -7795,7 +7795,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "Parked car pulled out into AV's lane of travel",
       "rcodex": "Parked car entered traffic into AV rear quarter",
       "rgemini": "AV was in its lane and a parked car pulled out into it."
     }
@@ -7825,7 +7825,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV entered AV lane from parking lot exit",
       "rcodex": "SUV pulled out into AV lane as AV was passing",
       "rgemini": "SUV pulled into Waymo's lane and hit the AV."
     }
@@ -7855,7 +7855,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV rear-ended by passenger car while proceeding straight",
       "rcodex": "Passenger car struck AV from behind while both were proceeding straight",
       "rgemini": "Rear-ended by another vehicle while traveling straight"
     }
@@ -7885,7 +7885,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Pickup truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a pickup truck reversed into it."
     }
@@ -7915,7 +7915,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car reversed into stationary AV at red light",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a passenger car reversed into it."
     }
@@ -7945,7 +7945,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "SUV entered AV lane from parking lot",
       "rcodex": "SUV entered from parking lot and crossed into AV lane",
       "rgemini": "SUV entered the roadway and crossed into the Waymo AV's lane."
     }
@@ -7975,7 +7975,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Bus sideswiped stationary AV while changing lanes",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was stationary with hazards and hit by a bus changing lanes."
     }
@@ -8005,7 +8005,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV in traffic queue",
       "rcodex": "Passenger car rear-ended stopped AV in queue",
       "rgemini": "AV was stationary and rear-ended by a passenger car."
     }
@@ -8032,10 +8032,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV turned into movable traffic barrier in parking lot",
+      "rclaude": "AV drove into movable traffic barrier in parking lot",
       "rcodex": "AV turned directly into movable traffic barrier",
       "rgemini": "AV proceeded to turn and hit a stationary movable traffic barrier."
     }
@@ -8065,7 +8065,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a passenger car reversed into it."
     }
@@ -8092,10 +8092,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.6,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV proceeded forward into opening gate",
       "rcodex": "AV proceeded as gate was swinging into lane",
       "rgemini": "AV proceeded straight while a gate was swinging open and was hit by the gate."
     }
@@ -8125,7 +8125,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "AV initiated right turn then stopped again and was rear-ended",
       "rgemini": "AV was stationary and rear-ended."
     }
@@ -8155,7 +8155,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
     }
@@ -8185,7 +8185,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck turned into stationary AV",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo AV was stationary when a heavy truck turned into it."
     }
@@ -8215,7 +8215,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "Passenger car hit AV from behind while AV was slowing",
       "rcodex": "Following car attempted pass while AV slowed for queue and clipped AV",
       "rgemini": "Rear-ended by another vehicle while slowing for traffic"
     }
@@ -8242,10 +8242,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Cyclist rear-ended AV that was braking for traffic",
       "rcodex": "Cyclist rear-ended braking AV at close following distance",
       "rgemini": "AV was braking for traffic and was rear-ended by a cyclist."
     }
@@ -8272,10 +8272,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.5,
+      "claude": 0.8,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV sideswiped parked heavy truck's trailer while passing",
+      "rclaude": "AV hit parked heavy truck trailer while passing",
       "rcodex": "AV struck parked flatbed while maneuvering around it",
       "rgemini": "AV hit a parked truck while maneuvering around it"
     }
@@ -8305,7 +8305,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "Pickup truck rear-ended stationary AV",
       "rcodex": "Pickup rear-ended AV stopped behind blocked lane",
       "rgemini": "Rear-ended by another vehicle while stopped to yield"
     }
@@ -8335,7 +8335,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car sideswiped stationary AV while passing",
       "rcodex": "Lane-changing passenger car sideswiped stopped AV",
       "rgemini": "Waymo was stationary and hit by a car changing lanes."
     }
@@ -8365,7 +8365,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Motorhome sideswiped stationary parked AV",
       "rcodex": "Motorhome passing on narrow street struck parked AV",
       "rgemini": "Waymo AV was stationary when a passing motorhome hit it."
     }
@@ -8395,7 +8395,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Pickup truck rear-ended stationary AV at red light",
       "rcodex": "Pickup rear-ended stopped AV in queue",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
     }
@@ -8425,7 +8425,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "Oncoming car crossed center line and hit AV",
       "rcodex": "Counterpart crossed center line into AV at intersection",
       "rgemini": "A passenger car crossed the center line into the AV."
     }
@@ -8455,7 +8455,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by car",
+      "rclaude": "SUV hit stationary AV on narrow street",
       "rcodex": "SUV struck AV after attempting narrow pass while AV yielded",
       "rgemini": "Hit while stationary yielding to an oncoming vehicle"
     }
@@ -8482,10 +8482,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV undercarriage hit raised pavement in parking lot",
       "rcodex": "AV undercarriage struck raised pavement in parking lot",
       "rgemini": "Waymo AV drove over raised pavement damaging its undercarriage."
     }
@@ -8512,10 +8512,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger opened door into passing car while AV stopped",
       "rcodex": "AV passenger opened door into passing car during drop-off",
       "rgemini": "AV passenger opened door into a passing car; AV driving system not at fault."
     }
@@ -8542,10 +8542,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.2,
       "codex": 0.45,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "AV stopped partially between lanes; truck hit it",
       "rcodex": "AV stopped straddling lanes during lane change and was struck by advancing truck",
       "rgemini": "Waymo was stationary and hit by a heavy truck proceeding forward."
     }
@@ -8575,7 +8575,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Bus reversed into stationary AV while parallel parking",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit while stationary by a reversing bus"
     }
@@ -8605,7 +8605,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck sideswiped stationary AV on narrow street",
       "rcodex": "Passing heavy truck clipped stopped AV on narrow road",
       "rgemini": "AV was stationary and hit by a passing heavy truck."
     }
@@ -8632,10 +8632,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "Passenger opened door into passing SUV while AV parked",
       "rcodex": "AV passenger opened rear door into passing SUV during drop-off",
       "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
     }
@@ -8662,10 +8662,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck trailer hit stationary AV in parking lot",
       "rcodex": "Turning heavy-truck trailer struck stationary AV",
       "rgemini": "Waymo AV was stationary when a turning heavy truck's trailer hit it."
     }
@@ -8692,10 +8692,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car crossed into opposing lane",
+      "rclaude": "AV stopped in lane to change lanes causing chain rear-end",
       "rcodex": "Third-party rear-end collision occurred behind stopped AV",
       "rgemini": "AV stopped in travel lane but other vehicle rear-ended a stopped car"
     }
@@ -8725,7 +8725,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "SUV intentionally rear-ended stationary AV twice",
       "rcodex": "SUV struck stopped AV in two separate rear-impact events",
       "rgemini": "Rear-ended and then hit again while parked by the same vehicle"
     }
@@ -8752,10 +8752,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car entered from driveway into AV",
+      "rclaude": "AV undercarriage hit speed bump",
       "rcodex": "AV undercarriage struck speed bump",
       "rgemini": "AV undercarriage hit a speed bump."
     }
@@ -8785,7 +8785,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended AV from behind",
       "rcodex": "Passenger car rear-ended AV while both were proceeding straight",
       "rgemini": "Rear-ended by another vehicle while traveling straight"
     }
@@ -8815,7 +8815,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at inoperative light",
       "rcodex": "Passenger car rear-ended AV stopped for inoperative signals",
       "rgemini": "Waymo AV was rear-ended while stopped for inoperative traffic lights."
     }
@@ -8845,7 +8845,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked@0, struck by SUV going straight (CBI)",
+      "rclaude": "SUV hit parked AV at curb",
       "rcodex": "SUV struck parked AV during curbside drop-off",
       "rgemini": "Waymo was parked and hit by an SUV."
     }
@@ -8875,7 +8875,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a passenger car."
     }
@@ -8902,10 +8902,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV stopped at right turn, rear-ended by vehicle behind",
+      "rclaude": "Pickup truck cut right from transit lane into turning AV",
       "rcodex": "Pickup passed from transit lane and both vehicles initiated right turn",
       "rgemini": "Pickup truck made an illegal pass and right turn from a transit-only lane hitting the Waymo AV."
     }
@@ -8932,10 +8932,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.15,
       "codex": 0.5,
       "gemini": 0.5,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped partially in lane during lane change; rear-ended",
       "rcodex": "AV stopped straddling lanes during lane change and was hit from rear quarter",
       "rgemini": "AV stopped abruptly while straddling lanes"
     }
@@ -8965,7 +8965,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "Passenger car rear-ended slowing AV from behind",
       "rcodex": "Following car clipped AV as AV slowed to yield to skateboarder",
       "rgemini": "AV slowed for a skateboarder and was rear-ended."
     }
@@ -8992,10 +8992,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.5,
+      "claude": 0.8,
       "codex": 0.7,
       "gemini": 1.0,
-      "rclaude": "AV hit cat sitting in roadway as AV began moving",
+      "rclaude": "AV ran over cat that was under the vehicle",
       "rcodex": "AV departed with cat under vehicle and ran over it",
       "rgemini": "Waymo ran over a cat that was under the vehicle before it started moving."
     }
@@ -9022,10 +9022,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "Other's door opened into AV's path",
+      "rclaude": "SUV passenger opened door into AV proceeding on green",
       "rcodex": "SUV passenger opened door into passing AV",
       "rgemini": "Passenger in adjacent SUV opened door into moving Waymo AV."
     }
@@ -9052,10 +9052,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.4,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passengers opened door and exited while AV in motion (passenger fault not AV fault)",
+      "rclaude": "Passenger exited moving AV; tire stopped on their foot",
       "rcodex": "Passenger exited moving vehicle; AV continued rolling onto foot",
       "rgemini": "Passenger exited moving vehicle and placed foot under tire."
     }
@@ -9085,7 +9085,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV in queue",
       "rgemini": "Waymo was rear-ended while stationary in traffic."
     }
@@ -9115,7 +9115,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "SUV rear-ended stationary AV at red light",
       "rcodex": "SUV rear-ended stationary AV in queue",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
     }
@@ -9145,7 +9145,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car reversed out of stall into parked AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Other car reversed out of parking stall into stationary Waymo."
     }
@@ -9175,7 +9175,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "Wrong-way car hit stationary AV head-on",
       "rcodex": "Wrong-way passenger car struck stationary AV",
       "rgemini": "AV was stationary and hit by a wrong-way driver."
     }
@@ -9205,7 +9205,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Chain reaction rear-end pushed SUV into stationary AV",
       "rcodex": "Chain-reaction rear-end pushed SUV into stopped AV",
       "rgemini": "AV was stationary and hit in a chain reaction rear-end collision."
     }
@@ -9235,7 +9235,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.3,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Passenger car rear-ended AV slowing for stop sign",
       "rcodex": "Both vehicles proceeding straight; likely sideswipe/merge conflict",
       "rgemini": "Waymo was rear-ended while slowing for a stop sign."
     }
@@ -9265,7 +9265,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "Passenger car sideswiped parked AV at curb",
       "rcodex": "Passing car side-swiped parked AV",
       "rgemini": "Waymo was parked and hit by a passing car."
     }
@@ -9295,7 +9295,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stationary AV at red light",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
     }
@@ -9325,7 +9325,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended parked AV",
       "rcodex": "Passenger car rear-ended parked AV",
       "rgemini": "Waymo was rear-ended while parked in-lane."
     }
@@ -9355,7 +9355,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Oncoming SUV crossed center line into AV lane",
       "rcodex": "Oncoming SUV crossed center line into AV lane",
       "rgemini": "An SUV crossed the center line into the AV."
     }
@@ -9385,7 +9385,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV rear-ended stationary AV at red light",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo stopped before entering street and was rear-ended."
     }
@@ -9415,7 +9415,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Pickup truck rear-ended stationary AV at red light",
       "rcodex": "AV stopped straddling lanes and was struck by following pickup",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
     }
@@ -9445,7 +9445,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "Chain reaction rear-end pushed car into stationary AV",
       "rcodex": "Chain-reaction impact pushed stopped passenger car into stopped AV",
       "rgemini": "Waymo was rear-ended in a chain reaction while stationary."
     }
@@ -9475,7 +9475,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV rear-ended AV slowing for red light",
       "rcodex": "SUV behind AV in split-lane position clipped AV rear while AV slowed",
       "rgemini": "AV was slowing for a red light and was rear-ended."
     }
@@ -9505,7 +9505,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "Passenger car lane-changed into stationary AV",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "Chain reaction rear-end into stationary Waymo."
     }
@@ -9535,7 +9535,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV at light",
       "rgemini": "Waymo was rear-ended while stationary at a green light."
     }
@@ -9562,10 +9562,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.8,
+      "claude": 0.3,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "AV proceeded through gate that began closing on it",
+      "rclaude": "AV drove forward while gate was swinging open into it",
       "rcodex": "AV proceeded as gate was opening into travel path",
       "rgemini": "Gate swung open into Waymo."
     }
@@ -9592,10 +9592,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended by car",
+      "rclaude": "AV stopped in intersection for cyclist; rear-ended",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV stopped for a cyclist running a red light and was rear-ended."
     }
@@ -9625,7 +9625,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, police SUV reversed into AV",
+      "rclaude": "Police SUV reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Police SUV reversed into stationary Waymo."
     }
@@ -9655,7 +9655,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, SUV reversed into AV",
+      "rclaude": "SUV deliberately reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and an SUV reversed into it twice."
     }
@@ -9685,7 +9685,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Pickup truck hit parked AV at curb",
       "rcodex": "Pickup struck parked AV from behind",
       "rgemini": "Waymo was parked and rear-ended by a pickup truck."
     }
@@ -9715,7 +9715,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
     }
@@ -9745,7 +9745,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car crossed into opposing lane",
+      "rclaude": "Heavy truck trailer sideswiped stationary AV",
       "rcodex": "Turning truck trailer struck AV stopped to yield",
       "rgemini": "Waymo was stationary and hit by a passing heavy truck."
     }
@@ -9775,7 +9775,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a heavy truck reversed into it."
     }
@@ -9805,7 +9805,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "Pickup truck reversed into AV while AV was passing",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "AV was passing a stopped pickup which then reversed into the AV."
     }
@@ -9835,7 +9835,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "Heavy truck sideswiped stationary AV on narrow street",
       "rcodex": "Oncoming heavy truck sideswiped stationary AV while passing narrow segment",
       "rgemini": "Truck hit stationary Waymo while passing on a narrow street."
     }
@@ -9865,7 +9865,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car changed lanes into AV",
+      "rclaude": "Car made illegal left turn into AV going straight",
       "rcodex": "Counterpart failed to yield / encroached",
       "rgemini": "Other car ran red light and turned into Waymo."
     }
@@ -9892,10 +9892,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV backed into bollard in parking lot",
+      "rclaude": "AV reversed into parking bollard",
       "rcodex": "AV maneuvered into bollard while reversing",
       "rgemini": "Waymo reversed into a stationary parking bollard."
     }
@@ -9922,10 +9922,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.05,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "Passenger car reversed into AV that was passing behind",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "AV was passing behind a stopped car that reversed into it."
     }
@@ -9955,7 +9955,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
     }
@@ -9985,7 +9985,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Passenger car rear-ended AV slowing for pedestrians",
       "rcodex": "Following car rear-ended AV as AV slowed for pedestrians",
       "rgemini": "Waymo was rear-ended while yielding to pedestrians."
     }
@@ -10015,7 +10015,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV turned left into AV lane of travel",
       "rcodex": "SUV left-turn entered AV lane and clipped AV rear quarter",
       "rgemini": "An SUV turned left into the AV's lane."
     }
@@ -10045,7 +10045,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car crossed into opposing lane",
+      "rclaude": "SUV hit AV from behind while AV slowed for tree branch",
       "rcodex": "SUV approached from behind and sideswiped slowing AV",
       "rgemini": "Waymo slowed for an obstacle and was hit from behind by an SUV."
     }
@@ -10072,10 +10072,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV braked for birds; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV after AV slowed for birds in lane",
       "rgemini": "AV slowed for birds and was rear-ended."
     }
@@ -10105,7 +10105,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "Pickup truck changed lanes into AV",
       "rcodex": "Pickup changed lanes into AV while AV proceeded straight",
       "rgemini": "A pickup truck changed lanes into the AV within an intersection."
     }
@@ -10135,7 +10135,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Van rear-ended stationary AV at stop sign",
       "rcodex": "Van turning from behind struck stationary AV at stop",
       "rgemini": "Waymo was rear-ended while stopped at a stop sign."
     }
@@ -10162,10 +10162,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped at green light before right turn; rear-ended",
       "rcodex": "Mail truck rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary at a green light."
     }
@@ -10192,10 +10192,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.4,
       "codex": 0.7,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV drove forward while tow truck was lifting it",
       "rcodex": "AV moved while tow lift was engaging, causing contact",
       "rgemini": "Waymo drove forward while being lifted by a tow truck."
     }
@@ -10225,7 +10225,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "Bus hit stationary AV while parking maneuvering",
       "rcodex": "Bus maneuvered into and struck parked AV",
       "rgemini": "AV was stationary and a bus reversed into it."
     }
@@ -10255,7 +10255,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "Bus reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Bus reversed into stationary Waymo."
     }
@@ -10282,10 +10282,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.5,
       "codex": 0.8,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove through low-hanging suspended wire",
       "rcodex": "AV continued into visibly low suspended wire across roadway",
       "rgemini": "Waymo struck a suspended wire held up by a pedestrian."
     }
@@ -10315,7 +10315,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Garbage truck sideswiped stationary AV on narrow street",
       "rcodex": "Passing garbage truck clipped stopped AV on narrow street",
       "rgemini": "AV was stationary and hit by a passing garbage truck."
     }
@@ -10345,7 +10345,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV made illegal unprotected left turn into AV",
       "rcodex": "Oncoming SUV made unprotected left into AV path",
       "rgemini": "An SUV made an unprotected left turn into the AV."
     }
@@ -10372,10 +10372,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.8,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "Other crossed into AV's lane during parallel left turn",
+      "rclaude": "AV turned left from wrong lane into pickup truck",
       "rcodex": "AV initiated left turn from non-turn lane into occupied turn lane",
       "rgemini": "Waymo turned left from the wrong lane into a vehicle in the dedicated left turn lane."
     }
@@ -10405,7 +10405,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Car reversed into stationary Waymo."
     }
@@ -10432,10 +10432,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car entering traffic hit AV",
+      "rclaude": "Car exited driveway into AV passing on the street",
       "rcodex": "Vehicle pulling from driveway moved into AV side path",
       "rgemini": "Other car pulled out of driveway into the side of the Waymo."
     }
@@ -10465,7 +10465,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary in traffic."
     }
@@ -10495,7 +10495,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV rear-ended stationary AV at red light",
       "rcodex": "SUV rear-ended stopped AV in queue",
       "rgemini": "AV was stationary and rear-ended."
     }
@@ -10522,10 +10522,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.15,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped for fake stop sign; rear-ended by truck",
       "rcodex": "Heavy truck rear-ended stationary AV",
       "rgemini": "Waymo stopped for a sign and was rear-ended by a truck."
     }
@@ -10555,7 +10555,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV struck stationary AV while maneuvering around queue",
       "rgemini": "SUV hit stationary Waymo while passing."
     }
@@ -10585,7 +10585,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "SUV sideswiped stationary AV while passing",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "SUV hit stationary Waymo while squeezing past."
     }
@@ -10615,7 +10615,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned right into AV",
+      "rclaude": "Pickup truck rear-ended AV near stop sign",
       "rcodex": "Pickup rear-ended AV after AV stop-and-go at stop sign",
       "rgemini": "AV was rear-ended after stopping at a stop sign."
     }
@@ -10642,10 +10642,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.6,
       "codex": 0.25,
       "gemini": 1.0,
-      "rclaude": "AV going straight, car changed lanes into AV",
+      "rclaude": "AV drove into fallen utility line in travel lane",
       "rcodex": "AV contacted fallen utility line after slowing and evasive maneuver",
       "rgemini": "Waymo drove into a fallen utility line."
     }
@@ -10675,7 +10675,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "Passenger car rear-ended stationary AV",
       "rcodex": "Following car rear-ended AV stopped to yield",
       "rgemini": "AV stopped to yield and was rear-ended."
     }
@@ -10705,7 +10705,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car entered from driveway",
+      "rclaude": "Passenger car changed lanes into AV",
       "rcodex": "Passenger car changed lanes into AV path",
       "rgemini": "Passenger car changed lanes into the Waymo AV."
     }
@@ -10735,7 +10735,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV reversed out of parking into stationary AV",
       "rcodex": "Reversing SUV from stall struck AV after AV yielded then stopped",
       "rgemini": "SUV reversed into stationary Waymo."
     }
@@ -10762,10 +10762,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.2,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV hit tree branch that fell from truck ahead",
       "rcodex": "Object originated from another vehicle",
       "rgemini": "Tree branch fell directly into Waymo's path."
     }
@@ -10795,7 +10795,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by passing vehicle",
+      "rclaude": "Passenger car rear-ended stationary AV yielding to ped",
       "rcodex": "Passenger car rear-ended stationary AV yielding to pedestrian",
       "rgemini": "Waymo was rear-ended while stopped to yield to a pedestrian."
     }
@@ -10822,10 +10822,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.1,
       "codex": 0.35,
       "gemini": 0.0,
-      "rclaude": "AV changing lanes, pickup entering traffic",
+      "rclaude": "Pickup truck pulled from curb into AV changing lanes",
       "rcodex": "AV lane change and pickup curb pull-out created shared merge conflict",
       "rgemini": "A pickup truck pulled away from the curb into the AV."
     }
@@ -10855,7 +10855,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Truck reversed into stationary Waymo."
     }
@@ -10885,7 +10885,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.3,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck rear-ended AV slowing for left turn",
       "rcodex": "Both vehicles proceeding straight; likely sideswipe/merge conflict",
       "rgemini": "Waymo was rear-ended while slowing for a turn."
     }
@@ -10915,7 +10915,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Motorcycle rear-ended AV slowing for pedestrian",
       "rcodex": "Motorcycle rear-ended AV while AV slowed for pedestrian",
       "rgemini": "AV slowed for a pedestrian and was rear-ended by a motorcycle."
     }
@@ -10945,7 +10945,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "Bus sideswiped stationary AV while passing",
       "rcodex": "Passing bus struck stationary AV while AV yielded in queue",
       "rgemini": "Bus hit stationary Waymo while passing."
     }
@@ -10975,7 +10975,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "Bus sideswiped stationary AV while turning left",
       "rcodex": "Bus in adjacent turn lane struck AV waiting at red",
       "rgemini": "Waymo was stationary at a red light and hit by a turning bus."
     }
@@ -11005,7 +11005,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "Bus sideswiped stationary AV while proceeding forward",
       "rcodex": "Bus and AV stop-go interaction with bus side contact into stationary AV",
       "rgemini": "Bus hit stationary Waymo."
     }
@@ -11032,10 +11032,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV undercarriage hit pavement at parking lot entrance",
       "rcodex": "AV undercarriage struck pavement at parking-lot entrance",
       "rgemini": "Waymo undercarriage hit the pavement at a parking lot entrance."
     }
@@ -11065,7 +11065,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended slowly moving AV at stop sign",
       "rcodex": "Rear vehicle struck AV while AV was slowly yielding at stop sign",
       "rgemini": "Waymo was rear-ended while proceeding slowly."
     }
@@ -11095,7 +11095,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Bus sideswiped parked AV at curb",
       "rcodex": "Bus side-swiped stopped AV during pass",
       "rgemini": "Waymo was parked and hit by a passing bus."
     }
@@ -11125,7 +11125,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "Mail truck pulled from curb into AV lane",
       "rcodex": "Mail truck pulled from curb as AV had just completed lane change",
       "rgemini": "Mail truck pulled away from curb into Waymo's lane."
     }
@@ -11155,7 +11155,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at stop sign",
       "rcodex": "Speeding passenger car maneuvered into stopped AV",
       "rgemini": "Waymo was stationary and hit by a speeding car."
     }
@@ -11185,7 +11185,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car entering traffic hit AV",
+      "rclaude": "Bus sideswiped stationary AV parked at curb",
       "rcodex": "Bus side-swiped curbside stopped AV",
       "rgemini": "AV was stationary and hit by a bus proceeding from a stop."
     }
@@ -11215,7 +11215,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stationary AV in queue",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
     }
@@ -11245,7 +11245,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "Bus sideswiped stationary AV while passing",
       "rcodex": "Bus passing on left struck stopped AV",
       "rgemini": "Waymo was stopped and hit by a passing bus."
     }
@@ -11275,7 +11275,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Car in front reversed into stationary Waymo."
     }
@@ -11305,7 +11305,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car crossed into opposing lane",
+      "rclaude": "Bus sideswiped parked AV while passing",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was stationary and hit by a passing bus."
     }
@@ -11335,7 +11335,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car crossed into opposing lane",
+      "rclaude": "Passenger car turned right into AV lane of travel",
       "rcodex": "Counterpart right turn crossed into AV lane",
       "rgemini": "Other car turned wide into Waymo's lane."
     }
@@ -11362,10 +11362,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car reversed into AV",
+      "rclaude": "Car made unprotected left turn; AV braked and hit SUV",
       "rcodex": "Counterpart failed to yield / encroached",
       "rgemini": "A passenger car made an unprotected left turn into the AV's path."
     }
@@ -11395,7 +11395,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary in traffic."
     }
@@ -11425,7 +11425,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.5,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Heavy truck reversed into stationary AV in parking lot",
       "rcodex": "Reversing trailer contact with AV after AV repositioned in lot",
       "rgemini": "Waymo moved forward while truck was reversing putting itself in the path."
     }
@@ -11455,7 +11455,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV turning right, rear-ended by SUV behind",
+      "rclaude": "SUV rear-ended AV during right turn at intersection",
       "rcodex": "Following SUV struck AV rear during turn-start stop-and-go",
       "rgemini": "Waymo stopped before entering street and was rear-ended."
     }
@@ -11482,10 +11482,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.6,
+      "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV turning left across traffic at stop sign",
+      "rclaude": "Passenger car rear-ended AV turning left at stop sign",
       "rcodex": "Rear vehicle hit AV during low-speed left-turn initiation; mostly rear-vehicle fault",
       "rgemini": "Waymo was rear-ended while proceeding to turn."
     }
@@ -11512,10 +11512,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.5,
+      "claude": 0.7,
       "codex": 0.4,
       "gemini": 1.0,
-      "rclaude": "AV hit domestic animal in travel lane",
+      "rclaude": "AV hit domestic animal in its lane of travel",
       "rcodex": "Domestic animal in lane contact while AV proceeded",
       "rgemini": "AV hit domestic animal"
     }
@@ -11545,7 +11545,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car changed lanes into AV",
       "rcodex": "Counterpart hit another vehicle then deflected into AV",
       "rgemini": "Other car hit a van and swerved into Waymo."
     }
@@ -11575,7 +11575,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car crossed into opposing lane",
+      "rclaude": "Passenger car changed lanes into AV from turn lane",
       "rcodex": "Passenger car merged from center lane into AV path",
       "rgemini": "A passenger car changed lanes into the AV."
     }
@@ -11605,7 +11605,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Passenger car rear-ended stationary AV at stop sign",
       "rcodex": "Passenger car rear-ended AV stopped for pedestrian",
       "rgemini": "Waymo was rear-ended while stationary yielding to a pedestrian."
     }
@@ -11632,10 +11632,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by car",
+      "rclaude": "Passenger opened door into passing SUV while AV parked",
       "rcodex": "Open AV passenger door was struck by passing SUV",
       "rgemini": "Waymo passenger opened door into passing SUV. AV itself not at fault."
     }
@@ -11665,7 +11665,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Chain reaction rear-end pushed car into stationary AV",
       "rcodex": "Chain-reaction rear-end pushed car into stopped AV",
       "rgemini": "Waymo was rear-ended in a chain reaction while stationary."
     }
@@ -11692,10 +11692,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.15,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "Other reversed into stationary AV",
+      "rclaude": "AV passed SUV which then reversed into AV",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "SUV reversed into the Waymo AV while it was passing."
     }
@@ -11725,7 +11725,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was parked; bus hit stationary AV while turning",
       "rcodex": "Bus completing right turn struck parked AV while passing",
       "rgemini": "Bus hit stationary Waymo while passing."
     }
@@ -11755,7 +11755,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; car in front reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a passenger car reversed into it."
     }
@@ -11785,7 +11785,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; chain reaction rear-end pushed SUV into AV",
       "rcodex": "Stationary SUV was pushed into stationary AV in chain collision",
       "rgemini": "Chain reaction rear-end pushed SUV into stationary Waymo."
     }
@@ -11812,10 +11812,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove over fallen street sign in its lane at 39 mph",
       "rcodex": "AV struck fallen street sign in lane at speed",
       "rgemini": "Waymo hit a fallen street sign in its lane of travel."
     }
@@ -11845,7 +11845,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; truck sideswiped stationary AV while passing",
       "rcodex": "Passing truck trailer clipped stopped AV",
       "rgemini": "Waymo was stationary and hit by a passing heavy truck."
     }
@@ -11872,10 +11872,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.2,
       "codex": 0.35,
       "gemini": 0.5,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "Both AV and SUV were moving; SUV entered AV lane but AV also pulled out",
       "rcodex": "AV pulled from curb while SUV was passing and moving toward curb; shared conflict",
       "rgemini": "Waymo started moving while being passed by SUV."
     }
@@ -11905,7 +11905,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Other reversed into AV while AV was passing",
+      "rclaude": "AV was passing stopped car; that car reversed into AV",
       "rcodex": "Counterpart reversed into AV after entering on red",
       "rgemini": "Other car ran red light then reversed into Waymo."
     }
@@ -11935,7 +11935,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at stop sign; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stopped at a stop sign."
     }
@@ -11965,7 +11965,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car crossed into opposing lane",
+      "rclaude": "AV was stopped at curb; rear-ended by approaching car",
       "rcodex": "Passenger car passing from behind struck stationary curbside AV",
       "rgemini": "Waymo was rear-ended while parked at curb."
     }
@@ -11995,7 +11995,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; car in front reversed into stationary AV",
       "rcodex": "Vehicle ahead reversed into stationary AV",
       "rgemini": "AV was stationary and honked; vehicle in front reversed into it."
     }
@@ -12025,7 +12025,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at flashing red; rear-ended by SUV",
       "rcodex": "SUV rear-ended stationary AV at flashing red",
       "rgemini": "AV was stopped at a flashing red light; rear-ended by another vehicle."
     }
@@ -12052,10 +12052,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Wrong-way vehicle hit AV; AV braked and maneuvered to avoid",
       "rcodex": "Wrong-way counterpart entered AV lane and struck AV",
       "rgemini": "Oncoming vehicle entered the Waymo AV's lane; Waymo took evasive action but was hit."
     }
@@ -12085,7 +12085,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped to yield on narrow street; passing car hit it",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary and yielding when hit by a passing car."
     }
@@ -12112,10 +12112,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; passenger opened door and passing car hit it",
       "rcodex": "Open AV passenger door was struck by passing car",
       "rgemini": "Waymo passenger opened door into traffic but other car was passing in opposing lane. AV itself not at fault."
     }
@@ -12145,7 +12145,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV was stopped at red light; chain-reaction rear-end collision",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary and rear-ended due to a multi-vehicle collision behind it."
     }
@@ -12175,7 +12175,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "Other car turned right into AV lane; car at fault",
       "rcodex": "Counterpart right turn partially entered AV lane and clipped rear quarter",
       "rgemini": "Passenger car made an improper right turn into the Waymo AV's lane."
     }
@@ -12205,7 +12205,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped in traffic; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
     }
@@ -12235,7 +12235,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; pickup reversed into stationary AV while parking",
       "rcodex": "Pickup reversing to park struck stationary AV",
       "rgemini": "AV was stationary yielding; other vehicle reversed into it while parallel parking."
     }
@@ -12265,7 +12265,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV was stopped at red light; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
     }
@@ -12295,7 +12295,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "AV was parked for pickup; car passing hit stationary AV",
       "rcodex": "Passing car hit parked AV during maneuver-around",
       "rgemini": "AV was parked with hazard lights; other vehicle hit it while attempting to pass."
     }
@@ -12325,7 +12325,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; SUV in front reversed into stationary AV",
       "rcodex": "SUV reversed into stationary AV",
       "rgemini": "AV was stationary in traffic; vehicle in front reversed into it."
     }
@@ -12355,7 +12355,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; fire truck hit stationary AV while turning",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was stationary and yielding when hit by a turning fire truck."
     }
@@ -12382,10 +12382,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "Other encroached into AV's lane during parallel left turn",
+      "rclaude": "Both turning left in adjacent lanes; SUV crossed into AV lane",
       "rcodex": "Other SUV crossed dashed line during parallel left turn",
       "rgemini": "AV was making a legal left turn; other vehicle in adjacent turn lane crossed into AV's lane."
     }
@@ -12415,7 +12415,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary yielding to a reversing truck which backed into it."
     }
@@ -12442,10 +12442,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.8,
       "codex": 0.25,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove into fallen utility line hanging in travel lane",
       "rcodex": "AV contacted fallen utility line in travel lane",
       "rgemini": "AV hit stationary fallen utility line"
     }
@@ -12472,10 +12472,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.8,
       "codex": 0.35,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove over debris in roadway at 25 mph",
       "rcodex": "AV tire contacted roadway debris in travel lane",
       "rgemini": "AV hit stationary debris"
     }
@@ -12502,10 +12502,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.5,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "Hand truck dolly fell from truck ahead into AV's path",
+      "rclaude": "Dolly fell from truck ahead; AV was following and hit it",
       "rcodex": "Object fell from truck trailer into AV lane",
       "rgemini": "Debris fell directly from the vehicle ahead into the Waymo AV's path leaving no time to react."
     }
@@ -12532,10 +12532,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped; truck turned right from left lane into AV lane",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Truck made an improper right turn from the left lane across the Waymo AV's path; Waymo was stationary when hit."
     }
@@ -12565,7 +12565,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, heavy truck scraped AV from behind",
+      "rclaude": "AV was stopped; oversized truck sideswiped stationary AV",
       "rcodex": "Truck trailer encroached and struck stopped AV",
       "rgemini": "Waymo was stationary and yielding when hit by a passing heavy truck."
     }
@@ -12595,7 +12595,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, SUV scraped AV on narrow street",
+      "rclaude": "AV was parked; SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV sideswiped parked AV",
       "rgemini": "AV was stopped for a passenger drop-off; other vehicle hit it while attempting to pass."
     }
@@ -12622,10 +12622,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.5,
+      "claude": 0.2,
       "codex": 0.5,
       "gemini": 0.0,
-      "rclaude": "Both changing lanes simultaneously",
+      "rclaude": "Both changing lanes simultaneously; other car entered AV lane",
       "rcodex": "Both vehicles changed lanes into each other",
       "rgemini": "AV was completing a lane change when another vehicle merged into its lane and hit its rear right side."
     }
@@ -12655,7 +12655,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, truck scraped AV passing",
+      "rclaude": "AV was stopped; box truck sideswiped stationary AV passing",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to a truck which hit it while passing."
     }
@@ -12685,7 +12685,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was proceeding; golf cart reversed into AV from parking stall",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Waymo was reversed into by a golf cart."
     }
@@ -12715,7 +12715,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Passenger car rear-ended stationary AV",
       "rgemini": "AV was stopped at a red light; rear-ended by another vehicle."
     }
@@ -12742,10 +12742,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "AV was slowing; rear-ended by car following too closely",
       "rcodex": "Following car struck AV from behind as AV slowed in intersection",
       "rgemini": "Waymo was rear-ended while slowing for a traffic signal."
     }
@@ -12772,10 +12772,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.8,
       "codex": 0.25,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV drove into fallen utility line hanging in travel lane",
       "rcodex": "AV contacted fallen utility line hanging in lane",
       "rgemini": "AV hit stationary fallen utility line"
     }
@@ -12805,7 +12805,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Heavy truck trailer reversed into stationary AV",
       "rgemini": "AV was stationary in a turn lane; heavy truck in front reversed into it."
     }
@@ -12832,10 +12832,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV undercarriage hit pavement; should detect road conditions",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement causing damage to its undercarriage."
     }
@@ -12865,7 +12865,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car crossed into opposing lane",
+      "rclaude": "AV was stopped; street sweeper reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a street sweeper."
     }
@@ -12895,7 +12895,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Car behind AV changed lanes and sideswiped AV",
       "rcodex": "Counterpart lane change into AV path",
       "rgemini": "Waymo was hit by a vehicle that lost control while changing lanes."
     }
@@ -12925,7 +12925,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Passenger car rear-ended stationary AV",
       "rgemini": "AV was stopped at a red light; rear-ended by another vehicle."
     }
@@ -12955,7 +12955,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
     }
@@ -12982,10 +12982,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped for truck but followed too soon; truck reversed again",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary when the truck reversed into it."
     }
@@ -13015,7 +13015,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV was stopped yielding to pedestrian; rear-ended by car",
       "rcodex": "Passenger car rear-ended AV while AV yielded to crosswalk pedestrian",
       "rgemini": "Waymo was rear-ended while stationary yielding to a pedestrian."
     }
@@ -13042,10 +13042,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "Heavy truck crossed into AV's turn lane during right turn",
+      "rclaude": "Both turning right; box truck crossed into AV turn lane",
       "rcodex": "Box truck crossed solid line into AV turn path",
       "rgemini": "AV was making a legal right turn; other vehicle made an illegal right turn from the left lane across its path."
     }
@@ -13075,7 +13075,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "AV stopped to yield on narrow street; car hit stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to oncoming traffic; the other car hit it."
     }
@@ -13105,7 +13105,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; car behind drove into stationary AV",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was rear-ended while yielding to oncoming traffic."
     }
@@ -13135,7 +13135,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV was stopped in traffic; rear-ended by heavy truck",
       "rcodex": "Heavy truck rolled forward into stationary AV",
       "rgemini": "AV was stopped in traffic; rear-ended by a heavy truck."
     }
@@ -13165,7 +13165,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped on narrow street; truck sideswiped stationary AV",
       "rcodex": "Passing heavy truck struck stationary AV on narrow street",
       "rgemini": "Waymo was stationary yielding to a truck which hit it while passing."
     }
@@ -13195,7 +13195,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.15,
       "gemini": 0.0,
-      "rclaude": "AV turning right, rear-ended by following vehicle",
+      "rclaude": "Other car went straight from right-turn-only lane into AV",
       "rcodex": "Counterpart went straight from right-turn-only lane",
       "rgemini": "AV was making a legal right turn; other vehicle went straight from a right-turn-only lane and struck it."
     }
@@ -13225,7 +13225,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped in traffic; truck sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Truck hit stationary Waymo while passing."
     }
@@ -13255,7 +13255,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV was stopped; van reversed into stationary AV",
       "rcodex": "Van reversed into stationary AV",
       "rgemini": "AV was stationary yielding; other vehicle traveling wrong way reversed into it."
     }
@@ -13285,7 +13285,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV was stopped at red light; car behind drove into AV",
       "rcodex": "Passenger car rear-ended stationary AV in queue",
       "rgemini": "AV was stationary in traffic; rear-ended by another vehicle."
     }
@@ -13315,7 +13315,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; truck reversed into stationary AV while parking",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was stationary yielding to a reversing truck which backed into it."
     }
@@ -13345,7 +13345,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.2,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV changed lanes to avoid dog, contacted car",
+      "rclaude": "AV slowed and changed lanes for dog; rear-ended by car",
       "rcodex": "AV lane-change maneuver to avoid dog preceded rear-end contact",
       "rgemini": "Waymo was rear-ended while slowing to avoid an animal in the roadway."
     }
@@ -13372,10 +13372,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped at red for 6 min; van sideswiped while passing",
       "rcodex": "Passing van struck stationary AV during overtake",
       "rgemini": "AV was stationary at a red light; other vehicle hit it while attempting to pass."
     }
@@ -13405,7 +13405,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; fire engine hit stationary AV while turning",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was stationary yielding to a fire engine which hit it while turning."
     }
@@ -13435,7 +13435,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped in parking lot; pickup truck passed and hit it",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary; pickup truck hit it while passing."
     }
@@ -13462,10 +13462,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 0.2,
+      "claude": 0.1,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "Both backing, other continued into stationary AV",
+      "rclaude": "AV was reversing but truck reversed faster into AV",
       "rcodex": "Truck continued reversing into AV despite AV reverse attempt",
       "rgemini": "AV was stationary after attempting to reverse away; heavy truck reversed into it."
     }
@@ -13492,10 +13492,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car turned left into AV",
+      "rclaude": "AV hit speed bump/pavement change in parking lot",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement due to elevation change causing damage to its undercarriage."
     }
@@ -13525,7 +13525,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car changed lanes into AV",
+      "rclaude": "AV was parked for pickup; truck sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Truck hit stationary Waymo while passing."
     }
@@ -13555,7 +13555,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped yielding to pedestrians; scooter rear-ended AV",
       "rcodex": "Scooter struck AV while AV was stopped yielding to pedestrians",
       "rgemini": "AV was stopped yielding to pedestrians; rear-ended by a scooter."
     }
@@ -13582,10 +13582,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.15,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "AV stopped suddenly after bird collision; rear-ended by car",
       "rcodex": "AV stopped and was rear-ended by following car",
       "rgemini": "Waymo was rear-ended while stationary after an unexpected event (hitting a bird)."
     }
@@ -13612,10 +13612,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV undercarriage hit pavement entering parking lot driveway",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement due to elevation change causing damage to its undercarriage."
     }
@@ -13642,10 +13642,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV stopped, car parking maneuver hit AV",
+      "rclaude": "AV undercarriage hit pavement entering parking lot driveway",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement due to elevation change causing damage to its undercarriage."
     }
@@ -13675,7 +13675,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, car reversed into AV",
+      "rclaude": "AV was stopped in traffic; van mirror hit AV mirror passing",
       "rcodex": "Passing van mirror struck stationary AV",
       "rgemini": "Waymo was stationary when a passing van hit its mirror."
     }
@@ -13705,7 +13705,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV stopped to yield on narrow street; truck hit stationary AV",
       "rcodex": "Passing pickup struck stationary AV on narrow street",
       "rgemini": "AV was stationary yielding on a narrow street; other vehicle hit it while passing."
     }
@@ -13735,7 +13735,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; car sideswiped stationary AV while passing",
       "rcodex": "Car changing lanes to pass struck stationary AV",
       "rgemini": "AV was stationary in traffic; other vehicle hit it while changing lanes to pass."
     }
@@ -13762,10 +13762,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "Other encroached into AV's lane during parallel left turn",
+      "rclaude": "Both turning left in adjacent lanes; SUV crossed into AV lane",
       "rcodex": "Other SUV crossed dashed line during parallel left turn",
       "rgemini": "AV was making a legal left turn; other vehicle in adjacent turn lane crossed into AV's lane."
     }
@@ -13795,7 +13795,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at red; car behind drove into stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary yielding to an emergency vehicle."
     }
@@ -13822,10 +13822,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.2,
       "codex": 0.4,
       "gemini": 0.0,
-      "rclaude": "AV turning right, other passed on right side",
+      "rclaude": "AV began moving into road as SUV passed; shared fault",
       "rcodex": "AV turn entry and counterpart passing maneuver both contributed",
       "rgemini": "SUV attempted to pass the Waymo AV improperly as it was beginning to move from a stop sign."
     }
@@ -13855,7 +13855,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV stopped on narrow street; car sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to oncoming traffic; the other car hit it while passing."
     }
@@ -13885,7 +13885,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV was stopped; bus reversed into stationary AV",
       "rcodex": "Bus reversed into stationary AV",
       "rgemini": "AV was stationary in a turn lane; bus in front reversed into it."
     }
@@ -13915,7 +13915,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at red; truck making wide turn hit stationary AV",
       "rcodex": "Turning heavy truck crossed centerline into stationary AV",
       "rgemini": "AV was stationary at a red light; turning truck crossed the center line and struck it."
     }
@@ -13945,7 +13945,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; car in front reversed into stationary AV",
       "rcodex": "Vehicle ahead reversed into stationary AV",
       "rgemini": "AV was stationary in traffic; vehicle in front reversed into it."
     }
@@ -13972,10 +13972,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV turned onto elevated street, undercarriage hit pavement",
+      "rclaude": "AV undercarriage hit elevated sidewalk-level street entrance",
       "rcodex": "AV struck raised roadway/sidewalk while turning",
       "rgemini": "Waymo drove onto a raised street/sidewalk and bottomed out."
     }
@@ -14005,7 +14005,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; cyclist ran stop sign and hit stationary AV",
       "rcodex": "E-bike entered stop-controlled intersection and hit stationary AV",
       "rgemini": "AV was stationary yielding; cyclist ran a stop sign and struck it."
     }
@@ -14032,10 +14032,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped for possible emergency vehicle; rear-ended by truck",
       "rcodex": "Pickup rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary."
     }
@@ -14065,7 +14065,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Heavy truck reversed into stationary AV",
       "rgemini": "AV was stationary after attempting to reverse away; other vehicle reversed into it."
     }
@@ -14095,7 +14095,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at yellow/red light; rear-ended by SUV",
       "rcodex": "SUV rear-ended stationary AV at red light",
       "rgemini": "AV was stopped at a red light; rear-ended by another vehicle."
     }
@@ -14125,7 +14125,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.3,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV turning right, contacted by passing cable car",
+      "rclaude": "AV merged left into path of cable car; shared fault",
       "rcodex": "AV moved left to merge while cable car was passing",
       "rgemini": "AV shifted left to merge into passing cable car"
     }
@@ -14155,7 +14155,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "SUV turned right without stopping at stop sign into AV path",
       "rcodex": "Counterpart turned right from stop-controlled approach into AV path",
       "rgemini": "SUV ran a stop sign and hit the Waymo AV."
     }
@@ -14185,7 +14185,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked, struck by passing vehicle",
+      "rclaude": "AV was parked; car reversed into parked AV while parking",
       "rcodex": "Parallel-parking car reversed into parked AV",
       "rgemini": "AV was parked at the curb; other vehicle reversed into it while parallel parking."
     }
@@ -14215,7 +14215,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV going straight, car turned left into AV",
+      "rclaude": "AV was stopped; chain reaction rear-end pushed SUV into AV",
       "rcodex": "Chain-reaction crash pushed stopped SUV into stopped AV",
       "rgemini": "Waymo was stationary and rear-ended in a chain reaction."
     }
@@ -14242,10 +14242,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.2,
       "codex": 0.35,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped mid-lane-change; truck behind hit AV in new lane",
       "rcodex": "AV stopped partially across lane during lane-change attempt",
       "rgemini": "Waymo was stationary yielding to traffic; pickup truck hit it from behind."
     }
@@ -14275,7 +14275,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped for pickup; car sideswiped stationary AV",
       "rcodex": "Oncoming car passing left struck stationary AV",
       "rgemini": "AV was stationary for a pick-up; other vehicle hit it while attempting to pass."
     }
@@ -14302,10 +14302,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was parked; passenger opened door into passing motorcycle",
       "rcodex": "AV passenger door opening contributed to motorcycle contact",
       "rgemini": "AV passenger opened door into the path of a motorcycle passing on the right; AV itself not at fault."
     }
@@ -14332,10 +14332,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.15,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "Other crossed into AV's turn lane during right turn",
+      "rclaude": "Both turning right; truck crossed in front of AV; AV close to curb",
       "rcodex": "Pickup turned across AV curbside right-turn path",
       "rgemini": "AV was turning right near the curb; other vehicle in the same lane turned right across its path."
     }
@@ -14365,7 +14365,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; truck reversed out of parking lot into AV",
       "rcodex": "Pickup reversed from driveway into stationary AV",
       "rgemini": "AV was stationary at the curb; other vehicle reversed into it from a parking lot."
     }
@@ -14395,7 +14395,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car entering traffic hit AV",
+      "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
     }
@@ -14425,7 +14425,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was parked at curb; van rear-ended stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary at the curb; van hit it from behind."
     }
@@ -14455,7 +14455,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was slowing for flashing red; rear-ended by accelerating SUV",
       "rcodex": "SUV struck AV from behind while AV was slowing for flashing red",
       "rgemini": "Waymo was rear-ended while slowing for a traffic signal."
     }
@@ -14482,10 +14482,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car parking maneuver hit AV",
+      "rclaude": "Other car ran stop sign into intersection hitting AV side",
       "rcodex": "Cross-traffic vehicle entered intersection and struck AV side",
       "rgemini": "Passenger car entered intersection and hit the side of the Waymo AV which had the right of way."
     }
@@ -14515,7 +14515,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, car turned right into AV",
+      "rclaude": "Pickup truck sideswiped AV while changing lanes erratically",
       "rcodex": "Pickup changed back into AV lane while passing",
       "rgemini": "AV was traveling in its lane; other vehicle merged into its lane and struck it."
     }
@@ -14545,7 +14545,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
     }
@@ -14572,10 +14572,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.2,
       "gemini": 0.0,
-      "rclaude": "AV turning right, SUV passed and scraped AV",
+      "rclaude": "SUV passed AV on left while AV was turning right with signal",
       "rcodex": "Counterpart passed during AV right turn; mostly counterpart fault",
       "rgemini": "SUV passed turning Waymo and hit it."
     }
@@ -14605,7 +14605,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV nearly stopped at stop sign; rear-ended by SUV",
       "rcodex": "SUV from behind struck AV after stop-sign slowdown",
       "rgemini": "AV was proceeding after a stop sign; rear-ended by another vehicle."
     }
@@ -14632,10 +14632,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV hit speed bump in parking lot entrance",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit a stationary speed bump causing damage to its undercarriage."
     }
@@ -14665,7 +14665,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at red light; rear-ended by speeding car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary at a red light; passenger car hit it from behind at high speed."
     }
@@ -14692,10 +14692,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Other car ran stop sign at high speed into intersection hitting AV",
       "rcodex": "Passenger car ran stop sign and entered AV path",
       "rgemini": "AV was proceeding legally through intersection; other vehicle ran a stop sign at high speed and struck it."
     }
@@ -14725,7 +14725,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; SUV passed and sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to traffic; SUV hit it while passing."
     }
@@ -14755,7 +14755,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
     }
@@ -14782,10 +14782,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.3,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Cone thrown from truck into AV lane; unusual but AV hit it",
       "rcodex": "Traffic cone was thrown into AV lane by another vehicle occupant",
       "rgemini": "AV struck a traffic cone intentionally thrown into its path by a passenger in another vehicle."
     }
@@ -14815,7 +14815,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at red light; rear-ended by SUV",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
     }
@@ -14842,10 +14842,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV hit speed bump on frontage road at 20 mph",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit a stationary speed bump causing damage to its undercarriage."
     }
@@ -14875,7 +14875,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at stop sign; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was stopped at a stop sign; rear-ended by another vehicle."
     }
@@ -14905,7 +14905,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; truck sideswiped stationary AV while passing",
       "rcodex": "Passing heavy truck sideswiped stationary AV",
       "rgemini": "AV was stationary yielding to traffic; heavy truck hit it while attempting to pass."
     }
@@ -14935,7 +14935,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped at red; truck turned and sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary at a red light; pickup truck hit it while turning."
     }
@@ -14965,7 +14965,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV stopped before entering road; rear-ended by car behind",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at an intersection."
     }
@@ -14995,7 +14995,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Other car turned right on red into AV lane of travel",
       "rcodex": "Counterpart right turn crossed AV path",
       "rgemini": "Passenger car turned right on red into the path of the Waymo AV which had a green light."
     }
@@ -15022,10 +15022,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "Other car ran stop sign into intersection hitting AV",
       "rcodex": "Passenger car ran stop sign and struck AV rear quarter",
       "rgemini": "AV proceeded after stopping at a stop sign; other vehicle ran its stop sign and struck the AV."
     }
@@ -15055,7 +15055,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was parked for pickup; van sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary and parked with hazard lights; van hit it while passing."
     }
@@ -15085,7 +15085,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV moved slowly from stop; rear-ended by car behind",
       "rcodex": "Following car struck AV from behind during unprotected-left yield",
       "rgemini": "Waymo was rear-ended while yielding to oncoming traffic."
     }
@@ -15115,7 +15115,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; chain reaction crash pushed SUV into AV",
       "rcodex": "Stationary AV struck after trailing SUV was rear-ended",
       "rgemini": "Waymo was stationary and rear-ended due to a multi-vehicle collision behind it."
     }
@@ -15145,7 +15145,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped, struck by car",
+      "rclaude": "AV was slowing; other car lost control and crossed into AV lane",
       "rcodex": "Counterpart lost traction and crossed into AV lane",
       "rgemini": "AV was slowing in its lane; other vehicle lost control while turning and crossed into AV's lane."
     }
@@ -15175,7 +15175,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV was stopped; chain reaction crash pushed SUV into AV",
       "rcodex": "Stationary AV struck via chain-reaction collision",
       "rgemini": "AV was stationary; struck by a vehicle that was pushed into it by a third speeding vehicle."
     }
@@ -15202,10 +15202,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV stopped, rear-ended",
+      "rclaude": "AV undercarriage hit raised pavement over utility cover",
       "rcodex": "AV undercarriage struck raised pavement in travel lane",
       "rgemini": "AV struck raised pavement in its path; single-vehicle incident."
     }
@@ -15232,10 +15232,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.2,
+      "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV turning right, e-cyclist veered from sidewalk into AV",
+      "rclaude": "E-cyclist veered into roadway and hit nearly stopped AV",
       "rcodex": "E-cyclist entered turn path and contacted near-stopped AV rear side",
       "rgemini": "Zoox braked to yield to an e-cyclist who then veered into the roadway and struck the nearly stopped AV."
     }
@@ -15265,7 +15265,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, other passed and scraped AV running red light",
+      "rclaude": "AV was stopped; truck passed on left and sideswiped AV",
       "rcodex": "Pickup passed and struck stopped Zoox AV",
       "rgemini": "Zoox was stationary waiting to turn when a pickup truck illegally passed it and struck it."
     }
@@ -15292,10 +15292,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, truck ran stop sign into AV's path",
+      "rclaude": "Truck ran stop sign into AV path; AV braked but contact occurred",
       "rcodex": "Truck pulled out from driveway into AV lane",
       "rgemini": "Zoox was struck by a tractor-trailer that failed to yield and ran a stop sign."
     }
@@ -15322,10 +15322,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV going straight, SUV ahead abruptly reversed into AV",
+      "rclaude": "AV was passing; SUV abruptly reversed to park and hit AV",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "The AV was struck by another vehicle that abruptly reversed without signaling to parallel park while the AV was passing."
     }
@@ -15355,7 +15355,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, box truck turned left into AV's path",
+      "rclaude": "Box truck made sudden unprotected left turn hitting AV",
       "rcodex": "Truck made unprotected left across AV path",
       "rgemini": "Box truck made an unprotected left turn into the path of the Zoox AV."
     }
@@ -15385,7 +15385,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, truck reversed into AV despite horn warning",
+      "rclaude": "AV was stopped; truck reversed into stationary AV despite horn",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit by a reversing tractor-trailer while stopped"
     }
@@ -15415,7 +15415,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV turning right, rear-ended by pickup behind",
+      "rclaude": "AV was slowing for turn; rear-ended by inattentive pickup",
       "rcodex": "Pickup rear-ended slowing AV",
       "rgemini": "AV was slowing to yield and was rear-ended by a distracted driver."
     }
@@ -15445,7 +15445,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, SUV veered into AV's lane",
+      "rclaude": "SUV suddenly veered into AV lane without signal",
       "rcodex": "SUV veered into AV path from adjacent lane",
       "rgemini": "Another vehicle veered into the AV's lane without signaling"
     }
@@ -15472,10 +15472,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.5,
-      "rclaude": "AV stopped in traffic, rear-ended by SUV behind",
+      "rclaude": "AV stopped briefly after starting from green; rear-ended by SUV",
       "rcodex": "AV rear-ended while stationary",
       "rgemini": "AV stopped unexpectedly on green and was rear-ended"
     }
@@ -15505,7 +15505,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV going straight, cars cut into AV's lane during turn",
+      "rclaude": "Car made illegal right turn from through lane clipping AV",
       "rcodex": "Other cars made illegal right turn across AV path",
       "rgemini": "AV was proceeding legally on green; other vehicle made an illegal right turn across its path."
     }
@@ -15532,10 +15532,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.0,
+      "claude": 0.1,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV braked for debris, rear-ended by merging pickup",
+      "rclaude": "AV braked hard for debris; rear-ended by merging pickup",
       "rcodex": "AV braked for debris and was rear-ended by merging pickup",
       "rgemini": "AV braked for debris in lane; rear-ended by a close-following vehicle."
     }
@@ -15565,7 +15565,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped, truck reversed into AV despite horn warning",
+      "rclaude": "AV was stopped; box truck reversed into stationary AV",
       "rcodex": "Truck reversed into stopped AV",
       "rgemini": "AV was stopped and honked; other vehicle reversed into it."
     }
