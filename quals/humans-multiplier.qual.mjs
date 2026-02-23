@@ -1,14 +1,6 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import vm from "node:vm";
-
-const html = fs.readFileSync("index.html", "utf8");
-const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
-assert.ok(
-  scriptMatch,
-  "Replicata: parse index.html. Expectata: inline app script exists. Resultata: script tag missing.",
-);
-const appScript = scriptMatch[1].split("// --- Init ---")[0];
+import { appScript } from "./load-app.mjs";
 
 const nodes = new Map();
 const getNode = id => {
@@ -24,7 +16,7 @@ const ctx = vm.createContext({
     createElement() { return { textContent: "", innerHTML: "" }; },
   },
 });
-vm.runInContext(appScript, ctx, { filename: "index.html" });
+vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 const set = (id, v) => { getNode(id).value = String(v); };
 set("tesla-miles", 500000);

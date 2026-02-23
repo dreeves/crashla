@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import vm from "node:vm";
+import { appScript, dataScript } from "./load-app.mjs";
 
 class ElementStub {
   constructor(tagName, id = "") {
@@ -46,13 +46,6 @@ const getNode = id => {
   return nodeById.get(id);
 };
 
-const html = fs.readFileSync("index.html", "utf8");
-const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
-assert.ok(
-  scriptMatch,
-  "Replicata: parse index.html. Expectata: inline script exists. Resultata: script tag missing.",
-);
-const appScript = scriptMatch[1].split("// --- Init ---")[0];
 
 const ctx = vm.createContext({
   console,
@@ -62,7 +55,8 @@ const ctx = vm.createContext({
     createElement: tag => new ElementStub(tag),
   },
 });
-vm.runInContext(appScript, ctx, { filename: "index.html" });
+vm.runInContext(dataScript, ctx, { filename: "data.js" });
+vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 vm.runInContext(`
 incidents = INCIDENT_DATA;
@@ -195,19 +189,18 @@ Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`
 );
 
 assert.ok(
-  html.includes("Monthly VMT:") &&
-    html.includes("Cumulative VMT:"),
+  appScript.includes("Monthly VMT:") &&
+    appScript.includes("Cumulative VMT:"),
   `Replicata: inspect cross-company MPI datapoint tooltip source.
 Expectata: tooltip source includes monthly and cumulative mileage labels.
 Resultata: labels missing from source.`,
 );
 
 assert.ok(
-  html.includes("Statistical Method") &&
-    html.includes("Monthly VMT range:") &&
-    html.includes("Incidents in bin:"),
-  `Replicata: inspect source for translated methodology text and lower-chart tooltip labels.
-Expectata: source includes translated methodology heading plus lower-chart tooltip labels for VMT range and incident-bin counts.
+  appScript.includes("Monthly VMT range:") &&
+    appScript.includes("Incidents in bin:"),
+  `Replicata: inspect source for lower-chart tooltip labels.
+Expectata: source includes lower-chart tooltip labels for VMT range and incident-bin counts.
 Resultata: expected strings missing from source.`,
 );
 

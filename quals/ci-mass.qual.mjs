@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import vm from "node:vm";
+import { appScript } from "./load-app.mjs";
 
 class ElementStub {
   constructor(tagName, id = "") {
@@ -56,10 +56,6 @@ const getNode = id => {
   return nodeById.get(id);
 };
 
-const html = fs.readFileSync("index.html", "utf8");
-const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
-assert.ok(scriptMatch, "Replicata: load index.html script. Expectata: script exists. Resultata: inline script missing.");
-const appScript = scriptMatch[1].split("// --- Init ---")[0];
 
 const ctx = vm.createContext({
   console,
@@ -69,7 +65,7 @@ const ctx = vm.createContext({
     createElement: tag => new ElementStub(tag),
   },
 });
-vm.runInContext(appScript, ctx, { filename: "index.html" });
+vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 vm.runInContext(`
 incidents = [

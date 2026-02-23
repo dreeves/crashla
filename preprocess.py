@@ -3,7 +3,7 @@
 
 Reads nhtsa-2025-jun-2026-jan.csv, filters to Driver/Operator Type = "None",
 deduplicates by Same Incident ID (keeping highest Report Version), and injects
-the data inline into index.html (between marker comments).
+the data into incidents.js and vmt.js (between marker comments).
 """
 
 import csv
@@ -13,7 +13,8 @@ import urllib.request
 from collections import Counter
 
 INPUT  = "nhtsa-2025-jun-2026-jan.csv"
-HTML   = "index.html"
+INCIDENT_JS = "incidents.js"
+VMT_JS      = "vmt.js"
 VMT_SHEET_ID = "1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w"
 VMT_SHEET_GID = "844581871"
 VMT_SHEET_URL = (
@@ -119,6 +120,21 @@ def load_fault_models():
     return models, ids
 
 
+NHTSA_WINDOW_START = "2025-06-15"
+NHTSA_WINDOW_END   = "2026-01-15"
+
+def month_coverage(month_str):
+    """Fraction of the month inside the NHTSA observation window."""
+    year, mon = int(month_str[:4]), int(month_str[5:7])
+    import calendar
+    days_in_month = calendar.monthrange(year, mon)[1]
+    # Window: June 15 through January 15
+    if month_str == "2025-06":
+        return (30 - 15 + 1) / days_in_month  # Jun 15–30
+    if month_str == "2026-01":
+        return 15 / days_in_month              # Jan 1–15
+    return 1.0
+
 def fetch_vmt_sheet_csv():
     with urllib.request.urlopen(VMT_SHEET_URL, timeout=30) as resp:
         payload = resp.read()
@@ -127,7 +143,18 @@ def fetch_vmt_sheet_csv():
     must(len(lines) > 1, "VMT sheet CSV must include header and rows")
     must(lines[0] == "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale",
          "VMT sheet CSV header mismatch", header=lines[0])
-    return text
+    # Add coverage column (partial-month fraction for NHTSA window)
+    out = [lines[0].replace(",rationale", ",coverage,rationale")]
+    for line in lines[1:]:
+        if not line.strip():
+            continue
+        parts = line.split(",", 6)  # company,month,vmt,cum,min,max,rationale
+        month = parts[1]
+        cov = month_coverage(month)
+        cov_str = str(round(cov, 3))
+        parts.insert(6, cov_str)
+        out.append(",".join(parts))
+    return "\n".join(out)
 
 
 def js_template_literal(text):
@@ -194,34 +221,37 @@ def main():
         r["time"],
     ))
 
-    # Inject data inline into index.html
-    with open(HTML) as f:
-        html = f.read()
-
+    # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
     vmt_text = fetch_vmt_sheet_csv().replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
 
-    def inject(html, start_marker, end_marker, payload):
+    def inject(source, start_marker, end_marker, payload):
         """Replace content between marker comments with payload."""
-        si = html.index(start_marker)
-        ei = html.index(end_marker, si)
-        return html[:si] + start_marker + payload + html[ei:]
+        si = source.index(start_marker)
+        ei = source.index(end_marker, si)
+        return source[:si] + start_marker + payload + source[ei:]
 
-    html = inject(html,
-                  "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
-                  incident_json)
-    html = inject(html,
-                  "/* VMT_CSV_START */", "/* VMT_CSV_END */",
-                  vmt_template)
+    with open(INCIDENT_JS) as f:
+        inc_js = f.read()
+    inc_js = inject(inc_js,
+                    "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
+                    incident_json)
+    with open(INCIDENT_JS, "w") as f:
+        f.write(inc_js)
 
-    with open(HTML, "w") as f:
-        f.write(html)
+    with open(VMT_JS) as f:
+        vmt_js = f.read()
+    vmt_js = inject(vmt_js,
+                    "/* VMT_CSV_START */", "/* VMT_CSV_END */",
+                    vmt_template)
+    with open(VMT_JS, "w") as f:
+        f.write(vmt_js)
 
     # Summary
     counts = Counter(r["company"] for r in incidents)
     total = len(incidents)
-    print(f"Injected {total} incidents inline into {HTML}")
+    print(f"Injected {total} incidents into {INCIDENT_JS} and VMT into {VMT_JS}")
     for company, n in counts.most_common():
         print(f"  {company}: {n}")
 
