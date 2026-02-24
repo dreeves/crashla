@@ -243,6 +243,10 @@ tr:hover { background: #f8f8ff; }
   margin-top: 0.3rem;
   font-size: 0.82rem;
 }
+#month-legend-mpi-lines {
+  flex-direction: column;
+  gap: 0.25rem;
+}
 .month-legend-item {
   display: inline-flex;
   align-items: center;
@@ -336,39 +340,6 @@ tr:hover { background: #f8f8ff; }
   fill: #334;
   font-size: 11px;
 }
-.month-summary {
-  margin-top: 0.75rem;
-  background: #fff;
-  border: 1px solid #dfe4ef;
-  border-radius: 4px;
-  padding: 0.7rem;
-}
-.month-summary-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-}
-.month-summary table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-}
-.month-summary th,
-.month-summary td {
-  padding: 0.28rem 0.42rem;
-  border-bottom: 1px solid #e8ecf5;
-  text-align: right;
-}
-.month-summary th:first-child,
-.month-summary td:first-child {
-  text-align: left;
-}
-.month-summary-scroll {
-  overflow-x: auto;
-}
-.month-summary-scroll table {
-  min-width: 760px;
-}
 .mpi-cards {
   display: flex;
   gap: 0.6rem;
@@ -385,7 +356,13 @@ tr:hover { background: #f8f8ff; }
 .mpi-card-company {
   font-weight: 600;
   font-size: 0.85rem;
+  margin-bottom: 0.15rem;
+}
+.mpi-card-vmt {
+  font-size: 0.75rem;
+  color: #8090a8;
   margin-bottom: 0.35rem;
+  font-variant-numeric: tabular-nums;
 }
 .mpi-card-metric {
   margin-bottom: 0.4rem;

@@ -89,7 +89,6 @@ const metrics = vm.runInContext(`
     legendMpiLines: document.getElementById("month-legend-mpi-lines").innerHTML,
     legendLines: document.getElementById("month-legend-lines").innerHTML,
     legendSpeed: document.getElementById("month-legend-speed").innerHTML,
-    summaryBox: document.getElementById("month-summary-box").innerHTML,
   };
 })()
 `, ctx);
@@ -223,25 +222,6 @@ Expectata: each company chart renders a left VMT axis, a VMT line, stacked incid
 Resultata: rendered snippets were ${JSON.stringify(rendered.slice(0, 400))}.`,
 );
 
-assert.ok(
-  plain.summaryBox.includes("Total summary") &&
-    plain.summaryBox.includes("Company") &&
-    plain.summaryBox.includes("VMT min") &&
-    plain.summaryBox.includes("VMT best") &&
-    plain.summaryBox.includes("VMT max") &&
-    plain.summaryBox.includes("Total incidents") &&
-    plain.summaryBox.includes("Nonstationary incidents") &&
-    plain.summaryBox.includes("Nonstationary non-parking-lot incidents") &&
-    plain.summaryBox.includes("Miles per incident") &&
-    plain.summaryBox.includes("Miles per nonstationary incident") &&
-    plain.summaryBox.includes("Miles per nonstationary non-parking-lot incident") &&
-    plain.summaryBox.includes("Tesla") &&
-    plain.summaryBox.includes("Waymo") &&
-    plain.summaryBox.includes("Zoox"),
-  `Replicata: render monthly summary box.
-Expectata: summary box includes translated labels and all three companies.
-Resultata: summary box was ${JSON.stringify(plain.summaryBox)}.`,
-);
 
 assert.ok(
   plain.legendMpiCompanies.includes("Tesla") &&

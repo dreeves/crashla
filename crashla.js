@@ -134,73 +134,33 @@ const MONTH_METRIC_DEFS = [
 ];
 let monthMetricEnabled = {all: true, nonstationary: false, roadwayNonstationary: false, atfault: false};
 
-function lightenHex(hex, amount) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgb(${Math.round(r + (255 - r) * amount)},${Math.round(g + (255 - g) * amount)},${Math.round(b + (255 - b) * amount)})`;
-}
 
-const LINE_STYLE_PRESETS = [
-  {
-    name: "Thickness + opacity",
-    all:                {width: 2.5, opacity: 1,    dash: "", markerScale: 1},
-    nonstationary:      {width: 1.5, opacity: 0.55, dash: "", markerScale: 1},
-    roadwayNonstationary: {width: 1.2, opacity: 0.8,  dash: "", markerScale: 1},
-    atfault:            {width: 1,   opacity: 0.3,  dash: "", markerScale: 1},
-    colorFn: (color) => color,
-  },
-  {
-    name: "Thickness + dashes",
-    all:                {width: 2.5, opacity: 1, dash: "",      markerScale: 1},
-    nonstationary:      {width: 1.5, opacity: 1, dash: "6 4",   markerScale: 1},
-    roadwayNonstationary: {width: 1.2, opacity: 1, dash: "10 4 2 4", markerScale: 1},
-    atfault:            {width: 1,   opacity: 1, dash: "2 4",   markerScale: 1},
-    colorFn: (color) => color,
-  },
-  {
-    name: "Color intensity",
-    all:                {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0},
-    nonstationary:      {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.45},
-    roadwayNonstationary: {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.25},
-    atfault:            {width: 2, opacity: 1, dash: "", markerScale: 1, lighten: 0.7},
-    colorFn: (color, lighten) => lighten > 0 ? lightenHex(color, lighten) : color,
-  },
-  {
-    name: "Big markers",
-    all:                {width: 1.2, opacity: 1, dash: "", markerScale: 1},
-    nonstationary:      {width: 1.2, opacity: 1, dash: "", markerScale: 1.6},
-    roadwayNonstationary: {width: 1.2, opacity: 1, dash: "", markerScale: 1.9},
-    atfault:            {width: 1.2, opacity: 1, dash: "", markerScale: 2.2},
-    colorFn: (color) => color,
-  },
-];
-let lineStyleIdx = 0;
+const LINE_STYLE = {
+  all:                {width: 2.5, opacity: 1},
+  nonstationary:      {width: 1.5, opacity: 0.55},
+  roadwayNonstationary: {width: 1.2, opacity: 0.8},
+  atfault:            {width: 1,   opacity: 0.3},
+};
 
 function metricLineStyle(company, metricKey) {
-  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
-  const s = preset[metricKey];
-  const color = preset.colorFn(MONTHLY_COMPANY_COLORS[company], s.lighten || 0);
+  const s = LINE_STYLE[metricKey];
+  const color = MONTHLY_COMPANY_COLORS[company];
   let style = `stroke:${color};stroke-width:${s.width}`;
   if (s.opacity < 1) style += `;opacity:${s.opacity}`;
-  if (s.dash) style += `;stroke-dasharray:${s.dash}`;
   return style;
 }
 
 function metricMarkerColor(company, metricKey) {
-  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
-  const s = preset[metricKey];
-  return preset.colorFn(MONTHLY_COMPANY_COLORS[company], s.lighten || 0);
+  return MONTHLY_COMPANY_COLORS[company];
 }
 
 function metricMarkerScale(metricKey) {
-  return LINE_STYLE_PRESETS[lineStyleIdx][metricKey].markerScale;
+  return 1;
 }
 
 function metricErrStyle(company, metricKey) {
-  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
-  const s = preset[metricKey];
-  const color = preset.colorFn(MONTHLY_COMPANY_COLORS[company], s.lighten || 0);
+  const s = LINE_STYLE[metricKey];
+  const color = MONTHLY_COMPANY_COLORS[company];
   let style = `stroke:${color}`;
   if (s.opacity < 1) style += `;opacity:${s.opacity}`;
   return style;
@@ -1163,7 +1123,7 @@ function renderAllCompaniesMpiChart(series) {
     }
     if (seg.length > 0) segments.push(seg);
     const color = metricMarkerColor(row.company, row.metric.key);
-    const metricOpacity = LINE_STYLE_PRESETS[lineStyleIdx][row.metric.key].opacity;
+    const metricOpacity = LINE_STYLE[row.metric.key].opacity;
     const bandOpacity = (0.12 * metricOpacity).toFixed(3);
     return segments.map(seg => {
       let d = "";
@@ -1312,48 +1272,6 @@ function renderCompanyMonthlyChart(series, company) {
   `;
 }
 
-function renderMonthlySummary(series) {
-  // TO-DO: Human vet all new end-user copy in this summary box.
-  const rows = monthlySummaryRows(series);
-  return `
-    <div class="month-summary-title">Total summary</div>
-    <div class="month-summary-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>VMT min</th>
-            <th>VMT best</th>
-            <th>VMT max</th>
-            <th>Total incidents</th>
-            <th>Nonstationary incidents</th>
-            <th>Nonstationary non-parking-lot incidents</th>
-            <th>Miles per incident</th>
-            <th>Miles per nonstationary incident</th>
-            <th>Miles per nonstationary non-parking-lot incident</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(row => `
-            <tr>
-              <td>${row.company}</td>
-              <td>${fmtWhole(row.vmtMin)}</td>
-              <td>${fmtWhole(row.vmtBest)}</td>
-              <td>${fmtWhole(row.vmtMax)}</td>
-              <td>${fmtCount(row.incTotal)}</td>
-              <td>${fmtCount(row.incNonstationary)}</td>
-              <td>${fmtCount(row.incRoadwayNonstationary)}</td>
-              <td>${fmtWhole(row.milesPerIncident)}</td>
-              <td>${fmtWhole(row.milesPerNonstationaryIncident)}</td>
-              <td>${fmtWhole(row.milesPerRoadwayNonstationaryIncident)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
 // TO-DO: Human vet all end-user labels in these summary cards.
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
@@ -1366,6 +1284,7 @@ function renderMpiSummaryCards(series) {
   return rows.map(row => `
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
       <div class="mpi-card-company">${row.company}</div>
+      <div class="mpi-card-vmt">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
       ${metrics.map(m => {
         const k = row[m.inc];
         const a = k + 0.5;
@@ -1375,8 +1294,7 @@ function renderMpiSummaryCards(series) {
         const median = 1 / gammaquant(a, row.vmtBest, 0.5);
         return `
         <div class="mpi-card-metric${m.primary ? " primary" : ""}">
-          <div>${m.label}</div>
-          <div class="mpi-card-formula">${fmtWhole(row.vmtBest)} miles \u00f7 ${fmtCount(k)} incidents = <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span></div>
+          <div>${m.label}: ${fmtCount(k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span></div>
           <div class="mpi-card-ci">95% CI: ${fmtWhole(ciLo)} \u2013 ${fmtWhole(ciHi)}</div>
         </div>`;
       }).join("")}
@@ -1399,23 +1317,16 @@ function renderMonthlyLegends() {
     });
   }
 
-  const preset = LINE_STYLE_PRESETS[lineStyleIdx];
   byId("month-legend-mpi-lines").innerHTML = `
     ${MONTH_METRIC_DEFS.map(metric => {
-      const s = preset[metric.key];
-      const color = preset.colorFn("#4a5264", s.lighten || 0);
+      const s = LINE_STYLE[metric.key];
+      const color = "#4a5264";
       let keyStyle = `width:22px;height:0;display:inline-block;border-top:${s.width}px solid ${color}`;
-      if (s.dash) keyStyle += `;border-top-style:dashed`;
       if (s.opacity < 1) keyStyle += `;opacity:${s.opacity}`;
-      const markerScale = s.markerScale;
-      const markerRadius = (metric.marker === "hollow-triangle" || metric.marker === "hollow-square") ? "0" : "50%";
-      const markerHtml = markerScale > 1
-        ? `<span style="display:inline-block;width:${6 * markerScale}px;height:${6 * markerScale}px;border:1.5px solid ${color};border-radius:${markerRadius};background:#fff;margin-right:2px;vertical-align:middle"></span>`
-        : "";
       return `
       <label class="month-legend-item month-company-toggle" for="${monthMetricToggleId(metric.key)}">
         <input type="checkbox" id="${monthMetricToggleId(metric.key)}" ${monthMetricEnabled[metric.key] ? "checked" : ""}>
-        <span style="${keyStyle}"></span>${markerHtml}${metric.label}
+        <span style="${keyStyle}"></span>${metric.label}
       </label>`;
     }).join("")}
   `;
@@ -1461,15 +1372,6 @@ function buildMonthlyViews() {
     </div>
   `).join("");
   renderMonthlyLegends();
-  byId("month-summary-box").innerHTML = renderMonthlySummary(series);
-  const sel = byId("line-style-select");
-  sel.innerHTML = LINE_STYLE_PRESETS.map((p, i) =>
-    `<option value="${i}" ${i === lineStyleIdx ? "selected" : ""}>${p.name}</option>`
-  ).join("");
-  sel.onchange = () => {
-    lineStyleIdx = Number(sel.value);
-    buildMonthlyViews();
-  };
 }
 
 // --- Fault fraction data ---
