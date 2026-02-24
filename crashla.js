@@ -125,14 +125,20 @@ let vmtRows = [];
 let faultData = {}; // reportId -> {claude, codex, gemini, rclaude, rcodex, rgemini}
 const DEFAULT_FAULT_WEIGHTS = {claude: 3, codex: 3, gemini: 3};
 let faultWeightState = {...DEFAULT_FAULT_WEIGHTS};
-let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true};
+let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true, Humans: false};
 const MONTH_METRIC_DEFS = [
   {key: "all", label: "Miles per incident", marker: "solid-circle"},
   {key: "nonstationary", label: "Miles per nonstationary incident", marker: "hollow-circle"},
   {key: "roadwayNonstationary", label: "Miles per nonstationary non-parking-lot incident", marker: "hollow-square"},
   {key: "atfault", label: "Miles per at-fault incident", marker: "hollow-triangle"},
+  {key: "injury", label: "Miles per injury crash", marker: "solid-circle"},
+  {key: "hospitalization", label: "Miles per hospitalization crash", marker: "solid-circle"},
+  {key: "fatality", label: "Miles per fatal crash", marker: "solid-circle"},
 ];
-let monthMetricEnabled = {all: true, nonstationary: false, roadwayNonstationary: false, atfault: false};
+let monthMetricEnabled = {
+  all: true, nonstationary: false, roadwayNonstationary: false, atfault: false,
+  injury: false, hospitalization: false, fatality: false,
+};
 
 
 const LINE_STYLE = {
@@ -140,6 +146,9 @@ const LINE_STYLE = {
   nonstationary:      {width: 1.5, opacity: 0.55},
   roadwayNonstationary: {width: 1.2, opacity: 0.8},
   atfault:            {width: 1,   opacity: 0.3},
+  injury:             {width: 2,   opacity: 0.9},
+  hospitalization:    {width: 1.5, opacity: 0.7},
+  fatality:           {width: 1.2, opacity: 0.5},
 };
 
 function metricLineStyle(company, metricKey) {
@@ -154,9 +163,6 @@ function metricMarkerColor(company, metricKey) {
   return MONTHLY_COMPANY_COLORS[company];
 }
 
-function metricMarkerScale(metricKey) {
-  return 1;
-}
 
 function metricErrStyle(company, metricKey) {
   const s = LINE_STYLE[metricKey];
@@ -169,6 +175,7 @@ const CI_MASS_MIN_PCT = 50;
 const CI_MASS_MAX_PCT = 99.9;
 const CI_MASS_STEP_PCT = 0.1;
 const CI_MASS_DEFAULT_PCT = 95;
+const CI_FAN_LEVELS = [0.50, 0.80, 0.95]; // nested CI bands from tight to wide
 const COMPANY_COLORS = {
   Tesla: "#d13b2d",
   Waymo: "#2a8f57",
@@ -190,6 +197,7 @@ const MONTHLY_COMPANY_COLORS = {
   Tesla: "#d13b2d",
   Waymo: "#2060c0",
   Zoox: "#2a8f57",
+  Humans: "#888",
 };
 const SPEED_BINS = ["unknown", "31+", "11-30", "1-10", "0"];
 const SPEED_LABELS = {
@@ -829,6 +837,20 @@ function emptySpeedBins() {
   return {"31+": 0, "11-30": 0, "1-10": 0, unknown: 0, "0": 0};
 }
 
+// Severity classification for SGO data
+const INJURY_SEVERITIES = new Set([
+  "Minor W/O Hospitalization",
+  "Minor W/ Hospitalization",
+  "Moderate W/O Hospitalization",
+  "Moderate W/ Hospitalization",
+  "Fatality",
+]);
+const HOSPITALIZATION_SEVERITIES = new Set([
+  "Minor W/ Hospitalization",
+  "Moderate W/ Hospitalization",
+  "Fatality",
+]);
+
 function linearTicks(min, max, count) {
   const out = [];
   for (let i = 0; i <= count; i++) {
@@ -899,6 +921,9 @@ function monthlySummaryRows(series) {
       incTotal,
       incNonstationary,
       incRoadwayNonstationary,
+      incInjury: rows.reduce((sum, row) => sum + row.incidents.injury, 0),
+      incHospitalization: rows.reduce((sum, row) => sum + row.incidents.hospitalization, 0),
+      incFatality: rows.reduce((sum, row) => sum + row.incidents.fatality, 0),
       milesPerIncident: vmtBest / incTotal,
       milesPerNonstationaryIncident: vmtBest / incNonstationary,
       milesPerRoadwayNonstationaryIncident: vmtBest / incRoadwayNonstationary,
@@ -926,7 +951,8 @@ function monthSeriesData() {
     const key = inc.company + "|" + month;
     let rec = incidentsByKey[key];
     if (rec === undefined) {
-      rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0};
+      rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
+             injury: 0, hospitalization: 0, fatality: 0};
       incidentsByKey[key] = rec;
     }
     rec.total += 1;
@@ -944,6 +970,13 @@ function monthSeriesData() {
     must(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
       "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
     rec.atFault += atFaultFrac || 0;
+    rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
+    rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
+    // Per-vehicle fatality: divide by number of vehicles involved to match
+    // fleet-wide fatality rate methodology (see theargumentmag.com article).
+    // vehiclesInvolved defaults to 2; overridden in preprocess.py when the
+    // narrative reveals more vehicles (e.g., 3 for the Tempe fatality).
+    rec.fatality += Number(inc.severity === "Fatality") / inc.vehiclesInvolved;
   }
 
   const months = [...monthSet].sort();
@@ -958,7 +991,7 @@ function monthSeriesData() {
       must(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
       must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0};
+      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, injury: 0, hospitalization: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       companies[company] = {
         vmtMin: vmt.vmtMin * c,
@@ -1006,6 +1039,9 @@ function renderAllCompaniesMpiChart(series) {
     nonstationary: rec => nonstationaryIncidentCount(rec.incidents.speeds),
     roadwayNonstationary: rec => roadwayNonstationaryIncidentCount(rec),
     atfault: rec => rec.incidents.atFault,
+    injury: rec => rec.incidents.injury,
+    hospitalization: rec => rec.incidents.hospitalization,
+    fatality: rec => rec.incidents.fatality,
   };
   const markerRenderer = {
     "solid-circle": (x, y, color, s) => {
@@ -1039,20 +1075,76 @@ function renderAllCompaniesMpiChart(series) {
         const k = countFn(row);
         const massFrac = CI_MASS_DEFAULT_PCT / 100;
         const mpiBest = estimateMpi(k, row.vmtBest, massFrac).median;
-        const mpiMin = k > 0 ? row.vmtMin / k : mpiBest;
-        const mpiMax = k > 0 ? row.vmtMax / k : mpiBest;
+        const mpiMin = estimateMpi(k, row.vmtMin, massFrac).median;
+        const mpiMax = estimateMpi(k, row.vmtMax, massFrac).median;
         const a = k + 0.5;
-        const tail = (1 - massFrac) / 2;
-        const ciLo = 1 / gammaquant(a, row.vmtMin, 1 - tail);
-        const ciHi = 1 / gammaquant(a, row.vmtMax, tail);
-        yMax = Math.max(yMax, mpiMax);
+        // Fan chart: nested CI bands at 50%, 80%, 95%
+        const bands = CI_FAN_LEVELS.map(level => {
+          const t = (1 - level) / 2;
+          return {
+            lo: 1 / gammaquant(a, row.vmtMin, 1 - t),
+            hi: 1 / gammaquant(a, row.vmtMax, t),
+          };
+        });
+        if (k > 0) yMax = Math.max(yMax, mpiBest);
         return {
-          mpiMin, mpiBest, mpiMax, ciLo, ciHi, incidentCount: k,
+          mpiMin, mpiBest, mpiMax, bands, incidentCount: k,
           vmtMonth: row.vmtBest,
           vmtCume: row.vmtCume,
         };
       });
       seriesRows.push({company, metric, vals});
+    }
+  }
+
+  // Human reference lines: known values for injury/fatality,
+  // 1/5 of Waymo's overall MPI for other metrics.
+  // Sources: NHTSA CRSS (~2.1M injury crashes / ~3.2T VMT ≈ 1.5M MPI),
+  //          FARS (~43K deaths / ~3.2T VMT ≈ 75M miles per death).
+  // AV fatalities use per-vehicle counting (÷ vehicles involved) to match
+  // the fleet-wide human stat; the human MPI needs no such adjustment.
+  const humanRefLines = [];
+  if (monthCompanyEnabled.Humans) {
+    // Human MPI from CRSS/FARS: ~3.2T VMT/yr, ~2.1M injury crashes (1.5M MPI),
+    // ~250K hospitalization crashes (13M MPI), ~40K fatalities (75M MPI after
+    // dividing by ~1.06 vehicles involved per fatal crash, per FARS).
+    const knownHumanMpi = {
+      injury: 1500000, hospitalization: 13000000, fatality: 75000000,
+    };
+    const waymoRows = companyMonthRows(series, "Waymo");
+    const waymoVmt = waymoRows.reduce((s, r) => s + r.vmtBest, 0);
+    for (const metric of includedMonthMetrics()) {
+      let mpi;
+      if (knownHumanMpi[metric.key] !== undefined) {
+        mpi = knownHumanMpi[metric.key];
+      } else {
+        const countFn = countByMetric[metric.key];
+        const waymoK = waymoRows.reduce((s, r) => s + countFn(r), 0);
+        const waymoMpi = waymoK > 0 ? waymoVmt / waymoK : 0;
+        mpi = waymoMpi / 5;
+      }
+      humanRefLines.push({metric, mpi});
+      yMax = Math.max(yMax, mpi);
+    }
+    // Subset metrics must have higher MPI (rarer events = more miles between).
+    // These constraints are logical invariants: violations mean bad data/estimates.
+    const humanMpiByKey = Object.fromEntries(
+      humanRefLines.map(r => [r.metric.key, r.mpi]));
+    const subsetChains = [
+      ["all", "nonstationary", "roadwayNonstationary"],
+      ["all", "atfault"],
+      ["injury", "hospitalization", "fatality"],
+    ];
+    for (const chain of subsetChains) {
+      for (let i = 1; i < chain.length; i++) {
+        if (humanMpiByKey[chain[i-1]] === undefined) continue;
+        if (humanMpiByKey[chain[i]]   === undefined) continue;
+        must(humanMpiByKey[chain[i-1]] <= humanMpiByKey[chain[i]],
+          "human MPI ordering violated", {
+            lesser: chain[i-1], lesserMpi: humanMpiByKey[chain[i-1]],
+            greater: chain[i], greaterMpi: humanMpiByKey[chain[i]],
+          });
+      }
     }
   }
 
@@ -1068,7 +1160,7 @@ function renderAllCompaniesMpiChart(series) {
     let penDown = false;
     for (let i = 0; i < row.vals.length; i++) {
       const mpi = row.vals[i];
-      if (mpi === null) {
+      if (mpi === null || mpi.incidentCount === 0) {
         penDown = false;
         continue;
       }
@@ -1078,9 +1170,9 @@ function renderAllCompaniesMpiChart(series) {
     return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.company, row.metric.key)}"></path>`;
   }).join("");
 
-  const errs = seriesRows.map(row =>
+  const errs = `<g clip-path="url(#mpi-clip)">` + seriesRows.map(row =>
     row.vals.map((mpi, i) => {
-      if (mpi === null) return "";
+      if (mpi === null || mpi.incidentCount === 0) return "";
       const x = mapX(i);
       const yLo = mapY(mpi.mpiMin);
       const yHi = mapY(mpi.mpiMax);
@@ -1091,25 +1183,28 @@ function renderAllCompaniesMpiChart(series) {
         <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yHi.toFixed(2)}" style="${errStyle}"></line>
       `;
     }).join("")
-  ).join("");
+  ).join("") + `</g>`;
 
   const marks = seriesRows.map(row =>
     row.vals.map((mpi, i) => {
+      if (mpi.incidentCount === 0) return "";
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
       const color = metricMarkerColor(row.company, row.metric.key);
-      const scale = metricMarkerScale(row.metric.key);
       const marker = markerRenderer[row.metric.marker];
       must(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
       const k = mpi.incidentCount;
       const kFmt = Number.isInteger(k) ? String(k) : k.toFixed(1);
       // TO-DO: Human vet new tooltip mileage labels below.
-      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(mpi.ciLo)} \u2013 ${fmtMiles(mpi.ciHi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
-      return `<g>${marker(x, y, color, scale)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer"><title>${escHtml(tip)}</title></circle></g>`;
+      const ci95 = mpi.bands[mpi.bands.length - 1];
+      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
+      return `<g>${marker(x, y, color, 1)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer"><title>${escHtml(tip)}</title></circle></g>`;
     }).join("")
   ).join("");
 
-  // Bayesian CI bands (clipped to plot area since bounds can be extreme)
+  // Fan chart: nested CI bands at 50%, 80%, 95% with decreasing opacity.
+  // Clamp to plot range so SVG coordinates stay reasonable.
+  const clampY = v => Math.max(mTop, Math.min(mTop + pH, mapY(v)));
   const bands = seriesRows.map(row => {
     const segments = [];
     let seg = [];
@@ -1124,17 +1219,21 @@ function renderAllCompaniesMpiChart(series) {
     if (seg.length > 0) segments.push(seg);
     const color = metricMarkerColor(row.company, row.metric.key);
     const metricOpacity = LINE_STYLE[row.metric.key].opacity;
-    const bandOpacity = (0.12 * metricOpacity).toFixed(3);
-    return segments.map(seg => {
-      let d = "";
-      for (const pt of seg) {
-        d += `${d ? " L " : "M "}${mapX(pt.i).toFixed(2)} ${mapY(pt.val.ciHi).toFixed(2)}`;
-      }
-      for (let j = seg.length - 1; j >= 0; j--) {
-        d += ` L ${mapX(seg[j].i).toFixed(2)} ${mapY(seg[j].val.ciLo).toFixed(2)}`;
-      }
-      d += " Z";
-      return `<path d="${d}" style="fill:${color};opacity:${bandOpacity}" clip-path="url(#mpi-clip)"></path>`;
+    // Draw widest band first (95%), then 80%, then 50% on top
+    return CI_FAN_LEVELS.slice().reverse().map((_level, li) => {
+      const bandIdx = CI_FAN_LEVELS.length - 1 - li; // index into bands array
+      const bandOpacity = (0.10 * metricOpacity * (1 + li * 0.5)).toFixed(3);
+      return segments.map(seg => {
+        let d = "";
+        for (const pt of seg) {
+          d += `${d ? " L " : "M "}${mapX(pt.i).toFixed(2)} ${clampY(pt.val.bands[bandIdx].hi).toFixed(2)}`;
+        }
+        for (let j = seg.length - 1; j >= 0; j--) {
+          d += ` L ${mapX(seg[j].i).toFixed(2)} ${clampY(seg[j].val.bands[bandIdx].lo).toFixed(2)}`;
+        }
+        d += " Z";
+        return `<path d="${d}" style="fill:${color};opacity:${bandOpacity}"></path>`;
+      }).join("");
     }).join("");
   }).join("");
 
@@ -1148,6 +1247,16 @@ function renderAllCompaniesMpiChart(series) {
       ${lines}
       ${errs}
       ${marks}
+      <g clip-path="url(#mpi-clip)">${humanRefLines.map(ref => {
+        const y = mapY(ref.mpi);
+        const s = LINE_STYLE[ref.metric.key];
+        const opacity = s.opacity < 1 ? `;opacity:${s.opacity}` : "";
+        return `
+          <line x1="${mLeft}" y1="${y.toFixed(2)}" x2="${mLeft + pW}" y2="${y.toFixed(2)}"
+            style="stroke:#888;stroke-width:${s.width};stroke-dasharray:6 4${opacity}"></line>
+          <text x="${mLeft + pW - 4}" y="${(y - 4).toFixed(2)}" text-anchor="end"
+            style="fill:#888;font-size:10px${opacity}">${fmtMiles(ref.mpi)}</text>`;
+      }).join("")}</g>
     </svg>
   `;
 }
@@ -1280,6 +1389,9 @@ function renderMpiSummaryCards(series) {
     {label: "All incidents",                 inc: "incTotal",                primary: true},
     {label: "Nonstationary",                 inc: "incNonstationary",        primary: false},
     {label: "Nonstationary non-parking-lot", inc: "incRoadwayNonstationary", primary: false},
+    {label: "Injury",                        inc: "incInjury",              primary: false},
+    {label: "Hospitalization",               inc: "incHospitalization",     primary: false},
+    {label: "Fatality",                      inc: "incFatality",            primary: false},
   ];
   return rows.map(row => `
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
@@ -1303,13 +1415,14 @@ function renderMpiSummaryCards(series) {
 }
 
 function renderMonthlyLegends() {
-  byId("month-legend-mpi-companies").innerHTML = ADS_COMPANIES.map(company => `
+  const allCompanies = [...ADS_COMPANIES, "Humans"];
+  byId("month-legend-mpi-companies").innerHTML = allCompanies.map(company => `
     <label class="month-legend-item month-company-toggle" for="${monthCompanyToggleId(company)}">
       <input type="checkbox" id="${monthCompanyToggleId(company)}" ${monthCompanyEnabled[company] ? "checked" : ""}>
       <span class="month-chip" style="background:${MONTHLY_COMPANY_COLORS[company]}"></span>${company}
     </label>
   `).join("");
-  for (const company of ADS_COMPANIES) {
+  for (const company of allCompanies) {
     const input = byId(monthCompanyToggleId(company));
     input.addEventListener("change", () => {
       monthCompanyEnabled[company] = input.checked;
@@ -1641,4 +1754,6 @@ function escAttr(s) {
   initWeightSliders();
   buildMonthlyViews();
   buildBrowser();
+  byId("colophon").textContent =
+    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.`;
 }

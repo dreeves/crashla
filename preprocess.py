@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """Preprocess NHTSA SGO crash data CSV into inline data for the web tool.
 
-Reads nhtsa-2025-jun-2026-jan.csv, filters to Driver/Operator Type = "None",
-deduplicates by Same Incident ID (keeping highest Report Version), and injects
-the data into incidents.js and vmt.js (between marker comments).
+Fetches the ADS incident CSV from NHTSA, filters to Driver/Operator Type =
+"None", deduplicates by Same Incident ID (keeping highest Report Version), and
+injects the data into incidents.js and vmt.js (between marker comments).
 """
 
 import csv
+import datetime
+import io
 import json
 import math
 import urllib.request
 from collections import Counter
 
-INPUT  = "nhtsa-2025-jun-2026-jan.csv"
+NHTSA_ADS_CSV_URL = (
+    "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/"
+    "SGO-2021-01_Incident_Reports_ADS.csv"
+)
 INCIDENT_JS = "incidents.js"
 VMT_JS      = "vmt.js"
 VMT_SHEET_ID = "1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w"
@@ -82,10 +87,28 @@ COMPANY_SHORT = {
     "Zoox, Inc.":   "Zoox",
 }
 
+# Manual overrides for number of vehicles involved, keyed by Same Incident ID.
+# The NHTSA CSV's "Crash With" field is singular and doesn't capture multi-
+# vehicle pileups. Default is 2 (the AV + one crash partner). Override here
+# when the narrative reveals more vehicles were involved.
+VEHICLES_INVOLVED = {
+    # Waymo SEP-2025 Tempe fatality: AV + motorcycle + hit-and-run passenger car
+    "dc166aecd5b4265": 3,
+}
+
 
 def must(cond, msg, **ctx):
     if not cond:
         raise AssertionError(f"{msg}: {ctx}")
+
+
+def fetch_nhtsa_csv():
+    """Fetch the ADS incident reports CSV from NHTSA."""
+    print(f"Fetching NHTSA ADS CSV from {NHTSA_ADS_CSV_URL} ...")
+    with urllib.request.urlopen(NHTSA_ADS_CSV_URL, timeout=60) as resp:
+        payload = resp.read()
+    text = payload.decode("utf-8")
+    return list(csv.DictReader(io.StringIO(text)))
 
 
 def parse_fault_csv(path):
@@ -162,8 +185,7 @@ def js_template_literal(text):
 
 
 def main():
-    with open(INPUT, newline="") as f:
-        rows = list(csv.DictReader(f))
+    rows = fetch_nhtsa_csv()
     fault_models, fault_ids = load_fault_models()
 
     # Filter to driverless incidents only
@@ -202,6 +224,8 @@ def main():
             "rcodex": fault_models["codex"][rid]["reasoning"],
             "rgemini": fault_models["gemini"][rid]["reasoning"],
         }
+        iid_short = rec["incidentId"]
+        rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(iid_short, 2)
         incidents.append(rec)
 
     incident_ids = {r["reportId"] for r in incidents}
@@ -232,8 +256,13 @@ def main():
         ei = source.index(end_marker, si)
         return source[:si] + start_marker + payload + source[ei:]
 
+    fetch_date = datetime.date.today().isoformat()
+
     with open(INCIDENT_JS) as f:
         inc_js = f.read()
+    inc_js = inject(inc_js,
+                    "/* NHTSA_FETCH_DATE_START */", "/* NHTSA_FETCH_DATE_END */",
+                    f'"{fetch_date}"')
     inc_js = inject(inc_js,
                     "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
                     incident_json)

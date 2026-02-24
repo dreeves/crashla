@@ -1,3 +1,4 @@
+const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-02-24"/* NHTSA_FETCH_DATE_END */;
 const INCIDENT_DATA = /* INCIDENT_DATA_START */
 [
   {
@@ -28,7 +29,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative; estimate from CP=Proceeding Straight and AV=Stopped",
       "rgemini": "Redacted narrative; SV speed was 0"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-11459",
@@ -58,7 +60,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative; estimate from fixed-object contact with AV in nonstandard maneuver",
       "rgemini": "Redacted narrative; AV hit fixed object"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-11375",
@@ -88,7 +91,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both turning; shared fault likely",
       "rcodex": "Redacted narrative; estimate from CP=Making Right Turn and AV=Making Right Turn",
       "rgemini": "Redacted narrative; CP turned into AV's rear right"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-11687",
@@ -118,7 +122,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative; estimate from fixed-object contact during AV left turn",
       "rgemini": "Redacted narrative; AV hit fixed object while turning"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-11786",
@@ -148,7 +153,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative; estimate from cyclist moving alongside stopped AV",
       "rgemini": "Redacted narrative; SV speed was 0"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-11787",
@@ -178,7 +184,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Animal crossing; partially avoidable",
       "rcodex": "Redacted narrative; estimate from CP=NM Crossing Roadway and AV=Stopped",
       "rgemini": "Redacted narrative; AV hit animal"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-11784",
@@ -208,7 +215,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other vehicle backed into AV",
       "rcodex": "Redacted narrative; estimate from CP=Backing and AV=Proceeding Straight",
       "rgemini": "Redacted narrative; CP backed into AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-11986",
@@ -238,7 +246,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV proceeding; limited info from metadata",
       "rcodex": "Redacted narrative with unknown counterpart action while AV proceeding",
       "rgemini": "Redacted narrative; sideswipe/ambiguous"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-13237",
@@ -268,7 +277,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative; estimate from CP=Making Right Turn and AV=Stopped",
       "rgemini": "Redacted narrative; SV speed was 0"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-13647",
@@ -298,7 +308,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative and crash with fixed object while AV proceeding",
       "rgemini": "Redacted narrative; AV hit fixed object (bottom)"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-13646",
@@ -328,7 +339,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative and AV backing into fixed object class",
       "rgemini": "Redacted narrative; AV backed over fixed object"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-13648",
@@ -358,7 +370,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped; struck by other party",
       "rcodex": "Redacted narrative with AV stopped and counterpart turning right",
       "rgemini": "Redacted narrative; SV speed was 0"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-13644",
@@ -388,7 +401,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into parked object",
       "rcodex": "Redacted narrative with counterpart parked and AV proceeding",
       "rgemini": "Redacted narrative; SV hit Parked CP"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "13781-13645",
@@ -418,7 +432,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV struck fixed object; should detect and avoid",
       "rcodex": "Redacted narrative and AV backing into pole/tree",
       "rgemini": "Redacted narrative; AV backed into pole/tree"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11297",
@@ -448,7 +463,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV turned into parking-lot entrance chain",
       "rgemini": "AV hit a stationary hanging chain"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11244",
@@ -478,7 +494,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other turned left into AV path",
       "rcodex": "SUV left turn crossed centerline into AV path",
       "rgemini": "Other vehicle crossed centerline and hit AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11239",
@@ -508,7 +525,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV turned into parking-lot chain",
       "rgemini": "AV hit a stationary hanging chain"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11193",
@@ -538,7 +556,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV struck parking-lot chain",
       "rgemini": "AV hit a stationary chain"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11190",
@@ -568,7 +587,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended stopped AV at red",
       "rgemini": "AV was stopped and rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11161",
@@ -598,7 +618,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV reversed into parked trailer; AV at fault",
       "rcodex": "AV reversing multi-point maneuver struck trailer hitch",
       "rgemini": "AV reversed into a stationary trailer hitch"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11204",
@@ -628,7 +649,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by other party",
       "rcodex": "Van departed roadway/sidewalk and struck stationary AV",
       "rgemini": "AV was stopped and hit by an erratically driven van"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11196",
@@ -658,7 +680,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other entered traffic into AV path",
       "rcodex": "Pickup entered from alley into AV lane",
       "rgemini": "Other vehicle entered lane from an alley and hit AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11171",
@@ -688,7 +711,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing van",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11174",
@@ -718,7 +742,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit elevated gate track; should detect",
       "rcodex": "AV underbody struck elevated gate track",
       "rgemini": "AV hit a stationary elevated gate track"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11189",
@@ -748,7 +773,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Passing heavy truck struck stopped AV on narrow street",
       "rgemini": "AV was stopped and hit by a passing heavy truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11209",
@@ -778,7 +804,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit elevated gate track; should detect",
       "rcodex": "AV underbody struck elevated gate track",
       "rgemini": "AV hit a stationary elevated gate track"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11291",
@@ -808,7 +835,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other turned right across AV lane",
       "rcodex": "Heavy truck turned right from adjacent lane across AV path",
       "rgemini": "The AV was struck by a heavy truck that made an improper right turn from the left turn lane and crossed into the AVs lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11170",
@@ -838,7 +866,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and hit by a reversing car"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11213",
@@ -868,7 +897,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "The AV was parked partially in-lane and its passenger opened a door into the path of a passing bus. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11298",
@@ -898,7 +928,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Passing heavy truck struck stopped AV on narrow street",
       "rgemini": "AV was stopped and hit by a passing heavy truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11249",
@@ -928,7 +959,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "AV reversed and stopped in lane before passing truck clipped AV",
       "rgemini": "AV was stopped and hit by a passing pickup truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11219",
@@ -958,7 +990,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing heavy truck struck stopped AV on narrow segment",
       "rgemini": "AV was stopped and hit by a passing heavy truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11177",
@@ -988,7 +1021,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by other party",
       "rcodex": "SUV rear-ended stopped AV at red",
       "rgemini": "AV was stopped and rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11225",
@@ -1018,7 +1052,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both proceeding; other likely at fault",
       "rcodex": "Passenger car entered roadway from driveway into AV side",
       "rgemini": "Other vehicle failed to yield when entering roadway and hit AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11146",
@@ -1048,7 +1083,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Debris from vehicle ahead; partially avoidable",
       "rcodex": "AV struck debris displaced across lane by vehicle ahead",
       "rgemini": "AV hit unavoidable moving debris from a vehicle ahead"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11175",
@@ -1078,7 +1114,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped to yield blocked lane",
       "rgemini": "AV was stopped and rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11295",
@@ -1108,7 +1145,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit parking barrier arm; should have stopped",
       "rcodex": "Barrier arm reclosed as AV proceeded through exit",
       "rgemini": "The AV proceeded forward and struck an automatic barrier arm that had closed in its path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11192",
@@ -1138,7 +1176,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passenger car pulled out from parking position into stopped AV",
       "rgemini": "AV was stopped and hit by a car exiting a parking spot"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11210",
@@ -1168,7 +1207,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Lane-changing passenger car sideswiped stopped AV",
       "rgemini": "AV was stopped and hit by a car changing lanes"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11163",
@@ -1198,7 +1238,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning van passed and struck parked AV in loading zone",
       "rgemini": "The AV was parked with hazards and was struck by a van that was attempting to pass it while completing a turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11167",
@@ -1228,7 +1269,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and hit by a reversing car"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11194",
@@ -1258,7 +1300,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "SUV passing stopped AV clipped rear quarter",
       "rgemini": "AV was stopped and hit by a maneuvering SUV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11221",
@@ -1288,7 +1331,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other vehicle reversed into AV path",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Other vehicle reversed into the AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11162",
@@ -1318,7 +1362,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "SUV attempted pass maneuver around stopped AV and clipped rear quarter",
       "rgemini": "AV was stopped and hit by a passing SUV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11216",
@@ -1348,7 +1393,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing car with open door struck parked AV",
       "rgemini": "AV was parked and hit by a passing car with an open door"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11207",
@@ -1378,7 +1424,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing car",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11224",
@@ -1408,7 +1455,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV passenger opened door hitting parked vehicle",
       "rcodex": "AV passenger repeatedly opened door while AV moved past stopped AV",
       "rgemini": "Passenger in moving AV opened door and hit a stationary AV. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11214",
@@ -1438,7 +1486,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV while AV slowed for queue",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down for a queue of traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11247",
@@ -1468,7 +1517,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Passing box truck struck stopped AV on narrow street",
       "rgemini": "AV was stopped and hit by a passing box truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11195",
@@ -1498,7 +1548,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit fallen utility line; hard to detect",
       "rcodex": "AV struck fallen utility line hanging across roadway",
       "rgemini": "AV hit a fallen utility line in the roadway"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11218",
@@ -1528,7 +1579,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11245",
@@ -1558,7 +1610,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was slowing for a stop sign and was rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11246",
@@ -1588,7 +1641,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other crossed lane line during left turn",
       "rcodex": "Inner-lane pickup crossed turn-lane boundary into AV",
       "rgemini": "Other vehicle crossed lane line during dual turn and hit AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11172",
@@ -1618,7 +1672,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other turned right across AV lane",
       "rcodex": "SUV turned right across AV lane while AV was passing",
       "rgemini": "Other vehicle crossed lane line and hit AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11208",
@@ -1648,7 +1703,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped at red",
       "rgemini": "AV was stopped and rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11173",
@@ -1678,7 +1734,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Pickup repeatedly struck stationary AV front and rear",
       "rgemini": "AV was stopped and hit twice by a pickup truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11205",
@@ -1708,7 +1765,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened front door into passing cyclist",
       "rgemini": "Passenger opened door into a passing cyclist while AV was parked. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11212",
@@ -1738,7 +1796,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped in queue",
       "rgemini": "AV was stopped and rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11250",
@@ -1768,7 +1827,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Turning minivan passing parked AV clipped rear quarter",
       "rgemini": "AV was parked and hit by a passing minivan"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11238",
@@ -1798,7 +1858,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Lane-changing passenger car sideswiped stopped AV",
       "rgemini": "AV was stopped and hit by a car changing lanes"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11276",
@@ -1828,7 +1889,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and hit by a reversing SUV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11206",
@@ -1858,7 +1920,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Object fell from other vehicle; hard to avoid",
       "rcodex": "Tires fell from trailer ahead and rolled into AV path",
       "rgemini": "AV hit unavoidable debris falling from a vehicle ahead"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11275",
@@ -1888,7 +1951,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit object in roadway; should detect and avoid",
       "rcodex": "AV struck unattended bicycle lying in roadway at speed",
       "rgemini": "AV hit an unattended bicycle in the roadway"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11220",
@@ -1918,7 +1982,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit object in roadway; should detect and avoid",
       "rcodex": "AV struck unattended bicycle lying in travel lane",
       "rgemini": "The AV failed to avoid and struck an unattended bicycle laying in the middle of the roadway."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11160",
@@ -1948,7 +2013,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped at red",
       "rgemini": "AV was stopped and rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11379",
@@ -1978,7 +2044,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into chain/barrier; should detect",
       "rcodex": "AV entered driveway and struck concrete/chain obstacle",
       "rgemini": "Waymo drove over a piece of concrete attached to a chain at a parking lot entrance."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11327",
@@ -2008,7 +2075,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended stopped AV at red light",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11381",
@@ -2038,7 +2106,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other made unprotected left turn into AV",
       "rcodex": "Oncoming car made unprotected left into AV lane",
       "rgemini": "Waymo was proceeding on a green light when another vehicle made an unprotected left turn into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11417",
@@ -2068,7 +2137,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other drove wrong way into AV",
       "rcodex": "Counterpart traveling wrong way",
       "rgemini": "The AV was struck by a wrong-way driver despite taking multiple evasive maneuvers to avoid the collision."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11330",
@@ -2098,7 +2168,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Pickup passing parked in-lane AV clipped rear quarter",
       "rgemini": "The AV was parked in-lane with hazards and was struck by a pickup truck that was passing it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11374",
@@ -2128,7 +2199,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Cross-traffic red-light violator struck AV after AV stopped to yield",
       "rgemini": "The AV had a green light and stopped to yield to another vehicle that ran a red light but the other vehicle still struck the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11372",
@@ -2158,7 +2230,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV while AV slowed for queue",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down for a queue of traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11467",
@@ -2188,7 +2261,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit parking barrier arm; should have stopped",
       "rcodex": "AV drove into closed barrier arm",
       "rgemini": "The AV proceeded forward and hit a closed barrier arm."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11362",
@@ -2218,7 +2292,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; other vehicle reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "The AV was stationary and the vehicle in front of it reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11414",
@@ -2248,7 +2323,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to traffic when another vehicle changed lanes into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11468",
@@ -2278,7 +2354,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped at stop sign",
       "rgemini": "Waymo was rear-ended by an SUV while stopped at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11415",
@@ -2308,7 +2385,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Pickup rear-ended stopped AV at red",
       "rgemini": "Waymo was rear-ended by a pickup truck while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11284",
@@ -2338,7 +2416,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning SUV struck stationary AV at red",
       "rgemini": "AV was stopped and hit by a turning SUV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11413",
@@ -2368,7 +2447,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Box truck struck parked in-lane AV near construction",
       "rgemini": "The AV was parked in-lane yielding to construction and was rear-ended by a box truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11400",
@@ -2398,7 +2478,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped in queue",
       "rgemini": "The AV was rear-ended by another vehicle while stopped in a queue."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11365",
@@ -2428,7 +2509,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "AV stop-and-go at beacon preceded rear-end by following car",
       "rgemini": "The AV was rear-ended by another vehicle while stopped before a crosswalk."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11328",
@@ -2458,7 +2540,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by other party",
       "rcodex": "AV stop-and-go then stop preceded rear-end by following truck",
       "rgemini": "The AV was rear-ended by a box truck after slowing to a stop to prepare for a turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11418",
@@ -2488,7 +2571,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by other party",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "The AV was stationary and the other vehicle reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11383",
@@ -2518,7 +2602,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other changed lanes into AV",
       "rcodex": "Passenger car changed lanes into AV side",
       "rgemini": "The AV was struck by another vehicle that abruptly changed lanes into the AVs lane of travel."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11432",
@@ -2548,7 +2633,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other turned right into AV",
       "rcodex": "Truck turned right from incorrect lane during parallel right-turn",
       "rgemini": "The AV was struck by a semi-truck that made an improper right turn from the entrance lane of the parking lot."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11384",
@@ -2578,7 +2664,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing SUV struck stopped AV rear quarter",
       "rgemini": "The AV was stationary yielding to traffic and was struck by an SUV that was passing it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11358",
@@ -2608,7 +2695,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Fire truck passing narrow lane struck stopped AV",
       "rgemini": "The AV was stationary yielding to a fire truck and the fire truck struck the AV while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11451",
@@ -2638,7 +2726,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck encroached into AV lane",
       "rcodex": "Truck re-entered lane from reverse maneuver; AV had limited clearance",
       "rgemini": "Waymo was maneuvering around a truck when the truck pulled forward into its lane and struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11426",
@@ -2668,7 +2757,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV started moving as pedestrian pushed carts nearby",
       "rcodex": "AV moved into path of carts pushed by pedestrian",
       "rgemini": "AV struck shopping carts pushed by pedestrian"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11333",
@@ -2698,7 +2788,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Turning bus clipped stopped AV on narrow street",
       "rgemini": "The AV was stationary at a red light and a bus struck it while completing a turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11404",
@@ -2728,7 +2819,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning passenger car clipped parked AV after drop-off",
       "rgemini": "The AV was parked at the curb and the other vehicle struck it while completing a turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11371",
@@ -2758,7 +2850,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Following car rear-ended AV while AV slowed to yield pedestrian",
       "rgemini": "The AV was rear-ended by another vehicle while slowing to yield to a pedestrian in a crosswalk."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11402",
@@ -2788,7 +2881,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped for red turn arrow",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11302",
@@ -2818,7 +2912,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Parallel left-turn conflict with following car contacting AV rear quarter",
       "rgemini": "The AV was rear-ended by another vehicle while both were making a protected left turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11424",
@@ -2848,7 +2943,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Two Waymo AVs collided in parking lot; shared fault",
       "rcodex": "AV pulled forward while adjacent AV was reversing from stall",
       "rgemini": "The AV proceeded forward and struck another AV that was reversing from an adjacent parking stall."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11455",
@@ -2878,7 +2974,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "SUV passing on narrow road struck stopped AV",
       "rgemini": "Waymo was stationary yielding to an SUV when the SUV struck it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11282",
@@ -2908,7 +3005,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing bus struck stopped AV in right-turn lane",
       "rgemini": "AV was stopped and hit by a passing bus"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11323",
@@ -2938,7 +3036,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV while AV slowed for queue",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down for a queue of traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11420",
@@ -2968,7 +3067,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Bus with open compartment door struck stopped AV mirror",
       "rgemini": "The AV was stationary and was struck by an open storage compartment door of a passing bus."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11421",
@@ -2998,7 +3098,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped in queue",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped in traffic for a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11273",
@@ -3028,7 +3129,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Heavy truck parking maneuver struck stationary curbside AV",
       "rgemini": "AV was stopped and hit by a maneuvering truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11373",
@@ -3058,7 +3160,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing heavy truck bed clipped parked AV",
       "rgemini": "The AV was parked at the curb and was struck by a heavy truck that was passing it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11378",
@@ -3088,7 +3191,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Chain-reaction pickup impact then rear-ended stopped AV",
       "rgemini": "The AV was rear-ended by a pickup truck that had just rear-ended another vehicle behind the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11401",
@@ -3118,7 +3222,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV stopped at stop sign",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11279",
@@ -3148,7 +3253,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Following passenger car clipped AV rear while AV slowed to yield merge",
       "rgemini": "AV slowed to yield and was rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11361",
@@ -3178,7 +3284,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Object fell from other vehicle; hard to avoid",
       "rcodex": "Detached object from oncoming pickup rolled into AV lane",
       "rgemini": "The AV was struck by an object that detached from another vehicle and rolled into its lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11430",
@@ -3208,7 +3315,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped for queue",
       "rgemini": "The AV was rear-ended by another vehicle while stopped in a queue."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11329",
@@ -3238,7 +3346,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Bus passing around parked AV clipped rear side",
       "rgemini": "The AV was parked in-lane with hazards and was struck by a bus that was maneuvering around it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11422",
@@ -3268,7 +3377,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit small object in road; should detect",
       "rcodex": "AV struck roadway object in lane",
       "rgemini": "Waymo drove over a dumbbell in its lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11360",
@@ -3298,7 +3408,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV as AV slowed behind stopped bus",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down to pass a stopped bus."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11370",
@@ -3328,7 +3439,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Following car rear-ended AV during stop-and-go turn-lane traffic",
       "rgemini": "The AV was rear-ended by another vehicle while slowing down behind a car waiting to make a turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11280",
@@ -3358,7 +3470,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "AV stop-and-go for emergency vehicle preceded rear-end by following car",
       "rgemini": "AV was stopped and rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11344",
@@ -3388,7 +3501,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passing bus struck parked curbside AV",
       "rgemini": "The AV was parked at the curb and a bus struck it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11452",
@@ -3418,7 +3532,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened door into passing scooter",
       "rgemini": "Waymo passenger opened their door into the path of a passing scooterist. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11281",
@@ -3448,7 +3563,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11428",
@@ -3478,7 +3594,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "SUV rear-ended AV after AV stopped for emergency vehicle",
       "rgemini": "Waymo was rear-ended by an SUV while stopped to yield to an emergency vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11334",
@@ -3508,7 +3625,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit median during U-turn; AV at fault",
       "rcodex": "AV U-turn maneuver struck raised median pavement",
       "rgemini": "The AV struck a concrete median while executing a U-turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11412",
@@ -3538,7 +3656,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Turning passenger car crossed center line into stationary AV",
       "rgemini": "The AV was stationary and the other vehicle crossed the center line into its lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11495",
@@ -3568,7 +3687,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into traffic; partial AV fault",
       "rcodex": "AV passenger opened door into passing bus",
       "rgemini": "The AV was parked but its passenger opened a door into the path of an oncoming bus. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11544",
@@ -3598,7 +3718,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by other vehicle",
       "rcodex": "Passenger car changing/straddling lanes clipped AV rear quarter",
       "rgemini": "Waymo was rear-ended by a vehicle splitting lanes while slowing for a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11561",
@@ -3628,7 +3749,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pedestrian pushed shopping cart into AV",
       "rcodex": "Pedestrian pushed shopping cart into AV path",
       "rgemini": "Pedestrian pushed a shopping cart into the AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11502",
@@ -3658,7 +3780,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Passenger car pulled from stall and struck parked AV",
       "rgemini": "Waymo was parked when another vehicle pulled forward into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11522",
@@ -3688,7 +3811,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped for scooter crossing",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped to yield to a scooterist."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11589",
@@ -3718,7 +3842,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Passenger car rear-ended AV stopped at red",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11433",
@@ -3748,7 +3873,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow road; other hit while passing",
       "rcodex": "Turning heavy truck struck AV that had reversed and stopped to yield",
       "rgemini": "The AV reversed to yield and was stationary at the curb when the other vehicle struck it while turning."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11525",
@@ -3778,7 +3904,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; other crossed into AV lane",
       "rcodex": "Truck turned right across lane and struck stopped AV",
       "rgemini": "Waymo was stationary yielding to a truck making an illegal right turn from the left lane when the truck struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11475",
@@ -3808,7 +3935,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by other vehicle",
       "rcodex": "Minivan rear-ended AV stopped at red",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11450",
@@ -3838,7 +3966,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; struck by passing vehicle",
       "rcodex": "Wrong-way SUV struck parked AV head-on",
       "rgemini": "The AV was parked and was struck head-on by a vehicle that crossed into the opposing lane at high speed."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11569",
@@ -3868,7 +3997,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car passenger opened door into AV path",
       "rcodex": "AV maneuvering around stopped car was struck by opening door",
       "rgemini": "Waymo was passing a stopped vehicle when a passenger opened their door into the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11516",
@@ -3898,7 +4028,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck reversed into AV passing behind it",
       "rcodex": "AV passed behind truck that resumed reversing; shared backing conflict",
       "rgemini": "Waymo was passing a stationary truck when the truck unexpectedly reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11474",
@@ -3928,7 +4059,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV stopped at red",
       "rgemini": "The AV was rear-ended by another vehicle while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11501",
@@ -3958,7 +4090,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV sideswiped parked truck's open door while passing",
       "rcodex": "Parked pickup door opened into passing AV in narrow gap",
       "rgemini": "Waymo struck a door that was opened into its path by a parked vehicle's driver."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11469",
@@ -3988,7 +4121,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stationary; bus turned left into stopped AV",
       "rcodex": "AV and bus both repositioned in intersection before bus turn contact",
       "rgemini": "The AV made multiple maneuvers around a turning bus and stopped in a position where the bus struck it while completing its turn. Shared fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11547",
@@ -4018,7 +4152,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped yielding; garbage truck sideswiped it passing",
       "rcodex": "Passing garbage truck on narrow road struck stopped AV",
       "rgemini": "Waymo was stationary yielding to a garbage truck when the truck struck it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11564",
@@ -4048,7 +4183,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; passenger car maneuvered into stopped AV",
       "rcodex": "AV stopped partially out of lane while traffic was directed around it",
       "rgemini": "Hit while stationary by a passing vehicle"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11588",
@@ -4078,7 +4214,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at stop sign; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV stopped at stop sign",
       "rgemini": "Waymo was rear-ended by an SUV while stopped at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11508",
@@ -4108,7 +4245,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked for pickup; pickup truck sideswiped it passing",
       "rcodex": "Turning pickup-trailer clipped stopped in-lane AV",
       "rgemini": "Waymo was stationary when a passing pickup truck struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11542",
@@ -4138,7 +4276,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary yielding; pickup sideswiped it passing",
       "rcodex": "Passing pickup-trailer struck AV that had stopped to yield",
       "rgemini": "Waymo was stationary yielding to a truck when the truck struck it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11591",
@@ -4168,7 +4307,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV mechanical failure: rear wheel separated while driving",
       "rcodex": "AV wheel/component separation while proceeding",
       "rgemini": "Waymo's wheel separated from the vehicle while driving indicating a maintenance or hardware failure."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11490",
@@ -4198,7 +4338,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; chain-reaction pushed car into stationary AV",
       "rcodex": "Chain-reaction impact pushed passenger car into parked AV",
       "rgemini": "The AV was parked and was struck as a secondary impact from a collision between two other vehicles."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11548",
@@ -4228,7 +4369,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into vegetation extending into alley roadway",
       "rcodex": "AV sideswiped vegetation encroaching into alley during pass",
       "rgemini": "AV hit vegetation extending into the roadway"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11611",
@@ -4258,7 +4400,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV changing lanes; pickup in target lane moved forward into AV",
       "rcodex": "AV lane change into occupied right lane led to rear-quarter impact",
       "rgemini": "AV was changing lanes when a stopped pickup proceeded forward and hit it"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11590",
@@ -4288,7 +4431,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV crossed center line and clipped parked AV",
       "rgemini": "Hit while parked by a passing vehicle that crossed the double yellow line"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11498",
@@ -4318,7 +4462,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was parked when another vehicle reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11500",
@@ -4348,7 +4493,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove over removed pavement section in construction zone",
       "rcodex": "AV followed construction path into removed-pavement drop",
       "rgemini": "The AV drove over a section of removed pavement in a construction zone."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11594",
@@ -4378,7 +4524,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Flagger arm lowered onto AV then AV drove forward into it",
       "rcodex": "AV proceeded into lowered flagger arm causing additional contact",
       "rgemini": "AV proceeded forward into a lowered flagger arm"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11496",
@@ -4408,7 +4555,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; motorcycle lane-split and fell into AV",
       "rcodex": "Motorcycle hit door of another car then fell into stationary AV",
       "rgemini": "Waymo was stationary when a motorcycle fell into it after striking an open door of another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11673",
@@ -4438,7 +4586,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at stop sign; rear-ended by SUV",
       "rcodex": "SUV rear-ended stationary AV at stop-sign queue",
       "rgemini": "Rear-ended by another vehicle while stopped"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11565",
@@ -4468,7 +4617,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped in crosswalk; trailer sideswiped it turning",
       "rcodex": "AV remained stopped within crosswalk as turning trailer contacted AV",
       "rgemini": "Waymo was stationary in the intersection when a pickup truck turning left struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11456",
@@ -4498,7 +4648,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; motorcycle changed lanes into stationary AV",
       "rcodex": "Motorcycle lane change into leftmost lane struck parked AV",
       "rgemini": "The AV was parked and was struck by a motorcycle that was changing lanes."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11488",
@@ -4528,7 +4679,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by passenger car",
       "rcodex": "Following car rear-ended AV after AV stopped to yield vulnerable users",
       "rgemini": "Rear-ended by another vehicle while stopped to yield"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11545",
@@ -4558,7 +4710,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car ran red light; AV braked but still made contact",
       "rcodex": "Cross-traffic car ran red and AV contacted side after hard braking",
       "rgemini": "Waymo struck a vehicle that ran a red light despite applying hard braking."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11605",
@@ -4588,7 +4741,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; passenger opened door into path of passing SUV",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Waymo passenger opened their door into the path of an oncoming SUV. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11523",
@@ -4618,7 +4772,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary yielding; van sideswiped it on narrow street",
       "rcodex": "Passing van on narrow road struck stopped AV",
       "rgemini": "Waymo was stationary yielding to a van when the van struck it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11543",
@@ -4648,7 +4803,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV clipped parked curbside AV",
       "rgemini": "Waymo was parked when a passing SUV struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11567",
@@ -4678,7 +4834,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; SUV sideswiped it while completing right turn",
       "rcodex": "SUV turning right around parked AV clipped AV rear quarter",
       "rgemini": "Hit while parked by a turning vehicle"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11573",
@@ -4708,7 +4865,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; SUV reversed out of stall into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit while parked by a reversing vehicle"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11607",
@@ -4738,7 +4896,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV merging from parking spot; car hit AV's rear left",
       "rcodex": "AV pulled from curb into moving queue and was struck at rear quarter",
       "rgemini": "AV merged into traffic and was hit by a vehicle already in the lane"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11546",
@@ -4768,7 +4927,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into fallen utility line hanging in travel lane",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo drove into a fallen utility line hanging in its lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11596",
@@ -4798,7 +4958,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped at red",
       "rgemini": "Waymo was rear-ended by another vehicle while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11621",
@@ -4828,7 +4989,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car changed lanes into AV's lane of travel",
       "rcodex": "Passenger car attempted turn across into AV lane",
       "rgemini": "Waymo was proceeding straight when another vehicle changed lanes into it while attempting a left turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11622",
@@ -4858,7 +5020,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped at red light",
       "rgemini": "Rear-ended by another vehicle while stopped at a red light"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11476",
@@ -4888,7 +5051,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV proceeding straight; rear-ended by speeding car",
       "rcodex": "Counterpart struck AV from behind while overtaking",
       "rgemini": "The AV was rear-ended by another vehicle while traveling normally."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11571",
@@ -4918,7 +5082,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove through standing water causing damage",
       "rcodex": "AV drove through standing water and sustained damage",
       "rgemini": "Waymo drove into standing water causing damage to itself."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11671",
@@ -4948,7 +5113,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit parked flatbed trailer while exiting parking spot",
       "rcodex": "AV exiting parking spot struck parked flatbed trailer",
       "rgemini": "AV hit a parked vehicle while exiting a parking spot"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11765",
@@ -4978,7 +5144,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11672",
@@ -5008,7 +5175,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into pothole in roadway",
       "rcodex": "AV struck pothole in lane and sustained damage",
       "rgemini": "AV hit a pothole"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11753",
@@ -5038,7 +5206,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped; passenger opened door into path of passing SUV",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11763",
@@ -5068,7 +5237,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary in traffic queue; SUV hit rear from behind",
       "rcodex": "SUV rear-quarter struck stopped AV in queue",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11795",
@@ -5098,7 +5268,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car changed lanes into AV's lane of travel",
       "rcodex": "Adjacent-lane car merged into AV at intersection",
       "rgemini": "Passenger car changed lanes into the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11713",
@@ -5128,7 +5299,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV slowing for right turn; motorcycle rear-ended AV",
       "rcodex": "Motorcycle rear-ended slowing AV as AV prepared signed right turn",
       "rgemini": "Rear-ended by a motorcycle while slowing for a right turn"
-    }
+    },
+    "vehiclesInvolved": 3
   },
   {
     "reportId": "30270-11608",
@@ -5158,7 +5330,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit parked flatbed truck while exiting parking spot",
       "rcodex": "AV exiting parking spot struck parked flatbed",
       "rgemini": "Waymo struck a parked truck while attempting to exit a parking spot."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11794",
@@ -5188,7 +5361,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Third-party car ran red light causing chain-reaction crash",
       "rcodex": "Third-party red-light violator caused chain collision into AV",
       "rgemini": "Another vehicle ran a red light causing a chain reaction that hit the AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11698",
@@ -5218,7 +5392,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit domestic animal that emerged from behind parked car",
       "rcodex": "Domestic animal suddenly entered lane from parked-vehicle area",
       "rgemini": "Animal darted into the street from behind a parked vehicle unavoidable."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11821",
@@ -5248,7 +5423,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary in traffic; SUV in front reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit by a reversing vehicle while stopped at a red light"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11739",
@@ -5278,7 +5454,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV slowing for stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV while AV slowed for stop sign",
       "rgemini": "Rear-ended by another vehicle while slowing for a stop sign"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11702",
@@ -5308,7 +5485,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by SUV",
       "rcodex": "SUV rear-ended stopped AV in turn lane",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11792",
@@ -5338,7 +5516,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck reversed into AV's lane during U-turn",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Hit by a reversing pickup truck"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11716",
@@ -5368,7 +5547,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped yielding; pickup truck reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when a pickup truck reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11850",
@@ -5398,7 +5578,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV slowing for emergency siren; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV after AV slowed for emergency siren",
       "rgemini": "Waymo AV was rear-ended while slowing for an emergency vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11755",
@@ -5428,7 +5609,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary in traffic; SUV crossed center line into AV",
       "rcodex": "SUV crossed center line from curb and struck stationary AV",
       "rgemini": "Hit while stationary by a vehicle crossing the center line"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11742",
@@ -5458,7 +5640,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV emerged from behind train into AV's lane",
       "rcodex": "SUV emerged across tracks into AV lane",
       "rgemini": "Another vehicle crossed into the AV's path from behind a stopped train"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11789",
@@ -5488,7 +5671,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary in traffic; SUV crossed center line into AV",
       "rcodex": "SUV crossed center line and struck stationary AV",
       "rgemini": "Hit while stationary by a turning vehicle that crossed the center line"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11851",
@@ -5518,7 +5702,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by passenger car from behind",
       "rcodex": "Following car struck AV while AV was stopped yielding near work vehicle",
       "rgemini": "Waymo AV was rear-ended while stationary yielding to a forklift."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11805",
@@ -5548,7 +5733,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into hanging chain at parking lot exit",
       "rcodex": "AV drove into hanging chain barrier in parking lot",
       "rgemini": "Waymo AV drove into a stationary hanging chain."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11771",
@@ -5578,7 +5764,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV maneuvering around truck hit its loading ramp",
       "rcodex": "AV maneuvered into parked truck loading ramp",
       "rgemini": "AV hit a parked truck's ramp while maneuvering around it"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11715",
@@ -5608,7 +5795,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; heavy truck reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when a heavy truck reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11718",
@@ -5638,7 +5826,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Car made sudden right turn without signal in front of AV",
       "rcodex": "Counterpart right turn crossed AV path",
       "rgemini": "Passenger car made a sudden right turn across the Waymo AV's path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11762",
@@ -5668,7 +5857,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car changed lanes into AV's lane during left turn",
       "rcodex": "Adjacent turning car changed lanes into AV during turn",
       "rgemini": "Another vehicle crossed the lane line and hit the AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11853",
@@ -5698,7 +5888,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; heavy truck sideswiped it on narrow street",
       "rcodex": "Passing heavy-truck trailer clipped stopped AV",
       "rgemini": "Waymo AV was stationary when a passing heavy truck's trailer hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11768",
@@ -5728,7 +5919,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped at stop sign",
       "rgemini": "Waymo AV was rear-ended while stationary at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11618",
@@ -5758,7 +5950,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; heavy truck sideswiped it turning",
       "rcodex": "Turning heavy truck side-swiped stopped AV",
       "rgemini": "Waymo was stationary at a red light when a turning truck struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11806",
@@ -5788,7 +5981,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Cyclist ran stop sign and hit rear of AV from side",
       "rcodex": "Cyclist entered roadway from trail against stop control and hit AV rear side",
       "rgemini": "Cyclist ran a stop sign and hit the AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11852",
@@ -5818,7 +6012,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; tow truck reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when a tow truck reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11802",
@@ -5848,7 +6043,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove through standing water in roadway",
       "rcodex": "AV entered roadway water and sustained damage",
       "rgemini": "AV drove into deep water"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11629",
@@ -5878,7 +6074,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove wrong way through exit-only tire spikes",
       "rcodex": "AV drove over one-way traffic spikes at exit-only gate",
       "rgemini": "Waymo drove through an exit-only gate and struck one-way traffic spikes."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11756",
@@ -5908,7 +6105,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at stop sign; bus sideswiped it passing",
       "rcodex": "Bus proceeding through intersection struck stopped AV",
       "rgemini": "Hit while stationary by a passing bus"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11831",
@@ -5938,7 +6136,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "AV stop-and-go at red preceded rear-end by following car",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11759",
@@ -5968,7 +6167,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV changing lanes; pickup in target lane moved forward into AV",
       "rcodex": "AV merged from curb and changed into occupied turn lane",
       "rgemini": "AV changed lanes closely in front of another vehicle"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11790",
@@ -5998,7 +6198,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by passenger car from behind",
       "rcodex": "Passenger car struck AV from behind while AV yielded stopped",
       "rgemini": "Waymo AV was rear-ended while stopped to yield to another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11701",
@@ -6028,7 +6229,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; rear-ended by passenger car from behind",
       "rcodex": "Passenger car rear-ended stopped AV at queue",
       "rgemini": "Waymo AV was rear-ended while stationary yielding to traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11769",
@@ -6058,7 +6260,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV pulled out of driveway into side of passing AV",
       "rcodex": "Counterpart left turn crossed AV path",
       "rgemini": "SUV pulled out of a driveway into the side of the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11839",
@@ -6088,7 +6291,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV stopped for pedestrian",
       "rgemini": "Waymo AV was rear-ended while stationary at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11623",
@@ -6118,7 +6322,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV changing lanes; pickup in prior lane moved forward into AV",
       "rcodex": "AV maneuver around stopped pickup and lane change created merge conflict",
       "rgemini": "Waymo was completing a lane change around a stopped truck when the truck pulled forward into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11692",
@@ -6148,7 +6353,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was backing but passenger car reversed into AV's front",
       "rcodex": "Both vehicles reversed",
       "rgemini": "Waymo AV was hit by a reversing vehicle despite attempting to reverse out of the way."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11612",
@@ -6178,7 +6384,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both turning left; SUV in left-turn-only lane went straight",
       "rcodex": "SUV in turn-only lane continued straight into turning AV",
       "rgemini": "Waymo was turning left from a valid lane when an SUV in a turn-only lane proceeded straight into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11637",
@@ -6208,7 +6415,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV made unprotected left turn into AV going straight on green",
       "rcodex": "SUV made unprotected left across AV path",
       "rgemini": "Waymo proceeded on a green light when an SUV made an unprotected left turn into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11761",
@@ -6238,7 +6446,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; bus reversed and changed lanes into AV",
       "rcodex": "Bus reversing/lane-change maneuver struck parked AV",
       "rgemini": "Waymo AV was stationary when a reversing bus hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11609",
@@ -6268,7 +6477,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary in traffic; bus sideswiped it passing",
       "rcodex": "Bus changing lanes struck stopped AV",
       "rgemini": "Waymo was stationary in traffic when a bus struck it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11627",
@@ -6298,7 +6508,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; passenger opened door into path of passing van",
       "rcodex": "AV rider opened rear door into passing van",
       "rgemini": "Waymo passenger opened their door into the path of a passing van. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11664",
@@ -6328,7 +6539,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV proceeded forward into SUV's open door after light change",
       "rcodex": "AV moved forward while adjacent SUV door remained open into AV path",
       "rgemini": "AV proceeded forward while vehicle door was open"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11695",
@@ -6358,7 +6570,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; passenger car reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo AV was stationary when the vehicle in front reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11760",
@@ -6388,7 +6601,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car changed lanes into AV's lane of travel",
       "rcodex": "Passenger car changed lanes into AV rear quarter",
       "rgemini": "Another vehicle changed lanes into the AV"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11791",
@@ -6418,7 +6632,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; chain-reaction pushed car into stopped AV",
       "rcodex": "Turning car hit second car which then struck stopped AV",
       "rgemini": "AV was stationary and hit in a chain reaction caused by another vehicle crossing the double yellow line."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11766",
@@ -6448,7 +6663,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage scraped pavement at parking lot entrance",
       "rcodex": "AV undercarriage struck pavement at parking-lot entrance",
       "rgemini": "AV bottomed out on pavement while turning into a parking lot"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11625",
@@ -6478,7 +6694,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV nearly stopped; motorcycle rear-ended AV from behind",
       "rcodex": "Motorcycle rear-ended AV after AV slowed to stop",
       "rgemini": "Waymo was rear-ended by a motorcycle while stopped to yield to another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11840",
@@ -6508,7 +6725,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit cat that emerged from behind parked vehicle",
       "rcodex": "Animal-involved roadway conflict",
       "rgemini": "Animal darted into the street from behind a parked vehicle unavoidable."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11724",
@@ -6538,7 +6756,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; pickup sideswiped it on narrow street",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo AV was stationary when a passing pickup truck hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11738",
@@ -6568,7 +6787,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped/slow; motorcycle changed lanes into AV's rear",
       "rcodex": "Motorcycle lane-change/merge into AV rear quarter during AV launch",
       "rgemini": "Motorcycle hit the rear of the AV while changing lanes"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11717",
@@ -6598,7 +6818,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Car made wide right turn entering AV's lane of travel",
       "rcodex": "Counterpart made wide turn into AV lane",
       "rgemini": "Passenger car made a wide turn into the Waymo AV's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11758",
@@ -6628,7 +6849,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary in traffic queue; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Rear-ended by another vehicle in a queue of traffic"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12008",
@@ -6658,7 +6880,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; passenger car reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a passenger car."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12052",
@@ -6688,7 +6911,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; passenger car sideswiped stationary AV passing",
       "rcodex": "Passing car sideswiped parked AV in alley",
       "rgemini": "AV was parked and hit by a passing car."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11996",
@@ -6718,7 +6942,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove through standing water causing damage",
       "rcodex": "AV drove through standing water and sustained damage",
       "rgemini": "Waymo AV drove into standing water."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11925",
@@ -6748,7 +6973,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary yielding; heavy truck sideswiped it passing",
       "rcodex": "Passing truck trailer clipped stopped AV on narrow road",
       "rgemini": "Waymo AV was stationary when a passing heavy truck's trailer hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11859",
@@ -6778,7 +7004,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV changed lanes from center into AV's lane of travel",
       "rcodex": "AV stop-and-go before intersection preceded rear-end by following car",
       "rgemini": "Another vehicle turned into the AV's lane and struck it"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11882",
@@ -6808,7 +7035,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary yielding; SUV sideswiped it on narrow street",
       "rcodex": "Passing SUV sideswiped stopped AV on narrow street",
       "rgemini": "AV was stationary and hit by a passing SUV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11855",
@@ -6838,7 +7066,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary yielding; ambulance sideswiped it passing",
       "rcodex": "Passing ambulance side-swiped AV that had pulled over and stopped",
       "rgemini": "Hit while stationary yielding to an ambulance"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12012",
@@ -6868,7 +7097,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV slowing in traffic; rear-ended by pickup truck",
       "rcodex": "Pickup in adjacent lane clipped AV rear while AV slowed in queue",
       "rgemini": "Waymo AV was rear-ended while slowing for traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12000",
@@ -6898,7 +7128,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; SUV reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was parked and an SUV reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12053",
@@ -6928,7 +7159,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped for debris; rear-ended by pickup truck",
       "rcodex": "Pickup rear-ended AV stopped for debris",
       "rgemini": "AV stopped for debris and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11863",
@@ -6958,7 +7190,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; pickup reversed across road into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit while parked by a reversing vehicle"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11858",
@@ -6988,7 +7221,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Rear-ended by another vehicle while stopped at a green light"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11949",
@@ -7018,7 +7252,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; SUV reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by an SUV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11958",
@@ -7048,7 +7283,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary in traffic; bus reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a bus reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11929",
@@ -7078,7 +7314,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; chain-reaction rear-end pushed car into AV",
       "rcodex": "Chain-reaction rear-end pushed stopped car into stopped AV",
       "rgemini": "Waymo AV was rear-ended in a chain reaction crash while stopped for an emergency vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11926",
@@ -7108,7 +7345,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended stopped AV in queue",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11962",
@@ -7138,7 +7376,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped in traffic; pickup rear-ended AV from behind",
       "rcodex": "Stop-and-go timing conflict led to rear-end from following pickup",
       "rgemini": "Waymo AV was rear-ended in stop-and-go traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11908",
@@ -7168,7 +7407,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV changed lanes into AV's lane of travel",
       "rcodex": "SUV changed lanes into AV rear quarter",
       "rgemini": "SUV changed lanes into the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12062",
@@ -7198,7 +7438,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV slowing for pickup; car tried to pass and hit AV",
       "rcodex": "Passing car clipped AV as AV slowed with signal for pickup",
       "rgemini": "Passenger car hit Waymo while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11924",
@@ -7228,7 +7469,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; heavy truck sideswiped stationary AV passing",
       "rcodex": "Passing heavy truck struck parked curbside AV",
       "rgemini": "Waymo AV was stationary when a passing heavy truck hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11997",
@@ -7258,7 +7500,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on freeway for 2+ min causing dangerous situation",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "Waymo AV was stopped and not involved in the collision between the SUV and pickup truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11999",
@@ -7288,7 +7531,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Basketball rolled into AV's lane; AV ran over it",
       "rcodex": "Basketball rolled into AV tire path",
       "rgemini": "A basketball rolled into the side of the moving AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12013",
@@ -7318,7 +7562,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; heavy truck sideswiped stopped AV passing",
       "rcodex": "AV stopped partially in lane during curb maneuver and was clipped by passing trailer",
       "rgemini": "AV was stationary and hit by a passing heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12059",
@@ -7348,7 +7593,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary yielding; tow truck sideswiped it passing",
       "rcodex": "Tow truck passing on narrow road struck stopped AV",
       "rgemini": "AV was stationary and hit by a passing tow truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11838",
@@ -7378,7 +7624,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped for animal; rear-ended by pickup truck",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Rear-ended by another vehicle while slowing for an animal"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11955",
@@ -7408,7 +7655,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary yielding; van sideswiped it on narrow street",
       "rcodex": "Van passing on narrow road clipped stopped AV",
       "rgemini": "Waymo was stationary and hit by a passing van."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11992",
@@ -7438,7 +7686,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped with door open; SUV passing hit the open door",
       "rcodex": "AV remained stopped with open door and passing SUV hit door",
       "rgemini": "SUV passed on the right and hit the open door of the stationary Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11841",
@@ -7468,7 +7717,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at stop sign; rear-ended by passenger car",
       "rcodex": "Passenger car failed to stop and rear-ended AV at stop sign",
       "rgemini": "Rear-ended by another vehicle while stopped at a stop sign"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11998",
@@ -7498,7 +7748,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV slowing for yellow light; rear-ended by passenger car",
       "rcodex": "Passenger car rear-ended AV while AV slowed for red light",
       "rgemini": "Waymo AV was rear-ended while slowing for a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12011",
@@ -7528,7 +7779,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped; car behind failed to stop and rear-ended AV",
       "rcodex": "AV initiated right turn then stopped again and was rear-ended",
       "rgemini": "Waymo AV was rear-ended while stationary."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11987",
@@ -7558,7 +7810,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary at red light; rear-ended by pickup truck",
       "rcodex": "Pickup rear-ended stopped AV at red light",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12042",
@@ -7588,7 +7841,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; heavy truck reversed into stopped AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11932",
@@ -7618,7 +7872,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; SUV reversed into stopped AV in parking lot",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and an SUV reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11988",
@@ -7648,7 +7903,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stationary; heavy truck crossed center line into AV",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "AV was stationary and a heavy truck crossed the double yellow line into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11888",
@@ -7678,7 +7934,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove over curb in parking lot damaging undercarriage",
       "rcodex": "AV drove over curb partition and later speed bump causing damage",
       "rgemini": "Waymo AV drove over a curb causing damage to itself."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11994",
@@ -7708,7 +7965,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV parked; passenger opened door into path of passing SUV",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Passenger opened door into passing traffic. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11940",
@@ -7738,7 +7996,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup reversed from parking into intersection hitting AV",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Pickup truck reversed into the intersection and hit the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11933",
@@ -7768,7 +8027,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV changed lanes into AV's lane without signaling",
       "rcodex": "Counterpart lane change into AV path",
       "rgemini": "SUV changed lanes into the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11953",
@@ -7798,7 +8058,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Parked car pulled out into AV's lane of travel",
       "rcodex": "Parked car entered traffic into AV rear quarter",
       "rgemini": "AV was in its lane and a parked car pulled out into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11907",
@@ -7828,7 +8089,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV entered AV lane from parking lot exit",
       "rcodex": "SUV pulled out into AV lane as AV was passing",
       "rgemini": "SUV pulled into Waymo's lane and hit the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11861",
@@ -7858,7 +8120,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV rear-ended by passenger car while proceeding straight",
       "rcodex": "Passenger car struck AV from behind while both were proceeding straight",
       "rgemini": "Rear-ended by another vehicle while traveling straight"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12018",
@@ -7888,7 +8151,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a pickup truck reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11956",
@@ -7918,7 +8182,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car reversed into stationary AV at red light",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a passenger car reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11892",
@@ -7948,7 +8213,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV entered AV lane from parking lot",
       "rcodex": "SUV entered from parking lot and crossed into AV lane",
       "rgemini": "SUV entered the roadway and crossed into the Waymo AV's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11954",
@@ -7978,7 +8244,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped stationary AV while changing lanes",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was stationary with hazards and hit by a bus changing lanes."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11928",
@@ -8008,7 +8275,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV in traffic queue",
       "rcodex": "Passenger car rear-ended stopped AV in queue",
       "rgemini": "AV was stationary and rear-ended by a passenger car."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12046",
@@ -8038,7 +8306,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into movable traffic barrier in parking lot",
       "rcodex": "AV turned directly into movable traffic barrier",
       "rgemini": "AV proceeded to turn and hit a stationary movable traffic barrier."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13053",
@@ -8068,7 +8337,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a passenger car reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12044",
@@ -8098,7 +8368,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV proceeded forward into opening gate",
       "rcodex": "AV proceeded as gate was swinging into lane",
       "rgemini": "AV proceeded straight while a gate was swinging open and was hit by the gate."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11906",
@@ -8128,7 +8399,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "AV initiated right turn then stopped again and was rear-ended",
       "rgemini": "AV was stationary and rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11865",
@@ -8158,7 +8430,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12007",
@@ -8188,7 +8461,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck turned into stationary AV",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo AV was stationary when a heavy truck turned into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11874",
@@ -8218,7 +8492,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car hit AV from behind while AV was slowing",
       "rcodex": "Following car attempted pass while AV slowed for queue and clipped AV",
       "rgemini": "Rear-ended by another vehicle while slowing for traffic"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12050",
@@ -8248,7 +8523,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Cyclist rear-ended AV that was braking for traffic",
       "rcodex": "Cyclist rear-ended braking AV at close following distance",
       "rgemini": "AV was braking for traffic and was rear-ended by a cyclist."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11836",
@@ -8278,7 +8554,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit parked heavy truck trailer while passing",
       "rcodex": "AV struck parked flatbed while maneuvering around it",
       "rgemini": "AV hit a parked truck while maneuvering around it"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11860",
@@ -8308,7 +8585,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck rear-ended stationary AV",
       "rcodex": "Pickup rear-ended AV stopped behind blocked lane",
       "rgemini": "Rear-ended by another vehicle while stopped to yield"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12063",
@@ -8338,7 +8616,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car sideswiped stationary AV while passing",
       "rcodex": "Lane-changing passenger car sideswiped stopped AV",
       "rgemini": "Waymo was stationary and hit by a car changing lanes."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11931",
@@ -8368,7 +8647,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Motorhome sideswiped stationary parked AV",
       "rcodex": "Motorhome passing on narrow street struck parked AV",
       "rgemini": "Waymo AV was stationary when a passing motorhome hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11930",
@@ -8398,7 +8678,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck rear-ended stationary AV at red light",
       "rcodex": "Pickup rear-ended stopped AV in queue",
       "rgemini": "Waymo AV was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12045",
@@ -8428,7 +8709,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Oncoming car crossed center line and hit AV",
       "rcodex": "Counterpart crossed center line into AV at intersection",
       "rgemini": "A passenger car crossed the center line into the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11837",
@@ -8458,7 +8740,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV hit stationary AV on narrow street",
       "rcodex": "SUV struck AV after attempting narrow pass while AV yielded",
       "rgemini": "Hit while stationary yielding to an oncoming vehicle"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11951",
@@ -8488,7 +8771,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit raised pavement in parking lot",
       "rcodex": "AV undercarriage struck raised pavement in parking lot",
       "rgemini": "Waymo AV drove over raised pavement damaging its undercarriage."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11960",
@@ -8518,7 +8802,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into passing car while AV stopped",
       "rcodex": "AV passenger opened door into passing car during drop-off",
       "rgemini": "AV passenger opened door into a passing car; AV driving system not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11957",
@@ -8548,7 +8833,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped partially between lanes; truck hit it",
       "rcodex": "AV stopped straddling lanes during lane change and was struck by advancing truck",
       "rgemini": "Waymo was stationary and hit by a heavy truck proceeding forward."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11883",
@@ -8578,7 +8864,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus reversed into stationary AV while parallel parking",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit while stationary by a reversing bus"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12019",
@@ -8608,7 +8895,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck sideswiped stationary AV on narrow street",
       "rcodex": "Passing heavy truck clipped stopped AV on narrow road",
       "rgemini": "AV was stationary and hit by a passing heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11842",
@@ -8638,7 +8926,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into passing SUV while AV parked",
       "rcodex": "AV passenger opened rear door into passing SUV during drop-off",
       "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11905",
@@ -8668,7 +8957,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck trailer hit stationary AV in parking lot",
       "rcodex": "Turning heavy-truck trailer struck stationary AV",
       "rgemini": "Waymo AV was stationary when a turning heavy truck's trailer hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13056",
@@ -8698,7 +8988,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped in lane to change lanes causing chain rear-end",
       "rcodex": "Third-party rear-end collision occurred behind stopped AV",
       "rgemini": "AV stopped in travel lane but other vehicle rear-ended a stopped car"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11864",
@@ -8728,7 +9019,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV intentionally rear-ended stationary AV twice",
       "rcodex": "SUV struck stopped AV in two separate rear-impact events",
       "rgemini": "Rear-ended and then hit again while parked by the same vehicle"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12035",
@@ -8758,7 +9050,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit speed bump",
       "rcodex": "AV undercarriage struck speed bump",
       "rgemini": "AV undercarriage hit a speed bump."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11884",
@@ -8788,7 +9081,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended AV from behind",
       "rcodex": "Passenger car rear-ended AV while both were proceeding straight",
       "rgemini": "Rear-ended by another vehicle while traveling straight"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11936",
@@ -8818,7 +9112,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at inoperative light",
       "rcodex": "Passenger car rear-ended AV stopped for inoperative signals",
       "rgemini": "Waymo AV was rear-ended while stopped for inoperative traffic lights."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11849",
@@ -8848,7 +9143,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV hit parked AV at curb",
       "rcodex": "SUV struck parked AV during curbside drop-off",
       "rgemini": "Waymo was parked and hit by an SUV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13028",
@@ -8878,7 +9174,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a passenger car."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11995",
@@ -8908,7 +9205,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck cut right from transit lane into turning AV",
       "rcodex": "Pickup passed from transit lane and both vehicles initiated right turn",
       "rgemini": "Pickup truck made an illegal pass and right turn from a transit-only lane hitting the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11904",
@@ -8938,7 +9236,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped partially in lane during lane change; rear-ended",
       "rcodex": "AV stopped straddling lanes during lane change and was hit from rear quarter",
       "rgemini": "AV stopped abruptly while straddling lanes"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13025",
@@ -8968,7 +9267,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended slowing AV from behind",
       "rcodex": "Following car clipped AV as AV slowed to yield to skateboarder",
       "rgemini": "AV slowed for a skateboarder and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12070",
@@ -8998,7 +9298,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV ran over cat that was under the vehicle",
       "rcodex": "AV departed with cat under vehicle and ran over it",
       "rgemini": "Waymo ran over a cat that was under the vehicle before it started moving."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-11887",
@@ -9028,7 +9329,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV passenger opened door into AV proceeding on green",
       "rcodex": "SUV passenger opened door into passing AV",
       "rgemini": "Passenger in adjacent SUV opened door into moving Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13161",
@@ -9058,7 +9360,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger exited moving AV; tire stopped on their foot",
       "rcodex": "Passenger exited moving vehicle; AV continued rolling onto foot",
       "rgemini": "Passenger exited moving vehicle and placed foot under tire."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13197",
@@ -9088,7 +9391,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV in queue",
       "rgemini": "Waymo was rear-ended while stationary in traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13236",
@@ -9118,7 +9422,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV rear-ended stationary AV at red light",
       "rcodex": "SUV rear-ended stationary AV in queue",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13164",
@@ -9148,7 +9453,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car reversed out of stall into parked AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Other car reversed out of parking stall into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13060",
@@ -9178,7 +9484,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Wrong-way car hit stationary AV head-on",
       "rcodex": "Wrong-way passenger car struck stationary AV",
       "rgemini": "AV was stationary and hit by a wrong-way driver."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13065",
@@ -9208,7 +9515,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Chain reaction rear-end pushed SUV into stationary AV",
       "rcodex": "Chain-reaction rear-end pushed SUV into stopped AV",
       "rgemini": "AV was stationary and hit in a chain reaction rear-end collision."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13102",
@@ -9238,7 +9546,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended AV slowing for stop sign",
       "rcodex": "Both vehicles proceeding straight; likely sideswipe/merge conflict",
       "rgemini": "Waymo was rear-ended while slowing for a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13194",
@@ -9268,7 +9577,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car sideswiped parked AV at curb",
       "rcodex": "Passing car side-swiped parked AV",
       "rgemini": "Waymo was parked and hit by a passing car."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13129",
@@ -9298,7 +9608,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stationary AV at red light",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13128",
@@ -9328,7 +9639,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended parked AV",
       "rcodex": "Passenger car rear-ended parked AV",
       "rgemini": "Waymo was rear-ended while parked in-lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12051",
@@ -9358,7 +9670,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Oncoming SUV crossed center line into AV lane",
       "rcodex": "Oncoming SUV crossed center line into AV lane",
       "rgemini": "An SUV crossed the center line into the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13204",
@@ -9388,7 +9701,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV rear-ended stationary AV at red light",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo stopped before entering street and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13199",
@@ -9418,7 +9732,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck rear-ended stationary AV at red light",
       "rcodex": "AV stopped straddling lanes and was struck by following pickup",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13130",
@@ -9448,7 +9763,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Chain reaction rear-end pushed car into stationary AV",
       "rcodex": "Chain-reaction impact pushed stopped passenger car into stopped AV",
       "rgemini": "Waymo was rear-ended in a chain reaction while stationary."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12047",
@@ -9478,7 +9794,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV rear-ended AV slowing for red light",
       "rcodex": "SUV behind AV in split-lane position clipped AV rear while AV slowed",
       "rgemini": "AV was slowing for a red light and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13099",
@@ -9508,7 +9825,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car lane-changed into stationary AV",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "Chain reaction rear-end into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13148",
@@ -9538,7 +9856,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV at light",
       "rgemini": "Waymo was rear-ended while stationary at a green light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13090",
@@ -9568,7 +9887,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove forward while gate was swinging open into it",
       "rcodex": "AV proceeded as gate was opening into travel path",
       "rgemini": "Gate swung open into Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13079",
@@ -9598,7 +9918,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped in intersection for cyclist; rear-ended",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV stopped for a cyclist running a red light and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13201",
@@ -9628,7 +9949,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Police SUV reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Police SUV reversed into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13063",
@@ -9658,7 +9980,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV deliberately reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and an SUV reversed into it twice."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13144",
@@ -9688,7 +10011,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck hit parked AV at curb",
       "rcodex": "Pickup struck parked AV from behind",
       "rgemini": "Waymo was parked and rear-ended by a pickup truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13159",
@@ -9718,7 +10042,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13126",
@@ -9748,7 +10073,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck trailer sideswiped stationary AV",
       "rcodex": "Turning truck trailer struck AV stopped to yield",
       "rgemini": "Waymo was stationary and hit by a passing heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12049",
@@ -9778,7 +10104,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a heavy truck reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13067",
@@ -9808,7 +10135,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck reversed into AV while AV was passing",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "AV was passing a stopped pickup which then reversed into the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13206",
@@ -9838,7 +10166,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck sideswiped stationary AV on narrow street",
       "rcodex": "Oncoming heavy truck sideswiped stationary AV while passing narrow segment",
       "rgemini": "Truck hit stationary Waymo while passing on a narrow street."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13085",
@@ -9868,7 +10197,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Car made illegal left turn into AV going straight",
       "rcodex": "Counterpart failed to yield / encroached",
       "rgemini": "Other car ran red light and turned into Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13246",
@@ -9898,7 +10228,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV reversed into parking bollard",
       "rcodex": "AV maneuvered into bollard while reversing",
       "rgemini": "Waymo reversed into a stationary parking bollard."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13024",
@@ -9928,7 +10259,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car reversed into AV that was passing behind",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "AV was passing behind a stopped car that reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13198",
@@ -9958,7 +10290,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13251",
@@ -9988,7 +10321,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended AV slowing for pedestrians",
       "rcodex": "Following car rear-ended AV as AV slowed for pedestrians",
       "rgemini": "Waymo was rear-ended while yielding to pedestrians."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13055",
@@ -10018,7 +10352,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV turned left into AV lane of travel",
       "rcodex": "SUV left-turn entered AV lane and clipped AV rear quarter",
       "rgemini": "An SUV turned left into the AV's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13276",
@@ -10048,7 +10383,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV hit AV from behind while AV slowed for tree branch",
       "rcodex": "SUV approached from behind and sideswiped slowing AV",
       "rgemini": "Waymo slowed for an obstacle and was hit from behind by an SUV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12061",
@@ -10078,7 +10414,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV braked for birds; rear-ended by SUV",
       "rcodex": "SUV rear-ended AV after AV slowed for birds in lane",
       "rgemini": "AV slowed for birds and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13023",
@@ -10108,7 +10445,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck changed lanes into AV",
       "rcodex": "Pickup changed lanes into AV while AV proceeded straight",
       "rgemini": "A pickup truck changed lanes into the AV within an intersection."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13235",
@@ -10138,7 +10476,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Van rear-ended stationary AV at stop sign",
       "rcodex": "Van turning from behind struck stationary AV at stop",
       "rgemini": "Waymo was rear-ended while stopped at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13100",
@@ -10168,7 +10507,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped at green light before right turn; rear-ended",
       "rcodex": "Mail truck rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary at a green light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13091",
@@ -10198,7 +10538,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove forward while tow truck was lifting it",
       "rcodex": "AV moved while tow lift was engaging, causing contact",
       "rgemini": "Waymo drove forward while being lifted by a tow truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13089",
@@ -10228,7 +10569,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus hit stationary AV while parking maneuvering",
       "rcodex": "Bus maneuvered into and struck parked AV",
       "rgemini": "AV was stationary and a bus reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13254",
@@ -10258,7 +10600,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Bus reversed into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13096",
@@ -10288,7 +10631,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove through low-hanging suspended wire",
       "rcodex": "AV continued into visibly low suspended wire across roadway",
       "rgemini": "Waymo struck a suspended wire held up by a pedestrian."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12054",
@@ -10318,7 +10662,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Garbage truck sideswiped stationary AV on narrow street",
       "rcodex": "Passing garbage truck clipped stopped AV on narrow street",
       "rgemini": "AV was stationary and hit by a passing garbage truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12048",
@@ -10348,7 +10693,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV made illegal unprotected left turn into AV",
       "rcodex": "Oncoming SUV made unprotected left into AV path",
       "rgemini": "An SUV made an unprotected left turn into the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13269",
@@ -10378,7 +10724,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV turned left from wrong lane into pickup truck",
       "rcodex": "AV initiated left turn from non-turn lane into occupied turn lane",
       "rgemini": "Waymo turned left from the wrong lane into a vehicle in the dedicated left turn lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13238",
@@ -10408,7 +10755,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Car reversed into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13373",
@@ -10438,7 +10786,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Car exited driveway into AV passing on the street",
       "rcodex": "Vehicle pulling from driveway moved into AV side path",
       "rgemini": "Other car pulled out of driveway into the side of the Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13190",
@@ -10468,7 +10817,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary in traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12055",
@@ -10498,7 +10848,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV rear-ended stationary AV at red light",
       "rcodex": "SUV rear-ended stopped AV in queue",
       "rgemini": "AV was stationary and rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13162",
@@ -10528,7 +10879,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped for fake stop sign; rear-ended by truck",
       "rcodex": "Heavy truck rear-ended stationary AV",
       "rgemini": "Waymo stopped for a sign and was rear-ended by a truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13274",
@@ -10558,7 +10910,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV struck stationary AV while maneuvering around queue",
       "rgemini": "SUV hit stationary Waymo while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13312",
@@ -10588,7 +10941,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV sideswiped stationary AV while passing",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "SUV hit stationary Waymo while squeezing past."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13054",
@@ -10618,7 +10972,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck rear-ended AV near stop sign",
       "rcodex": "Pickup rear-ended AV after AV stop-and-go at stop sign",
       "rgemini": "AV was rear-ended after stopping at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13256",
@@ -10648,7 +11003,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into fallen utility line in travel lane",
       "rcodex": "AV contacted fallen utility line after slowing and evasive maneuver",
       "rgemini": "Waymo drove into a fallen utility line."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13062",
@@ -10678,7 +11034,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV",
       "rcodex": "Following car rear-ended AV stopped to yield",
       "rgemini": "AV stopped to yield and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13240",
@@ -10708,7 +11065,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car changed lanes into AV",
       "rcodex": "Passenger car changed lanes into AV path",
       "rgemini": "Passenger car changed lanes into the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13311",
@@ -10738,7 +11096,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV reversed out of parking into stationary AV",
       "rcodex": "Reversing SUV from stall struck AV after AV yielded then stopped",
       "rgemini": "SUV reversed into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13095",
@@ -10768,7 +11127,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit tree branch that fell from truck ahead",
       "rcodex": "Object originated from another vehicle",
       "rgemini": "Tree branch fell directly into Waymo's path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13165",
@@ -10798,7 +11158,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV yielding to ped",
       "rcodex": "Passenger car rear-ended stationary AV yielding to pedestrian",
       "rgemini": "Waymo was rear-ended while stopped to yield to a pedestrian."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13058",
@@ -10828,7 +11189,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck pulled from curb into AV changing lanes",
       "rcodex": "AV lane change and pickup curb pull-out created shared merge conflict",
       "rgemini": "A pickup truck pulled away from the curb into the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13250",
@@ -10858,7 +11220,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Truck reversed into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13133",
@@ -10888,7 +11251,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck rear-ended AV slowing for left turn",
       "rcodex": "Both vehicles proceeding straight; likely sideswipe/merge conflict",
       "rgemini": "Waymo was rear-ended while slowing for a turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12056",
@@ -10918,7 +11282,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Motorcycle rear-ended AV slowing for pedestrian",
       "rcodex": "Motorcycle rear-ended AV while AV slowed for pedestrian",
       "rgemini": "AV slowed for a pedestrian and was rear-ended by a motorcycle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13066",
@@ -10948,7 +11313,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped stationary AV while passing",
       "rcodex": "Passing bus struck stationary AV while AV yielded in queue",
       "rgemini": "Bus hit stationary Waymo while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13241",
@@ -10978,7 +11344,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped stationary AV while turning left",
       "rcodex": "Bus in adjacent turn lane struck AV waiting at red",
       "rgemini": "Waymo was stationary at a red light and hit by a turning bus."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13082",
@@ -11008,7 +11375,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped stationary AV while proceeding forward",
       "rcodex": "Bus and AV stop-go interaction with bus side contact into stationary AV",
       "rgemini": "Bus hit stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13160",
@@ -11038,7 +11406,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit pavement at parking lot entrance",
       "rcodex": "AV undercarriage struck pavement at parking-lot entrance",
       "rgemini": "Waymo undercarriage hit the pavement at a parking lot entrance."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13167",
@@ -11068,7 +11437,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended slowly moving AV at stop sign",
       "rcodex": "Rear vehicle struck AV while AV was slowly yielding at stop sign",
       "rgemini": "Waymo was rear-ended while proceeding slowly."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13243",
@@ -11098,7 +11468,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped parked AV at curb",
       "rcodex": "Bus side-swiped stopped AV during pass",
       "rgemini": "Waymo was parked and hit by a passing bus."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13310",
@@ -11128,7 +11499,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Mail truck pulled from curb into AV lane",
       "rcodex": "Mail truck pulled from curb as AV had just completed lane change",
       "rgemini": "Mail truck pulled away from curb into Waymo's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13192",
@@ -11158,7 +11530,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at stop sign",
       "rcodex": "Speeding passenger car maneuvered into stopped AV",
       "rgemini": "Waymo was stationary and hit by a speeding car."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13068",
@@ -11188,7 +11561,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped stationary AV parked at curb",
       "rcodex": "Bus side-swiped curbside stopped AV",
       "rgemini": "AV was stationary and hit by a bus proceeding from a stop."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13163",
@@ -11218,7 +11592,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stationary AV in queue",
       "rgemini": "Waymo was rear-ended while stopped at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13242",
@@ -11248,7 +11623,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped stationary AV while passing",
       "rcodex": "Bus passing on left struck stopped AV",
       "rgemini": "Waymo was stopped and hit by a passing bus."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13247",
@@ -11278,7 +11654,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Car in front reversed into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13080",
@@ -11308,7 +11685,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Bus sideswiped parked AV while passing",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was stationary and hit by a passing bus."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13268",
@@ -11338,7 +11716,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car turned right into AV lane of travel",
       "rcodex": "Counterpart right turn crossed into AV lane",
       "rgemini": "Other car turned wide into Waymo's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13064",
@@ -11368,7 +11747,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Car made unprotected left turn; AV braked and hit SUV",
       "rcodex": "Counterpart failed to yield / encroached",
       "rgemini": "A passenger car made an unprotected left turn into the AV's path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13244",
@@ -11398,7 +11778,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at red light",
       "rcodex": "Passenger car rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary in traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13135",
@@ -11428,7 +11809,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Heavy truck reversed into stationary AV in parking lot",
       "rcodex": "Reversing trailer contact with AV after AV repositioned in lot",
       "rgemini": "Waymo moved forward while truck was reversing putting itself in the path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13088",
@@ -11458,7 +11840,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV rear-ended AV during right turn at intersection",
       "rcodex": "Following SUV struck AV rear during turn-start stop-and-go",
       "rgemini": "Waymo stopped before entering street and was rear-ended."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13239",
@@ -11488,7 +11871,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended AV turning left at stop sign",
       "rcodex": "Rear vehicle hit AV during low-speed left-turn initiation; mostly rear-vehicle fault",
       "rgemini": "Waymo was rear-ended while proceeding to turn."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13270",
@@ -11518,7 +11902,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit domestic animal in its lane of travel",
       "rcodex": "Domestic animal in lane contact while AV proceeded",
       "rgemini": "AV hit domestic animal"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13196",
@@ -11548,7 +11933,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car changed lanes into AV",
       "rcodex": "Counterpart hit another vehicle then deflected into AV",
       "rgemini": "Other car hit a van and swerved into Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13081",
@@ -11578,7 +11964,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car changed lanes into AV from turn lane",
       "rcodex": "Passenger car merged from center lane into AV path",
       "rgemini": "A passenger car changed lanes into the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13137",
@@ -11608,7 +11995,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger car rear-ended stationary AV at stop sign",
       "rcodex": "Passenger car rear-ended AV stopped for pedestrian",
       "rgemini": "Waymo was rear-ended while stationary yielding to a pedestrian."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13205",
@@ -11638,7 +12026,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Passenger opened door into passing SUV while AV parked",
       "rcodex": "Open AV passenger door was struck by passing SUV",
       "rgemini": "Waymo passenger opened door into passing SUV. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13092",
@@ -11668,7 +12057,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Chain reaction rear-end pushed car into stationary AV",
       "rcodex": "Chain-reaction rear-end pushed car into stopped AV",
       "rgemini": "Waymo was rear-ended in a chain reaction while stationary."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13202",
@@ -11698,7 +12088,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV passed SUV which then reversed into AV",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "SUV reversed into the Waymo AV while it was passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13155",
@@ -11728,7 +12119,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked; bus hit stationary AV while turning",
       "rcodex": "Bus completing right turn struck parked AV while passing",
       "rgemini": "Bus hit stationary Waymo while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-12060",
@@ -11758,7 +12150,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; car in front reversed into AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "AV was stationary and a passenger car reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13195",
@@ -11788,7 +12181,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; chain reaction rear-end pushed SUV into AV",
       "rcodex": "Stationary SUV was pushed into stationary AV in chain collision",
       "rgemini": "Chain reaction rear-end pushed SUV into stationary Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13193",
@@ -11818,7 +12212,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove over fallen street sign in its lane at 39 mph",
       "rcodex": "AV struck fallen street sign in lane at speed",
       "rgemini": "Waymo hit a fallen street sign in its lane of travel."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13127",
@@ -11848,7 +12243,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; truck sideswiped stationary AV while passing",
       "rcodex": "Passing truck trailer clipped stopped AV",
       "rgemini": "Waymo was stationary and hit by a passing heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13084",
@@ -11878,7 +12274,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both AV and SUV were moving; SUV entered AV lane but AV also pulled out",
       "rcodex": "AV pulled from curb while SUV was passing and moving toward curb; shared conflict",
       "rgemini": "Waymo started moving while being passed by SUV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13255",
@@ -11908,7 +12305,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was passing stopped car; that car reversed into AV",
       "rcodex": "Counterpart reversed into AV after entering on red",
       "rgemini": "Other car ran red light then reversed into Waymo."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13189",
@@ -11938,7 +12336,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at stop sign; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stopped at a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13275",
@@ -11968,7 +12367,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at curb; rear-ended by approaching car",
       "rcodex": "Passenger car passing from behind struck stationary curbside AV",
       "rgemini": "Waymo was rear-ended while parked at curb."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13515",
@@ -11998,7 +12398,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; car in front reversed into stationary AV",
       "rcodex": "Vehicle ahead reversed into stationary AV",
       "rgemini": "AV was stationary and honked; vehicle in front reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13331",
@@ -12028,7 +12429,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at flashing red; rear-ended by SUV",
       "rcodex": "SUV rear-ended stationary AV at flashing red",
       "rgemini": "AV was stopped at a flashing red light; rear-ended by another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13363",
@@ -12058,7 +12460,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Wrong-way vehicle hit AV; AV braked and maneuvered to avoid",
       "rcodex": "Wrong-way counterpart entered AV lane and struck AV",
       "rgemini": "Oncoming vehicle entered the Waymo AV's lane; Waymo took evasive action but was hit."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13301",
@@ -12088,7 +12491,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped to yield on narrow street; passing car hit it",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary and yielding when hit by a passing car."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13538",
@@ -12118,7 +12522,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; passenger opened door and passing car hit it",
       "rcodex": "Open AV passenger door was struck by passing car",
       "rgemini": "Waymo passenger opened door into traffic but other car was passing in opposing lane. AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13399",
@@ -12148,7 +12553,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; chain-reaction rear-end collision",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary and rear-ended due to a multi-vehicle collision behind it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13370",
@@ -12178,7 +12584,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car turned right into AV lane; car at fault",
       "rcodex": "Counterpart right turn partially entered AV lane and clipped rear quarter",
       "rgemini": "Passenger car made an improper right turn into the Waymo AV's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13495",
@@ -12208,7 +12615,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped in traffic; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13410",
@@ -12238,7 +12646,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; pickup reversed into stationary AV while parking",
       "rcodex": "Pickup reversing to park struck stationary AV",
       "rgemini": "AV was stationary yielding; other vehicle reversed into it while parallel parking."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13384",
@@ -12268,7 +12677,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by SUV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13309",
@@ -12298,7 +12708,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked for pickup; car passing hit stationary AV",
       "rcodex": "Passing car hit parked AV during maneuver-around",
       "rgemini": "AV was parked with hazard lights; other vehicle hit it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13323",
@@ -12328,7 +12739,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; SUV in front reversed into stationary AV",
       "rcodex": "SUV reversed into stationary AV",
       "rgemini": "AV was stationary in traffic; vehicle in front reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13302",
@@ -12358,7 +12770,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; fire truck hit stationary AV while turning",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was stationary and yielding when hit by a turning fire truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13403",
@@ -12388,7 +12801,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both turning left in adjacent lanes; SUV crossed into AV lane",
       "rcodex": "Other SUV crossed dashed line during parallel left turn",
       "rgemini": "AV was making a legal left turn; other vehicle in adjacent turn lane crossed into AV's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13542",
@@ -12418,7 +12832,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary yielding to a reversing truck which backed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13509",
@@ -12448,7 +12863,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into fallen utility line hanging in travel lane",
       "rcodex": "AV contacted fallen utility line in travel lane",
       "rgemini": "AV hit stationary fallen utility line"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13506",
@@ -12478,7 +12894,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove over debris in roadway at 25 mph",
       "rcodex": "AV tire contacted roadway debris in travel lane",
       "rgemini": "AV hit stationary debris"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13447",
@@ -12508,7 +12925,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Dolly fell from truck ahead; AV was following and hit it",
       "rcodex": "Object fell from truck trailer into AV lane",
       "rgemini": "Debris fell directly from the vehicle ahead into the Waymo AV's path leaving no time to react."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13507",
@@ -12538,7 +12956,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped; truck turned right from left lane into AV lane",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Truck made an improper right turn from the left lane across the Waymo AV's path; Waymo was stationary when hit."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13300",
@@ -12568,7 +12987,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; oversized truck sideswiped stationary AV",
       "rcodex": "Truck trailer encroached and struck stopped AV",
       "rgemini": "Waymo was stationary and yielding when hit by a passing heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13450",
@@ -12598,7 +13018,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked; SUV sideswiped stationary AV while passing",
       "rcodex": "Passing SUV sideswiped parked AV",
       "rgemini": "AV was stopped for a passenger drop-off; other vehicle hit it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13510",
@@ -12628,7 +13049,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both changing lanes simultaneously; other car entered AV lane",
       "rcodex": "Both vehicles changed lanes into each other",
       "rgemini": "AV was completing a lane change when another vehicle merged into its lane and hit its rear right side."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13407",
@@ -12658,7 +13080,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; box truck sideswiped stationary AV passing",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to a truck which hit it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13267",
@@ -12688,7 +13111,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was proceeding; golf cart reversed into AV from parking stall",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "Waymo was reversed into by a golf cart."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13395",
@@ -12718,7 +13142,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Passenger car rear-ended stationary AV",
       "rgemini": "AV was stopped at a red light; rear-ended by another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13371",
@@ -12748,7 +13173,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was slowing; rear-ended by car following too closely",
       "rcodex": "Following car struck AV from behind as AV slowed in intersection",
       "rgemini": "Waymo was rear-ended while slowing for a traffic signal."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13514",
@@ -12778,7 +13204,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV drove into fallen utility line hanging in travel lane",
       "rcodex": "AV contacted fallen utility line hanging in lane",
       "rgemini": "AV hit stationary fallen utility line"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13327",
@@ -12808,7 +13235,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Heavy truck trailer reversed into stationary AV",
       "rgemini": "AV was stationary in a turn lane; heavy truck in front reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13443",
@@ -12838,7 +13266,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit pavement; should detect road conditions",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement causing damage to its undercarriage."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13277",
@@ -12868,7 +13297,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; street sweeper reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a street sweeper."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13369",
@@ -12898,7 +13328,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Car behind AV changed lanes and sideswiped AV",
       "rcodex": "Counterpart lane change into AV path",
       "rgemini": "Waymo was hit by a vehicle that lost control while changing lanes."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13416",
@@ -12928,7 +13359,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Passenger car rear-ended stationary AV",
       "rgemini": "AV was stopped at a red light; rear-ended by another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13278",
@@ -12958,7 +13390,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary and reversed into by a heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13513",
@@ -12988,7 +13421,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped for truck but followed too soon; truck reversed again",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Waymo was stationary when the truck reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13364",
@@ -13018,7 +13452,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped yielding to pedestrian; rear-ended by car",
       "rcodex": "Passenger car rear-ended AV while AV yielded to crosswalk pedestrian",
       "rgemini": "Waymo was rear-ended while stationary yielding to a pedestrian."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13548",
@@ -13048,7 +13483,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both turning right; box truck crossed into AV turn lane",
       "rcodex": "Box truck crossed solid line into AV turn path",
       "rgemini": "AV was making a legal right turn; other vehicle made an illegal right turn from the left lane across its path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13388",
@@ -13078,7 +13514,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped to yield on narrow street; car hit stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to oncoming traffic; the other car hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13320",
@@ -13108,7 +13545,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; car behind drove into stationary AV",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was rear-ended while yielding to oncoming traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13554",
@@ -13138,7 +13576,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped in traffic; rear-ended by heavy truck",
       "rcodex": "Heavy truck rolled forward into stationary AV",
       "rgemini": "AV was stopped in traffic; rear-ended by a heavy truck."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13512",
@@ -13168,7 +13607,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow street; truck sideswiped stationary AV",
       "rcodex": "Passing heavy truck struck stationary AV on narrow street",
       "rgemini": "Waymo was stationary yielding to a truck which hit it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13405",
@@ -13198,7 +13638,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car went straight from right-turn-only lane into AV",
       "rcodex": "Counterpart went straight from right-turn-only lane",
       "rgemini": "AV was making a legal right turn; other vehicle went straight from a right-turn-only lane and struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13324",
@@ -13228,7 +13669,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped in traffic; truck sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Truck hit stationary Waymo while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13448",
@@ -13258,7 +13700,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; van reversed into stationary AV",
       "rcodex": "Van reversed into stationary AV",
       "rgemini": "AV was stationary yielding; other vehicle traveling wrong way reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13279",
@@ -13288,7 +13731,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; car behind drove into AV",
       "rcodex": "Passenger car rear-ended stationary AV in queue",
       "rgemini": "AV was stationary in traffic; rear-ended by another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13452",
@@ -13318,7 +13762,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; truck reversed into stationary AV while parking",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was stationary yielding to a reversing truck which backed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13372",
@@ -13348,7 +13793,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV slowed and changed lanes for dog; rear-ended by car",
       "rcodex": "AV lane-change maneuver to avoid dog preceded rear-end contact",
       "rgemini": "Waymo was rear-ended while slowing to avoid an animal in the roadway."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13511",
@@ -13378,7 +13824,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped at red for 6 min; van sideswiped while passing",
       "rcodex": "Passing van struck stationary AV during overtake",
       "rgemini": "AV was stationary at a red light; other vehicle hit it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13539",
@@ -13408,7 +13855,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; fire engine hit stationary AV while turning",
       "rcodex": "Counterpart maneuvered into stationary AV",
       "rgemini": "Waymo was stationary yielding to a fire engine which hit it while turning."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13540",
@@ -13438,7 +13886,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped in parking lot; pickup truck passed and hit it",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary; pickup truck hit it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13489",
@@ -13468,7 +13917,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was reversing but truck reversed faster into AV",
       "rcodex": "Truck continued reversing into AV despite AV reverse attempt",
       "rgemini": "AV was stationary after attempting to reverse away; heavy truck reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13467",
@@ -13498,7 +13948,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit speed bump/pavement change in parking lot",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement due to elevation change causing damage to its undercarriage."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13326",
@@ -13528,7 +13979,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked for pickup; truck sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Truck hit stationary Waymo while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13564",
@@ -13558,7 +14010,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped yielding to pedestrians; scooter rear-ended AV",
       "rcodex": "Scooter struck AV while AV was stopped yielding to pedestrians",
       "rgemini": "AV was stopped yielding to pedestrians; rear-ended by a scooter."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13486",
@@ -13588,7 +14041,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped suddenly after bird collision; rear-ended by car",
       "rcodex": "AV stopped and was rear-ended by following car",
       "rgemini": "Waymo was rear-ended while stationary after an unexpected event (hitting a bird)."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13485",
@@ -13618,7 +14072,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit pavement entering parking lot driveway",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement due to elevation change causing damage to its undercarriage."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13487",
@@ -13648,7 +14103,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit pavement entering parking lot driveway",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit the pavement due to elevation change causing damage to its undercarriage."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13365",
@@ -13678,7 +14134,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped in traffic; van mirror hit AV mirror passing",
       "rcodex": "Passing van mirror struck stationary AV",
       "rgemini": "Waymo was stationary when a passing van hit its mirror."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13451",
@@ -13708,7 +14165,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped to yield on narrow street; truck hit stationary AV",
       "rcodex": "Passing pickup struck stationary AV on narrow street",
       "rgemini": "AV was stationary yielding on a narrow street; other vehicle hit it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13408",
@@ -13738,7 +14196,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; car sideswiped stationary AV while passing",
       "rcodex": "Car changing lanes to pass struck stationary AV",
       "rgemini": "AV was stationary in traffic; other vehicle hit it while changing lanes to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13409",
@@ -13768,7 +14227,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both turning left in adjacent lanes; SUV crossed into AV lane",
       "rcodex": "Other SUV crossed dashed line during parallel left turn",
       "rgemini": "AV was making a legal left turn; other vehicle in adjacent turn lane crossed into AV's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13449",
@@ -13798,7 +14258,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red; car behind drove into stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary yielding to an emergency vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13396",
@@ -13828,7 +14289,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV began moving into road as SUV passed; shared fault",
       "rcodex": "AV turn entry and counterpart passing maneuver both contributed",
       "rgemini": "SUV attempted to pass the Waymo AV improperly as it was beginning to move from a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13444",
@@ -13858,7 +14320,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped on narrow street; car sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to oncoming traffic; the other car hit it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13453",
@@ -13888,7 +14351,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; bus reversed into stationary AV",
       "rcodex": "Bus reversed into stationary AV",
       "rgemini": "AV was stationary in a turn lane; bus in front reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13361",
@@ -13918,7 +14382,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red; truck making wide turn hit stationary AV",
       "rcodex": "Turning heavy truck crossed centerline into stationary AV",
       "rgemini": "AV was stationary at a red light; turning truck crossed the center line and struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13401",
@@ -13948,7 +14413,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; car in front reversed into stationary AV",
       "rcodex": "Vehicle ahead reversed into stationary AV",
       "rgemini": "AV was stationary in traffic; vehicle in front reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13325",
@@ -13978,7 +14444,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit elevated sidewalk-level street entrance",
       "rcodex": "AV struck raised roadway/sidewalk while turning",
       "rgemini": "Waymo drove onto a raised street/sidewalk and bottomed out."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13322",
@@ -14008,7 +14475,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; cyclist ran stop sign and hit stationary AV",
       "rcodex": "E-bike entered stop-controlled intersection and hit stationary AV",
       "rgemini": "AV was stationary yielding; cyclist ran a stop sign and struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13287",
@@ -14038,7 +14506,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped for possible emergency vehicle; rear-ended by truck",
       "rcodex": "Pickup rear-ended stopped AV",
       "rgemini": "Waymo was rear-ended while stationary."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13557",
@@ -14068,7 +14537,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; heavy truck reversed into stationary AV",
       "rcodex": "Heavy truck reversed into stationary AV",
       "rgemini": "AV was stationary after attempting to reverse away; other vehicle reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13549",
@@ -14098,7 +14568,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at yellow/red light; rear-ended by SUV",
       "rcodex": "SUV rear-ended stationary AV at red light",
       "rgemini": "AV was stopped at a red light; rear-ended by another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13454",
@@ -14128,7 +14599,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV merged left into path of cable car; shared fault",
       "rcodex": "AV moved left to merge while cable car was passing",
       "rgemini": "AV shifted left to merge into passing cable car"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13484",
@@ -14158,7 +14630,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV turned right without stopping at stop sign into AV path",
       "rcodex": "Counterpart turned right from stop-controlled approach into AV path",
       "rgemini": "SUV ran a stop sign and hit the Waymo AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13445",
@@ -14188,7 +14661,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked; car reversed into parked AV while parking",
       "rcodex": "Parallel-parking car reversed into parked AV",
       "rgemini": "AV was parked at the curb; other vehicle reversed into it while parallel parking."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13303",
@@ -14218,7 +14692,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; chain reaction rear-end pushed SUV into AV",
       "rcodex": "Chain-reaction crash pushed stopped SUV into stopped AV",
       "rgemini": "Waymo was stationary and rear-ended in a chain reaction."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13541",
@@ -14248,7 +14723,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped mid-lane-change; truck behind hit AV in new lane",
       "rcodex": "AV stopped partially across lane during lane-change attempt",
       "rgemini": "Waymo was stationary yielding to traffic; pickup truck hit it from behind."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13400",
@@ -14278,7 +14754,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped for pickup; car sideswiped stationary AV",
       "rcodex": "Oncoming car passing left struck stationary AV",
       "rgemini": "AV was stationary for a pick-up; other vehicle hit it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13321",
@@ -14308,7 +14785,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked; passenger opened door into passing motorcycle",
       "rcodex": "AV passenger door opening contributed to motorcycle contact",
       "rgemini": "AV passenger opened door into the path of a motorcycle passing on the right; AV itself not at fault."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13307",
@@ -14338,7 +14816,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Both turning right; truck crossed in front of AV; AV close to curb",
       "rcodex": "Pickup turned across AV curbside right-turn path",
       "rgemini": "AV was turning right near the curb; other vehicle in the same lane turned right across its path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13340",
@@ -14368,7 +14847,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; truck reversed out of parking lot into AV",
       "rcodex": "Pickup reversed from driveway into stationary AV",
       "rgemini": "AV was stationary at the curb; other vehicle reversed into it from a parking lot."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13402",
@@ -14398,7 +14878,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13491",
@@ -14428,7 +14909,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked at curb; van rear-ended stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary at the curb; van hit it from behind."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13490",
@@ -14458,7 +14940,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was slowing for flashing red; rear-ended by accelerating SUV",
       "rcodex": "SUV struck AV from behind while AV was slowing for flashing red",
       "rgemini": "Waymo was rear-ended while slowing for a traffic signal."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13488",
@@ -14488,7 +14971,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car ran stop sign into intersection hitting AV side",
       "rcodex": "Cross-traffic vehicle entered intersection and struck AV side",
       "rgemini": "Passenger car entered intersection and hit the side of the Waymo AV which had the right of way."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13308",
@@ -14518,7 +15002,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Pickup truck sideswiped AV while changing lanes erratically",
       "rcodex": "Pickup changed back into AV lane while passing",
       "rgemini": "AV was traveling in its lane; other vehicle merged into its lane and struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13442",
@@ -14548,7 +15033,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13328",
@@ -14578,7 +15064,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV passed AV on left while AV was turning right with signal",
       "rcodex": "Counterpart passed during AV right turn; mostly counterpart fault",
       "rgemini": "SUV passed turning Waymo and hit it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13420",
@@ -14608,7 +15095,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV nearly stopped at stop sign; rear-ended by SUV",
       "rcodex": "SUV from behind struck AV after stop-sign slowdown",
       "rgemini": "AV was proceeding after a stop sign; rear-ended by another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13559",
@@ -14638,7 +15126,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit speed bump in parking lot entrance",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit a stationary speed bump causing damage to its undercarriage."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13543",
@@ -14668,7 +15157,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by speeding car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary at a red light; passenger car hit it from behind at high speed."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13586",
@@ -14698,7 +15188,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car ran stop sign at high speed into intersection hitting AV",
       "rcodex": "Passenger car ran stop sign and entered AV path",
       "rgemini": "AV was proceeding legally through intersection; other vehicle ran a stop sign at high speed and struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13544",
@@ -14728,7 +15219,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; SUV passed and sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary yielding to traffic; SUV hit it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13547",
@@ -14758,7 +15250,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13607",
@@ -14788,7 +15281,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Cone thrown from truck into AV lane; unusual but AV hit it",
       "rcodex": "Traffic cone was thrown into AV lane by another vehicle occupant",
       "rgemini": "AV struck a traffic cone intentionally thrown into its path by a passenger in another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13545",
@@ -14818,7 +15312,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red light; rear-ended by SUV",
       "rcodex": "Counterpart failed to yield to stationary AV",
       "rgemini": "Waymo was rear-ended while stationary at a red light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13552",
@@ -14848,7 +15343,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV hit speed bump on frontage road at 20 mph",
       "rcodex": "AV contacted fixed roadway/object hazard",
       "rgemini": "Waymo AV hit a stationary speed bump causing damage to its undercarriage."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13573",
@@ -14878,7 +15374,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at stop sign; rear-ended by car",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "AV was stopped at a stop sign; rear-ended by another vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13581",
@@ -14908,7 +15405,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; truck sideswiped stationary AV while passing",
       "rcodex": "Passing heavy truck sideswiped stationary AV",
       "rgemini": "AV was stationary yielding to traffic; heavy truck hit it while attempting to pass."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13556",
@@ -14938,7 +15436,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped at red; truck turned and sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary at a red light; pickup truck hit it while turning."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13560",
@@ -14968,7 +15467,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped before entering road; rear-ended by car behind",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was rear-ended while stationary at an intersection."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13546",
@@ -14998,7 +15498,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car turned right on red into AV lane of travel",
       "rcodex": "Counterpart right turn crossed AV path",
       "rgemini": "Passenger car turned right on red into the path of the Waymo AV which had a green light."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13582",
@@ -15028,7 +15529,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Other car ran stop sign into intersection hitting AV",
       "rcodex": "Passenger car ran stop sign and struck AV rear quarter",
       "rgemini": "AV proceeded after stopping at a stop sign; other vehicle ran its stop sign and struck the AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13571",
@@ -15058,7 +15560,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was parked for pickup; van sideswiped stationary AV",
       "rcodex": "Stationary AV struck by moving counterpart",
       "rgemini": "Waymo was stationary and parked with hazard lights; van hit it while passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13558",
@@ -15088,7 +15591,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV moved slowly from stop; rear-ended by car behind",
       "rcodex": "Following car struck AV from behind during unprotected-left yield",
       "rgemini": "Waymo was rear-ended while yielding to oncoming traffic."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13550",
@@ -15118,7 +15622,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; chain reaction crash pushed SUV into AV",
       "rcodex": "Stationary AV struck after trailing SUV was rear-ended",
       "rgemini": "Waymo was stationary and rear-ended due to a multi-vehicle collision behind it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13575",
@@ -15148,7 +15653,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was slowing; other car lost control and crossed into AV lane",
       "rcodex": "Counterpart lost traction and crossed into AV lane",
       "rgemini": "AV was slowing in its lane; other vehicle lost control while turning and crossed into AV's lane."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13585",
@@ -15178,7 +15684,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; chain reaction crash pushed SUV into AV",
       "rcodex": "Stationary AV struck via chain-reaction collision",
       "rgemini": "AV was stationary; struck by a vehicle that was pushed into it by a third speeding vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30270-13583",
@@ -15208,7 +15715,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV undercarriage hit raised pavement over utility cover",
       "rcodex": "AV undercarriage struck raised pavement in travel lane",
       "rgemini": "AV struck raised pavement in its path; single-vehicle incident."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-11513",
@@ -15238,7 +15746,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "E-cyclist veered into roadway and hit nearly stopped AV",
       "rcodex": "E-cyclist entered turn path and contacted near-stopped AV rear side",
       "rgemini": "Zoox braked to yield to an e-cyclist who then veered into the roadway and struck the nearly stopped AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-11563",
@@ -15268,7 +15777,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; truck passed on left and sideswiped AV",
       "rcodex": "Pickup passed and struck stopped Zoox AV",
       "rgemini": "Zoox was stationary waiting to turn when a pickup truck illegally passed it and struck it."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-11587",
@@ -15298,7 +15808,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Truck ran stop sign into AV path; AV braked but contact occurred",
       "rcodex": "Truck pulled out from driveway into AV lane",
       "rgemini": "Zoox was struck by a tractor-trailer that failed to yield and ran a stop sign."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-11497",
@@ -15328,7 +15839,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was passing; SUV abruptly reversed to park and hit AV",
       "rcodex": "Counterpart backing maneuver caused collision",
       "rgemini": "The AV was struck by another vehicle that abruptly reversed without signaling to parallel park while the AV was passing."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-11902",
@@ -15358,7 +15870,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Box truck made sudden unprotected left turn hitting AV",
       "rcodex": "Truck made unprotected left across AV path",
       "rgemini": "Box truck made an unprotected left turn into the path of the Zoox AV."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-11856",
@@ -15388,7 +15901,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; truck reversed into stationary AV despite horn",
       "rcodex": "Counterpart backed into stationary AV",
       "rgemini": "Hit by a reversing tractor-trailer while stopped"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-13123",
@@ -15418,7 +15932,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was slowing for turn; rear-ended by inattentive pickup",
       "rcodex": "Pickup rear-ended slowing AV",
       "rgemini": "AV was slowing to yield and was rear-ended by a distracted driver."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-11847",
@@ -15448,7 +15963,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "SUV suddenly veered into AV lane without signal",
       "rcodex": "SUV veered into AV path from adjacent lane",
       "rgemini": "Another vehicle veered into the AV's lane without signaling"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-13376",
@@ -15478,7 +15994,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV stopped briefly after starting from green; rear-ended by SUV",
       "rcodex": "AV rear-ended while stationary",
       "rgemini": "AV stopped unexpectedly on green and was rear-ended"
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-13660",
@@ -15508,7 +16025,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "Car made illegal right turn from through lane clipping AV",
       "rcodex": "Other cars made illegal right turn across AV path",
       "rgemini": "AV was proceeding legally on green; other vehicle made an illegal right turn across its path."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-13661",
@@ -15538,7 +16056,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV braked hard for debris; rear-ended by merging pickup",
       "rcodex": "AV braked for debris and was rear-ended by merging pickup",
       "rgemini": "AV braked for debris in lane; rear-ended by a close-following vehicle."
-    }
+    },
+    "vehiclesInvolved": 2
   },
   {
     "reportId": "30610-13662",
@@ -15568,7 +16087,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "rclaude": "AV was stopped; box truck reversed into stationary AV",
       "rcodex": "Truck reversed into stopped AV",
       "rgemini": "AV was stopped and honked; other vehicle reversed into it."
-    }
+    },
+    "vehiclesInvolved": 2
   }
 ]
 /* INCIDENT_DATA_END */;
