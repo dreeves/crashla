@@ -103,12 +103,21 @@ def must(cond, msg, **ctx):
 
 
 def fetch_nhtsa_csv():
-    """Fetch the ADS incident reports CSV from NHTSA."""
+    """Fetch the ADS incident reports CSV from NHTSA.
+
+    Returns (rows, last_modified_date) where last_modified_date is an
+    ISO date string from the HTTP Last-Modified header, or None.
+    """
     print(f"Fetching NHTSA ADS CSV from {NHTSA_ADS_CSV_URL} ...")
     with urllib.request.urlopen(NHTSA_ADS_CSV_URL, timeout=60) as resp:
+        lm = resp.headers.get("Last-Modified")
         payload = resp.read()
     text = payload.decode("utf-8")
-    return list(csv.DictReader(io.StringIO(text)))
+    lm_date = None
+    if lm:
+        from email.utils import parsedate_to_datetime
+        lm_date = parsedate_to_datetime(lm).date().isoformat()
+    return list(csv.DictReader(io.StringIO(text))), lm_date
 
 
 def parse_fault_csv(path):
@@ -185,7 +194,7 @@ def js_template_literal(text):
 
 
 def main():
-    rows = fetch_nhtsa_csv()
+    rows, nhtsa_modified_date = fetch_nhtsa_csv()
     fault_models, fault_ids = load_fault_models()
 
     # Filter to driverless incidents only
@@ -263,6 +272,10 @@ def main():
     inc_js = inject(inc_js,
                     "/* NHTSA_FETCH_DATE_START */", "/* NHTSA_FETCH_DATE_END */",
                     f'"{fetch_date}"')
+    modified_val = f'"{nhtsa_modified_date}"' if nhtsa_modified_date else "null"
+    inc_js = inject(inc_js,
+                    "/* NHTSA_MODIFIED_DATE_START */", "/* NHTSA_MODIFIED_DATE_END */",
+                    modified_val)
     inc_js = inject(inc_js,
                     "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
                     incident_json)

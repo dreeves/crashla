@@ -269,6 +269,12 @@ tr:hover { background: #f8f8ff; }
   border: 1px solid rgba(0, 0, 0, 0.18);
   display: inline-block;
 }
+.ci-fan-swatch {
+  width: 14px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
 .month-grid {
   display: none;
 }

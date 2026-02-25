@@ -176,12 +176,6 @@ const CI_MASS_MAX_PCT = 99.9;
 const CI_MASS_STEP_PCT = 0.1;
 const CI_MASS_DEFAULT_PCT = 95;
 const CI_FAN_LEVELS = [0.50, 0.80, 0.95]; // nested CI bands from tight to wide
-const COMPANY_COLORS = {
-  Tesla: "#d13b2d",
-  Waymo: "#2a8f57",
-  Zoox: "#b7771a",
-  Humans: "#5b6475",
-};
 const COMPANY_ORDER = ["Tesla", "Waymo", "Zoox", "Humans"];
 const INCIDENT_MODEL_COMPANIES = ["Tesla", "Waymo", "Zoox"];
 const AXIS_MIN_DEFAULT_PCT = 0;
@@ -749,8 +743,8 @@ function updateEstimate(company) {
       <path class="graph-band" d="${band}"></path>
       <path class="graph-line" d="${path}"></path>
       ${peerLabels.map(p => `
-        <line class="graph-refline" x1="${mLeft}" y1="${p.lineY}" x2="${mLeft + pW}" y2="${p.lineY}" style="stroke:${COMPANY_COLORS[p.company]}"></line>
-        <text class="graph-reflabel" x="${mLeft + pW - 4}" y="${p.labelY}" text-anchor="end" style="fill:${COMPANY_COLORS[p.company]}">${p.company}: ${fmtMiles(p.est.median)}</text>
+        <line class="graph-refline" x1="${mLeft}" y1="${p.lineY}" x2="${mLeft + pW}" y2="${p.lineY}" style="stroke:${MONTHLY_COMPANY_COLORS[p.company]}"></line>
+        <text class="graph-reflabel" x="${mLeft + pW - 4}" y="${p.labelY}" text-anchor="end" style="fill:${MONTHLY_COMPANY_COLORS[p.company]}">${p.company}: ${fmtMiles(p.est.median)}</text>
       `).join("")}
       <circle class="graph-point" cx="${pointX}" cy="${pointY}" r="5"></circle>
       <text class="graph-label" x="${mLeft + pW / 2}" y="${svgH - 2}" text-anchor="middle">Total Autonomous Miles</text>
@@ -1086,7 +1080,7 @@ function renderAllCompaniesMpiChart(series) {
             hi: 1 / gammaquant(a, row.vmtMax, t),
           };
         });
-        if (k > 0) yMax = Math.max(yMax, mpiBest);
+        if (k > 0) yMax = Math.max(yMax, mpiBest, mpiMax);
         return {
           mpiMin, mpiBest, mpiMax, bands, incidentCount: k,
           vmtMonth: row.vmtBest,
@@ -1160,7 +1154,7 @@ function renderAllCompaniesMpiChart(series) {
     let penDown = false;
     for (let i = 0; i < row.vals.length; i++) {
       const mpi = row.vals[i];
-      if (mpi === null || mpi.incidentCount === 0) {
+      if (mpi.incidentCount === 0) {
         penDown = false;
         continue;
       }
@@ -1172,7 +1166,7 @@ function renderAllCompaniesMpiChart(series) {
 
   const errs = `<g clip-path="url(#mpi-clip)">` + seriesRows.map(row =>
     row.vals.map((mpi, i) => {
-      if (mpi === null || mpi.incidentCount === 0) return "";
+      if (mpi.incidentCount === 0) return "";
       const x = mapX(i);
       const yLo = mapY(mpi.mpiMin);
       const yHi = mapY(mpi.mpiMax);
@@ -1203,37 +1197,26 @@ function renderAllCompaniesMpiChart(series) {
   ).join("");
 
   // Fan chart: nested CI bands at 50%, 80%, 95% with decreasing opacity.
+  // Bands are always continuous — even months with k=0 have a valid posterior
+  // (Gamma(0.5, m)), just with very high MPI and wide uncertainty.
   // Clamp to plot range so SVG coordinates stay reasonable.
   const clampY = v => Math.max(mTop, Math.min(mTop + pH, mapY(v)));
   const bands = seriesRows.map(row => {
-    const segments = [];
-    let seg = [];
-    for (let i = 0; i < row.vals.length; i++) {
-      if (row.vals[i] === null) {
-        if (seg.length > 0) segments.push(seg);
-        seg = [];
-      } else {
-        seg.push({i, val: row.vals[i]});
-      }
-    }
-    if (seg.length > 0) segments.push(seg);
     const color = metricMarkerColor(row.company, row.metric.key);
     const metricOpacity = LINE_STYLE[row.metric.key].opacity;
     // Draw widest band first (95%), then 80%, then 50% on top
     return CI_FAN_LEVELS.slice().reverse().map((_level, li) => {
       const bandIdx = CI_FAN_LEVELS.length - 1 - li; // index into bands array
       const bandOpacity = (0.10 * metricOpacity * (1 + li * 0.5)).toFixed(3);
-      return segments.map(seg => {
-        let d = "";
-        for (const pt of seg) {
-          d += `${d ? " L " : "M "}${mapX(pt.i).toFixed(2)} ${clampY(pt.val.bands[bandIdx].hi).toFixed(2)}`;
-        }
-        for (let j = seg.length - 1; j >= 0; j--) {
-          d += ` L ${mapX(seg[j].i).toFixed(2)} ${clampY(seg[j].val.bands[bandIdx].lo).toFixed(2)}`;
-        }
-        d += " Z";
-        return `<path d="${d}" style="fill:${color};opacity:${bandOpacity}"></path>`;
-      }).join("");
+      let d = "";
+      for (let i = 0; i < row.vals.length; i++) {
+        d += `${d ? " L " : "M "}${mapX(i).toFixed(2)} ${clampY(row.vals[i].bands[bandIdx].hi).toFixed(2)}`;
+      }
+      for (let i = row.vals.length - 1; i >= 0; i--) {
+        d += ` L ${mapX(i).toFixed(2)} ${clampY(row.vals[i].bands[bandIdx].lo).toFixed(2)}`;
+      }
+      d += " Z";
+      return `<path d="${d}" style="fill:${color};opacity:${bandOpacity}"></path>`;
     }).join("");
   }).join("");
 
@@ -1450,6 +1433,30 @@ function renderMonthlyLegends() {
       buildMonthlyViews();
     });
   }
+
+  // CI fan legend: multi-stripe swatches showing each company's color at the
+  // band's rendered opacity level for each CI width (50%, 80%, 95%).
+  // TO-DO: Human vet legend labels below.
+  const fanCompanies = includedAdsCompanies();
+  const fanLevels = CI_FAN_LEVELS.map((level, i) => {
+    // Match the band rendering: reversed index li maps to bandOpacity =
+    // 0.10 * metricOpacity * (1 + li * 0.5). Use metricOpacity = 1 for legend.
+    const li = CI_FAN_LEVELS.length - 1 - i;
+    const opacity = (0.10 * (1 + li * 0.5)).toFixed(3);
+    const pct = Math.round(level * 100);
+    // Build vertical stripe gradient from company colors
+    const stripeW = 100 / fanCompanies.length;
+    const stops = fanCompanies.map((c, j) => {
+      const color = MONTHLY_COMPANY_COLORS[c];
+      return `${color} ${(j * stripeW).toFixed(1)}% ${((j + 1) * stripeW).toFixed(1)}%`;
+    }).join(", ");
+    const grad = `linear-gradient(to right, ${stops})`;
+    return `
+      <span class="month-legend-item">
+        <span class="ci-fan-swatch" style="background:${grad};opacity:${opacity}"></span>${pct}% CI
+      </span>`;
+  });
+  byId("month-legend-ci-fan").innerHTML = fanLevels.join("");
 
   byId("month-legend-lines").innerHTML = `
     <span class="month-legend-item">
@@ -1715,6 +1722,8 @@ function shortenSeverity(s) {
     ["No Injured", "No injury"],
     ["Minor W/O", "Minor injury"],
     ["Minor W/", "Minor injury (hosp.)"],
+    ["Moderate W/O", "Moderate injury"],
+    ["Moderate W/", "Moderate injury (hosp.)"],
     ["Serious", "Serious"],
     ["Fatal", "Fatal"],
     ["Property", "Property only"],
@@ -1754,6 +1763,10 @@ function escAttr(s) {
   initWeightSliders();
   buildMonthlyViews();
   buildBrowser();
+  // TO-DO: Human vet colophon copy below.
+  const modifiedPart = NHTSA_MODIFIED_DATE
+    ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
+    : "";
   byId("colophon").textContent =
-    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.`;
+    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart}`;
 }
