@@ -1386,7 +1386,8 @@ function renderCompanyMonthlyChart(series, company) {
     const mpiByKey = {};
     const variantCounts = {
       all: rec.total, nonstationary, roadwayNonstationary: rec.roadwayNonstationary,
-      injury: rec.injury, hospitalization: rec.hospitalization, fatality: rec.fatality,
+      atfault: rec.atFault, injury: rec.injury, hospitalization: rec.hospitalization,
+      fatality: rec.fatality,
     };
     for (const [vk, vk_count] of Object.entries(variantCounts)) {
       mpiByKey[vk] = fmtMiles(estimateMpi(vk_count, row.vmtBest, massFrac).median);
