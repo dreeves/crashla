@@ -224,6 +224,58 @@ const SPEED_BIN_COLORS = {
     "0": "#d9d9d9",
   },
 };
+// Movement-based partition of total incidents (sums to total)
+// TO-DO: Human vet segment labels below.
+const MOVEMENT_SEGMENTS = [
+  {key: "roadwayNonstationary", label: "Non-parking-lot nonstationary", mpiKey: "roadwayNonstationary"},
+  {key: "parkingLotNonstationary", label: "Parking-lot nonstationary", mpiKey: "nonstationary"},
+  {key: "stationary",           label: "Stationary",               mpiKey: "all"},
+];
+// Severity-based partition of total incidents (sums to total)
+const SEVERITY_SEGMENTS = [
+  {key: "fatality",             label: "Fatality",                 mpiKey: "fatality"},
+  {key: "hospitalizationOnly",  label: "Hospitalization (non-fatal)", mpiKey: "hospitalization"},
+  {key: "injuryOnly",           label: "Injury (non-hosp.)",       mpiKey: "injury"},
+  {key: "noInjury",             label: "No injury",                mpiKey: "all"},
+];
+// Colors for movement segments (darkest = most relevant to MPI)
+const MOVEMENT_COLORS = {
+  Tesla: {roadwayNonstationary: "#d13b2d", parkingLotNonstationary: "#e06f66", stationary: "#d9d9d9"},
+  Waymo: {roadwayNonstationary: "#2060c0", parkingLotNonstationary: "#5a87d1", stationary: "#d9d9d9"},
+  Zoox:  {roadwayNonstationary: "#2a8f57", parkingLotNonstationary: "#5ead7e", stationary: "#d9d9d9"},
+};
+// Colors for severity segments (darkest = most severe)
+const SEVERITY_COLORS = {
+  Tesla: {fatality: "#8b1a10", hospitalizationOnly: "#d13b2d", injuryOnly: "#e06f66", noInjury: "#efaaa4"},
+  Waymo: {fatality: "#0e3870", hospitalizationOnly: "#2060c0", injuryOnly: "#5a87d1", noInjury: "#99b4e5"},
+  Zoox:  {fatality: "#14553a", hospitalizationOnly: "#2a8f57", injuryOnly: "#5ead7e", noInjury: "#98ccb0"},
+};
+// Legend colors (company-neutral)
+const MOVEMENT_LEGEND_COLORS = {
+  roadwayNonstationary: "#505050", parkingLotNonstationary: "#909090", stationary: "#d0d0d0",
+};
+const SEVERITY_LEGEND_COLORS = {
+  fatality: "#383c46", hospitalizationOnly: "#606060", injuryOnly: "#909090", noInjury: "#c8c8c8",
+};
+
+// Compute movement and severity segment counts from an incident record
+function movementSegmentCounts(rec) {
+  const nonstationary = nonstationaryIncidentCount(rec.speeds);
+  return {
+    roadwayNonstationary: rec.roadwayNonstationary,
+    parkingLotNonstationary: nonstationary - rec.roadwayNonstationary,
+    stationary: rec.total - nonstationary,
+  };
+}
+function severitySegmentCounts(rec) {
+  return {
+    fatality: rec.fatality,
+    hospitalizationOnly: rec.hospitalization - rec.fatality,
+    injuryOnly: rec.injury - rec.hospitalization,
+    noInjury: rec.total - rec.injury,
+  };
+}
+
 const MONTH_TOKENS = {
   JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6,
   JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12,
@@ -1192,7 +1244,7 @@ function renderAllCompaniesMpiChart(series) {
       // TO-DO: Human vet new tooltip mileage labels below.
       const ci95 = mpi.bands[mpi.bands.length - 1];
       const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
-      return `<g>${marker(x, y, color, 1)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer"><title>${escHtml(tip)}</title></circle></g>`;
+      return `<g>${marker(x, y, color, 1)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle></g>`;
     }).join("")
   ).join("");
 
@@ -1291,44 +1343,70 @@ function renderCompanyMonthlyChart(series, company) {
   const barCounts = [];
   const barTotals = [];
   const errs = [];
+  const halfBar = (barW - 1) / 2; // 1px gap between the two bars
+  const massFrac = CI_MASS_DEFAULT_PCT / 100;
   // TO-DO: Human vet new lower-chart tooltip labels below.
   for (let i = 0; i < series.points.length; i++) {
     const row = rows[i];
     const month = series.months[i];
-    const x = mapX(i) - barW / 2;
+    const cx = mapX(i);
     const rec = row.incidents;
     const monthVmtBest = fmtWhole(row.vmtBest);
     const monthVmtCume = fmtWhole(row.vmtCume);
-    let stack = 0;
-    for (const bin of SPEED_BINS) {
-      const count = rec.speeds[bin];
-      const next = stack + count;
-      const y0 = mapIncidentY(stack);
-      const y1 = mapIncidentY(next);
-      const h = y0 - y1;
-      stack = next;
-      if (h <= 0) continue;
-      const barTip = `${company} ${month} (${SPEED_LABELS[bin]})\nIncidents in bin: ${fmtCount(count)}\nIncidents total: ${fmtCount(rec.total)}\nMonthly VMT (best): ${monthVmtBest}\nCumulative VMT: ${monthVmtCume}`;
-      bars.push(`
-        <rect class="month-inc-bar" x="${x.toFixed(2)}" y="${y1.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}"
-              fill="${SPEED_BIN_COLORS[company][bin]}" stroke="${vmtColor}" stroke-width="0.8"><title>${escHtml(barTip)}</title></rect>
-      `);
-      const centerY = y1 + h / 2;
-      barCounts.push(`
-        <text class="month-inc-count" x="${(x + barW / 2).toFixed(2)}" y="${centerY.toFixed(2)}">${fmtCount(count)}</text>
-      `);
+
+    // MPI for each variant (used in hover text)
+    const nonstationary = nonstationaryIncidentCount(rec.speeds);
+    const mpiByKey = {};
+    const variantCounts = {
+      all: rec.total, nonstationary, roadwayNonstationary: rec.roadwayNonstationary,
+      injury: rec.injury, hospitalization: rec.hospitalization, fatality: rec.fatality,
+    };
+    for (const [vk, vk_count] of Object.entries(variantCounts)) {
+      mpiByKey[vk] = fmtMiles(estimateMpi(vk_count, row.vmtBest, massFrac).median);
     }
+
+    // Render one stacked bar column
+    const renderBar = (xLeft, w, segments, colors, counts) => {
+      let stack = 0;
+      for (const seg of segments) {
+        const count = counts[seg.key];
+        const next = stack + count;
+        const y0 = mapIncidentY(stack);
+        const y1 = mapIncidentY(next);
+        const h = y0 - y1;
+        stack = next;
+        if (h <= 0) continue;
+        const mpiLabel = `MPI (${seg.label.toLowerCase()}): ${mpiByKey[seg.mpiKey]}`;
+        const barTip = `${company} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nCumulative VMT: ${monthVmtCume}`;
+        bars.push(`
+          <rect class="month-inc-bar" x="${xLeft.toFixed(2)}" y="${y1.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}"
+                fill="${colors[seg.key]}" stroke="${vmtColor}" stroke-width="0.8" data-tip="${escAttr(barTip)}"></rect>
+        `);
+        const centerY = y1 + h / 2;
+        barCounts.push(`
+          <text class="month-inc-count" x="${(xLeft + w / 2).toFixed(2)}" y="${centerY.toFixed(2)}">${fmtCount(count)}</text>
+        `);
+      }
+    };
+
+    // Left bar: movement partition
+    const moveCounts = movementSegmentCounts(rec);
+    renderBar(cx - barW / 2, halfBar, MOVEMENT_SEGMENTS, MOVEMENT_COLORS[company], moveCounts);
+
+    // Right bar: severity partition
+    const sevCounts = severitySegmentCounts(rec);
+    renderBar(cx - barW / 2 + halfBar + 1, halfBar, SEVERITY_SEGMENTS, SEVERITY_COLORS[company], sevCounts);
+
     if (rec.total > 0) {
-      const labelX = x + barW / 2;
+      const labelX = cx;
       const labelY = Math.max(mapIncidentY(rec.total) - 7, mTop + 7);
       barTotals.push(`<text class="month-inc-total" x="${labelX.toFixed(2)}" y="${labelY.toFixed(2)}">${fmtCount(rec.total)}</text>`);
     }
-    const cx = mapX(i);
     const yLo = mapVmtY(row.vmtMin);
     const yHi = mapVmtY(row.vmtMax);
     const vmtTip = `${company} ${month} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
     errs.push(`
-      <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"><title>${escHtml(vmtTip)}</title></line>
+      <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}" data-tip="${escAttr(vmtTip)}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
     `);
@@ -1345,7 +1423,7 @@ function renderCompanyMonthlyChart(series, company) {
     const y = mapVmtY(row.vmtBest);
     const rec = row.incidents;
     const vmtTip = `${company} ${series.months[i]} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
-    return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}"><title>${escHtml(vmtTip)}</title></circle>`;
+    return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}" data-tip="${escAttr(vmtTip)}"></circle>`;
   }).join("");
 
   return `
@@ -1462,23 +1540,23 @@ function renderMonthlyLegends() {
     <span class="month-legend-item">
       <span class="month-linekey solid"></span>VMT (best)
     </span>
-    <span class="month-legend-item">
-      <span class="month-chip" style="background:#a6adbb"></span>Incidents (stacked)
-    </span>
   `;
 
-  const speedLegendColor = {
-    unknown: "#383c46",
-    "31+": "#707070",
-    "11-30": "#989898",
-    "1-10": "#bbbbbb",
-    "0": "#d9d9d9",
-  };
-  byId("month-legend-speed").innerHTML = SPEED_BINS.map(bin => `
-    <span class="month-legend-item">
-      <span class="month-chip" style="background:${speedLegendColor[bin]}"></span>${SPEED_LABELS[bin]}
-    </span>
-  `).join("");
+  // TO-DO: Human vet bar segment legend labels below.
+  byId("month-legend-speed").innerHTML = `
+    <span class="month-legend-label">Left bar (movement):</span>
+    ${MOVEMENT_SEGMENTS.map(seg => `
+      <span class="month-legend-item">
+        <span class="month-chip" style="background:${MOVEMENT_LEGEND_COLORS[seg.key]}"></span>${seg.label}
+      </span>
+    `).join("")}
+    <span class="month-legend-label">Right bar (severity):</span>
+    ${SEVERITY_SEGMENTS.map(seg => `
+      <span class="month-legend-item">
+        <span class="month-chip" style="background:${SEVERITY_LEGEND_COLORS[seg.key]}"></span>${seg.label}
+      </span>
+    `).join("")}
+  `;
 }
 
 function buildMonthlyViews() {
@@ -1703,7 +1781,7 @@ function renderTable() {
       <td>${escHtml(r.city)}, ${escHtml(r.state)}</td>
       <td>${escHtml(r.crashWith)}</td>
       <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
-      <td class="fault-cell" title="${faultTip}">${faultHtml}</td>
+      <td class="fault-cell" data-tip="${faultTip}">${faultHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
       <td class="${narrativeClass}">${escHtml(narrativeText)}</td>
     `;
@@ -1742,6 +1820,95 @@ function escAttr(s) {
   return escHtml(s).replace(/"/g, "&quot;");
 }
 
+// --- Floating tooltip (works on mobile tap + desktop hover) ---
+
+function initTooltips() {
+  const tip = document.createElement("div");
+  tip.id = "chart-tip";
+  tip.className = "chart-tip";
+  document.body.appendChild(tip);
+
+  let pinned = false; // true when user tapped/clicked to pin the tooltip
+
+  function show(el, evt) {
+    const text = el.getAttribute("data-tip");
+    if (!text) return;
+    tip.textContent = text;
+    tip.style.display = "block";
+    position(evt);
+  }
+
+  function position(evt) {
+    // Position near the pointer/touch, clamped to viewport
+    const x = evt.clientX || (evt.touches && evt.touches[0].clientX) || 0;
+    const y = evt.clientY || (evt.touches && evt.touches[0].clientY) || 0;
+    const pad = 12;
+    const rect = tip.getBoundingClientRect();
+    let left = x + pad;
+    let top = y + pad;
+    if (left + rect.width > window.innerWidth - pad) {
+      left = x - rect.width - pad;
+    }
+    if (top + rect.height > window.innerHeight - pad) {
+      top = y - rect.height - pad;
+    }
+    tip.style.left = Math.max(pad, left) + "px";
+    tip.style.top = Math.max(pad, top) + "px";
+  }
+
+  function hide() {
+    if (!pinned) {
+      tip.style.display = "none";
+    }
+  }
+
+  function findTipTarget(el) {
+    // Walk up from event target to find nearest [data-tip]
+    while (el && el !== document.body) {
+      if (el.getAttribute && el.getAttribute("data-tip")) return el;
+      el = el.parentNode;
+    }
+    return null;
+  }
+
+  // Desktop hover
+  document.addEventListener("pointerenter", (evt) => {
+    if (pinned) return;
+    const target = findTipTarget(evt.target);
+    if (target) show(target, evt);
+  }, true);
+
+  document.addEventListener("pointerleave", (evt) => {
+    if (pinned) return;
+    const target = findTipTarget(evt.target);
+    if (target) hide();
+  }, true);
+
+  document.addEventListener("pointermove", (evt) => {
+    if (pinned) return;
+    if (tip.style.display === "block") position(evt);
+  }, true);
+
+  // Click/tap to pin tooltip (mobile-friendly)
+  document.addEventListener("click", (evt) => {
+    const target = findTipTarget(evt.target);
+    if (target) {
+      if (pinned && tip.style.display === "block") {
+        // Already showing pinned tooltip — if same target, dismiss
+        pinned = false;
+        tip.style.display = "none";
+      } else {
+        pinned = true;
+        show(target, evt);
+      }
+    } else {
+      // Clicked elsewhere — dismiss pinned tooltip
+      pinned = false;
+      tip.style.display = "none";
+    }
+  }, true);
+}
+
 // --- Init ---
 
 {
@@ -1769,4 +1936,5 @@ function escAttr(s) {
     : "";
   byId("colophon").textContent =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart}`;
+  initTooltips();
 }

@@ -197,9 +197,9 @@ Resultata: labels missing from source.`,
 
 assert.ok(
   appScript.includes("Monthly VMT range:") &&
-    appScript.includes("Incidents in bin:"),
+    appScript.includes("Segment:"),
   `Replicata: inspect source for lower-chart tooltip labels.
-Expectata: source includes lower-chart tooltip labels for VMT range and incident-bin counts.
+Expectata: source includes lower-chart tooltip labels for VMT range and segment counts.
 Resultata: expected strings missing from source.`,
 );
 
@@ -209,7 +209,7 @@ assert.ok(
     rendered.includes("Tesla") &&
     rendered.includes("Waymo") &&
     rendered.includes("Zoox") &&
-    rendered.includes("<title>") &&
+    rendered.includes("data-tip=") &&
     rendered.includes("month-vmt-line") &&
     rendered.includes("month-inc-bar") &&
     rendered.includes("month-inc-count") &&
@@ -237,14 +237,14 @@ assert.ok(
   plain.legendMpiLines.includes("Miles per nonstationary non-parking-lot incident") &&
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendLines.includes("VMT (best)") &&
-    plain.legendLines.includes("Incidents (stacked)") &&
-  plain.legendSpeed.includes("unknown") &&
-  plain.legendSpeed.includes("background:#383c46") &&
-  plain.legendSpeed.indexOf("unknown") < plain.legendSpeed.indexOf("31+ mph") &&
-  plain.legendSpeed.includes("31+ mph") &&
-    plain.legendSpeed.includes("0 mph"),
+  plain.legendSpeed.includes("Left bar (movement)") &&
+  plain.legendSpeed.includes("Right bar (severity)") &&
+  plain.legendSpeed.includes("Non-parking-lot nonstationary") &&
+  plain.legendSpeed.includes("Stationary") &&
+  plain.legendSpeed.includes("Fatality") &&
+    plain.legendSpeed.includes("No injury"),
   `Replicata: render monthly legends.
-Expectata: legends include company colors, cross-company metric styles, per-company line styles, and speed bins.
+Expectata: legends include company colors, cross-company metric styles, per-company line styles, and bar segment types.
 Resultata: mpi-companies=${JSON.stringify(plain.legendMpiCompanies)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}, line legend=${JSON.stringify(plain.legendLines)}, speed legend=${JSON.stringify(plain.legendSpeed)}.`,
 );
 
