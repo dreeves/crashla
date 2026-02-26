@@ -402,6 +402,16 @@ tr:hover { background: #f8f8ff; }
   font-size: 0.72rem;
   color: #8090a8;
 }
+.mpi-card-metric.highlighted {
+  background: #eef3ff;
+  border-radius: 3px;
+  padding: 0.15rem 0.3rem;
+  margin-left: -0.3rem;
+  margin-right: -0.3rem;
+}
+.mpi-card-metric.highlighted:not(.primary) {
+  color: #333;
+}
 @media (max-width: 760px) {
   .mpi-cards {
     flex-direction: column;

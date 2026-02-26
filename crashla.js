@@ -151,6 +151,50 @@ const LINE_STYLE = {
   fatality:           {width: 1.2, opacity: 0.5},
 };
 
+// Human reference MPI ranges from Kusano/Scanlon methodology
+// (surface streets, passenger vehicles, Blincoe underreporting adjustment)
+// and FARS/NHTSA. We show ranges because the exact apples-to-apples
+// correction is uncertain. The true value should lie within [lo, hi].
+//
+// lo = most SGO-comparable (Blincoe-adjusted, surface streets, higher rate)
+// hi = most conservative (police-reported or observed, lower rate)
+//
+// Sources:
+//   Kusano/Scanlon 7.1M-mi paper (arxiv 2312.12675, Table 3):
+//     All crashes: Blincoe-adj 9.67 IPMM, police-reported 4.68 IPMM
+//     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.91 IPMM
+//   Waymo safety impact page (waymo.com/safety/impact, 127M mi, Sep 2025):
+//     Any-injury 3.97 IPMM, airbag deploy 1.66 IPMM, SSI+ 0.23 IPMM
+//   FARS 2023: national 1.26 fatalities/100M VMT; urban ~0.7-1.15/100M VMT
+//
+// Derived metrics use the subset-bounding approach: if metric B is a subset
+// of metric A, then MPI-B >= MPI-A. The true value is bounded by neighbors.
+//
+// Note: all benchmarks are for surface streets in AV operating areas, which
+// have higher crash rates than the nationwide average. This is more
+// apples-to-apples than the raw national numbers.
+const KNOWN_HUMAN_MPI = {
+  // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
+  all:                  {lo: 103000,   hi: 214000},
+  // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
+  nonstationary:        {lo: 106000,   hi: 225000},
+  // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
+  roadwayNonstationary: {lo: 108000,   hi: 228000},
+  // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
+  // multi-vehicle ~50%; weighted mix gives 50-65%)
+  atfault:              {lo: 160000,   hi: 430000},
+  // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
+  injury:               {lo: 252000,   hi: 524000},
+  // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
+  // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
+  // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
+  // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
+  hospitalization:      {lo: 600000,   hi: 4350000},
+  // FARS national per-vehicle-adjusted (75M) to urban surface-street
+  // estimate (~130M, using urban fatality rate ~0.7-1.15 per 100M VMT)
+  fatality:             {lo: 75000000, hi: 130000000},
+};
+
 function metricLineStyle(company, metricKey) {
   const s = LINE_STYLE[metricKey];
   const color = MONTHLY_COMPANY_COLORS[company];
@@ -967,12 +1011,10 @@ function monthlySummaryRows(series) {
       incTotal,
       incNonstationary,
       incRoadwayNonstationary,
+      incAtFault: rows.reduce((sum, row) => sum + row.incidents.atFault, 0),
       incInjury: rows.reduce((sum, row) => sum + row.incidents.injury, 0),
       incHospitalization: rows.reduce((sum, row) => sum + row.incidents.hospitalization, 0),
       incFatality: rows.reduce((sum, row) => sum + row.incidents.fatality, 0),
-      milesPerIncident: vmtBest / incTotal,
-      milesPerNonstationaryIncident: vmtBest / incNonstationary,
-      milesPerRoadwayNonstationaryIncident: vmtBest / incRoadwayNonstationary,
     };
   });
 }
@@ -1143,54 +1185,11 @@ function renderAllCompaniesMpiChart(series) {
     }
   }
 
-  // Human reference bands (lo–hi ranges) from Kusano/Scanlon methodology
-  // (surface streets, passenger vehicles, Blincoe underreporting adjustment)
-  // and FARS/NHTSA. We show ranges because the exact apples-to-apples
-  // correction is uncertain. The true value should lie within [lo, hi].
-  //
-  // lo = most SGO-comparable (Blincoe-adjusted, surface streets, higher rate)
-  // hi = most conservative (police-reported or observed, lower rate)
-  //
-  // Sources:
-  //   Kusano/Scanlon 7.1M-mi paper (arxiv 2312.12675, Table 3):
-  //     All crashes: Blincoe-adj 9.67 IPMM, police-reported 4.68 IPMM
-  //     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.91 IPMM
-  //   Waymo safety impact page (waymo.com/safety/impact, 127M mi, Sep 2025):
-  //     Any-injury 3.97 IPMM, airbag deploy 1.66 IPMM, SSI+ 0.23 IPMM
-  //   FARS 2023: national 1.26 fatalities/100M VMT; urban ~0.7-1.15/100M VMT
-  //
-  // Derived metrics use the subset-bounding approach: if metric B is a subset
-  // of metric A, then MPI-B >= MPI-A. The true value is bounded by neighbors.
-  //
-  // Note: all benchmarks are for surface streets in AV operating areas, which
-  // have higher crash rates than the nationwide average. This is more
-  // apples-to-apples than the raw national numbers.
   const humanRefLines = [];
   if (monthCompanyEnabled.Humans) {
-    const knownHumanMpi = {
-      // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
-      all:                  {lo: 103000,   hi: 214000},
-      // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
-      nonstationary:        {lo: 106000,   hi: 225000},
-      // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
-      roadwayNonstationary: {lo: 108000,   hi: 228000},
-      // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
-      // multi-vehicle ~50%; weighted mix gives 50-65%)
-      atfault:              {lo: 160000,   hi: 430000},
-      // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
-      injury:               {lo: 252000,   hi: 524000},
-      // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
-      // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
-      // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
-      // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
-      hospitalization:      {lo: 600000,   hi: 4350000},
-      // FARS national per-vehicle-adjusted (75M) to urban surface-street
-      // estimate (~130M, using urban fatality rate ~0.7-1.15 per 100M VMT)
-      fatality:             {lo: 75000000, hi: 130000000},
-    };
     for (const metric of includedMonthMetrics()) {
-      if (knownHumanMpi[metric.key] === undefined) continue;
-      const range = knownHumanMpi[metric.key];
+      if (KNOWN_HUMAN_MPI[metric.key] === undefined) continue;
+      const range = KNOWN_HUMAN_MPI[metric.key];
       humanRefLines.push({metric, lo: range.lo, hi: range.hi});
       yMax = Math.max(yMax, range.hi);
     }
@@ -1471,36 +1470,59 @@ function renderCompanyMonthlyChart(series, company) {
 }
 
 // TO-DO: Human vet all end-user labels in these summary cards.
+const CARD_METRICS = [
+  {label: "All incidents",                 inc: "incTotal",                metricKey: "all",                  primary: true},
+  {label: "Nonstationary",                 inc: "incNonstationary",        metricKey: "nonstationary",        primary: false},
+  {label: "Nonstationary non-parking-lot", inc: "incRoadwayNonstationary", metricKey: "roadwayNonstationary", primary: false},
+  {label: "At-fault",                      inc: "incAtFault",             metricKey: "atfault",              primary: false},
+  {label: "Injury",                        inc: "incInjury",              metricKey: "injury",               primary: false},
+  {label: "Hospitalization",               inc: "incHospitalization",     metricKey: "hospitalization",      primary: false},
+  {label: "Fatality",                      inc: "incFatality",            metricKey: "fatality",             primary: false},
+];
+
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   const massFrac = CI_MASS_DEFAULT_PCT / 100;
-  const metrics = [
-    {label: "All incidents",                 inc: "incTotal",                primary: true},
-    {label: "Nonstationary",                 inc: "incNonstationary",        primary: false},
-    {label: "Nonstationary non-parking-lot", inc: "incRoadwayNonstationary", primary: false},
-    {label: "Injury",                        inc: "incInjury",              primary: false},
-    {label: "Hospitalization",               inc: "incHospitalization",     primary: false},
-    {label: "Fatality",                      inc: "incFatality",            primary: false},
-  ];
-  return rows.map(row => `
+  const adsCards = rows.map(row => `
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
       <div class="mpi-card-company">${row.company}</div>
       <div class="mpi-card-vmt">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
-      ${metrics.map(m => {
+      ${CARD_METRICS.map(m => {
         const k = row[m.inc];
         const a = k + 0.5;
         const tail = (1 - massFrac) / 2;
         const ciLo = 1 / gammaquant(a, row.vmtMin, 1 - tail);
         const ciHi = 1 / gammaquant(a, row.vmtMax, tail);
         const median = 1 / gammaquant(a, row.vmtBest, 0.5);
+        const hl = monthMetricEnabled[m.metricKey] ? " highlighted" : "";
         return `
-        <div class="mpi-card-metric${m.primary ? " primary" : ""}">
+        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.metricKey}">
           <div>${m.label}: ${fmtCount(k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span></div>
           <div class="mpi-card-ci">95% CI: ${fmtWhole(ciLo)} \u2013 ${fmtWhole(ciHi)}</div>
         </div>`;
       }).join("")}
     </div>
   `).join("");
+
+  const humanCard = `
+    <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS.Humans}">
+      <div class="mpi-card-company">Humans</div>
+      <div class="mpi-card-vmt">Kusano/Scanlon &amp; FARS benchmarks</div>
+      ${CARD_METRICS.map(m => {
+        const range = KNOWN_HUMAN_MPI[m.metricKey];
+        if (!range) return "";
+        const geoMean = Math.sqrt(range.lo * range.hi);
+        const hl = monthMetricEnabled[m.metricKey] ? " highlighted" : "";
+        return `
+        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.metricKey}">
+          <div>${m.label}: <span class="mpi-card-mpi">${fmtWhole(geoMean)} MPI</span></div>
+          <div class="mpi-card-ci">Range: ${fmtWhole(range.lo)} \u2013 ${fmtWhole(range.hi)}</div>
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+
+  return adsCards + humanCard;
 }
 
 function renderMonthlyLegends() {
