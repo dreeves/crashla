@@ -1143,39 +1143,60 @@ function renderAllCompaniesMpiChart(series) {
     }
   }
 
-  // Human reference lines: known values for injury/fatality,
-  // 1/5 of Waymo's overall MPI for other metrics.
-  // Sources: NHTSA CRSS (~2.1M injury crashes / ~3.2T VMT ≈ 1.5M MPI),
-  //          FARS (~43K deaths / ~3.2T VMT ≈ 75M miles per death).
-  // AV fatalities use per-vehicle counting (÷ vehicles involved) to match
-  // the fleet-wide human stat; the human MPI needs no such adjustment.
+  // Human reference bands (lo–hi ranges) from Kusano/Scanlon methodology
+  // (surface streets, passenger vehicles, Blincoe underreporting adjustment)
+  // and FARS/NHTSA. We show ranges because the exact apples-to-apples
+  // correction is uncertain. The true value should lie within [lo, hi].
+  //
+  // lo = most SGO-comparable (Blincoe-adjusted, surface streets, higher rate)
+  // hi = most conservative (police-reported or observed, lower rate)
+  //
+  // Sources:
+  //   Kusano/Scanlon 7.1M-mi paper (arxiv 2312.12675, Table 3):
+  //     All crashes: Blincoe-adj 9.67 IPMM, police-reported 4.68 IPMM
+  //     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.91 IPMM
+  //   Waymo safety impact page (waymo.com/safety/impact, 127M mi, Sep 2025):
+  //     Any-injury 3.97 IPMM, airbag deploy 1.66 IPMM, SSI+ 0.23 IPMM
+  //   FARS 2023: national 1.26 fatalities/100M VMT; urban ~0.7-1.15/100M VMT
+  //
+  // Derived metrics use the subset-bounding approach: if metric B is a subset
+  // of metric A, then MPI-B >= MPI-A. The true value is bounded by neighbors.
+  //
+  // Note: all benchmarks are for surface streets in AV operating areas, which
+  // have higher crash rates than the nationwide average. This is more
+  // apples-to-apples than the raw national numbers.
   const humanRefLines = [];
   if (monthCompanyEnabled.Humans) {
-    // Human MPI from CRSS/FARS: ~3.2T VMT/yr, ~2.1M injury crashes (1.5M MPI),
-    // ~250K hospitalization crashes (13M MPI), ~40K fatalities (75M MPI after
-    // dividing by ~1.06 vehicles involved per fatal crash, per FARS).
     const knownHumanMpi = {
-      injury: 1500000, hospitalization: 13000000, fatality: 75000000,
+      // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
+      all:                  {lo: 103000,   hi: 214000},
+      // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
+      nonstationary:        {lo: 106000,   hi: 225000},
+      // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
+      roadwayNonstationary: {lo: 108000,   hi: 228000},
+      // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
+      // multi-vehicle ~50%; weighted mix gives 50-65%)
+      atfault:              {lo: 160000,   hi: 430000},
+      // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
+      injury:               {lo: 252000,   hi: 524000},
+      // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
+      // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
+      // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
+      // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
+      hospitalization:      {lo: 600000,   hi: 4350000},
+      // FARS national per-vehicle-adjusted (75M) to urban surface-street
+      // estimate (~130M, using urban fatality rate ~0.7-1.15 per 100M VMT)
+      fatality:             {lo: 75000000, hi: 130000000},
     };
-    const waymoRows = companyMonthRows(series, "Waymo");
-    const waymoVmt = waymoRows.reduce((s, r) => s + r.vmtBest, 0);
     for (const metric of includedMonthMetrics()) {
-      let mpi;
-      if (knownHumanMpi[metric.key] !== undefined) {
-        mpi = knownHumanMpi[metric.key];
-      } else {
-        const countFn = countByMetric[metric.key];
-        const waymoK = waymoRows.reduce((s, r) => s + countFn(r), 0);
-        const waymoMpi = waymoK > 0 ? waymoVmt / waymoK : 0;
-        mpi = waymoMpi / 5;
-      }
-      humanRefLines.push({metric, mpi});
-      yMax = Math.max(yMax, mpi);
+      if (knownHumanMpi[metric.key] === undefined) continue;
+      const range = knownHumanMpi[metric.key];
+      humanRefLines.push({metric, lo: range.lo, hi: range.hi});
+      yMax = Math.max(yMax, range.hi);
     }
     // Subset metrics must have higher MPI (rarer events = more miles between).
-    // These constraints are logical invariants: violations mean bad data/estimates.
-    const humanMpiByKey = Object.fromEntries(
-      humanRefLines.map(r => [r.metric.key, r.mpi]));
+    const humanLoByKey = Object.fromEntries(
+      humanRefLines.map(r => [r.metric.key, r.lo]));
     const subsetChains = [
       ["all", "nonstationary", "roadwayNonstationary"],
       ["all", "atfault"],
@@ -1183,12 +1204,12 @@ function renderAllCompaniesMpiChart(series) {
     ];
     for (const chain of subsetChains) {
       for (let i = 1; i < chain.length; i++) {
-        if (humanMpiByKey[chain[i-1]] === undefined) continue;
-        if (humanMpiByKey[chain[i]]   === undefined) continue;
-        must(humanMpiByKey[chain[i-1]] <= humanMpiByKey[chain[i]],
+        if (humanLoByKey[chain[i-1]] === undefined) continue;
+        if (humanLoByKey[chain[i]]   === undefined) continue;
+        must(humanLoByKey[chain[i-1]] <= humanLoByKey[chain[i]],
           "human MPI ordering violated", {
-            lesser: chain[i-1], lesserMpi: humanMpiByKey[chain[i-1]],
-            greater: chain[i], greaterMpi: humanMpiByKey[chain[i]],
+            lesser: chain[i-1], lesserMpi: humanLoByKey[chain[i-1]],
+            greater: chain[i], greaterMpi: humanLoByKey[chain[i]],
           });
       }
     }
@@ -1283,14 +1304,21 @@ function renderAllCompaniesMpiChart(series) {
       ${errs}
       ${marks}
       <g clip-path="url(#mpi-clip)">${humanRefLines.map(ref => {
-        const y = mapY(ref.mpi);
+        const yLo = clampY(ref.lo);
+        const yHi = clampY(ref.hi);
+        const yMid = clampY(Math.sqrt(ref.lo * ref.hi)); // geometric mean
         const s = LINE_STYLE[ref.metric.key];
-        const opacity = s.opacity < 1 ? `;opacity:${s.opacity}` : "";
+        const metricOpacity = s.opacity < 1 ? s.opacity : 1;
+        // Shaded band between lo and hi
+        const bandH = Math.abs(yLo - yHi);
+        const bandTop = Math.min(yLo, yHi);
         return `
-          <line x1="${mLeft}" y1="${y.toFixed(2)}" x2="${mLeft + pW}" y2="${y.toFixed(2)}"
-            style="stroke:#888;stroke-width:${s.width};stroke-dasharray:6 4${opacity}"></line>
-          <text x="${mLeft + pW - 4}" y="${(y - 4).toFixed(2)}" text-anchor="end"
-            style="fill:#888;font-size:10px${opacity}">${fmtMiles(ref.mpi)}</text>`;
+          <rect x="${mLeft}" y="${bandTop.toFixed(2)}" width="${pW}" height="${bandH.toFixed(2)}"
+            style="fill:#888;opacity:${(0.10 * metricOpacity).toFixed(3)}"></rect>
+          <line x1="${mLeft}" y1="${yMid.toFixed(2)}" x2="${mLeft + pW}" y2="${yMid.toFixed(2)}"
+            style="stroke:#888;stroke-width:${s.width};stroke-dasharray:6 4;opacity:${(0.5 * metricOpacity).toFixed(3)}"></line>
+          <text x="${mLeft + pW - 4}" y="${(Math.min(yLo, yHi) - 3).toFixed(2)}" text-anchor="end"
+            style="fill:#888;font-size:9px;opacity:${(0.7 * metricOpacity).toFixed(3)}">${fmtMiles(ref.lo)}\u2013${fmtMiles(ref.hi)}</text>`;
       }).join("")}</g>
     </svg>
   `;

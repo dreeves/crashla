@@ -36,6 +36,13 @@
     <li>The point estimate shown in the line is the Bayesian posterior median of 1/&lambda;, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.</li>
     <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (weighted average of Claude, Codex, Gemini) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
   </ul>
+  <h2>Human Comparison Methodology</h2>
+  <p>Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows <a href="https://arxiv.org/abs/2312.12675">Kusano &amp; Scanlon (2024)</a>, as discussed in <a href="https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos">this analysis</a>: surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from <a href="https://waymo.com/safety/impact/">Waymo&rsquo;s safety impact page</a> (127M miles, Sep 2025) are also incorporated.</p>
+  <ul>
+    <li><b>Band interpretation:</b> The low end uses Blincoe-adjusted rates (correcting for ~60% underreporting of minor crashes); the high end uses police-reported or observed rates. The true apples-to-apples MPI should fall within each band.</li>
+    <li><b>Surface streets, not nationwide:</b> Human benchmarks are restricted to surface streets in AV operating areas (higher crash rates, lower fatality rates than the national average), following the Kusano/Scanlon approach.</li>
+    <li><b>Hospitalization band is wide:</b> The SGO&rsquo;s &ldquo;W/ Hospitalization&rdquo; (transported to hospital, incl. ER visits for minor injuries) has no direct human equivalent. The band spans from the airbag-deployment benchmark (crashes with significant impact) to the suspected-serious-injury+ benchmark.</li>
+  </ul>
 </section>
 
 <!-- TO-DO: Human vet all new end-user copy in this section. -->
