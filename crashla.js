@@ -175,24 +175,54 @@ const LINE_STYLE = {
 // apples-to-apples than the raw national numbers.
 const KNOWN_HUMAN_MPI = {
   // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
-  all:                  {lo: 103000,   hi: 214000},
+  all: {lo: 103000, hi: 214000,
+    src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM',
+    srcLinks: [
+      {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+    ]},
   // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
-  nonstationary:        {lo: 106000,   hi: 225000},
+  nonstationary: {lo: 106000, hi: 225000,
+    src: 'All-crash range adjusted for ~3\u20135% hit-while-parked share (CRSS)',
+    srcLinks: [
+      {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+    ]},
   // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
-  roadwayNonstationary: {lo: 108000,   hi: 228000},
+  roadwayNonstationary: {lo: 108000, hi: 228000,
+    src: 'CRSS trafficway-only rates \u2248 non-parking-lot; similar ratio',
+    srcLinks: [
+      {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+    ]},
   // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
   // multi-vehicle ~50%; weighted mix gives 50-65%)
-  atfault:              {lo: 160000,   hi: 430000},
+  atfault: {lo: 160000, hi: 430000,
+    src: '50\u201365% at-fault share (single-vehicle 100%, multi ~50%)',
+    srcLinks: [
+      {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+    ]},
   // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
-  injury:               {lo: 252000,   hi: 524000},
+  injury: {lo: 252000, hi: 524000,
+    src: 'lo: 1M/3.97 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
+    srcLinks: [
+      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+      {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+    ]},
   // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
   // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
   // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
   // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
-  hospitalization:      {lo: 600000,   hi: 4350000},
+  hospitalization: {lo: 600000, hi: 4350000,
+    src: 'lo: 1M/1.66 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM',
+    srcLinks: [
+      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+    ]},
   // FARS national per-vehicle-adjusted (75M) to urban surface-street
   // estimate (~130M, using urban fatality rate ~0.7-1.15 per 100M VMT)
-  fatality:             {lo: 75000000, hi: 130000000},
+  fatality: {lo: 75000000, hi: 130000000,
+    src: 'lo: FARS national 1.33/100M VMT; hi: urban surface-street ~0.77/100M VMT',
+    srcLinks: [
+      {label: 'NHTSA FARS 2023', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+      {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
+    ]},
 };
 
 function metricLineStyle(company, metricKey) {
@@ -1508,16 +1538,20 @@ function renderMpiSummaryCards(series) {
   const humanCard = `
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS.Humans}">
       <div class="mpi-card-company">Humans</div>
-      <div class="mpi-card-vmt">Kusano/Scanlon &amp; FARS benchmarks</div>
+      <div class="mpi-card-vmt">Benchmarks: <a href="https://arxiv.org/abs/2312.12675">Kusano/Scanlon 2024</a>, <a href="https://waymo.com/safety/impact/">Waymo safety impact</a>, <a href="https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705">FARS 2023</a></div>
       ${CARD_METRICS.map(m => {
         const range = KNOWN_HUMAN_MPI[m.metricKey];
         if (!range) return "";
         const geoMean = Math.sqrt(range.lo * range.hi);
         const hl = monthMetricEnabled[m.metricKey] ? " highlighted" : "";
+        const srcLine = range.srcLinks
+          ? range.srcLinks.map(s => `<a href="${s.url}">${s.label}</a>`).join(", ")
+          : "";
         return `
         <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.metricKey}">
           <div>${m.label}: <span class="mpi-card-mpi">${fmtWhole(geoMean)} MPI</span></div>
-          <div class="mpi-card-ci">Range: ${fmtWhole(range.lo)} \u2013 ${fmtWhole(range.hi)}</div>
+          <div class="mpi-card-ci">Range: ${fmtWhole(range.lo)} \u2013 ${fmtWhole(range.hi)}${range.src ? ` <span class="mpi-card-src" title="${range.src}">[?]</span>` : ""}</div>
+          ${srcLine ? `<div class="mpi-card-sources">${srcLine}</div>` : ""}
         </div>`;
       }).join("")}
     </div>

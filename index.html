@@ -11,9 +11,9 @@
 <h1>Tesla vs Waymo vs Zoox vs Humans</h1>
 
 <!-- TO-DO: Human vet all new end-user copy in this AI explainer section. -->
-<section class="ai-explainer">
-  <h2>Explanatory Note (AI-generated text)</h2>
-  <p>This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the NHTSA time window (June 15, 2025 through January 15, 2026).</p>
+<details class="ai-explainer">
+  <summary>Explanatory Note (AI-generated text)</summary>
+  <p>This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the <a href="https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting">NHTSA SGO</a> time window (June 15, 2025 through January 15, 2026).</p>
   <p>Context:
 <a href="https://agifriday.substack.com/crashla/">agifriday.substack.com/crashla</a> and
 <a href="https://agifriday.substack.com/crashla2/">agifriday.substack.com/crashla2</a>
@@ -23,6 +23,9 @@
     <li>Top chart: solid line = MPI from all incidents; dashed line = MPI from nonstationary incidents; dot-dash line = MPI from at-fault-weighted incidents; error bars use <code>vmt_min</code> and <code>vmt_max</code>.</li>
     <li>Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.</li>
     <li>Tesla mileage assumptions are anchored to tracker sources (<a href="https://robotaxitracker.com/">robotaxitracker.com</a> and <a href="https://robotaxi-safety-tracker.com/">robotaxi-safety-tracker.com</a>) and then aligned to this same NHTSA window for apples-to-apples comparison.</li>
+    <li>Waymo VMT is estimated by scaling <a href="https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting">California CPUC driverless VMT</a> (including deadhead) to all US cities using Waymo rider-only-mile city shares. Through Sep 2025 the error band is &plusmn;15%; for the extrapolated Oct&ndash;Jan period it widens to &plusmn;30%.</li>
+    <li>Zoox VMT uses rough estimates based on limited public data from <a href="https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting">CPUC quarterly reports</a> (California-only paid miles) plus <a href="https://techcrunch.com/2025/09/10/zoox-opens-its-las-vegas-robotaxi-service-to-the-public/">Las Vegas operations</a>. Error bands are 0.5x&ndash;2x because no month-level public VMT series exists.</li>
+    <li>All VMT data with rationale: <a href="https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871">Google Sheet (VMT + assumptions)</a></li>
   </ul>
   <!-- TO-DO: Human vet/translate all Latin below and update stale bullets above
        (first bullet references "dashed line" and "dot-dash line" which are now
@@ -37,13 +40,26 @@
     <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (weighted average of Claude, Codex, Gemini) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
   </ul>
   <h2>Human Comparison Methodology</h2>
-  <p>Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows <a href="https://arxiv.org/abs/2312.12675">Kusano &amp; Scanlon (2024)</a>, as discussed in <a href="https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos">this analysis</a>: surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from <a href="https://waymo.com/safety/impact/">Waymo&rsquo;s safety impact page</a> (127M miles, Sep 2025) are also incorporated.</p>
+  <p>Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows <a href="https://arxiv.org/abs/2312.12675">Kusano &amp; Scanlon (2024)</a>, as discussed in <a href="https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos">this analysis</a>: surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from <a href="https://waymo.com/safety/impact/">Waymo&rsquo;s safety impact page</a> (127M rider-only miles through Sep 2025) are also incorporated.</p>
   <ul>
     <li><b>Band interpretation:</b> The low end uses Blincoe-adjusted rates (correcting for ~60% underreporting of minor crashes); the high end uses police-reported or observed rates. The true apples-to-apples MPI should fall within each band.</li>
     <li><b>Surface streets, not nationwide:</b> Human benchmarks are restricted to surface streets in AV operating areas (higher crash rates, lower fatality rates than the national average), following the Kusano/Scanlon approach.</li>
     <li><b>Hospitalization band is wide:</b> The SGO&rsquo;s &ldquo;W/ Hospitalization&rdquo; (transported to hospital, incl. ER visits for minor injuries) has no direct human equivalent. The band spans from the airbag-deployment benchmark (crashes with significant impact) to the suspected-serious-injury+ benchmark.</li>
   </ul>
-</section>
+  <h3>Specific human benchmark derivations</h3>
+  <table class="source-table">
+    <thead><tr><th>Metric</th><th>Low MPI</th><th>High MPI</th><th>Derivation</th></tr></thead>
+    <tbody>
+      <tr><td>All incidents</td><td>103k</td><td>214k</td><td>1M / <a href="https://arxiv.org/abs/2312.12675">9.67 IPMM</a> (Blincoe-adj, Table 3) to 1M / <a href="https://arxiv.org/abs/2312.12675">4.68 IPMM</a> (police-reported, Table 3)</td></tr>
+      <tr><td>Nonstationary</td><td>106k</td><td>225k</td><td>All-crash range adjusted for ~3&ndash;5% hit-while-parked share (<a href="https://arxiv.org/abs/2312.12675">Kusano/Scanlon</a>; CRSS data)</td></tr>
+      <tr><td>Non-parking-lot nonstationary</td><td>108k</td><td>228k</td><td>CRSS is already trafficway-only &asymp; non-parking-lot; similar ratio (<a href="https://arxiv.org/abs/2312.12675">Kusano/Scanlon</a>)</td></tr>
+      <tr><td>At-fault</td><td>160k</td><td>430k</td><td>50&ndash;65% at-fault share applied to all-crash range (single-vehicle 100%, multi-vehicle ~50%)</td></tr>
+      <tr><td>Injury</td><td>252k</td><td>524k</td><td>1M / <a href="https://waymo.com/safety/impact/">3.97 IPMM</a> (Waymo benchmark) to 1M / <a href="https://arxiv.org/abs/2312.12675">1.91 IPMM</a> (Kusano observed, Table 3)</td></tr>
+      <tr><td>Hospitalization</td><td>600k</td><td>4,350k</td><td>1M / <a href="https://waymo.com/safety/impact/">1.66 IPMM</a> (airbag-deploy benchmark) to 1M / <a href="https://waymo.com/safety/impact/">0.23 IPMM</a> (SSI+ benchmark)</td></tr>
+      <tr><td>Fatality</td><td>75M</td><td>130M</td><td><a href="https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705">FARS 2023</a> national 1.33/100M VMT to <a href="https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison">IIHS urban</a> surface-street ~0.77/100M VMT</td></tr>
+    </tbody>
+  </table>
+</details>
 
 <!-- TO-DO: Human vet all new end-user copy in this section. -->
 <div class="month-panel">
