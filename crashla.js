@@ -131,13 +131,14 @@ const MONTH_METRIC_DEFS = [
   {key: "nonstationary", label: "Miles per nonstationary incident", marker: "hollow-circle"},
   {key: "roadwayNonstationary", label: "Miles per nonstationary non-parking-lot incident", marker: "hollow-square"},
   {key: "atfault", label: "Miles per at-fault incident", marker: "hollow-triangle"},
+  {key: "atfaultInjury", label: "Miles per at-fault injury crash", marker: "hollow-triangle"},
   {key: "injury", label: "Miles per injury crash", marker: "solid-circle"},
   {key: "hospitalization", label: "Miles per hospitalization crash", marker: "solid-circle"},
   {key: "fatality", label: "Miles per fatal crash", marker: "solid-circle"},
 ];
 let monthMetricEnabled = {
   all: true, nonstationary: false, roadwayNonstationary: false, atfault: false,
-  injury: false, hospitalization: false, fatality: false,
+  atfaultInjury: false, injury: false, hospitalization: false, fatality: false,
 };
 
 
@@ -146,6 +147,7 @@ const LINE_STYLE = {
   nonstationary:      {width: 1.5, opacity: 0.55},
   roadwayNonstationary: {width: 1.2, opacity: 0.8},
   atfault:            {width: 1,   opacity: 0.3},
+  atfaultInjury:      {width: 1,   opacity: 0.4},
   injury:             {width: 2,   opacity: 0.9},
   hospitalization:    {width: 1.5, opacity: 0.7},
   fatality:           {width: 1.2, opacity: 0.5},
@@ -198,6 +200,15 @@ const KNOWN_HUMAN_MPI = {
     src: '50\u201365% at-fault share (single-vehicle 100%, multi ~50%)',
     srcLinks: [
       {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+    ]},
+  // At-fault injury: intersection of at-fault and injury crashes.
+  // Apply at-fault share (50-65%) to injury MPI range:
+  //   lo: 252k / 0.65 ≈ 388k, hi: 524k / 0.50 ≈ 1,048k
+  atfaultInjury: {lo: 388000, hi: 1048000,
+    src: 'Injury range (252k\u2013524k) divided by at-fault share (50\u201365%)',
+    srcLinks: [
+      {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
     ]},
   // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
   injury: {lo: 252000, hi: 524000,
@@ -1042,6 +1053,7 @@ function monthlySummaryRows(series) {
       incNonstationary,
       incRoadwayNonstationary,
       incAtFault: rows.reduce((sum, row) => sum + row.incidents.atFault, 0),
+      incAtFaultInjury: rows.reduce((sum, row) => sum + row.incidents.atFaultInjury, 0),
       incInjury: rows.reduce((sum, row) => sum + row.incidents.injury, 0),
       incHospitalization: rows.reduce((sum, row) => sum + row.incidents.hospitalization, 0),
       incFatality: rows.reduce((sum, row) => sum + row.incidents.fatality, 0),
@@ -1070,7 +1082,7 @@ function monthSeriesData() {
     let rec = incidentsByKey[key];
     if (rec === undefined) {
       rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
-             injury: 0, hospitalization: 0, fatality: 0};
+             atFaultInjury: 0, injury: 0, hospitalization: 0, fatality: 0};
       incidentsByKey[key] = rec;
     }
     rec.total += 1;
@@ -1088,6 +1100,7 @@ function monthSeriesData() {
     must(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
       "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
     rec.atFault += atFaultFrac || 0;
+    rec.atFaultInjury += (atFaultFrac || 0) * Number(INJURY_SEVERITIES.has(inc.severity));
     rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
     rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
     // Per-vehicle fatality: divide by number of vehicles involved to match
@@ -1109,7 +1122,7 @@ function monthSeriesData() {
       must(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
       must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, injury: 0, hospitalization: 0, fatality: 0};
+      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       companies[company] = {
         vmtMin: vmt.vmtMin * c,
@@ -1157,6 +1170,7 @@ function renderAllCompaniesMpiChart(series) {
     nonstationary: rec => nonstationaryIncidentCount(rec.incidents.speeds),
     roadwayNonstationary: rec => roadwayNonstationaryIncidentCount(rec),
     atfault: rec => rec.incidents.atFault,
+    atfaultInjury: rec => rec.incidents.atFaultInjury,
     injury: rec => rec.incidents.injury,
     hospitalization: rec => rec.incidents.hospitalization,
     fatality: rec => rec.incidents.fatality,
@@ -1228,7 +1242,8 @@ function renderAllCompaniesMpiChart(series) {
       humanRefLines.map(r => [r.metric.key, r.lo]));
     const subsetChains = [
       ["all", "nonstationary", "roadwayNonstationary"],
-      ["all", "atfault"],
+      ["all", "atfault", "atfaultInjury"],
+      ["all", "injury", "atfaultInjury"],
       ["injury", "hospitalization", "fatality"],
     ];
     for (const chain of subsetChains) {
@@ -1416,7 +1431,7 @@ function renderCompanyMonthlyChart(series, company) {
     const mpiByKey = {};
     const variantCounts = {
       all: rec.total, nonstationary, roadwayNonstationary: rec.roadwayNonstationary,
-      atfault: rec.atFault, injury: rec.injury, hospitalization: rec.hospitalization,
+      atfault: rec.atFault, atfaultInjury: rec.atFaultInjury, injury: rec.injury, hospitalization: rec.hospitalization,
       fatality: rec.fatality,
     };
     for (const [vk, vk_count] of Object.entries(variantCounts)) {
@@ -1506,6 +1521,7 @@ const CARD_METRICS = [
   {label: "Nonstationary",                 inc: "incNonstationary",        metricKey: "nonstationary",        primary: false},
   {label: "Nonstationary non-parking-lot", inc: "incRoadwayNonstationary", metricKey: "roadwayNonstationary", primary: false},
   {label: "At-fault",                      inc: "incAtFault",             metricKey: "atfault",              primary: false},
+  {label: "At-fault injury",               inc: "incAtFaultInjury",       metricKey: "atfaultInjury",        primary: false},
   {label: "Injury",                        inc: "incInjury",              metricKey: "injury",               primary: false},
   {label: "Hospitalization",               inc: "incHospitalization",     metricKey: "hospitalization",      primary: false},
   {label: "Fatality",                      inc: "incFatality",            metricKey: "fatality",             primary: false},
