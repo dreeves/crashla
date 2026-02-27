@@ -202,13 +202,22 @@ const KNOWN_HUMAN_MPI = {
       {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
     ]},
   // At-fault injury: intersection of at-fault and injury crashes.
-  // Apply at-fault share (50-65%) to injury MPI range:
-  //   lo: 252k / 0.65 ≈ 388k, hi: 524k / 0.50 ≈ 1,048k
-  atfaultInjury: {lo: 388000, hi: 1048000,
-    src: 'Injury range (252k\u2013524k) divided by at-fault share (50\u201365%)',
+  // lo bound: single-vehicle crashes (100% at-fault) are overrepresented
+  // among injury crashes; at-fault share for injury crashes could be as
+  // high as ~85%. Apply to lo injury MPI: 252k / 0.85 ≈ 300k.
+  // hi bound: national police-reported injury crash rate (NHTSA 2023:
+  // 1,697,252 injury crashes / 3,247B VMT ≈ 1.91M MPI) gives a ceiling;
+  // at-fault subset ≈ 1.91M / ~94% critical-reason share ≈ 2.0M, but
+  // NHTSA notes critical reason ≠ fault, so conservatively round to 1.9M.
+  // Both bounds satisfy subset constraint: atfaultInjury ≥ injury (252k)
+  // and atfaultInjury ≥ atfault (160k).
+  atfaultInjury: {lo: 300000, hi: 1900000,
+    src: 'lo: injury lo (252k) / ~85% at-fault share in injury crashes; hi: national injury-crash MPI (~1.91M) as ceiling',
     srcLinks: [
       {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
       {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+      {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+      {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
     ]},
   // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
   injury: {lo: 252000, hi: 524000,
