@@ -293,6 +293,8 @@ def main():
     # Summary
     counts = Counter(r["company"] for r in incidents)
     total = len(incidents)
+    if nhtsa_modified_date:
+        print(f"NHTSA file last modified: {nhtsa_modified_date}")
     print(f"Injected {total} incidents into {INCIDENT_JS} and VMT into {VMT_JS}")
     for company, n in counts.most_common():
         print(f"  {company}: {n}")
