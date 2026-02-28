@@ -1066,6 +1066,9 @@ function monthlySummaryRows(series) {
       incInjury: rows.reduce((sum, row) => sum + row.incidents.injury, 0),
       incHospitalization: rows.reduce((sum, row) => sum + row.incidents.hospitalization, 0),
       incFatality: rows.reduce((sum, row) => sum + row.incidents.fatality, 0),
+      milesPerIncident: vmtBest / incTotal,
+      milesPerNonstationaryIncident: vmtBest / incNonstationary,
+      milesPerRoadwayNonstationaryIncident: vmtBest / incRoadwayNonstationary,
     };
   });
 }

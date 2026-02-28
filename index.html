@@ -8,7 +8,40 @@
 </head>
 <body>
 
-<h1>Tesla vs Waymo vs Zoox vs Humans</h1>
+<h1>Safety Data: Tesla vs Waymo vs Zoox vs Humans</h1>
+
+<p>
+Background at
+<a href="https://agifriday.substack.com/crashla/">agifriday.substack.com/crashla</a> and
+<a href="https://agifriday.substack.com/crashla2/">agifriday.substack.com/crashla2</a>
+</p>
+<br>&nbsp;<br>
+
+<!-- TO-DO: Human vet all new end-user copy in this section. -->
+<div class="month-panel">
+  <div class="month-legend" id="month-legend-mpi-companies"></div>
+  <div class="month-legend" id="month-legend-mpi-lines"></div>
+  <div class="month-legend" id="month-legend-ci-fan"></div>
+  <div id="chart-mpi-all" class="month-chart"></div>
+  <div id="mpi-summary-cards"></div>
+  <div id="chart-company-series" class="month-company-grid"></div>
+  <div class="month-legend" id="month-legend-lines"></div>
+  <div class="month-legend" id="month-legend-speed"></div>
+</div>
+
+<!--
+<div class="company-panel">
+  <div class="slider-row">
+    <label for="ci-mass"
+title="The higher this is, the wider the confidence intervals">Confidence intervals</label>
+    <input type="range" id="ci-mass" min="50" max="99.9" step="0.1" value="95"
+title="The higher this is, the wider the confidence intervals">
+    <span class="val" id="ci-mass-val">95.0%</span>
+  </div>
+</div>
+
+<div id="estimator"></div>
+-->
 
 <!-- TO-DO: Human vet all new end-user copy in this AI explainer section. -->
 <details class="ai-explainer">
@@ -60,32 +93,6 @@
     </tbody>
   </table>
 </details>
-
-<!-- TO-DO: Human vet all new end-user copy in this section. -->
-<div class="month-panel">
-  <div class="month-legend" id="month-legend-mpi-companies"></div>
-  <div class="month-legend" id="month-legend-mpi-lines"></div>
-  <div class="month-legend" id="month-legend-ci-fan"></div>
-  <div id="chart-mpi-all" class="month-chart"></div>
-  <div id="mpi-summary-cards"></div>
-  <div id="chart-company-series" class="month-company-grid"></div>
-  <div class="month-legend" id="month-legend-lines"></div>
-  <div class="month-legend" id="month-legend-speed"></div>
-</div>
-
-<!--
-<div class="company-panel">
-  <div class="slider-row">
-    <label for="ci-mass"
-title="The higher this is, the wider the confidence intervals">Confidence intervals</label>
-    <input type="range" id="ci-mass" min="50" max="99.9" step="0.1" value="95"
-title="The higher this is, the wider the confidence intervals">
-    <span class="val" id="ci-mass-val">95.0%</span>
-  </div>
-</div>
-
-<div id="estimator"></div>
--->
 
 <h2>Incident browser</h2>
 <div class="filters" id="filters"></div>
