@@ -437,37 +437,6 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "vehiclesInvolved": 2
   },
   {
-    "reportId": "30270-11297",
-    "version": "1",
-    "company": "Waymo",
-    "date": "APR-2025",
-    "time": "07:21",
-    "incidentId": "6a37da9018a1580",
-    "city": "Phoenix",
-    "state": "AZ",
-    "road": "Parking Lot",
-    "crashWith": "Other, see Narrative",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 5,
-    "svMovement": "Proceeding Straight",
-    "cpMovement": "Other, see Narrative",
-    "narrative": "On April [XXX], 2025 at 7:21 AM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving a chain at a parking lot entrance at [XXX]. \nThe Waymo AV was traveling westbound on [XXX] when it made a left turn into a parking lot at [XXX]. As the Waymo AV proceeded to enter the parking lot, the front of the Waymo AV made contact with a chain hanging across the entrance to the parking lot. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The chain sustained damage. Waymo became aware of damage to the chain on June 26th, 2025.\nWaymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "wxClear": "",
-    "wxRain": "",
-    "wxCloudy": "Y",
-    "wxPartlyCloudy": "",
-    "fault": {
-      "claude": 0.9,
-      "codex": 1.0,
-      "gemini": 1.0,
-      "rclaude": "AV drove into chain/barrier; should detect",
-      "rcodex": "AV turned into parking-lot entrance chain",
-      "rgemini": "AV hit a stationary hanging chain"
-    },
-    "vehiclesInvolved": 2
-  },
-  {
     "reportId": "30270-11244",
     "version": "1",
     "company": "Waymo",

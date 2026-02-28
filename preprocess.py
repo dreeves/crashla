@@ -152,7 +152,6 @@ def load_fault_models():
     return models, ids
 
 
-NHTSA_WINDOW_START = "2025-06-15"
 NHTSA_WINDOW_END   = "2026-01-15"
 
 # Month labels in the NHTSA CSV use "JAN-2026"; VMT CSV uses "2026-01".
@@ -489,11 +488,28 @@ def main():
          incidents_only=sorted(incident_ids - fault_ids)[:5],
          fault_only=sorted(fault_ids - incident_ids)[:5])
 
+    # Anti-Postel: all incident dates must be in the VMT window.
+    # The NHTSA data occasionally includes incidents from months outside
+    # the observation window (e.g., a Waymo incident from APR-2025).
+    # These have no VMT data, so we exclude them here with a loud warning.
+    VMT_MONTHS = {
+        "JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
+        "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026",
+    }
+    excluded = [r for r in incidents if r["date"] not in VMT_MONTHS]
+    for r in excluded:
+        print(f"  WARNING: excluding incident {r['reportId']} ({r['company']}"
+              f" {r['date']}) — outside VMT window")
+    incidents = [r for r in incidents if r["date"] in VMT_MONTHS]
+    excluded_ids = {r["reportId"] for r in excluded}
+    # Also remove excluded incidents from fault model sets so the ID-match
+    # check below still passes.
+    fault_ids -= excluded_ids
+
     # Sort by company then date
     month_order = {
         "JUN-2025": 1, "JUL-2025": 2, "AUG-2025": 3, "SEP-2025": 4,
         "OCT-2025": 5, "NOV-2025": 6, "DEC-2025": 7, "JAN-2026": 8,
-        "APR-2025": 0,
     }
     incidents.sort(key=lambda r: (
         r["company"],

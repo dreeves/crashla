@@ -558,7 +558,12 @@ function countByCompany(rows = incidents) {
 function incidentsInVmtWindow(rows = incidents) {
   must(vmtRows.length > 0, "incident browser requires vmtRows");
   const monthSet = new Set(vmtRows.map(row => row.month));
-  return rows.filter(inc => monthSet.has(monthKeyFromIncidentLabel(inc.date)));
+  for (const inc of rows) {
+    must(monthSet.has(monthKeyFromIncidentLabel(inc.date)),
+      "incident date outside VMT window",
+      {reportId: inc.reportId, company: inc.company, date: inc.date});
+  }
+  return rows;
 }
 
 function primarySliderBounds(cfg, vals) {
@@ -1111,7 +1116,8 @@ function monthSeriesData() {
   for (const inc of incidents) {
     must(ADS_COMPANIES.includes(inc.company), "inline incident data has unknown ADS company", {company: inc.company});
     const month = monthKeyFromIncidentLabel(inc.date);
-    if (!monthSet.has(month)) continue;
+    must(monthSet.has(month), "incident date outside VMT window",
+      {reportId: inc.reportId, company: inc.company, date: inc.date, month});
     const key = inc.company + "|" + month;
     let rec = incidentsByKey[key];
     if (rec === undefined) {
