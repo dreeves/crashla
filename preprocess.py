@@ -155,6 +155,19 @@ def load_fault_models():
 NHTSA_WINDOW_START = "2025-06-15"
 NHTSA_WINDOW_END   = "2026-01-15"
 
+# Month labels in the NHTSA CSV use "JAN-2026"; VMT CSV uses "2026-01".
+MONTH_ABBR_TO_NUM = {
+    "JAN": "01", "FEB": "02", "MAR": "03", "APR": "04",
+    "MAY": "05", "JUN": "06", "JUL": "07", "AUG": "08",
+    "SEP": "09", "OCT": "10", "NOV": "11", "DEC": "12",
+}
+
+def nhtsa_month_to_iso(label):
+    """Convert 'JAN-2026' to '2026-01'."""
+    abbr, year = label.split("-")
+    return f"{year}-{MONTH_ABBR_TO_NUM[abbr]}"
+
+
 def month_coverage(month_str):
     """Fraction of the month inside the NHTSA observation window."""
     year, mon = int(month_str[:4]), int(month_str[5:7])
@@ -167,7 +180,152 @@ def month_coverage(month_str):
         return 15 / days_in_month              # Jan 1–15
     return 1.0
 
-def fetch_vmt_sheet_csv():
+
+def incident_coverage(nhtsa_rows):
+    """Compute incident reporting completeness per company-month.
+
+    Under the NHTSA SGO, 5-Day reports are filed within 5 days; Monthly
+    reports are due by the 15th of the following month.  If the dataset
+    doesn't include submissions from the month AFTER a given incident month,
+    Monthly reports for that month are structurally absent.  By Poisson
+    thinning, the observed 5-Day count is Poisson(lambda * p * m) where p is
+    the fraction of incidents that generate 5-Day reports.  The posterior for
+    the full rate uses effective VMT = VMT * p.
+
+    Returns {(company, iso_month): (best, lo, hi)} where best/lo/hi are the
+    incident coverage fractions (1.0 for complete months).
+    """
+    # Determine which submission months are present in the dataset
+    submission_months = set()
+    for r in nhtsa_rows:
+        sub = r["Report Submission Date"].strip()
+        if sub:
+            submission_months.add(nhtsa_month_to_iso(sub))
+
+    # The last month in the NHTSA window
+    end_year, end_mon = int(NHTSA_WINDOW_END[:4]), int(NHTSA_WINDOW_END[5:7])
+    last_month = f"{end_year}-{end_mon:02d}"
+    # Monthly reports for the last month are due the following month
+    next_mon = end_mon + 1
+    next_year = end_year
+    if next_mon > 12:
+        next_mon = 1
+        next_year += 1
+    monthly_deadline_month = f"{next_year}-{next_mon:02d}"
+    # If submissions from the deadline month are absent, Monthly reports for
+    # the last month are structurally missing.
+    last_month_incomplete = monthly_deadline_month not in submission_months
+
+    if not last_month_incomplete:
+        return {}  # all months complete, no adjustments needed
+
+    # Count 5-Day vs total incidents per company-month (post-dedup)
+    # We need pre-dedup Report Type info, so work from raw rows filtered to
+    # Driver/Operator Type = "None".
+    none_rows = [r for r in nhtsa_rows
+                 if r["Driver / Operator Type"] == "None"]
+    # Dedup: keep highest Report Version per Same Incident ID.
+    # For report_type, use the ORIGINAL (v1) classification, since later
+    # versions of 5-Day reports have type "Update" but should still count
+    # as 5-Day for computing the historical 5-Day fraction.
+    by_incident = {}  # iid -> {ver, min_ver, company, month, report_type}
+    for r in none_rows:
+        iid = r["Same Incident ID"]
+        ver = int(r["Report Version"])
+        company = COMPANY_SHORT.get(r["Reporting Entity"].strip(),
+                                    r["Reporting Entity"].strip())
+        month = nhtsa_month_to_iso(r["Incident Date"].strip())
+        report_type = r["Report Type"].strip()
+        if iid not in by_incident:
+            by_incident[iid] = {
+                "ver": ver, "min_ver": ver,
+                "company": company, "month": month,
+                "report_type": report_type,
+            }
+        else:
+            rec = by_incident[iid]
+            if ver > rec["ver"]:
+                rec["ver"] = ver
+                rec["company"] = company
+                rec["month"] = month
+            if ver < rec["min_ver"]:
+                rec["min_ver"] = ver
+                rec["report_type"] = report_type
+
+    # Tally 5-Day fraction per company-month
+    counts = {}  # (company, month) -> {"five": n, "total": n}
+    for rec in by_incident.values():
+        key = (rec["company"], rec["month"])
+        if key not in counts:
+            counts[key] = {"five": 0, "total": 0}
+        counts[key]["total"] += 1
+        if rec["report_type"] == "5-Day":
+            counts[key]["five"] += 1
+
+    # For each company, compute historical 5-Day fraction from complete months
+    # (months where Monthly reports are present, i.e., not the last month)
+    companies = sorted(set(k[0] for k in counts))
+    five_day_fracs = {}  # company -> [frac, ...]
+    for company in companies:
+        fracs = []
+        for (co, mo), c in counts.items():
+            if co != company or mo == last_month:
+                continue
+            has_monthly = c["total"] > c["five"]
+            # Only use months with Monthly reports and enough data
+            if has_monthly and c["total"] >= 3:
+                fracs.append(c["five"] / c["total"])
+        five_day_fracs[company] = fracs
+
+    # Only adjust companies whose last-month data is actually missing Monthly
+    # reports.  Some companies (e.g., Tesla) file Monthly reports early, so
+    # their last-month data may already be approximately complete.
+    last_month_has_monthly = {}
+    for (co, mo), c in counts.items():
+        if mo == last_month:
+            last_month_has_monthly[co] = c["total"] > c["five"]
+
+    result = {}
+    for company in companies:
+        key = (company, last_month)
+        if last_month_has_monthly.get(company, False):
+            # Company filed Monthly reports for the last month (early filer);
+            # treat data as complete.
+            result[key] = (1.0, 1.0, 1.0)
+            print(f"  {company} {last_month} incident_coverage: 1.0"
+                  f" (Monthly reports present)")
+            continue
+        fracs = five_day_fracs[company]
+        if not fracs:
+            # No historical data to estimate 5-Day fraction; assume complete
+            result[key] = (1.0, 1.0, 1.0)
+            print(f"  {company} {last_month} incident_coverage: 1.0"
+                  f" (no historical data)")
+            continue
+        p_best = sum(fracs) / len(fracs)
+        p_lo = min(fracs)
+        p_hi = max(fracs)
+        must(0 < p_lo <= p_best <= p_hi <= 1,
+             "5-Day fraction out of range", company=company,
+             p_best=p_best, p_lo=p_lo, p_hi=p_hi)
+        # incident_coverage = p (the 5-Day fraction); this scales VMT down
+        # so the Gamma posterior correctly reflects the thinned observation.
+        # lo pairs with vmtMax (optimistic MPI), hi pairs with vmtMin
+        # (pessimistic MPI), so lo=p_lo and hi=p_hi.
+        result[key] = (round(p_best, 4), round(p_lo, 4), round(p_hi, 4))
+        print(f"  {company} {last_month} incident_coverage:"
+              f" best={p_best:.3f} lo={p_lo:.3f} hi={p_hi:.3f}"
+              f" (from {len(fracs)} complete months)")
+
+    return result
+
+
+def fetch_vmt_sheet_csv(inc_cov):
+    """Fetch VMT CSV from Google Sheets and add coverage + incident_coverage.
+
+    inc_cov: dict from incident_coverage(), mapping (company, iso_month) to
+    (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
+    """
     with urllib.request.urlopen(VMT_SHEET_URL, timeout=30) as resp:
         payload = resp.read()
     text = payload.decode("utf-8")
@@ -175,16 +333,30 @@ def fetch_vmt_sheet_csv():
     must(len(lines) > 1, "VMT sheet CSV must include header and rows")
     must(lines[0] == "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale",
          "VMT sheet CSV header mismatch", header=lines[0])
-    # Add coverage column (partial-month fraction for NHTSA window)
-    out = [lines[0].replace(",rationale", ",coverage,rationale")]
+    new_header = lines[0].replace(
+        ",rationale",
+        ",coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
+    )
+    out = [new_header]
     for line in lines[1:]:
         if not line.strip():
             continue
         parts = line.split(",", 6)  # company,month,vmt,cum,min,max,rationale
+        company_raw = parts[0].strip()
+        company = next(
+            (v for k, v in COMPANY_SHORT.items()
+             if k.lower().startswith(company_raw.lower())
+             or v.lower() == company_raw.lower()),
+            company_raw,
+        )
         month = parts[1]
         cov = month_coverage(month)
         cov_str = str(round(cov, 3))
+        ic_best, ic_lo, ic_hi = inc_cov.get((company, month), (1, 1, 1))
         parts.insert(6, cov_str)
+        parts.insert(7, str(ic_best))
+        parts.insert(8, str(ic_lo))
+        parts.insert(9, str(ic_hi))
         out.append(",".join(parts))
     return "\n".join(out)
 
@@ -254,9 +426,12 @@ def main():
         r["time"],
     ))
 
+    # Compute incident reporting completeness before building VMT CSV
+    inc_cov = incident_coverage(rows)
+
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
-    vmt_text = fetch_vmt_sheet_csv().replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    vmt_text = fetch_vmt_sheet_csv(inc_cov).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
 
     def inject(source, start_marker, end_marker, payload):

@@ -913,13 +913,17 @@ function csvUnquote(field) {
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   must(lines.length > 1, "VMT sheet CSV must include header and rows");
-  must(lines[0] === "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,coverage,rationale",
+  must(lines[0] === "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
     "VMT sheet CSV header mismatch", {header: lines[0]});
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (line === "") continue;
-    const hit = /^([^,]+),(\d{4}-\d{2}),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(.*)$/.exec(line);
+    const N = "\\d+(?:\\.\\d+)?"; // number pattern
+    const re = new RegExp(
+      `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`
+    );
+    const hit = re.exec(line);
     must(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
     const companyRaw = hit[1].trim();
     const company = ADS_COMPANIES.find(c => c.toLowerCase() === companyRaw.toLowerCase());
@@ -929,6 +933,13 @@ function parseVmtCsv(text) {
     const vmtMin = Number(hit[5]);
     const vmtMax = Number(hit[6]);
     const coverage = Number(hit[7]); // fraction of month in NHTSA window
+    // Incident reporting completeness (Poisson thinning factor).
+    // When Monthly reports are structurally absent for the last month, this
+    // is the historical 5-Day fraction for the company.  Multiplied into
+    // effective VMT so the Gamma posterior reflects the thinned observation.
+    const incCov     = Number(hit[8]);  // best estimate
+    const incCovMin  = Number(hit[9]);  // most pessimistic (smallest p)
+    const incCovMax  = Number(hit[10]); // most optimistic (largest p)
     must(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
       {lineNo: i + 1, vmtBest});
     must(Number.isFinite(vmtCume) && vmtCume >= 0,
@@ -941,6 +952,14 @@ function parseVmtCsv(text) {
       "expected vmt_min <= vmt <= vmt_max", {lineNo: i + 1, vmtMin, vmtBest, vmtMax});
     must(coverage > 0 && coverage <= 1, "coverage must be in (0, 1]",
       {lineNo: i + 1, coverage});
+    must(incCov > 0 && incCov <= 1, "incident_coverage must be in (0, 1]",
+      {lineNo: i + 1, incCov});
+    must(incCovMin > 0 && incCovMin <= incCov,
+      "incident_coverage_min must be in (0, incident_coverage]",
+      {lineNo: i + 1, incCovMin, incCov});
+    must(incCovMax >= incCov && incCovMax <= 1,
+      "incident_coverage_max must be in [incident_coverage, 1]",
+      {lineNo: i + 1, incCovMax, incCov});
     rows.push({
       company,
       month: hit[2],
@@ -949,7 +968,10 @@ function parseVmtCsv(text) {
       vmtMax,
       vmtCume,
       coverage,
-      rationale: csvUnquote(hit[8]),
+      incCov,
+      incCovMin,
+      incCovMax,
+      rationale: csvUnquote(hit[11]),
     });
   }
   must(rows.length > 0, "VMT sheet CSV has no data rows");
@@ -1136,10 +1158,15 @@ function monthSeriesData() {
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
+      // Incident coverage: when Monthly reports are absent for the last month,
+      // the observed 5-Day count is a Poisson-thinned subset.  Scaling VMT by
+      // the thinning probability p gives the correct posterior Gamma(k+0.5, m*p).
+      // incCovMin (smallest p) pairs with vmtMin for the most pessimistic MPI;
+      // incCovMax (largest p) pairs with vmtMax for the most optimistic MPI.
       companies[company] = {
-        vmtMin: vmt.vmtMin * c,
-        vmtBest: vmt.vmtBest * c,
-        vmtMax: vmt.vmtMax * c,
+        vmtMin: vmt.vmtMin * c * vmt.incCovMin,
+        vmtBest: vmt.vmtBest * c * vmt.incCov,
+        vmtMax: vmt.vmtMax * c * vmt.incCovMax,
         vmtCume: vmt.vmtCume,
         incidents: inc,
       };
