@@ -8,6 +8,24 @@ body {
   padding: 1rem;
 }
 h1 { margin-bottom: 0.5rem; }
+.abstract {
+  margin: 0.5rem 0 1rem;
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  background: #f5f7fa;
+  border-left: 4px solid #4a7cbf;
+  border-radius: 4px;
+}
+.abstract ol {
+  margin: 0 0 0.4rem 1.2rem;
+}
+.abstract li {
+  margin-bottom: 0.15rem;
+}
+.abstract .abstract-links {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  color: #555;
+}
 h2 { margin: 1.5rem 0 0.75rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.25rem; }
 h3 { margin: 0.75rem 0 0.5rem; }
 .ai-explainer {

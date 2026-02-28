@@ -1170,9 +1170,14 @@ function monthSeriesData() {
       // incCovMin (smallest p) pairs with vmtMin for the most pessimistic MPI;
       // incCovMax (largest p) pairs with vmtMax for the most optimistic MPI.
       companies[company] = {
+        // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * c * vmt.incCovMin,
         vmtBest: vmt.vmtBest * c * vmt.incCov,
         vmtMax: vmt.vmtMax * c * vmt.incCovMax,
+        // Raw VMT: used for fleet trend visualization on lower charts
+        vmtRawMin: vmt.vmtMin * c,
+        vmtRawBest: vmt.vmtBest * c,
+        vmtRawMax: vmt.vmtMax * c,
         vmtCume: vmt.vmtCume,
         incidents: inc,
       };
@@ -1266,7 +1271,8 @@ function renderAllCompaniesMpiChart(series) {
         if (k > 0) yMax = Math.max(yMax, mpiBest, mpiMax);
         return {
           mpiMin, mpiBest, mpiMax, bands, incidentCount: k,
-          vmtMonth: row.vmtBest,
+          vmtMonth: row.vmtRawBest,
+          vmtMonthEff: row.vmtBest,
           vmtCume: row.vmtCume,
         };
       });
@@ -1353,7 +1359,7 @@ function renderAllCompaniesMpiChart(series) {
       const kFmt = Number.isInteger(k) ? String(k) : k.toFixed(1);
       // TO-DO: Human vet new tooltip mileage labels below.
       const ci95 = mpi.bands[mpi.bands.length - 1];
-      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
+      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nEffective VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
       return `<g>${marker(x, y, color, 1)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle></g>`;
     }).join("")
   ).join("");
@@ -1445,7 +1451,7 @@ function renderCompanyMonthlyChart(series, company) {
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
   const rows = companyMonthRows(series, company);
-  const vmtMax = Math.max(1, ...rows.map(row => row.vmtMax));
+  const vmtMax = Math.max(1, ...rows.map(row => row.vmtRawMax));
   const incidentMax = Math.max(1, ...rows.map(row => row.incidents.total));
   const leftTicks = linearTicks(0, vmtMax, 4);
   const monthStep = pW / ((series.months.length - 1) || 1);
@@ -1468,8 +1474,9 @@ function renderCompanyMonthlyChart(series, company) {
     const month = series.months[i];
     const cx = mapX(i);
     const rec = row.incidents;
-    const monthVmtBest = fmtWhole(row.vmtBest);
+    const monthVmtBest = fmtWhole(row.vmtRawBest);
     const monthVmtCume = fmtWhole(row.vmtCume);
+    const monthVmtEff = fmtWhole(row.vmtBest);
 
     // MPI for each variant (used in hover text)
     const nonstationary = nonstationaryIncidentCount(rec.speeds);
@@ -1495,7 +1502,7 @@ function renderCompanyMonthlyChart(series, company) {
         stack = next;
         if (h <= 0) continue;
         const mpiLabel = `MPI (${seg.label.toLowerCase()}): ${mpiByKey[seg.mpiKey]}`;
-        const barTip = `${company} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nCumulative VMT: ${monthVmtCume}`;
+        const barTip = `${company} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nEffective VMT for MPI: ${monthVmtEff}\nCumulative VMT: ${monthVmtCume}`;
         bars.push(`
           <rect class="month-inc-bar" x="${xLeft.toFixed(2)}" y="${y1.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}"
                 fill="${colors[seg.key]}" stroke="${vmtColor}" stroke-width="0.8" data-tip="${escAttr(barTip)}"></rect>
@@ -1520,9 +1527,9 @@ function renderCompanyMonthlyChart(series, company) {
       const labelY = Math.max(mapIncidentY(rec.total) - 7, mTop + 7);
       barTotals.push(`<text class="month-inc-total" x="${labelX.toFixed(2)}" y="${labelY.toFixed(2)}">${fmtCount(rec.total)}</text>`);
     }
-    const yLo = mapVmtY(row.vmtMin);
-    const yHi = mapVmtY(row.vmtMax);
-    const vmtTip = `${company} ${month} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+    const yLo = mapVmtY(row.vmtRawMin);
+    const yHi = mapVmtY(row.vmtRawMax);
+    const vmtTip = `${company} ${month} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nEffective VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
     errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}" data-tip="${escAttr(vmtTip)}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
@@ -1532,15 +1539,15 @@ function renderCompanyMonthlyChart(series, company) {
 
   let vmtPath = "";
   for (let i = 0; i < series.points.length; i++) {
-    const y = mapVmtY(rows[i].vmtBest);
+    const y = mapVmtY(rows[i].vmtRawBest);
     vmtPath += `${i ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
   }
 
   const vmtMarks = rows.map((row, i) => {
     const x = mapX(i);
-    const y = mapVmtY(row.vmtBest);
+    const y = mapVmtY(row.vmtRawBest);
     const rec = row.incidents;
-    const vmtTip = `${company} ${series.months[i]} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtBest)}\nMonthly VMT range: ${fmtWhole(row.vmtMin)} - ${fmtWhole(row.vmtMax)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+    const vmtTip = `${company} ${series.months[i]} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nEffective VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
     return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}" data-tip="${escAttr(vmtTip)}"></circle>`;
   }).join("");
 
