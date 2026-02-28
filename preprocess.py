@@ -169,13 +169,17 @@ def nhtsa_month_to_iso(label):
 
 
 def month_coverage(month_str):
-    """Fraction of the month inside the NHTSA observation window."""
+    """Fraction of the month inside the NHTSA observation window.
+
+    January is partial: the data publication cutoff naturally restricts
+    incidents to Jan 1–15, so we scale VMT to match.  June is NOT scaled:
+    the incident dates are month-level ("JUN-2025") with no day, so we
+    can't separate pre- vs post-June-15 incidents.  Using the full month's
+    VMT against the full month's incidents avoids a systematic mismatch.
+    """
     year, mon = int(month_str[:4]), int(month_str[5:7])
     import calendar
     days_in_month = calendar.monthrange(year, mon)[1]
-    # Window: June 15 through January 15
-    if month_str == "2025-06":
-        return (30 - 15 + 1) / days_in_month  # Jun 15–30
     if month_str == "2026-01":
         return 15 / days_in_month              # Jan 1–15
     return 1.0
@@ -255,6 +259,12 @@ def incident_coverage(nhtsa_rows):
     # Tally 5-Day fraction per company-month
     counts = {}  # (company, month) -> {"five": n, "total": n}
     for rec in by_incident.values():
+        # The original (v1) report type must be 5-Day or Monthly.
+        # "Update" should only appear on later versions, never on v1.
+        must(rec["report_type"] in ("5-Day", "Monthly"),
+             "original report type must be 5-Day or Monthly",
+             iid=rec.get("company"), month=rec["month"],
+             report_type=rec["report_type"])
         key = (rec["company"], rec["month"])
         if key not in counts:
             counts[key] = {"five": 0, "total": 0}
@@ -365,8 +375,73 @@ def js_template_literal(text):
     return text.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
 
 
+EXPECTED_REPORT_TYPES = {"5-Day", "Monthly", "Update"}
+EXPECTED_DRIVER_TYPES = {
+    "None",
+    "In-Vehicle (Commercial / Test)",
+    "In-Vehicle and Remote (Commercial / Test)",
+    "Remote (Commercial / Test)",
+    "Other, see Narrative",
+}
+# All reporting entities currently in the NHTSA ADS CSV.
+# Anti-Postel: if NHTSA adds a new company, we want to crash and review.
+EXPECTED_COMPANIES = {
+    "Aurora Operations, Inc.",
+    "Avride Inc.",
+    "Beep, Inc.",
+    "Hyundai Motor America",
+    "May Mobility",
+    "Motional",
+    "Nuro",
+    "Ohmio, Inc.",
+    "Oxbotica",
+    "Stack AV",
+    "Tesla, Inc.",
+    "Waymo LLC",
+    "Zoox, Inc.",
+}
+INCIDENT_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
+SUBMISSION_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
+
+
 def main():
     rows, nhtsa_modified_date = fetch_nhtsa_csv()
+    must(len(rows) > 0, "NHTSA CSV has no rows")
+
+    # Anti-Postel: fail loud on unexpected field values
+    for i, r in enumerate(rows):
+        rt = r["Report Type"].strip()
+        must(rt in EXPECTED_REPORT_TYPES,
+             "unexpected Report Type", row=i, value=rt,
+             expected=sorted(EXPECTED_REPORT_TYPES))
+        dt = r["Driver / Operator Type"].strip()
+        must(dt in EXPECTED_DRIVER_TYPES,
+             "unexpected Driver / Operator Type", row=i, value=dt,
+             expected=sorted(EXPECTED_DRIVER_TYPES))
+        company = r["Reporting Entity"].strip()
+        must(company in EXPECTED_COMPANIES,
+             "unexpected Reporting Entity", row=i, value=company,
+             expected=sorted(EXPECTED_COMPANIES))
+        idate = r["Incident Date"].strip()
+        must(INCIDENT_DATE_RE.match(idate),
+             "unexpected Incident Date format", row=i, value=idate)
+        abbr = idate.split("-")[0]
+        must(abbr in MONTH_ABBR_TO_NUM,
+             "unknown month abbreviation in Incident Date", row=i, value=idate)
+        sub = r["Report Submission Date"].strip()
+        if sub:
+            must(SUBMISSION_DATE_RE.match(sub),
+                 "unexpected Report Submission Date format", row=i, value=sub)
+            sub_abbr = sub.split("-")[0]
+            must(sub_abbr in MONTH_ABBR_TO_NUM,
+                 "unknown month abbreviation in Submission Date", row=i,
+                 value=sub)
+        ver = r["Report Version"].strip()
+        must(ver.isdigit() and int(ver) >= 1,
+             "Report Version must be positive integer", row=i, value=ver)
+        iid = r["Same Incident ID"].strip()
+        must(len(iid) > 0, "Same Incident ID must not be empty", row=i)
+
     fault_models, fault_ids = load_fault_models()
 
     # Filter to driverless incidents only

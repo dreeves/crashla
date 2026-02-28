@@ -2054,11 +2054,33 @@ function initTooltips() {
 {
   const incidentData = INCIDENT_DATA;
   must(Array.isArray(incidentData), "INCIDENT_DATA must be an array");
+  must(incidentData.length > 0, "INCIDENT_DATA must not be empty");
+  const DATE_RE = /^[A-Z]{3}-\d{4}$/;
   for (const inc of incidentData) {
     must(inc !== null && typeof inc === "object", "incident must be an object");
     must(typeof inc.company === "string", "incident missing company");
     must(COMPANIES[inc.company] !== undefined,
       "inline incident data has unknown company", {company: inc.company});
+    must(typeof inc.reportId === "string" && inc.reportId.length > 0,
+      "incident missing reportId", {company: inc.company});
+    must(typeof inc.date === "string" && DATE_RE.test(inc.date),
+      "incident date must match MMM-YYYY format", {reportId: inc.reportId, date: inc.date});
+    must(inc.speed === null || (typeof inc.speed === "number" && Number.isFinite(inc.speed) && inc.speed >= 0),
+      "incident speed must be null or non-negative number", {reportId: inc.reportId, speed: inc.speed});
+    must(typeof inc.road === "string" && inc.road.length > 0,
+      "incident missing road type", {reportId: inc.reportId});
+    must(typeof inc.severity === "string" && inc.severity.length > 0,
+      "incident missing severity", {reportId: inc.reportId});
+    must(inc.fault !== null && typeof inc.fault === "object",
+      "incident missing fault object", {reportId: inc.reportId});
+    must(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
+      "incident vehiclesInvolved must be >= 1", {reportId: inc.reportId});
+    for (const model of ["claude", "codex", "gemini"]) {
+      const f = inc.fault[model];
+      must(typeof f === "number" && f >= 0 && f <= 1,
+        `incident fault.${model} must be number in [0, 1]`,
+        {reportId: inc.reportId, value: f});
+    }
   }
   incidents = incidentData;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
@@ -2070,7 +2092,6 @@ function initTooltips() {
   initWeightSliders();
   buildMonthlyViews();
   buildBrowser();
-  // TO-DO: Human vet colophon copy below.
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
     : "";
