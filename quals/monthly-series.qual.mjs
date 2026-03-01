@@ -238,6 +238,55 @@ Expectata: chart includes stroke-width:1.2 (used by airbag and fatality lines).
 Resultata: stroke-width:1.2 not found in rendered chart.`,
 );
 
+// Serious injury (SSI+) assertions
+assert.ok(
+  summaryByCompany.Waymo.incSeriousInjury >= 1 &&
+    summaryByCompany.Waymo.incSeriousInjury <= 10 &&
+    summaryByCompany.Tesla.incSeriousInjury === 0 &&
+    summaryByCompany.Zoox.incSeriousInjury === 0,
+  `Replicata: compute serious injury (SSI+) incident counts per company.
+Expectata: Waymo has 1\u201310 serious injury incidents (Moderate W/ Hosp + Fatality); Tesla and Zoox have 0.
+Resultata: Waymo=${summaryByCompany.Waymo.incSeriousInjury} Tesla=${summaryByCompany.Tesla.incSeriousInjury} Zoox=${summaryByCompany.Zoox.incSeriousInjury}.`,
+);
+
+assert.ok(
+  plain.summaryCardHtml.includes("Serious injury (SSI+)"),
+  `Replicata: render summary cards with all metrics enabled.
+Expectata: summary cards include "Serious injury (SSI+)" label.
+Resultata: label not found in card HTML.`,
+);
+
+const humanSsi = vm.runInContext("KNOWN_HUMAN_MPI.seriousInjury", ctx);
+assert.ok(
+  humanSsi && humanSsi.lo >= 3000000 && humanSsi.hi <= 7000000 && humanSsi.lo < humanSsi.hi,
+  `Replicata: inspect KNOWN_HUMAN_MPI.seriousInjury.
+Expectata: SSI+ human benchmark lo (3M\u20134M) < hi (6M\u20137M) based on ~0.23 IPMM.
+Resultata: ${JSON.stringify(humanSsi)}.`,
+);
+
+// Verify METRIC_DEFS refactor: all metrics have required fields
+const metricDefCheck = vm.runInContext(`
+  METRIC_DEFS.every(m =>
+    m.key && m.label && m.cardLabel && m.incField && m.marker &&
+    typeof m.lineWidth === "number" && typeof m.lineOpacity === "number" &&
+    typeof m.defaultEnabled === "boolean" && typeof m.primary === "boolean" &&
+    typeof m.countFn === "function")
+`, ctx);
+assert.ok(
+  metricDefCheck,
+  `Replicata: validate METRIC_DEFS structure.
+Expectata: every metric def has key, label, cardLabel, incField, marker, lineWidth, lineOpacity, defaultEnabled, primary, countFn.
+Resultata: some metric defs are missing required fields.`,
+);
+
+// Verify human benchmark bands are always rendered (no Humans checkbox needed)
+assert.ok(
+  plain.chartMpiAll.includes("stroke-dasharray:6 4"),
+  `Replicata: render chart with default settings (Humans always on).
+Expectata: chart includes dashed human reference lines even without toggling Humans on.
+Resultata: dashed lines not found in default chart render.`,
+);
+
 const renderedAll = plain.chartMpiAll;
 assert.ok(
   renderedAll.includes("<svg") &&
@@ -293,17 +342,20 @@ assert.ok(
   plain.legendMpiCompanies.includes("Tesla") &&
   plain.legendMpiCompanies.includes("Waymo") &&
     plain.legendMpiCompanies.includes("Zoox") &&
+  !plain.legendMpiCompanies.includes("Humans") &&
   plain.legendMpiCompanies.includes("type=\"checkbox\"") &&
   plain.legendMpiLines.includes("month-metric-toggle-all") &&
   plain.legendMpiLines.includes("month-metric-toggle-nonstationary") &&
   plain.legendMpiLines.includes("month-metric-toggle-roadwayNonstationary") &&
   plain.legendMpiLines.includes("month-metric-toggle-atfault") &&
   plain.legendMpiLines.includes("month-metric-toggle-airbag") &&
+  plain.legendMpiLines.includes("month-metric-toggle-seriousInjury") &&
   plain.legendMpiLines.includes("Miles per incident") &&
     plain.legendMpiLines.includes("Miles per nonstationary incident") &&
   plain.legendMpiLines.includes("Miles per nonstationary non-parking-lot incident") &&
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendMpiLines.includes("Miles per airbag-deploying crash") &&
+  plain.legendMpiLines.includes("Miles per serious injury crash") &&
   plain.legendLines.includes("VMT (best)") &&
   plain.legendSpeed.includes("Left bar (movement)") &&
   plain.legendSpeed.includes("Right bar (severity)") &&

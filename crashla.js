@@ -125,36 +125,14 @@ let vmtRows = [];
 let faultData = {}; // reportId -> {claude, codex, gemini, rclaude, rcodex, rgemini}
 const DEFAULT_FAULT_WEIGHTS = {claude: 3, codex: 3, gemini: 3};
 let faultWeightState = {...DEFAULT_FAULT_WEIGHTS};
-let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true, Humans: false};
-const MONTH_METRIC_DEFS = [
-  {key: "all", label: "Miles per incident", marker: "solid-circle"},
-  {key: "nonstationary", label: "Miles per nonstationary incident", marker: "hollow-circle"},
-  {key: "roadwayNonstationary", label: "Miles per nonstationary non-parking-lot incident", marker: "hollow-square"},
-  {key: "atfault", label: "Miles per at-fault incident", marker: "hollow-triangle"},
-  {key: "atfaultInjury", label: "Miles per at-fault injury crash", marker: "hollow-triangle"},
-  {key: "injury", label: "Miles per injury crash", marker: "solid-circle"},
-  {key: "hospitalization", label: "Miles per hospitalization crash", marker: "solid-circle"},
-  {key: "airbag", label: "Miles per airbag-deploying crash", marker: "solid-circle"},
-  {key: "fatality", label: "Miles per fatal crash", marker: "solid-circle"},
-];
-let monthMetricEnabled = {
-  all: true, nonstationary: false, roadwayNonstationary: false, atfault: false,
-  atfaultInjury: false, injury: false, hospitalization: false, airbag: false, fatality: false,
-};
-
-
-const LINE_STYLE = {
-  all:                {width: 2.5, opacity: 1},
-  nonstationary:      {width: 1.5, opacity: 0.55},
-  roadwayNonstationary: {width: 1.2, opacity: 0.8},
-  atfault:            {width: 1,   opacity: 0.3},
-  atfaultInjury:      {width: 1,   opacity: 0.4},
-  injury:             {width: 2,   opacity: 0.9},
-  hospitalization:    {width: 1.5, opacity: 0.7},
-  airbag:             {width: 1.2, opacity: 0.6},
-  fatality:           {width: 1.2, opacity: 0.5},
-};
-
+let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true, Humans: true};
+// Unified metric definitions. Each entry fully specifies one MPI variant:
+// label (chart legend), cardLabel (summary card), line style, human benchmark,
+// count function, and whether it's enabled by default.
+//
+// To add a new MPI variant, just add one entry here and (if needed) add the
+// corresponding incident field accumulation in monthSeriesData().
+//
 // Human reference MPI ranges from Kusano/Scanlon methodology
 // (surface streets, passenger vehicles, Blincoe underreporting adjustment)
 // and FARS/NHTSA. We show ranges because the exact apples-to-apples
@@ -177,85 +155,186 @@ const LINE_STYLE = {
 // Note: all benchmarks are for surface streets in AV operating areas, which
 // have higher crash rates than the nationwide average. This is more
 // apples-to-apples than the raw national numbers.
-const KNOWN_HUMAN_MPI = {
-  // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
-  all: {lo: 103000, hi: 214000,
-    src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM',
-    srcLinks: [
-      {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-    ]},
-  // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
-  nonstationary: {lo: 106000, hi: 225000,
-    src: 'All-crash range adjusted for ~3\u20135% hit-while-parked share (CRSS)',
-    srcLinks: [
-      {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
-    ]},
-  // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
-  roadwayNonstationary: {lo: 108000, hi: 228000,
-    src: 'CRSS trafficway-only rates \u2248 non-parking-lot; similar ratio',
-    srcLinks: [
-      {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
-    ]},
-  // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
-  // multi-vehicle ~50%; weighted mix gives 50-65%)
-  atfault: {lo: 160000, hi: 430000,
-    src: '50\u201365% at-fault share (single-vehicle 100%, multi ~50%)',
-    srcLinks: [
-      {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
-    ]},
-  // At-fault injury: intersection of at-fault and injury crashes.
-  // lo bound: single-vehicle crashes (100% at-fault) are overrepresented
-  // among injury crashes; at-fault share for injury crashes could be as
-  // high as ~85%. Apply to lo injury MPI: 252k / 0.85 ≈ 300k.
-  // hi bound: national police-reported injury crash rate (NHTSA 2023:
-  // 1,697,252 injury crashes / 3,247B VMT ≈ 1.91M MPI) gives a ceiling;
-  // at-fault subset ≈ 1.91M / ~94% critical-reason share ≈ 2.0M, but
-  // NHTSA notes critical reason ≠ fault, so conservatively round to 1.9M.
-  // Both bounds satisfy subset constraint: atfaultInjury ≥ injury (252k)
-  // and atfaultInjury ≥ atfault (160k).
-  atfaultInjury: {lo: 300000, hi: 1900000,
-    src: 'lo: injury lo (252k) / ~85% at-fault share in injury crashes; hi: national injury-crash MPI (~1.91M) as ceiling',
-    srcLinks: [
-      {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
-      {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
-      {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
-    ]},
-  // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
-  injury: {lo: 252000, hi: 524000,
-    src: 'lo: 1M/3.97 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
-    srcLinks: [
-      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
-      {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-    ]},
-  // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
-  // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
-  // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
-  // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
-  hospitalization: {lo: 600000, hi: 4350000,
-    src: 'lo: 1M/1.66 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM',
-    srcLinks: [
-      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
-    ]},
-  // Airbag deployment in any vehicle. Waymo safety impact page: human
-  // benchmark 1.66 IPMM (police-reported, AV operating counties, no
-  // underreporting adjustment — airbag deployments are mechanically
-  // triggered and rarely underreported). Range accounts for modest
-  // geographic/methodological variation.
-  airbag: {lo: 500000, hi: 700000,
-    src: 'Waymo safety impact: 1.66 IPMM police-reported airbag-deploy rate in AV operating counties',
-    srcLinks: [
-      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
-    ]},
-  // FARS national per-vehicle-adjusted (75M) to urban surface-street
-  // estimate (~130M, using urban fatality rate ~0.7-1.15 per 100M VMT)
-  fatality: {lo: 75000000, hi: 130000000,
-    src: 'lo: FARS national 1.33/100M VMT; hi: urban surface-street ~0.77/100M VMT',
-    srcLinks: [
-      {label: 'NHTSA FARS 2023', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
-      {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
-    ]},
-};
+const METRIC_DEFS = [
+  { key: "all",
+    label: "Miles per incident",
+    cardLabel: "All incidents",
+    incField: "incTotal",
+    marker: "solid-circle",
+    lineWidth: 2.5, lineOpacity: 1,
+    defaultEnabled: true, primary: true,
+    countFn: rec => rec.incidents.total,
+    humanMPI: {lo: 103000, hi: 214000,
+      // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
+      src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM',
+      srcLinks: [
+        {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+      ]},
+  },
+  { key: "nonstationary",
+    label: "Miles per nonstationary incident",
+    cardLabel: "Nonstationary",
+    incField: "incNonstationary",
+    marker: "hollow-circle",
+    lineWidth: 1.5, lineOpacity: 0.55,
+    defaultEnabled: false, primary: false,
+    countFn: rec => nonstationaryIncidentCount(rec.incidents.speeds),
+    // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
+    humanMPI: {lo: 106000, hi: 225000,
+      src: 'All-crash range adjusted for ~3\u20135% hit-while-parked share (CRSS)',
+      srcLinks: [
+        {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+      ]},
+  },
+  { key: "roadwayNonstationary",
+    label: "Miles per nonstationary non-parking-lot incident",
+    cardLabel: "Nonstationary non-parking-lot",
+    incField: "incRoadwayNonstationary",
+    marker: "hollow-square",
+    lineWidth: 1.2, lineOpacity: 0.8,
+    defaultEnabled: false, primary: false,
+    countFn: rec => roadwayNonstationaryIncidentCount(rec),
+    // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
+    humanMPI: {lo: 108000, hi: 228000,
+      src: 'CRSS trafficway-only rates \u2248 non-parking-lot; similar ratio',
+      srcLinks: [
+        {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+      ]},
+  },
+  { key: "atfault",
+    label: "Miles per at-fault incident",
+    cardLabel: "At-fault",
+    incField: "incAtFault",
+    marker: "hollow-triangle",
+    lineWidth: 1, lineOpacity: 0.3,
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.atFault,
+    // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
+    // multi-vehicle ~50%; weighted mix gives 50-65%)
+    humanMPI: {lo: 160000, hi: 430000,
+      src: '50\u201365% at-fault share (single-vehicle 100%, multi ~50%)',
+      srcLinks: [
+        {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+      ]},
+  },
+  { key: "atfaultInjury",
+    label: "Miles per at-fault injury crash",
+    cardLabel: "At-fault injury",
+    incField: "incAtFaultInjury",
+    marker: "hollow-triangle",
+    lineWidth: 1, lineOpacity: 0.4,
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.atFaultInjury,
+    // At-fault injury: intersection of at-fault and injury crashes.
+    // lo: injury lo (252k) / ~85% at-fault share in injury crashes ≈ 300k
+    // hi: national injury-crash MPI (~1.91M) as ceiling
+    humanMPI: {lo: 300000, hi: 1900000,
+      src: 'lo: injury lo (252k) / ~85% at-fault share in injury crashes; hi: national injury-crash MPI (~1.91M) as ceiling',
+      srcLinks: [
+        {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+        {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+        {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+        {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
+      ]},
+  },
+  { key: "injury",
+    label: "Miles per injury crash",
+    cardLabel: "Injury",
+    incField: "incInjury",
+    marker: "solid-circle",
+    lineWidth: 2, lineOpacity: 0.9,
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.injury,
+    // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
+    humanMPI: {lo: 252000, hi: 524000,
+      src: 'lo: 1M/3.97 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
+      srcLinks: [
+        {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+        {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+      ]},
+  },
+  { key: "hospitalization",
+    label: "Miles per hospitalization crash",
+    cardLabel: "Hospitalization",
+    incField: "incHospitalization",
+    marker: "solid-circle",
+    lineWidth: 1.5, lineOpacity: 0.7,
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.hospitalization,
+    // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
+    // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
+    // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
+    // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
+    humanMPI: {lo: 600000, hi: 4350000,
+      src: 'lo: 1M/1.66 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM',
+      srcLinks: [
+        {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+      ]},
+  },
+  { key: "airbag",
+    label: "Miles per airbag-deploying crash",
+    cardLabel: "Airbag deployment",
+    incField: "incAirbag",
+    marker: "solid-circle",
+    lineWidth: 1.2, lineOpacity: 0.6,
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.airbag,
+    // Airbag deployment in any vehicle. Waymo safety impact page: human
+    // benchmark 1.66 IPMM (police-reported, AV operating counties, no
+    // underreporting adjustment — airbag deployments are mechanically
+    // triggered and rarely underreported). Range accounts for modest
+    // geographic/methodological variation.
+    humanMPI: {lo: 500000, hi: 700000,
+      src: 'Waymo safety impact: 1.66 IPMM police-reported airbag-deploy rate in AV operating counties',
+      srcLinks: [
+        {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+      ]},
+  },
+  { key: "seriousInjury",
+    label: "Miles per serious injury crash",
+    cardLabel: "Serious injury (SSI+)",
+    incField: "incSeriousInjury",
+    marker: "solid-circle",
+    lineWidth: 1.2, lineOpacity: 0.55,
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.seriousInjury,
+    // SSI+ (KABCO A+K): Moderate W/ Hospitalization + Fatality.
+    // Waymo safety impact page: 0.23 IPMM. Range: 0.30 IPMM (broader
+    // definition, SGO "Moderate" may include some KABCO B cases) to
+    // 0.15 IPMM (narrower, only most severe subset).
+    humanMPI: {lo: 3300000, hi: 6700000,
+      src: 'Waymo safety impact SSI+ 0.23 IPMM; range 0.15\u20130.30 for definitional uncertainty',
+      srcLinks: [
+        {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+      ]},
+  },
+  { key: "fatality",
+    label: "Miles per fatal crash",
+    cardLabel: "Fatality",
+    incField: "incFatality",
+    marker: "solid-circle",
+    lineWidth: 1.2, lineOpacity: 0.5,
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.fatality,
+    // FARS national per-vehicle-adjusted (75M) to urban surface-street
+    // estimate (~130M, using urban fatality rate ~0.7-1.15 per 100M VMT)
+    humanMPI: {lo: 75000000, hi: 130000000,
+      src: 'lo: FARS national 1.33/100M VMT; hi: urban surface-street ~0.77/100M VMT',
+      srcLinks: [
+        {label: 'NHTSA FARS 2023', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+        {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
+      ]},
+  },
+];
+
+// Derived accessors — consumed by rendering code throughout
+const MONTH_METRIC_DEFS = METRIC_DEFS;
+const LINE_STYLE = Object.fromEntries(
+  METRIC_DEFS.map(m => [m.key, {width: m.lineWidth, opacity: m.lineOpacity}]));
+const KNOWN_HUMAN_MPI = Object.fromEntries(
+  METRIC_DEFS.filter(m => m.humanMPI).map(m => [m.key, m.humanMPI]));
+let monthMetricEnabled = Object.fromEntries(
+  METRIC_DEFS.map(m => [m.key, m.defaultEnabled]));
 
 function metricLineStyle(company, metricKey) {
   const s = LINE_STYLE[metricKey];
@@ -1029,6 +1108,11 @@ const HOSPITALIZATION_SEVERITIES = new Set([
   "Moderate W/ Hospitalization",
   "Fatality",
 ]);
+// SSI+ (KABCO A+K): suspected serious injury or worse
+const SERIOUS_INJURY_SEVERITIES = new Set([
+  "Moderate W/ Hospitalization",
+  "Fatality",
+]);
 
 function linearTicks(min, max, count) {
   const out = [];
@@ -1082,33 +1166,23 @@ function monthlySummaryRows(series) {
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
     const vmtMax = rows.reduce((sum, row) => sum + row.vmtMax, 0);
-    const incTotal = rows.reduce((sum, row) => sum + row.incidents.total, 0);
-    const incNonstationary = rows.reduce(
-      (sum, row) => sum + nonstationaryIncidentCount(row.incidents.speeds), 0);
-    const incRoadwayNonstationary = rows.reduce(
-      (sum, row) => sum + roadwayNonstationaryIncidentCount(row), 0);
-    must(incTotal > 0, "summary total incidents must be positive", {company, incTotal});
-    must(incNonstationary > 0,
-      "summary nonstationary incidents must be positive", {company, incNonstationary});
-    must(incRoadwayNonstationary > 0,
-      "summary roadway nonstationary incidents must be positive", {company, incRoadwayNonstationary});
+    // Auto-generate inc fields from METRIC_DEFS
+    const incFields = Object.fromEntries(
+      METRIC_DEFS.map(m => [m.incField, rows.reduce((sum, row) => sum + m.countFn(row), 0)]));
+    must(incFields.incTotal > 0, "summary total incidents must be positive", {company, incTotal: incFields.incTotal});
+    must(incFields.incNonstationary > 0,
+      "summary nonstationary incidents must be positive", {company, incNonstationary: incFields.incNonstationary});
+    must(incFields.incRoadwayNonstationary > 0,
+      "summary roadway nonstationary incidents must be positive", {company, incRoadwayNonstationary: incFields.incRoadwayNonstationary});
     return {
       company,
       vmtMin,
       vmtBest,
       vmtMax,
-      incTotal,
-      incNonstationary,
-      incRoadwayNonstationary,
-      incAtFault: rows.reduce((sum, row) => sum + row.incidents.atFault, 0),
-      incAtFaultInjury: rows.reduce((sum, row) => sum + row.incidents.atFaultInjury, 0),
-      incInjury: rows.reduce((sum, row) => sum + row.incidents.injury, 0),
-      incHospitalization: rows.reduce((sum, row) => sum + row.incidents.hospitalization, 0),
-      incAirbag: rows.reduce((sum, row) => sum + row.incidents.airbag, 0),
-      incFatality: rows.reduce((sum, row) => sum + row.incidents.fatality, 0),
-      milesPerIncident: vmtBest / incTotal,
-      milesPerNonstationaryIncident: vmtBest / incNonstationary,
-      milesPerRoadwayNonstationaryIncident: vmtBest / incRoadwayNonstationary,
+      ...incFields,
+      milesPerIncident: vmtBest / incFields.incTotal,
+      milesPerNonstationaryIncident: vmtBest / incFields.incNonstationary,
+      milesPerRoadwayNonstationaryIncident: vmtBest / incFields.incRoadwayNonstationary,
     };
   });
 }
@@ -1135,7 +1209,8 @@ function monthSeriesData() {
     let rec = incidentsByKey[key];
     if (rec === undefined) {
       rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
-             atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, fatality: 0};
+             atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0,
+             seriousInjury: 0, fatality: 0};
       incidentsByKey[key] = rec;
     }
     rec.total += 1;
@@ -1157,6 +1232,7 @@ function monthSeriesData() {
     rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
     rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
     rec.airbag += Number(inc.airbagAny === true);
+    rec.seriousInjury += Number(SERIOUS_INJURY_SEVERITIES.has(inc.severity));
     // Per-vehicle fatality: divide by number of vehicles involved to match
     // fleet-wide fatality rate methodology (see theargumentmag.com article).
     // vehiclesInvolved defaults to 2; overridden in preprocess.py when the
@@ -1176,7 +1252,7 @@ function monthSeriesData() {
       must(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
       must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, fatality: 0};
+      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       // Incident coverage: when Monthly reports are absent for the last month,
       // the observed 5-Day count is a Poisson-thinned subset.  Scaling VMT by
@@ -1229,17 +1305,8 @@ function renderAllCompaniesMpiChart(series) {
   const mBot = 40;
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
-  const countByMetric = {
-    all: rec => rec.incidents.total,
-    nonstationary: rec => nonstationaryIncidentCount(rec.incidents.speeds),
-    roadwayNonstationary: rec => roadwayNonstationaryIncidentCount(rec),
-    atfault: rec => rec.incidents.atFault,
-    atfaultInjury: rec => rec.incidents.atFaultInjury,
-    injury: rec => rec.incidents.injury,
-    hospitalization: rec => rec.incidents.hospitalization,
-    airbag: rec => rec.incidents.airbag,
-    fatality: rec => rec.incidents.fatality,
-  };
+  const countByMetric = Object.fromEntries(
+    METRIC_DEFS.map(m => [m.key, m.countFn]));
   const markerRenderer = {
     "solid-circle": (x, y, color, s) => {
       const r = 3.1 * s;
@@ -1295,33 +1362,32 @@ function renderAllCompaniesMpiChart(series) {
     }
   }
 
+  // Human reference bands always render (no toggle)
   const humanRefLines = [];
-  if (monthCompanyEnabled.Humans) {
-    for (const metric of includedMonthMetrics()) {
-      if (KNOWN_HUMAN_MPI[metric.key] === undefined) continue;
-      const range = KNOWN_HUMAN_MPI[metric.key];
-      humanRefLines.push({metric, lo: range.lo, hi: range.hi});
-      yMax = Math.max(yMax, range.hi);
-    }
-    // Subset metrics must have higher MPI (rarer events = more miles between).
-    const humanLoByKey = Object.fromEntries(
-      humanRefLines.map(r => [r.metric.key, r.lo]));
-    const subsetChains = [
-      ["all", "nonstationary", "roadwayNonstationary"],
-      ["all", "atfault", "atfaultInjury"],
-      ["all", "injury", "atfaultInjury"],
-      ["injury", "hospitalization", "fatality"],
-    ];
-    for (const chain of subsetChains) {
-      for (let i = 1; i < chain.length; i++) {
-        if (humanLoByKey[chain[i-1]] === undefined) continue;
-        if (humanLoByKey[chain[i]]   === undefined) continue;
-        must(humanLoByKey[chain[i-1]] <= humanLoByKey[chain[i]],
-          "human MPI ordering violated", {
-            lesser: chain[i-1], lesserMpi: humanLoByKey[chain[i-1]],
-            greater: chain[i], greaterMpi: humanLoByKey[chain[i]],
-          });
-      }
+  for (const metric of includedMonthMetrics()) {
+    if (KNOWN_HUMAN_MPI[metric.key] === undefined) continue;
+    const range = KNOWN_HUMAN_MPI[metric.key];
+    humanRefLines.push({metric, lo: range.lo, hi: range.hi});
+    yMax = Math.max(yMax, range.hi);
+  }
+  // Subset metrics must have higher MPI (rarer events = more miles between).
+  const humanLoByKey = Object.fromEntries(
+    humanRefLines.map(r => [r.metric.key, r.lo]));
+  const subsetChains = [
+    ["all", "nonstationary", "roadwayNonstationary"],
+    ["all", "atfault", "atfaultInjury"],
+    ["all", "injury", "atfaultInjury"],
+    ["injury", "hospitalization", "fatality"],
+  ];
+  for (const chain of subsetChains) {
+    for (let i = 1; i < chain.length; i++) {
+      if (humanLoByKey[chain[i-1]] === undefined) continue;
+      if (humanLoByKey[chain[i]]   === undefined) continue;
+      must(humanLoByKey[chain[i-1]] <= humanLoByKey[chain[i]],
+        "human MPI ordering violated", {
+          lesser: chain[i-1], lesserMpi: humanLoByKey[chain[i-1]],
+          greater: chain[i], greaterMpi: humanLoByKey[chain[i]],
+        });
     }
   }
 
@@ -1583,17 +1649,9 @@ function renderCompanyMonthlyChart(series, company) {
 }
 
 // TO-DO: Human vet all end-user labels in these summary cards.
-const CARD_METRICS = [
-  {label: "All incidents",                 inc: "incTotal",                metricKey: "all",                  primary: true},
-  {label: "Nonstationary",                 inc: "incNonstationary",        metricKey: "nonstationary",        primary: false},
-  {label: "Nonstationary non-parking-lot", inc: "incRoadwayNonstationary", metricKey: "roadwayNonstationary", primary: false},
-  {label: "At-fault",                      inc: "incAtFault",             metricKey: "atfault",              primary: false},
-  {label: "At-fault injury",               inc: "incAtFaultInjury",       metricKey: "atfaultInjury",        primary: false},
-  {label: "Injury",                        inc: "incInjury",              metricKey: "injury",               primary: false},
-  {label: "Hospitalization",               inc: "incHospitalization",     metricKey: "hospitalization",      primary: false},
-  {label: "Airbag deployment",             inc: "incAirbag",              metricKey: "airbag",               primary: false},
-  {label: "Fatality",                      inc: "incFatality",            metricKey: "fatality",             primary: false},
-];
+const CARD_METRICS = METRIC_DEFS.map(m => ({
+  label: m.cardLabel, inc: m.incField, metricKey: m.key, primary: m.primary,
+}));
 
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
@@ -1651,14 +1709,14 @@ function renderMpiSummaryCards(series) {
 }
 
 function renderMonthlyLegends() {
-  const allCompanies = [...ADS_COMPANIES, "Humans"];
-  byId("month-legend-mpi-companies").innerHTML = allCompanies.map(company => `
+  // Human benchmark bands always render (no toggle); only ADS companies get checkboxes
+  byId("month-legend-mpi-companies").innerHTML = ADS_COMPANIES.map(company => `
     <label class="month-legend-item month-company-toggle" for="${monthCompanyToggleId(company)}">
       <input type="checkbox" id="${monthCompanyToggleId(company)}" ${monthCompanyEnabled[company] ? "checked" : ""}>
       <span class="month-chip" style="background:${MONTHLY_COMPANY_COLORS[company]}"></span>${company}
     </label>
   `).join("");
-  for (const company of allCompanies) {
+  for (const company of ADS_COMPANIES) {
     const input = byId(monthCompanyToggleId(company));
     input.addEventListener("change", () => {
       monthCompanyEnabled[company] = input.checked;
