@@ -21,13 +21,13 @@ Report ID,faultfrac,reasoning
 30270-11161,0.9,AV reversed into parked trailer; AV at fault
 30270-11204,0,AV stationary; struck by other party
 30270-11196,0.1,Other entered traffic into AV path
-30270-11171,0.3,Passenger opened door into traffic; partial AV fault
+30270-11171,0,Passenger opened door into traffic; not AV system fault
 30270-11174,0.8,AV hit elevated gate track; should detect
 30270-11189,0.1,AV stopped on narrow road; other hit while passing
 30270-11209,0.8,AV hit elevated gate track; should detect
 30270-11291,0.1,Other turned right across AV lane
 30270-11170,0,AV stationary; struck by passing vehicle
-30270-11213,0.3,Passenger opened door into traffic; partial AV fault
+30270-11213,0,Passenger opened door into traffic; not AV system fault
 30270-11298,0.1,AV stopped on narrow road; other hit while passing
 30270-11249,0,AV stationary; rear-ended by other vehicle
 30270-11219,0,AV stationary; struck by passing vehicle
@@ -44,18 +44,18 @@ Report ID,faultfrac,reasoning
 30270-11221,0.1,Other vehicle reversed into AV path
 30270-11162,0,AV stationary; other vehicle reversed into AV
 30270-11216,0,AV stationary; struck by passing vehicle
-30270-11207,0.3,Passenger opened door into traffic; partial AV fault
-30270-11224,0.3,AV passenger opened door hitting parked vehicle
+30270-11207,0,Passenger opened door into traffic; not AV system fault
+30270-11224,0,AV passenger opened door hitting parked vehicle; not AV system fault
 30270-11214,0,AV rear-ended by other vehicle
 30270-11247,0.1,AV stopped on narrow road; other hit while passing
 30270-11195,0.5,AV hit fallen utility line; hard to detect
-30270-11218,0.3,Passenger opened door into traffic; partial AV fault
+30270-11218,0,Passenger opened door into traffic; not AV system fault
 30270-11245,0,AV stationary; rear-ended by other vehicle
 30270-11246,0.1,Other crossed lane line during left turn
 30270-11172,0.1,Other turned right across AV lane
 30270-11208,0,AV stationary; rear-ended by other vehicle
 30270-11173,0,AV stationary; rear-ended by other vehicle
-30270-11205,0.3,Passenger opened door into traffic; partial AV fault
+30270-11205,0,Passenger opened door into traffic; not AV system fault
 30270-11212,0,AV stationary; rear-ended by other vehicle
 30270-11250,0,AV stationary; rear-ended by other vehicle
 30270-11238,0,AV stationary; rear-ended by other vehicle
@@ -112,12 +112,12 @@ Report ID,faultfrac,reasoning
 30270-11370,0,AV rear-ended by other vehicle
 30270-11280,0,AV stationary; struck by passing vehicle
 30270-11344,0,AV stationary; struck by passing vehicle
-30270-11452,0.3,Passenger opened door into traffic; partial AV fault
-30270-11281,0.3,Passenger opened door into traffic; partial AV fault
+30270-11452,0,Passenger opened door into traffic; not AV system fault
+30270-11281,0,Passenger opened door into traffic; not AV system fault
 30270-11428,0,AV stationary; rear-ended by other vehicle
 30270-11334,0.9,AV hit median during U-turn; AV at fault
 30270-11412,0,AV stationary; struck by passing vehicle
-30270-11495,0.3,Passenger opened door into traffic; partial AV fault
+30270-11495,0,Passenger opened door into traffic; not AV system fault
 30270-11544,0,AV rear-ended by other vehicle
 30270-11561,0.1,Pedestrian pushed shopping cart into AV
 30270-11502,0,AV stationary; struck by passing vehicle
@@ -151,7 +151,7 @@ Report ID,faultfrac,reasoning
 30270-11456,0,AV parked; motorcycle changed lanes into stationary AV
 30270-11488,0,AV stationary; rear-ended by passenger car
 30270-11545,0.1,Other car ran red light; AV braked but still made contact
-30270-11605,0.3,AV parked; passenger opened door into path of passing SUV
+30270-11605,0,AV parked; passenger opened door into path of passing SUV; not AV system fault
 30270-11523,0,AV stationary yielding; van sideswiped it on narrow street
 30270-11543,0,AV parked; SUV sideswiped stationary AV while passing
 30270-11567,0,AV parked; SUV sideswiped it while completing right turn
@@ -166,7 +166,7 @@ Report ID,faultfrac,reasoning
 30270-11671,0.9,AV hit parked flatbed trailer while exiting parking spot
 30270-11765,0,AV stationary at red light; rear-ended by passenger car
 30270-11672,0.9,AV drove into pothole in roadway
-30270-11753,0.3,AV stopped; passenger opened door into path of passing SUV
+30270-11753,0,AV stopped; passenger opened door into path of passing SUV; not AV system fault
 30270-11763,0,AV stationary in traffic queue; SUV hit rear from behind
 30270-11795,0,Other car changed lanes into AV's lane of travel
 30270-11713,0.1,AV slowing for right turn; motorcycle rear-ended AV
@@ -208,7 +208,7 @@ Report ID,faultfrac,reasoning
 30270-11637,0.1,SUV made unprotected left turn into AV going straight on green
 30270-11761,0,AV parked; bus reversed and changed lanes into AV
 30270-11609,0,AV stationary in traffic; bus sideswiped it passing
-30270-11627,0.3,AV parked; passenger opened door into path of passing van
+30270-11627,0,AV parked; passenger opened door into path of passing van; not AV system fault
 30270-11664,0.2,AV proceeded forward into SUV's open door after light change
 30270-11695,0,AV stationary; passenger car reversed into stopped AV
 30270-11760,0,Other car changed lanes into AV's lane of travel
@@ -246,7 +246,7 @@ Report ID,faultfrac,reasoning
 30270-12059,0,AV stationary yielding; tow truck sideswiped it passing
 30270-11838,0,AV stopped for animal; rear-ended by pickup truck
 30270-11955,0,AV stationary yielding; van sideswiped it on narrow street
-30270-11992,0.3,AV stopped with door open; SUV passing hit the open door
+30270-11992,0,AV stopped with door open; SUV passing hit the open door; not AV system fault
 30270-11841,0,AV stationary at stop sign; rear-ended by passenger car
 30270-11998,0,AV slowing for yellow light; rear-ended by passenger car
 30270-12011,0,AV stopped; car behind failed to stop and rear-ended AV
@@ -255,7 +255,7 @@ Report ID,faultfrac,reasoning
 30270-11932,0,AV stationary; SUV reversed into stopped AV in parking lot
 30270-11988,0,AV stationary; heavy truck crossed center line into AV
 30270-11888,0.9,AV drove over curb in parking lot damaging undercarriage
-30270-11994,0.3,AV parked; passenger opened door into path of passing SUV
+30270-11994,0,AV parked; passenger opened door into path of passing SUV; not AV system fault
 30270-11940,0,Pickup reversed from parking into intersection hitting AV
 30270-11933,0,SUV changed lanes into AV's lane without signaling
 30270-11953,0,Parked car pulled out into AV's lane of travel
@@ -282,11 +282,11 @@ Report ID,faultfrac,reasoning
 30270-12045,0,Oncoming car crossed center line and hit AV
 30270-11837,0,SUV hit stationary AV on narrow street
 30270-11951,0.9,AV undercarriage hit raised pavement in parking lot
-30270-11960,0.3,Passenger opened door into passing car while AV stopped
+30270-11960,0,Passenger opened door into passing car while AV stopped; not AV system fault
 30270-11957,0.2,AV stopped partially between lanes; truck hit it
 30270-11883,0,Bus reversed into stationary AV while parallel parking
 30270-12019,0,Heavy truck sideswiped stationary AV on narrow street
-30270-11842,0.3,Passenger opened door into passing SUV while AV parked
+30270-11842,0,Passenger opened door into passing SUV while AV parked; not AV system fault
 30270-11905,0.1,Heavy truck trailer hit stationary AV in parking lot
 30270-13056,0.3,AV stopped in lane to change lanes causing chain rear-end
 30270-11864,0,SUV intentionally rear-ended stationary AV twice
@@ -300,7 +300,7 @@ Report ID,faultfrac,reasoning
 30270-13025,0,Passenger car rear-ended slowing AV from behind
 30270-12070,0.8,AV ran over cat that was under the vehicle
 30270-11887,0,SUV passenger opened door into AV proceeding on green
-30270-13161,0.4,Passenger exited moving AV; tire stopped on their foot
+30270-13161,0,Passenger exited moving AV; tire stopped on their foot; not AV system fault
 30270-13197,0,Passenger car rear-ended stationary AV at red light
 30270-13236,0,SUV rear-ended stationary AV at red light
 30270-13164,0,Passenger car reversed out of stall into parked AV
@@ -386,7 +386,7 @@ Report ID,faultfrac,reasoning
 30270-13196,0,Passenger car changed lanes into AV
 30270-13081,0,Passenger car changed lanes into AV from turn lane
 30270-13137,0,Passenger car rear-ended stationary AV at stop sign
-30270-13205,0.3,Passenger opened door into passing SUV while AV parked
+30270-13205,0,Passenger opened door into passing SUV while AV parked; not AV system fault
 30270-13092,0,Chain reaction rear-end pushed car into stationary AV
 30270-13202,0.15,AV passed SUV which then reversed into AV
 30270-13155,0,AV was parked; bus hit stationary AV while turning
@@ -402,7 +402,7 @@ Report ID,faultfrac,reasoning
 30270-13331,0,AV was stopped at flashing red; rear-ended by SUV
 30270-13363,0.1,Wrong-way vehicle hit AV; AV braked and maneuvered to avoid
 30270-13301,0,AV stopped to yield on narrow street; passing car hit it
-30270-13538,0.1,AV was stopped; passenger opened door and passing car hit it
+30270-13538,0,AV was stopped; passenger opened door and passing car hit it; not AV system fault
 30270-13399,0,AV was stopped at red light; chain-reaction rear-end collision
 30270-13370,0,Other car turned right into AV lane; car at fault
 30270-13495,0,AV was stopped in traffic; rear-ended by SUV
@@ -475,7 +475,7 @@ Report ID,faultfrac,reasoning
 30270-13303,0,AV was stopped; chain reaction rear-end pushed SUV into AV
 30270-13541,0.2,AV stopped mid-lane-change; truck behind hit AV in new lane
 30270-13400,0,AV was stopped for pickup; car sideswiped stationary AV
-30270-13321,0.1,AV was parked; passenger opened door into passing motorcycle
+30270-13321,0,AV was parked; passenger opened door into passing motorcycle; not AV system fault
 30270-13307,0.15,Both turning right; truck crossed in front of AV; AV close to curb
 30270-13340,0,AV was stopped; truck reversed out of parking lot into AV
 30270-13402,0,AV was stopped at red light; rear-ended by car

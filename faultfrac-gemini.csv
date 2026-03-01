@@ -520,12 +520,12 @@ Report ID,faultfrac,reasoning
 30270-11146,0.0,AV hit unavoidable moving debris from a vehicle ahead
 30270-11087,0.0,AV was stopped in traffic; struck from behind by another vehicle being pushed into it
 30270-11085,0.0,AV was stopped at a red light; struck from behind by an SUV
-30270-11016,1.0,AV was stopped; passenger opened door into path of a scooterist
+30270-11016,0.0,AV was stopped; passenger opened door into path of a scooterist. AV itself not at fault.
 30270-11014,0.0,AV was stopped for pickup; scooterist hit the rear of the stationary AV
 30270-11088,1.0,AV drove into raised pavement at a parking lot entrance
 30610-11096,0.0,AV slowed for traffic cones and was rear-ended by an SUV
 30270-10977,0.0,AV proceeding normally; scooterist emerged from behind another vehicle and struck the AV
-30270-11046,1.0,AV parked for drop-off; passenger opened door into path of passing vehicle
+30270-11046,0.0,AV parked for drop-off; passenger opened door into path of passing vehicle. AV itself not at fault.
 30270-11015,0.0,AV was parked at curb; pickup truck merged into it
 30270-11044,0.5,AV moved into left lane to avoid cyclists but was struck by one
 30270-11013,0.0,AV was slowing for a stop sign; rear-ended by passenger car

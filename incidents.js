@@ -763,10 +763,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV stopped; non-motorist contact",
       "rcodex": "AV stopped; non-motorist contact",
-      "rgemini": "AV was stopped; passenger opened door into path of a scooterist"
+      "rgemini": "AV was stopped; passenger opened door into path of a scooterist. AV itself not at fault."
     },
     "vehiclesInvolved": 2
   },
@@ -825,10 +825,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing van",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     },
@@ -1017,10 +1017,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "The AV was parked partially in-lane and its passenger opened a door into the path of a passing bus. AV itself not at fault."
     },
@@ -1403,10 +1403,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
-      "gemini": 1.0,
+      "gemini": 0.0,
       "rclaude": "AV parked; struck by passing vehicle",
       "rcodex": "AV parked; struck by passing vehicle",
-      "rgemini": "AV parked for drop-off; passenger opened door into path of passing vehicle"
+      "rgemini": "AV parked for drop-off; passenger opened door into path of passing vehicle. AV itself not at fault."
     },
     "vehiclesInvolved": 2
   },
@@ -1689,10 +1689,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing car",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     },
@@ -1753,10 +1753,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV passenger opened door hitting parked vehicle",
+      "rclaude": "AV passenger opened door hitting parked vehicle; not AV system fault",
       "rcodex": "AV passenger repeatedly opened door while AV moved past stopped AV",
       "rgemini": "Passenger in moving AV opened door and hit a stationary AV. AV itself not at fault."
     },
@@ -1881,10 +1881,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     },
@@ -2137,10 +2137,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened front door into passing cyclist",
       "rgemini": "Passenger opened door into a passing cyclist while AV was parked. AV itself not at fault."
     },
@@ -3961,10 +3961,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened door into passing scooter",
       "rgemini": "Waymo passenger opened their door into the path of a passing scooterist. AV itself not at fault."
     },
@@ -3993,10 +3993,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing bus",
       "rgemini": "Passenger opened door into passing traffic while AV was parked. AV itself not at fault."
     },
@@ -4121,10 +4121,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into traffic; partial AV fault",
+      "rclaude": "Passenger opened door into traffic; not AV system fault",
       "rcodex": "AV passenger opened door into passing bus",
       "rgemini": "The AV was parked but its passenger opened a door into the path of an oncoming bus. AV itself not at fault."
     },
@@ -5209,10 +5209,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked; passenger opened door into path of passing SUV",
+      "rclaude": "AV parked; passenger opened door into path of passing SUV; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Waymo passenger opened their door into the path of an oncoming SUV. AV itself not at fault."
     },
@@ -5689,10 +5689,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped; passenger opened door into path of passing SUV",
+      "rclaude": "AV stopped; passenger opened door into path of passing SUV; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
     },
@@ -7033,10 +7033,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked; passenger opened door into path of passing van",
+      "rclaude": "AV parked; passenger opened door into path of passing van; not AV system fault",
       "rcodex": "AV rider opened rear door into passing van",
       "rgemini": "Waymo passenger opened their door into the path of a passing van. AV itself not at fault."
     },
@@ -8249,10 +8249,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV stopped with door open; SUV passing hit the open door",
+      "rclaude": "AV stopped with door open; SUV passing hit the open door; not AV system fault",
       "rcodex": "AV remained stopped with open door and passing SUV hit door",
       "rgemini": "SUV passed on the right and hit the open door of the stationary Waymo AV."
     },
@@ -8537,10 +8537,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV parked; passenger opened door into path of passing SUV",
+      "rclaude": "AV parked; passenger opened door into path of passing SUV; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing SUV",
       "rgemini": "Passenger opened door into passing traffic. AV itself not at fault."
     },
@@ -9401,10 +9401,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into passing car while AV stopped",
+      "rclaude": "Passenger opened door into passing car while AV stopped; not AV system fault",
       "rcodex": "AV passenger opened door into passing car during drop-off",
       "rgemini": "AV passenger opened door into a passing car; AV driving system not at fault."
     },
@@ -9529,10 +9529,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into passing SUV while AV parked",
+      "rclaude": "Passenger opened door into passing SUV while AV parked; not AV system fault",
       "rcodex": "AV passenger opened rear door into passing SUV during drop-off",
       "rgemini": "Passenger opened door into a passing vehicle while AV was parked. AV itself not at fault."
     },
@@ -9946,10 +9946,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "fault": {
       "claude": 0.0,
-      "codex": 0.2,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": "SUV passenger opened door into AV proceeding on green",
-      "rcodex": "SUV passenger opened door into passing AV",
+      "rcodex": "SUV passenger opened door into passing AV; passenger at fault",
       "rgemini": "Passenger in adjacent SUV opened door into moving Waymo AV."
     },
     "vehiclesInvolved": 2
@@ -9977,10 +9977,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.4,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger exited moving AV; tire stopped on their foot",
+      "rclaude": "Passenger exited moving AV; tire stopped on their foot; not AV system fault",
       "rcodex": "Passenger exited moving vehicle; AV continued rolling onto foot",
       "rgemini": "Passenger exited moving vehicle and placed foot under tire."
     },
@@ -12729,10 +12729,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "Passenger opened door into passing SUV while AV parked",
+      "rclaude": "Passenger opened door into passing SUV while AV parked; not AV system fault",
       "rcodex": "Open AV passenger door was struck by passing SUV",
       "rgemini": "Waymo passenger opened door into passing SUV. AV itself not at fault."
     },
@@ -13241,10 +13241,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV was stopped; passenger opened door and passing car hit it",
+      "rclaude": "AV was stopped; passenger opened door and passing car hit it; not AV system fault",
       "rcodex": "Open AV passenger door was struck by passing car",
       "rgemini": "Waymo passenger opened door into traffic but other car was passing in opposing lane. AV itself not at fault."
     },
@@ -15577,10 +15577,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.1,
+      "claude": 0.0,
       "codex": 0.0,
       "gemini": 0.0,
-      "rclaude": "AV was parked; passenger opened door into passing motorcycle",
+      "rclaude": "AV was parked; passenger opened door into passing motorcycle; not AV system fault",
       "rcodex": "AV passenger door opening contributed to motorcycle contact",
       "rgemini": "AV passenger opened door into the path of a motorcycle passing on the right; AV itself not at fault."
     },

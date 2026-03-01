@@ -192,7 +192,7 @@ Report ID,faultfrac,reasoning
 30270-13126,0.00,Turning truck trailer struck AV stopped to yield
 30270-13100,0.00,Mail truck rear-ended stopped AV
 30270-11849,0.00,SUV struck parked AV during curbside drop-off
-30270-11887,0.20,SUV passenger opened door into passing AV
+30270-11887,0.00,SUV passenger opened door into passing AV; passenger at fault, not AV system
 30270-11933,0.15,Counterpart lane change into AV path
 30270-11865,0.00,Counterpart backed into stationary AV
 30270-13092,0.00,Chain-reaction rear-end pushed car into stopped AV
