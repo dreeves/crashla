@@ -59,7 +59,7 @@ title="The higher this is, the wider the confidence intervals">
   </p>
   <p>Raw working sheet: <a href="https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871">Google Sheet (VMT + assumptions)</a></p>
   <ul>
-    <li>Top chart: solid line = MPI from all incidents; dashed line = MPI from nonstationary incidents; dot-dash line = MPI from at-fault-weighted incidents; error bars use <code>vmt_min</code> and <code>vmt_max</code>.</li>
+    <li>Top chart: lines differentiated by thickness show MPI for each selected metric. Shaded fan bands show 50%/80%/95% Bayesian credible intervals; error bars show the effect of VMT uncertainty (<code>vmt_min</code>/<code>vmt_max</code>) on the posterior median.</li>
     <li>Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.</li>
     <li>Tesla mileage assumptions are anchored to tracker sources (<a href="https://robotaxitracker.com/">robotaxitracker.com</a> and <a href="https://robotaxi-safety-tracker.com/">robotaxi-safety-tracker.com</a>) and then aligned to this same NHTSA window for apples-to-apples comparison.</li>
     <li>Waymo VMT is estimated by scaling <a href="https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting">California CPUC driverless VMT</a> (including deadhead) to all US cities using Waymo rider-only-mile city shares. Through Sep 2025 the error band is &plusmn;15%; for the extrapolated Oct&ndash;Jan period it widens to &plusmn;30%.</li>

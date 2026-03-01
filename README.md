@@ -12,9 +12,9 @@ https://electrek.co/2026/01/29/teslas-own-robotaxi-data-confirms-crash-rate-3x-w
 
 NHTSA data source:
 https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
-(2025 June 15 through 2025 December 15)
+(2025 June 15 through 2025 December 15) [AI note: window now extends to 2026 January 15; code uses NHTSA_WINDOW_END = "2026-01-15"]
 https://docs.google.com/spreadsheets/d/1r4hEVKOzE9sLLWmbB0Tzwzpo7aoUadmhxDY1imd5tb8/edit?usp=sharing
-416 incidents after deduping and filtering to operator=none
+518 incidents after deduping and filtering to operator=none
 
 https://www.austintexas.gov/page/autonomous-vehicles
 
@@ -36,7 +36,7 @@ UNKNOWN: fraction of the Sep 1+ rides with empty driver's seat.
 
 ## Finding the Denominators
 
-For each of these self-driving car companies, we need a lower bound and upper bound on the total miles they drove in the US at SAE level 3+ from 2025-06-15 thru 2025-12-15:
+For each of these self-driving car companies, we need a lower bound and upper bound on the total miles they drove in the US at SAE level 3+ from 2025-06-15 thru 2025-12-15: [AI note: window now extends to 2026-01-15]
 
 1. Waymo
 2. Tesla
@@ -121,7 +121,7 @@ ps, here's the prompt i used to get Deep Research to estimate the VMTs:
 In the NHTSA database of ADS incidents from June 15 to January 15, 2026, if we de-duplicate and filter down to those incidents with no human operator, we have these numbers: 
 * Tesla: 14 incidents 
 * Zoox: 12 incidents 
-* Waymo: 493 incidents 
+* Waymo: 492 incidents (note one incident from april which we filter out for not being in range for the rest of the data)
 We're working on comparing the safety of these 3 robotaxi companies, -- incidents per mile. So we need to estimate those denominators. This takes very careful research. For example, Tesla publishes mileage that includes robotaxi rides with a safety driver in the driver's seat. That needs to be excluded since Tesla only reports incidents in the ADS data set when the driver's seat is empty. (Passenger seat monitors don't count, according to Tesla, and we're accepting that.) Likewise, Waymo publishes *paid* miles but their incident reports include unpaid miles so we need to estimate paid and unpaid unsupervised Waymo miles. 
 
 Please give your best estimates of the unsupervised mileage in that time frame for each of the three companies, along with a lower bound and upper bound for each. And do keep the big picture in mind, that we need an apples-to-apples comparison across these companies.

@@ -1594,9 +1594,15 @@ function renderMpiSummaryCards(series) {
         const ciHi = 1 / gammaquant(a, row.vmtMax, tail);
         const median = 1 / gammaquant(a, row.vmtBest, 0.5);
         const hl = monthMetricEnabled[m.metricKey] ? " highlighted" : "";
+        const humanRange = KNOWN_HUMAN_MPI[m.metricKey];
+        const humanGeo = humanRange ? Math.sqrt(humanRange.lo * humanRange.hi) : null;
+        const mult = humanGeo ? median / humanGeo : null;
+        const multStr = mult !== null
+          ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 1 ? "" : ""}${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
+          : "";
         return `
         <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.metricKey}">
-          <div>${m.label}: ${fmtCount(k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span></div>
+          <div>${m.label}: ${fmtCount(k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span>${multStr}</div>
           <div class="mpi-card-ci">95% CI: ${fmtWhole(ciLo)} \u2013 ${fmtWhole(ciHi)}</div>
         </div>`;
       }).join("")}

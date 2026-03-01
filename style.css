@@ -422,6 +422,14 @@ tr:hover { background: #f8f8ff; }
 .mpi-card-metric.primary .mpi-card-mpi {
   font-size: 0.95rem;
 }
+.mpi-card-mult {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 0.3em;
+  opacity: 0.7;
+}
+.mpi-card-mult.safer { color: #2a7a3a; }
+.mpi-card-mult.worse { color: #a04030; }
 .mpi-card-ci {
   font-size: 0.72rem;
   color: #8090a8;
