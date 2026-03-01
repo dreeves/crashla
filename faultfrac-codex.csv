@@ -518,3 +518,15 @@ Report ID,faultfrac,reasoning
 30270-11189,0.00,Passing heavy truck struck stopped AV on narrow street
 30270-11174,1.00,AV underbody struck elevated gate track
 30270-11146,0.40,AV struck debris displaced across lane by vehicle ahead
+30270-11087,TODO,AV stopped; struck by other vehicle proceeding straight
+30270-11085,TODO,AV stopped; struck by SUV proceeding straight
+30270-11016,TODO,AV stopped; non-motorist contact
+30270-11014,TODO,AV stopped; non-motorist contact; redacted narrative
+30270-11088,TODO,AV struck fixed object while turning in parking lot
+30610-11096,TODO,AV encountered traffic cones and contacted SUV at low speed
+30270-10977,TODO,AV proceeding at 18mph; struck non-motorist crossing roadway; redacted
+30270-11046,TODO,AV parked; struck by passing vehicle
+30270-11015,TODO,AV parked; struck by pickup changing lanes
+30270-11044,TODO,AV changing lanes at low speed; struck cyclist
+30270-11013,TODO,Both proceeding straight at low speed; limited info from metadata
+30270-10998,TODO,AV parked; struck by pickup proceeding straight

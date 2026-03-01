@@ -518,3 +518,15 @@ Report ID,faultfrac,reasoning
 30610-13660,0,Car made illegal right turn from through lane clipping AV
 30610-13661,0.1,AV braked hard for debris; rear-ended by merging pickup
 30610-13662,0,AV was stopped; box truck reversed into stationary AV
+30270-11087,0,AV stopped; struck by other vehicle proceeding straight
+30270-11085,0,AV stopped; struck by SUV proceeding straight
+30270-11016,0,AV stopped; non-motorist contact
+30270-11014,0,AV stopped; non-motorist contact; redacted narrative
+30270-11088,0.9,AV hit fixed object while turning in parking lot
+30610-11096,0.3,AV encountered cones and contacted SUV at low speed
+30270-10977,0.4,AV proceeding at 18mph; struck non-motorist crossing; redacted
+30270-11046,0,AV parked; struck by passing vehicle
+30270-11015,0,AV parked; struck by pickup changing lanes
+30270-11044,0.7,AV changing lanes at low speed; struck cyclist
+30270-11013,0.3,Both proceeding straight at low speed; shared fault likely
+30270-10998,0,AV parked; struck by pickup proceeding straight

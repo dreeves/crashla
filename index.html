@@ -52,7 +52,7 @@ title="The higher this is, the wider the confidence intervals">
 <!-- TO-DO: Human vet all new end-user copy in this AI explainer section. -->
 <details class="ai-explainer">
   <summary>Explanatory Note (AI-generated text)</summary>
-  <p>This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the <a href="https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting">NHTSA SGO</a> time window (June 15, 2025 through January 15, 2026).</p>
+  <p>This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the <a href="https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting">NHTSA SGO</a> time window (June 2025 through January 15, 2026). Incident data comes from both the current and <a href="https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv">archive</a> NHTSA CSVs so that June has full-month coverage.</p>
   <p>Context:
 <a href="https://agifriday.substack.com/crashla/">agifriday.substack.com/crashla</a> and
 <a href="https://agifriday.substack.com/crashla2/">agifriday.substack.com/crashla2</a>
@@ -74,7 +74,7 @@ title="The higher this is, the wider the confidence intervals">
   <ul>
     <li>The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(&lambda; &middot; m), where &lambda; is the rate (incidents per mile) and m is VMT. Jeffreys prior: &lambda; ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: &lambda; | k, m ~ Gamma(k + 0.5, m). MPI = 1/&lambda;; quantiles are inverted via a monotone decreasing transformation.</li>
     <li>The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper &lambda; quantile, and the upper MPI bound uses vmt_max with the lower &lambda; quantile. This yields the widest possible band.</li>
-    <li>For partial months (June and January), VMT is pro-rated by the coverage fraction so that VMT and incident counts cover the same observation window.</li>
+    <li>For the partial month (January), VMT is pro-rated by the coverage fraction so that VMT and incident counts cover the same observation window.</li>
     <li>The point estimate shown in the line is the Bayesian posterior median of 1/&lambda;, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.</li>
     <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (weighted average of Claude, Codex, Gemini) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
   </ul>

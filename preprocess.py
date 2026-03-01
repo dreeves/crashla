@@ -18,6 +18,10 @@ NHTSA_ADS_CSV_URL = (
     "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/"
     "SGO-2021-01_Incident_Reports_ADS.csv"
 )
+NHTSA_ADS_ARCHIVE_URL = (
+    "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/"
+    "SGO-2021-01_Incident_Reports_ADS.csv"
+)
 INCIDENT_JS = "incidents.js"
 VMT_JS      = "vmt.js"
 VMT_SHEET_ID = "1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w"
@@ -104,22 +108,49 @@ def must(cond, msg, **ctx):
         raise AssertionError(f"{msg}: {ctx}")
 
 
+# The archive CSV uses different column names for some fields.
+# Map archive names to the current-CSV names used by FIELDS.
+ARCHIVE_COLUMN_MAP = {
+    "SV Any Air Bags Deployed?":   "Any Air Bags Deployed?",
+    "SV Was Vehicle Towed?":       "Was Any Vehicle Towed?",
+    "SV Were All Passengers Belted?": "Were All Passengers Belted?",
+    "Weather - Fog/Smoke":         "Weather - Fog/Smoke/Haze",
+    "Weather - Unknown":           "Weather - Unk - See Narrative",
+}
+
+
+def _normalize_archive_row(row):
+    """Add missing current-schema keys to an archive row using column map."""
+    for archive_key, current_key in ARCHIVE_COLUMN_MAP.items():
+        if current_key not in row and archive_key in row:
+            row[current_key] = row[archive_key]
+    return row
+
+
 def fetch_nhtsa_csv():
-    """Fetch the ADS incident reports CSV from NHTSA.
+    """Fetch ADS incident reports from both current and archive CSVs.
 
     Returns (rows, last_modified_date) where last_modified_date is an
-    ISO date string from the HTTP Last-Modified header, or None.
+    ISO date string from the HTTP Last-Modified header of the current
+    CSV, or None.
     """
-    print(f"Fetching NHTSA ADS CSV from {NHTSA_ADS_CSV_URL} ...")
-    with urllib.request.urlopen(NHTSA_ADS_CSV_URL, timeout=60) as resp:
-        lm = resp.headers.get("Last-Modified")
-        payload = resp.read()
-    text = payload.decode("utf-8")
+    all_rows = []
     lm_date = None
-    if lm:
-        from email.utils import parsedate_to_datetime
-        lm_date = parsedate_to_datetime(lm).date().isoformat()
-    return list(csv.DictReader(io.StringIO(text))), lm_date
+    for url in [NHTSA_ADS_CSV_URL, NHTSA_ADS_ARCHIVE_URL]:
+        print(f"Fetching NHTSA ADS CSV from {url} ...")
+        with urllib.request.urlopen(url, timeout=60) as resp:
+            lm = resp.headers.get("Last-Modified")
+            payload = resp.read()
+        text = payload.decode("utf-8")
+        is_archive = url == NHTSA_ADS_ARCHIVE_URL
+        for row in csv.DictReader(io.StringIO(text)):
+            if is_archive:
+                _normalize_archive_row(row)
+            all_rows.append(row)
+        if lm and lm_date is None:
+            from email.utils import parsedate_to_datetime
+            lm_date = parsedate_to_datetime(lm).date().isoformat()
+    return all_rows, lm_date
 
 
 def parse_fault_csv(path):
@@ -178,8 +209,6 @@ def month_coverage(month_str):
     year, mon = int(month_str[:4]), int(month_str[5:7])
     import calendar
     days_in_month = calendar.monthrange(year, mon)[1]
-    if month_str == "2025-06":
-        return 16 / days_in_month              # Jun 15–30 (16 days)
     if month_str == "2026-01":
         return 15 / days_in_month              # Jan 1–15
     return 1.0
@@ -261,15 +290,21 @@ def incident_coverage(nhtsa_rows):
     for rec in by_incident.values():
         # The original (v1) report type must be 5-Day or Monthly.
         # "Update" should only appear on later versions, never on v1.
-        must(rec["report_type"] in ("5-Day", "Monthly"),
-             "original report type must be 5-Day or Monthly",
+        # Classify as 5-Day-like (quick) vs Monthly. "Update" and
+        # "10-Day Update" appear as v1 in the archive when the original
+        # filing predates the archive boundary; treat as quick reports.
+        QUICK_TYPES = {"1-Day", "5-Day", "Update", "10-Day Update"}
+        is_quick = rec["report_type"] in QUICK_TYPES
+        is_monthly = rec["report_type"] == "Monthly"
+        must(is_quick or is_monthly,
+             "unexpected original report type",
              iid=rec.get("company"), month=rec["month"],
              report_type=rec["report_type"])
         key = (rec["company"], rec["month"])
         if key not in counts:
             counts[key] = {"five": 0, "total": 0}
         counts[key]["total"] += 1
-        if rec["report_type"] == "5-Day":
+        if is_quick:
             counts[key]["five"] += 1
 
     # For each company, compute historical 5-Day fraction from complete months
@@ -375,29 +410,70 @@ def js_template_literal(text):
     return text.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
 
 
-EXPECTED_REPORT_TYPES = {"5-Day", "Monthly", "Update"}
+EXPECTED_REPORT_TYPES = {
+    "1-Day", "5-Day", "10-Day Update", "Monthly", "Update",
+    "No New or Updated Incident Reports",
+}
 EXPECTED_DRIVER_TYPES = {
-    "None",
+    "",
+    "Consumer",
     "In-Vehicle (Commercial / Test)",
     "In-Vehicle and Remote (Commercial / Test)",
-    "Remote (Commercial / Test)",
+    "None",
     "Other, see Narrative",
+    "Remote (Commercial / Test)",
+    "Unknown",
 }
-# All reporting entities currently in the NHTSA ADS CSV.
+# All reporting entities in the NHTSA ADS CSV (current + archive).
 # Anti-Postel: if NHTSA adds a new company, we want to crash and review.
 EXPECTED_COMPANIES = {
+    "Ambarella",
+    "Apollo Autonomous Driving USA",
+    "Apple Inc.",
+    "Argo AI",
     "Aurora Operations, Inc.",
+    "AutoX Technologies Inc",
     "Avride Inc.",
     "Beep, Inc.",
+    "Chrysler (FCA US, LLC)",
+    "Cruise LLC",
+    "Daimler Trucks North America, LLC",
+    "Easymile Inc.",
+    "First Transit",
+    "Ford Motor Company",
+    "General Motors, LLC",
+    "Ghost Autonomy Inc.",
     "Hyundai Motor America",
+    "Kia America, Inc.",
+    "Kodiak Robotics",
+    "Local Motors Industries",
+    "Lucid USA, Inc.",
     "May Mobility",
+    "Mercedes-Benz USA, LLC",
+    "Mobileye Vision Technologies",
     "Motional",
+    "NAVYA Inc.",
+    "NVIDIA CORP",
+    "Navistar, Inc.",
     "Nuro",
     "Ohmio, Inc.",
     "Oxbotica",
+    "PACCAR Incorporated",
+    "PlusAI Inc",
+    "Pony.ai",
+    "Robert Bosch, LLC",
+    "Robotic Research",
     "Stack AV",
+    "TORC Robotics, Inc.",
     "Tesla, Inc.",
+    "Toyota Motor Engineering & Manufacturing",
+    "Transdev Alternative Services",
+    "TuSimple",
+    "VinFast Auto, LLC",
+    "Volkswagen Group of America, Inc.",
+    "Volvo Car USA, LLC",
     "Waymo LLC",
+    "WeRide Corp",
     "Zoox, Inc.",
 }
 INCIDENT_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
@@ -408,8 +484,14 @@ def main():
     rows, nhtsa_modified_date = fetch_nhtsa_csv()
     must(len(rows) > 0, "NHTSA CSV has no rows")
 
-    # Anti-Postel: fail loud on unexpected field values
+    # Anti-Postel: fail loud on unexpected field values.
+    # Skip placeholder rows (empty incident ID or date) from archive.
+    valid_rows = []
     for i, r in enumerate(rows):
+        iid = r["Same Incident ID"].strip()
+        idate = r["Incident Date"].strip()
+        if not iid or not idate:
+            continue  # Placeholder rows (e.g., "No New or Updated" entries)
         rt = r["Report Type"].strip()
         must(rt in EXPECTED_REPORT_TYPES,
              "unexpected Report Type", row=i, value=rt,
@@ -422,7 +504,6 @@ def main():
         must(company in EXPECTED_COMPANIES,
              "unexpected Reporting Entity", row=i, value=company,
              expected=sorted(EXPECTED_COMPANIES))
-        idate = r["Incident Date"].strip()
         must(INCIDENT_DATE_RE.match(idate),
              "unexpected Incident Date format", row=i, value=idate)
         abbr = idate.split("-")[0]
@@ -439,8 +520,8 @@ def main():
         ver = r["Report Version"].strip()
         must(ver.isdigit() and int(ver) >= 1,
              "Report Version must be positive integer", row=i, value=ver)
-        iid = r["Same Incident ID"].strip()
-        must(len(iid) > 0, "Same Incident ID must not be empty", row=i)
+        valid_rows.append(r)
+    rows = valid_rows
 
     fault_models, fault_ids = load_fault_models()
 
@@ -455,13 +536,31 @@ def main():
         if iid not in by_incident or ver > by_incident[iid]["_ver"]:
             by_incident[iid] = {"_ver": ver, "_row": r}
 
-    incidents = []
+    # Filter to VMT window before looking up fault fractions.
+    # The archive includes years of data; we only need the analysis window.
+    VMT_MONTHS = {
+        "JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
+        "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026",
+    }
+    window_by_incident = {}
+    excluded_count = 0
     for iid, entry in by_incident.items():
+        month = nhtsa_month_to_iso(entry["_row"]["Incident Date"].strip())
+        nhtsa_month = entry["_row"]["Incident Date"].strip()
+        if nhtsa_month not in VMT_MONTHS:
+            excluded_count += 1
+            continue
+        window_by_incident[iid] = entry
+    if excluded_count > 0:
+        print(f"  Excluded {excluded_count} incidents outside VMT window")
+
+    incidents = []
+    for iid, entry in window_by_incident.items():
         r = entry["_row"]
         rec = {}
         for csv_field in FIELDS:
             key = KEY_MAP[csv_field]
-            val = r[csv_field].strip()
+            val = r.get(csv_field, "").strip()
             rec[key] = val
         # Shorten company name
         rec["company"] = COMPANY_SHORT.get(rec["company"], rec["company"])
@@ -487,27 +586,11 @@ def main():
         incidents.append(rec)
 
     incident_ids = {r["reportId"] for r in incidents}
-    must(incident_ids == fault_ids, "incident/fault Report ID sets must match",
-         incidents_only=sorted(incident_ids - fault_ids)[:5],
-         fault_only=sorted(fault_ids - incident_ids)[:5])
-
-    # Anti-Postel: all incident dates must be in the VMT window.
-    # The NHTSA data occasionally includes incidents from months outside
-    # the observation window (e.g., a Waymo incident from APR-2025).
-    # These have no VMT data, so we exclude them here with a loud warning.
-    VMT_MONTHS = {
-        "JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
-        "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026",
-    }
-    excluded = [r for r in incidents if r["date"] not in VMT_MONTHS]
-    for r in excluded:
-        print(f"  WARNING: excluding incident {r['reportId']} ({r['company']}"
-              f" {r['date']}) — outside VMT window")
-    incidents = [r for r in incidents if r["date"] in VMT_MONTHS]
-    excluded_ids = {r["reportId"] for r in excluded}
-    # Also remove excluded incidents from fault model sets so the ID-match
-    # check below still passes.
-    fault_ids -= excluded_ids
+    # Fault CSVs may contain entries for incidents outside the VMT window
+    # (e.g., APR-2025). Only check that every incident has fault data.
+    missing_fault = incident_ids - fault_ids
+    must(len(missing_fault) == 0, "incidents missing fault estimates",
+         missing=sorted(missing_fault)[:5])
 
     # Sort by company then date
     month_order = {
@@ -520,8 +603,14 @@ def main():
         r["time"],
     ))
 
-    # Compute incident reporting completeness before building VMT CSV
-    inc_cov = incident_coverage(rows)
+    # Compute incident reporting completeness before building VMT CSV.
+    # Only use rows from the VMT window to avoid archive history skewing
+    # the 5-Day fraction estimates.
+    VMT_NHTSA_MONTHS = {"JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
+                        "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026"}
+    window_rows = [r for r in rows
+                   if r.get("Incident Date", "").strip() in VMT_NHTSA_MONTHS]
+    inc_cov = incident_coverage(window_rows)
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
