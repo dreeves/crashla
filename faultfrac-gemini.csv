@@ -196,7 +196,7 @@ Report ID,faultfrac,reasoning
 30270-11933,0.0,SUV changed lanes into the Waymo AV.
 30270-11865,0.0,Waymo was stationary and reversed into by a heavy truck.
 30270-13092,0.0,Waymo was rear-ended in a chain reaction while stationary.
-30270-13096,0.0,Waymo struck a suspended wire held up by a pedestrian.
+30270-13096,0.6,Waymo struck a suspended wire held up by a pedestrian (likely failed to detect obstacle, but possible late sabotage).
 30270-12070,1.0,Waymo ran over a cat that was under the vehicle before it started moving.
 30270-13028,0.0,Waymo was stationary and reversed into by a passenger car.
 30270-12063,0.0,Waymo was stationary and hit by a car changing lanes.

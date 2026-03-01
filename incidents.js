@@ -11291,10 +11291,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.5,
       "codex": 0.8,
-      "gemini": 0.0,
+      "gemini": 0.6,
       "rclaude": "AV drove through low-hanging suspended wire",
       "rcodex": "AV continued into visibly low suspended wire across roadway",
-      "rgemini": "Waymo struck a suspended wire held up by a pedestrian."
+      "rgemini": "Waymo struck a suspended wire held up by a pedestrian (likely failed to detect obstacle"
     },
     "vehiclesInvolved": 2
   },

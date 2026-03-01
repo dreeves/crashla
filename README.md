@@ -133,3 +133,32 @@ can you make a file called faultfrac-MODEL.csv that, for every Report ID in nhts
 
 Report ID,faultfrac,reasoning
 54321-12345,0.5,"AV and other vehicle merged into each other"
+
+---
+
+## [AI] June and the Different Datasets
+
+The NHTSA Standing General Order (SGO) observation window runs from **June 15, 2025 through January 15, 2026**.
+June is therefore a partial month (June 15–30 only), as is January (Jan 1–15).
+The VMT figures for those months are pre-adjusted to match the same partial windows, so coverage=1.0 in the VMT data means "VMT and incidents are already aligned" — no further pro-rating needed for June.
+January has coverage=0.484 (15/31) because the VMT is given as a full-month figure and needs scaling.
+
+### The three datasets combined here
+
+1. **NHTSA SGO incident reports** (the numerator).
+   Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `preprocess.py`.
+   The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
+   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to Driver/Operator Type = "None", we get ~518 incidents across Tesla, Waymo, and Zoox.
+
+2. **Vehicle Miles Traveled (VMT)** (the denominator).
+   Sourced from a Google Sheet and embedded in `vmt.js`.
+   Each company's mileage comes from different public sources:
+   - **Tesla**: robotaxitracker.com cumulative deltas (Austin only; Bay Area excluded per Tesla's Q3 earnings call).
+   - **Waymo**: California CPUC driverless VMT, scaled to all-US using Waymo ride-ops city shares (±15% through Sep 2025, ±30% extrapolated after).
+   - **Zoox**: Rough US estimates based on limited public data from California CPUC and Las Vegas operations (0.5×–2× error band).
+
+3. **AI fault-fraction estimates** (for fault-weighted MPI).
+   Three AI models (Claude, Codex, Gemini) each estimated how at-fault the AV was for every incident, on a 0–1 scale.
+   Stored in `faultfrac-claude.csv`, `faultfrac-codex.csv`, `faultfrac-gemini.csv`.
+   These are used to compute fault-weighted incident counts and fault-variance columns.
+   Passenger-caused incidents (e.g., passenger opened door into traffic) are scored 0 — only the AV driving system's fault counts.
