@@ -83,6 +83,13 @@ const metrics = vm.runInContext(`
     janTeslaNonstationary: nonstationaryIncidentCount(byMonth["2026-01"].companies.Tesla.incidents.speeds),
     janTeslaRoadwayNonstationary: byMonth["2026-01"].companies.Tesla.incidents.roadwayNonstationary,
     summaryRows: monthlySummaryRows(series),
+    airbagByCompanyMonth: Object.fromEntries(
+      ADS_COMPANIES.map(company => [
+        company,
+        series.points.map(p => p.companies[company].incidents.airbag),
+      ]),
+    ),
+    summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
     chartMpiAll: document.getElementById("chart-mpi-all").innerHTML,
     chartCompanySeries: document.getElementById("chart-company-series").innerHTML,
     legendMpiCompanies: document.getElementById("month-legend-mpi-companies").innerHTML,
@@ -171,6 +178,65 @@ assert.ok(
 Expectata: summary rows include overall, nonstationary, and nonstationary-roadway miles-per-incident values derived from best-VMT totals and observed-window incident totals.
 Resultata: Tesla summary was ${JSON.stringify(summaryByCompany.Tesla)}.`,
 );
+assert.ok(
+  summaryByCompany.Waymo.incAirbag >= 15 &&
+    summaryByCompany.Waymo.incAirbag <= 30 &&
+    summaryByCompany.Tesla.incAirbag === 0 &&
+    summaryByCompany.Zoox.incAirbag === 0,
+  `Replicata: compute airbag deployment incident counts per company.
+Expectata: Waymo has 15\u201330 airbag incidents; Tesla and Zoox have 0 (no airbag deployments in current data).
+Resultata: Waymo=${summaryByCompany.Waymo.incAirbag} Tesla=${summaryByCompany.Tesla.incAirbag} Zoox=${summaryByCompany.Zoox.incAirbag}.`,
+);
+
+// Verify airbag field exists in incident data and the monthly series correctly
+// disaggregates it: Waymo's total airbag count across months should equal incAirbag.
+const waymoAirbagMonthly = plain.airbagByCompanyMonth.Waymo;
+const waymoAirbagSum = waymoAirbagMonthly.reduce((a, b) => a + b, 0);
+assert.equal(
+  waymoAirbagSum,
+  summaryByCompany.Waymo.incAirbag,
+  `Replicata: sum per-month Waymo airbag counts.
+Expectata: per-month sum equals summary incAirbag (${summaryByCompany.Waymo.incAirbag}).
+Resultata: monthly sum was ${waymoAirbagSum}, monthly breakdown was ${JSON.stringify(waymoAirbagMonthly)}.`,
+);
+
+// Verify incident data contains airbagAny field (boolean)
+const airbagFieldCheck = vm.runInContext(`
+  INCIDENT_DATA.every(inc => typeof inc.airbagAny === "boolean")
+`, ctx);
+assert.ok(
+  airbagFieldCheck,
+  `Replicata: check airbagAny field type in all incident records.
+Expectata: every incident has a boolean airbagAny field.
+Resultata: some incidents are missing or have non-boolean airbagAny.`,
+);
+
+// Verify airbag appears in summary cards when rendered (all metrics enabled)
+assert.ok(
+  plain.summaryCardHtml.includes("Airbag deployment") &&
+    plain.summaryCardHtml.includes("incAirbag") === false,
+  `Replicata: render summary cards with all metrics enabled.
+Expectata: summary cards include "Airbag deployment" label (not raw field name).
+Resultata: card HTML snippet: ${JSON.stringify(plain.summaryCardHtml.slice(0, 200))}.`,
+);
+
+// Verify human benchmark for airbag exists and has correct structure
+const humanAirbag = vm.runInContext("KNOWN_HUMAN_MPI.airbag", ctx);
+assert.ok(
+  humanAirbag && humanAirbag.lo > 0 && humanAirbag.hi > humanAirbag.lo &&
+    humanAirbag.lo >= 400000 && humanAirbag.hi <= 800000,
+  `Replicata: inspect KNOWN_HUMAN_MPI.airbag.
+Expectata: airbag human benchmark has lo (400k\u2013600k) < hi (600k\u2013800k) based on ~1.66 IPMM.
+Resultata: ${JSON.stringify(humanAirbag)}.`,
+);
+
+// Verify chart renders airbag line data (stroke-width:1.2 from airbag LINE_STYLE)
+assert.ok(
+  plain.chartMpiAll.includes("stroke-width:1.2"),
+  `Replicata: render all-company MPI chart with all metrics enabled.
+Expectata: chart includes stroke-width:1.2 (used by airbag and fatality lines).
+Resultata: stroke-width:1.2 not found in rendered chart.`,
+);
 
 const renderedAll = plain.chartMpiAll;
 assert.ok(
@@ -232,10 +298,12 @@ assert.ok(
   plain.legendMpiLines.includes("month-metric-toggle-nonstationary") &&
   plain.legendMpiLines.includes("month-metric-toggle-roadwayNonstationary") &&
   plain.legendMpiLines.includes("month-metric-toggle-atfault") &&
+  plain.legendMpiLines.includes("month-metric-toggle-airbag") &&
   plain.legendMpiLines.includes("Miles per incident") &&
     plain.legendMpiLines.includes("Miles per nonstationary incident") &&
   plain.legendMpiLines.includes("Miles per nonstationary non-parking-lot incident") &&
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
+  plain.legendMpiLines.includes("Miles per airbag-deploying crash") &&
   plain.legendLines.includes("VMT (best)") &&
   plain.legendSpeed.includes("Left bar (movement)") &&
   plain.legendSpeed.includes("Right bar (severity)") &&

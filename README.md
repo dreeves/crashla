@@ -1,6 +1,7 @@
 # How safe are robotaxis?
 
 https://agifriday.substack.com/p/crashla
+https://agifriday.substack.com/p/crashla2
 
 We know Waymos are much safer than human drivers:
 https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:waymo.com)",
+      "WebFetch(domain:arxiv.org)"
+    ]
+  }
+}

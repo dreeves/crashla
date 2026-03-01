@@ -134,11 +134,12 @@ const MONTH_METRIC_DEFS = [
   {key: "atfaultInjury", label: "Miles per at-fault injury crash", marker: "hollow-triangle"},
   {key: "injury", label: "Miles per injury crash", marker: "solid-circle"},
   {key: "hospitalization", label: "Miles per hospitalization crash", marker: "solid-circle"},
+  {key: "airbag", label: "Miles per airbag-deploying crash", marker: "solid-circle"},
   {key: "fatality", label: "Miles per fatal crash", marker: "solid-circle"},
 ];
 let monthMetricEnabled = {
   all: true, nonstationary: false, roadwayNonstationary: false, atfault: false,
-  atfaultInjury: false, injury: false, hospitalization: false, fatality: false,
+  atfaultInjury: false, injury: false, hospitalization: false, airbag: false, fatality: false,
 };
 
 
@@ -150,6 +151,7 @@ const LINE_STYLE = {
   atfaultInjury:      {width: 1,   opacity: 0.4},
   injury:             {width: 2,   opacity: 0.9},
   hospitalization:    {width: 1.5, opacity: 0.7},
+  airbag:             {width: 1.2, opacity: 0.6},
   fatality:           {width: 1.2, opacity: 0.5},
 };
 
@@ -232,6 +234,16 @@ const KNOWN_HUMAN_MPI = {
   // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
   hospitalization: {lo: 600000, hi: 4350000,
     src: 'lo: 1M/1.66 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM',
+    srcLinks: [
+      {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
+    ]},
+  // Airbag deployment in any vehicle. Waymo safety impact page: human
+  // benchmark 1.66 IPMM (police-reported, AV operating counties, no
+  // underreporting adjustment — airbag deployments are mechanically
+  // triggered and rarely underreported). Range accounts for modest
+  // geographic/methodological variation.
+  airbag: {lo: 500000, hi: 700000,
+    src: 'Waymo safety impact: 1.66 IPMM police-reported airbag-deploy rate in AV operating counties',
     srcLinks: [
       {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
     ]},
@@ -1092,6 +1104,7 @@ function monthlySummaryRows(series) {
       incAtFaultInjury: rows.reduce((sum, row) => sum + row.incidents.atFaultInjury, 0),
       incInjury: rows.reduce((sum, row) => sum + row.incidents.injury, 0),
       incHospitalization: rows.reduce((sum, row) => sum + row.incidents.hospitalization, 0),
+      incAirbag: rows.reduce((sum, row) => sum + row.incidents.airbag, 0),
       incFatality: rows.reduce((sum, row) => sum + row.incidents.fatality, 0),
       milesPerIncident: vmtBest / incTotal,
       milesPerNonstationaryIncident: vmtBest / incNonstationary,
@@ -1122,7 +1135,7 @@ function monthSeriesData() {
     let rec = incidentsByKey[key];
     if (rec === undefined) {
       rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
-             atFaultInjury: 0, injury: 0, hospitalization: 0, fatality: 0};
+             atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, fatality: 0};
       incidentsByKey[key] = rec;
     }
     rec.total += 1;
@@ -1143,6 +1156,7 @@ function monthSeriesData() {
     rec.atFaultInjury += (atFaultFrac || 0) * Number(INJURY_SEVERITIES.has(inc.severity));
     rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
     rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
+    rec.airbag += Number(inc.airbagAny === true);
     // Per-vehicle fatality: divide by number of vehicles involved to match
     // fleet-wide fatality rate methodology (see theargumentmag.com article).
     // vehiclesInvolved defaults to 2; overridden in preprocess.py when the
@@ -1162,7 +1176,7 @@ function monthSeriesData() {
       must(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
       must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, fatality: 0};
+      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       // Incident coverage: when Monthly reports are absent for the last month,
       // the observed 5-Day count is a Poisson-thinned subset.  Scaling VMT by
@@ -1223,6 +1237,7 @@ function renderAllCompaniesMpiChart(series) {
     atfaultInjury: rec => rec.incidents.atFaultInjury,
     injury: rec => rec.incidents.injury,
     hospitalization: rec => rec.incidents.hospitalization,
+    airbag: rec => rec.incidents.airbag,
     fatality: rec => rec.incidents.fatality,
   };
   const markerRenderer = {
@@ -1576,6 +1591,7 @@ const CARD_METRICS = [
   {label: "At-fault injury",               inc: "incAtFaultInjury",       metricKey: "atfaultInjury",        primary: false},
   {label: "Injury",                        inc: "incInjury",              metricKey: "injury",               primary: false},
   {label: "Hospitalization",               inc: "incHospitalization",     metricKey: "hospitalization",      primary: false},
+  {label: "Airbag deployment",             inc: "incAirbag",              metricKey: "airbag",               primary: false},
   {label: "Fatality",                      inc: "incFatality",            metricKey: "fatality",             primary: false},
 ];
 
@@ -1598,7 +1614,7 @@ function renderMpiSummaryCards(series) {
         const humanGeo = humanRange ? Math.sqrt(humanRange.lo * humanRange.hi) : null;
         const mult = humanGeo ? median / humanGeo : null;
         const multStr = mult !== null
-          ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 1 ? "" : ""}${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
+          ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
           : "";
         return `
         <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.metricKey}">

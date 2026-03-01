@@ -50,6 +50,7 @@ FIELDS = [
     "CP Pre-Crash Movement",
     "Narrative",
     "Narrative - CBI?",
+    "Any Air Bags Deployed?",
     "Weather - Clear",
     "Weather - Rain",
     "Weather - Cloudy",
@@ -74,6 +75,7 @@ KEY_MAP = {
     "CP Pre-Crash Movement":         "cpMovement",
     "Narrative":                     "narrative",
     "Narrative - CBI?":              "narrativeCbi",
+    "Any Air Bags Deployed?":        "airbagAny",
     "Weather - Clear":               "wxClear",
     "Weather - Rain":                "wxRain",
     "Weather - Cloudy":              "wxCloudy",
@@ -468,6 +470,8 @@ def main():
             rec["speed"] = int(rec["speed"])
         except (ValueError, TypeError):
             rec["speed"] = None
+        # Convert airbag field to boolean (any vehicle deployment)
+        rec["airbagAny"] = "Yes" in rec["airbagAny"]
         rid = rec["reportId"]
         must(rid in fault_ids, "missing fault estimates for report", reportId=rid)
         rec["fault"] = {
