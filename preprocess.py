@@ -170,15 +170,14 @@ def nhtsa_month_to_iso(label):
 def month_coverage(month_str):
     """Fraction of the month inside the NHTSA observation window.
 
-    January is partial: the data publication cutoff naturally restricts
-    incidents to Jan 1–15, so we scale VMT to match.  June is NOT scaled:
-    the incident dates are month-level ("JUN-2025") with no day, so we
-    can't separate pre- vs post-June-15 incidents.  Using the full month's
-    VMT against the full month's incidents avoids a systematic mismatch.
+    Both endpoints are partial: June 15–30 and January 1–15.  VMT is
+    pro-rated so that incident counts and miles cover the same window.
     """
     year, mon = int(month_str[:4]), int(month_str[5:7])
     import calendar
     days_in_month = calendar.monthrange(year, mon)[1]
+    if month_str == "2025-06":
+        return 16 / days_in_month              # Jun 15–30 (16 days)
     if month_str == "2026-01":
         return 15 / days_in_month              # Jan 1–15
     return 1.0
@@ -319,8 +318,8 @@ def incident_coverage(nhtsa_rows):
              p_best=p_best, p_lo=p_lo, p_hi=p_hi)
         # incident_coverage = p (the 5-Day fraction); this scales VMT down
         # so the Gamma posterior correctly reflects the thinned observation.
-        # lo pairs with vmtMax (optimistic MPI), hi pairs with vmtMin
-        # (pessimistic MPI), so lo=p_lo and hi=p_hi.
+        # lo pairs with vmtMin (pessimistic MPI), hi pairs with vmtMax
+        # (optimistic MPI).
         result[key] = (round(p_best, 4), round(p_lo, 4), round(p_hi, 4))
         print(f"  {company} {last_month} incident_coverage:"
               f" best={p_best:.3f} lo={p_lo:.3f} hi={p_hi:.3f}"
