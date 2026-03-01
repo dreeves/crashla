@@ -202,6 +202,11 @@ tr:hover { background: #f8f8ff; }
   white-space: nowrap;
   cursor: help;
 }
+.fault-var-cell {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
 .fault-bar {
   display: inline-block;
   height: 14px;

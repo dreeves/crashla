@@ -1870,6 +1870,27 @@ function weightedFault(reportId) {
   return weightedFaultFromValues(fd.claude, fd.codex, fd.gemini, faultWeights());
 }
 
+function weightedFaultVarianceFromValues(claude, codex, gemini, weights) {
+  const c = Number(claude);
+  const o = Number(codex);
+  const g = Number(gemini);
+  must(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
+  must(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
+  must(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
+  const total = weights.claude + weights.codex + weights.gemini;
+  const mean = total === 0 ? null : (weights.claude * c + weights.codex * o + weights.gemini * g) / total;
+  return mean === null ? null : (
+    weights.claude * (c - mean) * (c - mean) +
+    weights.codex * (o - mean) * (o - mean) +
+    weights.gemini * (g - mean) * (g - mean)
+  ) / total;
+}
+
+function weightedFaultVariance(reportId) {
+  const fd = faultData[reportId];
+  return fd ? weightedFaultVarianceFromValues(fd.claude, fd.codex, fd.gemini, faultWeights()) : null;
+}
+
 function faultColor(frac) {
   // Green (0) -> Yellow (0.5) -> Red (1)
   if (frac <= 0.5) {
@@ -1913,11 +1934,15 @@ const SORT_COLUMNS = [
   {key: "crashWith",val: r => r.crashWith},
   {key: "speed",    val: r => r.speed !== null ? r.speed : -1},
   {key: "fault",    val: r => { const f = weightedFault(r.reportId); return f !== null ? f : -1; }},
+  {key: "faultVariance", val: r => {
+    const v = weightedFaultVariance(r.reportId);
+    return v !== null ? v : -1;
+  }},
   {key: "severity", val: r => r.severity || ""},
   {key: "narrative", val: r => r.narrative || ""},
 ];
 
-const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
+const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Fault variance", "Severity", "Narrative"];
 
 function buildBrowser() {
   const rows = incidentsInVmtWindow();
@@ -2006,6 +2031,8 @@ function renderTable() {
     const faultHtml = fault !== null
       ? `<span class="fault-bar" style="width:${Math.round(fault * 40)}px;background:${faultColor(fault)}"></span>${fault.toFixed(2)}`
       : "—";
+    const faultVariance = weightedFaultVariance(r.reportId);
+    const faultVarianceHtml = faultVariance !== null ? faultVariance.toFixed(3) : "—";
     const faultTip = escAttr(faultTooltip(r.reportId));
 
     tr.innerHTML = `
@@ -2015,6 +2042,7 @@ function renderTable() {
       <td>${escHtml(r.crashWith)}</td>
       <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
       <td class="fault-cell" data-tip="${faultTip}">${faultHtml}</td>
+      <td class="fault-var-cell">${faultVarianceHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
       <td class="${narrativeClass}">${escHtml(narrativeText)}</td>
     `;

@@ -510,7 +510,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "gemini": 0.0,
       "rclaude": "AV parked; struck by pickup proceeding straight",
       "rcodex": "AV parked; struck by pickup proceeding straight",
-      "rgemini": "AV was parked; struck by pickup truck proceeding straight"
+      "rgemini": "AV was parked at curb; struck by a passing pickup truck"
     },
     "vehiclesInvolved": 2
   },
@@ -635,10 +635,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.3,
       "codex": 0.25,
-      "gemini": 0.2,
+      "gemini": 0.0,
       "rclaude": "Both proceeding straight at low speed; shared fault likely",
       "rcodex": "Both proceeding straight at low speed; limited info from metadata",
-      "rgemini": "Both vehicles proceeding straight at low speed; likely other vehicle at fault"
+      "rgemini": "AV was slowing for a stop sign; rear-ended by passenger car"
     },
     "vehiclesInvolved": 2
   },
@@ -763,10 +763,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
-      "gemini": 0.0,
+      "gemini": 1.0,
       "rclaude": "AV stopped; non-motorist contact",
       "rcodex": "AV stopped; non-motorist contact",
-      "rgemini": "AV was stopped; non-motorist made contact with stationary AV"
+      "rgemini": "AV was stopped; passenger opened door into path of a scooterist"
     },
     "vehiclesInvolved": 2
   },
@@ -798,7 +798,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "gemini": 0.0,
       "rclaude": "AV stopped; struck by SUV proceeding straight",
       "rcodex": "AV stopped; struck by SUV proceeding straight",
-      "rgemini": "AV was stopped; struck by SUV proceeding straight"
+      "rgemini": "AV was stopped at a red light; struck from behind by an SUV"
     },
     "vehiclesInvolved": 2
   },
@@ -1150,7 +1150,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "gemini": 0.0,
       "rclaude": "AV stopped; struck by other vehicle proceeding straight",
       "rcodex": "AV stopped; struck by other vehicle proceeding straight",
-      "rgemini": "AV was stopped; struck by other vehicle proceeding straight"
+      "rgemini": "AV was stopped in traffic; struck from behind by another vehicle being pushed into it"
     },
     "vehiclesInvolved": 2
   },
@@ -1339,10 +1339,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.4,
       "codex": 0.35,
-      "gemini": 0.3,
+      "gemini": 0.0,
       "rclaude": "AV proceeding at 18mph; struck non-motorist crossing; redacted",
       "rcodex": "AV proceeding at 18mph; struck non-motorist crossing roadway; redacted",
-      "rgemini": "AV was proceeding at 18mph; struck non-motorist crossing roadway; redacted narrative"
+      "rgemini": "AV proceeding normally; scooterist emerged from behind another vehicle and struck the AV"
     },
     "vehiclesInvolved": 2
   },
@@ -1403,10 +1403,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
-      "gemini": 0.0,
+      "gemini": 1.0,
       "rclaude": "AV parked; struck by passing vehicle",
       "rcodex": "AV parked; struck by passing vehicle",
-      "rgemini": "AV was parked; struck by a passing vehicle"
+      "rgemini": "AV parked for drop-off; passenger opened door into path of passing vehicle"
     },
     "vehiclesInvolved": 2
   },
@@ -1531,10 +1531,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
-      "gemini": 0.9,
+      "gemini": 1.0,
       "rclaude": "AV hit fixed object while turning in parking lot",
       "rcodex": "AV struck fixed object while turning in parking lot",
-      "rgemini": "AV hit a fixed object while turning in a parking lot"
+      "rgemini": "AV drove into raised pavement at a parking lot entrance"
     },
     "vehiclesInvolved": 2
   },
@@ -1723,10 +1723,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.7,
       "codex": 0.7,
-      "gemini": 0.6,
+      "gemini": 0.5,
       "rclaude": "AV changing lanes at low speed; struck cyclist",
       "rcodex": "AV changing lanes at low speed; struck cyclist",
-      "rgemini": "AV was changing lanes at low speed and struck a cyclist"
+      "rgemini": "AV moved into left lane to avoid cyclists but was struck by one"
     },
     "vehiclesInvolved": 2
   },
@@ -1982,7 +1982,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "gemini": 0.0,
       "rclaude": "AV stopped; non-motorist contact; redacted narrative",
       "rcodex": "AV stopped; non-motorist contact; redacted narrative",
-      "rgemini": "AV was stopped; non-motorist contact; redacted narrative"
+      "rgemini": "AV was stopped for pickup; scooterist hit the rear of the stationary AV"
     },
     "vehiclesInvolved": 2
   },
@@ -2046,7 +2046,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "gemini": 0.0,
       "rclaude": "AV parked; struck by pickup changing lanes",
       "rcodex": "AV parked; struck by pickup changing lanes",
-      "rgemini": "AV was parked; struck by pickup truck changing lanes"
+      "rgemini": "AV was parked at curb; pickup truck merged into it"
     },
     "vehiclesInvolved": 2
   },
@@ -16571,10 +16571,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": 0.3,
       "codex": 0.3,
-      "gemini": 0.2,
+      "gemini": 0.0,
       "rclaude": "AV encountered cones and contacted SUV at low speed",
       "rcodex": "AV encountered traffic cones and contacted SUV at low speed",
-      "rgemini": "AV encountered traffic cones and contacted SUV at very low speed"
+      "rgemini": "AV slowed for traffic cones and was rear-ended by an SUV"
     },
     "vehiclesInvolved": 2
   },
