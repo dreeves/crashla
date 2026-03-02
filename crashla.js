@@ -123,8 +123,6 @@ function estimateRate(k, m) {
 let incidents = [];
 let vmtRows = [];
 let faultData = {}; // reportId -> {claude, codex, gemini, rclaude, rcodex, rgemini}
-const DEFAULT_FAULT_WEIGHTS = {claude: 3, codex: 3, gemini: 3};
-let faultWeightState = {...DEFAULT_FAULT_WEIGHTS};
 let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true, Humans: true};
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
@@ -1199,7 +1197,6 @@ function monthSeriesData() {
   }
 
   const incidentsByKey = {};
-  const weights = faultWeights();
   for (const inc of incidents) {
     must(ADS_COMPANIES.includes(inc.company), "inline incident data has unknown ADS company", {company: inc.company});
     const month = monthKeyFromIncidentLabel(inc.date);
@@ -1223,7 +1220,7 @@ function monthSeriesData() {
     must(inc.fault !== null && typeof inc.fault === "object",
       "incident missing fault object for monthly series", {reportId: inc.reportId});
     const atFaultFrac = weightedFaultFromValues(
-      inc.fault.claude, inc.fault.codex, inc.fault.gemini, weights,
+      inc.fault.claude, inc.fault.codex, inc.fault.gemini,
     );
     must(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
       "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
@@ -1842,53 +1839,36 @@ function buildFaultDataFromIncidents(rows) {
   return data;
 }
 
-function faultWeights() {
-  return {...faultWeightState};
-}
-
-function setFaultWeight(model, rawValue) {
-  const value = Number(rawValue);
-  must(Number.isFinite(value) && value >= 0,
-    "fault weight must be a non-negative number", {model, rawValue});
-  faultWeightState[model] = value;
-}
-
-function weightedFaultFromValues(claude, codex, gemini, weights) {
+function weightedFaultFromValues(claude, codex, gemini) {
   const c = Number(claude);
   const o = Number(codex);
   const g = Number(gemini);
   must(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
   must(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
   must(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
-  const total = weights.claude + weights.codex + weights.gemini;
-  return total === 0 ? null : (weights.claude * c + weights.codex * o + weights.gemini * g) / total;
+  return (c + o + g) / 3;
 }
 
 function weightedFault(reportId) {
   const fd = faultData[reportId];
   if (!fd) return null;
-  return weightedFaultFromValues(fd.claude, fd.codex, fd.gemini, faultWeights());
+  return weightedFaultFromValues(fd.claude, fd.codex, fd.gemini);
 }
 
-function weightedFaultVarianceFromValues(claude, codex, gemini, weights) {
+function weightedFaultVarianceFromValues(claude, codex, gemini) {
   const c = Number(claude);
   const o = Number(codex);
   const g = Number(gemini);
   must(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
   must(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
   must(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
-  const total = weights.claude + weights.codex + weights.gemini;
-  const mean = total === 0 ? null : (weights.claude * c + weights.codex * o + weights.gemini * g) / total;
-  return mean === null ? null : (
-    weights.claude * (c - mean) * (c - mean) +
-    weights.codex * (o - mean) * (o - mean) +
-    weights.gemini * (g - mean) * (g - mean)
-  ) / total;
+  const mean = (c + o + g) / 3;
+  return ((c - mean) * (c - mean) + (o - mean) * (o - mean) + (g - mean) * (g - mean)) / 3;
 }
 
 function weightedFaultVariance(reportId) {
   const fd = faultData[reportId];
-  return fd ? weightedFaultVarianceFromValues(fd.claude, fd.codex, fd.gemini, faultWeights()) : null;
+  return fd ? weightedFaultVarianceFromValues(fd.claude, fd.codex, fd.gemini) : null;
 }
 
 function faultColor(frac) {
@@ -1907,19 +1887,6 @@ function faultTooltip(reportId) {
   return `Claude: ${fd.claude.toFixed(2)} — ${fd.rclaude}\nCodex: ${fd.codex.toFixed(2)} — ${fd.rcodex}\nGemini: ${fd.gemini.toFixed(2)} — ${fd.rgemini}`;
 }
 
-function initWeightSliders() {
-  for (const model of ["claude", "codex", "gemini"]) {
-    const input = byId("w-" + model);
-    const valSpan = byId("w-" + model + "-val");
-    setFaultWeight(model, input.value);
-    input.addEventListener("input", () => {
-      setFaultWeight(model, input.value);
-      valSpan.textContent = input.value;
-      buildMonthlyViews();
-      renderTable();
-    });
-  }
-}
 
 // --- Incident Browser ---
 
@@ -2210,7 +2177,6 @@ function initTooltips() {
     initCiMassControl();
     buildEstimator();
   }
-  initWeightSliders();
   buildMonthlyViews();
   buildBrowser();
   const modifiedPart = NHTSA_MODIFIED_DATE

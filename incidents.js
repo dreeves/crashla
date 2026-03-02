@@ -15385,10 +15385,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV merged left into path of cable car; shared fault",
+      "rclaude": "AV merged left into path of cable car on fixed tracks; AV should yield to rail vehicle",
       "rcodex": "AV moved left to merge while cable car was passing",
       "rgemini": "AV shifted left to merge into passing cable car"
     },

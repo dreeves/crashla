@@ -469,7 +469,7 @@ Report ID,faultfrac,reasoning
 30270-13287,0.1,AV stopped for possible emergency vehicle; rear-ended by truck
 30270-13557,0,AV was stopped; heavy truck reversed into stationary AV
 30270-13549,0,AV was stopped at yellow/red light; rear-ended by SUV
-30270-13454,0.3,AV merged left into path of cable car; shared fault
+30270-13454,0.9,AV merged left into path of cable car on fixed tracks; AV should yield to rail vehicle
 30270-13484,0,SUV turned right without stopping at stop sign into AV path
 30270-13445,0,AV was parked; car reversed into parked AV while parking
 30270-13303,0,AV was stopped; chain reaction rear-end pushed SUV into AV

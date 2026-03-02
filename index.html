@@ -35,7 +35,7 @@
   <div class="month-legend" id="month-legend-speed"></div>
 </div>
 
-<!--
+<!-- TODO: let's get rid of this now, and all concomitant code
 <div class="company-panel">
   <div class="slider-row">
     <label for="ci-mass"
@@ -76,7 +76,7 @@ title="The higher this is, the wider the confidence intervals">
     <li>The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper &lambda; quantile, and the upper MPI bound uses vmt_max with the lower &lambda; quantile. This yields the widest possible band.</li>
     <li>For the partial month (January), VMT is pro-rated by the coverage fraction so that VMT and incident counts cover the same observation window.</li>
     <li>The point estimate shown in the line is the Bayesian posterior median of 1/&lambda;, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.</li>
-    <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (weighted average of Claude, Codex, Gemini) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
+    <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (equal-weight average of Claude, Codex, and Gemini estimates) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
   </ul>
   <h2>Human Comparison Methodology</h2>
   <p>Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows <a href="https://arxiv.org/abs/2312.12675">Kusano &amp; Scanlon (2024)</a>, as discussed in <a href="https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos">this analysis</a>: surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from <a href="https://waymo.com/safety/impact/">Waymo&rsquo;s safety impact page</a> (127M rider-only miles through Sep 2025) are also incorporated.</p>
@@ -104,24 +104,6 @@ title="The higher this is, the wider the confidence intervals">
 
 <h2>Incident browser</h2>
 <div class="filters" id="filters"></div>
-<div class="weight-panel">
-  <h4>Fault estimate weights</h4>
-  <div class="weight-row">
-    <label for="w-claude">Claude</label>
-    <input type="range" id="w-claude" min="0" max="10" step="1" value="3">
-    <span class="val" id="w-claude-val">3</span>
-  </div>
-  <div class="weight-row">
-    <label for="w-codex">Codex</label>
-    <input type="range" id="w-codex" min="0" max="10" step="1" value="3">
-    <span class="val" id="w-codex-val">3</span>
-  </div>
-  <div class="weight-row">
-    <label for="w-gemini">Gemini</label>
-    <input type="range" id="w-gemini" min="0" max="10" step="1" value="3">
-    <span class="val" id="w-gemini-val">3</span>
-  </div>
-</div>
 <div class="incident-count" id="incident-count"></div>
 <div style="overflow-x: auto;">
   <table>
