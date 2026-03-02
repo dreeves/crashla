@@ -129,10 +129,16 @@ Please give your best estimates of the unsupervised mileage in that time frame f
 
 ---
 
-can you make a file called faultfrac-MODEL.csv that, for every Report ID in nhtsa-2025-jun-2026-jan.csv for which Operator=None, gives an estimated fraction at-fault for the AV? make sure to use the latest version of each incident. you can format it like so:
+can you make a file called faultfrac-MODEL.csv that, for every Report ID in nhtsa-2025-jun-2026-jan.csv for which Operator=None, gives an estimated fraction at-fault for the AV? make sure to use the latest version of each incident. it should have the following columns:
 
-Report ID,faultfrac,reasoning
-54321-12345,0.5,"AV and other vehicle merged into each other"
+* reportID [from the NHTSA dataset; must be unique]
+* speed [mph of subject vehicle]
+* crashwith [eg, "SUV" or "fixed object"]
+* svhit [what part of the subject vehicle made contact with crash partner]
+* cphit [what part of the crash partner (see crashwith) made contact with subject vehicle]
+* severity [eg, "minor injury"]
+* faultfrac [fractional/probalistic blame we subjectively assign to the AV specifically; AV passenger fault does not count]
+* reasoning [short blurb explaining why we're assigning that faultfrac]
 
 ---
 

@@ -1,532 +1,532 @@
-Report ID,faultfrac,reasoning
-13781-11507,0,AV stopped; struck by other party
-13781-11459,0.9,AV struck fixed object; should detect and avoid
-13781-11375,0.3,Both turning; shared fault likely
-13781-11687,0.9,AV struck fixed object; should detect and avoid
-13781-11786,0,AV stopped; struck by other party
-13781-11787,0.5,Animal crossing; partially avoidable
-13781-11784,0.1,Other vehicle backed into AV
-13781-11986,0.4,AV proceeding; limited info from metadata
-13781-13237,0,AV stopped; struck by other party
-13781-13647,0.9,AV struck fixed object; should detect and avoid
-13781-13646,0.9,AV struck fixed object; should detect and avoid
-13781-13648,0,AV stopped; struck by other party
-13781-13644,0.8,AV drove into parked object
-13781-13645,0.9,AV struck fixed object; should detect and avoid
-30270-11297,0.9,AV drove into chain/barrier; should detect
-30270-11244,0.1,Other turned left into AV path
-30270-11239,0.9,AV drove into chain/barrier; should detect
-30270-11193,0.9,AV drove into chain/barrier; should detect
-30270-11190,0,AV stationary; rear-ended by other vehicle
-30270-11161,0.9,AV reversed into parked trailer; AV at fault
-30270-11204,0,AV stationary; struck by other party
-30270-11196,0.1,Other entered traffic into AV path
-30270-11171,0,Passenger opened door into traffic; not AV system fault
-30270-11174,0.8,AV hit elevated gate track; should detect
-30270-11189,0.1,AV stopped on narrow road; other hit while passing
-30270-11209,0.8,AV hit elevated gate track; should detect
-30270-11291,0.1,Other turned right across AV lane
-30270-11170,0,AV stationary; struck by passing vehicle
-30270-11213,0,Passenger opened door into traffic; not AV system fault
-30270-11298,0.1,AV stopped on narrow road; other hit while passing
-30270-11249,0,AV stationary; rear-ended by other vehicle
-30270-11219,0,AV stationary; struck by passing vehicle
-30270-11177,0,AV stationary; struck by other party
-30270-11225,0.3,Both proceeding; other likely at fault
-30270-11146,0.4,Debris from vehicle ahead; partially avoidable
-30270-11175,0,AV stationary; rear-ended by other vehicle
-30270-11295,0.8,AV hit parking barrier arm; should have stopped
-30270-11192,0,AV stationary; struck by passing vehicle
-30270-11210,0,AV stationary; rear-ended by other vehicle
-30270-11163,0,AV stationary; struck by passing vehicle
-30270-11167,0,AV stationary; other vehicle reversed into AV
-30270-11194,0,AV stationary; struck by passing vehicle
-30270-11221,0.1,Other vehicle reversed into AV path
-30270-11162,0,AV stationary; other vehicle reversed into AV
-30270-11216,0,AV stationary; struck by passing vehicle
-30270-11207,0,Passenger opened door into traffic; not AV system fault
-30270-11224,0,AV passenger opened door hitting parked vehicle; not AV system fault
-30270-11214,0,AV rear-ended by other vehicle
-30270-11247,0.1,AV stopped on narrow road; other hit while passing
-30270-11195,0.5,AV hit fallen utility line; hard to detect
-30270-11218,0,Passenger opened door into traffic; not AV system fault
-30270-11245,0,AV stationary; rear-ended by other vehicle
-30270-11246,0.1,Other crossed lane line during left turn
-30270-11172,0.1,Other turned right across AV lane
-30270-11208,0,AV stationary; rear-ended by other vehicle
-30270-11173,0,AV stationary; rear-ended by other vehicle
-30270-11205,0,Passenger opened door into traffic; not AV system fault
-30270-11212,0,AV stationary; rear-ended by other vehicle
-30270-11250,0,AV stationary; rear-ended by other vehicle
-30270-11238,0,AV stationary; rear-ended by other vehicle
-30270-11276,0,AV stationary; other vehicle reversed into AV
-30270-11206,0.3,Object fell from other vehicle; hard to avoid
-30270-11275,0.8,AV hit object in roadway; should detect and avoid
-30270-11220,0.8,AV hit object in roadway; should detect and avoid
-30270-11160,0,AV stationary; rear-ended by other vehicle
-30270-11379,0.9,AV drove into chain/barrier; should detect
-30270-11327,0,AV stationary; rear-ended by other vehicle
-30270-11381,0,Other made unprotected left turn into AV
-30270-11417,0,Other drove wrong way into AV
-30270-11330,0,AV stationary; rear-ended by other vehicle
-30270-11374,0,AV stationary; struck by passing vehicle
-30270-11372,0,AV rear-ended by other vehicle
-30270-11467,0.8,AV hit parking barrier arm; should have stopped
-30270-11362,0,AV stationary; other vehicle reversed into AV
-30270-11414,0,AV stationary; struck by passing vehicle
-30270-11468,0,AV stationary; rear-ended by other vehicle
-30270-11415,0,AV stationary; rear-ended by other vehicle
-30270-11284,0,AV stationary; struck by passing vehicle
-30270-11413,0,AV stationary; rear-ended by other vehicle
-30270-11400,0,AV stationary; rear-ended by other vehicle
-30270-11365,0,AV stationary; rear-ended by other vehicle
-30270-11328,0,AV stationary; struck by other party
-30270-11418,0,AV stationary; struck by other party
-30270-11383,0.1,Other changed lanes into AV
-30270-11432,0.1,Other turned right into AV
-30270-11384,0,AV stationary; struck by passing vehicle
-30270-11358,0,AV stationary; struck by passing vehicle
-30270-11451,0.1,Heavy truck encroached into AV lane
-30270-11426,0.5,AV started moving as pedestrian pushed carts nearby
-30270-11333,0.1,AV stopped on narrow road; other hit while passing
-30270-11404,0,AV stationary; struck by passing vehicle
-30270-11371,0,AV rear-ended by other vehicle
-30270-11402,0,AV stationary; rear-ended by other vehicle
-30270-11302,0,AV rear-ended by other vehicle
-30270-11424,0.5,Two Waymo AVs collided in parking lot; shared fault
-30270-11455,0.1,AV stopped on narrow road; other hit while passing
-30270-11282,0,AV stationary; struck by passing vehicle
-30270-11323,0,AV rear-ended by other vehicle
-30270-11420,0,AV stationary; struck by passing vehicle
-30270-11421,0,AV stationary; rear-ended by other vehicle
-30270-11273,0,AV stationary; struck by passing vehicle
-30270-11373,0,AV stationary; struck by passing vehicle
-30270-11378,0,AV stationary; rear-ended by other vehicle
-30270-11401,0,AV stationary; rear-ended by other vehicle
-30270-11279,0,AV rear-ended by other vehicle
-30270-11361,0.3,Object fell from other vehicle; hard to avoid
-30270-11430,0,AV stationary; rear-ended by other vehicle
-30270-11329,0,AV stationary; struck by passing vehicle
-30270-11422,0.7,AV hit small object in road; should detect
-30270-11360,0,AV rear-ended by other vehicle
-30270-11370,0,AV rear-ended by other vehicle
-30270-11280,0,AV stationary; struck by passing vehicle
-30270-11344,0,AV stationary; struck by passing vehicle
-30270-11452,0,Passenger opened door into traffic; not AV system fault
-30270-11281,0,Passenger opened door into traffic; not AV system fault
-30270-11428,0,AV stationary; rear-ended by other vehicle
-30270-11334,0.9,AV hit median during U-turn; AV at fault
-30270-11412,0,AV stationary; struck by passing vehicle
-30270-11495,0,Passenger opened door into traffic; not AV system fault
-30270-11544,0,AV rear-ended by other vehicle
-30270-11561,0.1,Pedestrian pushed shopping cart into AV
-30270-11502,0,AV stationary; struck by passing vehicle
-30270-11522,0,AV stationary; rear-ended by other vehicle
-30270-11589,0,AV stationary; rear-ended by other vehicle
-30270-11433,0.1,AV stopped on narrow road; other hit while passing
-30270-11525,0,AV stationary; other crossed into AV lane
-30270-11475,0,AV stationary; rear-ended by other vehicle
-30270-11450,0,AV stationary; struck by passing vehicle
-30270-11569,0.1,Other car passenger opened door into AV path
-30270-11516,0.2,Heavy truck reversed into AV passing behind it
-30270-11474,0,AV stationary at red light; rear-ended by SUV
-30270-11501,0.3,AV sideswiped parked truck's open door while passing
-30270-11469,0.1,AV was stationary; bus turned left into stopped AV
-30270-11547,0,AV stopped yielding; garbage truck sideswiped it passing
-30270-11564,0,AV stationary; passenger car maneuvered into stopped AV
-30270-11588,0,AV stationary at stop sign; rear-ended by SUV
-30270-11508,0,AV parked for pickup; pickup truck sideswiped it passing
-30270-11542,0,AV stationary yielding; pickup sideswiped it passing
-30270-11591,1,AV mechanical failure: rear wheel separated while driving
-30270-11490,0,AV parked; chain-reaction pushed car into stationary AV
-30270-11548,0.8,AV drove into vegetation extending into alley roadway
-30270-11611,0.4,AV changing lanes; pickup in target lane moved forward into AV
-30270-11590,0,AV parked; SUV sideswiped stationary AV while passing
-30270-11498,0,AV parked; passenger car reversed into stationary AV
-30270-11500,0.9,AV drove over removed pavement section in construction zone
-30270-11594,0.5,Flagger arm lowered onto AV then AV drove forward into it
-30270-11496,0,AV stationary; motorcycle lane-split and fell into AV
-30270-11673,0,AV stationary at stop sign; rear-ended by SUV
-30270-11565,0,AV stopped in crosswalk; trailer sideswiped it turning
-30270-11456,0,AV parked; motorcycle changed lanes into stationary AV
-30270-11488,0,AV stationary; rear-ended by passenger car
-30270-11545,0.1,Other car ran red light; AV braked but still made contact
-30270-11605,0,AV parked; passenger opened door into path of passing SUV; not AV system fault
-30270-11523,0,AV stationary yielding; van sideswiped it on narrow street
-30270-11543,0,AV parked; SUV sideswiped stationary AV while passing
-30270-11567,0,AV parked; SUV sideswiped it while completing right turn
-30270-11573,0,AV parked; SUV reversed out of stall into stationary AV
-30270-11607,0.5,AV merging from parking spot; car hit AV's rear left
-30270-11546,0.7,AV drove into fallen utility line hanging in travel lane
-30270-11596,0,AV stationary at red light; rear-ended by passenger car
-30270-11621,0,Other car changed lanes into AV's lane of travel
-30270-11622,0,AV stationary at red light; rear-ended by passenger car
-30270-11476,0,AV proceeding straight; rear-ended by speeding car
-30270-11571,0.9,AV drove through standing water causing damage
-30270-11671,0.9,AV hit parked flatbed trailer while exiting parking spot
-30270-11765,0,AV stationary at red light; rear-ended by passenger car
-30270-11672,0.9,AV drove into pothole in roadway
-30270-11753,0,AV stopped; passenger opened door into path of passing SUV; not AV system fault
-30270-11763,0,AV stationary in traffic queue; SUV hit rear from behind
-30270-11795,0,Other car changed lanes into AV's lane of travel
-30270-11713,0.1,AV slowing for right turn; motorcycle rear-ended AV
-30270-11608,0.9,AV hit parked flatbed truck while exiting parking spot
-30270-11794,0,Third-party car ran red light causing chain-reaction crash
-30270-11698,0.6,AV hit domestic animal that emerged from behind parked car
-30270-11821,0,AV stationary in traffic; SUV in front reversed into AV
-30270-11739,0,AV slowing for stop sign; rear-ended by passenger car
-30270-11702,0,AV stationary at red light; rear-ended by SUV
-30270-11792,0,Pickup truck reversed into AV's lane during U-turn
-30270-11716,0,AV stopped yielding; pickup truck reversed into AV
-30270-11850,0,AV slowing for emergency siren; rear-ended by SUV
-30270-11755,0,AV stationary in traffic; SUV crossed center line into AV
-30270-11742,0.1,SUV emerged from behind train into AV's lane
-30270-11789,0,AV stationary in traffic; SUV crossed center line into AV
-30270-11851,0,AV stationary; rear-ended by passenger car from behind
-30270-11805,0.9,AV drove into hanging chain at parking lot exit
-30270-11771,0.8,AV maneuvering around truck hit its loading ramp
-30270-11715,0,AV stationary; heavy truck reversed into stopped AV
-30270-11718,0.1,Car made sudden right turn without signal in front of AV
-30270-11762,0,Other car changed lanes into AV's lane during left turn
-30270-11853,0,AV stationary; heavy truck sideswiped it on narrow street
-30270-11768,0,AV stationary at stop sign; rear-ended by passenger car
-30270-11618,0,AV stationary at red light; heavy truck sideswiped it turning
-30270-11806,0.1,Cyclist ran stop sign and hit rear of AV from side
-30270-11852,0,AV stationary; tow truck reversed into stopped AV
-30270-11802,0.9,AV drove through standing water in roadway
-30270-11629,1,AV drove wrong way through exit-only tire spikes
-30270-11756,0,AV stationary at stop sign; bus sideswiped it passing
-30270-11831,0,AV stationary at red light; rear-ended by passenger car
-30270-11759,0.5,AV changing lanes; pickup in target lane moved forward into AV
-30270-11790,0,AV stationary; rear-ended by passenger car from behind
-30270-11701,0,AV stationary; rear-ended by passenger car from behind
-30270-11769,0,SUV pulled out of driveway into side of passing AV
-30270-11839,0,AV stationary at stop sign; rear-ended by passenger car
-30270-11623,0.4,AV changing lanes; pickup in prior lane moved forward into AV
-30270-11692,0.1,AV was backing but passenger car reversed into AV's front
-30270-11612,0.2,Both turning left; SUV in left-turn-only lane went straight
-30270-11637,0.1,SUV made unprotected left turn into AV going straight on green
-30270-11761,0,AV parked; bus reversed and changed lanes into AV
-30270-11609,0,AV stationary in traffic; bus sideswiped it passing
-30270-11627,0,AV parked; passenger opened door into path of passing van; not AV system fault
-30270-11664,0.2,AV proceeded forward into SUV's open door after light change
-30270-11695,0,AV stationary; passenger car reversed into stopped AV
-30270-11760,0,Other car changed lanes into AV's lane of travel
-30270-11791,0,AV stationary; chain-reaction pushed car into stopped AV
-30270-11766,0.9,AV undercarriage scraped pavement at parking lot entrance
-30270-11625,0,AV nearly stopped; motorcycle rear-ended AV from behind
-30270-11840,0.6,AV hit cat that emerged from behind parked vehicle
-30270-11724,0,AV stationary; pickup sideswiped it on narrow street
-30270-11738,0,AV stopped/slow; motorcycle changed lanes into AV's rear
-30270-11717,0.1,Car made wide right turn entering AV's lane of travel
-30270-11758,0,AV stationary in traffic queue; rear-ended by SUV
-30270-12008,0,AV stationary; passenger car reversed into stopped AV
-30270-12052,0,AV parked; passenger car sideswiped stationary AV passing
-30270-11996,0.9,AV drove through standing water causing damage
-30270-11925,0,AV stationary yielding; heavy truck sideswiped it passing
-30270-11859,0,SUV changed lanes from center into AV's lane of travel
-30270-11882,0,AV stationary yielding; SUV sideswiped it on narrow street
-30270-11855,0,AV stationary yielding; ambulance sideswiped it passing
-30270-12012,0,AV slowing in traffic; rear-ended by pickup truck
-30270-12000,0,AV parked; SUV reversed into stationary AV
-30270-12053,0,AV stopped for debris; rear-ended by pickup truck
-30270-11863,0,AV parked; pickup reversed across road into stationary AV
-30270-11858,0,AV stationary at red light; rear-ended by passenger car
-30270-11949,0,AV stationary; SUV reversed into stopped AV
-30270-11958,0,AV stationary in traffic; bus reversed into stopped AV
-30270-11929,0,AV stationary; chain-reaction rear-end pushed car into AV
-30270-11926,0,AV stationary at red light; rear-ended by passenger car
-30270-11962,0,AV stopped in traffic; pickup rear-ended AV from behind
-30270-11908,0,SUV changed lanes into AV's lane of travel
-30270-12062,0,AV slowing for pickup; car tried to pass and hit AV
-30270-11924,0,AV parked; heavy truck sideswiped stationary AV passing
-30270-11997,0.15,AV stopped on freeway for 2+ min causing dangerous situation
-30270-11999,0.2,Basketball rolled into AV's lane; AV ran over it
-30270-12013,0,AV stationary; heavy truck sideswiped stopped AV passing
-30270-12059,0,AV stationary yielding; tow truck sideswiped it passing
-30270-11838,0,AV stopped for animal; rear-ended by pickup truck
-30270-11955,0,AV stationary yielding; van sideswiped it on narrow street
-30270-11992,0,AV stopped with door open; SUV passing hit the open door; not AV system fault
-30270-11841,0,AV stationary at stop sign; rear-ended by passenger car
-30270-11998,0,AV slowing for yellow light; rear-ended by passenger car
-30270-12011,0,AV stopped; car behind failed to stop and rear-ended AV
-30270-11987,0,AV stationary at red light; rear-ended by pickup truck
-30270-12042,0,AV stationary; heavy truck reversed into stopped AV
-30270-11932,0,AV stationary; SUV reversed into stopped AV in parking lot
-30270-11988,0,AV stationary; heavy truck crossed center line into AV
-30270-11888,0.9,AV drove over curb in parking lot damaging undercarriage
-30270-11994,0,AV parked; passenger opened door into path of passing SUV; not AV system fault
-30270-11940,0,Pickup reversed from parking into intersection hitting AV
-30270-11933,0,SUV changed lanes into AV's lane without signaling
-30270-11953,0,Parked car pulled out into AV's lane of travel
-30270-11907,0,SUV entered AV lane from parking lot exit
-30270-11861,0,AV rear-ended by passenger car while proceeding straight
-30270-12018,0,Pickup truck reversed into stationary AV
-30270-11956,0,Passenger car reversed into stationary AV at red light
-30270-11892,0,SUV entered AV lane from parking lot
-30270-11954,0,Bus sideswiped stationary AV while changing lanes
-30270-11928,0,Passenger car rear-ended stationary AV in traffic queue
-30270-12046,0.9,AV drove into movable traffic barrier in parking lot
-30270-13053,0,Passenger car reversed into stationary AV
-30270-12044,0.3,AV proceeded forward into opening gate
-30270-11906,0,Passenger car rear-ended stationary AV at red light
-30270-11865,0,Heavy truck reversed into stationary AV
-30270-12007,0,Heavy truck turned into stationary AV
-30270-11874,0,Passenger car hit AV from behind while AV was slowing
-30270-12050,0.1,Cyclist rear-ended AV that was braking for traffic
-30270-11836,0.8,AV hit parked heavy truck trailer while passing
-30270-11860,0,Pickup truck rear-ended stationary AV
-30270-12063,0,Passenger car sideswiped stationary AV while passing
-30270-11931,0,Motorhome sideswiped stationary parked AV
-30270-11930,0,Pickup truck rear-ended stationary AV at red light
-30270-12045,0,Oncoming car crossed center line and hit AV
-30270-11837,0,SUV hit stationary AV on narrow street
-30270-11951,0.9,AV undercarriage hit raised pavement in parking lot
-30270-11960,0,Passenger opened door into passing car while AV stopped; not AV system fault
-30270-11957,0.2,AV stopped partially between lanes; truck hit it
-30270-11883,0,Bus reversed into stationary AV while parallel parking
-30270-12019,0,Heavy truck sideswiped stationary AV on narrow street
-30270-11842,0,Passenger opened door into passing SUV while AV parked; not AV system fault
-30270-11905,0.1,Heavy truck trailer hit stationary AV in parking lot
-30270-13056,0.3,AV stopped in lane to change lanes causing chain rear-end
-30270-11864,0,SUV intentionally rear-ended stationary AV twice
-30270-12035,0.9,AV undercarriage hit speed bump
-30270-11884,0,Passenger car rear-ended AV from behind
-30270-11936,0,Passenger car rear-ended stationary AV at inoperative light
-30270-11849,0,SUV hit parked AV at curb
-30270-13028,0,Passenger car reversed into stationary AV
-30270-11995,0.1,Pickup truck cut right from transit lane into turning AV
-30270-11904,0.15,AV stopped partially in lane during lane change; rear-ended
-30270-13025,0,Passenger car rear-ended slowing AV from behind
-30270-12070,0.8,AV ran over cat that was under the vehicle
-30270-11887,0,SUV passenger opened door into AV proceeding on green
-30270-13161,0,Passenger exited moving AV; tire stopped on their foot; not AV system fault
-30270-13197,0,Passenger car rear-ended stationary AV at red light
-30270-13236,0,SUV rear-ended stationary AV at red light
-30270-13164,0,Passenger car reversed out of stall into parked AV
-30270-13060,0,Wrong-way car hit stationary AV head-on
-30270-13065,0,Chain reaction rear-end pushed SUV into stationary AV
-30270-13102,0,Passenger car rear-ended AV slowing for stop sign
-30270-13194,0,Passenger car sideswiped parked AV at curb
-30270-13129,0,Passenger car rear-ended stationary AV at red light
-30270-13128,0,Passenger car rear-ended parked AV
-30270-12051,0,Oncoming SUV crossed center line into AV lane
-30270-13204,0,SUV rear-ended stationary AV at red light
-30270-13199,0,Pickup truck rear-ended stationary AV at red light
-30270-13130,0,Chain reaction rear-end pushed car into stationary AV
-30270-12047,0,SUV rear-ended AV slowing for red light
-30270-13099,0,Passenger car lane-changed into stationary AV
-30270-13148,0,Passenger car rear-ended stationary AV at red light
-30270-13090,0.3,AV drove forward while gate was swinging open into it
-30270-13079,0.1,AV stopped in intersection for cyclist; rear-ended
-30270-13201,0,Police SUV reversed into stationary AV
-30270-13063,0,SUV deliberately reversed into stationary AV
-30270-13144,0,Pickup truck hit parked AV at curb
-30270-13159,0,Heavy truck reversed into stationary AV
-30270-13126,0,Heavy truck trailer sideswiped stationary AV
-30270-12049,0,Heavy truck reversed into stationary AV
-30270-13067,0,Pickup truck reversed into AV while AV was passing
-30270-13206,0,Heavy truck sideswiped stationary AV on narrow street
-30270-13085,0,Car made illegal left turn into AV going straight
-30270-13246,0.9,AV reversed into parking bollard
-30270-13024,0.05,Passenger car reversed into AV that was passing behind
-30270-13198,0,Passenger car rear-ended stationary AV at red light
-30270-13251,0,Passenger car rear-ended AV slowing for pedestrians
-30270-13055,0,SUV turned left into AV lane of travel
-30270-13276,0,SUV hit AV from behind while AV slowed for tree branch
-30270-12061,0.1,AV braked for birds; rear-ended by SUV
-30270-13023,0,Pickup truck changed lanes into AV
-30270-13235,0,Van rear-ended stationary AV at stop sign
-30270-13100,0.1,AV stopped at green light before right turn; rear-ended
-30270-13091,0.4,AV drove forward while tow truck was lifting it
-30270-13089,0,Bus hit stationary AV while parking maneuvering
-30270-13254,0,Bus reversed into stationary AV
-30270-13096,0.5,AV drove through low-hanging suspended wire
-30270-12054,0,Garbage truck sideswiped stationary AV on narrow street
-30270-12048,0,SUV made illegal unprotected left turn into AV
-30270-13269,0.8,AV turned left from wrong lane into pickup truck
-30270-13238,0,Passenger car reversed into stationary AV
-30270-13373,0.1,Car exited driveway into AV passing on the street
-30270-13190,0,Passenger car rear-ended stationary AV at red light
-30270-12055,0,SUV rear-ended stationary AV at red light
-30270-13162,0.15,AV stopped for fake stop sign; rear-ended by truck
-30270-13274,0,SUV sideswiped stationary AV while passing
-30270-13312,0,SUV sideswiped stationary AV while passing
-30270-13054,0,Pickup truck rear-ended AV near stop sign
-30270-13256,0.6,AV drove into fallen utility line in travel lane
-30270-13062,0,Passenger car rear-ended stationary AV
-30270-13240,0,Passenger car changed lanes into AV
-30270-13311,0,SUV reversed out of parking into stationary AV
-30270-13095,0.2,AV hit tree branch that fell from truck ahead
-30270-13165,0,Passenger car rear-ended stationary AV yielding to ped
-30270-13058,0.1,Pickup truck pulled from curb into AV changing lanes
-30270-13250,0,Heavy truck reversed into stationary AV
-30270-13133,0,Heavy truck rear-ended AV slowing for left turn
-30270-12056,0,Motorcycle rear-ended AV slowing for pedestrian
-30270-13066,0,Bus sideswiped stationary AV while passing
-30270-13241,0,Bus sideswiped stationary AV while turning left
-30270-13082,0,Bus sideswiped stationary AV while proceeding forward
-30270-13160,0.9,AV undercarriage hit pavement at parking lot entrance
-30270-13167,0,Passenger car rear-ended slowly moving AV at stop sign
-30270-13243,0,Bus sideswiped parked AV at curb
-30270-13310,0,Mail truck pulled from curb into AV lane
-30270-13192,0,Passenger car rear-ended stationary AV at stop sign
-30270-13068,0,Bus sideswiped stationary AV parked at curb
-30270-13163,0,Passenger car rear-ended stationary AV at red light
-30270-13242,0,Bus sideswiped stationary AV while passing
-30270-13247,0,Passenger car reversed into stationary AV
-30270-13080,0,Bus sideswiped parked AV while passing
-30270-13268,0,Passenger car turned right into AV lane of travel
-30270-13064,0.1,Car made unprotected left turn; AV braked and hit SUV
-30270-13244,0,Passenger car rear-ended stationary AV at red light
-30270-13135,0,Heavy truck reversed into stationary AV in parking lot
-30270-13088,0,SUV rear-ended AV during right turn at intersection
-30270-13239,0,Passenger car rear-ended AV turning left at stop sign
-30270-13270,0.7,AV hit domestic animal in its lane of travel
-30270-13196,0,Passenger car changed lanes into AV
-30270-13081,0,Passenger car changed lanes into AV from turn lane
-30270-13137,0,Passenger car rear-ended stationary AV at stop sign
-30270-13205,0,Passenger opened door into passing SUV while AV parked; not AV system fault
-30270-13092,0,Chain reaction rear-end pushed car into stationary AV
-30270-13202,0.15,AV passed SUV which then reversed into AV
-30270-13155,0,AV was parked; bus hit stationary AV while turning
-30270-12060,0,AV was stopped; car in front reversed into AV
-30270-13195,0,AV was stopped; chain reaction rear-end pushed SUV into AV
-30270-13193,0.9,AV drove over fallen street sign in its lane at 39 mph
-30270-13127,0,AV was stopped; truck sideswiped stationary AV while passing
-30270-13084,0.2,Both AV and SUV were moving; SUV entered AV lane but AV also pulled out
-30270-13255,0,AV was passing stopped car; that car reversed into AV
-30270-13189,0,AV was stopped at stop sign; rear-ended by SUV
-30270-13275,0,AV was stopped at curb; rear-ended by approaching car
-30270-13515,0,AV was stopped; car in front reversed into stationary AV
-30270-13331,0,AV was stopped at flashing red; rear-ended by SUV
-30270-13363,0.1,Wrong-way vehicle hit AV; AV braked and maneuvered to avoid
-30270-13301,0,AV stopped to yield on narrow street; passing car hit it
-30270-13538,0,AV was stopped; passenger opened door and passing car hit it; not AV system fault
-30270-13399,0,AV was stopped at red light; chain-reaction rear-end collision
-30270-13370,0,Other car turned right into AV lane; car at fault
-30270-13495,0,AV was stopped in traffic; rear-ended by SUV
-30270-13410,0,AV was stopped; pickup reversed into stationary AV while parking
-30270-13384,0,AV was stopped at red light; rear-ended by SUV
-30270-13309,0,AV was parked for pickup; car passing hit stationary AV
-30270-13323,0,AV was stopped; SUV in front reversed into stationary AV
-30270-13302,0,AV was stopped; fire truck hit stationary AV while turning
-30270-13403,0,Both turning left in adjacent lanes; SUV crossed into AV lane
-30270-13542,0,AV was stopped; heavy truck reversed into stationary AV
-30270-13509,0.8,AV drove into fallen utility line hanging in travel lane
-30270-13506,0.8,AV drove over debris in roadway at 25 mph
-30270-13447,0.5,Dolly fell from truck ahead; AV was following and hit it
-30270-13507,0.1,AV stopped; truck turned right from left lane into AV lane
-30270-13300,0,AV was stopped; oversized truck sideswiped stationary AV
-30270-13450,0,AV was parked; SUV sideswiped stationary AV while passing
-30270-13510,0.2,Both changing lanes simultaneously; other car entered AV lane
-30270-13407,0,AV was stopped; box truck sideswiped stationary AV passing
-30270-13267,0,AV was proceeding; golf cart reversed into AV from parking stall
-30270-13395,0,AV was stopped at red light; rear-ended by car
-30270-13371,0.1,AV was slowing; rear-ended by car following too closely
-30270-13514,0.8,AV drove into fallen utility line hanging in travel lane
-30270-13327,0,AV was stopped; heavy truck reversed into stationary AV
-30270-13443,0.9,AV undercarriage hit pavement; should detect road conditions
-30270-13277,0,AV was stopped; street sweeper reversed into stationary AV
-30270-13369,0,Car behind AV changed lanes and sideswiped AV
-30270-13416,0,AV was stopped at red light; rear-ended by car
-30270-13278,0,AV was stopped; heavy truck reversed into stationary AV
-30270-13513,0.1,AV stopped for truck but followed too soon; truck reversed again
-30270-13364,0,AV was stopped yielding to pedestrian; rear-ended by car
-30270-13548,0,Both turning right; box truck crossed into AV turn lane
-30270-13388,0,AV stopped to yield on narrow street; car hit stationary AV
-30270-13320,0,AV was stopped; car behind drove into stationary AV
-30270-13554,0,AV was stopped in traffic; rear-ended by heavy truck
-30270-13512,0,AV stopped on narrow street; truck sideswiped stationary AV
-30270-13405,0,Other car went straight from right-turn-only lane into AV
-30270-13324,0,AV was stopped in traffic; truck sideswiped stationary AV
-30270-13448,0,AV was stopped; van reversed into stationary AV
-30270-13279,0,AV was stopped at red light; car behind drove into AV
-30270-13452,0,AV was stopped; truck reversed into stationary AV while parking
-30270-13372,0.2,AV slowed and changed lanes for dog; rear-ended by car
-30270-13511,0.1,AV stopped at red for 6 min; van sideswiped while passing
-30270-13539,0,AV was stopped; fire engine hit stationary AV while turning
-30270-13540,0,AV was stopped in parking lot; pickup truck passed and hit it
-30270-13489,0.1,AV was reversing but truck reversed faster into AV
-30270-13467,0.9,AV hit speed bump/pavement change in parking lot
-30270-13326,0,AV was parked for pickup; truck sideswiped stationary AV
-30270-13564,0,AV was stopped yielding to pedestrians; scooter rear-ended AV
-30270-13486,0.15,AV stopped suddenly after bird collision; rear-ended by car
-30270-13485,0.9,AV undercarriage hit pavement entering parking lot driveway
-30270-13487,0.9,AV undercarriage hit pavement entering parking lot driveway
-30270-13365,0,AV was stopped in traffic; van mirror hit AV mirror passing
-30270-13451,0,AV stopped to yield on narrow street; truck hit stationary AV
-30270-13408,0,AV was stopped; car sideswiped stationary AV while passing
-30270-13409,0,Both turning left in adjacent lanes; SUV crossed into AV lane
-30270-13449,0,AV was stopped at red; car behind drove into stationary AV
-30270-13396,0.2,AV began moving into road as SUV passed; shared fault
-30270-13444,0,AV stopped on narrow street; car sideswiped stationary AV
-30270-13453,0,AV was stopped; bus reversed into stationary AV
-30270-13361,0,AV was stopped at red; truck making wide turn hit stationary AV
-30270-13401,0,AV was stopped; car in front reversed into stationary AV
-30270-13325,0.9,AV undercarriage hit elevated sidewalk-level street entrance
-30270-13322,0,AV was stopped; cyclist ran stop sign and hit stationary AV
-30270-13287,0.1,AV stopped for possible emergency vehicle; rear-ended by truck
-30270-13557,0,AV was stopped; heavy truck reversed into stationary AV
-30270-13549,0,AV was stopped at yellow/red light; rear-ended by SUV
-30270-13454,0.9,AV merged left into path of cable car on fixed tracks; AV should yield to rail vehicle
-30270-13484,0,SUV turned right without stopping at stop sign into AV path
-30270-13445,0,AV was parked; car reversed into parked AV while parking
-30270-13303,0,AV was stopped; chain reaction rear-end pushed SUV into AV
-30270-13541,0.2,AV stopped mid-lane-change; truck behind hit AV in new lane
-30270-13400,0,AV was stopped for pickup; car sideswiped stationary AV
-30270-13321,0,AV was parked; passenger opened door into passing motorcycle; not AV system fault
-30270-13307,0.15,Both turning right; truck crossed in front of AV; AV close to curb
-30270-13340,0,AV was stopped; truck reversed out of parking lot into AV
-30270-13402,0,AV was stopped at red light; rear-ended by car
-30270-13491,0,AV was parked at curb; van rear-ended stationary AV
-30270-13490,0,AV was slowing for flashing red; rear-ended by accelerating SUV
-30270-13488,0.1,Other car ran stop sign into intersection hitting AV side
-30270-13308,0,Pickup truck sideswiped AV while changing lanes erratically
-30270-13442,0,AV was stopped at red light; rear-ended by car
-30270-13328,0,SUV passed AV on left while AV was turning right with signal
-30270-13420,0,AV nearly stopped at stop sign; rear-ended by SUV
-30270-13559,0.9,AV hit speed bump in parking lot entrance
-30270-13543,0,AV was stopped at red light; rear-ended by speeding car
-30270-13586,0.1,Other car ran stop sign at high speed into intersection hitting AV
-30270-13544,0,AV was stopped; SUV passed and sideswiped stationary AV
-30270-13547,0,AV was stopped at red light; rear-ended by car
-30270-13607,0.3,Cone thrown from truck into AV lane; unusual but AV hit it
-30270-13545,0,AV was stopped at red light; rear-ended by SUV
-30270-13552,0.9,AV hit speed bump on frontage road at 20 mph
-30270-13573,0,AV was stopped at stop sign; rear-ended by car
-30270-13581,0,AV was stopped; truck sideswiped stationary AV while passing
-30270-13556,0,AV was stopped at red; truck turned and sideswiped stationary AV
-30270-13560,0,AV stopped before entering road; rear-ended by car behind
-30270-13546,0,Other car turned right on red into AV lane of travel
-30270-13582,0.1,Other car ran stop sign into intersection hitting AV
-30270-13571,0,AV was parked for pickup; van sideswiped stationary AV
-30270-13558,0,AV moved slowly from stop; rear-ended by car behind
-30270-13550,0,AV was stopped; chain reaction crash pushed SUV into AV
-30270-13575,0,AV was slowing; other car lost control and crossed into AV lane
-30270-13585,0,AV was stopped; chain reaction crash pushed SUV into AV
-30270-13583,0.9,AV undercarriage hit raised pavement over utility cover
-30610-11513,0,E-cyclist veered into roadway and hit nearly stopped AV
-30610-11563,0,AV was stopped; truck passed on left and sideswiped AV
-30610-11587,0.1,Truck ran stop sign into AV path; AV braked but contact occurred
-30610-11497,0.1,AV was passing; SUV abruptly reversed to park and hit AV
-30610-11902,0,Box truck made sudden unprotected left turn hitting AV
-30610-11856,0,AV was stopped; truck reversed into stationary AV despite horn
-30610-13123,0,AV was slowing for turn; rear-ended by inattentive pickup
-30610-11847,0,SUV suddenly veered into AV lane without signal
-30610-13376,0.1,AV stopped briefly after starting from green; rear-ended by SUV
-30610-13660,0,Car made illegal right turn from through lane clipping AV
-30610-13661,0.1,AV braked hard for debris; rear-ended by merging pickup
-30610-13662,0,AV was stopped; box truck reversed into stationary AV
-30270-11087,0,AV stopped; struck by other vehicle proceeding straight
-30270-11085,0,AV stopped; struck by SUV proceeding straight
-30270-11016,0,AV stopped; non-motorist contact
-30270-11014,0,AV stopped; non-motorist contact; redacted narrative
-30270-11088,0.9,AV hit fixed object while turning in parking lot
-30610-11096,0.3,AV encountered cones and contacted SUV at low speed
-30270-10977,0.4,AV proceeding at 18mph; struck non-motorist crossing; redacted
-30270-11046,0,AV parked; struck by passing vehicle
-30270-11015,0,AV parked; struck by pickup changing lanes
-30270-11044,0.7,AV changing lanes at low speed; struck cyclist
-30270-11013,0.3,Both proceeding straight at low speed; shared fault likely
-30270-10998,0,AV parked; struck by pickup proceeding straight
+reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
+13781-11507,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stopped; struck by other party
+13781-11459,8,Other Fixed Object,front-right,,Minor W/O Hospitalization,0.9,AV struck fixed object; should detect and avoid
+13781-11375,2,SUV,rear-right,front-right,Minor W/ Hospitalization,0.3,Both turning; shared fault likely
+13781-11687,6,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
+13781-11786,0,Non-Motorist: Cyclist,right,,Property Damage. No Injured Reported,0,AV stopped; struck by other party
+13781-11787,27,Animal,front-left,,No Injured Reported,0.5,Animal crossing; partially avoidable
+13781-11784,6,Passenger Car,right,rear-right,Property Damage. No Injured Reported,0.1,Other vehicle backed into AV
+13781-11986,18,"Other, see Narrative",right,front-right,Property Damage. No Injured Reported,0.4,AV proceeding; limited info from metadata
+13781-13237,0,"Other, see Narrative",rear-left+rear-right,front-right,No Injured Reported,0,AV stopped; struck by other party
+13781-13647,17,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
+13781-13646,2,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
+13781-13648,0,Bus,front+left,front-right,Property Damage. No Injured Reported,0,AV stopped; struck by other party
+13781-13644,4,Heavy Truck,left,rear,Property Damage. No Injured Reported,0.8,AV drove into parked object
+13781-13645,1,Pole / Tree,rear-right,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
+30270-11297,5,"Other, see Narrative",front-right+bottom,unknown,Property Damage. No Injured Reported,0.9,AV drove into chain/barrier; should detect
+30270-11244,8,SUV,front,front-right,Property Damage. No Injured Reported,0.1,Other turned left into AV path
+30270-11239,7,"Other, see Narrative",front-right,unknown,Property Damage. No Injured Reported,0.9,AV drove into chain/barrier; should detect
+30270-11193,2,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.9,AV drove into chain/barrier; should detect
+30270-11190,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11161,2,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0.9,AV reversed into parked trailer; AV at fault
+30270-11204,0,Van,front,front-right,No Injured Reported,0,AV stationary; struck by other party
+30270-11196,9,Pickup Truck,front-left,front,Property Damage. No Injured Reported,0.1,Other entered traffic into AV path
+30270-11171,0,Van,rear,right,Property Damage. No Injured Reported,0,Passenger opened door into traffic; not AV system fault
+30270-11174,10,Other Fixed Object,bottom,,No Injured Reported,0.8,AV hit elevated gate track; should detect
+30270-11189,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0.1,AV stopped on narrow road; other hit while passing
+30270-11209,10,Other Fixed Object,bottom,,No Injured Reported,0.8,AV hit elevated gate track; should detect
+30270-11291,5,Heavy Truck,left,right,Property Damage. No Injured Reported,0.1,Other turned right across AV lane
+30270-11170,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11213,0,Bus,left,right,Property Damage. No Injured Reported,0,Passenger opened door into traffic; not AV system fault
+30270-11298,0,Heavy Truck,left,left,Property Damage. No Injured Reported,0.1,AV stopped on narrow road; other hit while passing
+30270-11249,0,Pickup Truck,rear,right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11219,0,Heavy Truck,rear,left,Minor W/O Hospitalization,0,AV stationary; struck by passing vehicle
+30270-11177,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; struck by other party
+30270-11225,21,Passenger Car,right,front-right,Property Damage. No Injured Reported,0.3,Both proceeding; other likely at fault
+30270-11146,31,"Other, see Narrative",front+bottom,unknown,Property Damage. No Injured Reported,0.4,Debris from vehicle ahead; partially avoidable
+30270-11175,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11295,1,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.8,AV hit parking barrier arm; should have stopped
+30270-11192,0,Passenger Car,rear,front-right,Minor W/ Hospitalization,0,AV stationary; struck by passing vehicle
+30270-11210,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11163,0,Van,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11167,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; other vehicle reversed into AV
+30270-11194,0,SUV,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11221,8,Pickup Truck,left,rear-right,Property Damage. No Injured Reported,0.1,Other vehicle reversed into AV path
+30270-11162,0,SUV,rear,front,Property Damage. No Injured Reported,0,AV stationary; other vehicle reversed into AV
+30270-11216,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11207,0,Passenger Car,left,right,Property Damage. No Injured Reported,0,Passenger opened door into traffic; not AV system fault
+30270-11224,6,SUV,front-left+right,left,Property Damage. No Injured Reported,0,AV passenger opened door hitting parked vehicle; not AV system fault
+30270-11214,15,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11247,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0.1,AV stopped on narrow road; other hit while passing
+30270-11195,6,"Other, see Narrative",front-right,unknown,Property Damage. No Injured Reported,0.5,AV hit fallen utility line; hard to detect
+30270-11218,0,Bus,left,front-left,Property Damage. No Injured Reported,0,Passenger opened door into traffic; not AV system fault
+30270-11245,0,SUV,rear-right,front-right,Minor W/O Hospitalization,0,AV stationary; rear-ended by other vehicle
+30270-11246,10,Pickup Truck,left,front-left,Property Damage. No Injured Reported,0.1,Other crossed lane line during left turn
+30270-11172,22,SUV,left,front-left,Property Damage. No Injured Reported,0.1,Other turned right across AV lane
+30270-11208,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11173,0,Pickup Truck,right+front-right,rear-right+front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11205,0,Non-Motorist: Cyclist,right,,Minor W/ Hospitalization,0,Passenger opened door into traffic; not AV system fault
+30270-11212,0,SUV,rear-right,front-right,Minor W/O Hospitalization,0,AV stationary; rear-ended by other vehicle
+30270-11250,0,Van,rear,right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11238,0,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11276,0,SUV,rear,rear-right,Property Damage. No Injured Reported,0,AV stationary; other vehicle reversed into AV
+30270-11206,21,"Other, see Narrative",front-right,unknown,Property Damage. No Injured Reported,0.3,Object fell from other vehicle; hard to avoid
+30270-11275,39,"Other, see Narrative",front-left+bottom,unknown,Property Damage. No Injured Reported,0.8,AV hit object in roadway; should detect and avoid
+30270-11220,23,"Other, see Narrative",front-right+bottom,unknown,Property Damage. No Injured Reported,0.8,AV hit object in roadway; should detect and avoid
+30270-11160,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11379,7,Other Fixed Object,front-right+bottom,,Property Damage. No Injured Reported,0.9,AV drove into chain/barrier; should detect
+30270-11327,0,Passenger Car,rear-right,front-right,Minor W/O Hospitalization,0,AV stationary; rear-ended by other vehicle
+30270-11381,22,Passenger Car,rear,front,Property Damage. No Injured Reported,0,Other made unprotected left turn into AV
+30270-11417,12,Passenger Car,front-left,front-left,Property Damage. No Injured Reported,0,Other drove wrong way into AV
+30270-11330,0,Pickup Truck,rear,right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11374,0,Passenger Car,front-right,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11372,2,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11467,2,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.8,AV hit parking barrier arm; should have stopped
+30270-11362,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; other vehicle reversed into AV
+30270-11414,0,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11468,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11415,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11284,0,SUV,rear-right,front-left,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11413,0,Heavy Truck,rear-left,front,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11400,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11365,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11328,0,Heavy Truck,rear-right,front-right,Minor W/O Hospitalization,0,AV stationary; struck by other party
+30270-11418,0,SUV,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; struck by other party
+30270-11383,23,Passenger Car,front,right,Property Damage. No Injured Reported,0.1,Other changed lanes into AV
+30270-11432,3,Heavy Truck,left,right,Property Damage. No Injured Reported,0.1,Other turned right into AV
+30270-11384,0,SUV,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11358,0,First Responder Vehicle,rear,left,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11451,3,Heavy Truck,front-left,front,Property Damage. No Injured Reported,0.1,Heavy truck encroached into AV lane
+30270-11426,5,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0.5,AV started moving as pedestrian pushed carts nearby
+30270-11333,0,Bus,rear,rear,Property Damage. No Injured Reported,0.1,AV stopped on narrow road; other hit while passing
+30270-11404,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11371,1,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11402,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11302,11,Passenger Car,rear,front-right,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11424,5,SUV,front,right,Property Damage. No Injured Reported,0.5,Two Waymo AVs collided in parking lot; shared fault
+30270-11455,0,SUV,rear,left,Property Damage. No Injured Reported,0.1,AV stopped on narrow road; other hit while passing
+30270-11282,0,Bus,left,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11323,16,Passenger Car,rear-right,front-right,Minor W/O Hospitalization,0,AV rear-ended by other vehicle
+30270-11420,0,Bus,left,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11421,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11273,0,Heavy Truck,front,rear-left,Minor W/O Hospitalization,0,AV stationary; struck by passing vehicle
+30270-11373,0,Heavy Truck,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11378,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11401,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11279,1,Passenger Car,rear-left,front-left,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11361,4,"Other, see Narrative",front-right,unknown,Unknown,0.3,Object fell from other vehicle; hard to avoid
+30270-11430,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11329,0,Bus,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11422,7,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.7,AV hit small object in road; should detect
+30270-11360,5,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11370,1,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11280,0,Passenger Car,rear-right,front-right,Minor W/O Hospitalization,0,AV stationary; struck by passing vehicle
+30270-11344,0,Bus,rear,right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11452,0,Non-Motorist: Scooter - Skateboard,right,,Minor W/O Hospitalization,0,Passenger opened door into traffic; not AV system fault
+30270-11281,0,Bus,left,right,Property Damage. No Injured Reported,0,Passenger opened door into traffic; not AV system fault
+30270-11428,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11334,4,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV hit median during U-turn; AV at fault
+30270-11412,0,Passenger Car,left,left,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11495,0,Bus,rear,right,Property Damage. No Injured Reported,0,Passenger opened door into traffic; not AV system fault
+30270-11544,7,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV rear-ended by other vehicle
+30270-11561,18,"Other, see Narrative",left,unknown,Property Damage. No Injured Reported,0.1,Pedestrian pushed shopping cart into AV
+30270-11502,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; struck by passing vehicle
+30270-11522,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11589,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by other vehicle
+30270-11433,0,Heavy Truck,rear,left,Minor W/ Hospitalization,0.1,AV stopped on narrow road; other hit while passing
+30270-11525,0,Heavy Truck,left,right,Property Damage. No Injured Reported,0,AV stationary; other crossed into AV lane
+30270-11475,0,Van,rear-right,front-right,Minor W/O Hospitalization,0,AV stationary; rear-ended by other vehicle
+30270-11450,0,SUV,front+left,front+left,Moderate W/O Hospitalization,0,AV stationary; struck by passing vehicle
+30270-11569,5,Passenger Car,left,rear-left,Property Damage. No Injured Reported,0.1,Other car passenger opened door into AV path
+30270-11516,13,Heavy Truck,left,rear-right,Property Damage. No Injured Reported,0.2,Heavy truck reversed into AV passing behind it
+30270-11474,0,SUV,rear-left,front,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by SUV
+30270-11501,7,Pickup Truck,right,left,Property Damage. No Injured Reported,0.3,AV sideswiped parked truck's open door while passing
+30270-11469,0,Bus,rear,left,Property Damage. No Injured Reported,0.1,AV was stationary; bus turned left into stopped AV
+30270-11547,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV stopped yielding; garbage truck sideswiped it passing
+30270-11564,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,AV stationary; passenger car maneuvered into stopped AV
+30270-11588,0,SUV,rear,front-left,Property Damage. No Injured Reported,0,AV stationary at stop sign; rear-ended by SUV
+30270-11508,0,Pickup Truck,rear,left,Property Damage. No Injured Reported,0,AV parked for pickup; pickup truck sideswiped it passing
+30270-11542,0,Pickup Truck,front,left,Property Damage. No Injured Reported,0,AV stationary yielding; pickup sideswiped it passing
+30270-11591,22,"Other, see Narrative",rear,unknown,Property Damage. No Injured Reported,1,AV mechanical failure: rear wheel separated while driving
+30270-11490,0,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV parked; chain-reaction pushed car into stationary AV
+30270-11548,2,Other Fixed Object,right,,Property Damage. No Injured Reported,0.8,AV drove into vegetation extending into alley roadway
+30270-11611,2,Pickup Truck,rear-left,front-right,Property Damage. No Injured Reported,0.4,AV changing lanes; pickup in target lane moved forward into AV
+30270-11590,0,SUV,rear,right,Property Damage. No Injured Reported,0,AV parked; SUV sideswiped stationary AV while passing
+30270-11498,0,Passenger Car,rear-left,rear,Property Damage. No Injured Reported,0,AV parked; passenger car reversed into stationary AV
+30270-11500,13,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0.9,AV drove over removed pavement section in construction zone
+30270-11594,2,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.5,Flagger arm lowered onto AV then AV drove forward into it
+30270-11496,0,Motorcycle,right,front-right,Minor W/O Hospitalization,0,AV stationary; motorcycle lane-split and fell into AV
+30270-11673,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at stop sign; rear-ended by SUV
+30270-11565,0,"Other, see Narrative",front,left,Property Damage. No Injured Reported,0,AV stopped in crosswalk; trailer sideswiped it turning
+30270-11456,0,Motorcycle,rear-left,front-right,Property Damage. No Injured Reported,0,AV parked; motorcycle changed lanes into stationary AV
+30270-11488,0,Passenger Car,rear-right,front-right,Minor W/O Hospitalization,0,AV stationary; rear-ended by passenger car
+30270-11545,15,Passenger Car,front-right,left,Property Damage. No Injured Reported,0.1,Other car ran red light; AV braked but still made contact
+30270-11605,0,SUV,rear,right,No Injured Reported,0,AV parked; passenger opened door into path of passing SUV; not AV system fault
+30270-11523,0,Van,rear,left,Property Damage. No Injured Reported,0,AV stationary yielding; van sideswiped it on narrow street
+30270-11543,0,SUV,rear,front-left+right,Property Damage. No Injured Reported,0,AV parked; SUV sideswiped stationary AV while passing
+30270-11567,0,SUV,rear,right,Property Damage. No Injured Reported,0,AV parked; SUV sideswiped it while completing right turn
+30270-11573,0,SUV,rear,rear-right,Minor W/O Hospitalization,0,AV parked; SUV reversed out of stall into stationary AV
+30270-11607,8,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0.5,AV merging from parking spot; car hit AV's rear left
+30270-11546,29,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.7,AV drove into fallen utility line hanging in travel lane
+30270-11596,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by passenger car
+30270-11621,32,Passenger Car,right,front,Property Damage. No Injured Reported,0,Other car changed lanes into AV's lane of travel
+30270-11622,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by passenger car
+30270-11476,24,Passenger Car,rear,front-left,Minor W/O Hospitalization,0,AV proceeding straight; rear-ended by speeding car
+30270-11571,9,"Other, see Narrative",rear-right+front-right+bottom,unknown,Property Damage. No Injured Reported,0.9,AV drove through standing water causing damage
+30270-11671,3,Pickup Truck,front-left,rear,Property Damage. No Injured Reported,0.9,AV hit parked flatbed trailer while exiting parking spot
+30270-11765,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by passenger car
+30270-11672,25,"Other, see Narrative",front-left+bottom,unknown,Property Damage. No Injured Reported,0.9,AV drove into pothole in roadway
+30270-11753,0,SUV,rear,right,Property Damage. No Injured Reported,0,AV stopped; passenger opened door into path of passing SUV; not AV system fault
+30270-11763,0,SUV,rear,front-left,Property Damage. No Injured Reported,0,AV stationary in traffic queue; SUV hit rear from behind
+30270-11795,32,Passenger Car,left,right,Property Damage. No Injured Reported,0,Other car changed lanes into AV's lane of travel
+30270-11713,8,Motorcycle,rear,front-left+front-right,Fatality,0.1,AV slowing for right turn; motorcycle rear-ended AV
+30270-11608,2,Pickup Truck,right,left,Property Damage. No Injured Reported,0.9,AV hit parked flatbed truck while exiting parking spot
+30270-11794,19,Pickup Truck,left,right,Minor W/ Hospitalization,0,Third-party car ran red light causing chain-reaction crash
+30270-11698,16,Animal,front-left,,Property Damage. No Injured Reported,0.6,AV hit domestic animal that emerged from behind parked car
+30270-11821,0,SUV,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary in traffic; SUV in front reversed into AV
+30270-11739,3,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV slowing for stop sign; rear-ended by passenger car
+30270-11702,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by SUV
+30270-11792,17,Pickup Truck,right,rear,Property Damage. No Injured Reported,0,Pickup truck reversed into AV's lane during U-turn
+30270-11716,0,Pickup Truck,front-right,rear-right,Property Damage. No Injured Reported,0,AV stopped yielding; pickup truck reversed into AV
+30270-11850,1,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV slowing for emergency siren; rear-ended by SUV
+30270-11755,0,SUV,front,front,Property Damage. No Injured Reported,0,AV stationary in traffic; SUV crossed center line into AV
+30270-11742,12,SUV,front,right,Property Damage. No Injured Reported,0.1,SUV emerged from behind train into AV's lane
+30270-11789,0,SUV,front,front,Minor W/ Hospitalization,0,AV stationary in traffic; SUV crossed center line into AV
+30270-11851,0,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV stationary; rear-ended by passenger car from behind
+30270-11805,8,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.9,AV drove into hanging chain at parking lot exit
+30270-11771,2,Heavy Truck,front,rear-left,Property Damage. No Injured Reported,0.8,AV maneuvering around truck hit its loading ramp
+30270-11715,0,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; heavy truck reversed into stopped AV
+30270-11718,17,Passenger Car,front,rear-left,Property Damage. No Injured Reported,0.1,Car made sudden right turn without signal in front of AV
+30270-11762,29,Passenger Car,front,right,Property Damage. No Injured Reported,0,Other car changed lanes into AV's lane during left turn
+30270-11853,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV stationary; heavy truck sideswiped it on narrow street
+30270-11768,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at stop sign; rear-ended by passenger car
+30270-11618,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV stationary at red light; heavy truck sideswiped it turning
+30270-11806,19,Non-Motorist: Cyclist,rear,,Minor W/ Hospitalization,0.1,Cyclist ran stop sign and hit rear of AV from side
+30270-11852,0,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; tow truck reversed into stopped AV
+30270-11802,13,"Other, see Narrative",front-right+bottom,unknown,Property Damage. No Injured Reported,0.9,AV drove through standing water in roadway
+30270-11629,3,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,1,AV drove wrong way through exit-only tire spikes
+30270-11756,0,Bus,rear,right,Property Damage. No Injured Reported,0,AV stationary at stop sign; bus sideswiped it passing
+30270-11831,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by passenger car
+30270-11759,1,Pickup Truck,front,front-left,Property Damage. No Injured Reported,0.5,AV changing lanes; pickup in target lane moved forward into AV
+30270-11790,0,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV stationary; rear-ended by passenger car from behind
+30270-11701,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; rear-ended by passenger car from behind
+30270-11769,12,SUV,rear,front-right,Property Damage. No Injured Reported,0,SUV pulled out of driveway into side of passing AV
+30270-11839,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at stop sign; rear-ended by passenger car
+30270-11623,8,Pickup Truck,rear-left,front,Property Damage. No Injured Reported,0.4,AV changing lanes; pickup in prior lane moved forward into AV
+30270-11692,3,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0.1,AV was backing but passenger car reversed into AV's front
+30270-11612,14,SUV,left+right,right,Property Damage. No Injured Reported,0.2,Both turning left; SUV in left-turn-only lane went straight
+30270-11637,20,SUV,left,front,Property Damage. No Injured Reported,0.1,SUV made unprotected left turn into AV going straight on green
+30270-11761,0,Bus,rear,right,Property Damage. No Injured Reported,0,AV parked; bus reversed and changed lanes into AV
+30270-11609,0,Bus,rear,right,Property Damage. No Injured Reported,0,AV stationary in traffic; bus sideswiped it passing
+30270-11627,0,Van,left,right,Property Damage. No Injured Reported,0,AV parked; passenger opened door into path of passing van; not AV system fault
+30270-11664,2,SUV,rear,right,Property Damage. No Injured Reported,0.2,AV proceeded forward into SUV's open door after light change
+30270-11695,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; passenger car reversed into stopped AV
+30270-11760,21,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,Other car changed lanes into AV's lane of travel
+30270-11791,0,Passenger Car,left,right,Minor W/O Hospitalization,0,AV stationary; chain-reaction pushed car into stopped AV
+30270-11766,9,"Other, see Narrative",rear-left+bottom,unknown,Property Damage. No Injured Reported,0.9,AV undercarriage scraped pavement at parking lot entrance
+30270-11625,1,Motorcycle,rear-right,front-right,Property Damage. No Injured Reported,0,AV nearly stopped; motorcycle rear-ended AV from behind
+30270-11840,26,Animal,front-right,,Unknown,0.6,AV hit cat that emerged from behind parked vehicle
+30270-11724,0,Pickup Truck,left,left,Property Damage. No Injured Reported,0,AV stationary; pickup sideswiped it on narrow street
+30270-11738,0,Motorcycle,rear-left,front-right,Minor W/O Hospitalization,0,AV stopped/slow; motorcycle changed lanes into AV's rear
+30270-11717,3,Passenger Car,rear,left,Property Damage. No Injured Reported,0.1,Car made wide right turn entering AV's lane of travel
+30270-11758,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary in traffic queue; rear-ended by SUV
+30270-12008,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; passenger car reversed into stopped AV
+30270-12052,0,Passenger Car,rear,left,Property Damage. No Injured Reported,0,AV parked; passenger car sideswiped stationary AV passing
+30270-11996,20,"Other, see Narrative",rear-right+front-right+bottom,unknown,Property Damage. No Injured Reported,0.9,AV drove through standing water causing damage
+30270-11925,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV stationary yielding; heavy truck sideswiped it passing
+30270-11859,31,SUV,rear-left+right,front,No Injured Reported,0,SUV changed lanes from center into AV's lane of travel
+30270-11882,0,SUV,rear,left,Property Damage. No Injured Reported,0,AV stationary yielding; SUV sideswiped it on narrow street
+30270-11855,0,First Responder Vehicle,rear,left,Property Damage. No Injured Reported,0,AV stationary yielding; ambulance sideswiped it passing
+30270-12012,1,Pickup Truck,rear,front-left,Minor W/O Hospitalization,0,AV slowing in traffic; rear-ended by pickup truck
+30270-12000,0,SUV,front-right,rear-right,Property Damage. No Injured Reported,0,AV parked; SUV reversed into stationary AV
+30270-12053,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV stopped for debris; rear-ended by pickup truck
+30270-11863,0,Pickup Truck,left,rear-left,Property Damage. No Injured Reported,0,AV parked; pickup reversed across road into stationary AV
+30270-11858,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by passenger car
+30270-11949,0,SUV,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; SUV reversed into stopped AV
+30270-11958,0,Bus,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary in traffic; bus reversed into stopped AV
+30270-11929,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary; chain-reaction rear-end pushed car into AV
+30270-11926,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by passenger car
+30270-11962,2,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV stopped in traffic; pickup rear-ended AV from behind
+30270-11908,36,SUV,rear-left,front,Minor W/O Hospitalization,0,SUV changed lanes into AV's lane of travel
+30270-12062,1,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV slowing for pickup; car tried to pass and hit AV
+30270-11924,0,Heavy Truck,rear,right,Property Damage. No Injured Reported,0,AV parked; heavy truck sideswiped stationary AV passing
+30270-11997,0,"Other, see Narrative",unknown,unknown,Unknown,0.15,AV stopped on freeway for 2+ min causing dangerous situation
+30270-11999,20,"Other, see Narrative",rear,unknown,Property Damage. No Injured Reported,0.2,Basketball rolled into AV's lane; AV ran over it
+30270-12013,0,Heavy Truck,front-left,left,Property Damage. No Injured Reported,0,AV stationary; heavy truck sideswiped stopped AV passing
+30270-12059,0,"Other, see Narrative",rear,left,Property Damage. No Injured Reported,0,AV stationary yielding; tow truck sideswiped it passing
+30270-11838,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV stopped for animal; rear-ended by pickup truck
+30270-11955,0,Van,rear,rear,Property Damage. No Injured Reported,0,AV stationary yielding; van sideswiped it on narrow street
+30270-11992,0,SUV,right,left,Property Damage. No Injured Reported,0,AV stopped with door open; SUV passing hit the open door; not AV system fault
+30270-11841,0,Passenger Car,rear-right,front-right,Moderate W/ Hospitalization,0,AV stationary at stop sign; rear-ended by passenger car
+30270-11998,1,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV slowing for yellow light; rear-ended by passenger car
+30270-12011,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stopped; car behind failed to stop and rear-ended AV
+30270-11987,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV stationary at red light; rear-ended by pickup truck
+30270-12042,0,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0,AV stationary; heavy truck reversed into stopped AV
+30270-11932,0,SUV,front,rear-right,Property Damage. No Injured Reported,0,AV stationary; SUV reversed into stopped AV in parking lot
+30270-11988,0,Heavy Truck,left,left,Property Damage. No Injured Reported,0,AV stationary; heavy truck crossed center line into AV
+30270-11888,5,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV drove over curb in parking lot damaging undercarriage
+30270-11994,0,SUV,left,right,Property Damage. No Injured Reported,0,AV parked; passenger opened door into path of passing SUV; not AV system fault
+30270-11940,6,Pickup Truck,rear,rear-right,Property Damage. No Injured Reported,0,Pickup reversed from parking into intersection hitting AV
+30270-11933,40,SUV,right,front,Property Damage. No Injured Reported,0,SUV changed lanes into AV's lane without signaling
+30270-11953,14,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,Parked car pulled out into AV's lane of travel
+30270-11907,24,SUV,rear-left,front-left,Property Damage. No Injured Reported,0,SUV entered AV lane from parking lot exit
+30270-11861,18,Passenger Car,rear-right,front-right,Minor W/ Hospitalization,0,AV rear-ended by passenger car while proceeding straight
+30270-12018,0,Pickup Truck,front-right,rear-right,Property Damage. No Injured Reported,0,Pickup truck reversed into stationary AV
+30270-11956,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,Passenger car reversed into stationary AV at red light
+30270-11892,28,SUV,right,front,Property Damage. No Injured Reported,0,SUV entered AV lane from parking lot
+30270-11954,0,Bus,rear,right,Property Damage. No Injured Reported,0,Bus sideswiped stationary AV while changing lanes
+30270-11928,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV in traffic queue
+30270-12046,5,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0.9,AV drove into movable traffic barrier in parking lot
+30270-13053,0,Passenger Car,front,rear-left,Minor W/O Hospitalization,0,Passenger car reversed into stationary AV
+30270-12044,4,"Other, see Narrative",rear-left,unknown,Property Damage. No Injured Reported,0.3,AV proceeded forward into opening gate
+30270-11906,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV at red light
+30270-11865,0,Heavy Truck,rear,front-left,No Injured Reported,0,Heavy truck reversed into stationary AV
+30270-12007,0,Heavy Truck,rear-left,left,Property Damage. No Injured Reported,0,Heavy truck turned into stationary AV
+30270-11874,2,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,Passenger car hit AV from behind while AV was slowing
+30270-12050,11,Non-Motorist: Cyclist,rear-right,,Minor W/ Hospitalization,0.1,Cyclist rear-ended AV that was braking for traffic
+30270-11836,1,Heavy Truck,front-left,rear,Property Damage. No Injured Reported,0.8,AV hit parked heavy truck trailer while passing
+30270-11860,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,Pickup truck rear-ended stationary AV
+30270-12063,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,Passenger car sideswiped stationary AV while passing
+30270-11931,0,"Other, see Narrative",rear,left,Property Damage. No Injured Reported,0,Motorhome sideswiped stationary parked AV
+30270-11930,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,Pickup truck rear-ended stationary AV at red light
+30270-12045,2,Passenger Car,rear,front,Property Damage. No Injured Reported,0,Oncoming car crossed center line and hit AV
+30270-11837,0,SUV,rear,left,Property Damage. No Injured Reported,0,SUV hit stationary AV on narrow street
+30270-11951,9,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV undercarriage hit raised pavement in parking lot
+30270-11960,0,Passenger Car,left,right,Property Damage. No Injured Reported,0,Passenger opened door into passing car while AV stopped; not AV system fault
+30270-11957,0,Heavy Truck,front,front-left,Property Damage. No Injured Reported,0.2,AV stopped partially between lanes; truck hit it
+30270-11883,0,Bus,front-left,rear,Property Damage. No Injured Reported,0,Bus reversed into stationary AV while parallel parking
+30270-12019,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,Heavy truck sideswiped stationary AV on narrow street
+30270-11842,0,SUV,rear,right,Property Damage. No Injured Reported,0,Passenger opened door into passing SUV while AV parked; not AV system fault
+30270-11905,0,Heavy Truck,front,right,Property Damage. No Injured Reported,0.1,Heavy truck trailer hit stationary AV in parking lot
+30270-13056,0,"Other, see Narrative",unknown,unknown,Unknown,0.3,AV stopped in lane to change lanes causing chain rear-end
+30270-11864,0,SUV,rear-right,front-right,Minor W/O Hospitalization,0,SUV intentionally rear-ended stationary AV twice
+30270-12035,5,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV undercarriage hit speed bump
+30270-11884,25,Passenger Car,rear-right,front,Property Damage. No Injured Reported,0,Passenger car rear-ended AV from behind
+30270-11936,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV at inoperative light
+30270-11849,0,SUV,rear,front-right,Unknown,0,SUV hit parked AV at curb
+30270-13028,0,Passenger Car,front-left,rear,Property Damage. No Injured Reported,0,Passenger car reversed into stationary AV
+30270-11995,4,Pickup Truck,front,right,Property Damage. No Injured Reported,0.1,Pickup truck cut right from transit lane into turning AV
+30270-11904,0,SUV,rear,front-left,Property Damage. No Injured Reported,0.15,AV stopped partially in lane during lane change; rear-ended
+30270-13025,1,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,Passenger car rear-ended slowing AV from behind
+30270-12070,5,Animal,rear-left,,No Injured Reported,0.8,AV ran over cat that was under the vehicle
+30270-11887,7,SUV,rear,right,Property Damage. No Injured Reported,0,SUV passenger opened door into AV proceeding on green
+30270-13161,4,Non-Motorist: Pedestrian,rear-left,,Moderate W/ Hospitalization,0,Passenger exited moving AV; tire stopped on their foot; not AV system fault
+30270-13197,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV at red light
+30270-13236,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,SUV rear-ended stationary AV at red light
+30270-13164,0,Passenger Car,front,rear-left,Property Damage. No Injured Reported,0,Passenger car reversed out of stall into parked AV
+30270-13060,0,Passenger Car,front,front,Minor W/ Hospitalization,0,Wrong-way car hit stationary AV head-on
+30270-13065,0,SUV,rear-right,front-right,Minor W/ Hospitalization,0,Chain reaction rear-end pushed SUV into stationary AV
+30270-13102,9,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended AV slowing for stop sign
+30270-13194,0,Passenger Car,left,right,Property Damage. No Injured Reported,0,Passenger car sideswiped parked AV at curb
+30270-13129,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV at red light
+30270-13128,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended parked AV
+30270-12051,25,SUV,front,front,Minor W/ Hospitalization,0,Oncoming SUV crossed center line into AV lane
+30270-13204,0,SUV,rear-right,front-left,Property Damage. No Injured Reported,0,SUV rear-ended stationary AV at red light
+30270-13199,0,Pickup Truck,rear,front-left,Property Damage. No Injured Reported,0,Pickup truck rear-ended stationary AV at red light
+30270-13130,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Chain reaction rear-end pushed car into stationary AV
+30270-12047,1,SUV,rear-right,front,Property Damage. No Injured Reported,0,SUV rear-ended AV slowing for red light
+30270-13099,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car lane-changed into stationary AV
+30270-13148,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV at red light
+30270-13090,1,"Other, see Narrative",front-right,unknown,Property Damage. No Injured Reported,0.3,AV drove forward while gate was swinging open into it
+30270-13079,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0.1,AV stopped in intersection for cyclist; rear-ended
+30270-13201,0,First Responder Vehicle,front-right,rear-right,Property Damage. No Injured Reported,0,Police SUV reversed into stationary AV
+30270-13063,0,SUV,front-right,rear-right,Minor W/O Hospitalization,0,SUV deliberately reversed into stationary AV
+30270-13144,0,Pickup Truck,rear,front-left,Property Damage. No Injured Reported,0,Pickup truck hit parked AV at curb
+30270-13159,0,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0,Heavy truck reversed into stationary AV
+30270-13126,0,Heavy Truck,front,rear,Property Damage. No Injured Reported,0,Heavy truck trailer sideswiped stationary AV
+30270-12049,0,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0,Heavy truck reversed into stationary AV
+30270-13067,10,Pickup Truck,rear-left,rear-left,Property Damage. No Injured Reported,0,Pickup truck reversed into AV while AV was passing
+30270-13206,0,Heavy Truck,rear,rear,Property Damage. No Injured Reported,0,Heavy truck sideswiped stationary AV on narrow street
+30270-13085,33,Passenger Car,left,front-right,Property Damage. No Injured Reported,0,Car made illegal left turn into AV going straight
+30270-13246,1,Other Fixed Object,front-left,,Property Damage. No Injured Reported,0.9,AV reversed into parking bollard
+30270-13024,5,Passenger Car,left,rear-right,Property Damage. No Injured Reported,0.05,Passenger car reversed into AV that was passing behind
+30270-13198,0,Passenger Car,rear-right,front-right,Unknown,0,Passenger car rear-ended stationary AV at red light
+30270-13251,2,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended AV slowing for pedestrians
+30270-13055,14,SUV,rear-left,front-left,Property Damage. No Injured Reported,0,SUV turned left into AV lane of travel
+30270-13276,13,SUV,rear,front-left,Property Damage. No Injured Reported,0,SUV hit AV from behind while AV slowed for tree branch
+30270-12061,1,SUV,rear-right,front-right,Property Damage. No Injured Reported,0.1,AV braked for birds; rear-ended by SUV
+30270-13023,11,Pickup Truck,front,right,Property Damage. No Injured Reported,0,Pickup truck changed lanes into AV
+30270-13235,0,Van,rear-right,front-right,Property Damage. No Injured Reported,0,Van rear-ended stationary AV at stop sign
+30270-13100,0,Van,rear-right,front-right,Minor W/O Hospitalization,0.1,AV stopped at green light before right turn; rear-ended
+30270-13091,0,"Other, see Narrative",rear-right,unknown,Property Damage. No Injured Reported,0.4,AV drove forward while tow truck was lifting it
+30270-13089,0,Bus,front-left,rear,Property Damage. No Injured Reported,0,Bus hit stationary AV while parking maneuvering
+30270-13254,0,Bus,front-right,rear-right,Property Damage. No Injured Reported,0,Bus reversed into stationary AV
+30270-13096,30,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0.5,AV drove through low-hanging suspended wire
+30270-12054,0,Heavy Truck,rear,front,Property Damage. No Injured Reported,0,Garbage truck sideswiped stationary AV on narrow street
+30270-12048,17,SUV,left,front,Minor W/O Hospitalization,0,SUV made illegal unprotected left turn into AV
+30270-13269,15,Pickup Truck,left,front-left,Property Damage. No Injured Reported,0.8,AV turned left from wrong lane into pickup truck
+30270-13238,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,Passenger car reversed into stationary AV
+30270-13373,22,Passenger Car,right,front-right,Property Damage. No Injured Reported,0.1,Car exited driveway into AV passing on the street
+30270-13190,0,Passenger Car,rear-right,front-right,Minor W/O Hospitalization,0,Passenger car rear-ended stationary AV at red light
+30270-12055,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,SUV rear-ended stationary AV at red light
+30270-13162,0,Heavy Truck,rear-right,front-right,Property Damage. No Injured Reported,0.15,AV stopped for fake stop sign; rear-ended by truck
+30270-13274,0,SUV,rear,right,Property Damage. No Injured Reported,0,SUV sideswiped stationary AV while passing
+30270-13312,0,SUV,front-left,left,Property Damage. No Injured Reported,0,SUV sideswiped stationary AV while passing
+30270-13054,2,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,Pickup truck rear-ended AV near stop sign
+30270-13256,12,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.6,AV drove into fallen utility line in travel lane
+30270-13062,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV
+30270-13240,23,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,Passenger car changed lanes into AV
+30270-13311,0,SUV,left,rear-right,Property Damage. No Injured Reported,0,SUV reversed out of parking into stationary AV
+30270-13095,30,"Other, see Narrative",front-right,unknown,Property Damage. No Injured Reported,0.2,AV hit tree branch that fell from truck ahead
+30270-13165,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV yielding to ped
+30270-13058,25,Pickup Truck,rear-left,front,Property Damage. No Injured Reported,0.1,Pickup truck pulled from curb into AV changing lanes
+30270-13250,0,Heavy Truck,front-right,rear-left,Property Damage. No Injured Reported,0,Heavy truck reversed into stationary AV
+30270-13133,1,Heavy Truck,rear-right,front-right,Property Damage. No Injured Reported,0,Heavy truck rear-ended AV slowing for left turn
+30270-12056,2,Motorcycle,rear-left,front-right,Property Damage. No Injured Reported,0,Motorcycle rear-ended AV slowing for pedestrian
+30270-13066,0,Bus,rear,right,Property Damage. No Injured Reported,0,Bus sideswiped stationary AV while passing
+30270-13241,0,Bus,left,right,Property Damage. No Injured Reported,0,Bus sideswiped stationary AV while turning left
+30270-13082,0,Bus,front,right,Property Damage. No Injured Reported,0,Bus sideswiped stationary AV while proceeding forward
+30270-13160,8,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.9,AV undercarriage hit pavement at parking lot entrance
+30270-13167,2,Passenger Car,rear-right,front-right,Unknown,0,Passenger car rear-ended slowly moving AV at stop sign
+30270-13243,0,Bus,rear,right,Property Damage. No Injured Reported,0,Bus sideswiped parked AV at curb
+30270-13310,23,Van,rear-left,front,Property Damage. No Injured Reported,0,Mail truck pulled from curb into AV lane
+30270-13192,0,Passenger Car,rear,front-left,Minor W/ Hospitalization,0,Passenger car rear-ended stationary AV at stop sign
+30270-13068,0,Bus,left,right,Property Damage. No Injured Reported,0,Bus sideswiped stationary AV parked at curb
+30270-13163,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV at red light
+30270-13242,0,Bus,rear,right,Property Damage. No Injured Reported,0,Bus sideswiped stationary AV while passing
+30270-13247,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,Passenger car reversed into stationary AV
+30270-13080,0,Bus,rear,right,Property Damage. No Injured Reported,0,Bus sideswiped parked AV while passing
+30270-13268,24,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,Passenger car turned right into AV lane of travel
+30270-13064,16,Passenger Car,front,right,Property Damage. No Injured Reported,0.1,Car made unprotected left turn; AV braked and hit SUV
+30270-13244,0,Passenger Car,rear-right,front-right,Minor W/O Hospitalization,0,Passenger car rear-ended stationary AV at red light
+30270-13135,0,Heavy Truck,rear-left,right,Property Damage. No Injured Reported,0,Heavy truck reversed into stationary AV in parking lot
+30270-13088,2,SUV,rear,front-left,Property Damage. No Injured Reported,0,SUV rear-ended AV during right turn at intersection
+30270-13239,1,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended AV turning left at stop sign
+30270-13270,20,Animal,front-left,,Property Damage. No Injured Reported,0.7,AV hit domestic animal in its lane of travel
+30270-13196,20,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,Passenger car changed lanes into AV
+30270-13081,21,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,Passenger car changed lanes into AV from turn lane
+30270-13137,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Passenger car rear-ended stationary AV at stop sign
+30270-13205,0,SUV,rear,right,Property Damage. No Injured Reported,0,Passenger opened door into passing SUV while AV parked; not AV system fault
+30270-13092,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,Chain reaction rear-end pushed car into stationary AV
+30270-13202,7,SUV,rear-left,rear,Property Damage. No Injured Reported,0.15,AV passed SUV which then reversed into AV
+30270-13155,0,Bus,rear,right,Property Damage. No Injured Reported,0,AV was parked; bus hit stationary AV while turning
+30270-12060,0,Passenger Car,front-right,rear-left,Property Damage. No Injured Reported,0,AV was stopped; car in front reversed into AV
+30270-13195,0,SUV,rear-right,front-right,Minor W/O Hospitalization,0,AV was stopped; chain reaction rear-end pushed SUV into AV
+30270-13193,39,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.9,AV drove over fallen street sign in its lane at 39 mph
+30270-13127,0,Heavy Truck,rear,rear,Property Damage. No Injured Reported,0,AV was stopped; truck sideswiped stationary AV while passing
+30270-13084,2,SUV,front,right,Property Damage. No Injured Reported,0.2,Both AV and SUV were moving; SUV entered AV lane but AV also pulled out
+30270-13255,4,Passenger Car,left,rear-right,Property Damage. No Injured Reported,0,AV was passing stopped car; that car reversed into AV
+30270-13189,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at stop sign; rear-ended by SUV
+30270-13275,0,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV was stopped at curb; rear-ended by approaching car
+30270-13515,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV was stopped; car in front reversed into stationary AV
+30270-13331,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at flashing red; rear-ended by SUV
+30270-13363,9,SUV,rear,front,Property Damage. No Injured Reported,0.1,Wrong-way vehicle hit AV; AV braked and maneuvered to avoid
+30270-13301,0,Passenger Car,rear,left,Property Damage. No Injured Reported,0,AV stopped to yield on narrow street; passing car hit it
+30270-13538,0,Passenger Car,left,right,Property Damage. No Injured Reported,0,AV was stopped; passenger opened door and passing car hit it; not AV system fault
+30270-13399,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; chain-reaction rear-end collision
+30270-13370,34,Passenger Car,rear-left,front,Minor W/O Hospitalization,0,Other car turned right into AV lane; car at fault
+30270-13495,0,SUV,rear-right,front-right,Minor W/ Hospitalization,0,AV was stopped in traffic; rear-ended by SUV
+30270-13410,0,Pickup Truck,front-right,rear,Property Damage. No Injured Reported,0,AV was stopped; pickup reversed into stationary AV while parking
+30270-13384,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; rear-ended by SUV
+30270-13309,0,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV was parked for pickup; car passing hit stationary AV
+30270-13323,0,SUV,front,rear-left,Property Damage. No Injured Reported,0,AV was stopped; SUV in front reversed into stationary AV
+30270-13302,0,First Responder Vehicle,rear-left,right,Property Damage. No Injured Reported,0,AV was stopped; fire truck hit stationary AV while turning
+30270-13403,13,SUV,front,front-left,Property Damage. No Injured Reported,0,Both turning left in adjacent lanes; SUV crossed into AV lane
+30270-13542,0,Heavy Truck,right,rear,Property Damage. No Injured Reported,0,AV was stopped; heavy truck reversed into stationary AV
+30270-13509,18,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.8,AV drove into fallen utility line hanging in travel lane
+30270-13506,25,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0.8,AV drove over debris in roadway at 25 mph
+30270-13447,7,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.5,Dolly fell from truck ahead; AV was following and hit it
+30270-13507,0,Heavy Truck,front,right,Property Damage. No Injured Reported,0.1,AV stopped; truck turned right from left lane into AV lane
+30270-13300,0,Heavy Truck,left,right,Property Damage. No Injured Reported,0,AV was stopped; oversized truck sideswiped stationary AV
+30270-13450,0,SUV,rear,right,Property Damage. No Injured Reported,0,AV was parked; SUV sideswiped stationary AV while passing
+30270-13510,15,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0.2,Both changing lanes simultaneously; other car entered AV lane
+30270-13407,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV was stopped; box truck sideswiped stationary AV passing
+30270-13267,6,"Other, see Narrative",right,rear-right,Property Damage. No Injured Reported,0,AV was proceeding; golf cart reversed into AV from parking stall
+30270-13395,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; rear-ended by car
+30270-13371,3,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0.1,AV was slowing; rear-ended by car following too closely
+30270-13514,25,Other Fixed Object,front-right,,Property Damage. No Injured Reported,0.8,AV drove into fallen utility line hanging in travel lane
+30270-13327,0,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0,AV was stopped; heavy truck reversed into stationary AV
+30270-13443,10,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV undercarriage hit pavement; should detect road conditions
+30270-13277,0,"Other, see Narrative",front-right,rear-right,Property Damage. No Injured Reported,0,AV was stopped; street sweeper reversed into stationary AV
+30270-13369,2,Passenger Car,rear-left,left,Property Damage. No Injured Reported,0,Car behind AV changed lanes and sideswiped AV
+30270-13416,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; rear-ended by car
+30270-13278,0,Heavy Truck,front,rear-left,Property Damage. No Injured Reported,0,AV was stopped; heavy truck reversed into stationary AV
+30270-13513,0,Heavy Truck,front,rear-left,Property Damage. No Injured Reported,0.1,AV stopped for truck but followed too soon; truck reversed again
+30270-13364,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped yielding to pedestrian; rear-ended by car
+30270-13548,12,Heavy Truck,rear,front-left,Property Damage. No Injured Reported,0,Both turning right; box truck crossed into AV turn lane
+30270-13388,0,Passenger Car,front,front,Minor W/O Hospitalization,0,AV stopped to yield on narrow street; car hit stationary AV
+30270-13320,0,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV was stopped; car behind drove into stationary AV
+30270-13554,0,Heavy Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped in traffic; rear-ended by heavy truck
+30270-13512,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV stopped on narrow street; truck sideswiped stationary AV
+30270-13405,12,Passenger Car,rear-left,front,Property Damage. No Injured Reported,0,Other car went straight from right-turn-only lane into AV
+30270-13324,0,Heavy Truck,left,right,Property Damage. No Injured Reported,0,AV was stopped in traffic; truck sideswiped stationary AV
+30270-13448,0,Van,front,rear,Property Damage. No Injured Reported,0,AV was stopped; van reversed into stationary AV
+30270-13279,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; car behind drove into AV
+30270-13452,0,Heavy Truck,front-right,right,Property Damage. No Injured Reported,0,AV was stopped; truck reversed into stationary AV while parking
+30270-13372,9,Passenger Car,rear-right,front-right,Minor W/ Hospitalization,0.2,AV slowed and changed lanes for dog; rear-ended by car
+30270-13511,0,Van,rear,right,Property Damage. No Injured Reported,0.1,AV stopped at red for 6 min; van sideswiped while passing
+30270-13539,0,First Responder Vehicle,rear,left,Property Damage. No Injured Reported,0,AV was stopped; fire engine hit stationary AV while turning
+30270-13540,0,Pickup Truck,rear-left,right,Property Damage. No Injured Reported,0,AV was stopped in parking lot; pickup truck passed and hit it
+30270-13489,1,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0.1,AV was reversing but truck reversed faster into AV
+30270-13467,9,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.9,AV hit speed bump/pavement change in parking lot
+30270-13326,0,Pickup Truck,rear,right,Property Damage. No Injured Reported,0,AV was parked for pickup; truck sideswiped stationary AV
+30270-13564,0,Non-Motorist: Scooter - Skateboard,rear-left,,Property Damage. No Injured Reported,0,AV was stopped yielding to pedestrians; scooter rear-ended AV
+30270-13486,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0.15,AV stopped suddenly after bird collision; rear-ended by car
+30270-13485,10,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV undercarriage hit pavement entering parking lot driveway
+30270-13487,10,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV undercarriage hit pavement entering parking lot driveway
+30270-13365,0,Van,left,right,Property Damage. No Injured Reported,0,AV was stopped in traffic; van mirror hit AV mirror passing
+30270-13451,0,Pickup Truck,rear,rear,Property Damage. No Injured Reported,0,AV stopped to yield on narrow street; truck hit stationary AV
+30270-13408,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,AV was stopped; car sideswiped stationary AV while passing
+30270-13409,20,SUV,rear,front-left,Property Damage. No Injured Reported,0,Both turning left in adjacent lanes; SUV crossed into AV lane
+30270-13449,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red; car behind drove into stationary AV
+30270-13396,2,SUV,front,front-left,Property Damage. No Injured Reported,0.2,AV began moving into road as SUV passed; shared fault
+30270-13444,0,Passenger Car,rear,left,Property Damage. No Injured Reported,0,AV stopped on narrow street; car sideswiped stationary AV
+30270-13453,0,Bus,front-right,rear-right,Property Damage. No Injured Reported,0,AV was stopped; bus reversed into stationary AV
+30270-13361,0,Heavy Truck,rear,front,Property Damage. No Injured Reported,0,AV was stopped at red; truck making wide turn hit stationary AV
+30270-13401,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV was stopped; car in front reversed into stationary AV
+30270-13325,9,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.9,AV undercarriage hit elevated sidewalk-level street entrance
+30270-13322,0,Motorcycle,left,front-right,Property Damage. No Injured Reported,0,AV was stopped; cyclist ran stop sign and hit stationary AV
+30270-13287,0,Pickup Truck,rear-right,front-right,Minor W/O Hospitalization,0.1,AV stopped for possible emergency vehicle; rear-ended by truck
+30270-13557,0,Heavy Truck,front-right,rear-right,Property Damage. No Injured Reported,0,AV was stopped; heavy truck reversed into stationary AV
+30270-13549,0,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at yellow/red light; rear-ended by SUV
+30270-13454,3,"Other, see Narrative",front,right,Property Damage. No Injured Reported,0.9,AV merged left into path of cable car on fixed tracks; AV should yield to rail vehicle
+30270-13484,22,SUV,rear-left,front,No Injured Reported,0,SUV turned right without stopping at stop sign into AV path
+30270-13445,0,Passenger Car,front-right,rear-right,Property Damage. No Injured Reported,0,AV was parked; car reversed into parked AV while parking
+30270-13303,0,SUV,rear-right,front-left,Property Damage. No Injured Reported,0,AV was stopped; chain reaction rear-end pushed SUV into AV
+30270-13541,0,Pickup Truck,front,front-left,Property Damage. No Injured Reported,0.2,AV stopped mid-lane-change; truck behind hit AV in new lane
+30270-13400,0,Passenger Car,rear,left,Property Damage. No Injured Reported,0,AV was stopped for pickup; car sideswiped stationary AV
+30270-13321,0,Motorcycle,right,front,Property Damage. No Injured Reported,0,AV was parked; passenger opened door into passing motorcycle; not AV system fault
+30270-13307,9,Pickup Truck,front,front-left,Property Damage. No Injured Reported,0.15,Both turning right; truck crossed in front of AV; AV close to curb
+30270-13340,0,Pickup Truck,rear-left,rear,Property Damage. No Injured Reported,0,AV was stopped; truck reversed out of parking lot into AV
+30270-13402,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; rear-ended by car
+30270-13491,0,Van,rear-right,front-right,Minor W/ Hospitalization,0,AV was parked at curb; van rear-ended stationary AV
+30270-13490,9,SUV,rear-right,front-right,Minor W/O Hospitalization,0,AV was slowing for flashing red; rear-ended by accelerating SUV
+30270-13488,22,Passenger Car,right,front-right,Minor W/ Hospitalization,0.1,Other car ran stop sign into intersection hitting AV side
+30270-13308,35,Pickup Truck,rear,front-left,Property Damage. No Injured Reported,0,Pickup truck sideswiped AV while changing lanes erratically
+30270-13442,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; rear-ended by car
+30270-13328,7,SUV,rear,front-left,Property Damage. No Injured Reported,0,SUV passed AV on left while AV was turning right with signal
+30270-13420,1,SUV,rear-right,front-right,Property Damage. No Injured Reported,0,AV nearly stopped at stop sign; rear-ended by SUV
+30270-13559,5,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV hit speed bump in parking lot entrance
+30270-13543,0,Passenger Car,rear-left,front,Minor W/O Hospitalization,0,AV was stopped at red light; rear-ended by speeding car
+30270-13586,17,Passenger Car,left,front-right,Property Damage. No Injured Reported,0.1,Other car ran stop sign at high speed into intersection hitting AV
+30270-13544,0,SUV,rear,right,Property Damage. No Injured Reported,0,AV was stopped; SUV passed and sideswiped stationary AV
+30270-13547,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at red light; rear-ended by car
+30270-13607,20,"Other, see Narrative",front-right,unknown,Property Damage. No Injured Reported,0.3,Cone thrown from truck into AV lane; unusual but AV hit it
+30270-13545,0,SUV,rear-right,front-right,Minor W/O Hospitalization,0,AV was stopped at red light; rear-ended by SUV
+30270-13552,20,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.9,AV hit speed bump on frontage road at 20 mph
+30270-13573,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV was stopped at stop sign; rear-ended by car
+30270-13581,0,Heavy Truck,rear,right,Property Damage. No Injured Reported,0,AV was stopped; truck sideswiped stationary AV while passing
+30270-13556,0,Pickup Truck,rear,front,Property Damage. No Injured Reported,0,AV was stopped at red; truck turned and sideswiped stationary AV
+30270-13560,0,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV stopped before entering road; rear-ended by car behind
+30270-13546,28,Passenger Car,right,front,Property Damage. No Injured Reported,0,Other car turned right on red into AV lane of travel
+30270-13582,11,Passenger Car,rear-left,front-left,Property Damage. No Injured Reported,0.1,Other car ran stop sign into intersection hitting AV
+30270-13571,0,Van,rear,right,Property Damage. No Injured Reported,0,AV was parked for pickup; van sideswiped stationary AV
+30270-13558,2,Passenger Car,rear-right,front-right,Property Damage. No Injured Reported,0,AV moved slowly from stop; rear-ended by car behind
+30270-13550,0,SUV,rear-right,front-right,Minor W/O Hospitalization,0,AV was stopped; chain reaction crash pushed SUV into AV
+30270-13575,4,Passenger Car,front,front-left,Property Damage. No Injured Reported,0,AV was slowing; other car lost control and crossed into AV lane
+30270-13585,0,SUV,front-left,front,Minor W/O Hospitalization,0,AV was stopped; chain reaction crash pushed SUV into AV
+30270-13583,10,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV undercarriage hit raised pavement over utility cover
+30610-11513,0,Non-Motorist: Cyclist,rear-left,,No Injured Reported,0,E-cyclist veered into roadway and hit nearly stopped AV
+30610-11563,0,Pickup Truck,rear,front-left,Property Damage. No Injured Reported,0,AV was stopped; truck passed on left and sideswiped AV
+30610-11587,11,Heavy Truck,front+left,front-left+front-right,Property Damage. No Injured Reported,0.1,Truck ran stop sign into AV path; AV braked but contact occurred
+30610-11497,0,SUV,rear-left,front,Property Damage. No Injured Reported,0.1,AV was passing; SUV abruptly reversed to park and hit AV
+30610-11902,1,Heavy Truck,rear+top,front,Property Damage. No Injured Reported,0,Box truck made sudden unprotected left turn hitting AV
+30610-11856,0,Heavy Truck,front-left+front-right,rear+rear-right,Property Damage. No Injured Reported,0,AV was stopped; truck reversed into stationary AV despite horn
+30610-13123,0,Pickup Truck,rear-right,front-right,Property Damage. No Injured Reported,0,AV was slowing for turn; rear-ended by inattentive pickup
+30610-11847,30,SUV,left+rear,front-left,Property Damage. No Injured Reported,0,SUV suddenly veered into AV lane without signal
+30610-13376,0,SUV,rear+rear-right,front-left+front-right,Property Damage. No Injured Reported,0.1,AV stopped briefly after starting from green; rear-ended by SUV
+30610-13660,1,Passenger Car,front,rear-left,Property Damage. No Injured Reported,0,Car made illegal right turn from through lane clipping AV
+30610-13661,1,Pickup Truck,rear-left+rear-right,front+front-right,Property Damage. No Injured Reported,0.1,AV braked hard for debris; rear-ended by merging pickup
+30610-13662,0,Heavy Truck,front-left+front-right,rear+rear-right,Property Damage. No Injured Reported,0,AV was stopped; box truck reversed into stationary AV
+30270-11087,0,Passenger Car,rear,front,No Injuries Reported,0,AV stopped; struck by other vehicle proceeding straight
+30270-11085,0,SUV,rear-right,front-left,No Injuries Reported,0,AV stopped; struck by SUV proceeding straight
+30270-11016,0,Non-Motorist: Other,right,,Moderate,0,AV stopped; non-motorist contact
+30270-11014,0,Non-Motorist: Other,rear-left,,No Injuries Reported,0,AV stopped; non-motorist contact; redacted narrative
+30270-11088,9,Other Fixed Object,bottom,,No Injuries Reported,0.9,AV hit fixed object while turning in parking lot
+30610-11096,1,SUV,rear-left,front-right,No Injuries Reported,0.3,AV encountered cones and contacted SUV at low speed
+30270-10977,18,Non-Motorist: Other,rear-left,,No Injuries Reported,0.4,AV proceeding at 18mph; struck non-motorist crossing; redacted
+30270-11046,0,Passenger Car,right,left,No Injuries Reported,0,AV parked; struck by passing vehicle
+30270-11015,0,Pickup Truck,front-right,rear-left,No Injuries Reported,0,AV parked; struck by pickup changing lanes
+30270-11044,1,Non-Motorist: Cyclist,rear-right,,No Injuries Reported,0.7,AV changing lanes at low speed; struck cyclist
+30270-11013,2,Passenger Car,rear,front,No Injuries Reported,0.3,Both proceeding straight at low speed; shared fault likely
+30270-10998,0,Pickup Truck,rear-left,front-right,No Injuries Reported,0,AV parked; struck by pickup proceeding straight

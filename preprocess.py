@@ -157,11 +157,12 @@ def parse_fault_csv(path):
     with open(path, newline="") as f:
         rows = list(csv.DictReader(f))
     must(len(rows) > 0, "fault csv has no rows", path=path)
-    must({"Report ID", "faultfrac", "reasoning"} <= set(rows[0].keys()),
-         "fault csv header mismatch", path=path, header=list(rows[0].keys()))
+    keys = set(rows[0].keys())
+    must({"reportID", "faultfrac", "reasoning"} <= keys,
+         "fault csv header mismatch", path=path, header=list(keys))
     data = {}
     for row in rows:
-        rid = row["Report ID"].strip()
+        rid = row["reportID"].strip()
         must(rid != "", "fault row missing Report ID", path=path)
         faultfrac = float(row["faultfrac"])
         must(math.isfinite(faultfrac), "faultfrac not finite", path=path, reportId=rid, faultfrac=row["faultfrac"])

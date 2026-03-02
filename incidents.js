@@ -11294,7 +11294,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "gemini": 0.6,
       "rclaude": "AV drove through low-hanging suspended wire",
       "rcodex": "AV continued into visibly low suspended wire across roadway",
-      "rgemini": "Waymo struck a suspended wire held up by a pedestrian (likely failed to detect obstacle"
+      "rgemini": "Waymo struck a suspended wire held up by a pedestrian (likely failed to detect obstacle, but possible late sabotage)."
     },
     "vehiclesInvolved": 2
   },

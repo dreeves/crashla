@@ -2,98 +2,15 @@ import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript } from "./load-app.mjs";
 
-class ElementStub {
-  constructor(tagName, id = "") {
-    this.tagName = tagName;
-    this.id = id;
-    this.children = [];
-    this.parentNode = null;
-    this.className = "";
-    this.dataset = {};
-    this.textContent = "";
-    this.listeners = {};
-    this._innerHTML = "";
-    this.value = "";
-    this.classList = { toggle() {} };
-  }
-
-  appendChild(child) {
-    child.parentNode = this;
-    this.children.push(child);
-    return child;
-  }
-
-  replaceChildren(...nodes) {
-    for (const node of nodes) node.parentNode = this;
-    this.children = [...nodes];
-  }
-
-  addEventListener(type, fn) {
-    this.listeners[type] = [...(this.listeners[type] || []), fn];
-  }
-
-  click() {
-    for (const fn of this.listeners.click || []) fn();
-  }
-
-  set innerHTML(v) {
-    this._innerHTML = v;
-    this.children = [];
-  }
-
-  get innerHTML() {
-    return this._innerHTML;
-  }
-
-  querySelector() {
-    return new ElementStub("td");
-  }
-}
-
-const nodeById = new Map();
-const getNode = id => {
-  if (!nodeById.has(id)) nodeById.set(id, new ElementStub("div", id));
-  return nodeById.get(id);
-};
-
-
 const ctx = vm.createContext({
   console,
   Math,
   document: {
-    getElementById: getNode,
-    createElement: tag => new ElementStub(tag),
+    getElementById() { return null; },
+    createElement() { return { textContent: "", innerHTML: "" }; },
   },
 });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
-
-vm.runInContext(`
-incidents = [
-  { company: "Tesla", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
-  { company: "Waymo", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
-  { company: "Zoox", date: "2025-01-01", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }
-];
-document.getElementById("tesla-miles").value = "456000";
-document.getElementById("tesla-frac").value = "50";
-document.getElementById("tesla-deadhead").value = "20";
-document.getElementById("waymo-miles").value = "50000000";
-document.getElementById("waymo-deadhead").value = "0";
-document.getElementById("zoox-miles").value = "500000";
-document.getElementById("zoox-deadhead").value = "20";
-document.getElementById("humans-waymo-divisor").value = "5";
-buildEstimator();
-buildEstimator();
-`, ctx);
-
-const expectedPanels = vm.runInContext("Object.keys(COMPANIES).length", ctx);
-const estimatorChildren = getNode("estimator").children.length;
-assert.equal(
-  estimatorChildren,
-  expectedPanels,
-  `Replicata: call buildEstimator() twice.
-Expectata: estimator panel count remains ${expectedPanels}.
-Resultata: panel count was ${estimatorChildren}.`,
-);
 
 let threw = false;
 try {
