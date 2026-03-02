@@ -387,7 +387,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11589,0.0,Passenger Car,Rear Right,Front Right,Property Damage. No Injured Reported,0.0,Waymo was rear-ended by another vehicle while stopped at a red light.
 30270-11596,0.0,Passenger Car,Rear Right,Front Right,Property Damage. No Injured Reported,0.0,Waymo was rear-ended by another vehicle while stopped at a red light.
 30270-11588,0.0,SUV,Rear,Front Left,Property Damage. No Injured Reported,0.0,Waymo was rear-ended by an SUV while stopped at a stop sign.
-30270-11591,22.0,"Other, see Narrative",Rear,Unknown,Property Damage. No Injured Reported,1.0,Waymo's wheel separated from the vehicle while driving indicating a maintenance or hardware failure.
+30270-11591,22.0,"Other, see Narrative",Rear,Unknown,Property Damage. No Injured Reported,0.0,Waymo's wheel separated from the vehicle while driving indicating a maintenance or hardware failure.
 30610-11587,11.0,Heavy Truck,Left|Front,Front Left|Front Right,Property Damage. No Injured Reported,0.0,Zoox was struck by a tractor-trailer that failed to yield and ran a stop sign.
 30270-11571,9.0,"Other, see Narrative",Rear Right|Front Right|Bottom,Unknown,Property Damage. No Injured Reported,1.0,Waymo drove into standing water causing damage to itself.
 30270-11543,0.0,SUV,Rear,Front Left|Right,Property Damage. No Injured Reported,0.0,Waymo was parked when a passing SUV struck it.

@@ -137,7 +137,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11588,0,SUV,rear,front-left,Property Damage. No Injured Reported,0,AV stationary at stop sign; rear-ended by SUV
 30270-11508,0,Pickup Truck,rear,left,Property Damage. No Injured Reported,0,AV parked for pickup; pickup truck sideswiped it passing
 30270-11542,0,Pickup Truck,front,left,Property Damage. No Injured Reported,0,AV stationary yielding; pickup sideswiped it passing
-30270-11591,22,"Other, see Narrative",rear,unknown,Property Damage. No Injured Reported,1,AV mechanical failure: rear wheel separated while driving
+30270-11591,22,"Other, see Narrative",rear,unknown,Property Damage. No Injured Reported,0,Mechanical failure (wheel separated); not an AI driving fault
 30270-11490,0,Passenger Car,rear,front-left,Property Damage. No Injured Reported,0,AV parked; chain-reaction pushed car into stationary AV
 30270-11548,2,Other Fixed Object,right,,Property Damage. No Injured Reported,0.8,AV drove into vegetation extending into alley roadway
 30270-11611,2,Pickup Truck,rear-left,front-right,Property Damage. No Injured Reported,0.4,AV changing lanes; pickup in target lane moved forward into AV

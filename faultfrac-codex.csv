@@ -387,7 +387,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11589,0,Passenger Car,rear right,front right,no injury/property damage,0.00,Passenger car rear-ended AV stopped at red
 30270-11596,0,Passenger Car,rear right,front right,no injury/property damage,0.00,Passenger car rear-ended AV stopped at red
 30270-11588,0,SUV,rear,front left,no injury/property damage,0.00,SUV rear-ended AV stopped at stop sign
-30270-11591,22,"Other, see Narrative",rear,unknown,no injury/property damage,1.00,AV wheel/component separation while proceeding
+30270-11591,22,"Other, see Narrative",rear,unknown,no injury/property damage,0.00,Mechanical wheel/component separation; not AI driving fault
 30610-11587,11,Heavy Truck,left+front,front left+front right,no injury/property damage,0.05,Truck pulled out from driveway into AV lane
 30270-11571,9,"Other, see Narrative",rear right+front right+bottom,unknown,no injury/property damage,1.00,AV drove through standing water and sustained damage
 30270-11543,0,SUV,rear,front left+right,no injury/property damage,0.00,Passing SUV clipped parked curbside AV

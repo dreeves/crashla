@@ -137,12 +137,43 @@ can you make a file called faultfrac-MODEL.csv that, for every Report ID in nhts
 * svhit [what part of the subject vehicle made contact with crash partner]
 * cphit [what part of the crash partner (see crashwith) made contact with subject vehicle]
 * severity [eg, "minor injury"]
-* faultfrac [fractional/probalistic blame we subjectively assign to the AV specifically; AV passenger fault does not count]
+* faultfrac [fractional/probalistic blame we subjectively assign to the AI driver specifically; AV passenger fault does not count, nor mechanical failures like the wheels falling off the car; sensor failures do count as the fault of the artificial driver]
 * reasoning [short blurb explaining why we're assigning that faultfrac]
 
 ---
 
-## [AI] June and the Different Datasets
+## [AI TEXT] Comparison with Kelsey Piper's Waymo Safety Claims
+
+Kelsey Piper's article (Jan 16, 2026) argues Waymo is clearly safer than human drivers:
+https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos
+
+Her claims, sourced from Waymo's own safety page and the Kusano/Scanlon paper:
+* 2x safer for any crash ("half as likely to report any crash")
+* 5x safer for any-injury crash (Waymo 0.74 IPMM vs human 3.97 IPMM)
+* 5x for airbag deployments (Waymo 0.31 vs human 1.66 IPMM)
+* 10x for serious injuries (Waymo 0.02 vs human 0.23 IPMM)
+* "over 200 million miles" total for Waymo
+
+How our data compares:
+
+1. **Default view understates Waymo's advantage.** Our default metric is "all incidents" where Waymo's MPI (~255k) vs the human baseline (103k–214k) shows only ~1.2–2.5x safer. Piper's headline "80–90% lower risk" refers to serious crashes, not all incidents. The dramatic 5–10x safety multiples only appear in our injury/serious-injury/airbag metrics, which aren't the default view.
+
+2. **Miles are compatible but use different definitions.** Piper says "over 200 million" for Waymo total. Waymo's safety page shows 127M rider-only miles through Sep 2025; the 200M all-time milestone was announced Feb 2026 (https://www.benzinga.com/markets/tech/26/03/50953948). Our VMT of ~128M for the Jun 2025–Jan 2026 window includes deadhead miles and is scaled to all-US, so it's a different (larger) category than rider-only. The numbers are broadly consistent.
+
+3. **Reporting asymmetry.** Piper acknowledges Waymo may report more crashes due to better reporting but doesn't quantify this. Our human baselines explicitly address it: Kusano/Scanlon provide both Blincoe-adjusted rates (catching underreported human crashes) and police-reported rates. The lo–hi range in our human MPI benchmarks spans this uncertainty. Additionally, 45% of Waymo collisions involve <1 mph delta-V per Waymo's safety page — incidents that would almost never be police-reported for human drivers.
+
+4. **Fault attribution.** Piper doesn't discuss who's at fault. Our AI fault-fraction analysis shows many of Waymo's ~500 incidents were caused by other drivers. Fault-weighting makes Waymo look even safer than the raw incident count suggests.
+
+5. **Scope.** Piper's article is Waymo-only. Our tool adds Tesla and Zoox to the comparison, which is where the more contested conclusions live.
+
+Sources:
+* Waymo Safety Impact (127M mi, Sep 2025): https://waymo.com/safety/impact/
+* Kusano & Scanlon (56.7M mi): https://pubmed.ncbi.nlm.nih.gov/40378124/
+* Waymo 200M milestone (Feb 2026): https://www.benzinga.com/markets/tech/26/03/50953948
+
+---
+
+## [AI TEXT] June and the Different Datasets
 
 The NHTSA Standing General Order (SGO) observation window runs from **June 15, 2025 through January 15, 2026**.
 June is therefore a partial month (June 15–30 only), as is January (Jan 1–15).
