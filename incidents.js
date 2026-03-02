@@ -1,4 +1,4 @@
-const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-03-01"/* NHTSA_FETCH_DATE_END */;
+const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-03-02"/* NHTSA_FETCH_DATE_END */;
 const NHTSA_MODIFIED_DATE = /* NHTSA_MODIFIED_DATE_START */"2026-02-17"/* NHTSA_MODIFIED_DATE_END */;
 const INCIDENT_DATA = /* INCIDENT_DATA_START */
 [
@@ -4761,11 +4761,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "fault": {
-      "claude": 1.0,
-      "codex": 1.0,
-      "gemini": 1.0,
-      "rclaude": "AV mechanical failure: rear wheel separated while driving",
-      "rcodex": "AV wheel/component separation while proceeding",
+      "claude": 0.0,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": "Mechanical failure (wheel separated); not an AI driving fault",
+      "rcodex": "Mechanical wheel/component separation; not AI driving fault",
       "rgemini": "Waymo's wheel separated from the vehicle while driving indicating a maintenance or hardware failure."
     },
     "vehiclesInvolved": 2
