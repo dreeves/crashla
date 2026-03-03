@@ -1127,10 +1127,6 @@ function renderCompanyMonthlyChart(series, company) {
 }
 
 // TO-DO: Human vet all end-user labels in these summary cards.
-const CARD_METRICS = METRIC_DEFS.map(m => ({
-  label: m.cardLabel, inc: m.incField, metricKey: m.key, primary: m.primary,
-}));
-
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   const massFrac = CI_MASS_DEFAULT_PCT / 100;
@@ -1138,23 +1134,23 @@ function renderMpiSummaryCards(series) {
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
       <div class="mpi-card-company">${row.company}</div>
       <div class="mpi-card-vmt">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
-      ${CARD_METRICS.map(m => {
-        const k = row[m.inc];
+      ${METRIC_DEFS.map(m => {
+        const k = row[m.incField];
         const a = k + 0.5;
         const tail = (1 - massFrac) / 2;
         const ciLo = 1 / gammaquant(a, row.vmtMin, 1 - tail);
         const ciHi = 1 / gammaquant(a, row.vmtMax, tail);
         const median = 1 / gammaquant(a, row.vmtBest, 0.5);
-        const hl = monthMetricEnabled[m.metricKey] ? " highlighted" : "";
-        const humanRange = KNOWN_HUMAN_MPI[m.metricKey];
+        const hl = monthMetricEnabled[m.key] ? " highlighted" : "";
+        const humanRange = KNOWN_HUMAN_MPI[m.key];
         const humanGeo = humanRange ? Math.sqrt(humanRange.lo * humanRange.hi) : null;
         const mult = humanGeo ? median / humanGeo : null;
         const multStr = mult !== null
           ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
           : "";
         return `
-        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.metricKey}">
-          <div>${m.label}: ${fmtCount(k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span>${multStr}</div>
+        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
+          <div>${m.cardLabel}: ${fmtCount(k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span>${multStr}</div>
           <div class="mpi-card-ci">95% CI: ${fmtWhole(ciLo)} \u2013 ${fmtWhole(ciHi)}</div>
         </div>`;
       }).join("")}
@@ -1165,17 +1161,17 @@ function renderMpiSummaryCards(series) {
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS.Humans}">
       <div class="mpi-card-company">Humans</div>
       <div class="mpi-card-vmt">Benchmarks: <a href="https://arxiv.org/abs/2312.12675">Kusano/Scanlon 2024</a>, <a href="https://waymo.com/safety/impact/">Waymo safety impact</a>, <a href="https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705">FARS 2023</a></div>
-      ${CARD_METRICS.map(m => {
-        const range = KNOWN_HUMAN_MPI[m.metricKey];
+      ${METRIC_DEFS.map(m => {
+        const range = KNOWN_HUMAN_MPI[m.key];
         if (!range) return "";
         const geoMean = Math.sqrt(range.lo * range.hi);
-        const hl = monthMetricEnabled[m.metricKey] ? " highlighted" : "";
+        const hl = monthMetricEnabled[m.key] ? " highlighted" : "";
         const srcLine = range.srcLinks
           ? range.srcLinks.map(s => `<a href="${s.url}">${s.label}</a>`).join(", ")
           : "";
         return `
-        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.metricKey}">
-          <div>${m.label}: <span class="mpi-card-mpi">${fmtWhole(geoMean)} MPI</span></div>
+        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
+          <div>${m.cardLabel}: <span class="mpi-card-mpi">${fmtWhole(geoMean)} MPI</span></div>
           <div class="mpi-card-ci">Range: ${fmtWhole(range.lo)} \u2013 ${fmtWhole(range.hi)}${range.src ? ` <span class="mpi-card-src" title="${range.src}">[?]</span>` : ""}</div>
           ${srcLine ? `<div class="mpi-card-sources">${srcLine}</div>` : ""}
         </div>`;
@@ -1184,6 +1180,24 @@ function renderMpiSummaryCards(series) {
   `;
 
   return adsCards + humanCard;
+}
+
+function renderHumanBenchmarkTable() {
+  const rows = METRIC_DEFS
+    .filter(m => m.humanMPI)
+    .map(m => {
+      const h = m.humanMPI;
+      const links = (h.srcLinks || [])
+        .map(s => `<a href="${s.url}">${escHtml(s.label)}</a>`).join(", ");
+      const derivation = escHtml(h.src) + (links ? ` (${links})` : "");
+      return `<tr><td>${escHtml(m.cardLabel)}</td><td>${fmtMiles(h.lo)}</td><td>${fmtMiles(h.hi)}</td><td>${derivation}</td></tr>`;
+    }).join("");
+  return `
+    <h3>Specific human benchmark derivations</h3>
+    <table class="source-table">
+      <thead><tr><th>Metric</th><th>Low MPI</th><th>High MPI</th><th>Derivation</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 function renderMonthlyLegends() {
@@ -1667,6 +1681,7 @@ function initTooltips() {
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(incidentData);
   buildMonthlyViews();
+  byId("human-benchmark-table").innerHTML = renderHumanBenchmarkTable();
   buildBrowser();
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
