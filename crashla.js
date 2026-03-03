@@ -321,7 +321,6 @@ const METRIC_DEFS = [
 ];
 
 // Derived accessors — consumed by rendering code throughout
-const MONTH_METRIC_DEFS = METRIC_DEFS;
 const LINE_STYLE = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, {width: m.lineWidth, opacity: m.lineOpacity}]));
 const KNOWN_HUMAN_MPI = Object.fromEntries(
@@ -337,7 +336,7 @@ function metricLineStyle(company, metricKey) {
   return style;
 }
 
-function metricMarkerColor(company, metricKey) {
+function metricMarkerColor(company) {
   return MONTHLY_COMPANY_COLORS[company];
 }
 
@@ -351,8 +350,6 @@ function metricErrStyle(company, metricKey) {
 }
 const CI_MASS_DEFAULT_PCT = 95;
 const CI_FAN_LEVELS = [0.50, 0.80, 0.95]; // nested CI bands from tight to wide
-const COMPANY_ORDER = ["Tesla", "Waymo", "Zoox", "Humans"];
-const INCIDENT_MODEL_COMPANIES = ["Tesla", "Waymo", "Zoox"];
 const ADS_COMPANIES = ["Tesla", "Waymo", "Zoox"];
 const MONTHLY_COMPANY_COLORS = {
   Tesla: "#d13b2d",
@@ -628,11 +625,15 @@ function monthMetricToggleId(metric) {
 }
 
 function includedMonthMetrics() {
-  return MONTH_METRIC_DEFS.filter(metric => monthMetricEnabled[metric.key]);
+  return METRIC_DEFS.filter(metric => monthMetricEnabled[metric.key]);
 }
 
 function fmtWhole(n) {
   return Math.round(n).toLocaleString();
+}
+
+function vmtTooltip(company, month, row, rec) {
+  return `${company} ${month} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nEffective VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
 }
 
 function companyMonthRows(series, company) {
@@ -979,7 +980,7 @@ function renderAllCompaniesMpiChart(series) {
 }
 
 function drawDualMonthAxes(
-  months, svgW, svgH, mLeft, mTop, pW, pH, mapX,
+  months, svgH, mLeft, mTop, pW, pH, mapX,
   leftTicks, mapLeftY, leftFmt, leftLabel,
 ) {
   const axisY = mTop + pH;
@@ -1088,7 +1089,7 @@ function renderCompanyMonthlyChart(series, company) {
     }
     const yLo = mapVmtY(row.vmtRawMin);
     const yHi = mapVmtY(row.vmtRawMax);
-    const vmtTip = `${company} ${month} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nEffective VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+    const vmtTip = vmtTooltip(company, month, row, rec);
     errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}" data-tip="${escAttr(vmtTip)}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
@@ -1105,8 +1106,7 @@ function renderCompanyMonthlyChart(series, company) {
   const vmtMarks = rows.map((row, i) => {
     const x = mapX(i);
     const y = mapVmtY(row.vmtRawBest);
-    const rec = row.incidents;
-    const vmtTip = `${company} ${series.months[i]} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nEffective VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+    const vmtTip = vmtTooltip(company, series.months[i], row, row.incidents);
     return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}" data-tip="${escAttr(vmtTip)}"></circle>`;
   }).join("");
 
@@ -1119,7 +1119,7 @@ function renderCompanyMonthlyChart(series, company) {
       <path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>
       ${vmtMarks}
       ${drawDualMonthAxes(
-        series.months, svgW, svgH, mLeft, mTop, pW, pH, mapX, leftTicks, mapVmtY, fmtMiles,
+        series.months, svgH, mLeft, mTop, pW, pH, mapX, leftTicks, mapVmtY, fmtMiles,
         "Vehicle Miles Traveled (VMT)",
       )}
     </svg>
@@ -1203,7 +1203,7 @@ function renderMonthlyLegends() {
   }
 
   byId("month-legend-mpi-lines").innerHTML = `
-    ${MONTH_METRIC_DEFS.map(metric => {
+    ${METRIC_DEFS.map(metric => {
       const s = LINE_STYLE[metric.key];
       const color = "#4a5264";
       let keyStyle = `width:22px;height:0;display:inline-block;border-top:${s.width}px solid ${color}`;
@@ -1215,7 +1215,7 @@ function renderMonthlyLegends() {
       </label>`;
     }).join("")}
   `;
-  for (const metric of MONTH_METRIC_DEFS) {
+  for (const metric of METRIC_DEFS) {
     const input = byId(monthMetricToggleId(metric.key));
     input.addEventListener("change", () => {
       monthMetricEnabled[metric.key] = input.checked;
@@ -1362,10 +1362,18 @@ function faultColor(frac) {
   return `rgb(220, ${g}, 50)`;
 }
 
-function faultTooltip(reportId) {
-  const fd = faultData[reportId];
+function faultTooltip(inc) {
+  const fd = faultData[inc.reportId];
   if (!fd) return "";
-  return `Claude: ${fd.claude.toFixed(2)} — ${fd.rclaude}\nCodex: ${fd.codex.toFixed(2)} — ${fd.rcodex}\nGemini: ${fd.gemini.toFixed(2)} — ${fd.rgemini}`;
+  const lines = [
+    `Claude: ${fd.claude.toFixed(2)} — ${fd.rclaude}`,
+    `Codex: ${fd.codex.toFixed(2)} — ${fd.rcodex}`,
+    `Gemini: ${fd.gemini.toFixed(2)} — ${fd.rgemini}`,
+  ];
+  if (inc.svHit || inc.cpHit) {
+    lines.push(`${inc.svHit || "?"} \u{1F4A5} ${inc.cpHit || "?"}`);
+  }
+  return lines.join("\n");
 }
 
 
@@ -1481,7 +1489,7 @@ function renderTable() {
       : "—";
     const faultVariance = weightedFaultVariance(r.reportId);
     const faultVarianceHtml = faultVariance !== null ? faultVariance.toFixed(3) : "—";
-    const faultTip = escAttr(faultTooltip(r.reportId));
+    const faultTip = escAttr(faultTooltip(r));
 
     tr.innerHTML = `
       <td>${escHtml(r.company)}</td>
@@ -1644,6 +1652,10 @@ function initTooltips() {
       "incident missing fault object", {reportId: inc.reportId});
     must(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
       "incident vehiclesInvolved must be >= 1", {reportId: inc.reportId});
+    must(typeof inc.svHit === "string",
+      "incident missing svHit", {reportId: inc.reportId});
+    must(typeof inc.cpHit === "string",
+      "incident missing cpHit", {reportId: inc.reportId});
     for (const model of ["claude", "codex", "gemini"]) {
       const f = inc.fault[model];
       must(typeof f === "number" && f >= 0 && f <= 1,

@@ -86,6 +86,24 @@ KEY_MAP = {
     "Weather - Partly Cloudy":       "wxPartlyCloudy",
 }
 
+# Contact area boolean columns in the NHTSA CSV.
+# Each Y-valued column contributes its short label to a compact hit summary.
+CONTACT_AREA_LABELS = [
+    "Front Left", "Front", "Front Right",
+    "Left", "Top", "Right",
+    "Rear Left", "Rear", "Rear Right",
+    "Bottom", "Unknown",
+]
+
+def _contact_areas(row, prefix):
+    """Compact contact area string from NHTSA boolean columns, e.g., 'front left+rear'."""
+    parts = []
+    for label in CONTACT_AREA_LABELS:
+        if row.get(f"{prefix} - {label}", "").strip() == "Y":
+            parts.append(label.lower())
+    return "+".join(parts)
+
+
 # Canonical short names for companies
 COMPANY_SHORT = {
     "Waymo LLC":    "Waymo",
@@ -572,6 +590,9 @@ def main():
             rec["speed"] = None
         # Convert airbag field to boolean (any vehicle deployment)
         rec["airbagAny"] = "Yes" in rec["airbagAny"]
+        # Compact contact area summaries from NHTSA boolean columns
+        rec["svHit"] = _contact_areas(r, "SV Contact Area")
+        rec["cpHit"] = _contact_areas(r, "CP Contact Area")
         rid = rec["reportId"]
         must(rid in fault_ids, "missing fault estimates for report", reportId=rid)
         rec["fault"] = {

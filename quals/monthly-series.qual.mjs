@@ -74,7 +74,7 @@ const metrics = vm.runInContext(`
     ]),
   );
   // Enable all metrics so the chart renders all line variants
-  for (const m of MONTH_METRIC_DEFS) monthMetricEnabled[m.key] = true;
+  for (const m of METRIC_DEFS) monthMetricEnabled[m.key] = true;
   buildMonthlyViews();
   return {
     months: series.months,
@@ -120,9 +120,9 @@ Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 
 assert.deepEqual(
   plain.totalByCompany,
-  { Tesla: 14, Waymo: 492, Zoox: 12 },
+  { Tesla: 14, Waymo: 503, Zoox: 13 },
   `Replicata: sum monthly incident totals for each ADS company.
-Expectata: month aggregation preserves totals within the VMT window (Tesla 14, Waymo 492, Zoox 12).
+Expectata: month aggregation preserves totals within the VMT window (Tesla 14, Waymo 503, Zoox 13).
 Resultata: totals were ${JSON.stringify(plain.totalByCompany)}.`,
 );
 

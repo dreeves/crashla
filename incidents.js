@@ -1,4 +1,4 @@
-const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-03-02"/* NHTSA_FETCH_DATE_END */;
+const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-03-03"/* NHTSA_FETCH_DATE_END */;
 const NHTSA_MODIFIED_DATE = /* NHTSA_MODIFIED_DATE_START */"2026-02-17"/* NHTSA_MODIFIED_DATE_END */;
 const INCIDENT_DATA = /* INCIDENT_DATA_START */
 [
@@ -24,6 +24,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -56,6 +58,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.8,
@@ -88,6 +92,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.3,
       "codex": 0.4,
@@ -120,6 +126,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -152,6 +160,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -184,6 +194,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front left",
+    "cpHit": "",
     "fault": {
       "claude": 0.5,
       "codex": 0.25,
@@ -216,6 +228,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -248,6 +262,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.4,
       "codex": 0.5,
@@ -280,6 +296,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left+rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -312,6 +330,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -344,6 +364,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.95,
@@ -376,6 +398,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front+left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -408,6 +432,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.8,
       "codex": 0.9,
@@ -440,6 +466,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -472,6 +500,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -504,6 +534,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -536,6 +568,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -568,6 +602,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -600,6 +636,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -632,6 +670,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.3,
       "codex": 0.25,
@@ -664,6 +704,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -696,6 +738,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -728,6 +772,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -760,6 +806,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -792,6 +840,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -824,6 +874,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -856,6 +908,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 1.0,
@@ -888,6 +942,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -920,6 +976,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 1.0,
@@ -952,6 +1010,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -984,6 +1044,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1016,6 +1078,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1048,6 +1112,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -1080,6 +1146,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.2,
@@ -1112,6 +1180,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1144,6 +1214,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1176,6 +1248,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1208,6 +1282,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.3,
       "codex": 0.05,
@@ -1240,6 +1316,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.4,
       "codex": 0.4,
@@ -1272,6 +1350,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1304,6 +1384,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 0.8,
@@ -1336,6 +1418,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "",
     "fault": {
       "claude": 0.4,
       "codex": 0.35,
@@ -1368,6 +1452,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1400,6 +1486,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1432,6 +1520,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1464,6 +1554,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1496,6 +1588,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1528,6 +1622,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -1560,6 +1656,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1592,6 +1690,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -1624,6 +1724,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -1656,6 +1758,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1688,6 +1792,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1720,6 +1826,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "",
     "fault": {
       "claude": 0.7,
       "codex": 0.7,
@@ -1752,6 +1860,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left+right",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1784,6 +1894,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -1816,6 +1928,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -1848,6 +1962,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.5,
       "codex": 0.8,
@@ -1880,6 +1996,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -1912,6 +2030,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -1944,6 +2064,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -1976,6 +2098,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2008,6 +2132,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -2040,6 +2166,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2072,6 +2200,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2104,6 +2234,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right+right",
+    "cpHit": "front right+rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2136,6 +2268,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2168,6 +2302,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2200,6 +2336,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2232,6 +2370,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2264,6 +2404,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2296,6 +2438,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.3,
       "codex": 0.0,
@@ -2328,6 +2472,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.8,
       "codex": 0.8,
@@ -2360,6 +2506,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.8,
       "codex": 0.7,
@@ -2392,6 +2540,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2424,6 +2574,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right+bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -2456,6 +2608,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2488,6 +2642,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -2520,6 +2676,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2552,6 +2710,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2584,6 +2744,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -2616,6 +2778,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -2648,6 +2812,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 1.0,
@@ -2680,6 +2846,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2712,6 +2880,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -2744,6 +2914,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2776,6 +2948,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2808,6 +2982,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2840,6 +3016,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2872,6 +3050,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -2904,6 +3084,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -2936,6 +3118,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -2968,6 +3152,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3000,6 +3186,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -3032,6 +3220,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.25,
@@ -3064,6 +3254,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3096,6 +3288,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3128,6 +3322,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.1,
       "codex": 0.25,
@@ -3160,6 +3356,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.5,
       "codex": 0.7,
@@ -3192,6 +3390,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -3224,6 +3424,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3256,6 +3458,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -3288,6 +3492,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3320,6 +3526,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.25,
@@ -3352,6 +3560,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.5,
       "codex": 0.7,
@@ -3384,6 +3594,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -3416,6 +3628,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3448,6 +3662,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -3480,6 +3696,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3512,6 +3730,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3544,6 +3764,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3576,6 +3798,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3608,6 +3832,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3640,6 +3866,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3672,6 +3900,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -3704,6 +3934,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.3,
       "codex": 0.0,
@@ -3736,6 +3968,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3768,6 +4002,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3800,6 +4036,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.7,
       "codex": 0.6,
@@ -3832,6 +4070,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -3864,6 +4104,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -3896,6 +4138,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -3928,6 +4172,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3960,6 +4206,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -3992,6 +4240,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4024,6 +4274,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4056,6 +4308,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -4088,6 +4342,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4120,6 +4376,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4152,6 +4410,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -4184,6 +4444,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -4216,6 +4478,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4248,6 +4512,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4280,6 +4546,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4312,6 +4580,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -4344,6 +4614,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4376,6 +4648,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4408,6 +4682,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front+left",
+    "cpHit": "front+left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4440,6 +4716,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.1,
       "codex": 0.65,
@@ -4472,6 +4750,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.2,
       "codex": 0.25,
@@ -4504,6 +4784,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4536,6 +4818,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "left",
     "fault": {
       "claude": 0.3,
       "codex": 0.3,
@@ -4568,6 +4852,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.45,
@@ -4600,6 +4886,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4632,6 +4920,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.3,
@@ -4664,6 +4954,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4696,6 +4988,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4728,6 +5022,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4760,6 +5056,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4792,6 +5090,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4824,6 +5124,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 1.0,
@@ -4856,6 +5158,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.4,
       "codex": 0.7,
@@ -4888,6 +5192,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4920,6 +5226,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -4952,6 +5260,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 0.8,
@@ -4984,6 +5294,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.5,
       "codex": 1.0,
@@ -5016,6 +5328,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5048,6 +5362,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5080,6 +5396,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.2,
@@ -5112,6 +5430,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5144,6 +5464,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5176,6 +5498,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -5208,6 +5532,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5240,6 +5566,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5272,6 +5600,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left+right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5304,6 +5634,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5336,6 +5668,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5368,6 +5702,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.5,
       "codex": 0.65,
@@ -5400,6 +5736,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.7,
       "codex": 0.9,
@@ -5432,6 +5770,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5464,6 +5804,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -5496,6 +5838,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5528,6 +5872,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5560,6 +5906,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right+rear right+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -5592,6 +5940,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -5624,6 +5974,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5656,6 +6008,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 0.8,
@@ -5688,6 +6042,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5720,6 +6076,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5752,6 +6110,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -5784,6 +6144,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left+front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -5816,6 +6178,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "left",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -5848,6 +6212,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5880,6 +6246,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "",
     "fault": {
       "claude": 0.6,
       "codex": 0.4,
@@ -5912,6 +6280,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -5944,6 +6314,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -5976,6 +6348,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6008,6 +6382,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -6040,6 +6416,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6072,6 +6450,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -6104,6 +6484,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6136,6 +6518,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -6168,6 +6552,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6200,6 +6586,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6232,6 +6620,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -6264,6 +6654,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.8,
       "codex": 1.0,
@@ -6296,6 +6688,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6328,6 +6722,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -6360,6 +6756,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -6392,6 +6790,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6424,6 +6824,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6456,6 +6858,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6488,6 +6892,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -6520,6 +6926,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6552,6 +6960,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -6584,6 +6994,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "unknown",
     "fault": {
       "claude": 1.0,
       "codex": 1.0,
@@ -6616,6 +7028,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6648,6 +7062,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -6680,6 +7096,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.5,
       "codex": 0.7,
@@ -6712,6 +7130,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6744,6 +7164,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6776,6 +7198,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.15,
@@ -6808,6 +7232,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -6840,6 +7266,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.4,
       "codex": 0.65,
@@ -6872,6 +7300,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.1,
       "codex": 0.25,
@@ -6904,6 +7334,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left+right",
+    "cpHit": "right",
     "fault": {
       "claude": 0.2,
       "codex": 0.05,
@@ -6936,6 +7368,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -6968,6 +7402,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7000,6 +7436,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7032,6 +7470,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7064,6 +7504,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.2,
       "codex": 0.6,
@@ -7096,6 +7538,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7128,6 +7572,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -7160,6 +7606,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7192,6 +7640,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -7224,6 +7674,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -7256,6 +7708,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.6,
       "codex": 0.5,
@@ -7288,6 +7742,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -7320,6 +7776,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -7352,6 +7810,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -7384,6 +7844,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -7416,6 +7878,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7448,6 +7912,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7480,6 +7946,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right+rear right+bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -7512,6 +7980,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7544,6 +8014,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right+rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -7576,6 +8048,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7608,6 +8082,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7640,6 +8116,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -7672,6 +8150,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7704,6 +8184,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7736,6 +8218,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7768,6 +8252,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -7800,6 +8286,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7832,6 +8320,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7864,6 +8354,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7896,6 +8388,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -7928,6 +8422,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.2,
@@ -7960,6 +8456,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -7992,6 +8490,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8024,6 +8524,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8056,6 +8558,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "unknown",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.15,
       "codex": 0.0,
@@ -8088,6 +8592,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.2,
       "codex": 0.0,
@@ -8120,6 +8626,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.35,
@@ -8152,6 +8660,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8184,6 +8694,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8216,6 +8728,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8248,6 +8762,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8280,6 +8796,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8312,6 +8830,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8344,6 +8864,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.15,
@@ -8376,6 +8898,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8408,6 +8932,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8440,6 +8966,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8472,6 +9000,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8504,6 +9034,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -8536,6 +9068,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8568,6 +9102,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -8600,6 +9136,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.15,
@@ -8632,6 +9170,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8664,6 +9204,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8696,6 +9238,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8728,6 +9272,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8760,6 +9306,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8792,6 +9340,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8824,6 +9374,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -8856,6 +9408,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8888,6 +9442,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -8920,6 +9476,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -8952,6 +9510,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.3,
       "codex": 0.6,
@@ -8984,6 +9544,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.15,
@@ -9016,6 +9578,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9048,6 +9612,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -9080,6 +9646,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -9112,6 +9680,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -9144,6 +9714,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.8,
       "codex": 1.0,
@@ -9176,6 +9748,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9208,6 +9782,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9240,6 +9816,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9272,6 +9850,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9304,6 +9884,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -9336,6 +9918,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9368,6 +9952,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -9400,6 +9986,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9432,6 +10020,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.2,
       "codex": 0.45,
@@ -9464,6 +10054,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9496,6 +10088,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9528,6 +10122,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9560,6 +10156,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -9592,6 +10190,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "unknown",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.3,
       "codex": 0.0,
@@ -9624,6 +10224,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9656,6 +10258,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -9688,6 +10292,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -9720,6 +10326,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9752,6 +10360,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9784,6 +10394,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9816,6 +10428,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.2,
@@ -9848,6 +10462,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.15,
       "codex": 0.5,
@@ -9880,6 +10496,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -9912,6 +10530,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 0.7,
@@ -9944,6 +10564,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -9976,6 +10598,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10008,6 +10632,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10040,6 +10666,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10072,6 +10700,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10104,6 +10734,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10136,6 +10768,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10168,6 +10802,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.3,
@@ -10200,6 +10836,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10232,6 +10870,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10264,6 +10904,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10296,6 +10938,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10328,6 +10972,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -10360,6 +11006,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.2,
@@ -10392,6 +11040,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10424,6 +11074,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -10456,6 +11108,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10488,6 +11142,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10520,6 +11176,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.3,
       "codex": 0.25,
@@ -10552,6 +11210,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -10584,6 +11244,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10616,6 +11278,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10648,6 +11312,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10680,6 +11346,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10712,6 +11380,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10744,6 +11414,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10776,6 +11448,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -10808,6 +11482,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10840,6 +11516,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -10872,6 +11550,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -10904,6 +11584,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.05,
       "codex": 0.1,
@@ -10936,6 +11618,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -10968,6 +11652,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11000,6 +11686,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11032,6 +11720,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11064,6 +11754,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.15,
@@ -11096,6 +11788,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11128,6 +11822,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11160,6 +11856,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -11192,6 +11890,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.4,
       "codex": 0.7,
@@ -11224,6 +11924,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11256,6 +11958,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11288,6 +11992,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.5,
       "codex": 0.8,
@@ -11320,6 +12026,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11352,6 +12060,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11384,6 +12094,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.8,
       "codex": 1.0,
@@ -11416,6 +12128,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11448,6 +12162,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -11480,6 +12196,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11512,6 +12230,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11544,6 +12264,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.15,
       "codex": 0.0,
@@ -11576,6 +12298,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11608,6 +12332,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11640,6 +12366,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11672,6 +12400,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.6,
       "codex": 0.25,
@@ -11704,6 +12434,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11736,6 +12468,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11768,6 +12502,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "left",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -11800,6 +12536,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.2,
       "codex": 0.15,
@@ -11832,6 +12570,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11864,6 +12604,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.1,
       "codex": 0.35,
@@ -11896,6 +12638,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -11928,6 +12672,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.3,
@@ -11960,6 +12706,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -11992,6 +12740,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12024,6 +12774,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12056,6 +12808,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -12088,6 +12842,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -12120,6 +12876,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -12152,6 +12910,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12184,6 +12944,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.2,
@@ -12216,6 +12978,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12248,6 +13012,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12280,6 +13046,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12312,6 +13080,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12344,6 +13114,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12376,6 +13148,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -12408,6 +13182,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -12440,6 +13216,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -12472,6 +13250,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12504,6 +13284,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -12536,6 +13318,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12568,6 +13352,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.2,
@@ -12600,6 +13386,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "",
     "fault": {
       "claude": 0.7,
       "codex": 0.4,
@@ -12632,6 +13420,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -12664,6 +13454,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -12696,6 +13488,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12728,6 +13522,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12760,6 +13556,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12792,6 +13590,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.15,
       "codex": 0.1,
@@ -12824,6 +13624,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12856,6 +13658,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12888,6 +13692,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12920,6 +13726,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 0.8,
@@ -12952,6 +13760,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -12984,6 +13794,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.2,
       "codex": 0.35,
@@ -13016,6 +13828,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13048,6 +13862,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13080,6 +13896,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13112,6 +13930,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13144,6 +13964,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13176,6 +13998,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -13208,6 +14032,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13240,6 +14066,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13272,6 +14100,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13304,6 +14134,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13336,6 +14168,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13368,6 +14202,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13400,6 +14236,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13432,6 +14270,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13464,6 +14304,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13496,6 +14338,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13528,6 +14372,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -13560,6 +14406,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13592,6 +14440,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 0.25,
@@ -13624,6 +14474,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.8,
       "codex": 0.35,
@@ -13656,6 +14508,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.5,
       "codex": 0.15,
@@ -13688,6 +14542,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -13720,6 +14576,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13752,6 +14610,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13784,6 +14644,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.2,
       "codex": 0.5,
@@ -13816,6 +14678,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -13848,6 +14712,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -13880,6 +14746,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -13912,6 +14780,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -13944,6 +14814,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "",
     "fault": {
       "claude": 0.8,
       "codex": 0.25,
@@ -13976,6 +14848,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14008,6 +14882,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -14040,6 +14916,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14072,6 +14950,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.15,
@@ -14104,6 +14984,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14136,6 +15018,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14168,6 +15052,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -14200,6 +15086,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14232,6 +15120,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -14264,6 +15154,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -14296,6 +15188,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -14328,6 +15222,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14360,6 +15256,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14392,6 +15290,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.15,
@@ -14424,6 +15324,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -14456,6 +15358,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14488,6 +15392,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14520,6 +15426,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -14552,6 +15460,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.2,
       "codex": 0.2,
@@ -14584,6 +15494,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -14616,6 +15528,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -14648,6 +15562,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -14680,6 +15596,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.1,
       "codex": 0.2,
@@ -14712,6 +15630,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -14744,6 +15664,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -14776,6 +15698,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14808,6 +15732,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.15,
       "codex": 0.0,
@@ -14840,6 +15766,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -14872,6 +15800,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -14904,6 +15834,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14936,6 +15868,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -14968,6 +15902,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15000,6 +15936,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -15032,6 +15970,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15064,6 +16004,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.2,
       "codex": 0.4,
@@ -15096,6 +16038,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15128,6 +16072,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15160,6 +16106,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15192,6 +16140,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15224,6 +16174,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -15256,6 +16208,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15288,6 +16242,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -15320,6 +16276,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15352,6 +16310,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15384,6 +16344,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "right",
     "fault": {
       "claude": 0.9,
       "codex": 1.0,
@@ -15416,6 +16378,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15448,6 +16412,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15480,6 +16446,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15512,6 +16480,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.2,
       "codex": 0.35,
@@ -15544,6 +16514,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15576,6 +16548,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15608,6 +16582,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.15,
       "codex": 0.1,
@@ -15640,6 +16616,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "rear",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -15672,6 +16650,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15704,6 +16684,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15736,6 +16718,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15768,6 +16752,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -15800,6 +16786,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15832,6 +16820,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15864,6 +16854,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.2,
@@ -15896,6 +16888,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15928,6 +16922,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -15960,6 +16956,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -15992,6 +16990,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -16024,6 +17024,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16056,6 +17058,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16088,6 +17092,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front right",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.3,
       "codex": 0.05,
@@ -16120,6 +17126,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -16152,6 +17160,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -16184,6 +17194,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16216,6 +17228,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -16248,6 +17262,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16280,6 +17296,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16312,6 +17330,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "right",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -16344,6 +17364,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -16376,6 +17398,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "right",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16408,6 +17432,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -16440,6 +17466,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -16472,6 +17500,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16504,6 +17534,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -16536,6 +17568,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "bottom",
+    "cpHit": "",
     "fault": {
       "claude": 0.9,
       "codex": 0.9,
@@ -16568,6 +17602,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.3,
       "codex": 0.3,
@@ -16600,6 +17636,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "",
     "fault": {
       "claude": 0.0,
       "codex": 0.1,
@@ -16632,6 +17670,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -16664,6 +17704,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front+left",
+    "cpHit": "front left+front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -16696,6 +17738,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left",
+    "cpHit": "front",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -16728,6 +17772,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "top+rear",
+    "cpHit": "front",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16760,6 +17806,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left+front right",
+    "cpHit": "rear+rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -16792,6 +17840,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear right",
+    "cpHit": "front right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -16824,6 +17874,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "left+rear",
+    "cpHit": "front left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16856,6 +17908,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear+rear right",
+    "cpHit": "front left+front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -16888,6 +17942,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front",
+    "cpHit": "rear left",
     "fault": {
       "claude": 0.0,
       "codex": 0.05,
@@ -16920,6 +17976,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "rear left+rear right",
+    "cpHit": "front+front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -16952,6 +18010,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "svHit": "front left+front right",
+    "cpHit": "rear+rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
