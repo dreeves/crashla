@@ -654,11 +654,13 @@ function monthlySummaryRows(series) {
       "summary nonstationary incidents must be positive", {company, incNonstationary: incFields.incNonstationary});
     must(incFields.incRoadwayNonstationary > 0,
       "summary roadway nonstationary incidents must be positive", {company, incRoadwayNonstationary: incFields.incRoadwayNonstationary});
+    const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
     return {
       company,
       vmtMin,
       vmtBest,
       vmtMax,
+      vmtRationales,
       ...incFields,
       milesPerIncident: vmtBest / incFields.incTotal,
       milesPerNonstationaryIncident: vmtBest / incFields.incNonstationary,
@@ -748,6 +750,7 @@ function monthSeriesData() {
         vmtRawBest: vmt.vmtBest * c,
         vmtRawMax: vmt.vmtMax * c,
         vmtCume: vmt.vmtCume,
+        rationale: vmt.rationale,
         incidents: inc,
       };
     }
@@ -1133,7 +1136,7 @@ function renderMpiSummaryCards(series) {
   const adsCards = rows.map(row => `
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
       <div class="mpi-card-company">${row.company}</div>
-      <div class="mpi-card-vmt">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
+      <div class="mpi-card-vmt" data-tip="${escAttr(row.vmtRationales.join('\n'))}">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
       ${METRIC_DEFS.map(m => {
         const k = row[m.incField];
         const a = k + 0.5;
