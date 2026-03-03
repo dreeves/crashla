@@ -7,7 +7,7 @@ tesla,2025-09,90202,176923.5,88550,91854,1.0,1,1,1,Austin only: robotaxitracker 
 tesla,2025-10,80061,256984.5,67965,92157,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 tesla,2025-11,103800,360784.5,103800,103800,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 tesla,2025-12,146870.5,507655,111351,182390,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2026-01,139318.5,646973.5,92690,185947,0.484,1.0,1.0,1.0,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2026-01,164845,672500,92690,237000,0.484,1.0,1.0,1.0,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 waymo,2025-06,7055803,7055803,5997433,8114173,1.0,1,1,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
 waymo,2025-07,9643781,16699584,8197214,11090348,1.0,1,1,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
 waymo,2025-08,11021172,27720756,9367996,12674348,1.0,1,1,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
