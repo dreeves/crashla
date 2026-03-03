@@ -633,7 +633,7 @@ function fmtWhole(n) {
 }
 
 function vmtTooltip(company, month, row, rec) {
-  return `${company} ${month} (VMT)\nMonthly VMT (best): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nEffective VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nIncidents total: ${fmtCount(rec.total)}`;
+  return `${company} ${month} (VMT)\nMonthly VMT (central estimate): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nTotal incidents: ${fmtCount(rec.total)}`;
 }
 
 function companyMonthRows(series, company) {
@@ -922,7 +922,7 @@ function renderAllCompaniesMpiChart(series) {
       const kFmt = Number.isInteger(k) ? String(k) : k.toFixed(1);
       // TO-DO: Human vet new tooltip mileage labels below.
       const ci95 = mpi.bands[mpi.bands.length - 1];
-      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nEffective VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
+      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMiles per incident (MPI): ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
       return `<g>${marker(x, y, color, 1)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle></g>`;
     }).join("")
   ).join("");
@@ -1064,8 +1064,8 @@ function renderCompanyMonthlyChart(series, company) {
         const h = y0 - y1;
         stack = next;
         if (h <= 0) continue;
-        const mpiLabel = `MPI (${seg.label.toLowerCase()}): ${mpiByKey[seg.mpiKey]}`;
-        const barTip = `${company} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nEffective VMT for MPI: ${monthVmtEff}\nCumulative VMT: ${monthVmtCume}`;
+        const mpiLabel = `Miles per incident (MPI, ${seg.label.toLowerCase()}): ${mpiByKey[seg.mpiKey]}`;
+        const barTip = `${company} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nCoverage-adjusted VMT for MPI: ${monthVmtEff}\nCumulative VMT: ${monthVmtCume}`;
         bars.push(`
           <rect class="month-inc-bar" x="${xLeft.toFixed(2)}" y="${y1.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}"
                 fill="${colors[seg.key]}" stroke="${vmtColor}" stroke-width="0.8" data-tip="${escAttr(barTip)}"></rect>
@@ -1266,7 +1266,7 @@ function renderMonthlyLegends() {
 
   byId("month-legend-lines").innerHTML = `
     <span class="month-legend-item">
-      <span class="month-linekey solid"></span>VMT (best)
+      <span class="month-linekey solid"></span>VMT (central estimate)
     </span>
   `;
 
@@ -1278,6 +1278,7 @@ function renderMonthlyLegends() {
         <span class="month-chip" style="background:${MOVEMENT_LEGEND_COLORS[seg.key]}"></span>${seg.label}
       </span>
     `).join("")}
+    <span class="month-legend-break" aria-hidden="true"></span>
     <span class="month-legend-label">Right bar (severity):</span>
     ${SEVERITY_SEGMENTS.map(seg => `
       <span class="month-legend-item">

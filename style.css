@@ -197,6 +197,10 @@ tr:hover { background: #f8f8ff; }
   font-size: 0.78rem;
   color: #5b6475;
 }
+.month-legend-break {
+  flex-basis: 100%;
+  height: 0;
+}
 .month-company-toggle {
   cursor: pointer;
   user-select: none;

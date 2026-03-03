@@ -102,11 +102,11 @@ const vmtTip = vm.runInContext(`
 `, ctx);
 assert.ok(
   vmtTip.includes("TestCo 2025-07 (VMT)") &&
-    vmtTip.includes("Monthly VMT (best):") &&
+    vmtTip.includes("Monthly VMT (central estimate):") &&
     vmtTip.includes("Monthly VMT range:") &&
-    vmtTip.includes("Effective VMT for MPI:") &&
+    vmtTip.includes("Coverage-adjusted VMT for MPI:") &&
     vmtTip.includes("Cumulative VMT:") &&
-    vmtTip.includes("Incidents total:"),
+    vmtTip.includes("Total incidents:"),
   `Replicata: call vmtTooltip with sample data.
 Expectata: tooltip includes all expected labels (monthly, range, effective, cumulative, incidents).
 Resultata: tooltip was ${JSON.stringify(vmtTip)}.`,

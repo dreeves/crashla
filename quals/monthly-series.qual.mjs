@@ -356,8 +356,10 @@ assert.ok(
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendMpiLines.includes("Miles per airbag-deploying crash") &&
   plain.legendMpiLines.includes("Miles per serious injury crash") &&
-  plain.legendLines.includes("VMT (best)") &&
+  plain.legendLines.includes("VMT (central estimate)") &&
   plain.legendSpeed.includes("Left bar (movement)") &&
+  plain.legendSpeed.includes("month-legend-break") &&
+  plain.legendSpeed.indexOf("month-legend-break") < plain.legendSpeed.indexOf("Right bar (severity)") &&
   plain.legendSpeed.includes("Right bar (severity)") &&
   plain.legendSpeed.includes("Non-parking-lot nonstationary") &&
   plain.legendSpeed.includes("Stationary") &&
