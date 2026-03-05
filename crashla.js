@@ -5,13 +5,13 @@ function fail(msg, details) {
   throw new Error(msg + suffix);
 }
 
-function must(cond, msg, details) {
+function assert(cond, msg, details) {
   cond || fail(msg, details);
 }
 
 function byId(id) {
   const node = document.getElementById(id);
-  must(node !== null, "Missing required DOM node", {id});
+  assert(node !== null, "Missing required DOM node", {id});
   return node;
 }
 
@@ -73,7 +73,7 @@ function gammainc(a, x) {
 // Gamma quantile: find x such that P(a, x*b) = p, where Gamma(a, b) has rate b
 // Returns x (the quantile of Gamma(shape=a, rate=b))
 function gammaquant(a, b, p) {
-  must(a > 0 && b > 0 && p > 0 && p < 1,
+  assert(a > 0 && b > 0 && p > 0 && p < 1,
     "gammaquant: invalid params", {a, b, p});
   // Initial guess via Wilson-Hilferty approximation on chi-squared
   const nu = 2 * a;
@@ -325,6 +325,7 @@ const LINE_STYLE = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, {width: m.lineWidth, opacity: m.lineOpacity}]));
 const KNOWN_HUMAN_MPI = Object.fromEntries(
   METRIC_DEFS.filter(m => m.humanMPI).map(m => [m.key, m.humanMPI]));
+const METRIC_KEYS = METRIC_DEFS.map(m => m.key);
 let monthMetricEnabled = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, m.defaultEnabled]));
 
@@ -456,10 +457,10 @@ function countByCompany(rows = incidents) {
 }
 
 function incidentsInVmtWindow(rows = incidents) {
-  must(vmtRows.length > 0, "incident browser requires vmtRows");
+  assert(vmtRows.length > 0, "incident browser requires vmtRows");
   const monthSet = new Set(vmtRows.map(row => row.month));
   for (const inc of rows) {
-    must(monthSet.has(monthKeyFromIncidentLabel(inc.date)),
+    assert(monthSet.has(monthKeyFromIncidentLabel(inc.date)),
       "incident date outside VMT window",
       {reportId: inc.reportId, company: inc.company, date: inc.date});
   }
@@ -484,8 +485,8 @@ function csvUnquote(field) {
 
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
-  must(lines.length > 1, "VMT sheet CSV must include header and rows");
-  must(lines[0] === "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
+  assert(lines.length > 1, "VMT sheet CSV must include header and rows");
+  assert(lines[0] === "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
     "VMT sheet CSV header mismatch", {header: lines[0]});
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -496,10 +497,10 @@ function parseVmtCsv(text) {
       `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`
     );
     const hit = re.exec(line);
-    must(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
+    assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
     const companyRaw = hit[1].trim();
     const company = ADS_COMPANIES.find(c => c.toLowerCase() === companyRaw.toLowerCase());
-    must(company !== undefined, "VMT sheet CSV has unknown company", {companyRaw});
+    assert(company !== undefined, "VMT sheet CSV has unknown company", {companyRaw});
     const vmtBest = Number(hit[3]);
     const vmtCume = Number(hit[4]);
     const vmtMin = Number(hit[5]);
@@ -512,24 +513,24 @@ function parseVmtCsv(text) {
     const incCov     = Number(hit[8]);  // best estimate
     const incCovMin  = Number(hit[9]);  // most pessimistic (smallest p)
     const incCovMax  = Number(hit[10]); // most optimistic (largest p)
-    must(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
+    assert(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
       {lineNo: i + 1, vmtBest});
-    must(Number.isFinite(vmtCume) && vmtCume >= 0,
+    assert(Number.isFinite(vmtCume) && vmtCume >= 0,
       "company_cumulative_vmt must be non-negative number", {lineNo: i + 1, vmtCume});
-    must(Number.isFinite(vmtMin) && vmtMin >= 0, "vmt_min must be non-negative number",
+    assert(Number.isFinite(vmtMin) && vmtMin >= 0, "vmt_min must be non-negative number",
       {lineNo: i + 1, vmtMin});
-    must(Number.isFinite(vmtMax) && vmtMax >= 0, "vmt_max must be non-negative number",
+    assert(Number.isFinite(vmtMax) && vmtMax >= 0, "vmt_max must be non-negative number",
       {lineNo: i + 1, vmtMax});
-    must(vmtMin <= vmtBest && vmtBest <= vmtMax,
+    assert(vmtMin <= vmtBest && vmtBest <= vmtMax,
       "expected vmt_min <= vmt <= vmt_max", {lineNo: i + 1, vmtMin, vmtBest, vmtMax});
-    must(coverage > 0 && coverage <= 1, "coverage must be in (0, 1]",
+    assert(coverage > 0 && coverage <= 1, "coverage must be in (0, 1]",
       {lineNo: i + 1, coverage});
-    must(incCov > 0 && incCov <= 1, "incident_coverage must be in (0, 1]",
+    assert(incCov > 0 && incCov <= 1, "incident_coverage must be in (0, 1]",
       {lineNo: i + 1, incCov});
-    must(incCovMin > 0 && incCovMin <= incCov,
+    assert(incCovMin > 0 && incCovMin <= incCov,
       "incident_coverage_min must be in (0, incident_coverage]",
       {lineNo: i + 1, incCovMin, incCov});
-    must(incCovMax >= incCov && incCovMax <= 1,
+    assert(incCovMax >= incCov && incCovMax <= 1,
       "incident_coverage_max must be in [incident_coverage, 1]",
       {lineNo: i + 1, incCovMax, incCov});
     rows.push({
@@ -546,16 +547,16 @@ function parseVmtCsv(text) {
       rationale: csvUnquote(hit[11]),
     });
   }
-  must(rows.length > 0, "VMT sheet CSV has no data rows");
+  assert(rows.length > 0, "VMT sheet CSV has no data rows");
   return rows;
 }
 
 
 function monthKeyFromIncidentLabel(label) {
   const hit = /^([A-Z]{3})-(\d{4})$/.exec(label);
-  must(hit !== null, "Invalid incident month label", {label});
+  assert(hit !== null, "Invalid incident month label", {label});
   const month = MONTH_TOKENS[hit[1]];
-  must(month !== undefined, "Unknown incident month token", {label});
+  assert(month !== undefined, "Unknown incident month token", {label});
   return `${hit[2]}-${String(month).padStart(2, "0")}`;
 }
 
@@ -649,10 +650,10 @@ function monthlySummaryRows(series) {
     // Auto-generate inc fields from METRIC_DEFS
     const incFields = Object.fromEntries(
       METRIC_DEFS.map(m => [m.incField, rows.reduce((sum, row) => sum + m.countFn(row), 0)]));
-    must(incFields.incTotal > 0, "summary total incidents must be positive", {company, incTotal: incFields.incTotal});
-    must(incFields.incNonstationary > 0,
+    assert(incFields.incTotal > 0, "summary total incidents must be positive", {company, incTotal: incFields.incTotal});
+    assert(incFields.incNonstationary > 0,
       "summary nonstationary incidents must be positive", {company, incNonstationary: incFields.incNonstationary});
-    must(incFields.incRoadwayNonstationary > 0,
+    assert(incFields.incRoadwayNonstationary > 0,
       "summary roadway nonstationary incidents must be positive", {company, incRoadwayNonstationary: incFields.incRoadwayNonstationary});
     const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
     return {
@@ -670,21 +671,21 @@ function monthlySummaryRows(series) {
 }
 
 function monthSeriesData() {
-  must(vmtRows.length > 0, "month series requires vmtRows");
+  assert(vmtRows.length > 0, "month series requires vmtRows");
   const monthSet = new Set();
   const vmtByKey = {};
   for (const row of vmtRows) {
     const key = row.company + "|" + row.month;
-    must(vmtByKey[key] === undefined, "Duplicate VMT row for company-month", {key});
+    assert(vmtByKey[key] === undefined, "Duplicate VMT row for company-month", {key});
     vmtByKey[key] = row;
     monthSet.add(row.month);
   }
 
   const incidentsByKey = {};
   for (const inc of incidents) {
-    must(ADS_COMPANIES.includes(inc.company), "inline incident data has unknown ADS company", {company: inc.company});
+    assert(ADS_COMPANIES.includes(inc.company), "inline incident data has unknown ADS company", {company: inc.company});
     const month = monthKeyFromIncidentLabel(inc.date);
-    must(monthSet.has(month), "incident date outside VMT window",
+    assert(monthSet.has(month), "incident date outside VMT window",
       {reportId: inc.reportId, company: inc.company, date: inc.date, month});
     const key = inc.company + "|" + month;
     let rec = incidentsByKey[key];
@@ -697,16 +698,16 @@ function monthSeriesData() {
     rec.total += 1;
     const bin = speedBinForIncident(inc.speed);
     rec.speeds[bin] += 1;
-    must(typeof inc.road === "string", "incident road must be string", {reportId: inc.reportId, road: inc.road});
+    assert(typeof inc.road === "string", "incident road must be string", {reportId: inc.reportId, road: inc.road});
     rec.roadwayNonstationary += Number(
       bin !== "0" && inc.road !== "Parking Lot",
     );
-    must(inc.fault !== null && typeof inc.fault === "object",
+    assert(inc.fault !== null && typeof inc.fault === "object",
       "incident missing fault object for monthly series", {reportId: inc.reportId});
     const atFaultFrac = weightedFaultFromValues(
       inc.fault.claude, inc.fault.codex, inc.fault.gemini,
     );
-    must(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
+    assert(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
       "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
     rec.atFault += atFaultFrac || 0;
     rec.atFaultInjury += (atFaultFrac || 0) * Number(INJURY_SEVERITIES.has(inc.severity));
@@ -722,17 +723,17 @@ function monthSeriesData() {
   }
 
   const months = [...monthSet].sort();
-  must(months.length > 0, "No months to render");
+  assert(months.length > 0, "No months to render");
   const points = [];
   for (const month of months) {
     const companies = {};
     for (const company of ADS_COMPANIES) {
       const key = company + "|" + month;
       const vmt = vmtByKey[key];
-      must(vmt !== undefined, "Missing VMT for company-month", {company, month});
-      must(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
-      must(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
-      must(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
+      assert(vmt !== undefined, "Missing VMT for company-month", {company, month});
+      assert(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
+      assert(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
+      assert(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       // Incident coverage: when Monthly reports are absent for the last month,
@@ -816,7 +817,7 @@ function renderAllCompaniesMpiChart(series) {
     const rows = companyMonthRows(series, company);
     for (const metric of includedMonthMetrics()) {
       const countFn = countByMetric[metric.key];
-      must(typeof countFn === "function", "missing count fn for metric", {metric: metric.key});
+      assert(typeof countFn === "function", "missing count fn for metric", {metric: metric.key});
       const vals = rows.map(row => {
         const k = countFn(row);
         const massFrac = CI_MASS_DEFAULT_PCT / 100;
@@ -865,7 +866,7 @@ function renderAllCompaniesMpiChart(series) {
     for (let i = 1; i < chain.length; i++) {
       if (humanLoByKey[chain[i-1]] === undefined) continue;
       if (humanLoByKey[chain[i]]   === undefined) continue;
-      must(humanLoByKey[chain[i-1]] <= humanLoByKey[chain[i]],
+      assert(humanLoByKey[chain[i-1]] <= humanLoByKey[chain[i]],
         "human MPI ordering violated", {
           lesser: chain[i-1], lesserMpi: humanLoByKey[chain[i-1]],
           greater: chain[i], greaterMpi: humanLoByKey[chain[i]],
@@ -917,7 +918,7 @@ function renderAllCompaniesMpiChart(series) {
       const y = mapY(mpi.mpiBest);
       const color = metricMarkerColor(row.company, row.metric.key);
       const marker = markerRenderer[row.metric.marker];
-      must(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
+      assert(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
       const k = mpi.incidentCount;
       const kFmt = Number.isInteger(k) ? String(k) : k.toFixed(1);
       // TO-DO: Human vet new tooltip mileage labels below.
@@ -1299,6 +1300,7 @@ function buildMonthlyViews() {
     </div>
   `).join("");
   renderMonthlyLegends();
+  syncUrlState();
 }
 
 // --- Fault fraction data ---
@@ -1306,26 +1308,26 @@ function buildMonthlyViews() {
 function buildFaultDataFromIncidents(rows) {
   const data = {};
   for (const row of rows) {
-    must(typeof row.reportId === "string" && row.reportId !== "",
+    assert(typeof row.reportId === "string" && row.reportId !== "",
       "incident missing reportId for fault mapping");
-    must(row.fault !== null && typeof row.fault === "object",
+    assert(row.fault !== null && typeof row.fault === "object",
       "incident missing fault object", {reportId: row.reportId});
     const claude = Number(row.fault.claude);
     const codex = Number(row.fault.codex);
     const gemini = Number(row.fault.gemini);
-    must(Number.isFinite(claude) && claude >= 0 && claude <= 1,
+    assert(Number.isFinite(claude) && claude >= 0 && claude <= 1,
       "incident fault.claude out of range", {reportId: row.reportId, val: row.fault.claude});
-    must(Number.isFinite(codex) && codex >= 0 && codex <= 1,
+    assert(Number.isFinite(codex) && codex >= 0 && codex <= 1,
       "incident fault.codex out of range", {reportId: row.reportId, val: row.fault.codex});
-    must(Number.isFinite(gemini) && gemini >= 0 && gemini <= 1,
+    assert(Number.isFinite(gemini) && gemini >= 0 && gemini <= 1,
       "incident fault.gemini out of range", {reportId: row.reportId, val: row.fault.gemini});
-    must(typeof row.fault.rclaude === "string",
+    assert(typeof row.fault.rclaude === "string",
       "incident fault.rclaude invalid", {reportId: row.reportId});
-    must(typeof row.fault.rcodex === "string",
+    assert(typeof row.fault.rcodex === "string",
       "incident fault.rcodex invalid", {reportId: row.reportId});
-    must(typeof row.fault.rgemini === "string",
+    assert(typeof row.fault.rgemini === "string",
       "incident fault.rgemini invalid", {reportId: row.reportId});
-    must(data[row.reportId] === undefined, "duplicate reportId in incidents", {reportId: row.reportId});
+    assert(data[row.reportId] === undefined, "duplicate reportId in incidents", {reportId: row.reportId});
     data[row.reportId] = {
       claude,
       codex,
@@ -1342,9 +1344,9 @@ function weightedFaultFromValues(claude, codex, gemini) {
   const c = Number(claude);
   const o = Number(codex);
   const g = Number(gemini);
-  must(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
-  must(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
-  must(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
+  assert(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
+  assert(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
+  assert(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
   return (c + o + g) / 3;
 }
 
@@ -1358,9 +1360,9 @@ function weightedFaultVarianceFromValues(claude, codex, gemini) {
   const c = Number(claude);
   const o = Number(codex);
   const g = Number(gemini);
-  must(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
-  must(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
-  must(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
+  assert(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
+  assert(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
+  assert(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
   const mean = (c + o + g) / 3;
   return ((c - mean) * (c - mean) + (o - mean) * (o - mean) + (g - mean) * (g - mean)) / 3;
 }
@@ -1415,6 +1417,104 @@ const SORT_COLUMNS = [
   {key: "severity", val: r => r.severity || ""},
   {key: "narrative", val: r => r.narrative || ""},
 ];
+const SORT_COLUMN_KEYS = SORT_COLUMNS.map(col => col.key);
+const URL_STATE_KEYS = {
+  filter: "f",
+  sort: "s",
+  asc: "a",
+  companies: "c",
+  metrics: "m",
+};
+const URL_STATE_SORT_NONE = "-";
+
+function enabledKeyString(enabledByKey, orderedKeys) {
+  return orderedKeys.filter(key => enabledByKey[key]).join(".");
+}
+
+function parseEnabledKeyString(raw, orderedKeys, label) {
+  const keys = raw === "" ? [] : raw.split(".");
+  const allowed = new Set(orderedKeys);
+  const unique = new Set(keys);
+  assert(unique.size === keys.length, "Duplicate URL state key", {label, raw});
+  for (const key of keys) {
+    assert(allowed.has(key), "Unknown URL state key value", {label, key, raw});
+  }
+  return Object.fromEntries(orderedKeys.map(key => [key, unique.has(key)]));
+}
+
+function encodeUiStateQuery() {
+  const params = new URLSearchParams();
+  params.set(URL_STATE_KEYS.filter, activeFilter);
+  params.set(URL_STATE_KEYS.sort, sortCol === null ? URL_STATE_SORT_NONE : sortCol);
+  params.set(URL_STATE_KEYS.asc, sortAsc ? "1" : "0");
+  params.set(URL_STATE_KEYS.companies, enabledKeyString(monthCompanyEnabled, ADS_COMPANIES));
+  params.set(URL_STATE_KEYS.metrics, enabledKeyString(monthMetricEnabled, METRIC_KEYS));
+  return params.toString();
+}
+
+function applyUiStateQuery(queryString) {
+  const raw = queryString.startsWith("?") ? queryString.slice(1) : queryString;
+  if (raw === "") return;
+  const params = new URLSearchParams(raw);
+  const expectedKeys = Object.values(URL_STATE_KEYS);
+  const expectedSet = new Set(expectedKeys);
+  const seenKeys = new Set();
+
+  for (const key of params.keys()) {
+    assert(!seenKeys.has(key), "Duplicate URL state key", {key, raw});
+    seenKeys.add(key);
+    assert(expectedSet.has(key), "Unexpected URL state key", {key, raw});
+  }
+  for (const key of expectedKeys) {
+    assert(params.has(key), "Missing URL state key", {key, raw});
+  }
+
+  const filterVal = params.get(URL_STATE_KEYS.filter);
+  assert(filterVal !== null, "Missing filter URL state", {raw});
+  assert(["All", ...ADS_COMPANIES].includes(filterVal), "Invalid filter URL state", {filterVal, raw});
+  activeFilter = filterVal;
+
+  const sortVal = params.get(URL_STATE_KEYS.sort);
+  assert(sortVal !== null, "Missing sort URL state", {raw});
+  sortCol = sortVal === URL_STATE_SORT_NONE ? null : sortVal;
+  assert(sortCol === null || SORT_COLUMN_KEYS.includes(sortCol), "Invalid sort URL state", {sortVal, raw});
+
+  const ascVal = params.get(URL_STATE_KEYS.asc);
+  assert(ascVal === "0" || ascVal === "1", "Invalid sort direction URL state", {ascVal, raw});
+  sortAsc = ascVal === "1";
+
+  const companiesVal = params.get(URL_STATE_KEYS.companies);
+  assert(companiesVal !== null, "Missing companies URL state", {raw});
+  monthCompanyEnabled = {
+    ...monthCompanyEnabled,
+    ...parseEnabledKeyString(companiesVal, ADS_COMPANIES, "companies"),
+  };
+
+  const metricsVal = params.get(URL_STATE_KEYS.metrics);
+  assert(metricsVal !== null, "Missing metrics URL state", {raw});
+  monthMetricEnabled = parseEnabledKeyString(metricsVal, METRIC_KEYS, "metrics");
+}
+
+function canSyncUrlState() {
+  return typeof window === "object" &&
+    window !== null &&
+    window.location !== undefined &&
+    typeof window.location.search === "string" &&
+    typeof window.location.pathname === "string" &&
+    window.history !== undefined &&
+    typeof window.history.replaceState === "function" &&
+    typeof URLSearchParams === "function";
+}
+
+function loadUiStateFromLocation() {
+  if (!canSyncUrlState()) return;
+  applyUiStateQuery(window.location.search);
+}
+
+function syncUrlState() {
+  if (!canSyncUrlState()) return;
+  window.history.replaceState(null, "", `${window.location.pathname}?${encodeUiStateQuery()}`);
+}
 
 const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Fault variance", "Severity", "Narrative"];
 
@@ -1522,12 +1622,13 @@ function renderTable() {
     `;
     // Click to expand/collapse narrative
     const narrativeTd = tr.querySelector(".narrative-cell");
-    must(narrativeTd !== null, "Missing narrative cell");
+    assert(narrativeTd !== null, "Missing narrative cell");
     narrativeTd.addEventListener("click", () => {
       narrativeTd.classList.toggle("expanded");
     });
     tbody.appendChild(tr);
   }
+  syncUrlState();
 }
 
 function shortenSeverity(s) {
@@ -2083,35 +2184,35 @@ function initTooltips() {
 
 {
   const incidentData = INCIDENT_DATA;
-  must(Array.isArray(incidentData), "INCIDENT_DATA must be an array");
-  must(incidentData.length > 0, "INCIDENT_DATA must not be empty");
+  assert(Array.isArray(incidentData), "INCIDENT_DATA must be an array");
+  assert(incidentData.length > 0, "INCIDENT_DATA must not be empty");
   const DATE_RE = /^[A-Z]{3}-\d{4}$/;
   for (const inc of incidentData) {
-    must(inc !== null && typeof inc === "object", "incident must be an object");
-    must(typeof inc.company === "string", "incident missing company");
-    must(ADS_COMPANIES.includes(inc.company),
+    assert(inc !== null && typeof inc === "object", "incident must be an object");
+    assert(typeof inc.company === "string", "incident missing company");
+    assert(ADS_COMPANIES.includes(inc.company),
       "inline incident data has unknown company", {company: inc.company});
-    must(typeof inc.reportId === "string" && inc.reportId.length > 0,
+    assert(typeof inc.reportId === "string" && inc.reportId.length > 0,
       "incident missing reportId", {company: inc.company});
-    must(typeof inc.date === "string" && DATE_RE.test(inc.date),
+    assert(typeof inc.date === "string" && DATE_RE.test(inc.date),
       "incident date must match MMM-YYYY format", {reportId: inc.reportId, date: inc.date});
-    must(inc.speed === null || (typeof inc.speed === "number" && Number.isFinite(inc.speed) && inc.speed >= 0),
+    assert(inc.speed === null || (typeof inc.speed === "number" && Number.isFinite(inc.speed) && inc.speed >= 0),
       "incident speed must be null or non-negative number", {reportId: inc.reportId, speed: inc.speed});
-    must(typeof inc.road === "string" && inc.road.length > 0,
+    assert(typeof inc.road === "string" && inc.road.length > 0,
       "incident missing road type", {reportId: inc.reportId});
-    must(typeof inc.severity === "string" && inc.severity.length > 0,
+    assert(typeof inc.severity === "string" && inc.severity.length > 0,
       "incident missing severity", {reportId: inc.reportId});
-    must(inc.fault !== null && typeof inc.fault === "object",
+    assert(inc.fault !== null && typeof inc.fault === "object",
       "incident missing fault object", {reportId: inc.reportId});
-    must(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
+    assert(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
       "incident vehiclesInvolved must be >= 1", {reportId: inc.reportId});
-    must(typeof inc.svHit === "string",
+    assert(typeof inc.svHit === "string",
       "incident missing svHit", {reportId: inc.reportId});
-    must(typeof inc.cpHit === "string",
+    assert(typeof inc.cpHit === "string",
       "incident missing cpHit", {reportId: inc.reportId});
     for (const model of ["claude", "codex", "gemini"]) {
       const f = inc.fault[model];
-      must(typeof f === "number" && f >= 0 && f <= 1,
+      assert(typeof f === "number" && f >= 0 && f <= 1,
         `incident fault.${model} must be number in [0, 1]`,
         {reportId: inc.reportId, value: f});
     }
@@ -2119,6 +2220,7 @@ function initTooltips() {
   incidents = incidentData;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(incidentData);
+  loadUiStateFromLocation();
   buildMonthlyViews();
   buildBrowser();
   buildSanityChecks();
