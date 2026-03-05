@@ -1,3 +1,9 @@
+Other name ideas:
+
+* Via et Veritas
+* Bayes Against the Machine
+
+
 # How safe are robotaxis?
 
 https://agifriday.substack.com/p/crashla
