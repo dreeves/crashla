@@ -1597,6 +1597,10 @@ So we adjust the VMT to include deadhead miles.
 This table shows the fraction of NHTSA incidents for which a passenger was in the autonomous vehicle (AV).
 For comparison, for Waymo, CPUC data shows ~56% of VMT is revenue (P3) miles.
 </p>
+<p>
+Caveat:
+If the passenger-seat safety monitor (present in almost all Tesla robotaxi rides so far) is able to intervene to prevent incidents, then the true unsupervised miles per incident (MPI) for Tesla would be lower (worse) than what these graphs and data show.
+</p>
     <table>
       <thead><tr>
         <th>Company</th>

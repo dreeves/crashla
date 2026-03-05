@@ -144,7 +144,7 @@ can you make a file called faultfrac-MODEL.csv that, for every Report ID in nhts
 
 ## [AI TEXT] Explanatory Note
 
-This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) time window (June 2025 through January 15, 2026). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June has full-month coverage.
+This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) time window (June 15, 2025 through January 15, 2026). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June (starting June 15) has full incident coverage.
 
 Context:
 [agifriday.substack.com/crashla](https://agifriday.substack.com/crashla/) and
@@ -157,15 +157,15 @@ Raw working sheet: [Google Sheet (VMT + assumptions)](https://docs.google.com/sp
 - Tesla mileage assumptions are anchored to tracker sources ([robotaxitracker.com](https://robotaxitracker.com/) and [robotaxi-safety-tracker.com](https://robotaxi-safety-tracker.com/)) and then aligned to this same NHTSA window for apples-to-apples comparison.
 - Waymo VMT is estimated by scaling [California CPUC driverless VMT](https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting) (including deadhead) to all US cities using Waymo rider-only-mile city shares. Through Sep 2025 the error band is +/-15%; for the extrapolated Oct-Jan period it widens to +/-30%.
 - Zoox VMT uses rough estimates based on limited public data from [CPUC quarterly reports](https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting) (California-only paid miles) plus [Las Vegas operations](https://techcrunch.com/2025/09/10/zoox-opens-its-las-vegas-robotaxi-service-to-the-public/). Error bands are 0.5x-2x because no month-level public VMT series exists.
-- All VMT data with rationale: [Google Sheet (VMT + assumptions)](https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871)
 
 ### Statistical Method
 
 - The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(lambda * m), where lambda is the rate (incidents per mile) and m is VMT. Jeffreys prior: lambda ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: lambda | k, m ~ Gamma(k + 0.5, m). MPI = 1/lambda; quantiles are inverted via a monotone decreasing transformation.
 - The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper lambda quantile, and the upper MPI bound uses vmt_max with the lower lambda quantile. This yields the widest possible band.
-- For the partial month (January), VMT is pro-rated by the coverage fraction so that VMT and incident counts cover the same observation window.
+- For partial months (June 15–30 and January 1–15), VMT is pro-rated by the calendar coverage fraction. For January, incident coverage is also adjusted because Monthly-track NHTSA reports may not yet be available (see the "incident coverage" sanity check on the page).
 - The point estimate shown in the line is the Bayesian posterior median of 1/lambda, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.
 - Fault-weighted incidents (thin line): each incident contributes its fault fraction (equal-weight average of Claude, Codex, and Gemini estimates) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.
+- **Tesla safety-monitor caveat:** Most Tesla robotaxi rides include a passenger-seat safety monitor. Tesla classifies these as unsupervised (no operator) for NHTSA reporting, but the monitors may intervene to prevent incidents. If so, Tesla's true unsupervised MPI would be lower (worse) than shown.
 
 ### Human Comparison Methodology
 
@@ -191,13 +191,13 @@ Her claims, sourced from Waymo's own safety page and the Kusano/Scanlon paper:
 
 How our data compares:
 
-1. **Default view understates Waymo's advantage.** Our default metric is "all incidents" where Waymo's MPI (~255k) vs the human baseline (103k–214k) shows only ~1.2–2.5x safer. Piper's headline "80–90% lower risk" refers to serious crashes, not all incidents. The dramatic 5–10x safety multiples only appear in our injury/serious-injury/airbag metrics, which aren't the default view.
+1. **Default view understates Waymo's advantage.** Our default metric is "all incidents" where Waymo's MPI vs the human baseline shows roughly 1–2.5x safer. Piper's headline "80–90% lower risk" refers to serious crashes, not all incidents. The dramatic 5–10x safety multiples only appear in our injury/serious-injury/airbag metrics, which aren't the default view.
 
 2. **Miles are compatible but use different definitions.** Piper says "over 200 million" for Waymo total. Waymo's safety page shows 127M rider-only miles through Sep 2025; the 200M all-time milestone was announced Feb 2026 (https://www.benzinga.com/markets/tech/26/03/50953948). Our VMT of ~128M for the Jun 2025–Jan 2026 window includes deadhead miles and is scaled to all-US, so it's a different (larger) category than rider-only. The numbers are broadly consistent.
 
 3. **Reporting asymmetry.** Piper acknowledges Waymo may report more crashes due to better reporting but doesn't quantify this. Our human baselines explicitly address it: Kusano/Scanlon provide both Blincoe-adjusted rates (catching underreported human crashes) and police-reported rates. The lo–hi range in our human MPI benchmarks spans this uncertainty. Additionally, 45% of Waymo collisions involve <1 mph delta-V per Waymo's safety page — incidents that would almost never be police-reported for human drivers.
 
-4. **Fault attribution.** Piper doesn't discuss who's at fault. Our AI fault-fraction analysis shows many of Waymo's ~500 incidents were caused by other drivers. Fault-weighting makes Waymo look even safer than the raw incident count suggests.
+4. **Fault attribution.** Piper doesn't discuss who's at fault. Our AI fault-fraction analysis shows many of Waymo's ~503 incidents were caused by other drivers. Fault-weighting makes Waymo look even safer than the raw incident count suggests.
 
 5. **Scope.** Piper's article is Waymo-only. Our tool adds Tesla and Zoox to the comparison, which is where the more contested conclusions live.
 
@@ -220,7 +220,7 @@ January has coverage=0.484 (15/31) because the VMT is given as a full-month figu
 1. **NHTSA SGO incident reports** (the numerator).
    Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `preprocess.py`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
-   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to Driver/Operator Type = "None", we get ~518 incidents across Tesla, Waymo, and Zoox.
+   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to Driver/Operator Type = "None", we get 530 incidents: 503 Waymo, 14 Tesla, 13 Zoox.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
    Sourced from a Google Sheet and embedded in `vmt.js`.
