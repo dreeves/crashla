@@ -326,6 +326,14 @@ const LINE_STYLE = Object.fromEntries(
 const KNOWN_HUMAN_MPI = Object.fromEntries(
   METRIC_DEFS.filter(m => m.humanMPI).map(m => [m.key, m.humanMPI]));
 const METRIC_KEYS = METRIC_DEFS.map(m => m.key);
+const METRIC_BY_KEY = Object.fromEntries(
+  METRIC_DEFS.map(m => [m.key, m]));
+const STRESS_METRIC_KEYS = ["all", "atfault", "injury", "seriousInjury", "fatality"];
+const STRESS_VERDICT_META = {
+  safer: {label: "robustly safer", className: "safer"},
+  worse: {label: "robustly worse", className: "worse"},
+  ambiguous: {label: "ambiguous", className: "ambiguous"},
+};
 let monthMetricEnabled = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, m.defaultEnabled]));
 
@@ -668,6 +676,46 @@ function monthlySummaryRows(series) {
       milesPerRoadwayNonstationaryIncident: vmtBest / incFields.incRoadwayNonstationary,
     };
   });
+}
+
+function estimateMpiWindow(k, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAULT_PCT / 100) {
+  const a = k + 0.5;
+  const tail = (1 - massFrac) / 2;
+  return {
+    k,
+    median: 1 / gammaquant(a, vmtBest, 0.5),
+    lo: 1 / gammaquant(a, vmtMin, 1 - tail),
+    hi: 1 / gammaquant(a, vmtMax, tail),
+  };
+}
+
+function summaryMetricEstimate(row, metricKey, massFrac = CI_MASS_DEFAULT_PCT / 100) {
+  const metric = METRIC_BY_KEY[metricKey];
+  assert(metric !== undefined, "Unknown metric key for summary estimate", {metricKey});
+  return estimateMpiWindow(row[metric.incField], row.vmtMin, row.vmtBest, row.vmtMax, massFrac);
+}
+
+function fmtRatio(n) {
+  return n >= 100 ? fmtWhole(n) : n >= 10 ? n.toFixed(1) : n.toFixed(2);
+}
+
+function companyHumanStress(row, metricKey) {
+  const metric = METRIC_BY_KEY[metricKey];
+  const human = KNOWN_HUMAN_MPI[metricKey];
+  assert(metric !== undefined && human !== undefined, "Missing stress metric inputs", {metricKey});
+  const av = summaryMetricEstimate(row, metricKey);
+  const ratioLo = av.lo / human.hi;
+  const ratioHi = av.hi / human.lo;
+  const verdictKey = ratioLo > 1 ? "safer" : ratioHi < 1 ? "worse" : "ambiguous";
+  return {
+    metric,
+    human,
+    av,
+    ratioLo,
+    ratioHi,
+    verdictKey,
+    ...STRESS_VERDICT_META[verdictKey],
+  };
 }
 
 function monthSeriesData() {
@@ -1133,33 +1181,31 @@ function renderCompanyMonthlyChart(series, company) {
 // TO-DO: Human vet all end-user labels in these summary cards.
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
-  const massFrac = CI_MASS_DEFAULT_PCT / 100;
-  const adsCards = rows.map(row => `
-    <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
-      <div class="mpi-card-company">${row.company}</div>
-      <div class="mpi-card-vmt" data-tip="${escAttr(row.vmtRationales.join('\n'))}">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
-      ${METRIC_DEFS.map(m => {
-        const k = row[m.incField];
-        const a = k + 0.5;
-        const tail = (1 - massFrac) / 2;
-        const ciLo = 1 / gammaquant(a, row.vmtMin, 1 - tail);
-        const ciHi = 1 / gammaquant(a, row.vmtMax, tail);
-        const median = 1 / gammaquant(a, row.vmtBest, 0.5);
-        const hl = monthMetricEnabled[m.key] ? " highlighted" : "";
-        const humanRange = KNOWN_HUMAN_MPI[m.key];
-        const humanGeo = humanRange ? Math.sqrt(humanRange.lo * humanRange.hi) : null;
-        const mult = humanGeo ? median / humanGeo : null;
-        const multStr = mult !== null
-          ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
-          : "";
-        return `
-        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
-          <div>${m.cardLabel}: ${fmtCount(k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(median)} MPI</span>${multStr}</div>
-          <div class="mpi-card-ci">95% CI: ${fmtWhole(ciLo)} \u2013 ${fmtWhole(ciHi)}</div>
-        </div>`;
-      }).join("")}
-    </div>
-  `).join("");
+  const adsCards = rows.map(row => {
+    const stress = companyHumanStress(row, "all");
+    return `
+      <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
+        <div class="mpi-card-company">${row.company}</div>
+        <div class="mpi-card-vmt" data-tip="${escAttr(row.vmtRationales.join('\n'))}">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
+        <div class="mpi-card-stress">Overall: <span class="stress-badge ${stress.className}">${stress.label}</span> ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>
+        ${METRIC_DEFS.map(m => {
+          const mpi = summaryMetricEstimate(row, m.key);
+          const hl = monthMetricEnabled[m.key] ? " highlighted" : "";
+          const humanRange = KNOWN_HUMAN_MPI[m.key];
+          const humanGeo = humanRange ? Math.sqrt(humanRange.lo * humanRange.hi) : null;
+          const mult = humanGeo ? mpi.median / humanGeo : null;
+          const multStr = mult !== null
+            ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
+            : "";
+          return `
+          <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
+            <div>${m.cardLabel}: ${fmtCount(mpi.k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(mpi.median)} MPI</span>${multStr}</div>
+            <div class="mpi-card-ci">95% CI: ${fmtWhole(mpi.lo)} \u2013 ${fmtWhole(mpi.hi)}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    `;
+  }).join("");
 
   const humanCard = `
     <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS.Humans}">
@@ -1184,6 +1230,35 @@ function renderMpiSummaryCards(series) {
   `;
 
   return adsCards + humanCard;
+}
+
+function renderStressTestTable(series) {
+  const rows = monthlySummaryRows(series);
+  const body = rows.flatMap(row =>
+    STRESS_METRIC_KEYS.map(metricKey => {
+      const stress = companyHumanStress(row, metricKey);
+      return `<tr>
+        <td>${escHtml(row.company)}</td>
+        <td>${escHtml(stress.metric.cardLabel)}</td>
+        <td>${fmtCount(stress.av.k)}</td>
+        <td>${fmtWhole(stress.av.median)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
+        <td>${fmtWhole(stress.human.lo)} \u2013 ${fmtWhole(stress.human.hi)}</td>
+        <td>${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</td>
+        <td><span class="stress-badge ${stress.className}">${stress.label}</span></td>
+      </tr>`;
+    })
+  ).join("");
+  return `
+    <h3>Sensitivity analysis</h3>
+    <p>
+Codex notes:
+The "AV/human ratio" column shows the widest interval implied by the AV MPI (95% CI) and the human interval.
+If the entire ratio is above 1, AV is robustly safer; if the entire ratio is below 1, AV is robustly worse; otherwise, ambiguous.
+    </p>
+    <table class="source-table stress-table">
+      <thead><tr><th>Company</th><th>Metric</th><th>k</th><th>MPI AV (median; 95%)</th><th>Human MPI</th><th>AV/human ratio</th><th>Verdict</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
 }
 
 function renderHumanBenchmarkTable() {
@@ -1660,6 +1735,7 @@ function escAttr(s) {
 
 function buildSanityChecks() {
   const rows = incidentsInVmtWindow();
+  const series = monthSeriesData();
   const companies = ADS_COMPANIES;
   const sections = [];
 
@@ -2087,6 +2163,9 @@ When Monthly reports aren't yet available, the effective VMT is scaled down by t
 
   // --- 11. Human benchmark derivations ---
   sections.push(renderHumanBenchmarkTable());
+
+  // --- 12. Skeptical stress test of conclusions ---
+  sections.push(renderStressTestTable(series));
 
   byId("sanity-checks").innerHTML = sections.join("");
 }

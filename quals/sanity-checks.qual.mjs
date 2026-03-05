@@ -109,6 +109,7 @@ const expectedHeadings = [
   "VMT sources",
   "Incident coverage for partial months",
   "human benchmark derivations",
+  "Examen conclusionum durum",
 ];
 
 for (const heading of expectedHeadings) {

@@ -322,6 +322,12 @@ tr:hover { background: #f8f8ff; }
   margin-bottom: 0.35rem;
   font-variant-numeric: tabular-nums;
 }
+.mpi-card-stress {
+  font-size: 0.72rem;
+  color: #5b6475;
+  margin-bottom: 0.45rem;
+  font-variant-numeric: tabular-nums;
+}
 .mpi-card-metric {
   margin-bottom: 0.4rem;
   font-size: 0.82rem;
@@ -391,6 +397,26 @@ tr:hover { background: #f8f8ff; }
 .source-table a {
   color: #7a001f;
   font-weight: 700;
+}
+.stress-table td:nth-child(3),
+.stress-table td:nth-child(4),
+.stress-table td:nth-child(5),
+.stress-table td:nth-child(6) {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.stress-badge {
+  font-weight: 700;
+}
+.stress-badge.safer {
+  color: #2a7a3a;
+}
+.stress-badge.worse {
+  color: #a04030;
+}
+.stress-badge.ambiguous {
+  color: #8a6f19;
 }
 #sanity-checks p {
   margin: 0.45rem 0 0.7rem;
