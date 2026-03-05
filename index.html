@@ -35,45 +35,6 @@
   <div class="month-legend" id="month-legend-speed"></div>
 </div>
 
-<!-- TO-DO: Human vet all new end-user copy in this AI explainer section. -->
-<details class="ai-explainer">
-  <summary>Explanatory Note (AI-generated text)</summary>
-  <p>This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the <a href="https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting">NHTSA SGO</a> time window (June 2025 through January 15, 2026). Incident data comes from both the current and <a href="https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv">archive</a> NHTSA CSVs so that June has full-month coverage.</p>
-  <p>Context:
-<a href="https://agifriday.substack.com/crashla/">agifriday.substack.com/crashla</a> and
-<a href="https://agifriday.substack.com/crashla2/">agifriday.substack.com/crashla2</a>
-  </p>
-  <p>Raw working sheet: <a href="https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871">Google Sheet (VMT + assumptions)</a></p>
-  <ul>
-    <li>Top chart: lines differentiated by thickness show MPI for each selected metric. Shaded fan bands show 50%/80%/95% Bayesian credible intervals; error bars show the effect of VMT uncertainty (<code>vmt_min</code>/<code>vmt_max</code>) on the posterior median.</li>
-    <li>Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.</li>
-    <li>Tesla mileage assumptions are anchored to tracker sources (<a href="https://robotaxitracker.com/">robotaxitracker.com</a> and <a href="https://robotaxi-safety-tracker.com/">robotaxi-safety-tracker.com</a>) and then aligned to this same NHTSA window for apples-to-apples comparison.</li>
-    <li>Waymo VMT is estimated by scaling <a href="https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting">California CPUC driverless VMT</a> (including deadhead) to all US cities using Waymo rider-only-mile city shares. Through Sep 2025 the error band is &plusmn;15%; for the extrapolated Oct&ndash;Jan period it widens to &plusmn;30%.</li>
-    <li>Zoox VMT uses rough estimates based on limited public data from <a href="https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting">CPUC quarterly reports</a> (California-only paid miles) plus <a href="https://techcrunch.com/2025/09/10/zoox-opens-its-las-vegas-robotaxi-service-to-the-public/">Las Vegas operations</a>. Error bands are 0.5x&ndash;2x because no month-level public VMT series exists.</li>
-    <li>All VMT data with rationale: <a href="https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871">Google Sheet (VMT + assumptions)</a></li>
-  </ul>
-  <!-- TO-DO: Human vet/translate all Latin below and update stale bullets above
-       (first bullet references "dashed line" and "dot-dash line" which are now
-       thickness-differentiated, and "error bars use vmt_min/vmt_max" which now
-       coexists with Bayesian CI bands). -->
-       <h2>Statistical Method</h2>
-  <ul>
-    <li>The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(&lambda; &middot; m), where &lambda; is the rate (incidents per mile) and m is VMT. Jeffreys prior: &lambda; ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: &lambda; | k, m ~ Gamma(k + 0.5, m). MPI = 1/&lambda;; quantiles are inverted via a monotone decreasing transformation.</li>
-    <li>The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper &lambda; quantile, and the upper MPI bound uses vmt_max with the lower &lambda; quantile. This yields the widest possible band.</li>
-    <li>For the partial month (January), VMT is pro-rated by the coverage fraction so that VMT and incident counts cover the same observation window.</li>
-    <li>The point estimate shown in the line is the Bayesian posterior median of 1/&lambda;, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.</li>
-    <li>Fault-weighted incidents (thin line): each incident contributes its fault fraction (equal-weight average of Claude, Codex, and Gemini estimates) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.</li>
-  </ul>
-  <h2>Human Comparison Methodology</h2>
-  <p>Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows <a href="https://arxiv.org/abs/2312.12675">Kusano &amp; Scanlon (2024)</a>, as discussed in <a href="https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos">this analysis</a>: surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from <a href="https://waymo.com/safety/impact/">Waymo&rsquo;s safety impact page</a> (127M rider-only miles through Sep 2025) are also incorporated.</p>
-  <ul>
-    <li><b>Band interpretation:</b> The low end uses Blincoe-adjusted rates (correcting for ~60% underreporting of minor crashes); the high end uses police-reported or observed rates. The true apples-to-apples MPI should fall within each band.</li>
-    <li><b>Surface streets, not nationwide:</b> Human benchmarks are restricted to surface streets in AV operating areas (higher crash rates, lower fatality rates than the national average), following the Kusano/Scanlon approach.</li>
-    <li><b>Hospitalization band is wide:</b> The SGO&rsquo;s &ldquo;W/ Hospitalization&rdquo; (transported to hospital, incl. ER visits for minor injuries) has no direct human equivalent. The band spans from the airbag-deployment benchmark (crashes with significant impact) to the suspected-serious-injury+ benchmark.</li>
-  </ul>
-  <div id="human-benchmark-table"></div>
-</details>
-
 <h2>Incident browser</h2>
 <div class="filters" id="filters"></div>
 <div class="incident-count" id="incident-count"></div>

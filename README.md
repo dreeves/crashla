@@ -142,6 +142,41 @@ can you make a file called faultfrac-MODEL.csv that, for every Report ID in nhts
 
 ---
 
+## [AI TEXT] Explanatory Note
+
+This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) time window (June 2025 through January 15, 2026). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June has full-month coverage.
+
+Context:
+[agifriday.substack.com/crashla](https://agifriday.substack.com/crashla/) and
+[agifriday.substack.com/crashla2](https://agifriday.substack.com/crashla2/)
+
+Raw working sheet: [Google Sheet (VMT + assumptions)](https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871)
+
+- Top chart: lines differentiated by thickness show MPI for each selected metric. Shaded fan bands show 50%/80%/95% Bayesian credible intervals; error bars show the effect of VMT uncertainty (`vmt_min`/`vmt_max`) on the posterior median.
+- Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.
+- Tesla mileage assumptions are anchored to tracker sources ([robotaxitracker.com](https://robotaxitracker.com/) and [robotaxi-safety-tracker.com](https://robotaxi-safety-tracker.com/)) and then aligned to this same NHTSA window for apples-to-apples comparison.
+- Waymo VMT is estimated by scaling [California CPUC driverless VMT](https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting) (including deadhead) to all US cities using Waymo rider-only-mile city shares. Through Sep 2025 the error band is +/-15%; for the extrapolated Oct-Jan period it widens to +/-30%.
+- Zoox VMT uses rough estimates based on limited public data from [CPUC quarterly reports](https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting) (California-only paid miles) plus [Las Vegas operations](https://techcrunch.com/2025/09/10/zoox-opens-its-las-vegas-robotaxi-service-to-the-public/). Error bands are 0.5x-2x because no month-level public VMT series exists.
+- All VMT data with rationale: [Google Sheet (VMT + assumptions)](https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871)
+
+### Statistical Method
+
+- The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(lambda * m), where lambda is the rate (incidents per mile) and m is VMT. Jeffreys prior: lambda ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: lambda | k, m ~ Gamma(k + 0.5, m). MPI = 1/lambda; quantiles are inverted via a monotone decreasing transformation.
+- The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper lambda quantile, and the upper MPI bound uses vmt_max with the lower lambda quantile. This yields the widest possible band.
+- For the partial month (January), VMT is pro-rated by the coverage fraction so that VMT and incident counts cover the same observation window.
+- The point estimate shown in the line is the Bayesian posterior median of 1/lambda, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.
+- Fault-weighted incidents (thin line): each incident contributes its fault fraction (equal-weight average of Claude, Codex, and Gemini estimates) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.
+
+### Human Comparison Methodology
+
+Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows [Kusano & Scanlon (2024)](https://arxiv.org/abs/2312.12675), as discussed in [this analysis](https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos): surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from [Waymo's safety impact page](https://waymo.com/safety/impact/) (127M rider-only miles through Sep 2025) are also incorporated.
+
+- **Band interpretation:** The low end uses Blincoe-adjusted rates (correcting for ~60% underreporting of minor crashes); the high end uses police-reported or observed rates. The true apples-to-apples MPI should fall within each band.
+- **Surface streets, not nationwide:** Human benchmarks are restricted to surface streets in AV operating areas (higher crash rates, lower fatality rates than the national average), following the Kusano/Scanlon approach.
+- **Hospitalization band is wide:** The SGO's "W/ Hospitalization" (transported to hospital, incl. ER visits for minor injuries) has no direct human equivalent. The band spans from the airbag-deployment benchmark (crashes with significant impact) to the suspected-serious-injury+ benchmark.
+
+---
+
 ## [AI TEXT] Comparison with Kelsey Piper's Waymo Safety Claims
 
 Kelsey Piper's article (Jan 16, 2026) argues Waymo is clearly safer than human drivers:

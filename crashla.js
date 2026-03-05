@@ -1772,31 +1772,43 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       <tbody>${vmtUncRows.join("")}</tbody>
     </table>`);
 
-  // --- 6. Poisson dispersion ---
+  // --- 6. Poisson dispersion (VMT-normalized) ---
+  // Pearson chi-squared dispersion test: X² = Σ(k_i - λ̂·m_i)² / (λ̂·m_i)
+  // where λ̂ = Σk_i / Σm_i is the MLE rate and m_i is monthly VMT.
+  // Under the Poisson model, X²/(n-1) ≈ 1.
   const dispRows = [];
   for (const co of companies) {
     const coVmt = vmtRows.filter(r => r.company === co);
-    const monthCounts = [];
+    const monthData = [];
     for (const vmtRow of coVmt) {
       const count = rows.filter(r =>
         r.company === co &&
         monthKeyFromIncidentLabel(r.date) === vmtRow.month).length;
-      monthCounts.push(count);
+      // Use effective VMT (calendar coverage * incident reporting completeness)
+      // to match the MPI calculation's Poisson rate estimation
+      monthData.push({count, vmt: vmtRow.vmtBest * vmtRow.coverage * vmtRow.incCov});
     }
-    if (monthCounts.length < 3) continue;
-    const mean = monthCounts.reduce((a, b) => a + b, 0) / monthCounts.length;
-    const variance = monthCounts.reduce((s, c) =>
-      s + (c - mean) * (c - mean), 0) / (monthCounts.length - 1);
-    const dispersion = mean > 0 ? (variance / mean).toFixed(2) : "\u2014";
-    const verdict = mean === 0 ? "\u2014"
-      : variance / mean < 0.5 ? "underdispersed"
-      : variance / mean < 2 ? "consistent with Poisson"
-      : variance / mean < 5 ? "mildly overdispersed"
+    if (monthData.length < 3) continue;
+    const totalK = monthData.reduce((s, d) => s + d.count, 0);
+    const totalM = monthData.reduce((s, d) => s + d.vmt, 0);
+    const lambdaHat = totalK / totalM;
+    let chiSq = 0;
+    for (const d of monthData) {
+      const expected = lambdaHat * d.vmt;
+      if (expected > 0) chiSq += (d.count - expected) ** 2 / expected;
+    }
+    const df = monthData.length - 1;
+    const dispersion = (chiSq / df).toFixed(2);
+    const rates = monthData.map(d =>
+      d.vmt > 0 ? (d.count / d.vmt * 1e6).toFixed(1) : "\u2014");
+    const verdict = chiSq / df < 0.5 ? "underdispersed"
+      : chiSq / df < 2 ? "consistent with Poisson"
+      : chiSq / df < 5 ? "mildly overdispersed"
       : "overdispersed";
     dispRows.push(`<tr>
       <td>${escHtml(co)}</td>
-      <td>${monthCounts.join(", ")}</td>
-      <td>${mean.toFixed(1)}</td>
+      <td>${rates.join(", ")}</td>
+      <td>${(lambdaHat * 1e6).toFixed(1)}</td>
       <td>${dispersion}</td>
       <td>${verdict}</td>
     </tr>`);
@@ -1806,20 +1818,22 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
 <p>
 For confidence bands we use a statistical model that assumes a Poisson process where incidents occur at a constant rate per mile.
 (Also, apologies that this is all miles. That's the data we have and it would be messier to convert it all.)
-Sanity check: the variance-to-mean ratio of monthly incident counts should be near 1 for a Poisson process.
-Overdispersion (ratio &gt;&gt; 1) could indicate reporting lags, changing conditions, or model misspecification.
-Note from Claude: this is a rough check since VMT varies across months, which itself induces some variance in raw counts.
+Here we check that assumption using a Pearson chi-squared dispersion test normalized by monthly VMT.
+A dispersion index near 1 supports the Poisson model; values much greater than 1 suggest that either something's awry or the robotaxis are getting better or worse.
 </p>
     <table>
       <thead><tr>
         <th>Company</th>
-        <th>Monthly counts</th>
-        <th>Mean</th>
-        <th>Var/Mean</th>
+        <th>Monthly rate (per M mi)</th>
+        <th>Overall rate</th>
+        <th>Dispersion index</th>
         <th>Assessment</th>
       </tr></thead>
       <tbody>${dispRows.join("")}</tbody>
     </table>`);
+
+  // --- 7. Human benchmark derivations ---
+  sections.push(renderHumanBenchmarkTable());
 
   byId("sanity-checks").innerHTML = sections.join("");
 }
@@ -1954,7 +1968,6 @@ function initTooltips() {
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(incidentData);
   buildMonthlyViews();
-  byId("human-benchmark-table").innerHTML = renderHumanBenchmarkTable();
   buildBrowser();
   buildSanityChecks();
   const modifiedPart = NHTSA_MODIFIED_DATE
