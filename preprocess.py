@@ -59,6 +59,7 @@ FIELDS = [
     "Weather - Rain",
     "Weather - Cloudy",
     "Weather - Partly Cloudy",
+    "Were All Passengers Belted?",
 ]
 
 # Shorter keys for the JSON output (greppable, pronounceable jargon)
@@ -84,6 +85,7 @@ KEY_MAP = {
     "Weather - Rain":                "wxRain",
     "Weather - Cloudy":              "wxCloudy",
     "Weather - Partly Cloudy":       "wxPartlyCloudy",
+    "Were All Passengers Belted?":   "belted",
 }
 
 # Contact area boolean columns in the NHTSA CSV.
@@ -678,6 +680,23 @@ def main():
     print(f"Injected {total} incidents into {INCIDENT_JS} and VMT into {VMT_JS}")
     for company, n in counts.most_common():
         print(f"  {company}: {n}")
+
+    # Passenger occupancy summary per company
+    print("\nPassenger occupancy at time of crash:")
+    for company in sorted(counts):
+        co_incidents = [r for r in incidents if r["company"] == company]
+        n = len(co_incidents)
+        with_pax = sum(1 for r in co_incidents
+                       if r["belted"] not in
+                       ("Subject Vehicle - No Passenger In Vehicle",
+                        "Unknown", ""))
+        no_pax = sum(1 for r in co_incidents
+                     if r["belted"] ==
+                     "Subject Vehicle - No Passenger In Vehicle")
+        unk = n - with_pax - no_pax
+        pct = f"{100*with_pax/n:.0f}%" if n else "n/a"
+        print(f"  {company}: {with_pax}/{n} with passenger ({pct})"
+              f"  [no passenger: {no_pax}, unknown: {unk}]")
 
 
 if __name__ == "__main__":

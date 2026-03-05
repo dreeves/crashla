@@ -1,4 +1,4 @@
-const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-03-03"/* NHTSA_FETCH_DATE_END */;
+const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-03-04"/* NHTSA_FETCH_DATE_END */;
 const NHTSA_MODIFIED_DATE = /* NHTSA_MODIFIED_DATE_START */"2026-02-17"/* NHTSA_MODIFIED_DATE_END */;
 const INCIDENT_DATA = /* INCIDENT_DATA_START */
 [
@@ -24,6 +24,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Unknown",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -58,6 +59,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -92,6 +94,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -126,6 +129,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -160,6 +164,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "",
     "fault": {
@@ -194,6 +199,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "",
     "fault": {
@@ -228,6 +234,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Unknown",
     "svHit": "right",
     "cpHit": "rear right",
     "fault": {
@@ -262,6 +269,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front right",
     "fault": {
@@ -296,6 +304,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Unknown",
     "svHit": "rear left+rear right",
     "cpHit": "front right",
     "fault": {
@@ -330,6 +339,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -364,6 +374,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -398,6 +409,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front+left",
     "cpHit": "front right",
     "fault": {
@@ -432,6 +444,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Unknown",
     "svHit": "left",
     "cpHit": "rear",
     "fault": {
@@ -466,6 +479,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "",
     "fault": {
@@ -500,6 +514,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front right",
     "fault": {
@@ -534,6 +549,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "No Passengers in Vehicle",
     "svHit": "rear left",
     "cpHit": "front right",
     "fault": {
@@ -568,6 +584,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "unknown",
     "fault": {
@@ -602,6 +619,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -636,6 +654,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -670,6 +689,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "No Passengers in Vehicle",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -704,6 +724,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "unknown",
     "fault": {
@@ -738,6 +759,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front right",
     "fault": {
@@ -772,6 +794,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "front",
     "fault": {
@@ -806,6 +829,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "No, see Narrative",
     "svHit": "right",
     "cpHit": "",
     "fault": {
@@ -840,6 +864,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "No Passengers in Vehicle",
     "svHit": "rear right",
     "cpHit": "front left",
     "fault": {
@@ -874,6 +899,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -908,6 +934,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -942,6 +969,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -976,6 +1004,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -1010,6 +1039,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -1044,6 +1074,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -1078,6 +1109,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -1112,6 +1144,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "left",
     "fault": {
@@ -1146,6 +1179,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -1180,6 +1214,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -1214,6 +1249,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Yes",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -1248,6 +1284,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -1282,6 +1319,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front right",
     "fault": {
@@ -1316,6 +1354,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -1350,6 +1389,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -1384,6 +1424,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -1418,6 +1459,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Yes",
     "svHit": "rear left",
     "cpHit": "",
     "fault": {
@@ -1452,6 +1494,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front right",
     "fault": {
@@ -1486,6 +1529,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "No, see Narrative",
     "svHit": "right",
     "cpHit": "left",
     "fault": {
@@ -1520,6 +1564,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -1554,6 +1599,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -1588,6 +1634,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -1622,6 +1669,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Yes",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -1656,6 +1704,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -1690,6 +1739,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "rear right",
     "fault": {
@@ -1724,6 +1774,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -1758,6 +1809,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -1792,6 +1844,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -1826,6 +1879,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Yes",
     "svHit": "rear right",
     "cpHit": "",
     "fault": {
@@ -1860,6 +1914,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "front left+right",
     "cpHit": "left",
     "fault": {
@@ -1894,6 +1949,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -1928,6 +1984,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -1962,6 +2019,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "unknown",
     "fault": {
@@ -1996,6 +2054,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "front left",
     "fault": {
@@ -2030,6 +2089,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2064,6 +2124,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
     "fault": {
@@ -2098,6 +2159,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "No Passengers in Vehicle",
     "svHit": "rear left",
     "cpHit": "",
     "fault": {
@@ -2132,6 +2194,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "front left",
     "fault": {
@@ -2166,6 +2229,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "No Passengers in Vehicle",
     "svHit": "front right",
     "cpHit": "rear left",
     "fault": {
@@ -2200,6 +2264,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2234,6 +2299,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right+right",
     "cpHit": "front right+rear right",
     "fault": {
@@ -2268,6 +2334,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "right",
     "cpHit": "",
     "fault": {
@@ -2302,6 +2369,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2336,6 +2404,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -2370,6 +2439,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -2404,6 +2474,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "rear right",
     "fault": {
@@ -2438,6 +2509,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "front right",
     "cpHit": "unknown",
     "fault": {
@@ -2472,6 +2544,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -2506,6 +2579,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "front right+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -2540,6 +2614,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2574,6 +2649,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right+bottom",
     "cpHit": "",
     "fault": {
@@ -2608,6 +2684,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2642,6 +2719,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -2676,6 +2754,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "front left",
     "fault": {
@@ -2710,6 +2789,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -2744,6 +2824,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "right",
     "fault": {
@@ -2778,6 +2859,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2812,6 +2894,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -2846,6 +2929,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -2880,6 +2964,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -2914,6 +2999,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2948,6 +3034,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -2982,6 +3069,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front left",
     "fault": {
@@ -3016,6 +3104,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -3050,6 +3139,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3084,6 +3174,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3118,6 +3209,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3152,6 +3244,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -3186,6 +3279,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -3220,6 +3314,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -3254,6 +3349,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -3288,6 +3384,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -3322,6 +3419,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "front",
     "fault": {
@@ -3356,6 +3454,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "front",
     "cpHit": "unknown",
     "fault": {
@@ -3390,6 +3489,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "rear",
     "fault": {
@@ -3424,6 +3524,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -3458,6 +3559,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3492,6 +3594,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3526,6 +3629,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front right",
     "fault": {
@@ -3560,6 +3664,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -3594,6 +3699,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -3628,6 +3734,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -3662,6 +3769,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3696,6 +3804,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -3730,6 +3839,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3764,6 +3874,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -3798,6 +3909,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -3832,6 +3944,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3866,6 +3979,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -3900,6 +4014,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front left",
     "fault": {
@@ -3934,6 +4049,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "unknown",
     "fault": {
@@ -3968,6 +4084,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4002,6 +4119,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -4036,6 +4154,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "unknown",
     "fault": {
@@ -4070,6 +4189,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4104,6 +4224,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4138,6 +4259,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4172,6 +4294,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -4206,6 +4329,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "right",
     "cpHit": "",
     "fault": {
@@ -4240,6 +4364,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -4274,6 +4399,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4308,6 +4434,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -4342,6 +4469,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "left",
     "fault": {
@@ -4376,6 +4504,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -4410,6 +4539,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -4444,6 +4574,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "unknown",
     "fault": {
@@ -4478,6 +4609,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4512,6 +4644,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4546,6 +4679,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4580,6 +4714,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -4614,6 +4749,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -4648,6 +4784,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -4682,6 +4819,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front+left",
     "cpHit": "front+left",
     "fault": {
@@ -4716,6 +4854,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "rear left",
     "fault": {
@@ -4750,6 +4889,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "rear right",
     "fault": {
@@ -4784,6 +4924,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -4818,6 +4959,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "left",
     "fault": {
@@ -4852,6 +4994,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -4886,6 +5029,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -4920,6 +5064,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -4954,6 +5099,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -4988,6 +5134,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -5022,6 +5169,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "left",
     "fault": {
@@ -5056,6 +5204,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "unknown",
     "fault": {
@@ -5090,6 +5239,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -5124,6 +5274,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "",
     "fault": {
@@ -5158,6 +5309,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front right",
     "fault": {
@@ -5192,6 +5344,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -5226,6 +5379,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "rear",
     "fault": {
@@ -5260,6 +5414,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "unknown",
     "fault": {
@@ -5294,6 +5449,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -5328,6 +5484,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front right",
     "fault": {
@@ -5362,6 +5519,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -5396,6 +5554,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "front",
     "cpHit": "left",
     "fault": {
@@ -5430,6 +5589,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front right",
     "fault": {
@@ -5464,6 +5624,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -5498,6 +5659,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "left",
     "fault": {
@@ -5532,6 +5694,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -5566,6 +5729,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -5600,6 +5764,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left+right",
     "fault": {
@@ -5634,6 +5799,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -5668,6 +5834,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "rear right",
     "fault": {
@@ -5702,6 +5869,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -5736,6 +5904,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -5770,6 +5939,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -5804,6 +5974,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front",
     "fault": {
@@ -5838,6 +6009,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -5872,6 +6044,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -5906,6 +6079,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right+rear right+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -5940,6 +6114,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "rear",
     "fault": {
@@ -5974,6 +6149,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -6008,6 +6184,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -6042,6 +6219,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -6076,6 +6254,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -6110,6 +6289,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -6144,6 +6324,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left+front right",
     "fault": {
@@ -6178,6 +6359,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "left",
     "fault": {
@@ -6212,6 +6394,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -6246,6 +6429,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "",
     "fault": {
@@ -6280,6 +6464,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -6314,6 +6499,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -6348,6 +6534,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -6382,6 +6569,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "rear",
     "fault": {
@@ -6416,6 +6604,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -6450,6 +6639,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -6484,6 +6674,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front",
     "fault": {
@@ -6518,6 +6709,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -6552,6 +6744,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front",
     "fault": {
@@ -6586,6 +6779,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -6620,6 +6814,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -6654,6 +6849,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -6688,6 +6884,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -6722,6 +6919,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -6756,6 +6954,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -6790,6 +6989,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -6824,6 +7024,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -6858,6 +7059,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -6892,6 +7094,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "",
     "fault": {
@@ -6926,6 +7129,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -6960,6 +7164,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -6994,6 +7199,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "unknown",
     "fault": {
@@ -7028,6 +7234,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -7062,6 +7269,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -7096,6 +7304,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front left",
     "fault": {
@@ -7130,6 +7339,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -7164,6 +7374,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -7198,6 +7409,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front right",
     "fault": {
@@ -7232,6 +7444,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -7266,6 +7479,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -7300,6 +7514,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -7334,6 +7549,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left+right",
     "cpHit": "right",
     "fault": {
@@ -7368,6 +7584,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front",
     "fault": {
@@ -7402,6 +7619,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -7436,6 +7654,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -7470,6 +7689,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -7504,6 +7724,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -7538,6 +7759,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -7572,6 +7794,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -7606,6 +7829,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -7640,6 +7864,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -7674,6 +7899,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -7708,6 +7934,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -7742,6 +7969,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "left",
     "fault": {
@@ -7776,6 +8004,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front right",
     "fault": {
@@ -7810,6 +8039,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -7844,6 +8074,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -7878,6 +8109,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -7912,6 +8144,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -7946,6 +8179,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right+rear right+bottom",
     "cpHit": "unknown",
     "fault": {
@@ -7980,6 +8214,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -8014,6 +8249,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right+rear left",
     "cpHit": "front",
     "fault": {
@@ -8048,6 +8284,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -8082,6 +8319,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -8116,6 +8354,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -8150,6 +8389,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -8184,6 +8424,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8218,6 +8459,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "rear left",
     "fault": {
@@ -8252,6 +8494,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8286,6 +8529,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -8320,6 +8564,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -8354,6 +8599,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8388,6 +8634,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8422,6 +8669,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8456,6 +8704,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -8490,6 +8739,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -8524,6 +8774,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -8558,6 +8809,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "unknown",
     "cpHit": "unknown",
     "fault": {
@@ -8592,6 +8844,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "unknown",
     "fault": {
@@ -8626,6 +8879,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "left",
     "fault": {
@@ -8660,6 +8914,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -8694,6 +8949,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8728,6 +8984,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "rear",
     "fault": {
@@ -8762,6 +9019,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "left",
     "fault": {
@@ -8796,6 +9054,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8830,6 +9089,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8864,6 +9124,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8898,6 +9159,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -8932,6 +9194,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -8966,6 +9229,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear right",
     "fault": {
@@ -9000,6 +9264,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "left",
     "fault": {
@@ -9034,6 +9299,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -9068,6 +9334,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -9102,6 +9369,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "rear right",
     "fault": {
@@ -9136,6 +9404,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front",
     "fault": {
@@ -9170,6 +9439,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -9204,6 +9474,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front left",
     "fault": {
@@ -9238,6 +9509,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -9272,6 +9544,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -9306,6 +9579,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -9340,6 +9614,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front",
     "fault": {
@@ -9374,6 +9649,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -9408,6 +9684,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -9442,6 +9719,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "unknown",
     "fault": {
@@ -9476,6 +9754,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -9510,6 +9789,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "unknown",
     "fault": {
@@ -9544,6 +9824,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -9578,6 +9859,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -9612,6 +9894,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "left",
     "fault": {
@@ -9646,6 +9929,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -9680,6 +9964,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "",
     "fault": {
@@ -9714,6 +9999,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "rear",
     "fault": {
@@ -9748,6 +10034,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -9782,6 +10069,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -9816,6 +10104,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -9850,6 +10139,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -9884,6 +10174,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -9918,6 +10209,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -9952,6 +10244,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -9986,6 +10279,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -10020,6 +10314,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front left",
     "fault": {
@@ -10054,6 +10349,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "rear",
     "fault": {
@@ -10088,6 +10384,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -10122,6 +10419,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -10156,6 +10454,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -10190,6 +10489,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "unknown",
     "cpHit": "unknown",
     "fault": {
@@ -10224,6 +10524,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10258,6 +10559,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -10292,6 +10594,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front",
     "fault": {
@@ -10326,6 +10629,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10360,6 +10664,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front right",
     "fault": {
@@ -10394,6 +10699,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "rear",
     "fault": {
@@ -10428,6 +10734,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -10462,6 +10769,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -10496,6 +10804,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -10530,6 +10839,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear left",
     "cpHit": "",
     "fault": {
@@ -10564,6 +10874,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -10598,6 +10909,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear left",
     "cpHit": "",
     "fault": {
@@ -10632,6 +10944,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10666,6 +10979,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10700,6 +11014,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -10734,6 +11049,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front",
     "fault": {
@@ -10768,6 +11084,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10802,6 +11119,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10836,6 +11154,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -10870,6 +11189,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10904,6 +11224,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -10938,6 +11259,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front",
     "fault": {
@@ -10972,6 +11294,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front left",
     "fault": {
@@ -11006,6 +11329,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -11040,6 +11364,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11074,6 +11399,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front",
     "fault": {
@@ -11108,6 +11434,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11142,6 +11469,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11176,6 +11504,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "unknown",
     "fault": {
@@ -11210,6 +11539,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11244,6 +11574,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -11278,6 +11609,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -11312,6 +11644,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -11346,6 +11679,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -11380,6 +11714,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear",
     "fault": {
@@ -11414,6 +11749,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -11448,6 +11784,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "rear left",
     "fault": {
@@ -11482,6 +11819,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "rear",
     "fault": {
@@ -11516,6 +11854,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front right",
     "fault": {
@@ -11550,6 +11889,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "",
     "fault": {
@@ -11584,6 +11924,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "rear right",
     "fault": {
@@ -11618,6 +11959,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11652,6 +11994,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11686,6 +12029,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front left",
     "fault": {
@@ -11720,6 +12064,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -11754,6 +12099,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11788,6 +12134,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -11822,6 +12169,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11856,6 +12204,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -11890,6 +12239,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "unknown",
     "fault": {
@@ -11924,6 +12274,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "rear",
     "fault": {
@@ -11958,6 +12309,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -11992,6 +12344,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "unknown",
     "fault": {
@@ -12026,6 +12379,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -12060,6 +12414,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front",
     "fault": {
@@ -12094,6 +12449,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
     "fault": {
@@ -12128,6 +12484,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -12162,6 +12519,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front right",
     "fault": {
@@ -12196,6 +12554,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12230,6 +12589,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12264,6 +12624,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12298,6 +12659,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -12332,6 +12694,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "left",
     "fault": {
@@ -12366,6 +12729,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12400,6 +12764,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -12434,6 +12799,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12468,6 +12834,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -12502,6 +12869,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "rear right",
     "fault": {
@@ -12536,6 +12904,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "unknown",
     "fault": {
@@ -12570,6 +12939,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12604,6 +12974,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -12638,6 +13009,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear left",
     "fault": {
@@ -12672,6 +13044,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12706,6 +13079,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front right",
     "fault": {
@@ -12740,6 +13114,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -12774,6 +13149,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -12808,6 +13184,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -12842,6 +13219,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
     "fault": {
@@ -12876,6 +13254,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -12910,6 +13289,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -12944,6 +13324,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -12978,6 +13359,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -13012,6 +13394,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -13046,6 +13429,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13080,6 +13464,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -13114,6 +13499,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -13148,6 +13534,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -13182,6 +13569,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -13216,6 +13604,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -13250,6 +13639,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13284,6 +13674,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "right",
     "fault": {
@@ -13318,6 +13709,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -13352,6 +13744,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13386,6 +13779,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "",
     "fault": {
@@ -13420,6 +13814,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -13454,6 +13849,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -13488,6 +13884,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13522,6 +13919,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -13556,6 +13954,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13590,6 +13989,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "rear",
     "fault": {
@@ -13624,6 +14024,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -13658,6 +14059,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear left",
     "fault": {
@@ -13692,6 +14094,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13726,6 +14129,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
     "fault": {
@@ -13760,6 +14164,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "rear",
     "fault": {
@@ -13794,6 +14199,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -13828,6 +14234,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "rear right",
     "fault": {
@@ -13862,6 +14269,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13896,6 +14304,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -13930,6 +14339,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -13964,6 +14374,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -13998,6 +14409,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -14032,6 +14444,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -14066,6 +14479,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -14100,6 +14514,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -14134,6 +14549,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -14168,6 +14584,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -14202,6 +14619,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear",
     "fault": {
@@ -14236,6 +14654,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -14270,6 +14689,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -14304,6 +14724,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -14338,6 +14759,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "right",
     "fault": {
@@ -14372,6 +14794,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front left",
     "fault": {
@@ -14406,6 +14829,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "rear",
     "fault": {
@@ -14440,6 +14864,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -14474,6 +14899,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "unknown",
     "fault": {
@@ -14508,6 +14934,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "unknown",
     "fault": {
@@ -14542,6 +14969,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -14576,6 +15004,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -14610,6 +15039,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -14644,6 +15074,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -14678,6 +15109,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -14712,6 +15144,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "rear right",
     "fault": {
@@ -14746,6 +15179,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -14780,6 +15214,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -14814,6 +15249,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
     "fault": {
@@ -14848,6 +15284,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -14882,6 +15319,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -14916,6 +15354,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -14950,6 +15389,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear left",
     "cpHit": "left",
     "fault": {
@@ -14984,6 +15424,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -15018,6 +15459,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -15052,6 +15494,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -15086,6 +15529,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -15120,6 +15564,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -15154,6 +15599,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front",
     "fault": {
@@ -15188,6 +15634,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -15222,6 +15669,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -15256,6 +15704,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -15290,6 +15739,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -15324,6 +15774,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -15358,6 +15809,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear",
     "fault": {
@@ -15392,6 +15844,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -15426,6 +15879,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "right",
     "fault": {
@@ -15460,6 +15914,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -15494,6 +15949,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -15528,6 +15984,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -15562,6 +16019,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "right",
     "fault": {
@@ -15596,6 +16054,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -15630,6 +16089,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
     "fault": {
@@ -15664,6 +16124,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -15698,6 +16159,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "",
     "fault": {
@@ -15732,6 +16194,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -15766,6 +16229,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -15800,6 +16264,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -15834,6 +16299,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "right",
     "fault": {
@@ -15868,6 +16334,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "rear",
     "fault": {
@@ -15902,6 +16369,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -15936,6 +16404,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -15970,6 +16439,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16004,6 +16474,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front left",
     "fault": {
@@ -16038,6 +16509,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -16072,6 +16544,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -16106,6 +16579,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -16140,6 +16614,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -16174,6 +16649,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
     "fault": {
@@ -16208,6 +16684,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front right",
     "fault": {
@@ -16242,6 +16719,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16276,6 +16754,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -16310,6 +16789,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16344,6 +16824,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
     "fault": {
@@ -16378,6 +16859,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -16412,6 +16894,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
     "fault": {
@@ -16446,6 +16929,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front left",
     "fault": {
@@ -16480,6 +16964,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front left",
     "fault": {
@@ -16514,6 +16999,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
     "fault": {
@@ -16548,6 +17034,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "right",
     "cpHit": "front",
     "fault": {
@@ -16582,6 +17069,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front left",
     "fault": {
@@ -16616,6 +17104,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear left",
     "cpHit": "rear",
     "fault": {
@@ -16650,6 +17139,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16684,6 +17174,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16718,6 +17209,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16752,6 +17244,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front right",
     "fault": {
@@ -16786,6 +17279,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -16820,6 +17314,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16854,6 +17349,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -16888,6 +17384,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -16922,6 +17419,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -16956,6 +17454,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -16990,6 +17489,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front right",
     "fault": {
@@ -17024,6 +17524,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -17058,6 +17559,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -17092,6 +17594,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "unknown",
     "fault": {
@@ -17126,6 +17629,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -17160,6 +17664,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "unknown",
     "fault": {
@@ -17194,6 +17699,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -17228,6 +17734,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -17262,6 +17769,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front",
     "fault": {
@@ -17296,6 +17804,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -17330,6 +17839,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front",
     "fault": {
@@ -17364,6 +17874,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front left",
     "fault": {
@@ -17398,6 +17909,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
     "fault": {
@@ -17432,6 +17944,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -17466,6 +17979,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "Y",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -17500,6 +18014,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front left",
     "fault": {
@@ -17534,6 +18049,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "front",
     "fault": {
@@ -17568,6 +18084,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -17602,6 +18119,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "No Passengers in Vehicle",
     "svHit": "rear left",
     "cpHit": "front right",
     "fault": {
@@ -17636,6 +18154,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "",
     "fault": {
@@ -17670,6 +18189,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
     "fault": {
@@ -17704,6 +18224,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front+left",
     "cpHit": "front left+front right",
     "fault": {
@@ -17738,6 +18259,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -17772,6 +18294,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "top+rear",
     "cpHit": "front",
     "fault": {
@@ -17806,6 +18329,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left+front right",
     "cpHit": "rear+rear right",
     "fault": {
@@ -17840,6 +18364,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -17874,6 +18399,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left+rear",
     "cpHit": "front left",
     "fault": {
@@ -17908,6 +18434,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear+rear right",
     "cpHit": "front left+front right",
     "fault": {
@@ -17942,6 +18469,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
     "fault": {
@@ -17976,6 +18504,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left+rear right",
     "cpHit": "front+front right",
     "fault": {
@@ -18010,6 +18539,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left+front right",
     "cpHit": "rear+rear right",
     "fault": {

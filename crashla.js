@@ -1555,6 +1555,57 @@ function escAttr(s) {
   return escHtml(s).replace(/"/g, "&quot;");
 }
 
+// --- Sanity Checks ---
+
+function buildSanityChecks() {
+  const rows = incidentsInVmtWindow();
+  const companies = ADS_COMPANIES;
+  const tableRows = [];
+  for (const co of companies) {
+    const coRows = rows.filter(r => r.company === co);
+    const n = coRows.length;
+    if (n === 0) continue;
+    const withPax = coRows.filter(r =>
+      r.belted !== "Subject Vehicle - No Passenger In Vehicle" &&
+      r.belted !== "Unknown" && r.belted !== "").length;
+    const noPax = coRows.filter(r =>
+      r.belted === "Subject Vehicle - No Passenger In Vehicle").length;
+    const unk = n - withPax - noPax;
+    // Range: low assumes all unknowns had no passenger, high assumes all did
+    const pctLo = Math.round(100 * withPax / n);
+    const pctHi = Math.round(100 * (withPax + unk) / n);
+    const pctStr = pctLo === pctHi
+      ? `${pctLo}%`
+      : `${pctLo}\u2013${pctHi}%`;
+    tableRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${withPax}</td>
+      <td>${noPax}</td>
+      <td>${unk}</td>
+      <td>${n}</td>
+      <td>${pctStr}</td>
+    </tr>`);
+  }
+  byId("sanity-checks").innerHTML = `
+<p>
+Vehicle Miles Traveled (VMT) is often reported as paid miles only, but the proper denominator for the NHTSA incident data includes miles driven when the car is empty (aka deadhead miles).
+So we adjust the VMT to include deadhead miles.
+This table shows the fraction of incidents for which a passenger was in the autonomous vehicle (AV).
+For comparison, for Waymo, CPUC data shows ~56% of VMT is revenue (P3) miles.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>With passenger</th>
+        <th>No passenger</th>
+        <th>Unknown</th>
+        <th>Total</th>
+        <th>% with passenger</th>
+      </tr></thead>
+      <tbody>${tableRows.join("")}</tbody>
+    </table>`;
+}
+
 // --- Floating tooltip (works on mobile tap + desktop hover) ---
 
 function initTooltips() {
@@ -1687,8 +1738,9 @@ function initTooltips() {
   buildMonthlyViews();
   byId("human-benchmark-table").innerHTML = renderHumanBenchmarkTable();
   buildBrowser();
+  buildSanityChecks();
   const modifiedPart = NHTSA_MODIFIED_DATE
-    ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
+    ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE} (per HTTP header).`
     : "";
   byId("colophon").textContent =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart}`;
