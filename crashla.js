@@ -1560,7 +1560,10 @@ function escAttr(s) {
 function buildSanityChecks() {
   const rows = incidentsInVmtWindow();
   const companies = ADS_COMPANIES;
-  const tableRows = [];
+  const sections = [];
+
+  // --- 1. Passenger presence (existing) ---
+  const paxTableRows = [];
   for (const co of companies) {
     const coRows = rows.filter(r => r.company === co);
     const n = coRows.length;
@@ -1577,7 +1580,7 @@ function buildSanityChecks() {
     const pctStr = pctLo === pctHi
       ? `${pctLo}%`
       : `${pctLo}\u2013${pctHi}%`;
-    tableRows.push(`<tr>
+    paxTableRows.push(`<tr>
       <td>${escHtml(co)}</td>
       <td>${withPax}</td>
       <td>${noPax}</td>
@@ -1586,11 +1589,12 @@ function buildSanityChecks() {
       <td>${pctStr}</td>
     </tr>`);
   }
-  byId("sanity-checks").innerHTML = `
+  sections.push(`
+<h3>Passenger presence</h3>
 <p>
 Vehicle Miles Traveled (VMT) is often reported as paid miles only, but the proper denominator for the NHTSA incident data includes miles driven when the car is empty (aka deadhead miles).
 So we adjust the VMT to include deadhead miles.
-This table shows the fraction of incidents for which a passenger was in the autonomous vehicle (AV).
+This table shows the fraction of NHTSA incidents for which a passenger was in the autonomous vehicle (AV).
 For comparison, for Waymo, CPUC data shows ~56% of VMT is revenue (P3) miles.
 </p>
     <table>
@@ -1602,8 +1606,222 @@ For comparison, for Waymo, CPUC data shows ~56% of VMT is revenue (P3) miles.
         <th>Total</th>
         <th>% with passenger</th>
       </tr></thead>
-      <tbody>${tableRows.join("")}</tbody>
-    </table>`;
+      <tbody>${paxTableRows.join("")}</tbody>
+    </table>`);
+
+  // --- 2. Narrative redaction (CBI) ---
+  const cbiTableRows = [];
+  for (const co of companies) {
+    const coRows = rows.filter(r => r.company === co);
+    const n = coRows.length;
+    if (n === 0) continue;
+    const cbiCount = coRows.filter(r => r.narrativeCbi === "Y").length;
+    const pct = Math.round(100 * cbiCount / n);
+    cbiTableRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${cbiCount}</td>
+      <td>${n - cbiCount}</td>
+      <td>${n}</td>
+      <td>${pct}%</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>Narrative redaction</h3>
+<p>
+Companies are allowed to redact details of incidents by calling them 
+Confidential Business Information (CBI).
+Tesla does this much more than the others.
+It makes it hard to estimate fault, so we've tried to guess based on data we do have, like speed of the AV and where what part of which car hit what.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>Redacted (CBI)</th>
+        <th>Full narrative</th>
+        <th>Total</th>
+        <th>% redacted</th>
+      </tr></thead>
+      <tbody>${cbiTableRows.join("")}</tbody>
+    </table>`);
+
+  // --- 3. Fault model agreement ---
+  const faultAgreeRows = [];
+  for (const co of companies) {
+    const coRows = rows.filter(r => r.company === co);
+    const n = coRows.length;
+    if (n === 0) continue;
+    let sumMaxSpread = 0;
+    let sumVariance = 0;
+    let closeAgree = 0;
+    for (const r of coRows) {
+      const vals = [r.fault.claude, r.fault.codex, r.fault.gemini];
+      const spread = Math.max(...vals) - Math.min(...vals);
+      sumMaxSpread += spread;
+      sumVariance += weightedFaultVarianceFromValues(vals[0], vals[1], vals[2]);
+      if (spread <= 0.1) closeAgree++;
+    }
+    const avgSpread = (sumMaxSpread / n).toFixed(2);
+    const rmsd = Math.sqrt(sumVariance / n).toFixed(2);
+    const agreePct = Math.round(100 * closeAgree / n);
+    faultAgreeRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${avgSpread}</td>
+      <td>${rmsd}</td>
+      <td>${agreePct}%</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>Fault variance</h3>
+<p>
+We estimate fault by averaging the assessment of three different LLMs (Claude Opus 4.6, GPT-Codex-5.3-Thinking, Gemini 3.1 Pro).
+We record this as a fault fraction for each incident: 
+the fractional/probalistic blame we subjectively assign to the AI driver specifically.
+Fault of the AV passenger doesn't count, like opening a door into traffic.
+Nor do mechanical failures like the wheels falling off the car count as the AV's fault.
+Sensor failures do count as the fault of the AV.
+<br>&nbsp;<br>
+</p>
+<p>
+"Avg max spread" is the average of (max &minus; min) across the three models per incident.
+"RMSD" is the root-mean-square deviation of individual model scores from their per-incident mean.
+"Close agreement" is the fraction of incidents where all three models are within 0.1 of each other.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>Avg max spread</th>
+        <th>RMSD</th>
+        <th>Close agreement (&le;0.1)</th>
+      </tr></thead>
+      <tbody>${faultAgreeRows.join("")}</tbody>
+    </table>`);
+
+  // --- 4. Severity breakdown ---
+  const sevTableRows = [];
+  for (const co of companies) {
+    const coRows = rows.filter(r => r.company === co);
+    const n = coRows.length;
+    if (n === 0) continue;
+    const propDmg = coRows.filter(r =>
+      !INJURY_SEVERITIES.has(r.severity)).length;
+    const injOnly = coRows.filter(r =>
+      INJURY_SEVERITIES.has(r.severity) &&
+      !HOSPITALIZATION_SEVERITIES.has(r.severity)).length;
+    const hospOnly = coRows.filter(r =>
+      HOSPITALIZATION_SEVERITIES.has(r.severity) &&
+      r.severity !== "Fatality").length;
+    const fatal = coRows.filter(r => r.severity === "Fatality").length;
+    sevTableRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${propDmg} (${Math.round(100 * propDmg / n)}%)</td>
+      <td>${injOnly} (${Math.round(100 * injOnly / n)}%)</td>
+      <td>${hospOnly} (${Math.round(100 * hospOnly / n)}%)</td>
+      <td>${fatal} (${Math.round(100 * fatal / n)}%)</td>
+      <td>${n}</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>Severity breakdown</h3>
+<p>
+(Note that the one fatality here was not the fault of the AV, which was stationary at the time.)
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>Property damage only</th>
+        <th>Injury (no hosp.)</th>
+        <th>Hospitalization</th>
+        <th>Fatality</th>
+        <th>Total</th>
+      </tr></thead>
+      <tbody>${sevTableRows.join("")}</tbody>
+    </table>`);
+
+  // --- 5. VMT uncertainty ---
+  const vmtUncRows = [];
+  for (const co of companies) {
+    const coVmt = vmtRows.filter(r => r.company === co);
+    if (coVmt.length === 0) continue;
+    const totalMin = coVmt.reduce((s, r) => s + r.vmtMin * r.coverage, 0);
+    const totalBest = coVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
+    const totalMax = coVmt.reduce((s, r) => s + r.vmtMax * r.coverage, 0);
+    const ratio = (totalMax / totalMin).toFixed(1);
+    vmtUncRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${fmtMiles(totalMin)}</td>
+      <td>${fmtMiles(totalBest)}</td>
+      <td>${fmtMiles(totalMax)}</td>
+      <td>${ratio}x</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>VMT uncertainty</h3>
+<p>
+Below is the total adjusted Vehicle Miles Traveled (VMT) for each company across the NHTSA window, showing low/central/high estimates.
+The "range ratio" (max &divide; min) is a measure of uncertainty in the VMT numbers.
+For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be off by up to a factor of 2.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>VMT low</th>
+        <th>VMT central</th>
+        <th>VMT high</th>
+        <th>Range ratio</th>
+      </tr></thead>
+      <tbody>${vmtUncRows.join("")}</tbody>
+    </table>`);
+
+  // --- 6. Poisson dispersion ---
+  const dispRows = [];
+  for (const co of companies) {
+    const coVmt = vmtRows.filter(r => r.company === co);
+    const monthCounts = [];
+    for (const vmtRow of coVmt) {
+      const count = rows.filter(r =>
+        r.company === co &&
+        monthKeyFromIncidentLabel(r.date) === vmtRow.month).length;
+      monthCounts.push(count);
+    }
+    if (monthCounts.length < 3) continue;
+    const mean = monthCounts.reduce((a, b) => a + b, 0) / monthCounts.length;
+    const variance = monthCounts.reduce((s, c) =>
+      s + (c - mean) * (c - mean), 0) / (monthCounts.length - 1);
+    const dispersion = mean > 0 ? (variance / mean).toFixed(2) : "\u2014";
+    const verdict = mean === 0 ? "\u2014"
+      : variance / mean < 0.5 ? "underdispersed"
+      : variance / mean < 2 ? "consistent with Poisson"
+      : variance / mean < 5 ? "mildly overdispersed"
+      : "overdispersed";
+    dispRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${monthCounts.join(", ")}</td>
+      <td>${mean.toFixed(1)}</td>
+      <td>${dispersion}</td>
+      <td>${verdict}</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>Poisson dispersion</h3>
+<p>
+For confidence bands we use a statistical model that assumes a Poisson process where incidents occur at a constant rate per mile.
+(Also, apologies that this is all miles. That's the data we have and it would be messier to convert it all.)
+Sanity check: the variance-to-mean ratio of monthly incident counts should be near 1 for a Poisson process.
+Overdispersion (ratio &gt;&gt; 1) could indicate reporting lags, changing conditions, or model misspecification.
+Note: this is a rough check since VMT varies across months, which itself induces some variance in raw counts.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>Monthly counts</th>
+        <th>Mean</th>
+        <th>Var/Mean</th>
+        <th>Assessment</th>
+      </tr></thead>
+      <tbody>${dispRows.join("")}</tbody>
+    </table>`);
+
+  byId("sanity-checks").innerHTML = sections.join("");
 }
 
 // --- Floating tooltip (works on mobile tap + desktop hover) ---
