@@ -180,6 +180,9 @@ tr:hover { background: #f8f8ff; }
   margin-top: 0.3rem;
   font-size: 0.82rem;
 }
+#month-legend-speed {
+  row-gap: 0.25rem;
+}
 #month-legend-mpi-companies {
   gap: 1.5rem;
 }
@@ -388,6 +391,9 @@ tr:hover { background: #f8f8ff; }
 .source-table a {
   color: #7a001f;
   font-weight: 700;
+}
+#sanity-checks p {
+  margin: 0.45rem 0 0.7rem;
 }
 .mpi-card-metric.highlighted {
   background: #eef3ff;

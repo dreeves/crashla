@@ -1683,7 +1683,6 @@ the fractional/probalistic blame we subjectively assign to the AI driver specifi
 Fault of the AV passenger doesn't count, like opening a door into traffic.
 Nor do mechanical failures like the wheels falling off the car count as the AV's fault.
 Sensor failures do count as the fault of the AV.
-<br>&nbsp;<br>
 </p>
 <p>
 "Avg max spread" is the average of (max &minus; min) across the three models per incident.
