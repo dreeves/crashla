@@ -1808,7 +1808,7 @@ For confidence bands we use a statistical model that assumes a Poisson process w
 (Also, apologies that this is all miles. That's the data we have and it would be messier to convert it all.)
 Sanity check: the variance-to-mean ratio of monthly incident counts should be near 1 for a Poisson process.
 Overdispersion (ratio &gt;&gt; 1) could indicate reporting lags, changing conditions, or model misspecification.
-Note: this is a rough check since VMT varies across months, which itself induces some variance in raw counts.
+Note from Claude: this is a rough check since VMT varies across months, which itself induces some variance in raw counts.
 </p>
     <table>
       <thead><tr>
