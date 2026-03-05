@@ -1835,7 +1835,153 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
       <tbody>${dispRows.join("")}</tbody>
     </table>`);
 
-  // --- 7. Human benchmark derivations ---
+  // --- 7. Reporting threshold asymmetry ---
+  const rptRows = [];
+  for (const co of companies) {
+    const coRows = rows.filter(r => r.company === co);
+    const n = coRows.length;
+    if (n === 0) continue;
+    const zeroMph = coRows.filter(r => r.speed === 0).length;
+    const stopped = coRows.filter(r => r.svMovement === "Stopped").length;
+    const propDmgOnly = coRows.filter(r =>
+      !INJURY_SEVERITIES.has(r.severity)).length;
+    rptRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${zeroMph} (${Math.round(100 * zeroMph / n)}%)</td>
+      <td>${stopped} (${Math.round(100 * stopped / n)}%)</td>
+      <td>${propDmgOnly} (${Math.round(100 * propDmgOnly / n)}%)</td>
+      <td>${n}</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>Reporting threshold disparities</h3>
+<p>
+It's possible that, as a totally arbitrary example, Waymo is more fastidious in what it reports to NHTSA.
+Certainly all these companies are reporting more incidents than human drivers do.
+A high fraction of 0-mph incidents suggests a company reports more minor events
+This inflates the company's raw incident count relative to others and relative to the human baseline.
+The "nonstationary" MPI metric filters these out.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>Speed = 0 mph</th>
+        <th>AV stopped</th>
+        <th>Property damage only</th>
+        <th>Total</th>
+      </tr></thead>
+      <tbody>${rptRows.join("")}</tbody>
+    </table>`);
+
+  // --- 8. Geographic scope ---
+  const geoByCompany = {};
+  for (const co of companies) {
+    const coRows = rows.filter(r => r.company === co);
+    const cities = {};
+    for (const r of coRows) {
+      const loc = r.city && r.state ? (r.city + ", " + r.state) : "Unknown";
+      cities[loc] = (cities[loc] || 0) + 1;
+    }
+    const sorted = Object.entries(cities).sort((a, b) => b[1] - a[1]);
+    geoByCompany[co] = sorted;
+  }
+  const geoRows = [];
+  for (const co of companies) {
+    const locs = geoByCompany[co];
+    if (locs.length === 0) continue;
+    const cityList = locs.map(([loc, cnt]) =>
+      `${escHtml(loc)}\u00a0(${cnt})`).join(", ");
+    geoRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${locs.length}</td>
+      <td>${cityList}</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>Geography</h3>
+<p>
+Human crash rates vary by city, presumably.
+Maybe that affects AVs too?
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th># cities</th>
+        <th>Cities (incident count)</th>
+      </tr></thead>
+      <tbody>${geoRows.join("")}</tbody>
+    </table>`);
+
+  // --- 9. VMT sources ---
+  const vmtSrcRows = [];
+  for (const co of companies) {
+    const coVmt = vmtRows.filter(r => r.company === co);
+    if (coVmt.length === 0) continue;
+    // Use the rationale from the first row (they're all the same per company)
+    const rationales = [...new Set(coVmt.map(r => r.rationale).filter(Boolean))];
+    const ratStr = rationales.map(r => escHtml(r)).join("<br>");
+    vmtSrcRows.push(`<tr>
+      <td>${escHtml(co)}</td>
+      <td>${ratStr}</td>
+    </tr>`);
+  }
+  sections.push(`
+<h3>VMT sources</h3>
+<p>
+Where the Vehicle Miles Traveled (VMT) estimates come from for each company.
+These are the denominators in every miles per incident (MPI) calculation, so any errors here matter a lot.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>Source and methodology</th>
+      </tr></thead>
+      <tbody>${vmtSrcRows.join("")}</tbody>
+    </table>`);
+
+  // --- 10. Incident coverage for partial months ---
+  const icRows = [];
+  for (const co of companies) {
+    const coVmt = vmtRows.filter(r => r.company === co);
+    const partial = coVmt.filter(r => r.incCov < 1);
+    if (partial.length === 0) {
+      icRows.push(`<tr>
+        <td>${escHtml(co)}</td>
+        <td colspan="4">All months have full incident coverage</td>
+      </tr>`);
+      continue;
+    }
+    for (const row of partial) {
+      icRows.push(`<tr>
+        <td>${escHtml(co)}</td>
+        <td>${escHtml(row.month)}</td>
+        <td>${(row.incCov * 100).toFixed(1)}%</td>
+        <td>${(row.incCovMin * 100).toFixed(1)}%\u2013${(row.incCovMax * 100).toFixed(1)}%</td>
+        <td>${(row.coverage * 100).toFixed(1)}%</td>
+      </tr>`);
+    }
+  }
+  sections.push(`
+<h3>Incident coverage for partial months</h3>
+<p>
+"Calendar coverage" is the fraction of the month in the window (e.g., 15/31 &approx; 48%).
+"Incident coverage" estimates what fraction of incidents from that period have actually been reported.
+Claude notes: 
+NHTSA has two reporting tracks: "5-Day" (filed within 5 days of becoming aware) and "Monthly" (filed monthly in arrears).
+When Monthly reports aren't yet available, the effective VMT is scaled down by the incident coverage factor so the Poisson model accounts for missing reports.
+</p>
+    <table>
+      <thead><tr>
+        <th>Company</th>
+        <th>Month</th>
+        <th>Incident coverage (best)</th>
+        <th>Range</th>
+        <th>Calendar coverage</th>
+      </tr></thead>
+      <tbody>${icRows.join("")}</tbody>
+    </table>`);
+
+  // --- 11. Human benchmark derivations ---
   sections.push(renderHumanBenchmarkTable());
 
   byId("sanity-checks").innerHTML = sections.join("");
