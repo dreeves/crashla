@@ -1801,9 +1801,12 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
     const dispersion = (chiSq / df).toFixed(2);
     const rates = monthData.map(d =>
       d.vmt > 0 ? (d.count / d.vmt * 1e6).toFixed(1) : "\u2014");
-    const verdict = chiSq / df < 0.5 ? "underdispersed"
-      : chiSq / df < 2 ? "consistent with Poisson"
-      : chiSq / df < 5 ? "mildly overdispersed"
+    // With few total incidents the test has no power; flag that
+    const d = chiSq / df;
+    const verdict = totalK < 20 ? "too few incidents to tell"
+      : d < 0.5 ? "underdispersed"
+      : d < 2 ? "consistent with Poisson"
+      : d < 5 ? "mildly overdispersed"
       : "overdispersed";
     dispRows.push(`<tr>
       <td>${escHtml(co)}</td>
