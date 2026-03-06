@@ -159,20 +159,20 @@ Resultata: ratio range was ${plain.byCompany.Waymo.atfault.ratioLo}x to ${plain.
 );
 
 assert.ok(
-  plain.summaryCardHtml.includes("Examen (omnia):") &&
-    plain.summaryCardHtml.includes("peior robuste") &&
-    plain.summaryCardHtml.includes("ambiguum"),
+  plain.summaryCardHtml.includes("Overall:") &&
+    plain.summaryCardHtml.includes("robustly worse") &&
+    plain.summaryCardHtml.includes("ambiguous"),
   `Replicata: render top summary cards with stress labels.
-Expectata: summary cards include the Latin stress label plus both worse and ambiguous verdicts.
+Expectata: summary cards include the English stress label plus both worse and ambiguous verdicts.
 Resultata: summary card HTML snippet was ${JSON.stringify(plain.summaryCardHtml.slice(0, 400))}.`,
 );
 
 assert.ok(
-  plain.sanityHtml.includes("Examen conclusionum durum") &&
-    plain.sanityHtml.includes("Ratio AV/homines") &&
-    plain.sanityHtml.includes("tutior robuste"),
+  plain.sanityHtml.includes("Sensitivity analysis") &&
+    plain.sanityHtml.includes("AV/human ratio") &&
+    plain.sanityHtml.includes("robustly safer"),
   `Replicata: render skeptical stress-test sanity subsection.
-Expectata: sanity HTML includes the new heading, ratio column, and safer verdict label.
+Expectata: sanity HTML includes the English heading, ratio column, and safer verdict label.
 Resultata: sanity HTML snippet was ${JSON.stringify(plain.sanityHtml.slice(0, 500))}.`,
 );
 
