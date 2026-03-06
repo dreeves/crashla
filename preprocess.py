@@ -35,6 +35,11 @@ FAULT_INPUTS = {
     "codex": "faultfrac-codex.csv",
     "gemini": "faultfrac-gemini.csv",
 }
+FAULT_CSV_FIELDS = [
+    "reportID", "speed", "crashwith", "svhit", "cphit", "severity",
+    "faultfrac", "reasoning",
+]
+FAULT_MASTER_FIELDS = FAULT_CSV_FIELDS[:-2]
 
 # Fields to extract for each incident
 FIELDS = [
@@ -174,12 +179,8 @@ def fetch_nhtsa_csv():
 
 
 def parse_fault_csv(path):
-    with open(path, newline="") as f:
-        rows = list(csv.DictReader(f))
+    rows = read_fault_csv_rows(path)
     must(len(rows) > 0, "fault csv has no rows", path=path)
-    keys = set(rows[0].keys())
-    must({"reportID", "faultfrac", "reasoning"} <= keys,
-         "fault csv header mismatch", path=path, header=list(keys))
     data = {}
     for row in rows:
         rid = row["reportID"].strip()
@@ -204,6 +205,81 @@ def load_fault_models():
     for model in ("codex", "gemini"):
         must(set(models[model]) == ids, "fault model ID sets must match", model=model)
     return models, ids
+
+
+def read_fault_csv_rows(path):
+    with open(path, newline="") as f:
+        reader = csv.DictReader(f)
+        must(reader.fieldnames == FAULT_CSV_FIELDS,
+             "fault csv header mismatch", path=path,
+             header=reader.fieldnames, expected=FAULT_CSV_FIELDS)
+        return list(reader)
+
+
+def load_fault_report_ids():
+    ids = set()
+    for path in FAULT_INPUTS.values():
+        rows = read_fault_csv_rows(path)
+        must(len(rows) > 0, "fault csv has no rows", path=path)
+        ids.update(row["reportID"].strip() for row in rows)
+    return ids
+
+
+def fault_master_row(row):
+    return {
+        "reportID": row["Report ID"].strip(),
+        "speed": row["SV Precrash Speed (MPH)"].strip(),
+        "crashwith": row["Crash With"].strip(),
+        "svhit": _contact_areas(row, "SV Contact Area"),
+        "cphit": _contact_areas(row, "CP Contact Area"),
+        "severity": row["Highest Injury Severity Alleged"].strip(),
+    }
+
+
+def build_fault_master_rows(rows, target_ids):
+    master_rows = {}
+    for row in rows:
+        master = fault_master_row(row)
+        rid = master["reportID"]
+        if rid not in target_ids:
+            continue
+        prev = master_rows.setdefault(rid, master)
+        must(prev == master,
+             "conflicting NHTSA master rows for fault report", reportId=rid,
+             first=prev, second=master)
+    missing = target_ids - set(master_rows)
+    must(len(missing) == 0, "fault csv reports missing from NHTSA master",
+         missing=sorted(missing)[:5])
+    return master_rows
+
+
+def sync_fault_csv(path, master_rows):
+    rows = read_fault_csv_rows(path)
+    must(len(rows) > 0, "fault csv has no rows", path=path)
+
+    synced = []
+    changed = 0
+    for row in rows:
+        rid = row["reportID"].strip()
+        must(rid in master_rows, "fault csv report missing from NHTSA master",
+             path=path, reportId=rid)
+        merged = dict(master_rows[rid])
+        merged["faultfrac"] = row["faultfrac"]
+        merged["reasoning"] = row["reasoning"]
+        changed += sum(row[field] != merged[field] for field in FAULT_MASTER_FIELDS)
+        synced.append(merged)
+
+    with open(path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=FAULT_CSV_FIELDS,
+                                lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(synced)
+    print(f"  Synced {path} from NHTSA master data ({changed} field updates)")
+
+
+def sync_fault_csvs(master_rows):
+    for path in FAULT_INPUTS.values():
+        sync_fault_csv(path, master_rows)
 
 
 NHTSA_WINDOW_END   = "2026-01-15"
@@ -544,8 +620,6 @@ def main():
         valid_rows.append(r)
     rows = valid_rows
 
-    fault_models, fault_ids = load_fault_models()
-
     # Filter to driverless incidents only
     none_rows = [r for r in rows if r["Driver / Operator Type"] == "None"]
 
@@ -556,6 +630,15 @@ def main():
         ver = int(r["Report Version"])
         if iid not in by_incident or ver > by_incident[iid]["_ver"]:
             by_incident[iid] = {"_ver": ver, "_row": r}
+
+    fault_target_ids = load_fault_report_ids()
+    fault_master_rows = build_fault_master_rows(
+        (entry["_row"] for entry in by_incident.values()),
+        fault_target_ids,
+    )
+
+    sync_fault_csvs(fault_master_rows)
+    fault_models, fault_ids = load_fault_models()
 
     # Filter to VMT window before looking up fault fractions.
     # The archive includes years of data; we only need the analysis window.

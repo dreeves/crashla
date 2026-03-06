@@ -35,6 +35,31 @@ The preprocess pipeline is:
 8. Inject the resulting incident data into `incidents.js`
 9. Inject the resulting VMT CSV text into `vmt.js`
 
+## Fault CSV synchronization
+
+The `faultfrac-*.csv` files are partly local judgment and partly mirrored NHTSA data.
+
+Their schema is:
+
+```text
+reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
+```
+
+The rule is:
+
+- The first six columns come from the latest deduplicated NHTSA master data
+- The last two columns (`faultfrac`, `reasoning`) are the model-owned judgment columns
+
+When `preprocess.py` runs, it synchronizes the first six columns of every
+`faultfrac-*.csv` file from the live NHTSA master rows before loading the fault
+fractions into the app pipeline.
+
+That means:
+
+- contact-area formatting stays consistent across models
+- speed / crash partner / severity stay aligned with the latest NHTSA version
+- the model-owned `faultfrac` and `reasoning` columns are preserved
+
 ## What the checked-in NHTSA CSV files are for
 
 `nhtsa-2025-jun-dec.csv` and `nhtsa-2025-jun-2026-jan.csv` are archival snapshots only.
