@@ -584,6 +584,7 @@ function emptySpeedBins() {
 const INJURY_SEVERITIES = new Set([
   "Minor W/O Hospitalization",
   "Minor W/ Hospitalization",
+  "Moderate",
   "Moderate W/O Hospitalization",
   "Moderate W/ Hospitalization",
   "Fatality",

@@ -249,6 +249,29 @@ Expectata: Waymo has 1\u201310 serious injury incidents (Moderate W/ Hosp + Fata
 Resultata: Waymo=${summaryByCompany.Waymo.incSeriousInjury} Tesla=${summaryByCompany.Tesla.incSeriousInjury} Zoox=${summaryByCompany.Zoox.incSeriousInjury}.`,
 );
 
+const moderateSeverityCheck = vm.runInContext(`
+  (() => {
+    const inc = INCIDENT_DATA.find(r => r.reportId === "30270-11016");
+    return {
+      exists: inc !== undefined,
+      severity: inc && inc.severity,
+      injury: inc ? Number(INJURY_SEVERITIES.has(inc.severity)) : null,
+      hospitalization: inc ? Number(HOSPITALIZATION_SEVERITIES.has(inc.severity)) : null,
+      seriousInjury: inc ? Number(SERIOUS_INJURY_SEVERITIES.has(inc.severity)) : null,
+    };
+  })()
+`, ctx);
+assert.ok(
+  moderateSeverityCheck.exists === true &&
+    moderateSeverityCheck.severity === "Moderate" &&
+    moderateSeverityCheck.injury === 1 &&
+    moderateSeverityCheck.hospitalization === 0 &&
+    moderateSeverityCheck.seriousInjury === 0,
+  `Replicata: classify Waymo report 30270-11016 with severity "Moderate".
+Expectata: bare "Moderate" counts as injury but not hospitalization or serious injury.
+Resultata: classification was ${JSON.stringify(moderateSeverityCheck)}.`,
+);
+
 assert.ok(
   plain.summaryCardHtml.includes("Serious injury (SSI+)"),
   `Replicata: render summary cards with all metrics enabled.
