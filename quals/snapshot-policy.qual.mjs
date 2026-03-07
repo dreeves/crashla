@@ -19,11 +19,15 @@ with tempfile.TemporaryDirectory() as tmp:
     first = slurp.snapshot_csv_if_changed("demo", "same\\n", "20260306T010101")
     second = slurp.snapshot_csv_if_changed("demo", "same\\n", "20260306T020202")
     third = slurp.snapshot_csv_if_changed("demo", "different\\n", "20260306T030303")
+    crlf_first = slurp.snapshot_csv_if_changed("crlf", "a,b\\r\\n1,2\\r\\n", "20260306T040404")
+    crlf_second = slurp.snapshot_csv_if_changed("crlf", "a,b\\r\\n1,2\\r\\n", "20260306T050505")
     files = sorted(path.name for path in tmpdir.glob("*.csv"))
     print(json.dumps({
         "first": first.name,
         "second": second.name,
         "third": third.name,
+        "crlf_first": crlf_first.name,
+        "crlf_second": crlf_second.name,
         "files": files,
         "latest": slurp.latest_snapshot_path("demo").name,
     }))
@@ -58,9 +62,9 @@ Resultata: the changed-content snapshot was ${JSON.stringify(out.third)}.`,
 
 assert.deepEqual(
   out.files,
-  ["demo-20260306T030303.csv", "legacy-old.csv"],
-  `Replicata: inspect the temp snapshot directory after one unchanged fetch and one changed fetch.
-Expectata: the directory keeps the legacy snapshot and adds exactly one new timestamped snapshot.
+  ["crlf-20260306T040404.csv", "demo-20260306T030303.csv", "legacy-old.csv"],
+  `Replicata: inspect the temp snapshot directory after unchanged LF and CRLF fetches plus one changed fetch.
+Expectata: the directory keeps the legacy snapshot and adds exactly one timestamped snapshot per distinct CSV payload.
 Resultata: snapshot files were ${JSON.stringify(out.files)}.`,
 );
 
@@ -70,6 +74,14 @@ assert.equal(
   `Replicata: ask data/slurp.py for the latest snapshot after a changed fetch.
 Expectata: the newest timestamped snapshot supersedes the legacy snapshot.
 Resultata: latest snapshot was ${JSON.stringify(out.latest)}.`,
+);
+
+assert.equal(
+  out.crlf_second,
+  out.crlf_first,
+  `Replicata: call data/slurp.py snapshot_csv_if_changed twice with identical CRLF CSV text.
+Expectata: unchanged content is compared exactly, so the helper reuses the first snapshot instead of creating a duplicate.
+Resultata: the CRLF snapshots were ${JSON.stringify({ first: out.crlf_first, second: out.crlf_second })}.`,
 );
 
 console.log("qual pass: data/slurp.py snapshots only changed fetches and bridges legacy snapshot names");

@@ -184,7 +184,7 @@ def latest_snapshot_path(prefix):
 def snapshot_csv_if_changed(prefix, text, stamp):
     SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
     latest = latest_snapshot_path(prefix)
-    if latest is not None and latest.read_text() == text:
+    if latest is not None and latest.read_bytes().decode("utf-8") == text:
         print(f"  Snapshot unchanged: {relpath(latest)}")
         return latest
     base = SNAPSHOT_DIR / f"{prefix}-{stamp}.csv"
