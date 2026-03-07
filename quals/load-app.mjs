@@ -5,7 +5,7 @@ import fs from "node:fs";
 const appScript = fs.readFileSync("crashla.js", "utf8")
   .split("// --- Init ---")[0];
 
-const dataScript = fs.readFileSync("incidents.js", "utf8") + "\n" +
-  fs.readFileSync("vmt.js", "utf8");
+const dataScript = fs.readFileSync("data/incidents.js", "utf8") + "\n" +
+  fs.readFileSync("data/vmt.js", "utf8");
 
 export { appScript, dataScript };

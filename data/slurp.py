@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Preprocess NHTSA SGO crash data CSV into inline data for the web tool.
+"""Slurp live NHTSA SGO crash data into inline data for the web tool.
 
-Fetches the ADS incident CSV from NHTSA, filters to Driver/Operator Type =
-"None", deduplicates by Same Incident ID (keeping highest Report Version), and
-injects the data into incidents.js and vmt.js (between marker comments).
+Fetches current + archive ADS incident CSVs from NHTSA, filters to Driver /
+Operator Type = "None", deduplicates by Same Incident ID (keeping highest
+Report Version), and injects the data into data/incidents.js and data/vmt.js
+(between marker comments).
 """
 
 import csv
@@ -13,6 +14,17 @@ import json
 import math
 import urllib.request
 from collections import Counter
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent
+ROOT_DIR = DATA_DIR.parent
+SNAPSHOT_DIR = DATA_DIR / "snapshots"
+LEGACY_SNAPSHOT_PATHS = {
+    "nhtsa-current": [
+        SNAPSHOT_DIR / "nhtsa-2025-jun-dec.csv",
+        SNAPSHOT_DIR / "nhtsa-2025-jun-2026-jan.csv",
+    ],
+}
 
 NHTSA_ADS_CSV_URL = (
     "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/"
@@ -22,8 +34,8 @@ NHTSA_ADS_ARCHIVE_URL = (
     "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/"
     "SGO-2021-01_Incident_Reports_ADS.csv"
 )
-INCIDENT_JS = "incidents.js"
-VMT_JS      = "vmt.js"
+INCIDENT_JS = DATA_DIR / "incidents.js"
+VMT_JS      = DATA_DIR / "vmt.js"
 VMT_SHEET_ID = "1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w"
 VMT_SHEET_GID = "844581871"
 VMT_SHEET_URL = (
@@ -31,9 +43,9 @@ VMT_SHEET_URL = (
     f"?format=csv&gid={VMT_SHEET_GID}"
 )
 FAULT_INPUTS = {
-    "claude": "faultfrac-claude.csv",
-    "codex": "faultfrac-codex.csv",
-    "gemini": "faultfrac-gemini.csv",
+    "claude": DATA_DIR / "faultfrac-claude.csv",
+    "codex": DATA_DIR / "faultfrac-codex.csv",
+    "gemini": DATA_DIR / "faultfrac-gemini.csv",
 }
 FAULT_CSV_FIELDS = [
     "reportID", "speed", "crashwith", "svhit", "cphit", "severity",
@@ -152,7 +164,41 @@ def _normalize_archive_row(row):
     return row
 
 
-def fetch_nhtsa_csv():
+def relpath(path):
+    path = Path(path).resolve()
+    try:
+        return str(path.relative_to(ROOT_DIR))
+    except ValueError:
+        return str(path)
+
+
+def latest_snapshot_path(prefix):
+    paths = sorted(SNAPSHOT_DIR.glob(f"{prefix}-*.csv"))
+    if paths:
+        return paths[-1]
+    legacy = [path for path in LEGACY_SNAPSHOT_PATHS.get(prefix, [])
+              if path.exists()]
+    return legacy[-1] if legacy else None
+
+
+def snapshot_csv_if_changed(prefix, text, stamp):
+    SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
+    latest = latest_snapshot_path(prefix)
+    if latest is not None and latest.read_text() == text:
+        print(f"  Snapshot unchanged: {relpath(latest)}")
+        return latest
+    base = SNAPSHOT_DIR / f"{prefix}-{stamp}.csv"
+    path = base
+    i = 2
+    while path.exists():
+        path = SNAPSHOT_DIR / f"{prefix}-{stamp}-{i}.csv"
+        i += 1
+    path.write_text(text)
+    print(f"  Snapshot saved: {relpath(path)}")
+    return path
+
+
+def fetch_nhtsa_csv(stamp):
     """Fetch ADS incident reports from both current and archive CSVs.
 
     Returns (rows, last_modified_date) where last_modified_date is an
@@ -161,12 +207,17 @@ def fetch_nhtsa_csv():
     """
     all_rows = []
     lm_date = None
+    snapshot_prefix = {
+        NHTSA_ADS_CSV_URL: "nhtsa-current",
+        NHTSA_ADS_ARCHIVE_URL: "nhtsa-archive",
+    }
     for url in [NHTSA_ADS_CSV_URL, NHTSA_ADS_ARCHIVE_URL]:
         print(f"Fetching NHTSA ADS CSV from {url} ...")
         with urllib.request.urlopen(url, timeout=60) as resp:
             lm = resp.headers.get("Last-Modified")
             payload = resp.read()
         text = payload.decode("utf-8")
+        snapshot_csv_if_changed(snapshot_prefix[url], text, stamp)
         is_archive = url == NHTSA_ADS_ARCHIVE_URL
         for row in csv.DictReader(io.StringIO(text)):
             if is_archive:
@@ -274,7 +325,7 @@ def sync_fault_csv(path, master_rows):
                                 lineterminator="\n")
         writer.writeheader()
         writer.writerows(synced)
-    print(f"  Synced {path} from NHTSA master data ({changed} field updates)")
+    print(f"  Synced {relpath(path)} from NHTSA master data ({changed} field updates)")
 
 
 def sync_fault_csvs(master_rows):
@@ -462,7 +513,7 @@ def incident_coverage(nhtsa_rows):
     return result
 
 
-def fetch_vmt_sheet_csv(inc_cov):
+def fetch_vmt_sheet_csv(inc_cov, stamp):
     """Fetch VMT CSV from Google Sheets and add coverage + incident_coverage.
 
     inc_cov: dict from incident_coverage(), mapping (company, iso_month) to
@@ -471,6 +522,7 @@ def fetch_vmt_sheet_csv(inc_cov):
     with urllib.request.urlopen(VMT_SHEET_URL, timeout=30) as resp:
         payload = resp.read()
     text = payload.decode("utf-8")
+    snapshot_csv_if_changed("vmt-sheet", text, stamp)
     lines = text.splitlines()
     must(len(lines) > 1, "VMT sheet CSV must include header and rows")
     must(lines[0] == "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale",
@@ -578,7 +630,8 @@ SUBMISSION_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
 
 
 def main():
-    rows, nhtsa_modified_date = fetch_nhtsa_csv()
+    run_stamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    rows, nhtsa_modified_date = fetch_nhtsa_csv(run_stamp)
     must(len(rows) > 0, "NHTSA CSV has no rows")
 
     # Anti-Postel: fail loud on unexpected field values.
@@ -721,7 +774,7 @@ def main():
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
-    vmt_text = fetch_vmt_sheet_csv(inc_cov).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    vmt_text = fetch_vmt_sheet_csv(inc_cov, run_stamp).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
 
     def inject(source, start_marker, end_marker, payload):
@@ -760,7 +813,7 @@ def main():
     total = len(incidents)
     if nhtsa_modified_date:
         print(f"NHTSA file last modified: {nhtsa_modified_date}")
-    print(f"Injected {total} incidents into {INCIDENT_JS} and VMT into {VMT_JS}")
+    print(f"Injected {total} incidents into {relpath(INCIDENT_JS)} and VMT into {relpath(VMT_JS)}")
     for company, n in counts.most_common():
         print(f"  {company}: {n}")
 

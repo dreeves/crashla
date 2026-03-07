@@ -5,8 +5,10 @@ const py = `
 import csv
 import json
 import os
+import sys
 import tempfile
-import preprocess
+sys.path.insert(0, "data")
+import slurp
 
 row = {
     "Report ID": "RID-1",
@@ -37,8 +39,8 @@ row = {
     "CP Contact Area - Unknown": "",
 }
 
-master = preprocess.fault_master_row(row)
-built = preprocess.build_fault_master_rows([
+master = slurp.fault_master_row(row)
+built = slurp.build_fault_master_rows([
     row,
     dict(row),
     {
@@ -55,7 +57,7 @@ built = preprocess.build_fault_master_rows([
 
 tmp = tempfile.NamedTemporaryFile("w", newline="", delete=False, suffix=".csv")
 try:
-    writer = csv.DictWriter(tmp, fieldnames=preprocess.FAULT_CSV_FIELDS, lineterminator="\\n")
+    writer = csv.DictWriter(tmp, fieldnames=slurp.FAULT_CSV_FIELDS, lineterminator="\\n")
     writer.writeheader()
     writer.writerow({
         "reportID": "RID-1",
@@ -68,9 +70,8 @@ try:
         "reasoning": "keep me",
     })
     tmp.close()
-    preprocess.sync_fault_csv(tmp.name, {"RID-1": master})
-    with open(tmp.name, newline="") as f:
-        out = list(csv.DictReader(f))
+    slurp.sync_fault_csv(tmp.name, {"RID-1": master})
+    out = slurp.read_fault_csv_rows(tmp.name)
     print(json.dumps({"master": master, "row": out[0], "built": built}))
 finally:
     os.unlink(tmp.name)
@@ -89,7 +90,7 @@ assert.deepEqual(
     cphit: "rear",
     severity: "Minor W/O Hospitalization",
   },
-  `Replicata: call preprocess.fault_master_row on a synthetic NHTSA row.
+  `Replicata: call data/slurp.py fault_master_row on a synthetic NHTSA row.
 Expectata: the helper emits the canonical first-six fault CSV columns from master NHTSA data.
 Resultata: got ${JSON.stringify(out.master)}.`,
 );
@@ -106,7 +107,7 @@ assert.deepEqual(
       severity: "Minor W/O Hospitalization",
     },
   },
-  `Replicata: call preprocess.build_fault_master_rows with duplicate non-target report IDs and a duplicated identical target row.
+  `Replicata: call data/slurp.py build_fault_master_rows with duplicate non-target report IDs and a duplicated identical target row.
 Expectata: only the targeted report ID survives, and non-target duplicate report IDs do not trigger a conflict.
 Resultata: got ${JSON.stringify(out.built)}.`,
 );
@@ -120,9 +121,9 @@ assert.ok(
     out.row.severity === "Minor W/O Hospitalization" &&
     out.row.faultfrac === "0.25" &&
     out.row.reasoning === "keep me",
-  `Replicata: run preprocess.sync_fault_csv on a temp fault CSV whose master columns drifted.
+  `Replicata: run data/slurp.py sync_fault_csv on a temp fault CSV whose master columns drifted.
 Expectata: the first six columns are replaced from NHTSA master data while faultfrac and reasoning are preserved.
 Resultata: synced row was ${JSON.stringify(out.row)}.`,
 );
 
-console.log("qual pass: preprocess syncs fault CSV metadata from NHTSA master rows");
+console.log("qual pass: data/slurp.py syncs fault CSV metadata from NHTSA master rows");

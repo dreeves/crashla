@@ -1,42 +1,46 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const preprocess = fs.readFileSync("preprocess.py", "utf8");
-const doc = fs.readFileSync("DATA-SOURCES.md", "utf8");
+const preprocess = fs.readFileSync("data/slurp.py", "utf8");
+const doc = fs.readFileSync("data/README.md", "utf8");
 
 assert.ok(
   preprocess.includes("NHTSA_ADS_CSV_URL") &&
     preprocess.includes("NHTSA_ADS_ARCHIVE_URL") &&
     preprocess.includes("VMT_SHEET_URL"),
-  `Replicata: inspect preprocess.py data-source constants.
-Expectata: preprocess.py defines live NHTSA current/archive URLs and the live VMT sheet URL.
+  `Replicata: inspect data/slurp.py data-source constants.
+Expectata: data/slurp.py defines live NHTSA current/archive URLs and the live VMT sheet URL.
 Resultata: expected live-source constants were missing.`,
 );
 
 assert.ok(
-  preprocess.includes("fetch_nhtsa_csv()") &&
-    preprocess.includes("fetch_vmt_sheet_csv(inc_cov)") &&
+  preprocess.includes("def fetch_nhtsa_csv(stamp):") &&
+    preprocess.includes("def fetch_vmt_sheet_csv(inc_cov, stamp):") &&
+    preprocess.includes("def snapshot_csv_if_changed(prefix, text, stamp):") &&
     preprocess.includes("urllib.request.urlopen"),
-  `Replicata: inspect preprocess.py fetch code path.
-Expectata: preprocess.py fetches NHTSA and VMT data over the network during regeneration.
+  `Replicata: inspect data/slurp.py fetch code path.
+Expectata: data/slurp.py fetches NHTSA and VMT data over the network during regeneration and snapshots each live fetch.
 Resultata: expected live-fetch code path was missing.`,
 );
 
 assert.ok(
-  !preprocess.includes("nhtsa-2025-jun-dec.csv") &&
-    !preprocess.includes("nhtsa-2025-jun-2026-jan.csv"),
-  `Replicata: inspect preprocess.py for local archival snapshot usage.
-Expectata: preprocess.py does not read the checked-in nhtsa-*.csv archival snapshot files.
-Resultata: preprocess.py still referenced a checked-in archival snapshot file.`,
+  preprocess.includes("LEGACY_SNAPSHOT_PATHS") &&
+    preprocess.includes("snapshot_csv_if_changed") &&
+    preprocess.includes("return legacy[-1] if legacy else None"),
+  `Replicata: inspect data/slurp.py legacy snapshot bridge.
+Expectata: data/slurp.py may compare against the latest legacy current snapshot, but only through the snapshot helper path that avoids duplicate archival files.
+Resultata: the expected legacy-snapshot bridge was missing.`,
 );
 
 assert.ok(
   doc.includes("archival snapshots only") &&
-    doc.includes("does not read `nhtsa-2025-jun-dec.csv` or `nhtsa-2025-jun-2026-jan.csv`") &&
-    doc.includes("fetches NHTSA and Google Sheets data live"),
-  `Replicata: inspect DATA-SOURCES.md.
-Expectata: the data-sources document states that the checked-in NHTSA CSVs are archival and preprocess.py fetches live upstream data.
+    doc.includes("does not read `data/snapshots/nhtsa-2025-jun-dec.csv` or") &&
+    doc.includes("fetches NHTSA and Google Sheets data live") &&
+    doc.includes("New snapshots use timestamped filenames") &&
+    doc.includes("They are not parsed as incident inputs"),
+  `Replicata: inspect data/README.md.
+Expectata: the data-sources document states that the checked-in NHTSA CSVs are archival, data/slurp.py fetches live upstream data, and changed fetches create timestamped snapshots without treating legacy snapshots as live inputs.
 Resultata: the expected documentation text was missing.`,
 );
 
-console.log("qual pass: preprocess data-source documentation matches the live fetch pipeline");
+console.log("qual pass: data/slurp.py documentation matches the live fetch pipeline");

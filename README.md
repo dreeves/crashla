@@ -135,7 +135,7 @@ Please give your best estimates of the unsupervised mileage in that time frame f
 
 ---
 
-can you make a file called faultfrac-MODEL.csv that, for every Report ID in nhtsa-2025-jun-2026-jan.csv for which Operator=None, gives an estimated fraction at-fault for the AV? make sure to use the latest version of each incident. it should have the following columns:
+can you make a file called faultfrac-MODEL.csv that, for every Report ID in data/snapshots/nhtsa-2025-jun-2026-jan.csv for which Operator=None, gives an estimated fraction at-fault for the AV? make sure to use the latest version of each incident. it should have the following columns:
 
 * reportID [from the NHTSA dataset; must be unique]
 * speed [mph of subject vehicle]
@@ -224,12 +224,13 @@ January has coverage=0.484 (15/31) because the VMT is given as a full-month figu
 ### The three datasets combined here
 
 1. **NHTSA SGO incident reports** (the numerator).
-   Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `preprocess.py`.
+   Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `data/slurp.py`.
+   Archival raw fetch snapshots live under `data/snapshots/`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
    After deduplication (keeping highest Report Version per Same Incident ID) and filtering to Driver/Operator Type = "None", we get 530 incidents: 503 Waymo, 14 Tesla, 13 Zoox.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
-   Sourced from a Google Sheet and embedded in `vmt.js`.
+   Sourced from a Google Sheet and embedded in `data/vmt.js`.
    Each company's mileage comes from different public sources:
    - **Tesla**: robotaxitracker.com cumulative deltas (Austin only; Bay Area excluded per Tesla's Q3 earnings call).
    - **Waymo**: California CPUC driverless VMT, scaled to all-US using Waymo ride-ops city shares (±15% through Sep 2025, ±30% extrapolated after).
@@ -237,6 +238,6 @@ January has coverage=0.484 (15/31) because the VMT is given as a full-month figu
 
 3. **AI fault-fraction estimates** (for fault-weighted MPI).
    Three AI models (Claude, Codex, Gemini) each estimated how at-fault the AV was for every incident, on a 0–1 scale.
-   Stored in `faultfrac-claude.csv`, `faultfrac-codex.csv`, `faultfrac-gemini.csv`.
+   Stored in `data/faultfrac-claude.csv`, `data/faultfrac-codex.csv`, `data/faultfrac-gemini.csv`.
    These are used to compute fault-weighted incident counts and fault-variance columns.
    Passenger-caused incidents (e.g., passenger opened door into traffic) are scored 0 — only the AV driving system's fault counts.
