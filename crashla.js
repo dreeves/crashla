@@ -220,9 +220,11 @@ const METRIC_DEFS = [
     countFn: rec => rec.incidents.atFaultInjury,
     // At-fault injury: intersection of at-fault and injury crashes.
     // lo: injury lo (252k) / ~85% at-fault share in injury crashes ≈ 300k
-    // hi: injury hi (524k from 1.91 IPMM) is a floor; 524k/~28% at-fault share ≈ 1.9M
-    humanMPI: {lo: 300000, hi: 1900000,
-      src: 'lo: injury lo (252k) / ~85% at-fault share in injury crashes; hi: conservative upper bound assuming low at-fault share in injury crashes',
+    // hi: injury hi (524k) / 50% at-fault share ≈ 1,050k
+    //   50% = same lower bound as all-crash at-fault (single-vehicle 100%,
+    //   multi-vehicle ~50%). Cross-check: atfault hi (430k) × 524k/214k ≈ 1,053k.
+    humanMPI: {lo: 300000, hi: 1050000,
+      src: 'lo: injury lo (252k) / ~85% at-fault share; hi: injury hi (524k) / 50% at-fault share (same lower bound as all-crash at-fault)',
       srcLinks: [
         {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
         {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
