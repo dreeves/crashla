@@ -220,9 +220,9 @@ const METRIC_DEFS = [
     countFn: rec => rec.incidents.atFaultInjury,
     // At-fault injury: intersection of at-fault and injury crashes.
     // lo: injury lo (252k) / ~85% at-fault share in injury crashes ≈ 300k
-    // hi: national injury-crash MPI (~1.91M) as ceiling
+    // hi: injury hi (524k from 1.91 IPMM) is a floor; 524k/~28% at-fault share ≈ 1.9M
     humanMPI: {lo: 300000, hi: 1900000,
-      src: 'lo: injury lo (252k) / ~85% at-fault share in injury crashes; hi: national injury-crash MPI (~1.91M) as ceiling',
+      src: 'lo: injury lo (252k) / ~85% at-fault share in injury crashes; hi: conservative upper bound assuming low at-fault share in injury crashes',
       srcLinks: [
         {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
         {label: 'Waymo safety impact (127M mi)', url: 'https://waymo.com/safety/impact/'},
@@ -1709,14 +1709,14 @@ function renderTable() {
 
 function shortenSeverity(s) {
   const rules = [
-    ["No Injured", "No injury"],
+    ["Property", "Property only"],
+    ["No Injur", "No injury"],
     ["Minor W/O", "Minor injury"],
     ["Minor W/", "Minor injury (hosp.)"],
     ["Moderate W/O", "Moderate injury"],
     ["Moderate W/", "Moderate injury (hosp.)"],
     ["Serious", "Serious"],
     ["Fatal", "Fatal"],
-    ["Property", "Property only"],
   ];
   const hit = (s || "") && rules.find(([needle]) => s.includes(needle));
   return hit ? hit[1] : (s || "?");

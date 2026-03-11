@@ -351,8 +351,10 @@ def nhtsa_month_to_iso(label):
 def month_coverage(month_str):
     """Fraction of the month inside the NHTSA observation window.
 
-    Both endpoints are partial: June 15–30 and January 1–15.  VMT is
-    pro-rated so that incident counts and miles cover the same window.
+    January 2026 is partial (1–15).  June 2025 is full because slurp.py
+    merges the current CSV (Jun 16–Jan 15, Third Amended SGO) with the
+    archive CSV (2021–~Jun 15, prior SGO), covering the whole month with
+    zero overlap.  VMT is pro-rated so incident counts and miles align.
     """
     year, mon = int(month_str[:4]), int(month_str[5:7])
     import calendar
