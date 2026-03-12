@@ -101,7 +101,7 @@ const stress = vm.runInContext(`
   return {
     byCompany: Object.fromEntries(rows.map(row => [
       row.company,
-      Object.fromEntries(STRESS_METRIC_KEYS.map(key => [key, companyHumanStress(row, key)])),
+      Object.fromEntries(METRIC_KEYS.map(key => [key, companyHumanStress(row, key)])),
     ])),
     summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
     sanityHtml: document.getElementById("sanity-checks").innerHTML,
@@ -126,7 +126,7 @@ Expectata: Waymo all-incident claim remains assumption-sensitive rather than rob
 Resultata: verdict was ${plain.byCompany.Waymo.all.verdictKey}.`,
 );
 
-for (const key of ["atfault", "injury", "seriousInjury"]) {
+for (const key of ["atfault", "injury", "airbag", "seriousInjury"]) {
   assert.equal(
     plain.byCompany.Waymo[key].verdictKey,
     "safer",

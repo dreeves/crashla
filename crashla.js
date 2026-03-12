@@ -330,7 +330,6 @@ const KNOWN_HUMAN_MPI = Object.fromEntries(
 const METRIC_KEYS = METRIC_DEFS.map(m => m.key);
 const METRIC_BY_KEY = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, m]));
-const STRESS_METRIC_KEYS = ["all", "atfault", "injury", "seriousInjury", "fatality"];
 const STRESS_VERDICT_META = {
   safer: {label: "robustly safer", className: "safer"},
   worse: {label: "robustly worse", className: "worse"},
@@ -483,9 +482,15 @@ function scaleLinear(v, d0, d1, r0, r1) {
 }
 
 function fmtMiles(n) {
-  if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
-  if (n >= 1e3) return (n / 1e3).toFixed(1) + "K";
-  return Math.round(n).toLocaleString();
+  const suffixes = ["", "K", "M", "B", "T"];
+  let tier = 0;
+  let val = n;
+  // 999.95 is where toFixed(1) would roll over to "1000.0"; bump tier instead
+  while (val >= 999.95 && tier < suffixes.length - 1) {
+    val /= 1000;
+    tier++;
+  }
+  return tier === 0 ? Math.round(n).toLocaleString() : val.toFixed(1) + suffixes[tier];
 }
 
 function csvUnquote(field) {
@@ -699,7 +704,8 @@ function summaryMetricEstimate(row, metricKey, massFrac = CI_MASS_DEFAULT_PCT / 
 }
 
 function fmtRatio(n) {
-  return n >= 100 ? fmtWhole(n) : n >= 10 ? n.toFixed(1) : n.toFixed(2);
+  // 99.95 and 9.995: thresholds where toFixed would roll over to next tier
+  return n >= 99.95 ? fmtWhole(n) : n >= 9.995 ? n.toFixed(1) : n.toFixed(2);
 }
 
 function companyHumanStress(row, metricKey) {
@@ -1094,13 +1100,9 @@ function renderCompanyMonthlyChart(series, company) {
     const monthVmtEff = fmtWhole(row.vmtBest);
 
     // MPI for each variant (used in hover text)
-    const nonstationary = nonstationaryIncidentCount(rec.speeds);
     const mpiByKey = {};
-    const variantCounts = {
-      all: rec.total, nonstationary, roadwayNonstationary: rec.roadwayNonstationary,
-      atfault: rec.atFault, atfaultInjury: rec.atFaultInjury, injury: rec.injury, hospitalization: rec.hospitalization,
-      fatality: rec.fatality,
-    };
+    const variantCounts = Object.fromEntries(
+      METRIC_DEFS.map(m => [m.key, m.countFn(row)]));
     for (const [vk, vk_count] of Object.entries(variantCounts)) {
       mpiByKey[vk] = fmtMiles(estimateMpi(vk_count, row.vmtBest, massFrac).median);
     }
@@ -1238,7 +1240,7 @@ function renderMpiSummaryCards(series) {
 function renderStressTestTable(series) {
   const rows = monthlySummaryRows(series);
   const body = rows.flatMap(row =>
-    STRESS_METRIC_KEYS.map(metricKey => {
+    METRIC_KEYS.map(metricKey => {
       const stress = companyHumanStress(row, metricKey);
       return `<tr>
         <td>${escHtml(row.company)}</td>
