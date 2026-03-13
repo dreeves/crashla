@@ -14,6 +14,9 @@ class ElementStub {
     this.listeners = {};
     this._innerHTML = "";
     this._attributes = {};
+    this.style = {};
+    this.value = "0";
+    this.classList = { toggle() {} };
   }
 
   set textContent(v) {
@@ -51,7 +54,7 @@ class ElementStub {
     return this._attributes[name] ?? null;
   }
 
-  querySelector() { return null; }
+  querySelector() { return new ElementStub("queried"); }
 
   set innerHTML(v) {
     this._innerHTML = v;

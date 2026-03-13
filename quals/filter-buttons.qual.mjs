@@ -75,6 +75,7 @@ vmtRows = [
   {company: "Waymo", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
   {company: "Zoox", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
 ];
+activeSeries = { months: ["2025-06"] };
 buildBrowser();
 `, ctx);
 

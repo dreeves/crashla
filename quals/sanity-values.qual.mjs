@@ -89,6 +89,8 @@ vm.runInContext(`
   incidents = INCIDENT_DATA;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
+  fullMonthSeries = monthSeriesData();
+  activeSeries = fullMonthSeries;
   buildSanityChecks();
 `, ctx);
 

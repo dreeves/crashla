@@ -154,6 +154,123 @@ tr:hover { background: #f8f8ff; }
   color: #5b6475;
   margin-bottom: 0.6rem;
 }
+/* Date range slider */
+#date-range-controls {
+  margin: 0.6rem 0 0.4rem;
+}
+.date-range-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.2rem;
+}
+.date-range-label {
+  font-size: 0.82rem;
+  color: #5b6475;
+  font-weight: 600;
+}
+.month-panel.date-filtered {
+  border-color: #2060c0;
+  background: #f8faff;
+}
+.date-filtered .date-range-label {
+  background: #e0ecff;
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  color: #1a4a8a;
+}
+.date-range-reset {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid #b0b8c8;
+  border-radius: 3px;
+  background: #fff;
+  color: #5b6475;
+  cursor: pointer;
+}
+.date-range-reset:hover {
+  background: #eef1f6;
+  border-color: #8090a8;
+}
+.date-range-slider {
+  position: relative;
+  height: 24px;
+}
+.date-range-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: #dde2ea;
+  border-radius: 2px;
+}
+.date-range-fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: #2060c0;
+  border-radius: 2px;
+}
+.date-range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  outline: none;
+}
+.date-range-input-min { z-index: 2; }
+.date-range-input-max { z-index: 3; }
+.date-range-input::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+  border: none;
+}
+.date-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2060c0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  cursor: grab;
+  margin-top: -6px;
+}
+.date-range-input::-moz-range-track {
+  height: 4px;
+  background: transparent;
+  border: none;
+}
+.date-range-input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #2060c0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  cursor: grab;
+}
+.date-range-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  font-size: 10px;
+  color: #5b6475;
+  user-select: none;
+}
+
 .month-chart {
   margin-bottom: 0.8rem;
 }

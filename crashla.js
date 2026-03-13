@@ -101,6 +101,21 @@ function gammaquant(a, b, p) {
   return x;
 }
 
+// Inverse-gamma density w.r.t. log(x): f(x)·x where f is the InvGamma PDF.
+// If λ ~ Gamma(α, β) then MPI = 1/λ ~ InvGamma(α, β).
+// log(f(x)·x) = α·ln(β) − lnΓ(α) − α·ln(x) − β/x
+function invGammaLogDensity(x, alpha, beta) {
+  return Math.exp(alpha * Math.log(beta) - lgamma(alpha) - alpha * Math.log(x) - beta / x);
+}
+
+// Log-normal density w.r.t. log(x): if ln(X) ~ N(μ, σ²) then this is
+// the density on a log-scaled axis, i.e., the normal PDF in log-space.
+function logNormalLogDensity(x, mu, sigma) {
+  assert(sigma > 0, "logNormalLogDensity: sigma must be positive", {sigma});
+  const z = (Math.log(x) - mu) / sigma;
+  return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+}
+
 // Compute miles-per-incident estimate with credible interval.
 // k = incident count, m = miles driven, massFrac = CI mass (e.g., 0.95)
 function estimateMpi(k, m, massFrac) {
@@ -337,6 +352,10 @@ const STRESS_VERDICT_META = {
 };
 let monthMetricEnabled = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, m.defaultEnabled]));
+let monthRangeStart = 0;
+let monthRangeEnd = Infinity;
+let fullMonthSeries = null;
+let activeSeries = null;
 
 function metricLineStyle(company, metricKey) {
   const s = LINE_STYLE[metricKey];
@@ -476,12 +495,24 @@ function incidentsInVmtWindow(rows = incidents) {
   return rows;
 }
 
+function activeIncidents() {
+  const all = incidentsInVmtWindow();
+  const months = new Set(activeSeries.months);
+  return all.filter(inc => months.has(monthKeyFromIncidentLabel(inc.date)));
+}
+
+function activeVmt() {
+  const months = new Set(activeSeries.months);
+  return vmtRows.filter(r => months.has(r.month));
+}
+
 function scaleLinear(v, d0, d1, r0, r1) {
   const span = (d1 - d0) || 1;
   return r0 + (v - d0) * (r1 - r0) / span;
 }
 
 function fmtMiles(n) {
+  assert(Number.isFinite(n) && n >= 0, "fmtMiles: invalid input", {n});
   const suffixes = ["", "K", "M", "B", "T"];
   let tier = 0;
   let val = n;
@@ -624,6 +655,7 @@ function roadwayNonstationaryIncidentCount(rec) {
 }
 
 function fmtCount(n) {
+  assert(Number.isFinite(n) && n >= 0, "fmtCount: invalid input", {n});
   const rounded = Math.round(n * 10) / 10;
   if (Number.isInteger(rounded)) return rounded.toLocaleString();
   return rounded.toFixed(1);
@@ -646,6 +678,7 @@ function includedMonthMetrics() {
 }
 
 function fmtWhole(n) {
+  assert(Number.isFinite(n), "fmtWhole: invalid input", {n});
   return Math.round(n).toLocaleString();
 }
 
@@ -666,11 +699,7 @@ function monthlySummaryRows(series) {
     // Auto-generate inc fields from METRIC_DEFS
     const incFields = Object.fromEntries(
       METRIC_DEFS.map(m => [m.incField, rows.reduce((sum, row) => sum + m.countFn(row), 0)]));
-    assert(incFields.incTotal > 0, "summary total incidents must be positive", {company, incTotal: incFields.incTotal});
-    assert(incFields.incNonstationary > 0,
-      "summary nonstationary incidents must be positive", {company, incNonstationary: incFields.incNonstationary});
-    assert(incFields.incRoadwayNonstationary > 0,
-      "summary roadway nonstationary incidents must be positive", {company, incRoadwayNonstationary: incFields.incRoadwayNonstationary});
+
     const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
     return {
       company,
@@ -704,6 +733,7 @@ function summaryMetricEstimate(row, metricKey, massFrac = CI_MASS_DEFAULT_PCT / 
 }
 
 function fmtRatio(n) {
+  assert(Number.isFinite(n), "fmtRatio: invalid input", {n});
   // 99.95 and 9.995: thresholds where toFixed would roll over to next tier
   return n >= 99.95 ? fmtWhole(n) : n >= 9.995 ? n.toFixed(1) : n.toFixed(2);
 }
@@ -813,6 +843,26 @@ function monthSeriesData() {
       };
     }
     points.push({month, companies});
+  }
+  return {months, points};
+}
+
+function sliceSeries(series, startIdx, endIdx) {
+  const months = series.months.slice(startIdx, endIdx + 1);
+  const points = series.points.slice(startIdx, endIdx + 1).map(point => {
+    const companies = {};
+    for (const company of ADS_COMPANIES) {
+      const orig = point.companies[company];
+      companies[company] = {...orig, incidents: {...orig.incidents, speeds: {...orig.incidents.speeds}}};
+    }
+    return {month: point.month, companies};
+  });
+  for (const company of ADS_COMPANIES) {
+    let cume = 0;
+    for (const point of points) {
+      cume += point.companies[company].vmtRawBest;
+      point.companies[company].vmtCume = cume;
+    }
   }
   return {months, points};
 }
@@ -1036,6 +1086,176 @@ function renderAllCompaniesMpiChart(series) {
           <text x="${mLeft + pW - 4}" y="${(Math.min(yLo, yHi) - 3).toFixed(2)}" text-anchor="end"
             style="fill:#888;font-size:9px;opacity:${(0.7 * metricOpacity).toFixed(3)}">${fmtMiles(ref.lo)}\u2013${fmtMiles(ref.hi)}</text>`;
       }).join("")}</g>
+    </svg>
+  `;
+}
+
+function renderDistributionChart(series) {
+  const summaryRows = monthlySummaryRows(series);
+  const curves = [];
+  for (const row of summaryRows) {
+    if (!monthCompanyEnabled[row.company]) continue;
+    for (const metric of includedMonthMetrics()) {
+      const k = row[metric.incField];
+      const alpha = k + 0.5;
+      const beta = row.vmtBest;
+      curves.push({
+        company: row.company, metric, alpha, beta, k,
+        vmtMin: row.vmtMin, vmtBest: row.vmtBest, vmtMax: row.vmtMax,
+      });
+    }
+  }
+  if (curves.length === 0) return "";
+
+  // X-axis range from distribution quantiles (0.1st and 99.9th percentile)
+  let xMin = Infinity, xMax = 0;
+  for (const c of curves) {
+    xMin = Math.min(xMin, 1 / gammaquant(c.alpha, c.beta, 0.999));
+    xMax = Math.max(xMax, 1 / gammaquant(c.alpha, c.beta, 0.001));
+  }
+  const humanCurves = [];
+  for (const metric of includedMonthMetrics()) {
+    const h = KNOWN_HUMAN_MPI[metric.key];
+    if (!h) continue;
+    const mu = (Math.log(h.lo) + Math.log(h.hi)) / 2;
+    const sigma = (Math.log(h.hi) - Math.log(h.lo)) / (2 * 1.96);
+    humanCurves.push({metric, mu, sigma, lo: h.lo, hi: h.hi});
+    xMin = Math.min(xMin, Math.exp(mu - 3.09 * sigma));
+    xMax = Math.max(xMax, Math.exp(mu + 3.09 * sigma));
+  }
+  assert(xMin < xMax, "distribution chart: degenerate x range", {xMin, xMax});
+
+  // Sample on log-uniform grid
+  const nPts = 250;
+  const logMin = Math.log(xMin);
+  const logMax = Math.log(xMax);
+  const logStep = (logMax - logMin) / (nPts - 1);
+  const xs = [];
+  for (let i = 0; i < nPts; i++) xs.push(Math.exp(logMin + logStep * i));
+
+  let yMax = 0;
+  for (const c of curves) {
+    c.ys = xs.map(x => invGammaLogDensity(x, c.alpha, c.beta));
+    const peakIdx = c.ys.reduce((best, y, i) => y > c.ys[best] ? i : best, 0);
+    c.peakX = xs[peakIdx];
+    c.peakY = c.ys[peakIdx];
+    yMax = Math.max(yMax, c.peakY);
+  }
+  for (const hc of humanCurves) {
+    hc.ys = xs.map(x => logNormalLogDensity(x, hc.mu, hc.sigma));
+    const peakIdx = hc.ys.reduce((best, y, i) => y > hc.ys[best] ? i : best, 0);
+    hc.peakX = xs[peakIdx];
+    hc.peakY = hc.ys[peakIdx];
+    yMax = Math.max(yMax, hc.peakY);
+  }
+  if (yMax === 0) return "";
+
+  const svgW = 900, svgH = 280;
+  const mLeft = 68, mRight = 16, mTop = 14, mBot = 40;
+  const pW = svgW - mLeft - mRight;
+  const pH = svgH - mTop - mBot;
+  const baseline = mTop + pH;
+  const mapX = x => mLeft + (Math.log(x) - logMin) / (logMax - logMin) * pW;
+  const mapY = y => mTop + pH * (1 - y / yMax);
+
+  // Log-scale x-axis ticks
+  const ticks = [];
+  const e0 = Math.floor(Math.log10(xMin));
+  const e1 = Math.ceil(Math.log10(xMax));
+  for (let e = e0; e <= e1; e++) {
+    for (const m of [1, 2, 5]) {
+      const v = m * Math.pow(10, e);
+      if (v >= xMin && v <= xMax) ticks.push(v);
+    }
+  }
+
+  const axes = `
+    ${ticks.map(v => `
+      <line x1="${mapX(v).toFixed(2)}" y1="${mTop}" x2="${mapX(v).toFixed(2)}" y2="${baseline}"
+        style="stroke:#e0e4ef;stroke-width:0.5"></line>
+      <text class="month-tick" x="${mapX(v).toFixed(2)}" y="${svgH - 16}" text-anchor="middle">${fmtMiles(v)}</text>
+    `).join("")}
+    <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
+    <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
+    <text class="month-label" x="12" y="${mTop + pH / 2}" transform="rotate(-90 12 ${mTop + pH / 2})" text-anchor="middle">Probability Density for True MPI</text>
+  `;
+
+  // Human benchmark curves (log-normal bell curves in gray)
+  const humanFills = humanCurves.map(hc => {
+    const op = (0.12 * LINE_STYLE[hc.metric.key].opacity).toFixed(3);
+    let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
+    for (let i = 0; i < nPts; i++) {
+      d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(hc.ys[i]).toFixed(2)}`;
+    }
+    d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
+    return `<path d="${d}" style="fill:#888;opacity:${op}"></path>`;
+  }).join("");
+
+  const humanStrokes = humanCurves.map(hc => {
+    const s = LINE_STYLE[hc.metric.key];
+    const op = s.opacity < 1 ? s.opacity : 1;
+    let d = "";
+    for (let i = 0; i < nPts; i++) {
+      d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(hc.ys[i]).toFixed(2)}`;
+    }
+    return `<path d="${d}" style="stroke:#888;stroke-width:${s.width};opacity:${(0.7 * op).toFixed(3)};fill:none"></path>`;
+  }).join("");
+
+  const humanMarkers = humanCurves.map(hc => {
+    const x = mapX(hc.peakX);
+    const y = mapY(hc.peakY);
+    const geo = Math.sqrt(hc.lo * hc.hi);
+    const op = LINE_STYLE[hc.metric.key].opacity;
+    // TO-DO: Human vet distribution chart human benchmark tooltip below.
+    const tip = `Humans (${hc.metric.cardLabel})\nGeometric mean: ${fmtMiles(geo)} MPI\n95% range: ${fmtMiles(hc.lo)} \u2013 ${fmtMiles(hc.hi)}`;
+    return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:#888;stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>` +
+      `<text x="${x.toFixed(2)}" y="${(y - 8).toFixed(2)}" text-anchor="middle" style="fill:#888;font-size:8px;opacity:${(0.6 * op).toFixed(3)}">${escHtml(hc.metric.cardLabel)}</text>`;
+  }).join("");
+
+  // Curve fills (low opacity) and strokes
+  const fills = curves.map(c => {
+    const color = MONTHLY_COMPANY_COLORS[c.company];
+    const op = (0.12 * LINE_STYLE[c.metric.key].opacity).toFixed(3);
+    let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
+    for (let i = 0; i < nPts; i++) {
+      d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
+    }
+    d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
+    return `<path d="${d}" style="fill:${color};opacity:${op}"></path>`;
+  }).join("");
+
+  const strokes = curves.map(c => {
+    let d = "";
+    for (let i = 0; i < nPts; i++) {
+      d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
+    }
+    return `<path d="${d}" style="${metricLineStyle(c.company, c.metric.key)};fill:none"></path>`;
+  }).join("");
+
+  // Peak markers with tooltips
+  const markers = curves.map(c => {
+    const color = MONTHLY_COMPANY_COLORS[c.company];
+    const x = mapX(c.peakX);
+    const y = mapY(c.peakY);
+    const mpi = estimateMpiWindow(c.k, c.vmtMin, c.vmtBest, c.vmtMax);
+    const kFmt = Number.isInteger(c.k) ? String(c.k) : c.k.toFixed(1);
+    // TO-DO: Human vet distribution chart tooltip labels below.
+    const tip = `${c.company} (${c.metric.cardLabel})\nMedian MPI: ${fmtMiles(mpi.median)}\n95% CI: ${fmtMiles(mpi.lo)} \u2013 ${fmtMiles(mpi.hi)}\n${kFmt} incident${c.k === 1 ? "" : "s"}`;
+    return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
+  }).join("");
+
+  return `
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+      <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
+      ${axes}
+      <g clip-path="url(#dist-clip)">
+      ${humanFills}
+      ${humanStrokes}
+      ${fills}
+      ${strokes}
+      ${humanMarkers}
+      ${markers}
+      </g>
     </svg>
   `;
 }
@@ -1369,18 +1589,97 @@ function renderMonthlyLegends() {
   `;
 }
 
+function renderDateRangeControls() {
+  const container = byId("date-range-controls");
+  const months = fullMonthSeries.months;
+  const maxIdx = months.length - 1;
+  const endIdx = Math.min(
+    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
+  const startIdx = Math.min(monthRangeStart, endIdx);
+  const isFullRange = startIdx === 0 && endIdx === maxIdx;
+  const lo = maxIdx > 0 ? (startIdx / maxIdx) * 100 : 0;
+  const w = maxIdx > 0 ? ((endIdx - startIdx) / maxIdx) * 100 : 100;
+  const rangeLabel = startIdx === endIdx
+    ? months[startIdx]
+    : `${months[startIdx]} \u2014 ${months[endIdx]}`;
+  container.innerHTML = `
+    <div class="date-range-header">
+      <span class="date-range-label">${rangeLabel}</span>
+      <button class="date-range-reset" id="date-range-reset" style="${isFullRange ? "display:none" : ""}">Zoom out</button>
+    </div>
+    <div class="date-range-slider">
+      <div class="date-range-track"></div>
+      <div class="date-range-fill" id="date-range-fill" style="left:${lo.toFixed(2)}%;width:${w.toFixed(2)}%"></div>
+      <input type="range" class="date-range-input date-range-input-min" id="date-range-min"
+             min="0" max="${maxIdx}" value="${startIdx}" step="1">
+      <input type="range" class="date-range-input date-range-input-max" id="date-range-max"
+             min="0" max="${maxIdx}" value="${endIdx}" step="1">
+    </div>
+    <div class="date-range-ticks">
+      ${months.map(m => `<span>${m}</span>`).join("")}
+    </div>
+  `;
+  const minInput = byId("date-range-min");
+  const maxInput = byId("date-range-max");
+  const fill = byId("date-range-fill");
+  function updateFill() {
+    const a = Math.min(Number(minInput.value), Number(maxInput.value));
+    const b = Math.max(Number(minInput.value), Number(maxInput.value));
+    const fLeft = maxIdx > 0 ? (a / maxIdx) * 100 : 0;
+    const fWidth = maxIdx > 0 ? ((b - a) / maxIdx) * 100 : 100;
+    fill.style.left = fLeft.toFixed(2) + "%";
+    fill.style.width = fWidth.toFixed(2) + "%";
+  }
+  minInput.addEventListener("input", updateFill);
+  maxInput.addEventListener("input", updateFill);
+  function onRangeChange() {
+    const a = Number(minInput.value);
+    const b = Number(maxInput.value);
+    monthRangeStart = Math.min(a, b);
+    monthRangeEnd = Math.max(a, b);
+    buildMonthlyViews();
+  }
+  minInput.addEventListener("change", onRangeChange);
+  maxInput.addEventListener("change", onRangeChange);
+  const resetBtn = byId("date-range-reset");
+  resetBtn.addEventListener("click", () => {
+    monthRangeStart = 0;
+    monthRangeEnd = Infinity;
+    buildMonthlyViews();
+  });
+}
+
 function buildMonthlyViews() {
-  const series = monthSeriesData();
-  byId("chart-mpi-all").innerHTML = renderAllCompaniesMpiChart(series);
-  byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(series)}</div>`;
+  fullMonthSeries = monthSeriesData();
+  const fullSummary = monthlySummaryRows(fullMonthSeries);
+  for (const row of fullSummary) {
+    assert(row.incTotal > 0, "full-series total incidents must be positive", {company: row.company});
+    assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {company: row.company});
+    assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {company: row.company});
+  }
+  const maxIdx = fullMonthSeries.months.length - 1;
+  const endIdx = Math.min(
+    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
+  const startIdx = Math.min(monthRangeStart, endIdx);
+  const isFullRange = startIdx === 0 && endIdx === maxIdx;
+  byId("month-panel").classList.toggle("date-filtered", !isFullRange);
+  activeSeries = isFullRange
+    ? fullMonthSeries
+    : sliceSeries(fullMonthSeries, startIdx, endIdx);
+  byId("chart-mpi-all").innerHTML = renderAllCompaniesMpiChart(activeSeries);
+  byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
+  byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
   byId("chart-company-series").innerHTML = ADS_COMPANIES.map(company => `
     <div class="month-chart">
       <h3>${company}</h3>
-      ${renderCompanyMonthlyChart(series, company)}
+      ${renderCompanyMonthlyChart(activeSeries, company)}
     </div>
   `).join("");
   renderMonthlyLegends();
+  renderDateRangeControls();
   syncUrlState();
+  buildSanityChecks();
+  buildBrowser();
 }
 
 // --- Fault fraction data ---
@@ -1504,7 +1803,9 @@ const URL_STATE_KEYS = {
   asc: "a",
   companies: "c",
   metrics: "m",
+  dateRange: "d",
 };
+const URL_STATE_REQUIRED = ["f", "s", "a", "c", "m"];
 const URL_STATE_SORT_NONE = "-";
 
 function enabledKeyString(enabledByKey, orderedKeys) {
@@ -1529,6 +1830,15 @@ function encodeUiStateQuery() {
   params.set(URL_STATE_KEYS.asc, sortAsc ? "1" : "0");
   params.set(URL_STATE_KEYS.companies, enabledKeyString(monthCompanyEnabled, ADS_COMPANIES));
   params.set(URL_STATE_KEYS.metrics, enabledKeyString(monthMetricEnabled, METRIC_KEYS));
+  const fullLen = fullMonthSeries ? fullMonthSeries.months.length : 0;
+  const isDefaultRange = monthRangeStart === 0 &&
+    (monthRangeEnd === Infinity || (fullLen > 0 && monthRangeEnd >= fullLen - 1));
+  if (!isDefaultRange) {
+    const endClamped = fullLen > 0
+      ? Math.min(monthRangeEnd === Infinity ? fullLen - 1 : monthRangeEnd, fullLen - 1)
+      : monthRangeEnd;
+    params.set(URL_STATE_KEYS.dateRange, `${monthRangeStart}-${endClamped}`);
+  }
   return params.toString();
 }
 
@@ -1545,7 +1855,7 @@ function applyUiStateQuery(queryString) {
     seenKeys.add(key);
     assert(expectedSet.has(key), "Unexpected URL state key", {key, raw});
   }
-  for (const key of expectedKeys) {
+  for (const key of URL_STATE_REQUIRED) {
     assert(params.has(key), "Missing URL state key", {key, raw});
   }
 
@@ -1573,6 +1883,18 @@ function applyUiStateQuery(queryString) {
   const metricsVal = params.get(URL_STATE_KEYS.metrics);
   assert(metricsVal !== null, "Missing metrics URL state", {raw});
   monthMetricEnabled = parseEnabledKeyString(metricsVal, METRIC_KEYS, "metrics");
+
+  if (params.has(URL_STATE_KEYS.dateRange)) {
+    const drVal = params.get(URL_STATE_KEYS.dateRange);
+    const drHit = /^(\d+)-(\d+)$/.exec(drVal);
+    assert(drHit !== null, "Invalid date range URL state format", {drVal});
+    const drStart = Number(drHit[1]);
+    const drEnd = Number(drHit[2]);
+    assert(drStart >= 0 && drEnd >= drStart,
+      "Invalid date range URL state values", {drStart, drEnd});
+    monthRangeStart = drStart;
+    monthRangeEnd = drEnd;
+  }
 }
 
 function canSyncUrlState() {
@@ -1599,7 +1921,7 @@ function syncUrlState() {
 const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Fault variance", "Severity", "Narrative"];
 
 function buildBrowser() {
-  const rows = incidentsInVmtWindow();
+  const rows = activeIncidents();
   const counts = countByCompany(rows);
   const filterDiv = byId("filters");
   filterDiv.replaceChildren();
@@ -1647,7 +1969,7 @@ function renderHeaders() {
 
 function renderTable() {
   const tbody = byId("incidents-body");
-  const rows = incidentsInVmtWindow();
+  const rows = activeIncidents();
   let filtered = activeFilter === "All"
     ? [...rows]
     : rows.filter(r => r.company === activeFilter);
@@ -1739,8 +2061,9 @@ function escAttr(s) {
 // --- Sanity Checks ---
 
 function buildSanityChecks() {
-  const rows = incidentsInVmtWindow();
-  const series = monthSeriesData();
+  const rows = activeIncidents();
+  const vmt = activeVmt();
+  const series = activeSeries || monthSeriesData();
   const companies = ADS_COMPANIES;
   const sections = [];
 
@@ -1925,7 +2248,7 @@ Sensor failures do count as the fault of the AV.
   // --- 5. VMT uncertainty ---
   const vmtUncRows = [];
   for (const co of companies) {
-    const coVmt = vmtRows.filter(r => r.company === co);
+    const coVmt = vmt.filter(r => r.company === co);
     if (coVmt.length === 0) continue;
     const totalMin = coVmt.reduce((s, r) => s + r.vmtMin * r.coverage, 0);
     const totalBest = coVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
@@ -1963,7 +2286,7 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
   // Under the Poisson model, X²/(n-1) ≈ 1.
   const dispRows = [];
   for (const co of companies) {
-    const coVmt = vmtRows.filter(r => r.company === co);
+    const coVmt = vmt.filter(r => r.company === co);
     const monthData = [];
     for (const vmtRow of coVmt) {
       const count = rows.filter(r =>
@@ -2100,7 +2423,7 @@ Maybe that affects AVs too?
   // --- 9. VMT sources ---
   const vmtSrcRows = [];
   for (const co of companies) {
-    const coVmt = vmtRows.filter(r => r.company === co);
+    const coVmt = vmt.filter(r => r.company === co);
     if (coVmt.length === 0) continue;
     // Use the rationale from the first row (they're all the same per company)
     const rationales = [...new Set(coVmt.map(r => r.rationale).filter(Boolean))];
@@ -2127,7 +2450,7 @@ These are the denominators in every miles per incident (MPI) calculation, so any
   // --- 10. Incident coverage for partial months ---
   const icRows = [];
   for (const co of companies) {
-    const coVmt = vmtRows.filter(r => r.company === co);
+    const coVmt = vmt.filter(r => r.company === co);
     const partial = coVmt.filter(r => r.incCov < 1);
     if (partial.length === 0) {
       icRows.push(`<tr>
@@ -2306,8 +2629,6 @@ function initTooltips() {
   faultData = buildFaultDataFromIncidents(incidentData);
   loadUiStateFromLocation();
   buildMonthlyViews();
-  buildBrowser();
-  buildSanityChecks();
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE} (per HTTP header).`
     : "";

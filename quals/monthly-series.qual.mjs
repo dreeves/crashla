@@ -13,6 +13,9 @@ class ElementStub {
     this.textContent = "";
     this.listeners = {};
     this._innerHTML = "";
+    this.style = {};
+    this.value = "0";
+    this.classList = { toggle() {} };
   }
 
   appendChild(child) {
@@ -29,6 +32,10 @@ class ElementStub {
   addEventListener(type, fn) {
     this.listeners[type] = [...(this.listeners[type] || []), fn];
   }
+
+  setAttribute(k, v) { this[k] = v; }
+
+  querySelector() { return new ElementStub("queried"); }
 
   set innerHTML(v) {
     this._innerHTML = v;

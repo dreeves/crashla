@@ -85,6 +85,7 @@ faultData = {
     rgemini: "c",
   },
 };
+activeSeries = { months: ["2025-06"] };
 buildBrowser();
 `, ctx);
 
