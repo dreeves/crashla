@@ -139,6 +139,26 @@ VEHICLES_INVOLVED = {
     "dc166aecd5b4265": 3,
 }
 
+# Manual severity overrides keyed by Same Incident ID. The NHTSA field
+# "Highest Injury Severity Alleged" is sometimes "Unknown"; we resolve it
+# from the narrative, counting only human injuries (not animal).
+SEVERITY_OVERRIDE = {
+    # Detached object from pickup; Waymo passenger alleged unspecified injury
+    "3aaa6f68cd36c6a": "Minor W/O Hospitalization",
+    # Hit a cat; only animal injured, no human injury
+    "4ff19a5f7f16d32": "Property Damage. No Injured Reported",
+    # Waymo stopped on US-101; pickup went off bridge; minor injuries in pickup
+    "9dd54dcd7afd557": "Minor W/O Hospitalization",
+    # Waymo stopped; two SUVs collided behind it; no injuries mentioned
+    "7ef0a8cc1427085": "Property Damage. No Injured Reported",
+    # Waymo parked; rear-ended by SUV; passengers alleged unknown injuries
+    "4ef86957b945a92": "Minor W/O Hospitalization",
+    # Waymo stopped at red; rear-ended; other driver transported to hospital
+    "2908275d904dec6": "Minor W/ Hospitalization",
+    # Waymo slow at stop sign; rear-ended; Waymo passenger transported to hospital
+    "bb1ec8d2c85745a": "Minor W/ Hospitalization",
+}
+
 
 def must(cond, msg, **ctx):
     if not cond:
@@ -745,6 +765,8 @@ def main():
         }
         iid_short = rec["incidentId"]
         rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(iid_short, 2)
+        if iid_short in SEVERITY_OVERRIDE:
+            rec["severity"] = SEVERITY_OVERRIDE[iid_short]
         incidents.append(rec)
 
     incident_ids = {r["reportId"] for r in incidents}

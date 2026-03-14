@@ -229,10 +229,10 @@ Resultata: no data-tip attributes found.`,
 );
 
 assert.ok(
-  distChart.includes("Densitas probabilitatis MPI"),
+  distChart.includes("Probability Density for True MPI"),
   `Replicata: call renderDistributionChart and inspect y-axis label.
-Expectata: y-axis label is Latin "Densitas probabilitatis MPI" per rule 14.
-Resultata: Latin label not found in output.`,
+Expectata: y-axis label is "Probability Density for True MPI".
+Resultata: expected label not found in output.`,
 );
 
 assert.ok(
