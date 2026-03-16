@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Waymo VMT: Three Estimation Approaches Compared</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2em auto; padding: 0 1em; background: #f8f9fa; }
+  h1 { font-size: 1.4em; }
+  h2 { font-size: 1.15em; margin-top: 2em; }
+  .chart-wrap { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1); padding: 1em; margin: 1.5em 0; }
+  svg text { font-family: system-ui, sans-serif; }
+  .legend { display: flex; gap: 1.5em; justify-content: center; margin: 0.5em 0 1em; font-size: 0.85em; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.3em; }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 2px; display: inline-block; }
+  .note { font-size: 0.82em; color: #666; margin-top: 1em; line-height: 1.5; }
+  .method { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1); padding: 1em 1.2em; margin: 1em 0; font-size: 0.9em; line-height: 1.6; }
+  .method h3 { margin: 0 0 0.3em; font-size: 1em; }
+  .method-old h3 { color: #4285f4; }
+  .method-ca h3 { color: #ea4335; }
+  .method-smooth h3 { color: #34a853; }
+  .verdict { border-left: 3px solid #34a853; padding-left: 1em; margin: 1.5em 0; font-size: 0.9em; }
+  table { border-collapse: collapse; font-size: 0.85em; margin: 1em 0; width: 100%; }
+  th, td { padding: 0.3em 0.8em; text-align: right; border-bottom: 1px solid #eee; }
+  th { background: #f8f9fa; font-weight: 600; }
+  td:first-child, th:first-child { text-align: left; }
+  .highlight { background: #e8f5e9; }
+</style>
+</head>
+<body>
+<h1>Waymo Monthly US VMT: Three Estimation Approaches</h1>
+
+<div class="chart-wrap">
+  <div class="legend">
+    <span><span class="swatch" style="background:rgba(66,133,244,.25);border:2px solid #4285f4"></span> Old (exponential extrapolation)</span>
+    <span><span class="swatch" style="background:rgba(234,67,53,.25);border:2px solid #ea4335"></span> CA-proxy (CPUC monthly distribution)</span>
+    <span><span class="swatch" style="background:rgba(52,168,83,.25);border:2px solid #34a853"></span> Smooth (milestone interpolation)</span>
+  </div>
+  <svg id="chart" viewBox="0 0 900 420"></svg>
+  <p class="note">
+    <b>Shaded bands</b> show min/max uncertainty ranges (±25% Jun&ndash;Sep, ±30% Oct&ndash;Jan
+    for the smooth model). Bands are calibrated to encompass the envelope of
+    PCHIP, Akima, linear interpolation, the CA-proxy methodology, milestone
+    perturbations (±1%), and date uncertainty (±5 days on the 200M crossing),
+    plus a 10% margin for unmodeled events.
+    All three models are constrained to reach ~200M cumulative by ~Feb 14, 2026;
+    they differ in how they distribute miles across months.
+  </p>
+</div>
+
+<h2>The Three Methods</h2>
+
+<div class="method method-old">
+  <h3>1. Old Estimates (Blue) &mdash; Exponential Extrapolation</h3>
+  <p>The original Google Sheet estimates projected exponential growth from mid-2025 trends
+  without being constrained by the 200M milestone. This produced runaway growth:
+  28.5M/month by January 2026. <b>Problem:</b> at that rate, cumulative would reach
+  ~240M by mid-February &mdash; but Waymo only hit 200M around Feb 14.
+  These estimates are definitively too high for Oct&ndash;Jan.</p>
+</div>
+
+<div class="method method-ca">
+  <h3>2. CA-Proxy (Red) &mdash; CPUC Monthly Distribution</h3>
+  <p>Uses actual California CPUC driverless VMT filings to distribute US miles
+  within milestone intervals. CA monthly VMT is the most granular real data we have.
+  <b>Problem:</b> CA VMT plateaued at ~8.4M/month in Nov&ndash;Dec 2025, and the
+  model assumes constant CA share within each interval. This produces a US plateau
+  (16.4M for Nov, Dec, <i>and</i> Jan) that contradicts all growth indicators.
+  It also creates a spurious 33% dip in June 2025 from a CA-specific anomaly
+  (possibly service disruptions from anti-ICE protests in LA/SF).
+  CA is increasingly unrepresentative as Austin and other non-CA markets scale.</p>
+</div>
+
+<div class="method method-smooth">
+  <h3>3. Smooth Interpolation (Green) &mdash; PCHIP Through 13 Milestones</h3>
+  <p>Fits a monotone cubic curve (PCHIP) through 13 cumulative milestone data points,
+  including the newly found <b>100M milestone on July 15, 2025</b>.
+  Monthly VMT is derived from first differences of the cumulative curve.
+  <b>Strengths:</b> hits every milestone exactly, produces smooth monotonic growth,
+  no CA-specific artifacts. Consistent with weekly trip count cross-checks
+  (model/trip ratio 0.93&ndash;1.01x for 2025 data points).
+  <b>Limitation:</b> assumes smooth growth between milestones &mdash; can&rsquo;t
+  capture real month-to-month fluctuations from events like city launches or
+  service disruptions. But for crash-rate denominators, smooth is arguably
+  more appropriate than noisy.
+  Uncertainty bands (±25&ndash;30%) are calibrated to encompass the full envelope
+  of alternative models (Akima, linear, CA-proxy) plus milestone perturbations
+  and a margin for unmodeled events.</p>
+</div>
+
+<div class="verdict">
+  <b>Verdict:</b> The smooth model is our best estimate. It respects milestone
+  constraints, shows continued exponential growth (~10&ndash;14%/month in late 2025),
+  and cross-checks against independent trip count data. The CA-proxy model&rsquo;s
+  plateau and June dip are artifacts of using a single region as a proxy for
+  national operations.
+</div>
+
+<h2>Side-by-Side Comparison</h2>
+<table>
+  <tr><th>Month</th><th>Old (extrap.)</th><th>CA-Proxy</th><th>Smooth (PCHIP)</th><th>Notes</th></tr>
+  <tr><td>Jun 2025</td><td>7.1M</td><td>6.5M</td><td class="highlight">8.3M</td><td>CA-proxy has spurious 33% dip</td></tr>
+  <tr><td>Jul 2025</td><td>9.6M</td><td>8.9M</td><td class="highlight">8.9M</td><td>CA-proxy and smooth agree</td></tr>
+  <tr><td>Aug 2025</td><td>11.0M</td><td>10.2M</td><td class="highlight">10.5M</td><td>All three similar</td></tr>
+  <tr><td>Sep 2025</td><td>13.0M</td><td>12.0M</td><td class="highlight">11.6M</td><td>All three similar</td></tr>
+  <tr><td>Oct 2025</td><td>15.8M</td><td>15.4M</td><td class="highlight">13.7M</td><td>CA-proxy front-loads interval</td></tr>
+  <tr><td>Nov 2025</td><td>19.2M</td><td>16.4M</td><td class="highlight">14.8M</td><td>Smooth shows continued growth</td></tr>
+  <tr><td>Dec 2025</td><td>23.4M</td><td>16.4M</td><td class="highlight">17.0M</td><td>CA-proxy plateaus; smooth grows</td></tr>
+  <tr><td>Jan 2026</td><td>28.5M</td><td>16.4M</td><td class="highlight">18.6M</td><td>Smooth 13% above CA-proxy</td></tr>
+  <tr style="font-weight:600; border-top:2px solid #333">
+    <td>Total</td><td>127.7M</td><td>102.3M</td><td>103.4M</td><td>CA-proxy &amp; smooth ≈ equal (milestone-constrained)</td></tr>
+</table>
+
+<h2>Why Not Just Use CA Data?</h2>
+<p class="note" style="font-size:0.9em; color:#333">
+As Waymo expands beyond California, the CPUC data becomes a less reliable proxy for
+US-wide monthly patterns. Three signals illustrate this:<br><br>
+<b>1. CA VMT plateaued while US growth accelerated.</b>
+CA deployment VMT was 8.4M in both Nov and Dec 2025 (CPUC filings), yet Waymo&rsquo;s
+US milestone pace was accelerating: the time to add each 25M miles dropped from ~5
+months (25M&rarr;50M) to ~6 weeks (175M&rarr;200M). Non-CA markets (Austin, Phoenix
+highways) were driving the growth.<br><br>
+<b>2. June 2025 CA dip didn&rsquo;t happen nationally.</b>
+CA deployment VMT dropped 33% in June (5.4M&rarr;3.6M), but the milestone data shows
+Waymo accumulated 25M US miles in Apr&ndash;Jun at an <i>accelerating</i> pace, reaching
+100M just 15 days into July. The June dip was CA-specific.<br><br>
+<b>3. Trip counts and weekly miles confirm smooth growth.</b>
+Waymo reported 250K weekly trips (Apr), ~450K (Dec), and 400K+ (Feb 2026). At 8&ndash;9
+miles/trip including deadhead, these imply 8.7M&rarr;17.5M monthly VMT &mdash; consistent
+with the smooth model, not the CA-proxy plateau.<br><br>
+<b>4. Weekly miles rate data independently validates the curve shape.</b>
+Official Waymo statements report lower-bound weekly mile rates:
+&ldquo;1M+/week&rdquo; (Oct 2024),
+&ldquo;2M+/week&rdquo; (Jul 2025),
+and &ldquo;over 4 million miles per week&rdquo;
+(Feb 4, 2026 &mdash; Waymo CSO Mauricio Pena, US Senate testimony).
+The smooth model&rsquo;s PCHIP derivative gives 1.2M, 2.1M, and 4.4M/week
+at those dates &mdash; consistently above the stated floors, with a ratio of
+1.03&ndash;1.22x. The model predicts crossing 4M/week on Dec 29, 2025.
+A Dec 8 CNBC report citing &ldquo;2M+/week&rdquo; appears to be a stale figure;
+the model shows 3.7M/week by then.
+</p>
+
+<h2>Milestones Used (13 data points + rate checks)</h2>
+<table>
+  <tr><th>Date</th><th>Cumulative</th><th>Source</th></tr>
+  <tr><td>Oct 31, 2022</td><td>0</td><td>Driverless pilot started Nov 2022</td></tr>
+  <tr><td>Dec 31, 2022</td><td>1M</td><td>Waymo blog</td></tr>
+  <tr><td>Oct 31, 2023</td><td>7.14M</td><td>Waymo safety page</td></tr>
+  <tr><td>Dec 31, 2023</td><td>9.3M</td><td>Waymo safety page</td></tr>
+  <tr><td>Jun 30, 2024</td><td>22M</td><td>Waymo announcement</td></tr>
+  <tr><td>Jul 31, 2024</td><td>25M</td><td>Safety Impact Hub</td></tr>
+  <tr><td>Dec 31, 2024</td><td>50M</td><td>Waymo announcement</td></tr>
+  <tr><td>Jan 31, 2025</td><td>56.7M</td><td>Peer-reviewed paper</td></tr>
+  <tr><td>Mar 31, 2025</td><td>71M</td><td>Waymo announcement</td></tr>
+  <tr><td>Jun 30, 2025</td><td>96M</td><td>Waymo announcement</td></tr>
+  <tr><td>Jul 15, 2025</td><td>100M</td><td>Waymo &ldquo;100M miles&rdquo; announcement</td></tr>
+  <tr><td>Sep 30, 2025</td><td>127M</td><td>Safety Impact Hub (Dec 2025)</td></tr>
+  <tr><td>~Feb 14, 2026</td><td>200M</td><td>&ldquo;nearly 200M&rdquo; Feb 6; &ldquo;over 200M&rdquo; Feb 23</td></tr>
+  <tr><td colspan="3" style="text-align:left; font-weight:600; background:#f0f0f0; padding-top:0.5em">Rate cross-checks (not used in model, validate curve shape)</td></tr>
+  <tr><td>Oct 29, 2024</td><td>1M+/week</td><td>Alphabet Q3 2024 earnings (model: 1.2M/week)</td></tr>
+  <tr><td>Jul 15, 2025</td><td>2M+/week</td><td>100M milestone announcement (model: 2.1M/week)</td></tr>
+  <tr><td>Feb 4, 2026</td><td>4M+/week</td><td>Senate testimony, Waymo CSO M. Pena (model: 4.4M/week)</td></tr>
+</table>
+
+<h2>Search for Intermediate Milestones</h2>
+<p class="note" style="font-size:0.9em; color:#333">
+The biggest gap in our data is Sep 30 (127M) to ~Feb 14 (200M) &mdash; 4.5 months
+and 73M miles. We exhaustively searched for any intermediate cumulative milestone
+from Waymo (blog posts, X/Twitter, Alphabet Q3 &amp; Q4 2025 earnings calls,
+Safety Impact Hub updates, Senate testimony, SEC filings, the 2025 Year in Review blog,
+the $16B fundraise announcement).<br><br>
+<b>Result: no intermediate cumulative milestone exists.</b>
+Waymo did not announce 150M or 175M. The Q3 2025 earnings call (Oct 29)
+mentioned no mileage figure. The Dec 16 Safety Hub update still referenced
+127M through September. The $16B blog (Feb 2) still cited &ldquo;127 million miles.&rdquo;
+The 200M figure first appeared as &ldquo;nearly 200M&rdquo; on Feb 4&ndash;12, then
+&ldquo;over 200M&rdquo; on Feb 23.<br><br>
+<b>However</b>, we found a valuable rate constraint: Waymo CSO Mauricio Pena
+testified to the US Senate on Feb 4, 2026 that Waymo drives
+&ldquo;over 4 million miles&rdquo; per week. Our model predicts 4.4M/week on that date
+and first crosses 4M/week on Dec 29 &mdash; perfectly consistent.<br><br>
+Third-party estimates (EE Times: ~150M, Driverless Digest: ~165M at year-end 2025)
+are lower than our model (~172M) because they extrapolated from 127M without
+the 200M endpoint constraint.
+</p>
+
+<h2>Uncertainty: What the Bands Do and Don&rsquo;t Capture</h2>
+
+<div class="method">
+<h3 style="color:#333">What the bands cover</h3>
+<p>The ±25&ndash;30% bands on the smooth model are calibrated to encompass:</p>
+<ul style="margin:0.3em 0; padding-left:1.5em; line-height:1.7">
+  <li><b>Alternative interpolation methods</b> &mdash; PCHIP, Akima, and linear
+      interpolation give different monthly distributions. The bands cover all three.</li>
+  <li><b>The CA-proxy methodology</b> &mdash; an entirely different approach
+      (distributing US miles proportionally to CA CPUC monthly data). Every
+      CA-proxy estimate falls within the smooth model&rsquo;s bands.</li>
+  <li><b>Milestone value uncertainty (±1%)</b> &mdash; &ldquo;22 million&rdquo; could mean
+      21.8M or 22.2M. 500 Monte Carlo perturbations confirm the bands cover this.</li>
+  <li><b>200M crossing date uncertainty (±5 days)</b> &mdash; shifting the date from
+      Feb 8 to Feb 20 changes Oct&ndash;Jan estimates by only ±4&ndash;9%.</li>
+  <li><b>A 10% margin for unmodeled events</b> &mdash; service disruptions, city
+      launches, seasonal effects, fleet maintenance.</li>
+</ul>
+</div>
+
+<div class="method">
+<h3 style="color:#333">What the bands don&rsquo;t capture</h3>
+<ul style="margin:0.3em 0; padding-left:1.5em; line-height:1.7">
+  <li><b>Month-to-month correlation.</b> Oct&ndash;Jan must sum to ~73M
+      (milestone-constrained). If Oct is at its low end, Nov&ndash;Jan must compensate.
+      The bands are valid <i>per-month</i> for crash-rate denominators, but you
+      cannot read all four lo values simultaneously (that would imply only 44M
+      total, not 73M). For cumulative uncertainty, the bands are tighter than
+      they appear because errors partially cancel.</li>
+  <li><b>No independent non-CA monthly data.</b> We have no monthly VMT data
+      for Austin, Phoenix, or other non-CA markets. The smooth interpolation
+      papers over this gap. If a single city had a dramatic ramp-up or shutdown
+      in a specific month, we wouldn&rsquo;t see it.</li>
+  <li><b>Jul 2025 is pathologically sensitive</b> to the 100M milestone value.
+      Because it straddles two tight intervals (96M on Jun 30 &rarr; 100M on Jul 15
+      &rarr; 127M on Sep 30), a ±2% shift in the 100M milestone moves Jul&rsquo;s
+      estimate by ±34%. The ±25% band just barely covers this.</li>
+  <li><b>Trip count cross-checks have their own uncertainty.</b>
+      Waymo&rsquo;s &ldquo;150K+&rdquo; and &ldquo;2M+&rdquo; figures are lower bounds, and converting
+      trips to miles requires assuming a miles-per-trip ratio (6.7&ndash;9.0)
+      that itself changes over time.</li>
+</ul>
+</div>
+
+<div class="method">
+<h3 style="color:#333">Sensitivity analysis summary</h3>
+<p>Combined worst-case perturbations (127M→125M, 200M date ±6 days, value ±3M)
+only shift monthly estimates by ±2&ndash;4%. The ±30% bands are dominated by
+<b>interpolation shape uncertainty</b> (which growth trajectory is correct between
+milestones), not milestone precision. For crash-rate analysis, this is the honest
+level of uncertainty: we know the cumulative total well, but the month-by-month
+distribution within the Oct&ndash;Feb interval is genuinely uncertain at the
+±30% level.</p>
+</div>
+
+<script>
+// ── Data: three estimation approaches ──
+const old = [
+  {m:"Jun 25", mid:7055803, lo:5997433, hi:8114173},
+  {m:"Jul",    mid:9643781, lo:8197214, hi:11090348},
+  {m:"Aug",    mid:11021172, lo:9367996, hi:12674348},
+  {m:"Sep",    mid:12991437, lo:11042721, hi:14940153},
+  {m:"Oct",    mid:15812060, lo:11068442, hi:20555678},
+  {m:"Nov",    mid:19245080, lo:13471556, hi:25018604},
+  {m:"Dec",    mid:23423456, lo:16396419, hi:30450493},
+  {m:"Jan 26", mid:28509017, lo:19956312, hi:37061722},
+];
+const caProxy = [
+  {m:"Jun 25", mid:6514873, lo:5537642, hi:7492104},
+  {m:"Jul",    mid:8875435, lo:7544120, hi:10206750},
+  {m:"Aug",    mid:10159117, lo:8635249, hi:11682985},
+  {m:"Sep",    mid:11965448, lo:10170631, hi:13760265},
+  {m:"Oct",    mid:15437580, lo:12350064, hi:18525096},
+  {m:"Nov",    mid:16437998, lo:13150398, hi:19725598},
+  {m:"Dec",    mid:16449769, lo:13159815, hi:19739723},
+  {m:"Jan 26", mid:16449769, lo:13159815, hi:19739723},
+];
+const smooth = [
+  {m:"Jun 25", mid:8295216, lo:6221412, hi:10369020},    // PCHIP, ±25%
+  {m:"Jul",    mid:8871767, lo:6653825, hi:11089709},    // ±25%
+  {m:"Aug",    mid:10485460, lo:7864095, hi:13106825},   // ±25%
+  {m:"Sep",    mid:11642773, lo:8732080, hi:14553466},   // ±25%
+  {m:"Oct",    mid:13697521, lo:9588265, hi:17806777},   // ±30%
+  {m:"Nov",    mid:14835759, lo:10385031, hi:19286487},  // ±30%
+  {m:"Dec",    mid:16951530, lo:11866071, hi:22036989},  // ±30%
+  {m:"Jan 26", mid:18587646, lo:13011352, hi:24163940}, // ±30%
+];
+
+const svg = document.getElementById("chart");
+const W = 900, H = 420;
+const mL = 80, mR = 30, mT = 20, mB = 50;
+const pW = W - mL - mR, pH = H - mT - mB;
+const n = old.length;
+
+const yMax = 40e6;
+const yTicks = [0, 5e6, 10e6, 15e6, 20e6, 25e6, 30e6, 35e6];
+
+const mapX = i => mL + (i / (n - 1)) * pW;
+const mapY = v => mT + pH - (v / yMax) * pH;
+const fmtM = v => (v / 1e6).toFixed(0) + "M";
+
+// Grid
+let s = "";
+for (const y of yTicks) {
+  s += `<line x1="${mL}" y1="${mapY(y)}" x2="${mL+pW}" y2="${mapY(y)}" stroke="#e0e0e0" stroke-width="1"/>`;
+  s += `<text x="${mL-10}" y="${mapY(y)+4}" text-anchor="end" font-size="12" fill="#666">${fmtM(y)}</text>`;
+}
+// X labels
+for (let i = 0; i < n; i++) {
+  s += `<line x1="${mapX(i)}" y1="${mT}" x2="${mapX(i)}" y2="${mT+pH}" stroke="#f0f0f0" stroke-width="1"/>`;
+  s += `<text x="${mapX(i)}" y="${H-20}" text-anchor="middle" font-size="13" fill="#333">${old[i].m}</text>`;
+}
+// Axes
+s += `<line x1="${mL}" y1="${mT}" x2="${mL}" y2="${mT+pH}" stroke="#999" stroke-width="1"/>`;
+s += `<line x1="${mL}" y1="${mT+pH}" x2="${mL+pW}" y2="${mT+pH}" stroke="#999" stroke-width="1"/>`;
+s += `<text x="14" y="${mT+pH/2}" transform="rotate(-90 14 ${mT+pH/2})" text-anchor="middle" font-size="13" fill="#666">US Driverless VMT (miles/month)</text>`;
+
+function rangePoly(data, fill) {
+  const pts = data.map((d,i) => `${mapX(i)},${mapY(d.hi)}`).join(" ")
+    + " " + [...data].reverse().map((d,i) => `${mapX(n-1-i)},${mapY(d.lo)}`).join(" ");
+  return `<polygon points="${pts}" fill="${fill}" stroke="none"/>`;
+}
+
+function midLine(data, color, dash) {
+  const pts = data.map((d,i) => `${mapX(i)},${mapY(d.mid)}`).join(" ");
+  return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" ${dash ? `stroke-dasharray="${dash}"` : ""}/>`;
+}
+
+function dots(data, color) {
+  return data.map((d,i) => `<circle cx="${mapX(i)}" cy="${mapY(d.mid)}" r="4" fill="${color}" stroke="#fff" stroke-width="1.5"/>`).join("");
+}
+
+// Draw in order: bands (back), then lines, then dots (front)
+// Old: blue, light band
+s += rangePoly(old, "rgba(66,133,244,0.08)");
+// CA-proxy: red, no band (too cluttered with 3 series), just dashed line
+// Smooth: green band
+s += rangePoly(smooth, "rgba(52,168,83,0.12)");
+
+// Lines
+s += midLine(old, "#4285f4", "");            // solid blue
+s += midLine(caProxy, "#ea4335", "6 4");     // dashed red
+s += midLine(smooth, "#34a853", "");         // solid green
+
+// Dots
+s += dots(old, "#4285f4");
+s += dots(caProxy, "#ea4335");
+s += dots(smooth, "#34a853");
+
+// Value labels at Jan 26
+const lastO = old[n-1], lastC = caProxy[n-1], lastS = smooth[n-1];
+s += `<text x="${mapX(n-1)+12}" y="${mapY(lastO.mid)-2}" font-size="11" fill="#4285f4" font-weight="600">${(lastO.mid/1e6).toFixed(1)}M</text>`;
+s += `<text x="${mapX(n-1)+12}" y="${mapY(lastS.mid)+2}" font-size="11" fill="#34a853" font-weight="600">${(lastS.mid/1e6).toFixed(1)}M</text>`;
+s += `<text x="${mapX(n-1)+12}" y="${mapY(lastC.mid)+14}" font-size="11" fill="#ea4335" font-weight="600">${(lastC.mid/1e6).toFixed(1)}M</text>`;
+
+svg.innerHTML = s;
+</script>
+</body>
+</html>

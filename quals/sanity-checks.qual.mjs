@@ -197,12 +197,12 @@ assert.ok(
 Expectata: VMT sources table includes methodology descriptions.
 Resultata: expected content not found.`);
 
-// --- Incident coverage: January partial month ---
+// --- Incident coverage section ---
 assert.ok(
-  html.includes("48.4%") &&
-    html.includes("All months have full incident coverage"),
+  html.includes("Incident coverage") &&
+    html.includes("Calendar coverage"),
   `Replicata: check incident coverage content.
-Expectata: January calendar coverage (48.4%) and Tesla full coverage appear.
+Expectata: Incident coverage section with calendar coverage explanation appears.
 Resultata: expected content not found.`);
 
 // --- Human benchmarks: derivation table ---

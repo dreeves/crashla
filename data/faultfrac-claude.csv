@@ -530,3 +530,4 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11044,1,Non-Motorist: Cyclist,rear right,,No Injuries Reported,0.7,AV changing lanes at low speed; struck cyclist
 30270-11013,2,Passenger Car,rear,front,No Injuries Reported,0.3,Both proceeding straight at low speed; shared fault likely
 30270-10998,0,Pickup Truck,rear left,front right,No Injuries Reported,0,AV parked; struck by pickup proceeding straight
+13781-14043,9,Other Fixed Object,left+bottom,,Property Damage. No Injured Reported,0.9,AV lane departure into fixed object; should maintain lane position

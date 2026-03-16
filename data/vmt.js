@@ -8,15 +8,7 @@ tesla,2025-09,90202,176923.5,88550,91854,1.0,1,1,1,Austin only: robotaxitracker 
 tesla,2025-10,80061,256984.5,67965,92157,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 tesla,2025-11,103800,360784.5,88230,119370,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 tesla,2025-12,146870.5,507655,111351,182390,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2026-01,164845,672500,92690,237000,0.484,1.0,1.0,1.0,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-waymo,2025-06,7055803,7055803,5997433,8114173,1.0,1,1,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-07,9643781,16699584,8197214,11090348,1.0,1,1,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-08,11021172,27720756,9367996,12674348,1.0,1,1,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-09,12991437,40712193,11042721,14940153,1.0,1,1,1,US est.: scale CA driverless VMT incl deadhead to all US using Waymo RO-mile city shares (through Sep 2025); ±15%.
-waymo,2025-10,15812060,56524253,11068442,20555678,1.0,1,1,1,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
-waymo,2025-11,19245080,75769333,13471556,25018604,1.0,1,1,1,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
-waymo,2025-12,23423456,99192789,16396419,30450493,1.0,1,1,1,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
-waymo,2026-01,28509017,127701806,19956312,37061722,0.484,0.5389,0.4426,0.625,US est.: extrapolate beyond Sep 2025 then scale to all US; -30%/+30%.
+tesla,2026-01,164845,672500,92690,237000,0.484,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 zoox,2025-06,120000,120000,60000,240000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-07,130000,250000,65000,260000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-08,145000,395000,72500,290000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
@@ -24,6 +16,45 @@ zoox,2025-09,160000,555000,80000,320000,1.0,1,1,1,US rough est.: no month-level 
 zoox,2025-10,175000,730000,87500,350000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-11,190000,920000,95000,380000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-12,205000,1125000,102500,410000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2026-01,220000,1345000,110000,440000,0.484,0.6667,0.6667,0.6667,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2026-01,220000,1345000,110000,440000,0.484,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+waymo,2022-11,477159,477159,238580,715738,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2022-12,522841,1000000,261420,784262,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-01,543018,1543018,271509,814527,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-02,486192,2029210,243096,729288,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-03,541887,2571097,270944,812830,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-04,536259,3107356,268130,804388,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-05,575193,3682549,287596,862790,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-06,585450,4267999,292725,878175,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-07,643548,4911547,321774,965322,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-08,691719,5603266,345860,1037578,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-09,723796,6327062,361898,1085694,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-10,812937,7139999,406468,1219406,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-11,931491,8071490,465746,1397236,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
+waymo,2023-12,1228509,9299999,798531,1658487,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); deployment transition, shifting CA share; ±35%"
+waymo,2024-01,1561387,10861386,1014902,2107872,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); deployment transition, shifting CA share; ±35%"
+waymo,2024-02,1752784,12614170,1139310,2366258,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); deployment transition, shifting CA share; ±35%"
+waymo,2024-03,2131380,14745550,1385397,2877363,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); deployment transition, shifting CA share; ±35%"
+waymo,2024-04,2263088,17008638,1471007,3055169,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); deployment transition, shifting CA share; ±35%"
+waymo,2024-05,2489584,19498222,1618230,3360938,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); deployment transition, shifting CA share; ±35%"
+waymo,2024-06,2501777,21999999,1626155,3377399,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); deployment transition, shifting CA share; ±35%"
+waymo,2024-07,3000000,24999999,2250000,3750000,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2024-08,3969048,28969047,2976786,4961310,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2024-09,4513576,33482623,3385182,5641970,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2024-10,5212185,38694808,3909139,6515231,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2024-11,5433979,44128787,4075484,6792474,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2024-12,5871213,50000000,4403410,7339016,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-01,6700000,56700000,5025000,8375000,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-02,6570870,63270870,4928152,8213588,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-03,7729130,71000000,5796848,9661412,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-04,8028149,79028149,6021112,10035186,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-05,8676635,87704784,6507476,10845794,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-06,8295216,96000000,6221412,10369020,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-07,8871767,104871767,6653825,11089709,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-08,10485460,115357227,7864095,13106825,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-09,11642773,127000000,8732080,14553466,1.0,1,1,1,US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo,2025-10,13697521,140697521,9588265,17806777,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
+waymo,2025-11,14835759,155533280,10385031,19286487,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
+waymo,2025-12,16951530,172484810,11866071,22036989,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
+waymo,2026-01,18587646,191072456,13011352,24163940,0.484,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
 `
 /* VMT_CSV_END */;

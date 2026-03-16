@@ -1,0 +1,8 @@
+waymo	2025-06	8295216	8295216	6221412	10369020	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo	2025-07	8871767	17166983	6653825	11089709	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo	2025-08	10485460	27652443	7864095	13106825	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo	2025-09	11642773	39295216	8732080	14553466	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); dense milestones + interpolation/event uncertainty; ±25%
+waymo	2025-10	13697521	52992737	9588265	17806777	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%
+waymo	2025-11	14835759	67828496	10385031	19286487	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%
+waymo	2025-12	16951530	84780026	11866071	22036989	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%
+waymo	2026-01	18587646	103367672	13011352	24163940	US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%

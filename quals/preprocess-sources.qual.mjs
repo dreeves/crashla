@@ -15,7 +15,8 @@ Resultata: expected live-source constants were missing.`,
 
 assert.ok(
   preprocess.includes("def fetch_nhtsa_csv(stamp):") &&
-    preprocess.includes("def fetch_vmt_sheet_csv(inc_cov, stamp):") &&
+    preprocess.includes("def fetch_vmt_sheet_raw(stamp):") &&
+    preprocess.includes("def build_vmt_csv(raw_text, inc_cov):") &&
     preprocess.includes("def snapshot_csv_if_changed(prefix, text, stamp):") &&
     preprocess.includes("urllib.request.urlopen"),
   `Replicata: inspect data/slurp.py fetch code path.

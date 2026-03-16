@@ -535,17 +535,33 @@ def incident_coverage(nhtsa_rows):
     return result
 
 
-def fetch_vmt_sheet_csv(inc_cov, stamp):
-    """Fetch VMT CSV from Google Sheets and add coverage + incident_coverage.
-
-    inc_cov: dict from incident_coverage(), mapping (company, iso_month) to
-    (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
-    """
+def fetch_vmt_sheet_raw(stamp):
+    """Fetch raw VMT CSV text from Google Sheets (and snapshot it)."""
     with urllib.request.urlopen(VMT_SHEET_URL, timeout=30) as resp:
         payload = resp.read()
     text = payload.decode("utf-8")
     snapshot_csv_if_changed("vmt-sheet", text, stamp)
-    lines = text.splitlines()
+    return text
+
+
+def parse_vmt_months(raw_text):
+    """Parse the set of ISO months from the raw VMT CSV text."""
+    months = set()
+    for line in raw_text.splitlines()[1:]:  # skip header
+        if not line.strip():
+            continue
+        parts = line.split(",", 2)
+        months.add(parts[1].strip())
+    return months
+
+
+def build_vmt_csv(raw_text, inc_cov):
+    """Add coverage + incident_coverage columns to the raw VMT CSV text.
+
+    inc_cov: dict from incident_coverage(), mapping (company, iso_month) to
+    (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
+    """
+    lines = raw_text.splitlines()
     must(len(lines) > 1, "VMT sheet CSV must include header and rows")
     must(lines[0] == "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale",
          "VMT sheet CSV header mismatch", header=lines[0])
@@ -715,18 +731,15 @@ def main():
     sync_fault_csvs(fault_master_rows)
     fault_models, fault_ids = load_fault_models()
 
-    # Filter to VMT window before looking up fault fractions.
-    # The archive includes years of data; we only need the analysis window.
-    VMT_MONTHS = {
-        "JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
-        "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026",
-    }
+    # Filter to months that have VMT data for any company.
+    # The archive includes years of data; we only need months with VMT.
+    vmt_raw = fetch_vmt_sheet_raw(run_stamp)
+    vmt_months = parse_vmt_months(vmt_raw)
     window_by_incident = {}
     excluded_count = 0
     for iid, entry in by_incident.items():
-        month = nhtsa_month_to_iso(entry["_row"]["Incident Date"].strip())
-        nhtsa_month = entry["_row"]["Incident Date"].strip()
-        if nhtsa_month not in VMT_MONTHS:
+        month_iso = nhtsa_month_to_iso(entry["_row"]["Incident Date"].strip())
+        if month_iso not in vmt_months:
             excluded_count += 1
             continue
         window_by_incident[iid] = entry
@@ -754,15 +767,17 @@ def main():
         rec["svHit"] = _contact_areas(r, "SV Contact Area")
         rec["cpHit"] = _contact_areas(r, "CP Contact Area")
         rid = rec["reportId"]
-        must(rid in fault_ids, "missing fault estimates for report", reportId=rid)
-        rec["fault"] = {
-            "claude": fault_models["claude"][rid]["faultfrac"],
-            "codex": fault_models["codex"][rid]["faultfrac"],
-            "gemini": fault_models["gemini"][rid]["faultfrac"],
-            "rclaude": fault_models["claude"][rid]["reasoning"],
-            "rcodex": fault_models["codex"][rid]["reasoning"],
-            "rgemini": fault_models["gemini"][rid]["reasoning"],
-        }
+        if rid in fault_ids:
+            rec["fault"] = {
+                "claude": fault_models["claude"][rid]["faultfrac"],
+                "codex": fault_models["codex"][rid]["faultfrac"],
+                "gemini": fault_models["gemini"][rid]["faultfrac"],
+                "rclaude": fault_models["claude"][rid]["reasoning"],
+                "rcodex": fault_models["codex"][rid]["reasoning"],
+                "rgemini": fault_models["gemini"][rid]["reasoning"],
+            }
+        else:
+            rec["fault"] = None
         iid_short = rec["incidentId"]
         rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(iid_short, 2)
         if iid_short in SEVERITY_OVERRIDE:
@@ -770,35 +785,32 @@ def main():
         incidents.append(rec)
 
     incident_ids = {r["reportId"] for r in incidents}
-    # Fault CSVs may contain entries for incidents outside the VMT window
-    # (e.g., APR-2025). Only check that every incident has fault data.
-    missing_fault = incident_ids - fault_ids
-    must(len(missing_fault) == 0, "incidents missing fault estimates",
+    # Every incident with fault data should be in the VMT window.
+    # Incidents without fault data (pre-analysis-window) have fault=None.
+    incidents_with_fault = {r["reportId"] for r in incidents if r["fault"] is not None}
+    missing_fault = incidents_with_fault - fault_ids
+    must(len(missing_fault) == 0, "incidents with fault missing from fault CSVs",
          missing=sorted(missing_fault)[:5])
 
-    # Sort by company then date
-    month_order = {
-        "JUN-2025": 1, "JUL-2025": 2, "AUG-2025": 3, "SEP-2025": 4,
-        "OCT-2025": 5, "NOV-2025": 6, "DEC-2025": 7, "JAN-2026": 8,
-    }
+    # Sort by company then date (ISO month sorts lexicographically)
     incidents.sort(key=lambda r: (
         r["company"],
-        month_order.get(r["date"], 99),
+        nhtsa_month_to_iso(r["date"]),
         r["time"],
     ))
 
     # Compute incident reporting completeness before building VMT CSV.
-    # Only use rows from the VMT window to avoid archive history skewing
-    # the 5-Day fraction estimates.
-    VMT_NHTSA_MONTHS = {"JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
-                        "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026"}
+    # Only use rows from the NHTSA analysis window to avoid archive history
+    # skewing the 5-Day fraction estimates.
+    NHTSA_ANALYSIS_MONTHS = {"JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
+                             "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026"}
     window_rows = [r for r in rows
-                   if r.get("Incident Date", "").strip() in VMT_NHTSA_MONTHS]
+                   if r.get("Incident Date", "").strip() in NHTSA_ANALYSIS_MONTHS]
     inc_cov = incident_coverage(window_rows)
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
-    vmt_text = fetch_vmt_sheet_csv(inc_cov, run_stamp).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    vmt_text = build_vmt_csv(vmt_raw, inc_cov).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
 
     def inject(source, start_marker, end_marker, payload):

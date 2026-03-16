@@ -352,7 +352,8 @@ const STRESS_VERDICT_META = {
 };
 let monthMetricEnabled = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, m.defaultEnabled]));
-let monthRangeStart = 0;
+const DEFAULT_START_MONTH = "2025-06"; // default slider start (NHTSA analysis window)
+let monthRangeStart = -1; // -1 = use DEFAULT_START_MONTH
 let monthRangeEnd = Infinity;
 let fullMonthSeries = null;
 let activeSeries = null;
@@ -692,7 +693,10 @@ function companyMonthRows(series, company) {
 
 function monthlySummaryRows(series) {
   return ADS_COMPANIES.map(company => {
-    const rows = companyMonthRows(series, company);
+    // Only use incidentObservable months (all companies have VMT) for MPI
+    const rows = series.points
+      .filter(p => p.incidentObservable && p.companies[company] !== null)
+      .map(p => p.companies[company]);
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
     const vmtMax = rows.reduce((sum, row) => sum + row.vmtMax, 0);
@@ -789,13 +793,16 @@ function monthSeriesData() {
     rec.roadwayNonstationary += Number(
       bin !== "0" && inc.road !== "Parking Lot",
     );
-    assert(inc.fault !== null && typeof inc.fault === "object",
-      "incident missing fault object for monthly series", {reportId: inc.reportId});
-    const atFaultFrac = weightedFaultFromValues(
-      inc.fault.claude, inc.fault.codex, inc.fault.gemini,
-    );
-    assert(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
-      "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
+    let atFaultFrac = null;
+    if (inc.fault !== null) {
+      assert(typeof inc.fault === "object",
+        "incident fault must be null or object", {reportId: inc.reportId});
+      atFaultFrac = weightedFaultFromValues(
+        inc.fault.claude, inc.fault.codex, inc.fault.gemini,
+      );
+      assert(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
+        "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
+    }
     rec.atFault += atFaultFrac || 0;
     rec.atFaultInjury += (atFaultFrac || 0) * Number(INJURY_SEVERITIES.has(inc.severity));
     rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
@@ -817,7 +824,10 @@ function monthSeriesData() {
     for (const company of ADS_COMPANIES) {
       const key = company + "|" + month;
       const vmt = vmtByKey[key];
-      assert(vmt !== undefined, "Missing VMT for company-month", {company, month});
+      if (vmt === undefined) {
+        companies[company] = null;
+        continue;
+      }
       assert(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
       assert(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
@@ -842,7 +852,9 @@ function monthSeriesData() {
         incidents: inc,
       };
     }
-    points.push({month, companies});
+    // incidentObservable: all companies have VMT data = the NHTSA incident window
+    const incidentObservable = ADS_COMPANIES.every(co => companies[co] !== null);
+    points.push({month, companies, incidentObservable});
   }
   return {months, points};
 }
@@ -853,13 +865,15 @@ function sliceSeries(series, startIdx, endIdx) {
     const companies = {};
     for (const company of ADS_COMPANIES) {
       const orig = point.companies[company];
-      companies[company] = {...orig, incidents: {...orig.incidents, speeds: {...orig.incidents.speeds}}};
+      companies[company] = orig === null ? null
+        : {...orig, incidents: {...orig.incidents, speeds: {...orig.incidents.speeds}}};
     }
-    return {month: point.month, companies};
+    return {month: point.month, companies, incidentObservable: point.incidentObservable};
   });
   for (const company of ADS_COMPANIES) {
     let cume = 0;
     for (const point of points) {
+      if (point.companies[company] === null) continue;
       cume += point.companies[company].vmtRawBest;
       point.companies[company].vmtCume = cume;
     }
@@ -871,10 +885,11 @@ function drawSingleMonthAxes(
   months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, yFmt, yLabel,
 ) {
   const axisY = mTop + pH;
+  const labelStep = months.length <= 12 ? 1 : months.length <= 24 ? 2 : 3;
   return `
     ${months.map((month, i) => `
-      <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"></line>
-      <text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>
+      <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"${i % labelStep !== 0 ? ' style="opacity:0.3"' : ""}></line>
+      ${i % labelStep === 0 || i === months.length - 1 ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
     `).join("")}
     ${yTicks.map(y => `
       <line class="month-grid" x1="${mLeft}" y1="${mapY(y)}" x2="${mLeft + pW}" y2="${mapY(y)}"></line>
@@ -926,6 +941,7 @@ function renderAllCompaniesMpiChart(series) {
       const countFn = countByMetric[metric.key];
       assert(typeof countFn === "function", "missing count fn for metric", {metric: metric.key});
       const vals = rows.map(row => {
+        if (row === null) return null;
         const k = countFn(row);
         const massFrac = CI_MASS_DEFAULT_PCT / 100;
         const mpiBest = estimateMpi(k, row.vmtBest, massFrac).median;
@@ -993,7 +1009,7 @@ function renderAllCompaniesMpiChart(series) {
     let penDown = false;
     for (let i = 0; i < row.vals.length; i++) {
       const mpi = row.vals[i];
-      if (mpi.incidentCount === 0) {
+      if (mpi === null || mpi.incidentCount === 0) {
         penDown = false;
         continue;
       }
@@ -1005,7 +1021,7 @@ function renderAllCompaniesMpiChart(series) {
 
   const errs = `<g clip-path="url(#mpi-clip)">` + seriesRows.map(row =>
     row.vals.map((mpi, i) => {
-      if (mpi.incidentCount === 0) return "";
+      if (mpi === null || mpi.incidentCount === 0) return "";
       const x = mapX(i);
       const yLo = mapY(mpi.mpiMin);
       const yHi = mapY(mpi.mpiMax);
@@ -1020,7 +1036,7 @@ function renderAllCompaniesMpiChart(series) {
 
   const marks = seriesRows.map(row =>
     row.vals.map((mpi, i) => {
-      if (mpi.incidentCount === 0) return "";
+      if (mpi === null || mpi.incidentCount === 0) return "";
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
       const color = metricMarkerColor(row.company, row.metric.key);
@@ -1047,15 +1063,25 @@ function renderAllCompaniesMpiChart(series) {
     return CI_FAN_LEVELS.slice().reverse().map((_level, li) => {
       const bandIdx = CI_FAN_LEVELS.length - 1 - li; // index into bands array
       const bandOpacity = (0.10 * metricOpacity * (1 + li * 0.5)).toFixed(3);
-      let d = "";
+      // Split into contiguous segments (skip null vals)
+      const segments = [];
+      let seg = [];
       for (let i = 0; i < row.vals.length; i++) {
-        d += `${d ? " L " : "M "}${mapX(i).toFixed(2)} ${clampY(row.vals[i].bands[bandIdx].hi).toFixed(2)}`;
+        if (row.vals[i] !== null) { seg.push(i); }
+        else { if (seg.length > 0) { segments.push(seg); seg = []; } }
       }
-      for (let i = row.vals.length - 1; i >= 0; i--) {
-        d += ` L ${mapX(i).toFixed(2)} ${clampY(row.vals[i].bands[bandIdx].lo).toFixed(2)}`;
-      }
-      d += " Z";
-      return `<path d="${d}" style="fill:${color};opacity:${bandOpacity}"></path>`;
+      if (seg.length > 0) segments.push(seg);
+      return segments.map(indices => {
+        let d = "";
+        for (const i of indices) {
+          d += `${d ? " L " : "M "}${mapX(i).toFixed(2)} ${clampY(row.vals[i].bands[bandIdx].hi).toFixed(2)}`;
+        }
+        for (let j = indices.length - 1; j >= 0; j--) {
+          d += ` L ${mapX(indices[j]).toFixed(2)} ${clampY(row.vals[indices[j]].bands[bandIdx].lo).toFixed(2)}`;
+        }
+        d += " Z";
+        return `<path d="${d}" style="fill:${color};opacity:${bandOpacity}"></path>`;
+      }).join("");
     }).join("");
   }).join("");
 
@@ -1267,10 +1293,11 @@ function drawDualMonthAxes(
   const axisY = mTop + pH;
   const rightX = mLeft + pW;
   const midY = mTop + pH / 2;
+  const labelStep = months.length <= 12 ? 1 : months.length <= 24 ? 2 : 3;
   return `
     ${months.map((month, i) => `
-      <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"></line>
-      <text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>
+      <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"${i % labelStep !== 0 ? ' style="opacity:0.3"' : ""}></line>
+      ${i % labelStep === 0 || i === months.length - 1 ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
     `).join("")}
     ${leftTicks.map(y => `
       <line class="month-grid" x1="${mLeft}" y1="${mapLeftY(y)}" x2="${rightX}" y2="${mapLeftY(y)}"></line>
@@ -1282,7 +1309,17 @@ function drawDualMonthAxes(
   `;
 }
 
-function renderCompanyMonthlyChart(series, company) {
+function renderCompanyMonthlyChart(globalSeries, company) {
+  // Filter to months where this company has VMT data
+  const presentIndices = [];
+  for (let i = 0; i < globalSeries.points.length; i++) {
+    if (globalSeries.points[i].companies[company] !== null) presentIndices.push(i);
+  }
+  if (presentIndices.length === 0) return "";
+  const series = {
+    months: presentIndices.map(i => globalSeries.months[i]),
+    points: presentIndices.map(i => globalSeries.points[i]),
+  };
   const svgW = 900;
   const svgH = 250;
   const mLeft = 68;
@@ -1616,7 +1653,10 @@ function renderDateRangeControls() {
              min="0" max="${maxIdx}" value="${endIdx}" step="1">
     </div>
     <div class="date-range-ticks">
-      ${months.map(m => `<span>${m}</span>`).join("")}
+      ${months.length <= 12
+        ? months.map(m => `<span>${m}</span>`).join("")
+        : months.filter((_, i) => i === 0 || i === months.length - 1 || i === Math.round(months.length / 2))
+            .map(m => `<span>${m}</span>`).join("")}
     </div>
   `;
   const minInput = byId("date-range-min");
@@ -1643,7 +1683,7 @@ function renderDateRangeControls() {
   maxInput.addEventListener("change", onRangeChange);
   const resetBtn = byId("date-range-reset");
   resetBtn.addEventListener("click", () => {
-    monthRangeStart = 0;
+    monthRangeStart = -1; // resolve to DEFAULT_START_MONTH
     monthRangeEnd = Infinity;
     buildMonthlyViews();
   });
@@ -1653,9 +1693,15 @@ function buildMonthlyViews() {
   fullMonthSeries = monthSeriesData();
   const fullSummary = monthlySummaryRows(fullMonthSeries);
   for (const row of fullSummary) {
+    if (row.vmtBest === 0) continue; // company has no data in incident window
     assert(row.incTotal > 0, "full-series total incidents must be positive", {company: row.company});
     assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {company: row.company});
     assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {company: row.company});
+  }
+  // Resolve default start month on first build
+  if (monthRangeStart === -1) {
+    const idx = fullMonthSeries.months.indexOf(DEFAULT_START_MONTH);
+    monthRangeStart = idx >= 0 ? idx : 0;
   }
   const maxIdx = fullMonthSeries.months.length - 1;
   const endIdx = Math.min(
@@ -1689,8 +1735,9 @@ function buildFaultDataFromIncidents(rows) {
   for (const row of rows) {
     assert(typeof row.reportId === "string" && row.reportId !== "",
       "incident missing reportId for fault mapping");
-    assert(row.fault !== null && typeof row.fault === "object",
-      "incident missing fault object", {reportId: row.reportId});
+    if (row.fault === null) continue; // pre-analysis-window incidents lack fault data
+    assert(typeof row.fault === "object",
+      "incident fault must be null or object", {reportId: row.reportId});
     const claude = Number(row.fault.claude);
     const codex = Number(row.fault.codex);
     const gemini = Number(row.fault.gemini);
@@ -1831,7 +1878,10 @@ function encodeUiStateQuery() {
   params.set(URL_STATE_KEYS.companies, enabledKeyString(monthCompanyEnabled, ADS_COMPANIES));
   params.set(URL_STATE_KEYS.metrics, enabledKeyString(monthMetricEnabled, METRIC_KEYS));
   const fullLen = fullMonthSeries ? fullMonthSeries.months.length : 0;
-  const isDefaultRange = monthRangeStart === 0 &&
+  const defaultStartIdx = fullMonthSeries
+    ? Math.max(0, fullMonthSeries.months.indexOf(DEFAULT_START_MONTH))
+    : 0;
+  const isDefaultRange = (monthRangeStart === -1 || monthRangeStart === defaultStartIdx) &&
     (monthRangeEnd === Infinity || (fullLen > 0 && monthRangeEnd >= fullLen - 1));
   if (!isDefaultRange) {
     const endClamped = fullLen > 0
@@ -2156,7 +2206,7 @@ It makes it hard to estimate fault, so we've tried to guess based on data we do 
   // --- 3. Fault model agreement ---
   const faultAgreeRows = [];
   for (const co of companies) {
-    const coRows = rows.filter(r => r.company === co);
+    const coRows = rows.filter(r => r.company === co && r.fault !== null);
     const n = coRows.length;
     if (n === 0) continue;
     let sumMaxSpread = 0;
@@ -2246,9 +2296,11 @@ Sensor failures do count as the fault of the AV.
     </table>`);
 
   // --- 5. VMT uncertainty ---
+  // Restrict to incidentObservable months for like-for-like comparison
+  const obsMonths = new Set(series.points.filter(p => p.incidentObservable).map(p => p.month));
   const vmtUncRows = [];
   for (const co of companies) {
-    const coVmt = vmt.filter(r => r.company === co);
+    const coVmt = vmt.filter(r => r.company === co && obsMonths.has(r.month));
     if (coVmt.length === 0) continue;
     const totalMin = coVmt.reduce((s, r) => s + r.vmtMin * r.coverage, 0);
     const totalBest = coVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
@@ -2286,7 +2338,7 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
   // Under the Poisson model, X²/(n-1) ≈ 1.
   const dispRows = [];
   for (const co of companies) {
-    const coVmt = vmt.filter(r => r.company === co);
+    const coVmt = vmt.filter(r => r.company === co && obsMonths.has(r.month));
     const monthData = [];
     for (const vmtRow of coVmt) {
       const count = rows.filter(r =>
@@ -2609,19 +2661,21 @@ function initTooltips() {
       "incident missing road type", {reportId: inc.reportId});
     assert(typeof inc.severity === "string" && inc.severity.length > 0,
       "incident missing severity", {reportId: inc.reportId});
-    assert(inc.fault !== null && typeof inc.fault === "object",
-      "incident missing fault object", {reportId: inc.reportId});
+    assert(inc.fault === null || typeof inc.fault === "object",
+      "incident fault must be null or object", {reportId: inc.reportId});
     assert(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
       "incident vehiclesInvolved must be >= 1", {reportId: inc.reportId});
     assert(typeof inc.svHit === "string",
       "incident missing svHit", {reportId: inc.reportId});
     assert(typeof inc.cpHit === "string",
       "incident missing cpHit", {reportId: inc.reportId});
-    for (const model of ["claude", "codex", "gemini"]) {
-      const f = inc.fault[model];
-      assert(typeof f === "number" && f >= 0 && f <= 1,
-        `incident fault.${model} must be number in [0, 1]`,
-        {reportId: inc.reportId, value: f});
+    if (inc.fault !== null) {
+      for (const model of ["claude", "codex", "gemini"]) {
+        const f = inc.fault[model];
+        assert(typeof f === "number" && f >= 0 && f <= 1,
+          `incident fault.${model} must be number in [0, 1]`,
+          {reportId: inc.reportId, value: f});
+      }
     }
   }
   incidents = incidentData;
