@@ -1,0 +1,3 @@
+tesla	2026-02	185000	857500	120000	260000	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+zoox	2026-02	230000	1575000	115000	460000	US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+waymo	2026-02	20000000	211072456	14000000	26000000	US est.: smooth interpolation of cumulative milestones; 4.5-month interval, growth shape uncertain; ±30%

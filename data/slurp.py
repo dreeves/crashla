@@ -272,9 +272,10 @@ def load_fault_models():
     models = {}
     for model, path in FAULT_INPUTS.items():
         models[model] = parse_fault_csv(path)
-    ids = set(models["claude"])
-    for model in ("codex", "gemini"):
-        must(set(models[model]) == ids, "fault model ID sets must match", model=model)
+    # Union of all model IDs — models may have different sets
+    ids = set()
+    for model in models:
+        ids |= set(models[model])
     return models, ids
 
 
@@ -353,8 +354,6 @@ def sync_fault_csvs(master_rows):
         sync_fault_csv(path, master_rows)
 
 
-NHTSA_WINDOW_END   = "2026-01-15"
-
 # Month labels in the NHTSA CSV use "JAN-2026"; VMT CSV uses "2026-01".
 MONTH_ABBR_TO_NUM = {
     "JAN": "01", "FEB": "02", "MAR": "03", "APR": "04",
@@ -368,23 +367,7 @@ def nhtsa_month_to_iso(label):
     return f"{year}-{MONTH_ABBR_TO_NUM[abbr]}"
 
 
-def month_coverage(month_str):
-    """Fraction of the month inside the NHTSA observation window.
-
-    January 2026 is partial (1–15).  June 2025 is full because slurp.py
-    merges the current CSV (Jun 16–Jan 15, Third Amended SGO) with the
-    archive CSV (2021–~Jun 15, prior SGO), covering the whole month with
-    zero overlap.  VMT is pro-rated so incident counts and miles align.
-    """
-    year, mon = int(month_str[:4]), int(month_str[5:7])
-    import calendar
-    days_in_month = calendar.monthrange(year, mon)[1]
-    if month_str == "2026-01":
-        return 15 / days_in_month              # Jan 1–15
-    return 1.0
-
-
-def incident_coverage(nhtsa_rows):
+def incident_coverage(nhtsa_rows, last_month):
     """Compute incident reporting completeness per company-month.
 
     Under the NHTSA SGO, 5-Day reports are filed within 5 days; Monthly
@@ -394,6 +377,9 @@ def incident_coverage(nhtsa_rows):
     thinning, the observed 5-Day count is Poisson(lambda * p * m) where p is
     the fraction of incidents that generate 5-Day reports.  The posterior for
     the full rate uses effective VMT = VMT * p.
+
+    last_month: ISO month string (e.g. "2026-02") — the latest month with
+    any incident data.  Derived from the data, not hardcoded.
 
     Returns {(company, iso_month): (best, lo, hi)} where best/lo/hi are the
     incident coverage fractions (1.0 for complete months).
@@ -405,10 +391,8 @@ def incident_coverage(nhtsa_rows):
         if sub:
             submission_months.add(nhtsa_month_to_iso(sub))
 
-    # The last month in the NHTSA window
-    end_year, end_mon = int(NHTSA_WINDOW_END[:4]), int(NHTSA_WINDOW_END[5:7])
-    last_month = f"{end_year}-{end_mon:02d}"
     # Monthly reports for the last month are due the following month
+    end_year, end_mon = int(last_month[:4]), int(last_month[5:7])
     next_mon = end_mon + 1
     next_year = end_year
     if next_mon > 12:
@@ -477,20 +461,32 @@ def incident_coverage(nhtsa_rows):
         if is_quick:
             counts[key]["five"] += 1
 
-    # For each company, compute historical 5-Day fraction from complete months
-    # (months where Monthly reports are present, i.e., not the last month)
+    # For each company, estimate the 5-Day fraction from the single most
+    # recent complete month (has Monthly reports, total >= 3).  The fraction
+    # trends over time, so older months would bias the estimate.  Wilson
+    # score 95% CI gives lo/hi.
+    import math
+    def wilson_ci(k, n, z=1.96):
+        """Wilson score 95% CI for binomial proportion k/n."""
+        p_hat = k / n
+        denom = 1 + z * z / n
+        centre = (p_hat + z * z / (2 * n)) / denom
+        spread = z * math.sqrt(
+            (p_hat * (1 - p_hat) + z * z / (4 * n)) / n) / denom
+        return (round(p_hat, 4),
+                round(max(centre - spread, 0.01), 4),
+                round(min(centre + spread, 1.0), 4))
+
     companies = sorted(set(k[0] for k in counts))
-    five_day_fracs = {}  # company -> [frac, ...]
+    # Find last complete reference month per company
+    ref_month = {}  # company -> (month, five, total)
     for company in companies:
-        fracs = []
-        for (co, mo), c in counts.items():
-            if co != company or mo == last_month:
+        for (co, mo), c in sorted(counts.items(), reverse=True):
+            if co != company or mo >= last_month:
                 continue
-            has_monthly = c["total"] > c["five"]
-            # Only use months with Monthly reports and enough data
-            if has_monthly and c["total"] >= 3:
-                fracs.append(c["five"] / c["total"])
-        five_day_fracs[company] = fracs
+            if c["total"] > c["five"] and c["total"] >= 3:
+                ref_month[company] = (mo, c["five"], c["total"])
+                break
 
     # Only adjust companies whose last-month data is actually missing Monthly
     # reports.  Some companies (e.g., Tesla) file Monthly reports early, so
@@ -504,33 +500,32 @@ def incident_coverage(nhtsa_rows):
     for company in companies:
         key = (company, last_month)
         if last_month_has_monthly.get(company, False):
-            # Company filed Monthly reports for the last month (early filer);
-            # treat data as complete.
             result[key] = (1.0, 1.0, 1.0)
             print(f"  {company} {last_month} incident_coverage: 1.0"
                   f" (Monthly reports present)")
             continue
-        fracs = five_day_fracs[company]
-        if not fracs:
-            # No historical data to estimate 5-Day fraction; assume complete
+        if company not in ref_month:
             result[key] = (1.0, 1.0, 1.0)
             print(f"  {company} {last_month} incident_coverage: 1.0"
-                  f" (no historical data)")
+                  f" (no reference month)")
             continue
-        p_best = sum(fracs) / len(fracs)
-        p_lo = min(fracs)
-        p_hi = max(fracs)
+        mo, five, total = ref_month[company]
+        p_best, p_lo, p_hi = wilson_ci(five, total)
+        # If the company files ~0% as 5-Day (e.g., Tesla), the last month
+        # is unobservable via 5-Day reports; treat as complete — the 0
+        # observed incidents will produce a wide Gamma posterior naturally.
+        if p_best == 0:
+            result[key] = (1.0, 1.0, 1.0)
+            print(f"  {company} {last_month} incident_coverage: 1.0"
+                  f" (0% 5-Day in ref month {mo}: {five}/{total})")
+            continue
         must(0 < p_lo <= p_best <= p_hi <= 1,
              "5-Day fraction out of range", company=company,
              p_best=p_best, p_lo=p_lo, p_hi=p_hi)
-        # incident_coverage = p (the 5-Day fraction); this scales VMT down
-        # so the Gamma posterior correctly reflects the thinned observation.
-        # lo pairs with vmtMin (pessimistic MPI), hi pairs with vmtMax
-        # (optimistic MPI).
-        result[key] = (round(p_best, 4), round(p_lo, 4), round(p_hi, 4))
+        result[key] = (p_best, p_lo, p_hi)
         print(f"  {company} {last_month} incident_coverage:"
               f" best={p_best:.3f} lo={p_lo:.3f} hi={p_hi:.3f}"
-              f" (from {len(fracs)} complete months)")
+              f" (from {mo}: {five}/{total})")
 
     return result
 
@@ -555,11 +550,12 @@ def parse_vmt_months(raw_text):
     return months
 
 
-def build_vmt_csv(raw_text, inc_cov):
+def build_vmt_csv(raw_text, inc_cov, active_months):
     """Add coverage + incident_coverage columns to the raw VMT CSV text.
 
     inc_cov: dict from incident_coverage(), mapping (company, iso_month) to
     (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
+    active_months: set of ISO months to include (months with incident data).
     """
     lines = raw_text.splitlines()
     must(len(lines) > 1, "VMT sheet CSV must include header and rows")
@@ -581,9 +577,10 @@ def build_vmt_csv(raw_text, inc_cov):
              or v.lower() == company_raw.lower()),
             company_raw,
         )
-        month = parts[1]
-        cov = month_coverage(month)
-        cov_str = str(round(cov, 3))
+        month = parts[1].strip()
+        if month not in active_months:
+            continue
+        cov_str = "1.0"
         ic_best, ic_lo, ic_hi = inc_cov.get((company, month), (1, 1, 1))
         parts.insert(6, cov_str)
         parts.insert(7, str(ic_best))
@@ -735,6 +732,19 @@ def main():
     # The archive includes years of data; we only need months with VMT.
     vmt_raw = fetch_vmt_sheet_raw(run_stamp)
     vmt_months = parse_vmt_months(vmt_raw)
+
+    # Derive last_month from the data: latest incident month that also has VMT.
+    # Months with VMT but no incidents yet (beyond the NHTSA reporting frontier)
+    # are excluded so we don't show 0-incident months with full VMT.
+    incident_months_with_vmt = set()
+    for entry in by_incident.values():
+        m = nhtsa_month_to_iso(entry["_row"]["Incident Date"].strip())
+        if m in vmt_months:
+            incident_months_with_vmt.add(m)
+    last_month = max(incident_months_with_vmt)
+    vmt_months = {m for m in vmt_months if m <= last_month}
+    print(f"  Last incident month: {last_month}")
+
     window_by_incident = {}
     excluded_count = 0
     for iid, entry in by_incident.items():
@@ -769,12 +779,12 @@ def main():
         rid = rec["reportId"]
         if rid in fault_ids:
             rec["fault"] = {
-                "claude": fault_models["claude"][rid]["faultfrac"],
-                "codex": fault_models["codex"][rid]["faultfrac"],
-                "gemini": fault_models["gemini"][rid]["faultfrac"],
-                "rclaude": fault_models["claude"][rid]["reasoning"],
-                "rcodex": fault_models["codex"][rid]["reasoning"],
-                "rgemini": fault_models["gemini"][rid]["reasoning"],
+                "claude": fault_models["claude"][rid]["faultfrac"] if rid in fault_models["claude"] else None,
+                "codex": fault_models["codex"][rid]["faultfrac"] if rid in fault_models["codex"] else None,
+                "gemini": fault_models["gemini"][rid]["faultfrac"] if rid in fault_models["gemini"] else None,
+                "rclaude": fault_models["claude"][rid]["reasoning"] if rid in fault_models["claude"] else None,
+                "rcodex": fault_models["codex"][rid]["reasoning"] if rid in fault_models["codex"] else None,
+                "rgemini": fault_models["gemini"][rid]["reasoning"] if rid in fault_models["gemini"] else None,
             }
         else:
             rec["fault"] = None
@@ -800,17 +810,15 @@ def main():
     ))
 
     # Compute incident reporting completeness before building VMT CSV.
-    # Only use rows from the NHTSA analysis window to avoid archive history
-    # skewing the 5-Day fraction estimates.
-    NHTSA_ANALYSIS_MONTHS = {"JUN-2025", "JUL-2025", "AUG-2025", "SEP-2025",
-                             "OCT-2025", "NOV-2025", "DEC-2025", "JAN-2026"}
+    # Use rows from vmt_months to estimate 5-Day fraction from recent history.
     window_rows = [r for r in rows
-                   if r.get("Incident Date", "").strip() in NHTSA_ANALYSIS_MONTHS]
-    inc_cov = incident_coverage(window_rows)
+                   if nhtsa_month_to_iso(r.get("Incident Date", "").strip())
+                   in vmt_months]
+    inc_cov = incident_coverage(window_rows, last_month)
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
-    vmt_text = build_vmt_csv(vmt_raw, inc_cov).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    vmt_text = build_vmt_csv(vmt_raw, inc_cov, vmt_months).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
 
     def inject(source, start_marker, end_marker, payload):

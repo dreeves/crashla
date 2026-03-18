@@ -8,7 +8,7 @@ tesla,2025-09,90202,176923.5,88550,91854,1.0,1,1,1,Austin only: robotaxitracker 
 tesla,2025-10,80061,256984.5,67965,92157,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 tesla,2025-11,103800,360784.5,88230,119370,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 tesla,2025-12,146870.5,507655,111351,182390,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla,2026-01,164845,672500,92690,237000,0.484,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla,2026-01,164845,672500,92690,237000,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
 zoox,2025-06,120000,120000,60000,240000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-07,130000,250000,65000,260000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-08,145000,395000,72500,290000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
@@ -16,7 +16,7 @@ zoox,2025-09,160000,555000,80000,320000,1.0,1,1,1,US rough est.: no month-level 
 zoox,2025-10,175000,730000,87500,350000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-11,190000,920000,95000,380000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 zoox,2025-12,205000,1125000,102500,410000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-zoox,2026-01,220000,1345000,110000,440000,0.484,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+zoox,2026-01,220000,1345000,110000,440000,1.0,1,1,1,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
 waymo,2022-11,477159,477159,238580,715738,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
 waymo,2022-12,522841,1000000,261420,784262,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
 waymo,2023-01,543018,1543018,271509,814527,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); sparse milestones, pilot era, CA was ~14% of ops; ±50%"
@@ -55,6 +55,9 @@ waymo,2025-09,11642773,127000000,8732080,14553466,1.0,1,1,1,US est.: smooth inte
 waymo,2025-10,13697521,140697521,9588265,17806777,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
 waymo,2025-11,14835759,155533280,10385031,19286487,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
 waymo,2025-12,16951530,172484810,11866071,22036989,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
-waymo,2026-01,18587646,191072456,13011352,24163940,0.484,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
+waymo,2026-01,18587646,191072456,13011352,24163940,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
+tesla,2026-02,185000,857500,120000,260000,1.0,1.0,1.0,1.0,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+zoox,2026-02,230000,1575000,115000,460000,1.0,0.6667,0.2077,0.9385,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+waymo,2026-02,20000000,211072456,14000000,26000000,1.0,0.6703,0.5686,0.7583,US est.: smooth interpolation of cumulative milestones; growth shape uncertain; ±30%
 `
 /* VMT_CSV_END */;

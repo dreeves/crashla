@@ -109,17 +109,17 @@ const metrics = vm.runInContext(`
 const plain = JSON.parse(JSON.stringify(metrics));
 
 assert(
-  plain.months.includes("2025-06") && plain.months.includes("2026-01"),
+  plain.months.includes("2025-06") && plain.months.includes("2026-02"),
   `Replicata: aggregate month series from inline incident data + inline VMT sheet CSV.
-Expectata: month axis includes the NHTSA window (2025-06 through 2026-01); may extend earlier with Waymo-only VMT.
+Expectata: month axis includes the NHTSA window (2025-06 through 2026-02); may extend earlier with Waymo-only VMT.
 Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 );
 
 assert.deepEqual(
   plain.totalByCompany,
-  { Tesla: 15, Waymo: 1480, Zoox: 14 },
+  { Tesla: 15, Waymo: 1498, Zoox: 15 },
   `Replicata: sum monthly incident totals for each ADS company.
-Expectata: month aggregation preserves totals within the VMT window (Tesla 15, Waymo 1480 incl pre-Jun, Zoox 14).
+Expectata: month aggregation preserves totals within the VMT window (Tesla 15, Waymo 1498 incl pre-Jun, Zoox 15).
 Resultata: totals were ${JSON.stringify(plain.totalByCompany)}.`,
 );
 

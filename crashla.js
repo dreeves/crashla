@@ -1642,7 +1642,8 @@ function renderDateRangeControls() {
   container.innerHTML = `
     <div class="date-range-header">
       <span class="date-range-label">${rangeLabel}</span>
-      <button class="date-range-reset" id="date-range-reset" style="${isFullRange ? "display:none" : ""}">Zoom out</button>
+      <button class="date-range-reset" id="date-range-reset" 
+              style="${isFullRange ? "display:none" : ""}">Reset dates</button>
     </div>
     <div class="date-range-slider">
       <div class="date-range-track"></div>
@@ -1738,21 +1739,17 @@ function buildFaultDataFromIncidents(rows) {
     if (row.fault === null) continue; // pre-analysis-window incidents lack fault data
     assert(typeof row.fault === "object",
       "incident fault must be null or object", {reportId: row.reportId});
-    const claude = Number(row.fault.claude);
-    const codex = Number(row.fault.codex);
-    const gemini = Number(row.fault.gemini);
-    assert(Number.isFinite(claude) && claude >= 0 && claude <= 1,
-      "incident fault.claude out of range", {reportId: row.reportId, val: row.fault.claude});
-    assert(Number.isFinite(codex) && codex >= 0 && codex <= 1,
-      "incident fault.codex out of range", {reportId: row.reportId, val: row.fault.codex});
-    assert(Number.isFinite(gemini) && gemini >= 0 && gemini <= 1,
-      "incident fault.gemini out of range", {reportId: row.reportId, val: row.fault.gemini});
-    assert(typeof row.fault.rclaude === "string",
-      "incident fault.rclaude invalid", {reportId: row.reportId});
-    assert(typeof row.fault.rcodex === "string",
-      "incident fault.rcodex invalid", {reportId: row.reportId});
-    assert(typeof row.fault.rgemini === "string",
-      "incident fault.rgemini invalid", {reportId: row.reportId});
+    const claude = row.fault.claude === null ? null : Number(row.fault.claude);
+    const codex = row.fault.codex === null ? null : Number(row.fault.codex);
+    const gemini = row.fault.gemini === null ? null : Number(row.fault.gemini);
+    for (const [name, val] of [["claude", claude], ["codex", codex], ["gemini", gemini]]) {
+      assert(val === null || (Number.isFinite(val) && val >= 0 && val <= 1),
+        `incident fault.${name} out of range`, {reportId: row.reportId, val});
+    }
+    for (const [name, key] of [["rclaude", "rclaude"], ["rcodex", "rcodex"], ["rgemini", "rgemini"]]) {
+      assert(row.fault[key] === null || typeof row.fault[key] === "string",
+        `incident fault.${name} invalid`, {reportId: row.reportId});
+    }
     assert(data[row.reportId] === undefined, "duplicate reportId in incidents", {reportId: row.reportId});
     data[row.reportId] = {
       claude,
@@ -1767,13 +1764,14 @@ function buildFaultDataFromIncidents(rows) {
 }
 
 function weightedFaultFromValues(claude, codex, gemini) {
-  const c = Number(claude);
-  const o = Number(codex);
-  const g = Number(gemini);
-  assert(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
-  assert(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
-  assert(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
-  return (c + o + g) / 3;
+  const vals = [];
+  for (const v of [claude, codex, gemini]) {
+    if (v === null) continue;
+    const n = Number(v);
+    assert(Number.isFinite(n) && n >= 0 && n <= 1, "fault value out of range", {v});
+    vals.push(n);
+  }
+  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
 }
 
 function weightedFault(reportId) {
@@ -1783,14 +1781,16 @@ function weightedFault(reportId) {
 }
 
 function weightedFaultVarianceFromValues(claude, codex, gemini) {
-  const c = Number(claude);
-  const o = Number(codex);
-  const g = Number(gemini);
-  assert(Number.isFinite(c) && c >= 0 && c <= 1, "fault claude out of range", {claude});
-  assert(Number.isFinite(o) && o >= 0 && o <= 1, "fault codex out of range", {codex});
-  assert(Number.isFinite(g) && g >= 0 && g <= 1, "fault gemini out of range", {gemini});
-  const mean = (c + o + g) / 3;
-  return ((c - mean) * (c - mean) + (o - mean) * (o - mean) + (g - mean) * (g - mean)) / 3;
+  const vals = [];
+  for (const v of [claude, codex, gemini]) {
+    if (v === null) continue;
+    const n = Number(v);
+    assert(Number.isFinite(n) && n >= 0 && n <= 1, "fault value out of range", {v});
+    vals.push(n);
+  }
+  if (vals.length < 2) return 0;
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+  return vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length;
 }
 
 function weightedFaultVariance(reportId) {
@@ -1811,11 +1811,14 @@ function faultColor(frac) {
 function faultTooltip(inc) {
   const fd = faultData[inc.reportId];
   if (!fd) return "";
-  const lines = [
-    `Claude: ${fd.claude.toFixed(2)} — ${fd.rclaude}`,
-    `Codex: ${fd.codex.toFixed(2)} — ${fd.rcodex}`,
-    `Gemini: ${fd.gemini.toFixed(2)} — ${fd.rgemini}`,
-  ];
+  const lines = [];
+  for (const [label, val, reason] of [
+    ["Claude", fd.claude, fd.rclaude],
+    ["Codex", fd.codex, fd.rcodex],
+    ["Gemini", fd.gemini, fd.rgemini],
+  ]) {
+    if (val !== null) lines.push(`${label}: ${val.toFixed(2)} — ${reason}`);
+  }
   if (inc.svHit || inc.cpHit) {
     lines.push(`${inc.svHit || "?"} \u{1F4A5} ${inc.cpHit || "?"}`);
   }
@@ -2213,10 +2216,11 @@ It makes it hard to estimate fault, so we've tried to guess based on data we do 
     let sumVariance = 0;
     let closeAgree = 0;
     for (const r of coRows) {
-      const vals = [r.fault.claude, r.fault.codex, r.fault.gemini];
+      const vals = [r.fault.claude, r.fault.codex, r.fault.gemini].filter(v => v !== null);
+      if (vals.length < 2) { closeAgree++; continue; }
       const spread = Math.max(...vals) - Math.min(...vals);
       sumMaxSpread += spread;
-      sumVariance += weightedFaultVarianceFromValues(vals[0], vals[1], vals[2]);
+      sumVariance += weightedFaultVarianceFromValues(r.fault.claude, r.fault.codex, r.fault.gemini);
       if (spread <= 0.1) closeAgree++;
     }
     const avgSpread = (sumMaxSpread / n).toFixed(2);
@@ -2672,8 +2676,8 @@ function initTooltips() {
     if (inc.fault !== null) {
       for (const model of ["claude", "codex", "gemini"]) {
         const f = inc.fault[model];
-        assert(typeof f === "number" && f >= 0 && f <= 1,
-          `incident fault.${model} must be number in [0, 1]`,
+        assert(f === null || (typeof f === "number" && f >= 0 && f <= 1),
+          `incident fault.${model} must be null or number in [0, 1]`,
           {reportId: inc.reportId, value: f});
       }
     }

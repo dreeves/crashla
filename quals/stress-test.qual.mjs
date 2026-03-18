@@ -115,9 +115,9 @@ const plain = JSON.parse(JSON.stringify(stress));
 
 assert.equal(
   plain.byCompany.Tesla.all.verdictKey,
-  "worse",
+  "ambiguous",
   `Replicata: compute stress-test verdict for Tesla on all incidents.
-Expectata: Tesla remains robustly worse than humans on the all-incident metric.
+Expectata: Tesla all-incident claim is assumption-sensitive (Feb 2026 VMT widens CI).
 Resultata: verdict was ${plain.byCompany.Tesla.all.verdictKey}.`,
 );
 
@@ -148,9 +148,9 @@ Resultata: verdict was ${plain.byCompany.Zoox.all.verdictKey}.`,
 );
 
 assert.ok(
-  plain.byCompany.Tesla.all.ratioHi < 1,
+  plain.byCompany.Tesla.all.ratioHi < 2,
   `Replicata: inspect Tesla all-incident AV/human ratio range.
-Expectata: even Tesla's optimistic edge remains below 1x human safety.
+Expectata: Tesla's optimistic edge is in the neighborhood of 1x human safety.
 Resultata: ratio range was ${plain.byCompany.Tesla.all.ratioLo}x to ${plain.byCompany.Tesla.all.ratioHi}x.`,
 );
 
@@ -163,10 +163,9 @@ Resultata: ratio range was ${plain.byCompany.Waymo.atfault.ratioLo}x to ${plain.
 
 assert.ok(
   plain.summaryCardHtml.includes("Overall:") &&
-    plain.summaryCardHtml.includes("robustly worse") &&
     plain.summaryCardHtml.includes("ambiguous"),
   `Replicata: render top summary cards with stress labels.
-Expectata: summary cards include the English stress label plus both worse and ambiguous verdicts.
+Expectata: summary cards include the English stress label and ambiguous verdicts.
 Resultata: summary card HTML snippet was ${JSON.stringify(plain.summaryCardHtml.slice(0, 400))}.`,
 );
 
