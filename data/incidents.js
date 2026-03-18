@@ -306,7 +306,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Unknown",
-    "svHit": "rear left+rear right",
+    "svHit": "rear left + rear right",
     "cpHit": "front right",
     "fault": {
       "claude": 0.0,
@@ -411,7 +411,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - All Belted",
-    "svHit": "front+left",
+    "svHit": "front + left",
     "cpHit": "front right",
     "fault": {
       "claude": 0.0,
@@ -446,7 +446,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - All Belted",
-    "svHit": "left+bottom",
+    "svHit": "left + bottom",
     "cpHit": "",
     "fault": {
       "claude": 0.9,
@@ -579,7 +579,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right+right+rear right",
+    "svHit": "front left + front + front right + right + rear right",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -664,7 +664,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear left",
-    "cpHit": "front left+front+front right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -720,7 +720,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "left",
-    "cpHit": "front left+front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -859,7 +859,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -944,7 +944,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "front right",
-    "cpHit": "front left+front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1000,7 +1000,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear",
-    "cpHit": "front left+front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1083,7 +1083,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front",
+    "svHit": "front left + front",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -1224,7 +1224,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "right",
-    "cpHit": "rear left+rear+rear right",
+    "cpHit": "rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1252,7 +1252,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear right",
-    "cpHit": "front left+front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1279,8 +1279,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1363,8 +1363,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1391,8 +1391,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right",
-    "cpHit": "front left+front+left",
+    "svHit": "front left + front + front right",
+    "cpHit": "front left + front + left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1616,7 +1616,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "front",
-    "cpHit": "rear+rear right",
+    "cpHit": "rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1699,8 +1699,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -1811,7 +1811,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -1895,7 +1895,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "left+top",
+    "svHit": "left + top",
     "cpHit": "front right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -2091,7 +2091,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
+    "svHit": "rear + rear right",
     "cpHit": "front",
     "fault": null,
     "vehiclesInvolved": 2
@@ -2148,7 +2148,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "unknown",
-    "cpHit": "rear left+rear+rear right",
+    "cpHit": "rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2203,7 +2203,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front right+right",
+    "svHit": "front right + right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -2399,8 +2399,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2427,7 +2427,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -2483,8 +2483,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2539,8 +2539,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front+front right",
-    "cpHit": "front left+front+left+rear left",
+    "svHit": "front + front right",
+    "cpHit": "front left + front + left + rear left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2595,7 +2595,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front+front right",
+    "svHit": "front + front right",
     "cpHit": "rear left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -2623,8 +2623,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2651,8 +2651,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front",
-    "cpHit": "front left+front",
+    "svHit": "front left + front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2679,8 +2679,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front",
-    "cpHit": "front left+front",
+    "svHit": "front left + front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2848,7 +2848,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear",
-    "cpHit": "front left+front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -2875,7 +2875,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
+    "svHit": "rear left + rear + rear right",
     "cpHit": "rear left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -2931,8 +2931,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -3071,7 +3071,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -3351,8 +3351,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -3379,8 +3379,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front+front right",
-    "cpHit": "rear left+rear+rear right",
+    "svHit": "front left + front + front right",
+    "cpHit": "rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -3547,7 +3547,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front+bottom",
+    "svHit": "front + bottom",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -3575,7 +3575,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
+    "svHit": "rear + rear right",
     "cpHit": "front right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -3687,8 +3687,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -3855,7 +3855,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front",
+    "svHit": "front left + front",
     "cpHit": "right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -3883,8 +3883,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -4051,8 +4051,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front",
-    "cpHit": "right+rear right",
+    "svHit": "front left + front",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -4079,7 +4079,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front+front right",
+    "svHit": "front + front right",
     "cpHit": "rear",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4163,7 +4163,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
+    "svHit": "rear + rear right",
     "cpHit": "front",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4191,7 +4191,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
-    "svHit": "front right+rear right",
+    "svHit": "front right + rear right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4219,7 +4219,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+left",
+    "svHit": "front left + left",
     "cpHit": "rear left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4247,7 +4247,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "left+rear left",
+    "svHit": "left + rear left",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4275,7 +4275,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+rear right",
+    "svHit": "front left + rear right",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4303,8 +4303,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -4472,7 +4472,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -4499,8 +4499,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear+rear right",
-    "cpHit": "front+front right",
+    "svHit": "rear + rear right",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -4639,7 +4639,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+top",
+    "svHit": "front left + top",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4696,7 +4696,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "left",
-    "cpHit": "front left+front+front right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -4751,7 +4751,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -4780,7 +4780,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "right",
-    "cpHit": "rear left+rear",
+    "cpHit": "rear left + rear",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -5115,7 +5115,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+right",
+    "svHit": "front right + right",
     "cpHit": "front right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -5143,7 +5143,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "right+rear right",
+    "svHit": "right + rear right",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -5255,7 +5255,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "left+rear left",
+    "svHit": "left + rear left",
     "cpHit": "rear left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -5283,8 +5283,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front",
-    "cpHit": "rear+rear right",
+    "svHit": "front left + front",
+    "cpHit": "rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -5339,8 +5339,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front+front right",
-    "cpHit": "rear left+rear",
+    "svHit": "front + front right",
+    "cpHit": "rear left + rear",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -5395,8 +5395,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -5451,8 +5451,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -5563,8 +5563,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -5647,7 +5647,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+bottom",
+    "svHit": "rear left + bottom",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -5787,8 +5787,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front left+front",
+    "svHit": "rear left + rear",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -5900,7 +5900,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
     "svHit": "rear left",
-    "cpHit": "front left+front+front right+left+top+right+rear left+rear+rear right+bottom",
+    "cpHit": "front left + front + front right + left + top + right + rear left + rear + rear right + bottom",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6151,8 +6151,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6207,7 +6207,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -6235,8 +6235,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6291,8 +6291,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "left+rear left",
-    "cpHit": "front right+right",
+    "svHit": "left + rear left",
+    "cpHit": "front right + right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6319,7 +6319,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front+bottom",
+    "svHit": "front + bottom",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -6347,8 +6347,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6403,8 +6403,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6431,8 +6431,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6459,7 +6459,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+right+rear right",
+    "svHit": "front right + right + rear right",
     "cpHit": "front left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -6487,8 +6487,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -6599,8 +6599,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+right",
-    "cpHit": "front left+front+front right",
+    "svHit": "front right + right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7019,8 +7019,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7104,7 +7104,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7132,7 +7132,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7160,7 +7160,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "front left",
-    "cpHit": "front left+front+front right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7187,7 +7187,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
+    "svHit": "rear left + rear",
     "cpHit": "front",
     "fault": null,
     "vehiclesInvolved": 2
@@ -7243,8 +7243,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front",
-    "cpHit": "front left+front",
+    "svHit": "front left + front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7411,8 +7411,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+right",
-    "cpHit": "front left+front+front right",
+    "svHit": "front right + right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7831,8 +7831,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front",
-    "cpHit": "front right+right+rear right",
+    "svHit": "front left + front",
+    "cpHit": "front right + right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -7888,7 +7888,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
     "svHit": "left",
-    "cpHit": "front right+right+rear right",
+    "cpHit": "front right + right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8251,7 +8251,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+right",
+    "svHit": "front right + right",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -8335,8 +8335,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+left",
-    "cpHit": "front left+front+front right",
+    "svHit": "front left + left",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8419,8 +8419,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8447,8 +8447,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
-    "cpHit": "front+front right",
+    "svHit": "rear + rear right",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8476,7 +8476,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
     "svHit": "rear left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8503,8 +8503,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "right+rear right",
-    "cpHit": "rear left+rear+rear right",
+    "svHit": "right + rear right",
+    "cpHit": "rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8559,8 +8559,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+right",
-    "cpHit": "front left+front+front right",
+    "svHit": "front right + right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8644,7 +8644,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "front left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -8672,7 +8672,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "front left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -9231,8 +9231,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -9259,8 +9259,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -9624,7 +9624,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "front right",
-    "cpHit": "left+rear left",
+    "cpHit": "left + rear left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -9652,7 +9652,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "front right",
-    "cpHit": "left+rear left",
+    "cpHit": "left + rear left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10015,8 +10015,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10295,8 +10295,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "left+rear left",
-    "cpHit": "front right+right",
+    "svHit": "left + rear left",
+    "cpHit": "front right + right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10380,7 +10380,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "right",
-    "cpHit": "front+front right",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10408,7 +10408,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear right",
-    "cpHit": "front left+front+front right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10435,7 +10435,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+left",
+    "svHit": "front left + front + left",
     "cpHit": "right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -10547,7 +10547,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front right+right",
+    "svHit": "front right + right",
     "cpHit": "front left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -10715,8 +10715,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+left+rear left",
-    "cpHit": "front right+rear right",
+    "svHit": "front left + left + rear left",
+    "cpHit": "front right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10772,7 +10772,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10911,8 +10911,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "left+rear left",
-    "cpHit": "front left+front",
+    "svHit": "left + rear left",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -10968,7 +10968,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear left",
-    "cpHit": "front left+front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -11051,7 +11051,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+left",
+    "svHit": "front left + left",
     "cpHit": "front right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -11107,8 +11107,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right",
-    "cpHit": "front right+right",
+    "svHit": "front left + front + front right",
+    "cpHit": "front right + right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -11219,8 +11219,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -11331,8 +11331,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right",
-    "cpHit": "rear left+rear+rear right",
+    "svHit": "front left + front + front right",
+    "cpHit": "rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -11500,7 +11500,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "front left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -11695,7 +11695,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front+rear left",
+    "svHit": "front + rear left",
     "cpHit": "front right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -11947,7 +11947,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "left+rear left",
+    "svHit": "left + rear left",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -11975,8 +11975,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -12031,7 +12031,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "left+rear left",
+    "svHit": "left + rear left",
     "cpHit": "rear right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -12227,8 +12227,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -12675,8 +12675,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -12731,8 +12731,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -12787,8 +12787,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+left",
-    "cpHit": "front+front right+right",
+    "svHit": "front left + front + left",
+    "cpHit": "front + front right + right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -12843,8 +12843,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -12871,8 +12871,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -12899,8 +12899,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front+rear left+rear+rear right",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front + rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -13180,7 +13180,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "left",
-    "cpHit": "front right+right",
+    "cpHit": "front right + right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -13208,7 +13208,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
     "svHit": "left",
-    "cpHit": "front right+right",
+    "cpHit": "front right + right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -13571,8 +13571,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -13907,8 +13907,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -14551,8 +14551,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front+front right+right+rear right",
-    "cpHit": "front left+left+rear left+rear",
+    "svHit": "front + front right + right + rear right",
+    "cpHit": "front left + left + rear left + rear",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -14860,7 +14860,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "front",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -14915,8 +14915,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front",
-    "cpHit": "front left+front",
+    "svHit": "front left + front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15055,8 +15055,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15112,7 +15112,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15307,8 +15307,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+left",
-    "cpHit": "front left+front",
+    "svHit": "front left + left",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15335,8 +15335,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right+top",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right + top",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15391,7 +15391,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "left+rear left",
+    "svHit": "left + rear left",
     "cpHit": "right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -15448,7 +15448,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear left",
-    "cpHit": "front+front right",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15700,7 +15700,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear left",
-    "cpHit": "right+rear right",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15839,7 +15839,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "left+rear left",
+    "svHit": "left + rear left",
     "cpHit": "right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -15867,8 +15867,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+left",
-    "cpHit": "right+rear right",
+    "svHit": "front left + left",
+    "cpHit": "right + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -15923,7 +15923,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front+bottom",
+    "svHit": "front + bottom",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -16091,7 +16091,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+left",
+    "svHit": "front left + left",
     "cpHit": "right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -16203,8 +16203,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -16343,7 +16343,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "",
     "fault": null,
     "vehiclesInvolved": 2
@@ -16371,7 +16371,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+rear right+bottom",
+    "svHit": "front right + rear right + bottom",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -16623,8 +16623,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front right+right+rear left+rear+rear right",
-    "cpHit": "front left+front+front right+left+right+rear left+rear+rear right",
+    "svHit": "front right + right + rear left + rear + rear right",
+    "cpHit": "front left + front + front right + left + right + rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -16707,7 +16707,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+bottom",
+    "svHit": "rear left + bottom",
     "cpHit": "front left",
     "fault": null,
     "vehiclesInvolved": 2
@@ -16735,8 +16735,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear",
-    "cpHit": "front left+front",
+    "svHit": "rear left + rear",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -16932,7 +16932,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear left",
-    "cpHit": "front right+right",
+    "cpHit": "front right + right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -17015,8 +17015,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -17044,7 +17044,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear right",
-    "cpHit": "front left+front",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -17099,7 +17099,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front+front right",
+    "svHit": "front left + front + front right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -17155,8 +17155,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No, see Narrative",
-    "svHit": "front+front right",
-    "cpHit": "rear left+rear+rear right",
+    "svHit": "front + front right",
+    "cpHit": "rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -18108,7 +18108,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "front left",
-    "cpHit": "front left+front+front right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -18276,7 +18276,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear",
-    "cpHit": "front+front right",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -18471,8 +18471,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear+rear right",
-    "cpHit": "front+front right",
+    "svHit": "rear + rear right",
+    "cpHit": "front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -18584,7 +18584,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "front right",
-    "cpHit": "front left+left",
+    "cpHit": "front left + left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -19591,8 +19591,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -20459,8 +20459,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -20516,7 +20516,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "right",
-    "cpHit": "front left+front+front right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -20683,8 +20683,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -20768,7 +20768,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "rear right",
-    "cpHit": "front left+rear left+rear+rear right",
+    "cpHit": "front left + rear left + rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -21047,7 +21047,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front+front right",
+    "svHit": "front + front right",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -21411,7 +21411,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front right+bottom",
+    "svHit": "front right + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
@@ -21978,7 +21978,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "right+rear right",
+    "svHit": "right + rear right",
     "cpHit": "front",
     "fault": null,
     "vehiclesInvolved": 2
@@ -22118,7 +22118,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "rear left+rear",
+    "svHit": "rear left + rear",
     "cpHit": "front right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -22706,8 +22706,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+front",
-    "cpHit": "rear+rear right",
+    "svHit": "front left + front",
+    "cpHit": "rear + rear right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -22874,8 +22874,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -22958,8 +22958,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -23294,8 +23294,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "rear left+rear+rear right",
-    "cpHit": "front left+front+front right",
+    "svHit": "rear left + rear + rear right",
+    "cpHit": "front left + front + front right",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -24022,7 +24022,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+left",
+    "svHit": "front left + left",
     "cpHit": "right",
     "fault": null,
     "vehiclesInvolved": 2
@@ -24050,7 +24050,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front+rear+bottom",
+    "svHit": "front + rear + bottom",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -24246,7 +24246,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
-    "svHit": "front left+rear left",
+    "svHit": "front left + rear left",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -24442,7 +24442,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front right+bottom",
+    "svHit": "front right + bottom",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -25087,7 +25087,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "No Passengers in Vehicle",
     "svHit": "rear",
-    "cpHit": "front+rear left",
+    "cpHit": "front + rear left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -25758,8 +25758,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Yes",
-    "svHit": "front left+left+rear left",
-    "cpHit": "front left+left",
+    "svHit": "front left + left + rear left",
+    "cpHit": "front left + left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -26766,7 +26766,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front+bottom",
+    "svHit": "front + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.4,
@@ -27326,7 +27326,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - Not Belted - see Narrative",
-    "svHit": "front left+right",
+    "svHit": "front left + right",
     "cpHit": "left",
     "fault": {
       "claude": 0.0,
@@ -27711,8 +27711,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front right+right",
-    "cpHit": "front right+rear right",
+    "svHit": "front right + right",
+    "cpHit": "front right + rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -27956,7 +27956,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - All Belted",
-    "svHit": "front left+bottom",
+    "svHit": "front left + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.8,
@@ -27991,7 +27991,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - Not Belted - see Narrative",
-    "svHit": "front right+bottom",
+    "svHit": "front right + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.8,
@@ -28061,7 +28061,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front right+bottom",
+    "svHit": "front right + bottom",
     "cpHit": "",
     "fault": {
       "claude": 0.9,
@@ -30231,8 +30231,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front+left",
-    "cpHit": "front+left",
+    "svHit": "front + left",
+    "cpHit": "front + left",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -31177,7 +31177,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
-    "cpHit": "front left+right",
+    "cpHit": "front left + right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -31491,7 +31491,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front right+rear right+bottom",
+    "svHit": "front right + rear right + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
@@ -31596,7 +31596,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front left+bottom",
+    "svHit": "front left + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
@@ -31737,7 +31737,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
-    "cpHit": "front left+front right",
+    "cpHit": "front left + front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.1,
@@ -32576,7 +32576,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front right+bottom",
+    "svHit": "front right + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
@@ -32961,7 +32961,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "left+right",
+    "svHit": "left + right",
     "cpHit": "right",
     "fault": {
       "claude": 0.2,
@@ -33276,7 +33276,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - All Belted",
-    "svHit": "rear left+bottom",
+    "svHit": "rear left + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
@@ -33591,7 +33591,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front right+rear right+bottom",
+    "svHit": "front right + rear right + bottom",
     "cpHit": "unknown",
     "fault": {
       "claude": 0.9,
@@ -33661,7 +33661,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "right+rear left",
+    "svHit": "right + rear left",
     "cpHit": "front",
     "fault": {
       "claude": 0.0,
@@ -45603,7 +45603,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front left+rear left",
+    "svHit": "front left + rear left",
     "cpHit": "unknown",
     "fault": null,
     "vehiclesInvolved": 2
@@ -46024,7 +46024,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxPartlyCloudy": "",
     "belted": "Yes",
     "svHit": "front right",
-    "cpHit": "front left+left",
+    "cpHit": "front left + left",
     "fault": null,
     "vehiclesInvolved": 2
   },
@@ -46296,8 +46296,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front+left",
-    "cpHit": "front left+front right",
+    "svHit": "front + left",
+    "cpHit": "front left + front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.05,
@@ -46366,7 +46366,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "top+rear",
+    "svHit": "top + rear",
     "cpHit": "front",
     "fault": {
       "claude": 0.0,
@@ -46401,8 +46401,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front left+front right",
-    "cpHit": "rear+rear right",
+    "svHit": "front left + front right",
+    "cpHit": "rear + rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,
@@ -46471,7 +46471,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "left+rear",
+    "svHit": "left + rear",
     "cpHit": "front left",
     "fault": {
       "claude": 0.0,
@@ -46506,8 +46506,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - All Belted",
-    "svHit": "rear+rear right",
-    "cpHit": "front left+front right",
+    "svHit": "rear + rear right",
+    "cpHit": "front left + front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -46576,8 +46576,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - All Belted",
-    "svHit": "rear left+rear right",
-    "cpHit": "front+front right",
+    "svHit": "rear left + rear right",
+    "cpHit": "front + front right",
     "fault": {
       "claude": 0.1,
       "codex": 0.0,
@@ -46611,8 +46611,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxCloudy": "",
     "wxPartlyCloudy": "",
     "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front left+front right",
-    "cpHit": "rear+rear right",
+    "svHit": "front left + front right",
+    "cpHit": "rear + rear right",
     "fault": {
       "claude": 0.0,
       "codex": 0.0,

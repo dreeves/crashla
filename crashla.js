@@ -1789,7 +1789,7 @@ function faultTooltip(inc) {
     if (val !== null) lines.push(`${label}: ${val.toFixed(2)} — ${reason}`);
   }
   if (inc.svHit || inc.cpHit) {
-    lines.push(`${inc.svHit || "?"} \u{1F4A5} ${inc.cpHit || "?"}`);
+    lines.push(`${inc.svHit || "n/a"} \u{1F4A5} ${inc.cpHit || "n/a"}`);
   }
   return lines.join("\n");
 }

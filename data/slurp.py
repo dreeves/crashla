@@ -120,7 +120,7 @@ def _contact_areas(row, prefix):
     for label in CONTACT_AREA_LABELS:
         if row.get(f"{prefix} - {label}", "").strip() == "Y":
             parts.append(label.lower())
-    return "+".join(parts)
+    return " + ".join(parts)
 
 
 # Canonical short names for companies
