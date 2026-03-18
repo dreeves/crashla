@@ -681,31 +681,7 @@ function driverMonthRows(series, driver) {
 }
 
 function monthlySummaryRows(series) {
-  // Humans summary row: literature-based MPI with log-normal density
-  const humanMpiEstimates = Object.fromEntries(
-    METRIC_DEFS.filter(m => m.humanMPI).map(m => {
-      const h = m.humanMPI;
-      const geo = Math.sqrt(h.lo * h.hi);
-      const mu = (Math.log(h.lo) + Math.log(h.hi)) / 2;
-      const sigma = (Math.log(h.hi) - Math.log(h.lo)) / (2 * 1.96);
-      return [m.key, {
-        median: geo, lo: h.lo, hi: h.hi, k: null,
-        densityFn: x => logNormalLogDensity(x, mu, sigma),
-        xMin: Math.exp(mu - 3.09 * sigma),
-        xMax: Math.exp(mu + 3.09 * sigma),
-      }];
-    }));
-  const humanRow = {
-    driver: "Humans",
-    vmtMin: 0, vmtBest: 0, vmtMax: 0,
-    vmtRationales: [],
-    ...Object.fromEntries(METRIC_DEFS.map(m => [m.incField, 0])),
-    mpiEstimates: humanMpiEstimates,
-    milesPerIncident: 0,
-    milesPerNonstationaryIncident: 0,
-    milesPerRoadwayNonstationaryIncident: 0,
-  };
-  const adsRows = ADS_DRIVERS.map(driver => {
+  return ALL_DRIVERS.map(driver => {
     // Only use incidentObservable months (all drivers have VMT) for MPI
     const rows = series.points
       .filter(p => p.incidentObservable && p.drivers[driver] !== null)
@@ -718,31 +694,45 @@ function monthlySummaryRows(series) {
       METRIC_DEFS.map(m => [m.incField, rows.reduce((sum, row) => sum + m.countFn(row), 0)]));
 
     const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
-    // Pre-compute MPI estimates for each metric (consumed by cards + distribution)
+    // Pre-compute MPI estimates for each metric (consumed by cards + distribution).
+    // vmtBest > 0: Bayesian Gamma posterior from observed incidents + VMT.
+    // vmtBest === 0: log-normal from literature CI (humanMPI on METRIC_DEFS).
     const mpiEstimates = Object.fromEntries(METRIC_DEFS.map(m => {
-      const k = incFields[m.incField];
-      const alpha = k + 0.5;
-      const beta = vmtBest;
-      const est = estimateMpiWindow(k, vmtMin, vmtBest, vmtMax);
+      if (vmtBest > 0) {
+        const k = incFields[m.incField];
+        const alpha = k + 0.5;
+        const beta = vmtBest;
+        const est = estimateMpiWindow(k, vmtMin, vmtBest, vmtMax);
+        return [m.key, {
+          ...est,
+          densityFn: x => invGammaLogDensity(x, alpha, beta),
+          xMin: 1 / gammaquant(alpha, beta, 0.999),
+          xMax: 1 / gammaquant(alpha, beta, 0.001),
+        }];
+      }
+      if (!m.humanMPI) return [m.key, null];
+      const h = m.humanMPI;
+      const geo = Math.sqrt(h.lo * h.hi);
+      const mu = (Math.log(h.lo) + Math.log(h.hi)) / 2;
+      const sigma = (Math.log(h.hi) - Math.log(h.lo)) / (2 * 1.96);
       return [m.key, {
-        ...est,
-        densityFn: x => invGammaLogDensity(x, alpha, beta),
-        xMin: 1 / gammaquant(alpha, beta, 0.999),
-        xMax: 1 / gammaquant(alpha, beta, 0.001),
+        median: geo, lo: h.lo, hi: h.hi, k: null,
+        densityFn: x => logNormalLogDensity(x, mu, sigma),
+        xMin: Math.exp(mu - 3.09 * sigma),
+        xMax: Math.exp(mu + 3.09 * sigma),
       }];
-    }));
+    }).filter(([, v]) => v !== null));
     return {
       driver,
       vmtMin, vmtBest, vmtMax,
       vmtRationales,
       ...incFields,
       mpiEstimates,
-      milesPerIncident: vmtBest / incFields.incTotal,
-      milesPerNonstationaryIncident: vmtBest / incFields.incNonstationary,
-      milesPerRoadwayNonstationaryIncident: vmtBest / incFields.incRoadwayNonstationary,
+      milesPerIncident: vmtBest > 0 ? vmtBest / incFields.incTotal : 0,
+      milesPerNonstationaryIncident: vmtBest > 0 ? vmtBest / incFields.incNonstationary : 0,
+      milesPerRoadwayNonstationaryIncident: vmtBest > 0 ? vmtBest / incFields.incRoadwayNonstationary : 0,
     };
   });
-  return [humanRow, ...adsRows];
 }
 
 function estimateMpiWindow(k, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAULT_PCT / 100) {
@@ -850,7 +840,10 @@ function monthSeriesData() {
   const humanEntry = {
     vmtMin: 0, vmtBest: 0, vmtMax: 0,
     vmtRawMin: 0, vmtRawBest: 0, vmtRawMax: 0,
-    vmtCume: 0, rationale: null, incidents: null,
+    vmtCume: 0, rationale: null,
+    incidents: {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
+                atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0,
+                seriousInjury: 0, fatality: 0},
     mpiByMetric: humanMpiByMetric,
   };
 
@@ -923,13 +916,12 @@ function sliceSeries(series, startIdx, endIdx) {
     for (const driver of ALL_DRIVERS) {
       const orig = point.drivers[driver];
       if (orig === null) { drivers[driver] = null; continue; }
-      if (orig.incidents === null) { drivers[driver] = orig; continue; }
       drivers[driver] = {...orig, incidents: {...orig.incidents, speeds: {...orig.incidents.speeds}},
         mpiByMetric: {...orig.mpiByMetric}};
     }
     return {month: point.month, drivers, incidentObservable: point.incidentObservable};
   });
-  for (const driver of ADS_DRIVERS) {
+  for (const driver of ALL_DRIVERS) {
     let cume = 0;
     for (const point of points) {
       if (point.drivers[driver] === null) continue;
@@ -1311,7 +1303,6 @@ function renderDriverMonthlyChart(globalSeries, driver) {
   const barTotals = [];
   const errs = [];
   const halfBar = (barW - 1) / 2; // 1px gap between the two bars
-  const massFrac = CI_MASS_DEFAULT_PCT / 100;
   // TO-DO: Human vet new lower-chart tooltip labels below.
   for (let i = 0; i < series.points.length; i++) {
     const row = rows[i];
@@ -1322,13 +1313,9 @@ function renderDriverMonthlyChart(globalSeries, driver) {
     const monthVmtCume = fmtWhole(row.vmtCume);
     const monthVmtEff = fmtWhole(row.vmtBest);
 
-    // MPI for each variant (used in hover text)
-    const mpiByKey = {};
-    const variantCounts = Object.fromEntries(
-      METRIC_DEFS.map(m => [m.key, m.countFn(row)]));
-    for (const [vk, vk_count] of Object.entries(variantCounts)) {
-      mpiByKey[vk] = fmtMiles(estimateMpi(vk_count, row.vmtBest, massFrac).median);
-    }
+    // MPI for each variant (used in hover text) — read pre-computed values
+    const mpiByKey = Object.fromEntries(
+      METRIC_DEFS.map(m => [m.key, fmtMiles(row.mpiByMetric[m.key].mpiBest)]));
 
     // Render one stacked bar column
     const renderBar = (xLeft, w, segments, colors, counts) => {
@@ -1668,7 +1655,7 @@ function buildMonthlyViews() {
   byId("chart-mpi-all").innerHTML = renderAllCompaniesMpiChart(activeSeries);
   byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
-  byId("chart-driver-series").innerHTML = ADS_DRIVERS.map(driver => `
+  byId("chart-driver-series").innerHTML = ALL_DRIVERS.map(driver => `
     <div class="month-chart">
       <h3>${driver}</h3>
       ${renderDriverMonthlyChart(activeSeries, driver)}

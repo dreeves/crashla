@@ -36,25 +36,27 @@ Additional rules specific to this project:
 ### Phase 1: company → driver rename (mechanical) ✅ DONE
 Full rename of "company" to "driver" across the entire codebase: crashla.js, quals, index.html, style.css, data/slurp.py, data/vmt.js, data/incidents.js. Also fixed pre-existing qual (`contact-areas.qual.mjs:89` — `"?"` → `"n/a"`). All 20 quals pass.
 
-### Phase 2: anti-magic refactor (Humans as a driver)
+### Phase 2: anti-magic refactor (Humans as a driver) ✅ DONE
 
-**Design**: Push MPI computation into the data layer. Every driver's per-month entry carries pre-computed `mpiByMetric`. Rendering code reads this uniformly.
-
-**Shared reference trick**: Build one `humanEntry` object with `flatline: true` and `mpiByMetric` computed once from `METRIC_DEFS[*].humanMPI`. Place the same JS object reference in every month's `drivers["Humans"]`. Zero data duplication, uniform code paths.
+**Design**: Push MPI computation into the data layer. Every driver's per-month entry carries pre-computed `mpiByMetric`. Rendering code reads this uniformly. No `if (driver === "Humans")` anywhere — all conditionals are data-driven (`vmtBest > 0`, `k !== null`).
 
 **Key changes**:
-- `ALL_DRIVERS = [...ADS_DRIVERS, "Humans"]`
+- `ALL_DRIVERS = ["Humans", ...ADS_DRIVERS]` (Humans first for SVG z-ordering)
 - Humans color: `"#888"` → `"#c9a800"` (gold)
 - Add `mpiByMetric` pre-computed on all monthly entries in `monthSeriesData()`
-- Add Humans shared reference to every month
-- Add Humans to `monthlySummaryRows()` with `flatline: true`
+- Add Humans shared reference to every month (with zero-incidents object, not null)
+- Unify `monthlySummaryRows()` into single `ALL_DRIVERS.map()` loop
 - Unify MPI chart (remove `humanRefLines` block)
 - Unify distribution chart (remove `humanCurves` block)
 - Unify summary cards (remove `humanCard` block)
+- Per-driver charts include ALL_DRIVERS (Humans shows flat MPI lines, zero-height bars)
+- Per-driver chart reads pre-computed `mpiByMetric` (DRY, no recomputation)
+- `sliceSeries()` deep-copies uniformly, accumulates VMT for ALL_DRIVERS
 - Add Humans to legend toggles via `includedDrivers()` filtering `ALL_DRIVERS`
-- Delete `KNOWN_HUMAN_MPI`, `summaryMetricEstimate()`
+- Delete `KNOWN_HUMAN_MPI`, `summaryMetricEstimate()`, `includedAdsDrivers()`
+- Company→Driver rename in all UI strings, table headers, variable names
 
-**Rendering conditionals (exhaustive)**:
+**Rendering conditionals (exhaustive, all data-driven)**:
 1. Tooltip: omit VMT lines when `vmtRawBest === 0`
 2. Summary card: omit "k incidents" when `k === null`
 3. No `if (driver === "Humans")` anywhere
