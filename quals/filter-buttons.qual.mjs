@@ -66,20 +66,20 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 vm.runInContext(`
 incidents = [
-  { company: "Tesla", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
-  { company: "Waymo", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
-  { company: "Zoox", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }
+  { driver: "Tesla", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
+  { driver: "Waymo", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" },
+  { driver: "Zoox", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }
 ];
 vmtRows = [
-  {company: "Tesla", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
-  {company: "Waymo", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
-  {company: "Zoox", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
+  {driver: "Tesla", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
+  {driver: "Waymo", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
+  {driver: "Zoox", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
 ];
 activeSeries = { months: ["2025-06"] };
 buildBrowser();
 `, ctx);
 
-const expectedCount = vm.runInContext("ADS_COMPANIES.length + 1", ctx);
+const expectedCount = vm.runInContext("ADS_DRIVERS.length + 1", ctx);
 const filterRoot = getNode("filters");
 const before = filterRoot.children.length;
 filterRoot.children[1].click();

@@ -83,7 +83,7 @@ FIELDS = [
 KEY_MAP = {
     "Report ID":                     "reportId",
     "Report Version":                "version",
-    "Reporting Entity":              "company",
+    "Reporting Entity":              "driver",
     "Incident Date":                 "date",
     "Incident Time (24:00)":         "time",
     "Same Incident ID":              "incidentId",
@@ -123,8 +123,8 @@ def _contact_areas(row, prefix):
     return " + ".join(parts)
 
 
-# Canonical short names for companies
-COMPANY_SHORT = {
+# Canonical short names for drivers (reporting entities)
+DRIVER_SHORT = {
     "Waymo LLC":    "Waymo",
     "Tesla, Inc.":  "Tesla",
     "Zoox, Inc.":   "Zoox",
@@ -368,7 +368,7 @@ def nhtsa_month_to_iso(label):
 
 
 def incident_coverage(nhtsa_rows, last_month):
-    """Compute incident reporting completeness per company-month.
+    """Compute incident reporting completeness per driver-month.
 
     Under the NHTSA SGO, 5-Day reports are filed within 5 days; Monthly
     reports are due by the 15th of the following month.  If the dataset
@@ -381,7 +381,7 @@ def incident_coverage(nhtsa_rows, last_month):
     last_month: ISO month string (e.g. "2026-02") — the latest month with
     any incident data.  Derived from the data, not hardcoded.
 
-    Returns {(company, iso_month): (best, lo, hi)} where best/lo/hi are the
+    Returns {(driver, iso_month): (best, lo, hi)} where best/lo/hi are the
     incident coverage fractions (1.0 for complete months).
     """
     # Determine which submission months are present in the dataset
@@ -406,7 +406,7 @@ def incident_coverage(nhtsa_rows, last_month):
     if not last_month_incomplete:
         return {}  # all months complete, no adjustments needed
 
-    # Count 5-Day vs total incidents per company-month (post-dedup)
+    # Count 5-Day vs total incidents per driver-month (post-dedup)
     # We need pre-dedup Report Type info, so work from raw rows filtered to
     # Driver/Operator Type = "None".
     none_rows = [r for r in nhtsa_rows
@@ -415,32 +415,32 @@ def incident_coverage(nhtsa_rows, last_month):
     # For report_type, use the ORIGINAL (v1) classification, since later
     # versions of 5-Day reports have type "Update" but should still count
     # as 5-Day for computing the historical 5-Day fraction.
-    by_incident = {}  # iid -> {ver, min_ver, company, month, report_type}
+    by_incident = {}  # iid -> {ver, min_ver, driver, month, report_type}
     for r in none_rows:
         iid = r["Same Incident ID"]
         ver = int(r["Report Version"])
-        company = COMPANY_SHORT.get(r["Reporting Entity"].strip(),
-                                    r["Reporting Entity"].strip())
+        driver = DRIVER_SHORT.get(r["Reporting Entity"].strip(),
+                                   r["Reporting Entity"].strip())
         month = nhtsa_month_to_iso(r["Incident Date"].strip())
         report_type = r["Report Type"].strip()
         if iid not in by_incident:
             by_incident[iid] = {
                 "ver": ver, "min_ver": ver,
-                "company": company, "month": month,
+                "driver": driver, "month": month,
                 "report_type": report_type,
             }
         else:
             rec = by_incident[iid]
             if ver > rec["ver"]:
                 rec["ver"] = ver
-                rec["company"] = company
+                rec["driver"] = driver
                 rec["month"] = month
             if ver < rec["min_ver"]:
                 rec["min_ver"] = ver
                 rec["report_type"] = report_type
 
-    # Tally 5-Day fraction per company-month
-    counts = {}  # (company, month) -> {"five": n, "total": n}
+    # Tally 5-Day fraction per driver-month
+    counts = {}  # (driver, month) -> {"five": n, "total": n}
     for rec in by_incident.values():
         # The original (v1) report type must be 5-Day or Monthly.
         # "Update" should only appear on later versions, never on v1.
@@ -452,16 +452,16 @@ def incident_coverage(nhtsa_rows, last_month):
         is_monthly = rec["report_type"] == "Monthly"
         must(is_quick or is_monthly,
              "unexpected original report type",
-             iid=rec.get("company"), month=rec["month"],
+             iid=rec.get("driver"), month=rec["month"],
              report_type=rec["report_type"])
-        key = (rec["company"], rec["month"])
+        key = (rec["driver"], rec["month"])
         if key not in counts:
             counts[key] = {"five": 0, "total": 0}
         counts[key]["total"] += 1
         if is_quick:
             counts[key]["five"] += 1
 
-    # For each company, estimate the 5-Day fraction from the single most
+    # For each driver, estimate the 5-Day fraction from the single most
     # recent complete month (has Monthly reports, total >= 3).  The fraction
     # trends over time, so older months would bias the estimate.  Wilson
     # score 95% CI gives lo/hi.
@@ -477,19 +477,19 @@ def incident_coverage(nhtsa_rows, last_month):
                 round(max(centre - spread, 0.01), 4),
                 round(min(centre + spread, 1.0), 4))
 
-    companies = sorted(set(k[0] for k in counts))
-    # Find last complete reference month per company
-    ref_month = {}  # company -> (month, five, total)
-    for company in companies:
+    drivers = sorted(set(k[0] for k in counts))
+    # Find last complete reference month per driver
+    ref_month = {}  # driver -> (month, five, total)
+    for driver in drivers:
         for (co, mo), c in sorted(counts.items(), reverse=True):
-            if co != company or mo >= last_month:
+            if co != driver or mo >= last_month:
                 continue
             if c["total"] > c["five"] and c["total"] >= 3:
-                ref_month[company] = (mo, c["five"], c["total"])
+                ref_month[driver] = (mo, c["five"], c["total"])
                 break
 
-    # Only adjust companies whose last-month data is actually missing Monthly
-    # reports.  Some companies (e.g., Tesla) file Monthly reports early, so
+    # Only adjust drivers whose last-month data is actually missing Monthly
+    # reports.  Some drivers (e.g., Tesla) file Monthly reports early, so
     # their last-month data may already be approximately complete.
     last_month_has_monthly = {}
     for (co, mo), c in counts.items():
@@ -497,33 +497,33 @@ def incident_coverage(nhtsa_rows, last_month):
             last_month_has_monthly[co] = c["total"] > c["five"]
 
     result = {}
-    for company in companies:
-        key = (company, last_month)
-        if last_month_has_monthly.get(company, False):
+    for driver in drivers:
+        key = (driver, last_month)
+        if last_month_has_monthly.get(driver, False):
             result[key] = (1.0, 1.0, 1.0)
-            print(f"  {company} {last_month} incident_coverage: 1.0"
+            print(f"  {driver} {last_month} incident_coverage: 1.0"
                   f" (Monthly reports present)")
             continue
-        if company not in ref_month:
+        if driver not in ref_month:
             result[key] = (1.0, 1.0, 1.0)
-            print(f"  {company} {last_month} incident_coverage: 1.0"
+            print(f"  {driver} {last_month} incident_coverage: 1.0"
                   f" (no reference month)")
             continue
-        mo, five, total = ref_month[company]
+        mo, five, total = ref_month[driver]
         p_best, p_lo, p_hi = wilson_ci(five, total)
-        # If the company files ~0% as 5-Day (e.g., Tesla), the last month
+        # If the driver files ~0% as 5-Day (e.g., Tesla), the last month
         # is unobservable via 5-Day reports; treat as complete — the 0
         # observed incidents will produce a wide Gamma posterior naturally.
         if p_best == 0:
             result[key] = (1.0, 1.0, 1.0)
-            print(f"  {company} {last_month} incident_coverage: 1.0"
+            print(f"  {driver} {last_month} incident_coverage: 1.0"
                   f" (0% 5-Day in ref month {mo}: {five}/{total})")
             continue
         must(0 < p_lo <= p_best <= p_hi <= 1,
-             "5-Day fraction out of range", company=company,
+             "5-Day fraction out of range", driver=driver,
              p_best=p_best, p_lo=p_lo, p_hi=p_hi)
         result[key] = (p_best, p_lo, p_hi)
-        print(f"  {company} {last_month} incident_coverage:"
+        print(f"  {driver} {last_month} incident_coverage:"
               f" best={p_best:.3f} lo={p_lo:.3f} hi={p_hi:.3f}"
               f" (from {mo}: {five}/{total})")
 
@@ -553,13 +553,13 @@ def parse_vmt_months(raw_text):
 def build_vmt_csv(raw_text, inc_cov, active_months):
     """Add coverage + incident_coverage columns to the raw VMT CSV text.
 
-    inc_cov: dict from incident_coverage(), mapping (company, iso_month) to
+    inc_cov: dict from incident_coverage(), mapping (driver, iso_month) to
     (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
     active_months: set of ISO months to include (months with incident data).
     """
     lines = raw_text.splitlines()
     must(len(lines) > 1, "VMT sheet CSV must include header and rows")
-    must(lines[0] == "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,rationale",
+    must(lines[0] == "driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,rationale",
          "VMT sheet CSV header mismatch", header=lines[0])
     new_header = lines[0].replace(
         ",rationale",
@@ -569,19 +569,19 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
     for line in lines[1:]:
         if not line.strip():
             continue
-        parts = line.split(",", 6)  # company,month,vmt,cum,min,max,rationale
-        company_raw = parts[0].strip()
-        company = next(
-            (v for k, v in COMPANY_SHORT.items()
-             if k.lower().startswith(company_raw.lower())
-             or v.lower() == company_raw.lower()),
-            company_raw,
+        parts = line.split(",", 6)  # driver,month,vmt,cum,min,max,rationale
+        driver_raw = parts[0].strip()
+        driver = next(
+            (v for k, v in DRIVER_SHORT.items()
+             if k.lower().startswith(driver_raw.lower())
+             or v.lower() == driver_raw.lower()),
+            driver_raw,
         )
         month = parts[1].strip()
         if month not in active_months:
             continue
         cov_str = "1.0"
-        ic_best, ic_lo, ic_hi = inc_cov.get((company, month), (1, 1, 1))
+        ic_best, ic_lo, ic_hi = inc_cov.get((driver, month), (1, 1, 1))
         parts.insert(6, cov_str)
         parts.insert(7, str(ic_best))
         parts.insert(8, str(ic_lo))
@@ -609,7 +609,7 @@ EXPECTED_DRIVER_TYPES = {
     "Unknown",
 }
 # All reporting entities in the NHTSA ADS CSV (current + archive).
-# Anti-Postel: if NHTSA adds a new company, we want to crash and review.
+# Anti-Postel: if NHTSA adds a new driver, we want to crash and review.
 EXPECTED_COMPANIES = {
     "Ambarella",
     "Apollo Autonomous Driving USA",
@@ -685,9 +685,9 @@ def main():
         must(dt in EXPECTED_DRIVER_TYPES,
              "unexpected Driver / Operator Type", row=i, value=dt,
              expected=sorted(EXPECTED_DRIVER_TYPES))
-        company = r["Reporting Entity"].strip()
-        must(company in EXPECTED_COMPANIES,
-             "unexpected Reporting Entity", row=i, value=company,
+        driver = r["Reporting Entity"].strip()
+        must(driver in EXPECTED_COMPANIES,
+             "unexpected Reporting Entity", row=i, value=driver,
              expected=sorted(EXPECTED_COMPANIES))
         must(INCIDENT_DATE_RE.match(idate),
              "unexpected Incident Date format", row=i, value=idate)
@@ -728,7 +728,7 @@ def main():
     sync_fault_csvs(fault_master_rows)
     fault_models, fault_ids = load_fault_models()
 
-    # Filter to months that have VMT data for any company.
+    # Filter to months that have VMT data for any driver.
     # The archive includes years of data; we only need months with VMT.
     vmt_raw = fetch_vmt_sheet_raw(run_stamp)
     vmt_months = parse_vmt_months(vmt_raw)
@@ -764,8 +764,8 @@ def main():
             key = KEY_MAP[csv_field]
             val = r.get(csv_field, "").strip()
             rec[key] = val
-        # Shorten company name
-        rec["company"] = COMPANY_SHORT.get(rec["company"], rec["company"])
+        # Shorten driver name
+        rec["driver"] = DRIVER_SHORT.get(rec["driver"], rec["driver"])
         # Parse speed as number
         try:
             rec["speed"] = int(rec["speed"])
@@ -802,9 +802,9 @@ def main():
     must(len(missing_fault) == 0, "incidents with fault missing from fault CSVs",
          missing=sorted(missing_fault)[:5])
 
-    # Sort by company then date (ISO month sorts lexicographically)
+    # Sort by driver then date (ISO month sorts lexicographically)
     incidents.sort(key=lambda r: (
-        r["company"],
+        r["driver"],
         nhtsa_month_to_iso(r["date"]),
         r["time"],
     ))
@@ -853,18 +853,18 @@ def main():
         f.write(vmt_js)
 
     # Summary
-    counts = Counter(r["company"] for r in incidents)
+    counts = Counter(r["driver"] for r in incidents)
     total = len(incidents)
     if nhtsa_modified_date:
         print(f"NHTSA file last modified: {nhtsa_modified_date}")
     print(f"Injected {total} incidents into {relpath(INCIDENT_JS)} and VMT into {relpath(VMT_JS)}")
-    for company, n in counts.most_common():
-        print(f"  {company}: {n}")
+    for driver, n in counts.most_common():
+        print(f"  {driver}: {n}")
 
-    # Passenger occupancy summary per company
+    # Passenger occupancy summary per driver
     print("\nPassenger occupancy at time of crash:")
-    for company in sorted(counts):
-        co_incidents = [r for r in incidents if r["company"] == company]
+    for driver in sorted(counts):
+        co_incidents = [r for r in incidents if r["driver"] == driver]
         n = len(co_incidents)
         with_pax = sum(1 for r in co_incidents
                        if r["belted"] not in
@@ -875,7 +875,7 @@ def main():
                      "Subject Vehicle - No Passenger In Vehicle")
         unk = n - with_pax - no_pax
         pct = f"{100*with_pax/n:.0f}%" if n else "n/a"
-        print(f"  {company}: {with_pax}/{n} with passenger ({pct})"
+        print(f"  {driver}: {with_pax}/{n} with passenger ({pct})"
               f"  [no passenger: {no_pax}, unknown: {unk}]")
 
 

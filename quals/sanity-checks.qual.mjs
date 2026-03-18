@@ -168,7 +168,7 @@ Resultata: expected columns not found.`);
 const tooFewCount = (html.match(/too few incidents to tell/g) || []).length;
 assert.ok(
   tooFewCount >= 2,
-  `Replicata: check Poisson dispersion for small-sample companies.
+  `Replicata: check Poisson dispersion for small-sample drivers.
 Expectata: Tesla (14) and Zoox (13) both show "too few incidents to tell".
 Resultata: found ${tooFewCount} occurrences.`);
 
@@ -220,7 +220,7 @@ for (const co of ["Tesla", "Waymo", "Zoox"]) {
   assert.ok(
     count >= 8,
     `Replicata: check ${co} presence across sanity check tables.
-Expectata: ${co} appears in at least 8 table cells (one per section with company rows).
+Expectata: ${co} appears in at least 8 table cells (one per section with driver rows).
 Resultata: ${co} appeared ${count} times.`);
 }
 

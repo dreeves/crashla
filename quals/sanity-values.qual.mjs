@@ -105,8 +105,8 @@ const paxSection = html.split("<h3>Passenger presence</h3>")[1]
 const paxTrMatches = [...paxSection.matchAll(/<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>/g)];
 assert.ok(
   paxTrMatches.length >= 3,
-  `Replicata: passenger presence table has company rows.
-Expectata: at least 3 company rows (Tesla, Waymo, Zoox).
+  `Replicata: passenger presence table has driver rows.
+Expectata: at least 3 driver rows (Tesla, Waymo, Zoox).
 Resultata: found ${paxTrMatches.length} rows.`);
 
 for (const m of paxTrMatches) {
@@ -126,7 +126,7 @@ const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<
 const sevMatches = [...sevSection.matchAll(sevPattern)];
 assert.ok(
   sevMatches.length >= 3,
-  `Replicata: severity table has company rows.
+  `Replicata: severity table has driver rows.
 Expectata: at least 3 rows.
 Resultata: found ${sevMatches.length}.`);
 
@@ -146,7 +146,7 @@ const cbiSection = html.split("<h3>Narrative redaction</h3>")[1]
 const cbiPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>/g;
 const cbiMatches = [...cbiSection.matchAll(cbiPattern)];
 assert.ok(cbiMatches.length >= 3,
-  `Replicata: CBI table has company rows.
+  `Replicata: CBI table has driver rows.
 Expectata: at least 3.
 Resultata: found ${cbiMatches.length}.`);
 
@@ -184,7 +184,7 @@ const dispSection = html.split("<h3>Poisson dispersion</h3>")[1]
 const dispPattern = /<td>([\d.]+)<\/td>\s*<td>(too few|underdispersed|consistent|mildly|overdispersed)/g;
 const dispMatches = [...dispSection.matchAll(dispPattern)];
 assert.ok(dispMatches.length >= 3,
-  `Replicata: Poisson dispersion table has company rows.
+  `Replicata: Poisson dispersion table has driver rows.
 Expectata: at least 3.
 Resultata: found ${dispMatches.length}.`);
 
@@ -203,7 +203,7 @@ const rptSection = html.split("<h3>Reporting threshold disparities</h3>")[1]
 const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
 const rptMatches = [...rptSection.matchAll(rptPattern)];
 assert.ok(rptMatches.length >= 3,
-  `Replicata: reporting threshold table has company rows.
+  `Replicata: reporting threshold table has driver rows.
 Expectata: at least 3.
 Resultata: found ${rptMatches.length}.`);
 
@@ -225,9 +225,9 @@ const extractTotals = (section, colIndex) => {
   for (const block of trBlocks) {
     const tds = [...block.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(m => m[1]);
     if (tds.length >= colIndex + 1) {
-      const company = tds[0].trim();
+      const driver = tds[0].trim();
       const val = parseInt(tds[colIndex], 10);
-      if (!isNaN(val)) totals[company] = val;
+      if (!isNaN(val)) totals[driver] = val;
     }
   }
   return totals;

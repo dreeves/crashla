@@ -192,7 +192,7 @@ incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
 selectedMetricKey = "all";
-for (const c of ADS_COMPANIES) monthCompanyEnabled[c] = true;
+for (const c of ADS_DRIVERS) monthDriverEnabled[c] = true;
 activeSeries = monthSeriesData();
 `, ctx);
 
@@ -200,7 +200,7 @@ const distChart = vm.runInContext(`renderDistributionChart(activeSeries)`, ctx);
 
 assert.ok(
   distChart.includes("<svg"),
-  `Replicata: call renderDistributionChart with all metrics and companies enabled.
+  `Replicata: call renderDistributionChart with all metrics and drivers enabled.
 Expectata: result contains an SVG element.
 Resultata: no <svg found in output.`,
 );
@@ -216,9 +216,9 @@ assert.ok(
   distChart.includes("#d13b2d") &&
     distChart.includes("#2060c0") &&
     distChart.includes("#2a8f57"),
-  `Replicata: call renderDistributionChart with all companies enabled.
-Expectata: SVG includes company colors (Tesla #d13b2d, Waymo #2060c0, Zoox #2a8f57).
-Resultata: one or more company colors missing.`,
+  `Replicata: call renderDistributionChart with all drivers enabled.
+Expectata: SVG includes driver colors (Tesla #d13b2d, Waymo #2060c0, Zoox #2a8f57).
+Resultata: one or more driver colors missing.`,
 );
 
 assert.ok(
@@ -236,26 +236,26 @@ Resultata: expected label not found in output.`,
 );
 
 assert.ok(
-  distChart.includes("fill:#888"),
+  distChart.includes("fill:#c9a800"),
   `Replicata: call renderDistributionChart with metrics that have human benchmarks.
-Expectata: SVG includes gray (fill:#888) human benchmark log-normal curves.
+Expectata: SVG includes gold (fill:#c9a800) human benchmark log-normal curves.
 Resultata: human curve color not found in output.`,
 );
 
-// Edge case: no companies enabled → empty string
+// Edge case: no drivers enabled → empty string
 const emptyChart = vm.runInContext(`
 (() => {
-  for (const c of ADS_COMPANIES) monthCompanyEnabled[c] = false;
+  for (const c of ALL_DRIVERS) monthDriverEnabled[c] = false;
   const result = renderDistributionChart(activeSeries);
-  for (const c of ADS_COMPANIES) monthCompanyEnabled[c] = true;
+  for (const c of ALL_DRIVERS) monthDriverEnabled[c] = true;
   return result;
 })()
 `, ctx);
 
 assert.ok(
   emptyChart === "" || !emptyChart.includes("#d13b2d"),
-  `Replicata: call renderDistributionChart with all companies disabled.
-Expectata: returns empty string or SVG without company curves.
+  `Replicata: call renderDistributionChart with all drivers disabled.
+Expectata: returns empty string or SVG without driver curves.
 Resultata: output was ${JSON.stringify(emptyChart.slice(0, 200))}.`,
 );
 

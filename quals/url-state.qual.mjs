@@ -33,7 +33,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 const state = vm.runInContext(`
 (() => {
-  monthCompanyEnabled = {Tesla: true, Waymo: false, Zoox: true, Humans: true};
+  monthDriverEnabled = {Humans: true, Tesla: true, Waymo: false, Zoox: true};
   selectedMetricKey = "injury";
   activeFilter = "Waymo";
   sortCol = "speed";
@@ -41,7 +41,7 @@ const state = vm.runInContext(`
 
   const query = encodeUiStateQuery();
 
-  monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true, Humans: true};
+  monthDriverEnabled = {Humans: true, Tesla: true, Waymo: true, Zoox: true};
   selectedMetricKey = "all";
   activeFilter = "All";
   sortCol = null;
@@ -56,7 +56,7 @@ const state = vm.runInContext(`
     activeFilter,
     sortCol,
     sortAsc,
-    monthCompanyEnabled,
+    monthDriverEnabled,
     selectedMetricKey,
   };
 })()
@@ -65,9 +65,9 @@ const plain = JSON.parse(JSON.stringify(state));
 
 assert.equal(
   plain.query,
-  "f=Waymo&s=speed&a=0&c=Tesla.Zoox&m=injury",
+  "f=Waymo&s=speed&a=0&c=Humans.Tesla.Zoox&m=injury",
   `Replicata: encode UI state to a query string.
-Expectata: query string exactly captures filter/sort/company/metric state.
+Expectata: query string exactly captures filter/sort/driver/metric state.
 Resultata: query was ${plain.query}.`,
 );
 
@@ -104,11 +104,11 @@ Resultata: sortAsc was ${plain.sortAsc}.`,
 );
 
 assert.deepEqual(
-  plain.monthCompanyEnabled,
-  {Tesla: true, Waymo: false, Zoox: true, Humans: true},
-  `Replicata: apply encoded query to reset company toggles.
-Expectata: company toggles restored (Tesla+Zoox on, Waymo off).
-Resultata: company toggles were ${JSON.stringify(plain.monthCompanyEnabled)}.`,
+  plain.monthDriverEnabled,
+  {Humans: true, Tesla: true, Waymo: false, Zoox: true},
+  `Replicata: apply encoded query to reset driver toggles.
+Expectata: driver toggles restored (Tesla+Zoox on, Waymo off).
+Resultata: driver toggles were ${JSON.stringify(plain.monthDriverEnabled)}.`,
 );
 
 assert.equal(

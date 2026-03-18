@@ -74,31 +74,31 @@ const metrics = vm.runInContext(`
 (() => {
   const series = monthSeriesData();
   const byMonth = Object.fromEntries(series.points.map(p => [p.month, p]));
-  const totalByCompany = Object.fromEntries(
-    ADS_COMPANIES.map(company => [
-      company,
-      series.points.reduce((sum, p) => sum + (p.companies[company] ? p.companies[company].incidents.total : 0), 0),
+  const totalByDriver = Object.fromEntries(
+    ADS_DRIVERS.map(driver => [
+      driver,
+      series.points.reduce((sum, p) => sum + (p.drivers[driver] ? p.drivers[driver].incidents.total : 0), 0),
     ]),
   );
   selectedMetricKey = "all";
   buildMonthlyViews();
   return {
     months: series.months,
-    totalByCompany,
-    janTeslaBins: byMonth["2026-01"].companies.Tesla.incidents.speeds,
-    janTeslaNonstationary: nonstationaryIncidentCount(byMonth["2026-01"].companies.Tesla.incidents.speeds),
-    janTeslaRoadwayNonstationary: byMonth["2026-01"].companies.Tesla.incidents.roadwayNonstationary,
+    totalByDriver,
+    janTeslaBins: byMonth["2026-01"].drivers.Tesla.incidents.speeds,
+    janTeslaNonstationary: nonstationaryIncidentCount(byMonth["2026-01"].drivers.Tesla.incidents.speeds),
+    janTeslaRoadwayNonstationary: byMonth["2026-01"].drivers.Tesla.incidents.roadwayNonstationary,
     summaryRows: monthlySummaryRows(series),
-    airbagByCompanyMonth: Object.fromEntries(
-      ADS_COMPANIES.map(company => [
-        company,
-        series.points.filter(p => p.incidentObservable && p.companies[company] !== null).map(p => p.companies[company].incidents.airbag),
+    airbagByDriverMonth: Object.fromEntries(
+      ADS_DRIVERS.map(driver => [
+        driver,
+        series.points.filter(p => p.incidentObservable && p.drivers[driver] !== null).map(p => p.drivers[driver].incidents.airbag),
       ]),
     ),
     summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
     chartMpiAll: document.getElementById("chart-mpi-all").innerHTML,
-    chartCompanySeries: document.getElementById("chart-company-series").innerHTML,
-    legendMpiCompanies: document.getElementById("month-legend-mpi-companies").innerHTML,
+    chartDriverSeries: document.getElementById("chart-driver-series").innerHTML,
+    legendMpiDrivers: document.getElementById("month-legend-mpi-drivers").innerHTML,
     legendMpiLines: document.getElementById("month-legend-mpi-lines").innerHTML,
     legendLines: document.getElementById("month-legend-lines").innerHTML,
     legendSpeed: document.getElementById("month-legend-speed").innerHTML,
@@ -115,11 +115,11 @@ Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 );
 
 assert.deepEqual(
-  plain.totalByCompany,
+  plain.totalByDriver,
   { Tesla: 15, Waymo: 1498, Zoox: 15 },
-  `Replicata: sum monthly incident totals for each ADS company.
+  `Replicata: sum monthly incident totals for each ADS driver.
 Expectata: month aggregation preserves totals within the VMT window (Tesla 15, Waymo 1498 incl pre-Jun, Zoox 15).
-Resultata: totals were ${JSON.stringify(plain.totalByCompany)}.`,
+Resultata: totals were ${JSON.stringify(plain.totalByDriver)}.`,
 );
 
 assert.deepEqual(
@@ -146,53 +146,53 @@ Expectata: two January Tesla incidents are both nonstationary and not in a parki
 Resultata: nonstationary-roadway count was ${JSON.stringify(plain.janTeslaRoadwayNonstationary)}.`,
 );
 
-const summaryByCompany = Object.fromEntries(
-  plain.summaryRows.map(row => [row.company, row]),
+const summaryByDriver = Object.fromEntries(
+  plain.summaryRows.map(row => [row.driver, row]),
 );
 assert.ok(
-  summaryByCompany.Tesla && summaryByCompany.Waymo && summaryByCompany.Zoox,
+  summaryByDriver.Tesla && summaryByDriver.Waymo && summaryByDriver.Zoox,
   `Replicata: compute monthly summary rows.
 Expectata: summary rows include Tesla, Waymo, and Zoox.
 Resultata: summary rows were ${JSON.stringify(plain.summaryRows)}.`,
 );
 assert.ok(
-  Math.abs(summaryByCompany.Tesla.incTotal - 15) < 1e-6 &&
-    Math.abs(summaryByCompany.Tesla.incNonstationary - 11) < 1e-6 &&
-    Math.abs(summaryByCompany.Tesla.incRoadwayNonstationary - 8) < 1e-6,
+  Math.abs(summaryByDriver.Tesla.incTotal - 15) < 1e-6 &&
+    Math.abs(summaryByDriver.Tesla.incNonstationary - 11) < 1e-6 &&
+    Math.abs(summaryByDriver.Tesla.incRoadwayNonstationary - 8) < 1e-6,
   `Replicata: compute Tesla summary incident totals.
 Expectata: summary totals report observed-window incidents (15 total, 11 nonstationary, 8 nonstationary-roadway) without incident scaling.
-Resultata: Tesla summary was ${JSON.stringify(summaryByCompany.Tesla)}.`,
+Resultata: Tesla summary was ${JSON.stringify(summaryByDriver.Tesla)}.`,
 );
 assert.ok(
-  Math.abs(summaryByCompany.Tesla.milesPerIncident -
-    (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incTotal)) < 1e-6 &&
-    Math.abs(summaryByCompany.Tesla.milesPerNonstationaryIncident -
-      (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incNonstationary)) < 1e-6 &&
-    Math.abs(summaryByCompany.Tesla.milesPerRoadwayNonstationaryIncident -
-      (summaryByCompany.Tesla.vmtBest / summaryByCompany.Tesla.incRoadwayNonstationary)) < 1e-6,
+  Math.abs(summaryByDriver.Tesla.milesPerIncident -
+    (summaryByDriver.Tesla.vmtBest / summaryByDriver.Tesla.incTotal)) < 1e-6 &&
+    Math.abs(summaryByDriver.Tesla.milesPerNonstationaryIncident -
+      (summaryByDriver.Tesla.vmtBest / summaryByDriver.Tesla.incNonstationary)) < 1e-6 &&
+    Math.abs(summaryByDriver.Tesla.milesPerRoadwayNonstationaryIncident -
+      (summaryByDriver.Tesla.vmtBest / summaryByDriver.Tesla.incRoadwayNonstationary)) < 1e-6,
   `Replicata: compute Tesla summary miles-per-incident fields.
 Expectata: summary rows include overall, nonstationary, and nonstationary-roadway miles-per-incident values derived from best-VMT totals and observed-window incident totals.
-Resultata: Tesla summary was ${JSON.stringify(summaryByCompany.Tesla)}.`,
+Resultata: Tesla summary was ${JSON.stringify(summaryByDriver.Tesla)}.`,
 );
 assert.ok(
-  summaryByCompany.Waymo.incAirbag >= 15 &&
-    summaryByCompany.Waymo.incAirbag <= 30 &&
-    summaryByCompany.Tesla.incAirbag === 0 &&
-    summaryByCompany.Zoox.incAirbag === 0,
-  `Replicata: compute airbag deployment incident counts per company.
+  summaryByDriver.Waymo.incAirbag >= 15 &&
+    summaryByDriver.Waymo.incAirbag <= 30 &&
+    summaryByDriver.Tesla.incAirbag === 0 &&
+    summaryByDriver.Zoox.incAirbag === 0,
+  `Replicata: compute airbag deployment incident counts per driver.
 Expectata: Waymo has 15\u201330 airbag incidents; Tesla and Zoox have 0 (no airbag deployments in current data).
-Resultata: Waymo=${summaryByCompany.Waymo.incAirbag} Tesla=${summaryByCompany.Tesla.incAirbag} Zoox=${summaryByCompany.Zoox.incAirbag}.`,
+Resultata: Waymo=${summaryByDriver.Waymo.incAirbag} Tesla=${summaryByDriver.Tesla.incAirbag} Zoox=${summaryByDriver.Zoox.incAirbag}.`,
 );
 
 // Verify airbag field exists in incident data and the monthly series correctly
 // disaggregates it: Waymo's total airbag count across months should equal incAirbag.
-const waymoAirbagMonthly = plain.airbagByCompanyMonth.Waymo;
+const waymoAirbagMonthly = plain.airbagByDriverMonth.Waymo;
 const waymoAirbagSum = waymoAirbagMonthly.reduce((a, b) => a + b, 0);
 assert.equal(
   waymoAirbagSum,
-  summaryByCompany.Waymo.incAirbag,
+  summaryByDriver.Waymo.incAirbag,
   `Replicata: sum per-month Waymo airbag counts.
-Expectata: per-month sum equals summary incAirbag (${summaryByCompany.Waymo.incAirbag}).
+Expectata: per-month sum equals summary incAirbag (${summaryByDriver.Waymo.incAirbag}).
 Resultata: monthly sum was ${waymoAirbagSum}, monthly breakdown was ${JSON.stringify(waymoAirbagMonthly)}.`,
 );
 
@@ -217,11 +217,11 @@ Resultata: card HTML snippet: ${JSON.stringify(plain.summaryCardHtml.slice(0, 20
 );
 
 // Verify human benchmark for airbag exists and has correct structure
-const humanAirbag = vm.runInContext("KNOWN_HUMAN_MPI.airbag", ctx);
+const humanAirbag = vm.runInContext("METRIC_DEFS.find(m => m.key === 'airbag').humanMPI", ctx);
 assert.ok(
   humanAirbag && humanAirbag.lo > 0 && humanAirbag.hi > humanAirbag.lo &&
     humanAirbag.lo >= 400000 && humanAirbag.hi <= 800000,
-  `Replicata: inspect KNOWN_HUMAN_MPI.airbag.
+  `Replicata: inspect humanMPI for airbag metric.
 Expectata: airbag human benchmark has lo (400k\u2013600k) < hi (600k\u2013800k) based on ~1.66 IPMM.
 Resultata: ${JSON.stringify(humanAirbag)}.`,
 );
@@ -229,20 +229,20 @@ Resultata: ${JSON.stringify(humanAirbag)}.`,
 // Verify chart renders line data with standard stroke-width:2
 assert.ok(
   plain.chartMpiAll.includes("stroke-width:2"),
-  `Replicata: render all-company MPI chart with selected metric.
+  `Replicata: render all-driver MPI chart with selected metric.
 Expectata: chart includes stroke-width:2 (standard line width).
 Resultata: stroke-width:2 not found in rendered chart.`,
 );
 
 // Serious injury (SSI+) assertions
 assert.ok(
-  summaryByCompany.Waymo.incSeriousInjury >= 1 &&
-    summaryByCompany.Waymo.incSeriousInjury <= 10 &&
-    summaryByCompany.Tesla.incSeriousInjury === 0 &&
-    summaryByCompany.Zoox.incSeriousInjury === 0,
-  `Replicata: compute serious injury (SSI+) incident counts per company.
+  summaryByDriver.Waymo.incSeriousInjury >= 1 &&
+    summaryByDriver.Waymo.incSeriousInjury <= 10 &&
+    summaryByDriver.Tesla.incSeriousInjury === 0 &&
+    summaryByDriver.Zoox.incSeriousInjury === 0,
+  `Replicata: compute serious injury (SSI+) incident counts per driver.
 Expectata: Waymo has 1\u201310 serious injury incidents (Moderate W/ Hosp + Fatality); Tesla and Zoox have 0.
-Resultata: Waymo=${summaryByCompany.Waymo.incSeriousInjury} Tesla=${summaryByCompany.Tesla.incSeriousInjury} Zoox=${summaryByCompany.Zoox.incSeriousInjury}.`,
+Resultata: Waymo=${summaryByDriver.Waymo.incSeriousInjury} Tesla=${summaryByDriver.Tesla.incSeriousInjury} Zoox=${summaryByDriver.Zoox.incSeriousInjury}.`,
 );
 
 const moderateSeverityCheck = vm.runInContext(`
@@ -275,10 +275,10 @@ Expectata: summary cards include "Serious injury (SSI+)" label.
 Resultata: label not found in card HTML.`,
 );
 
-const humanSsi = vm.runInContext("KNOWN_HUMAN_MPI.seriousInjury", ctx);
+const humanSsi = vm.runInContext("METRIC_DEFS.find(m => m.key === 'seriousInjury').humanMPI", ctx);
 assert.ok(
   humanSsi && humanSsi.lo >= 3000000 && humanSsi.hi <= 7000000 && humanSsi.lo < humanSsi.hi,
-  `Replicata: inspect KNOWN_HUMAN_MPI.seriousInjury.
+  `Replicata: inspect humanMPI for seriousInjury metric.
 Expectata: SSI+ human benchmark lo (3M\u20134M) < hi (6M\u20137M) based on ~0.23 IPMM.
 Resultata: ${JSON.stringify(humanSsi)}.`,
 );
@@ -297,12 +297,12 @@ Expectata: every metric def has key, label, cardLabel, incField, marker, default
 Resultata: some metric defs are missing required fields.`,
 );
 
-// Verify human benchmark bands are always rendered (no Humans checkbox needed)
+// Verify Humans driver is rendered in the chart (gold color, enabled by default)
 assert.ok(
-  plain.chartMpiAll.includes("stroke-dasharray:6 4"),
-  `Replicata: render chart with default settings (Humans always on).
-Expectata: chart includes dashed human reference lines even without toggling Humans on.
-Resultata: dashed lines not found in default chart render.`,
+  plain.chartMpiAll.includes("#c9a800"),
+  `Replicata: render chart with default settings (Humans enabled by default).
+Expectata: chart includes gold (#c9a800) Humans driver lines/bands.
+Resultata: Humans color not found in default chart render.`,
 );
 
 const renderedAll = plain.chartMpiAll;
@@ -311,15 +311,15 @@ assert.ok(
     renderedAll.includes("month-mpi-all-line") &&
     renderedAll.includes("stroke-width:2") &&
     renderedAll.includes("Miles Per Incident (MPI)"),
-  `Replicata: render cross-company miles-per-incident chart.
-Expectata: chart includes all-company line traces with standard stroke-width, month labels, and the miles-per-incident axis.
+  `Replicata: render cross-driver miles-per-incident chart.
+Expectata: chart includes all-driver line traces with standard stroke-width, month labels, and the miles-per-incident axis.
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 
 assert.ok(
   appScript.includes("Monthly VMT:") &&
     appScript.includes("Cumulative VMT:"),
-  `Replicata: inspect cross-company MPI datapoint tooltip source.
+  `Replicata: inspect cross-driver MPI datapoint tooltip source.
 Expectata: tooltip source includes monthly and cumulative mileage labels.
 Resultata: labels missing from source.`,
 );
@@ -332,7 +332,7 @@ Expectata: source includes lower-chart tooltip labels for VMT range and segment 
 Resultata: expected strings missing from source.`,
 );
 
-const rendered = plain.chartCompanySeries;
+const rendered = plain.chartDriverSeries;
 assert.ok(
   rendered.includes("<svg") &&
     rendered.includes("Tesla") &&
@@ -346,18 +346,18 @@ assert.ok(
     rendered.includes("Vehicle Miles Traveled (VMT)") &&
     rendered.includes("month-err") &&
     rendered.includes("month-axis"),
-  `Replicata: render monthly charts per company.
-Expectata: each company chart renders a left VMT axis, a VMT line, stacked incident bars with count labels, and error bars.
+  `Replicata: render monthly charts per driver.
+Expectata: each driver chart renders a left VMT axis, a VMT line, stacked incident bars with count labels, and error bars.
 Resultata: rendered snippets were ${JSON.stringify(rendered.slice(0, 400))}.`,
 );
 
 
 assert.ok(
-  plain.legendMpiCompanies.includes("Tesla") &&
-  plain.legendMpiCompanies.includes("Waymo") &&
-    plain.legendMpiCompanies.includes("Zoox") &&
-  !plain.legendMpiCompanies.includes("Humans") &&
-  plain.legendMpiCompanies.includes("type=\"checkbox\"") &&
+  plain.legendMpiDrivers.includes("Tesla") &&
+  plain.legendMpiDrivers.includes("Waymo") &&
+    plain.legendMpiDrivers.includes("Zoox") &&
+  plain.legendMpiDrivers.includes("Humans") &&
+  plain.legendMpiDrivers.includes("type=\"checkbox\"") &&
   plain.legendMpiLines.includes("month-metric-toggle-all") &&
   plain.legendMpiLines.includes("month-metric-toggle-nonstationary") &&
   plain.legendMpiLines.includes("month-metric-toggle-roadwayNonstationary") &&
@@ -380,8 +380,8 @@ assert.ok(
   plain.legendSpeed.includes("Fatality") &&
     plain.legendSpeed.includes("No injury"),
   `Replicata: render monthly legends.
-Expectata: legends include company colors, cross-company metric styles, per-company line styles, and bar segment types.
-Resultata: mpi-companies=${JSON.stringify(plain.legendMpiCompanies)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}, line legend=${JSON.stringify(plain.legendLines)}, speed legend=${JSON.stringify(plain.legendSpeed)}.`,
+Expectata: legends include driver colors, cross-driver metric styles, per-driver line styles, and bar segment types.
+Resultata: mpi-drivers=${JSON.stringify(plain.legendMpiDrivers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}, line legend=${JSON.stringify(plain.legendLines)}, speed legend=${JSON.stringify(plain.legendSpeed)}.`,
 );
 
-console.log("qual pass: monthly charts render cross-company and per-company incident-rate views");
+console.log("qual pass: monthly charts render cross-driver and per-driver incident-rate views");

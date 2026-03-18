@@ -13,13 +13,14 @@ const ctx = vm.createContext({
 });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
-const mpi = vm.runInContext("KNOWN_HUMAN_MPI", ctx);
+const mpi = vm.runInContext(
+  "Object.fromEntries(METRIC_DEFS.filter(m => m.humanMPI).map(m => [m.key, m.humanMPI]))", ctx);
 
 // Every metric must have 0 < lo < hi
 for (const [key, val] of Object.entries(mpi)) {
   assert.ok(
     val.lo > 0 && val.hi > val.lo,
-    `Replicata: inspect KNOWN_HUMAN_MPI.${key}.
+    `Replicata: inspect humanMPI for metric ${key}.
 Expectata: 0 < lo < hi.
 Resultata: lo=${val.lo}, hi=${val.hi}.`);
 }

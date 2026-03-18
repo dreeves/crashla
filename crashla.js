@@ -133,7 +133,7 @@ function estimateMpi(k, m, massFrac) {
 let incidents = [];
 let vmtRows = [];
 let faultData = {}; // reportId -> {claude, codex, gemini, rclaude, rcodex, rgemini}
-let monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true, Humans: true};
+let monthDriverEnabled = {Humans: true, Tesla: true, Waymo: true, Zoox: true};
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
 // count function, and whether it's enabled by default.
@@ -328,8 +328,6 @@ const METRIC_DEFS = [
 ];
 
 // Derived accessors — consumed by rendering code throughout
-const KNOWN_HUMAN_MPI = Object.fromEntries(
-  METRIC_DEFS.filter(m => m.humanMPI).map(m => [m.key, m.humanMPI]));
 const METRIC_KEYS = METRIC_DEFS.map(m => m.key);
 const METRIC_BY_KEY = Object.fromEntries(
   METRIC_DEFS.map(m => [m.key, m]));
@@ -345,26 +343,27 @@ let monthRangeEnd = Infinity;
 let fullMonthSeries = null;
 let activeSeries = null;
 
-function metricLineStyle(company) {
-  return `stroke:${MONTHLY_COMPANY_COLORS[company]};stroke-width:2`;
+function metricLineStyle(driver) {
+  return `stroke:${DRIVER_COLORS[driver]};stroke-width:2`;
 }
 
-function metricMarkerColor(company) {
-  return MONTHLY_COMPANY_COLORS[company];
+function metricMarkerColor(driver) {
+  return DRIVER_COLORS[driver];
 }
 
 
-function metricErrStyle(company) {
-  return `stroke:${MONTHLY_COMPANY_COLORS[company]}`;
+function metricErrStyle(driver) {
+  return `stroke:${DRIVER_COLORS[driver]}`;
 }
 const CI_MASS_DEFAULT_PCT = 95;
 const CI_FAN_LEVELS = [0.50, 0.80, 0.95]; // nested CI bands from tight to wide
-const ADS_COMPANIES = ["Tesla", "Waymo", "Zoox"];
-const MONTHLY_COMPANY_COLORS = {
+const ADS_DRIVERS = ["Tesla", "Waymo", "Zoox"];
+const ALL_DRIVERS = ["Humans", ...ADS_DRIVERS];
+const DRIVER_COLORS = {
+  Humans: "#c9a800",
   Tesla: "#d13b2d",
   Waymo: "#2060c0",
   Zoox: "#2a8f57",
-  Humans: "#888",
 };
 const SPEED_BINS = ["unknown", "31+", "11-30", "1-10", "0"];
 const SPEED_LABELS = {
@@ -456,10 +455,10 @@ const MONTH_TOKENS = {
 const YM_RE = /^(\d{4})-(\d{2})$/;
 
 // Count incidents per company from loaded data
-function countByCompany(rows = incidents) {
+function countByDriver(rows = incidents) {
   const counts = {};
   for (const inc of rows) {
-    counts[inc.company] = (counts[inc.company] || 0) + 1;
+    counts[inc.driver] = (counts[inc.driver] || 0) + 1;
   }
   return counts;
 }
@@ -470,7 +469,7 @@ function incidentsInVmtWindow(rows = incidents) {
   for (const inc of rows) {
     assert(monthSet.has(monthKeyFromIncidentLabel(inc.date)),
       "incident date outside VMT window",
-      {reportId: inc.reportId, company: inc.company, date: inc.date});
+      {reportId: inc.reportId, driver: inc.driver, date: inc.date});
   }
   return rows;
 }
@@ -512,7 +511,7 @@ function csvUnquote(field) {
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   assert(lines.length > 1, "VMT sheet CSV must include header and rows");
-  assert(lines[0] === "company,month,vmt,company_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
+  assert(lines[0] === "driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
     "VMT sheet CSV header mismatch", {header: lines[0]});
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -524,9 +523,9 @@ function parseVmtCsv(text) {
     );
     const hit = re.exec(line);
     assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
-    const companyRaw = hit[1].trim();
-    const company = ADS_COMPANIES.find(c => c.toLowerCase() === companyRaw.toLowerCase());
-    assert(company !== undefined, "VMT sheet CSV has unknown company", {companyRaw});
+    const driverRaw = hit[1].trim();
+    const driver = ADS_DRIVERS.find(c => c.toLowerCase() === driverRaw.toLowerCase());
+    assert(driver !== undefined, "VMT sheet CSV has unknown driver", {driverRaw});
     const vmtBest = Number(hit[3]);
     const vmtCume = Number(hit[4]);
     const vmtMin = Number(hit[5]);
@@ -542,7 +541,7 @@ function parseVmtCsv(text) {
     assert(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
       {lineNo: i + 1, vmtBest});
     assert(Number.isFinite(vmtCume) && vmtCume >= 0,
-      "company_cumulative_vmt must be non-negative number", {lineNo: i + 1, vmtCume});
+      "driver_cumulative_vmt must be non-negative number", {lineNo: i + 1, vmtCume});
     assert(Number.isFinite(vmtMin) && vmtMin >= 0, "vmt_min must be non-negative number",
       {lineNo: i + 1, vmtMin});
     assert(Number.isFinite(vmtMax) && vmtMax >= 0, "vmt_max must be non-negative number",
@@ -560,7 +559,7 @@ function parseVmtCsv(text) {
       "incident_coverage_max must be in [incident_coverage, 1]",
       {lineNo: i + 1, incCovMax, incCov});
     rows.push({
-      company,
+      driver,
       month: hit[2],
       vmtMin,
       vmtBest,
@@ -652,12 +651,12 @@ function fmtCount(n) {
   return rounded.toFixed(1);
 }
 
-function monthCompanyToggleId(company) {
-  return "month-company-toggle-" + company.toLowerCase();
+function monthDriverToggleId(driver) {
+  return "month-driver-toggle-" + driver.toLowerCase();
 }
 
-function includedAdsCompanies() {
-  return ADS_COMPANIES.filter(company => monthCompanyEnabled[company]);
+function includedDrivers() {
+  return ALL_DRIVERS.filter(driver => monthDriverEnabled[driver]);
 }
 
 function monthMetricToggleId(metric) {
@@ -673,20 +672,44 @@ function fmtWhole(n) {
   return Math.round(n).toLocaleString();
 }
 
-function vmtTooltip(company, month, row, rec) {
-  return `${company} ${month} (VMT)\nMonthly VMT (central estimate): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nTotal incidents: ${fmtCount(rec.total)}`;
+function vmtTooltip(driver, month, row, rec) {
+  return `${driver} ${month} (VMT)\nMonthly VMT (central estimate): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nTotal incidents: ${fmtCount(rec.total)}`;
 }
 
-function companyMonthRows(series, company) {
-  return series.points.map(point => point.companies[company]);
+function driverMonthRows(series, driver) {
+  return series.points.map(point => point.drivers[driver]);
 }
 
 function monthlySummaryRows(series) {
-  return ADS_COMPANIES.map(company => {
-    // Only use incidentObservable months (all companies have VMT) for MPI
+  // Humans summary row: literature-based MPI with log-normal density
+  const humanMpiEstimates = Object.fromEntries(
+    METRIC_DEFS.filter(m => m.humanMPI).map(m => {
+      const h = m.humanMPI;
+      const geo = Math.sqrt(h.lo * h.hi);
+      const mu = (Math.log(h.lo) + Math.log(h.hi)) / 2;
+      const sigma = (Math.log(h.hi) - Math.log(h.lo)) / (2 * 1.96);
+      return [m.key, {
+        median: geo, lo: h.lo, hi: h.hi, k: null,
+        densityFn: x => logNormalLogDensity(x, mu, sigma),
+        xMin: Math.exp(mu - 3.09 * sigma),
+        xMax: Math.exp(mu + 3.09 * sigma),
+      }];
+    }));
+  const humanRow = {
+    driver: "Humans",
+    vmtMin: 0, vmtBest: 0, vmtMax: 0,
+    vmtRationales: [],
+    ...Object.fromEntries(METRIC_DEFS.map(m => [m.incField, 0])),
+    mpiEstimates: humanMpiEstimates,
+    milesPerIncident: 0,
+    milesPerNonstationaryIncident: 0,
+    milesPerRoadwayNonstationaryIncident: 0,
+  };
+  const adsRows = ADS_DRIVERS.map(driver => {
+    // Only use incidentObservable months (all drivers have VMT) for MPI
     const rows = series.points
-      .filter(p => p.incidentObservable && p.companies[company] !== null)
-      .map(p => p.companies[company]);
+      .filter(p => p.incidentObservable && p.drivers[driver] !== null)
+      .map(p => p.drivers[driver]);
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
     const vmtMax = rows.reduce((sum, row) => sum + row.vmtMax, 0);
@@ -695,18 +718,31 @@ function monthlySummaryRows(series) {
       METRIC_DEFS.map(m => [m.incField, rows.reduce((sum, row) => sum + m.countFn(row), 0)]));
 
     const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
+    // Pre-compute MPI estimates for each metric (consumed by cards + distribution)
+    const mpiEstimates = Object.fromEntries(METRIC_DEFS.map(m => {
+      const k = incFields[m.incField];
+      const alpha = k + 0.5;
+      const beta = vmtBest;
+      const est = estimateMpiWindow(k, vmtMin, vmtBest, vmtMax);
+      return [m.key, {
+        ...est,
+        densityFn: x => invGammaLogDensity(x, alpha, beta),
+        xMin: 1 / gammaquant(alpha, beta, 0.999),
+        xMax: 1 / gammaquant(alpha, beta, 0.001),
+      }];
+    }));
     return {
-      company,
-      vmtMin,
-      vmtBest,
-      vmtMax,
+      driver,
+      vmtMin, vmtBest, vmtMax,
       vmtRationales,
       ...incFields,
+      mpiEstimates,
       milesPerIncident: vmtBest / incFields.incTotal,
       milesPerNonstationaryIncident: vmtBest / incFields.incNonstationary,
       milesPerRoadwayNonstationaryIncident: vmtBest / incFields.incRoadwayNonstationary,
     };
   });
+  return [humanRow, ...adsRows];
 }
 
 function estimateMpiWindow(k, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAULT_PCT / 100) {
@@ -720,23 +756,17 @@ function estimateMpiWindow(k, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAUL
   };
 }
 
-function summaryMetricEstimate(row, metricKey, massFrac = CI_MASS_DEFAULT_PCT / 100) {
-  const metric = METRIC_BY_KEY[metricKey];
-  assert(metric !== undefined, "Unknown metric key for summary estimate", {metricKey});
-  return estimateMpiWindow(row[metric.incField], row.vmtMin, row.vmtBest, row.vmtMax, massFrac);
-}
-
 function fmtRatio(n) {
   assert(Number.isFinite(n), "fmtRatio: invalid input", {n});
   // 99.95 and 9.995: thresholds where toFixed would roll over to next tier
   return n >= 99.95 ? fmtWhole(n) : n >= 9.995 ? n.toFixed(1) : n.toFixed(2);
 }
 
-function companyHumanStress(row, metricKey) {
+function driverHumanStress(row, metricKey) {
   const metric = METRIC_BY_KEY[metricKey];
-  const human = KNOWN_HUMAN_MPI[metricKey];
+  const human = metric.humanMPI;
   assert(metric !== undefined && human !== undefined, "Missing stress metric inputs", {metricKey});
-  const av = summaryMetricEstimate(row, metricKey);
+  const av = row.mpiEstimates[metricKey];
   const ratioLo = av.lo / human.hi;
   const ratioHi = av.hi / human.lo;
   const verdictKey = ratioLo > 1 ? "safer" : ratioHi < 1 ? "worse" : "ambiguous";
@@ -756,19 +786,19 @@ function monthSeriesData() {
   const monthSet = new Set();
   const vmtByKey = {};
   for (const row of vmtRows) {
-    const key = row.company + "|" + row.month;
-    assert(vmtByKey[key] === undefined, "Duplicate VMT row for company-month", {key});
+    const key = row.driver + "|" + row.month;
+    assert(vmtByKey[key] === undefined, "Duplicate VMT row for driver-month", {key});
     vmtByKey[key] = row;
     monthSet.add(row.month);
   }
 
   const incidentsByKey = {};
   for (const inc of incidents) {
-    assert(ADS_COMPANIES.includes(inc.company), "inline incident data has unknown ADS company", {company: inc.company});
+    assert(ADS_DRIVERS.includes(inc.driver), "inline incident data has unknown ADS driver", {driver: inc.driver});
     const month = monthKeyFromIncidentLabel(inc.date);
     assert(monthSet.has(month), "incident date outside VMT window",
-      {reportId: inc.reportId, company: inc.company, date: inc.date, month});
-    const key = inc.company + "|" + month;
+      {reportId: inc.reportId, driver: inc.driver, date: inc.date, month});
+    const key = inc.driver + "|" + month;
     let rec = incidentsByKey[key];
     if (rec === undefined) {
       rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
@@ -806,21 +836,39 @@ function monthSeriesData() {
     rec.fatality += Number(inc.severity === "Fatality") / inc.vehiclesInvolved;
   }
 
+  // Shared human entry: same reference in every month (literature-based MPI)
+  const humanMpiByMetric = Object.fromEntries(
+    METRIC_DEFS.filter(m => m.humanMPI).map(m => {
+      const h = m.humanMPI;
+      const geo = Math.sqrt(h.lo * h.hi);
+      return [m.key, {
+        mpiMin: h.lo, mpiBest: geo, mpiMax: h.hi,
+        incidentCount: null,
+        bands: CI_FAN_LEVELS.map(() => ({lo: h.lo, hi: h.hi})),
+      }];
+    }));
+  const humanEntry = {
+    vmtMin: 0, vmtBest: 0, vmtMax: 0,
+    vmtRawMin: 0, vmtRawBest: 0, vmtRawMax: 0,
+    vmtCume: 0, rationale: null, incidents: null,
+    mpiByMetric: humanMpiByMetric,
+  };
+
   const months = [...monthSet].sort();
   assert(months.length > 0, "No months to render");
   const points = [];
   for (const month of months) {
-    const companies = {};
-    for (const company of ADS_COMPANIES) {
-      const key = company + "|" + month;
+    const drivers = {Humans: humanEntry};
+    for (const driver of ADS_DRIVERS) {
+      const key = driver + "|" + month;
       const vmt = vmtByKey[key];
       if (vmt === undefined) {
-        companies[company] = null;
+        drivers[driver] = null;
         continue;
       }
-      assert(vmt.vmtMin > 0, "vmt_min must be positive", {company, month, vmtMin: vmt.vmtMin});
-      assert(vmt.vmtBest > 0, "vmt must be positive", {company, month, vmtBest: vmt.vmtBest});
-      assert(vmt.vmtMax > 0, "vmt_max must be positive", {company, month, vmtMax: vmt.vmtMax});
+      assert(vmt.vmtMin > 0, "vmt_min must be positive", {driver, month, vmtMin: vmt.vmtMin});
+      assert(vmt.vmtBest > 0, "vmt must be positive", {driver, month, vmtBest: vmt.vmtBest});
+      assert(vmt.vmtMax > 0, "vmt_max must be positive", {driver, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       // Incident coverage: when Monthly reports are absent for the last month,
@@ -828,7 +876,7 @@ function monthSeriesData() {
       // the thinning probability p gives the correct posterior Gamma(k+0.5, m*p).
       // incCovMin (smallest p) pairs with vmtMin for the most pessimistic MPI;
       // incCovMax (largest p) pairs with vmtMax for the most optimistic MPI.
-      companies[company] = {
+      const entry = {
         // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * c * vmt.incCovMin,
         vmtBest: vmt.vmtBest * c * vmt.incCov,
@@ -841,10 +889,29 @@ function monthSeriesData() {
         rationale: vmt.rationale,
         incidents: inc,
       };
+      // Pre-compute MPI estimates for each metric (consumed by MPI chart)
+      entry.mpiByMetric = Object.fromEntries(METRIC_DEFS.map(m => {
+        const k = m.countFn(entry);
+        const a = k + 0.5;
+        return [m.key, {
+          mpiMin:  1 / gammaquant(a, entry.vmtMin,  0.5),
+          mpiBest: 1 / gammaquant(a, entry.vmtBest, 0.5),
+          mpiMax:  1 / gammaquant(a, entry.vmtMax,  0.5),
+          incidentCount: k,
+          bands: CI_FAN_LEVELS.map(level => {
+            const t = (1 - level) / 2;
+            return {
+              lo: 1 / gammaquant(a, entry.vmtMin, 1 - t),
+              hi: 1 / gammaquant(a, entry.vmtMax, t),
+            };
+          }),
+        }];
+      }));
+      drivers[driver] = entry;
     }
-    // incidentObservable: all companies have VMT data = the NHTSA incident window
-    const incidentObservable = ADS_COMPANIES.every(co => companies[co] !== null);
-    points.push({month, companies, incidentObservable});
+    // incidentObservable: all ADS drivers have VMT data = the NHTSA incident window
+    const incidentObservable = ADS_DRIVERS.every(co => drivers[co] !== null);
+    points.push({month, drivers, incidentObservable});
   }
   return {months, points};
 }
@@ -852,20 +919,22 @@ function monthSeriesData() {
 function sliceSeries(series, startIdx, endIdx) {
   const months = series.months.slice(startIdx, endIdx + 1);
   const points = series.points.slice(startIdx, endIdx + 1).map(point => {
-    const companies = {};
-    for (const company of ADS_COMPANIES) {
-      const orig = point.companies[company];
-      companies[company] = orig === null ? null
-        : {...orig, incidents: {...orig.incidents, speeds: {...orig.incidents.speeds}}};
+    const drivers = {};
+    for (const driver of ALL_DRIVERS) {
+      const orig = point.drivers[driver];
+      if (orig === null) { drivers[driver] = null; continue; }
+      if (orig.incidents === null) { drivers[driver] = orig; continue; }
+      drivers[driver] = {...orig, incidents: {...orig.incidents, speeds: {...orig.incidents.speeds}},
+        mpiByMetric: {...orig.mpiByMetric}};
     }
-    return {month: point.month, companies, incidentObservable: point.incidentObservable};
+    return {month: point.month, drivers, incidentObservable: point.incidentObservable};
   });
-  for (const company of ADS_COMPANIES) {
+  for (const driver of ADS_DRIVERS) {
     let cume = 0;
     for (const point of points) {
-      if (point.companies[company] === null) continue;
-      cume += point.companies[company].vmtRawBest;
-      point.companies[company].vmtCume = cume;
+      if (point.drivers[driver] === null) continue;
+      cume += point.drivers[driver].vmtRawBest;
+      point.drivers[driver].vmtCume = cume;
     }
   }
   return {months, points};
@@ -900,8 +969,6 @@ function renderAllCompaniesMpiChart(series) {
   const mBot = 40;
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
-  const countByMetric = Object.fromEntries(
-    METRIC_DEFS.map(m => [m.key, m.countFn]));
   const markerRenderer = {
     "solid-circle": (x, y, color, s) => {
       const r = 3.1 * s;
@@ -925,65 +992,41 @@ function renderAllCompaniesMpiChart(series) {
 
   const seriesRows = [];
   let yMax = 1;
-  for (const company of includedAdsCompanies()) {
-    const rows = companyMonthRows(series, company);
+  for (const driver of includedDrivers()) {
+    const rows = driverMonthRows(series, driver);
     for (const metric of includedMonthMetrics()) {
-      const countFn = countByMetric[metric.key];
-      assert(typeof countFn === "function", "missing count fn for metric", {metric: metric.key});
       const vals = rows.map(row => {
         if (row === null) return null;
-        const k = countFn(row);
-        const massFrac = CI_MASS_DEFAULT_PCT / 100;
-        const mpiBest = estimateMpi(k, row.vmtBest, massFrac).median;
-        const mpiMin = estimateMpi(k, row.vmtMin, massFrac).median;
-        const mpiMax = estimateMpi(k, row.vmtMax, massFrac).median;
-        const a = k + 0.5;
-        // Fan chart: nested CI bands at 50%, 80%, 95%
-        const bands = CI_FAN_LEVELS.map(level => {
-          const t = (1 - level) / 2;
-          return {
-            lo: 1 / gammaquant(a, row.vmtMin, 1 - t),
-            hi: 1 / gammaquant(a, row.vmtMax, t),
-          };
-        });
-        if (k > 0) yMax = Math.max(yMax, mpiBest, mpiMax);
-        return {
-          mpiMin, mpiBest, mpiMax, bands, incidentCount: k,
-          vmtMonth: row.vmtRawBest,
-          vmtMonthEff: row.vmtBest,
-          vmtCume: row.vmtCume,
-        };
+        const mpi = row.mpiByMetric[metric.key];
+        if (!mpi) return null;
+        const k = mpi.incidentCount;
+        if (k !== 0) yMax = Math.max(yMax, mpi.mpiBest, mpi.mpiMax);
+        return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume};
       });
-      seriesRows.push({company, metric, vals});
+      seriesRows.push({driver, metric, vals});
     }
   }
 
-  // Human reference bands always render (no toggle)
-  const humanRefLines = [];
-  for (const metric of includedMonthMetrics()) {
-    if (KNOWN_HUMAN_MPI[metric.key] === undefined) continue;
-    const range = KNOWN_HUMAN_MPI[metric.key];
-    humanRefLines.push({metric, lo: range.lo, hi: range.hi});
-    yMax = Math.max(yMax, range.hi);
-  }
   // Subset metrics must have higher MPI (rarer events = more miles between).
-  const humanLoByKey = Object.fromEntries(
-    humanRefLines.map(r => [r.metric.key, r.lo]));
-  const subsetChains = [
-    ["all", "nonstationary", "roadwayNonstationary"],
-    ["all", "atfault", "atfaultInjury"],
-    ["all", "injury", "atfaultInjury"],
-    ["injury", "hospitalization", "fatality"],
-  ];
-  for (const chain of subsetChains) {
-    for (let i = 1; i < chain.length; i++) {
-      if (humanLoByKey[chain[i-1]] === undefined) continue;
-      if (humanLoByKey[chain[i]]   === undefined) continue;
-      assert(humanLoByKey[chain[i-1]] <= humanLoByKey[chain[i]],
-        "human MPI ordering violated", {
-          lesser: chain[i-1], lesserMpi: humanLoByKey[chain[i-1]],
-          greater: chain[i], greaterMpi: humanLoByKey[chain[i]],
-        });
+  const humanMpi = driverMonthRows(series, "Humans")[0];
+  if (humanMpi) {
+    const subsetChains = [
+      ["all", "nonstationary", "roadwayNonstationary"],
+      ["all", "atfault", "atfaultInjury"],
+      ["all", "injury", "atfaultInjury"],
+      ["injury", "hospitalization", "fatality"],
+    ];
+    for (const chain of subsetChains) {
+      for (let i = 1; i < chain.length; i++) {
+        const a = humanMpi.mpiByMetric[chain[i-1]];
+        const b = humanMpi.mpiByMetric[chain[i]];
+        if (!a || !b) continue;
+        assert(a.mpiMin <= b.mpiMin,
+          "human MPI ordering violated", {
+            lesser: chain[i-1], lesserMpi: a.mpiMin,
+            greater: chain[i], greaterMpi: b.mpiMin,
+          });
+      }
     }
   }
 
@@ -1006,7 +1049,7 @@ function renderAllCompaniesMpiChart(series) {
       d += `${penDown ? " L " : "M "}${mapX(i).toFixed(2)} ${mapY(mpi.mpiBest).toFixed(2)}`;
       penDown = true;
     }
-    return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.company)}"></path>`;
+    return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.driver)}"></path>`;
   }).join("");
 
   const errs = `<g clip-path="url(#mpi-clip)">` + seriesRows.map(row =>
@@ -1015,7 +1058,7 @@ function renderAllCompaniesMpiChart(series) {
       const x = mapX(i);
       const yLo = mapY(mpi.mpiMin);
       const yHi = mapY(mpi.mpiMax);
-      const errStyle = metricErrStyle(row.company);
+      const errStyle = metricErrStyle(row.driver);
       return `
         <line class="month-err" x1="${x.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${x.toFixed(2)}" y2="${yHi.toFixed(2)}" style="${errStyle}"></line>
         <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yLo.toFixed(2)}" style="${errStyle}"></line>
@@ -1029,14 +1072,17 @@ function renderAllCompaniesMpiChart(series) {
       if (mpi === null || mpi.incidentCount === 0) return "";
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
-      const color = metricMarkerColor(row.company);
+      const color = metricMarkerColor(row.driver);
       const marker = markerRenderer[row.metric.marker];
       assert(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
       const k = mpi.incidentCount;
-      const kFmt = Number.isInteger(k) ? String(k) : k.toFixed(1);
       // TO-DO: Human vet new tooltip mileage labels below.
       const ci95 = mpi.bands[mpi.bands.length - 1];
-      const tip = `${row.company} ${series.months[i]} (${row.metric.label})\nMiles per incident (MPI): ${fmtMiles(mpi.mpiBest)} (${kFmt} incident${k === 1 ? "" : "s"})\n95% CI: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`;
+      const kLine = k !== null ? ` (${Number.isInteger(k) ? String(k) : k.toFixed(1)} incident${k === 1 ? "" : "s"})` : "";
+      const vmtLines = mpi.vmtMonth > 0
+        ? `\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`
+        : "";
+      const tip = `${row.driver} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)}${kLine}\nRange: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}${vmtLines}`;
       return `<g>${marker(x, y, color, 1)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle></g>`;
     }).join("")
   ).join("");
@@ -1047,7 +1093,7 @@ function renderAllCompaniesMpiChart(series) {
   // Clamp to plot range so SVG coordinates stay reasonable.
   const clampY = v => Math.max(mTop, Math.min(mTop + pH, mapY(v)));
   const bands = seriesRows.map(row => {
-    const color = metricMarkerColor(row.company);
+    const color = metricMarkerColor(row.driver);
     // Draw widest band first (95%), then 80%, then 50% on top
     return CI_FAN_LEVELS.slice().reverse().map((_level, li) => {
       const bandIdx = CI_FAN_LEVELS.length - 1 - li; // index into bands array
@@ -1084,21 +1130,6 @@ function renderAllCompaniesMpiChart(series) {
       ${lines}
       ${errs}
       ${marks}
-      <g clip-path="url(#mpi-clip)">${humanRefLines.map(ref => {
-        const yLo = clampY(ref.lo);
-        const yHi = clampY(ref.hi);
-        const yMid = clampY(Math.sqrt(ref.lo * ref.hi)); // geometric mean
-        // Shaded band between lo and hi
-        const bandH = Math.abs(yLo - yHi);
-        const bandTop = Math.min(yLo, yHi);
-        return `
-          <rect x="${mLeft}" y="${bandTop.toFixed(2)}" width="${pW}" height="${bandH.toFixed(2)}"
-            style="fill:#888;opacity:0.100"></rect>
-          <line x1="${mLeft}" y1="${yMid.toFixed(2)}" x2="${mLeft + pW}" y2="${yMid.toFixed(2)}"
-            style="stroke:#888;stroke-width:2;stroke-dasharray:6 4;opacity:0.500"></line>
-          <text x="${mLeft + pW - 4}" y="${(Math.min(yLo, yHi) - 3).toFixed(2)}" text-anchor="end"
-            style="fill:#888;font-size:9px;opacity:0.700">${fmtMiles(ref.lo)}\u2013${fmtMiles(ref.hi)}</text>`;
-      }).join("")}</g>
     </svg>
   `;
 }
@@ -1107,34 +1138,24 @@ function renderDistributionChart(series) {
   const summaryRows = monthlySummaryRows(series);
   const curves = [];
   for (const row of summaryRows) {
-    if (!monthCompanyEnabled[row.company]) continue;
+    if (!monthDriverEnabled[row.driver]) continue;
     for (const metric of includedMonthMetrics()) {
-      const k = row[metric.incField];
-      const alpha = k + 0.5;
-      const beta = row.vmtBest;
+      const est = row.mpiEstimates[metric.key];
+      if (!est) continue;
       curves.push({
-        company: row.company, metric, alpha, beta, k,
-        vmtMin: row.vmtMin, vmtBest: row.vmtBest, vmtMax: row.vmtMax,
+        driver: row.driver, metric, est,
+        densityFn: est.densityFn,
+        xMin: est.xMin, xMax: est.xMax,
       });
     }
   }
   if (curves.length === 0) return "";
 
-  // X-axis range from distribution quantiles (0.1st and 99.9th percentile)
+  // X-axis range from all curves' density extents
   let xMin = Infinity, xMax = 0;
   for (const c of curves) {
-    xMin = Math.min(xMin, 1 / gammaquant(c.alpha, c.beta, 0.999));
-    xMax = Math.max(xMax, 1 / gammaquant(c.alpha, c.beta, 0.001));
-  }
-  const humanCurves = [];
-  for (const metric of includedMonthMetrics()) {
-    const h = KNOWN_HUMAN_MPI[metric.key];
-    if (!h) continue;
-    const mu = (Math.log(h.lo) + Math.log(h.hi)) / 2;
-    const sigma = (Math.log(h.hi) - Math.log(h.lo)) / (2 * 1.96);
-    humanCurves.push({metric, mu, sigma, lo: h.lo, hi: h.hi});
-    xMin = Math.min(xMin, Math.exp(mu - 3.09 * sigma));
-    xMax = Math.max(xMax, Math.exp(mu + 3.09 * sigma));
+    xMin = Math.min(xMin, c.xMin);
+    xMax = Math.max(xMax, c.xMax);
   }
   assert(xMin < xMax, "distribution chart: degenerate x range", {xMin, xMax});
 
@@ -1148,18 +1169,11 @@ function renderDistributionChart(series) {
 
   let yMax = 0;
   for (const c of curves) {
-    c.ys = xs.map(x => invGammaLogDensity(x, c.alpha, c.beta));
+    c.ys = xs.map(x => c.densityFn(x));
     const peakIdx = c.ys.reduce((best, y, i) => y > c.ys[best] ? i : best, 0);
     c.peakX = xs[peakIdx];
     c.peakY = c.ys[peakIdx];
     yMax = Math.max(yMax, c.peakY);
-  }
-  for (const hc of humanCurves) {
-    hc.ys = xs.map(x => logNormalLogDensity(x, hc.mu, hc.sigma));
-    const peakIdx = hc.ys.reduce((best, y, i) => y > hc.ys[best] ? i : best, 0);
-    hc.peakX = xs[peakIdx];
-    hc.peakY = hc.ys[peakIdx];
-    yMax = Math.max(yMax, hc.peakY);
   }
   if (yMax === 0) return "";
 
@@ -1193,45 +1207,15 @@ function renderDistributionChart(series) {
     <text class="month-label" x="12" y="${mTop + pH / 2}" transform="rotate(-90 12 ${mTop + pH / 2})" text-anchor="middle">Probability Density for True MPI</text>
   `;
 
-  // Human benchmark curves (log-normal bell curves in gray)
-  const humanFills = humanCurves.map(hc => {
-    let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
-    for (let i = 0; i < nPts; i++) {
-      d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(hc.ys[i]).toFixed(2)}`;
-    }
-    d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
-    return `<path d="${d}" style="fill:#888;opacity:0.120"></path>`;
-  }).join("");
-
-  const humanStrokes = humanCurves.map(hc => {
-    let d = "";
-    for (let i = 0; i < nPts; i++) {
-      d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(hc.ys[i]).toFixed(2)}`;
-    }
-    return `<path d="${d}" style="stroke:#888;stroke-width:2;opacity:0.700;fill:none"></path>`;
-  }).join("");
-
-  const humanMarkers = humanCurves.map(hc => {
-    const x = mapX(hc.peakX);
-    const y = mapY(hc.peakY);
-    const geo = Math.sqrt(hc.lo * hc.hi);
-    const op = 1;
-    // TO-DO: Human vet distribution chart human benchmark tooltip below.
-    const tip = `Humans (${hc.metric.cardLabel})\nGeometric mean: ${fmtMiles(geo)} MPI\n95% range: ${fmtMiles(hc.lo)} \u2013 ${fmtMiles(hc.hi)}`;
-    return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:#888;stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>` +
-      `<text x="${x.toFixed(2)}" y="${(y - 8).toFixed(2)}" text-anchor="middle" style="fill:#888;font-size:8px;opacity:${(0.6 * op).toFixed(3)}">${escHtml(hc.metric.cardLabel)}</text>`;
-  }).join("");
-
-  // Curve fills (low opacity) and strokes
+  // Curve fills (low opacity) and strokes — unified for all drivers
   const fills = curves.map(c => {
-    const color = MONTHLY_COMPANY_COLORS[c.company];
-    const op = "0.120";
+    const color = DRIVER_COLORS[c.driver];
     let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
     for (let i = 0; i < nPts; i++) {
       d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
     }
     d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
-    return `<path d="${d}" style="fill:${color};opacity:${op}"></path>`;
+    return `<path d="${d}" style="fill:${color};opacity:0.120"></path>`;
   }).join("");
 
   const strokes = curves.map(c => {
@@ -1239,18 +1223,19 @@ function renderDistributionChart(series) {
     for (let i = 0; i < nPts; i++) {
       d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
     }
-    return `<path d="${d}" style="${metricLineStyle(c.company)};fill:none"></path>`;
+    return `<path d="${d}" style="${metricLineStyle(c.driver)};fill:none"></path>`;
   }).join("");
 
   // Peak markers with tooltips
   const markers = curves.map(c => {
-    const color = MONTHLY_COMPANY_COLORS[c.company];
+    const color = DRIVER_COLORS[c.driver];
     const x = mapX(c.peakX);
     const y = mapY(c.peakY);
-    const mpi = estimateMpiWindow(c.k, c.vmtMin, c.vmtBest, c.vmtMax);
-    const kFmt = Number.isInteger(c.k) ? String(c.k) : c.k.toFixed(1);
+    const kLine = c.est.k !== null
+      ? `\n${Number.isInteger(c.est.k) ? String(c.est.k) : c.est.k.toFixed(1)} incident${c.est.k === 1 ? "" : "s"}`
+      : "";
     // TO-DO: Human vet distribution chart tooltip labels below.
-    const tip = `${c.company} (${c.metric.cardLabel})\nMedian MPI: ${fmtMiles(mpi.median)}\n95% CI: ${fmtMiles(mpi.lo)} \u2013 ${fmtMiles(mpi.hi)}\n${kFmt} incident${c.k === 1 ? "" : "s"}`;
+    const tip = `${c.driver} (${c.metric.cardLabel})\nMPI: ${fmtMiles(c.est.median)}\nRange: ${fmtMiles(c.est.lo)} \u2013 ${fmtMiles(c.est.hi)}${kLine}`;
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
@@ -1259,11 +1244,8 @@ function renderDistributionChart(series) {
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}
       <g clip-path="url(#dist-clip)">
-      ${humanFills}
-      ${humanStrokes}
       ${fills}
       ${strokes}
-      ${humanMarkers}
       ${markers}
       </g>
     </svg>
@@ -1293,11 +1275,11 @@ function drawDualMonthAxes(
   `;
 }
 
-function renderCompanyMonthlyChart(globalSeries, company) {
-  // Filter to months where this company has VMT data
+function renderDriverMonthlyChart(globalSeries, driver) {
+  // Filter to months where this driver has VMT data
   const presentIndices = [];
   for (let i = 0; i < globalSeries.points.length; i++) {
-    if (globalSeries.points[i].companies[company] !== null) presentIndices.push(i);
+    if (globalSeries.points[i].drivers[driver] !== null) presentIndices.push(i);
   }
   if (presentIndices.length === 0) return "";
   const series = {
@@ -1312,7 +1294,7 @@ function renderCompanyMonthlyChart(globalSeries, company) {
   const mBot = 48;
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
-  const rows = companyMonthRows(series, company);
+  const rows = driverMonthRows(series, driver);
   const vmtMax = Math.max(1, ...rows.map(row => row.vmtRawMax));
   const incidentMax = Math.max(1, ...rows.map(row => row.incidents.total));
   const leftTicks = linearTicks(0, vmtMax, 4);
@@ -1322,7 +1304,7 @@ function renderCompanyMonthlyChart(globalSeries, company) {
   const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad);
   const mapVmtY = y => scaleLinear(y, 0, vmtMax, mTop + pH, mTop);
   const mapIncidentY = y => scaleLinear(y, 0, incidentMax, mTop + pH, mTop);
-  const vmtColor = MONTHLY_COMPANY_COLORS[company];
+  const vmtColor = DRIVER_COLORS[driver];
 
   const bars = [];
   const barCounts = [];
@@ -1360,7 +1342,7 @@ function renderCompanyMonthlyChart(globalSeries, company) {
         stack = next;
         if (h <= 0) continue;
         const mpiLabel = `Miles per incident (MPI, ${seg.label.toLowerCase()}): ${mpiByKey[seg.mpiKey]}`;
-        const barTip = `${company} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nCoverage-adjusted VMT for MPI: ${monthVmtEff}\nCumulative VMT: ${monthVmtCume}`;
+        const barTip = `${driver} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nCoverage-adjusted VMT for MPI: ${monthVmtEff}\nCumulative VMT: ${monthVmtCume}`;
         bars.push(`
           <rect class="month-inc-bar" x="${xLeft.toFixed(2)}" y="${y1.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}"
                 fill="${colors[seg.key]}" stroke="${vmtColor}" stroke-width="0.8" data-tip="${escAttr(barTip)}"></rect>
@@ -1374,11 +1356,11 @@ function renderCompanyMonthlyChart(globalSeries, company) {
 
     // Left bar: movement partition
     const moveCounts = movementSegmentCounts(rec);
-    renderBar(cx - barW / 2, halfBar, MOVEMENT_SEGMENTS, MOVEMENT_COLORS[company], moveCounts);
+    renderBar(cx - barW / 2, halfBar, MOVEMENT_SEGMENTS, MOVEMENT_COLORS[driver], moveCounts);
 
     // Right bar: severity partition
     const sevCounts = severitySegmentCounts(rec);
-    renderBar(cx - barW / 2 + halfBar + 1, halfBar, SEVERITY_SEGMENTS, SEVERITY_COLORS[company], sevCounts);
+    renderBar(cx - barW / 2 + halfBar + 1, halfBar, SEVERITY_SEGMENTS, SEVERITY_COLORS[driver], sevCounts);
 
     if (rec.total > 0) {
       const labelX = cx;
@@ -1387,7 +1369,7 @@ function renderCompanyMonthlyChart(globalSeries, company) {
     }
     const yLo = mapVmtY(row.vmtRawMin);
     const yHi = mapVmtY(row.vmtRawMax);
-    const vmtTip = vmtTooltip(company, month, row, rec);
+    const vmtTip = vmtTooltip(driver, month, row, rec);
     errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}" data-tip="${escAttr(vmtTip)}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
@@ -1404,7 +1386,7 @@ function renderCompanyMonthlyChart(globalSeries, company) {
   const vmtMarks = rows.map((row, i) => {
     const x = mapX(i);
     const y = mapVmtY(row.vmtRawBest);
-    const vmtTip = vmtTooltip(company, series.months[i], row, row.incidents);
+    const vmtTip = vmtTooltip(driver, series.months[i], row, row.incidents);
     return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}" data-tip="${escAttr(vmtTip)}"></circle>`;
   }).join("");
 
@@ -1427,64 +1409,55 @@ function renderCompanyMonthlyChart(globalSeries, company) {
 // TO-DO: Human vet all end-user labels in these summary cards.
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
-  const adsCards = rows.map(row => {
-    const stress = companyHumanStress(row, "all");
+  return rows.map(row => {
+    const vmtLine = row.vmtBest > 0
+      ? `<div class="mpi-card-vmt" data-tip="${escAttr(row.vmtRationales.join('\n'))}">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
+      : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.filter(m => m.humanMPI).flatMap(m => m.humanMPI.srcLinks || []).map(s => `<a href="${s.url}">${s.label}</a>`))].join(", ")}</div>`;
+    const stressLine = row.vmtBest > 0
+      ? (() => { const stress = driverHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: <span class="stress-badge ${stress.className}">${stress.label}</span> ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
+      : "";
     return `
-      <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS[row.company]}">
-        <div class="mpi-card-company">${row.company}</div>
-        <div class="mpi-card-vmt" data-tip="${escAttr(row.vmtRationales.join('\n'))}">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>
-        <div class="mpi-card-stress">Overall: <span class="stress-badge ${stress.className}">${stress.label}</span> ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>
+      <div class="mpi-card" style="border-left-color:${DRIVER_COLORS[row.driver]}">
+        <div class="mpi-card-driver">${row.driver}</div>
+        ${vmtLine}
+        ${stressLine}
         ${METRIC_DEFS.map(m => {
-          const mpi = summaryMetricEstimate(row, m.key);
+          const est = row.mpiEstimates[m.key];
+          if (!est) return "";
           const hl = m.key === selectedMetricKey ? " highlighted" : "";
-          const humanRange = KNOWN_HUMAN_MPI[m.key];
+          const humanRange = m.humanMPI;
           const humanGeo = humanRange ? Math.sqrt(humanRange.lo * humanRange.hi) : null;
-          const mult = humanGeo ? mpi.median / humanGeo : null;
+          const mult = (humanGeo && est.k !== null) ? est.median / humanGeo : null;
           const multStr = mult !== null
             ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
             : "";
+          const kLine = est.k !== null ? `${fmtCount(est.k)} incidents \u2192 ` : "";
+          const ciLabel = est.k !== null ? "95% CI" : "Range";
+          const srcLine = (est.k === null && humanRange && humanRange.srcLinks)
+            ? `<div class="mpi-card-sources">${humanRange.srcLinks.map(s => `<a href="${s.url}">${s.label}</a>`).join(", ")}</div>`
+            : "";
+          const srcHint = (est.k === null && humanRange && humanRange.src)
+            ? ` <span class="mpi-card-src" title="${humanRange.src}">[?]</span>`
+            : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
-            <div>${m.cardLabel}: ${fmtCount(mpi.k)} incidents \u2192 <span class="mpi-card-mpi">${fmtWhole(mpi.median)} MPI</span>${multStr}</div>
-            <div class="mpi-card-ci">95% CI: ${fmtWhole(mpi.lo)} \u2013 ${fmtWhole(mpi.hi)}</div>
+            <div>${m.cardLabel}: ${kLine}<span class="mpi-card-mpi">${fmtWhole(est.median)} MPI</span>${multStr}</div>
+            <div class="mpi-card-ci">${ciLabel}: ${fmtWhole(est.lo)} \u2013 ${fmtWhole(est.hi)}${srcHint}</div>
+            ${srcLine}
           </div>`;
         }).join("")}
       </div>
     `;
   }).join("");
-
-  const humanCard = `
-    <div class="mpi-card" style="border-left-color:${MONTHLY_COMPANY_COLORS.Humans}">
-      <div class="mpi-card-company">Humans</div>
-      <div class="mpi-card-vmt">Benchmarks: <a href="https://arxiv.org/abs/2312.12675">Kusano/Scanlon 2024</a>, <a href="https://waymo.com/safety/impact/">Waymo safety impact</a>, <a href="https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705">FARS 2023</a></div>
-      ${METRIC_DEFS.map(m => {
-        const range = KNOWN_HUMAN_MPI[m.key];
-        if (!range) return "";
-        const geoMean = Math.sqrt(range.lo * range.hi);
-        const hl = m.key === selectedMetricKey ? " highlighted" : "";
-        const srcLine = range.srcLinks
-          ? range.srcLinks.map(s => `<a href="${s.url}">${s.label}</a>`).join(", ")
-          : "";
-        return `
-        <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
-          <div>${m.cardLabel}: <span class="mpi-card-mpi">${fmtWhole(geoMean)} MPI</span></div>
-          <div class="mpi-card-ci">Range: ${fmtWhole(range.lo)} \u2013 ${fmtWhole(range.hi)}${range.src ? ` <span class="mpi-card-src" title="${range.src}">[?]</span>` : ""}</div>
-          ${srcLine ? `<div class="mpi-card-sources">${srcLine}</div>` : ""}
-        </div>`;
-      }).join("")}
-    </div>
-  `;
-
-  return adsCards + humanCard;
 }
 
 function renderStressTestTable(series) {
-  const rows = monthlySummaryRows(series);
+  const rows = monthlySummaryRows(series).filter(r => r.vmtBest > 0);
   const body = rows.flatMap(row =>
     METRIC_KEYS.map(metricKey => {
-      const stress = companyHumanStress(row, metricKey);
+      const stress = driverHumanStress(row, metricKey);
       return `<tr>
-        <td>${escHtml(row.company)}</td>
+        <td>${escHtml(row.driver)}</td>
         <td>${escHtml(stress.metric.cardLabel)}</td>
         <td>${fmtCount(stress.av.k)}</td>
         <td>${fmtWhole(stress.av.median)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
@@ -1502,7 +1475,7 @@ The "AV/human ratio" column shows the widest interval implied by the AV MPI (95%
 If the entire ratio is above 1, AV is robustly safer; if the entire ratio is below 1, AV is robustly worse; otherwise, ambiguous.
     </p>
     <table class="source-table stress-table">
-      <thead><tr><th>Company</th><th>Metric</th><th>k</th><th>MPI AV (median; 95%)</th><th>Human MPI</th><th>AV/human ratio</th><th>Verdict</th></tr></thead>
+      <thead><tr><th>Driver</th><th>Metric</th><th>k</th><th>MPI AV (median; 95%)</th><th>Human MPI</th><th>AV/human ratio</th><th>Verdict</th></tr></thead>
       <tbody>${body}</tbody>
     </table>`;
 }
@@ -1526,17 +1499,16 @@ function renderHumanBenchmarkTable() {
 }
 
 function renderMonthlyLegends() {
-  // Human benchmark bands always render (no toggle); only ADS companies get checkboxes
-  byId("month-legend-mpi-companies").innerHTML = ADS_COMPANIES.map(company => `
-    <label class="month-legend-item month-company-toggle" for="${monthCompanyToggleId(company)}">
-      <input type="checkbox" id="${monthCompanyToggleId(company)}" ${monthCompanyEnabled[company] ? "checked" : ""}>
-      <span class="month-chip" style="background:${MONTHLY_COMPANY_COLORS[company]}"></span>${company}
+  byId("month-legend-mpi-drivers").innerHTML = ALL_DRIVERS.map(driver => `
+    <label class="month-legend-item month-driver-toggle" for="${monthDriverToggleId(driver)}">
+      <input type="checkbox" id="${monthDriverToggleId(driver)}" ${monthDriverEnabled[driver] ? "checked" : ""}>
+      <span class="month-chip" style="background:${DRIVER_COLORS[driver]}"></span>${driver}
     </label>
   `).join("");
-  for (const company of ADS_COMPANIES) {
-    const input = byId(monthCompanyToggleId(company));
+  for (const driver of ALL_DRIVERS) {
+    const input = byId(monthDriverToggleId(driver));
     input.addEventListener("change", () => {
-      monthCompanyEnabled[company] = input.checked;
+      monthDriverEnabled[driver] = input.checked;
       buildMonthlyViews();
     });
   }
@@ -1544,7 +1516,7 @@ function renderMonthlyLegends() {
   byId("month-legend-mpi-lines").innerHTML = `
     ${METRIC_DEFS.map(metric => {
       return `
-      <label class="month-legend-item month-company-toggle" for="${monthMetricToggleId(metric.key)}">
+      <label class="month-legend-item month-driver-toggle" for="${monthMetricToggleId(metric.key)}">
         <input type="radio" name="month-metric" id="${monthMetricToggleId(metric.key)}" ${metric.key === selectedMetricKey ? "checked" : ""}>
         ${metric.label}
       </label>`;
@@ -1561,7 +1533,7 @@ function renderMonthlyLegends() {
   // CI fan legend: multi-stripe swatches showing each company's color at the
   // band's rendered opacity level for each CI width (50%, 80%, 95%).
   // TO-DO: Human vet legend labels below.
-  const fanCompanies = includedAdsCompanies();
+  const fanDrivers = includedDrivers();
   const fanLevels = CI_FAN_LEVELS.map((level, i) => {
     // Match the band rendering: reversed index li maps to bandOpacity =
     // 0.10 * metricOpacity * (1 + li * 0.5). Use metricOpacity = 1 for legend.
@@ -1569,9 +1541,9 @@ function renderMonthlyLegends() {
     const opacity = (0.10 * (1 + li * 0.5)).toFixed(3);
     const pct = Math.round(level * 100);
     // Build vertical stripe gradient from company colors
-    const stripeW = 100 / fanCompanies.length;
-    const stops = fanCompanies.map((c, j) => {
-      const color = MONTHLY_COMPANY_COLORS[c];
+    const stripeW = 100 / fanDrivers.length;
+    const stops = fanDrivers.map((c, j) => {
+      const color = DRIVER_COLORS[c];
       return `${color} ${(j * stripeW).toFixed(1)}% ${((j + 1) * stripeW).toFixed(1)}%`;
     }).join(", ");
     const grad = `linear-gradient(to right, ${stops})`;
@@ -1675,9 +1647,9 @@ function buildMonthlyViews() {
   const fullSummary = monthlySummaryRows(fullMonthSeries);
   for (const row of fullSummary) {
     if (row.vmtBest === 0) continue; // company has no data in incident window
-    assert(row.incTotal > 0, "full-series total incidents must be positive", {company: row.company});
-    assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {company: row.company});
-    assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {company: row.company});
+    assert(row.incTotal > 0, "full-series total incidents must be positive", {driver: row.driver});
+    assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {driver: row.driver});
+    assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {driver: row.driver});
   }
   // Resolve default start month on first build
   if (monthRangeStart === -1) {
@@ -1696,10 +1668,10 @@ function buildMonthlyViews() {
   byId("chart-mpi-all").innerHTML = renderAllCompaniesMpiChart(activeSeries);
   byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
-  byId("chart-company-series").innerHTML = ADS_COMPANIES.map(company => `
+  byId("chart-driver-series").innerHTML = ADS_DRIVERS.map(driver => `
     <div class="month-chart">
-      <h3>${company}</h3>
-      ${renderCompanyMonthlyChart(activeSeries, company)}
+      <h3>${driver}</h3>
+      ${renderDriverMonthlyChart(activeSeries, driver)}
     </div>
   `).join("");
   renderMonthlyLegends();
@@ -1813,7 +1785,7 @@ let sortCol = null;   // column key or null
 let sortAsc = true;
 
 const SORT_COLUMNS = [
-  {key: "company",  val: r => r.company},
+  {key: "driver",  val: r => r.driver},
   {key: "date",     val: r => r.date},
   {key: "location", val: r => (r.city + ", " + r.state)},
   {key: "crashWith",val: r => r.crashWith},
@@ -1831,7 +1803,7 @@ const URL_STATE_KEYS = {
   filter: "f",
   sort: "s",
   asc: "a",
-  companies: "c",
+  drivers: "c",
   metrics: "m",
   dateRange: "d",
 };
@@ -1858,7 +1830,7 @@ function encodeUiStateQuery() {
   params.set(URL_STATE_KEYS.filter, activeFilter);
   params.set(URL_STATE_KEYS.sort, sortCol === null ? URL_STATE_SORT_NONE : sortCol);
   params.set(URL_STATE_KEYS.asc, sortAsc ? "1" : "0");
-  params.set(URL_STATE_KEYS.companies, enabledKeyString(monthCompanyEnabled, ADS_COMPANIES));
+  params.set(URL_STATE_KEYS.drivers, enabledKeyString(monthDriverEnabled, ALL_DRIVERS));
   params.set(URL_STATE_KEYS.metrics, selectedMetricKey);
   const fullLen = fullMonthSeries ? fullMonthSeries.months.length : 0;
   const defaultStartIdx = fullMonthSeries
@@ -1894,7 +1866,7 @@ function applyUiStateQuery(queryString) {
 
   const filterVal = params.get(URL_STATE_KEYS.filter);
   assert(filterVal !== null, "Missing filter URL state", {raw});
-  assert(["All", ...ADS_COMPANIES].includes(filterVal), "Invalid filter URL state", {filterVal, raw});
+  assert(["All", ...ADS_DRIVERS].includes(filterVal), "Invalid filter URL state", {filterVal, raw});
   activeFilter = filterVal;
 
   const sortVal = params.get(URL_STATE_KEYS.sort);
@@ -1906,11 +1878,11 @@ function applyUiStateQuery(queryString) {
   assert(ascVal === "0" || ascVal === "1", "Invalid sort direction URL state", {ascVal, raw});
   sortAsc = ascVal === "1";
 
-  const companiesVal = params.get(URL_STATE_KEYS.companies);
-  assert(companiesVal !== null, "Missing companies URL state", {raw});
-  monthCompanyEnabled = {
-    ...monthCompanyEnabled,
-    ...parseEnabledKeyString(companiesVal, ADS_COMPANIES, "companies"),
+  const driversVal = params.get(URL_STATE_KEYS.drivers);
+  assert(driversVal !== null, "Missing drivers URL state", {raw});
+  monthDriverEnabled = {
+    ...monthDriverEnabled,
+    ...parseEnabledKeyString(driversVal, ALL_DRIVERS, "drivers"),
   };
 
   const metricsVal = params.get(URL_STATE_KEYS.metrics);
@@ -1958,15 +1930,15 @@ function syncUrlState() {
   window.history.replaceState(null, "", `${window.location.pathname}?${encodeUiStateQuery()}`);
 }
 
-const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Fault variance", "Severity", "Narrative"];
+const HEADER_LABELS = ["Driver", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Fault variance", "Severity", "Narrative"];
 
 function buildBrowser() {
   const rows = activeIncidents();
-  const counts = countByCompany(rows);
+  const counts = countByDriver(rows);
   const filterDiv = byId("filters");
   filterDiv.replaceChildren();
-  const companies = ["All", ...ADS_COMPANIES];
-  for (const c of companies) {
+  const allDrivers = ["All", ...ADS_DRIVERS];
+  for (const c of allDrivers) {
     const btn = document.createElement("button");
     const n = c === "All" ? rows.length : (counts[c] || 0);
     btn.textContent = `${c} (${n})`;
@@ -2012,7 +1984,7 @@ function renderTable() {
   const rows = activeIncidents();
   let filtered = activeFilter === "All"
     ? [...rows]
-    : rows.filter(r => r.company === activeFilter);
+    : rows.filter(r => r.driver === activeFilter);
 
   if (sortCol !== null) {
     const colDef = SORT_COLUMNS.find(c => c.key === sortCol);
@@ -2052,7 +2024,7 @@ function renderTable() {
     const faultTip = escAttr(faultTooltip(r));
 
     tr.innerHTML = `
-      <td>${escHtml(r.company)}</td>
+      <td>${escHtml(r.driver)}</td>
       <td>${escHtml(r.date)}</td>
       <td>${escHtml(r.city)}, ${escHtml(r.state)}</td>
       <td>${escHtml(r.crashWith)}</td>
@@ -2104,13 +2076,12 @@ function buildSanityChecks() {
   const rows = activeIncidents();
   const vmt = activeVmt();
   const series = activeSeries || monthSeriesData();
-  const companies = ADS_COMPANIES;
   const sections = [];
 
   // --- 1. Passenger presence (existing) ---
   const paxTableRows = [];
-  for (const co of companies) {
-    const coRows = rows.filter(r => r.company === co);
+  for (const co of ADS_DRIVERS) {
+    const coRows = rows.filter(r => r.driver === co);
     const n = coRows.length;
     if (n === 0) continue;
     const withPax = coRows.filter(r =>
@@ -2148,7 +2119,7 @@ If the passenger-seat safety monitor (present in almost all Tesla robotaxi rides
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>With passenger</th>
         <th>No passenger</th>
         <th>Unknown</th>
@@ -2160,8 +2131,8 @@ If the passenger-seat safety monitor (present in almost all Tesla robotaxi rides
 
   // --- 2. Narrative redaction (CBI) ---
   const cbiTableRows = [];
-  for (const co of companies) {
-    const coRows = rows.filter(r => r.company === co);
+  for (const co of ADS_DRIVERS) {
+    const coRows = rows.filter(r => r.driver === co);
     const n = coRows.length;
     if (n === 0) continue;
     const cbiCount = coRows.filter(r => r.narrativeCbi === "Y").length;
@@ -2184,7 +2155,7 @@ It makes it hard to estimate fault, so we've tried to guess based on data we do 
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>Redacted (CBI)</th>
         <th>Full narrative</th>
         <th>Total</th>
@@ -2195,8 +2166,8 @@ It makes it hard to estimate fault, so we've tried to guess based on data we do 
 
   // --- 3. Fault model agreement ---
   const faultAgreeRows = [];
-  for (const co of companies) {
-    const coRows = rows.filter(r => r.company === co && r.fault !== null);
+  for (const co of ADS_DRIVERS) {
+    const coRows = rows.filter(r => r.driver === co && r.fault !== null);
     const n = coRows.length;
     if (n === 0) continue;
     let sumMaxSpread = 0;
@@ -2237,7 +2208,7 @@ Sensor failures do count as the fault of the AV.
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>Avg max spread</th>
         <th>RMSD</th>
         <th>Close agreement (&le;0.1)</th>
@@ -2247,8 +2218,8 @@ Sensor failures do count as the fault of the AV.
 
   // --- 4. Severity breakdown ---
   const sevTableRows = [];
-  for (const co of companies) {
-    const coRows = rows.filter(r => r.company === co);
+  for (const co of ADS_DRIVERS) {
+    const coRows = rows.filter(r => r.driver === co);
     const n = coRows.length;
     if (n === 0) continue;
     const propDmg = coRows.filter(r =>
@@ -2276,7 +2247,7 @@ Sensor failures do count as the fault of the AV.
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>Property damage only</th>
         <th>Injury (no hosp.)</th>
         <th>Hospitalization</th>
@@ -2290,8 +2261,8 @@ Sensor failures do count as the fault of the AV.
   // Restrict to incidentObservable months for like-for-like comparison
   const obsMonths = new Set(series.points.filter(p => p.incidentObservable).map(p => p.month));
   const vmtUncRows = [];
-  for (const co of companies) {
-    const coVmt = vmt.filter(r => r.company === co && obsMonths.has(r.month));
+  for (const co of ADS_DRIVERS) {
+    const coVmt = vmt.filter(r => r.driver === co && obsMonths.has(r.month));
     if (coVmt.length === 0) continue;
     const totalMin = coVmt.reduce((s, r) => s + r.vmtMin * r.coverage, 0);
     const totalBest = coVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
@@ -2308,13 +2279,13 @@ Sensor failures do count as the fault of the AV.
   sections.push(`
 <h3>VMT uncertainty</h3>
 <p>
-Below is the total adjusted Vehicle Miles Traveled (VMT) for each company across the NHTSA window, showing low/central/high estimates.
+Below is the total adjusted Vehicle Miles Traveled (VMT) for each driver across the NHTSA window, showing low/central/high estimates.
 The "range ratio" (max &divide; min) is a measure of uncertainty in the VMT numbers.
 For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be off by up to a factor of 2.
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>VMT low</th>
         <th>VMT central</th>
         <th>VMT high</th>
@@ -2328,12 +2299,12 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
   // where λ̂ = Σk_i / Σm_i is the MLE rate and m_i is monthly VMT.
   // Under the Poisson model, X²/(n-1) ≈ 1.
   const dispRows = [];
-  for (const co of companies) {
-    const coVmt = vmt.filter(r => r.company === co && obsMonths.has(r.month));
+  for (const co of ADS_DRIVERS) {
+    const coVmt = vmt.filter(r => r.driver === co && obsMonths.has(r.month));
     const monthData = [];
     for (const vmtRow of coVmt) {
       const count = rows.filter(r =>
-        r.company === co &&
+        r.driver === co &&
         monthKeyFromIncidentLabel(r.date) === vmtRow.month).length;
       // Use effective VMT (calendar coverage * incident reporting completeness)
       // to match the MPI calculation's Poisson rate estimation
@@ -2377,7 +2348,7 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>Monthly rate (per M mi)</th>
         <th>Overall rate</th>
         <th>Dispersion index</th>
@@ -2388,8 +2359,8 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
 
   // --- 7. Reporting threshold asymmetry ---
   const rptRows = [];
-  for (const co of companies) {
-    const coRows = rows.filter(r => r.company === co);
+  for (const co of ADS_DRIVERS) {
+    const coRows = rows.filter(r => r.driver === co);
     const n = coRows.length;
     if (n === 0) continue;
     const zeroMph = coRows.filter(r => r.speed === 0).length;
@@ -2409,13 +2380,13 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
 <p>
 It's possible that, as a totally arbitrary example, Waymo is more fastidious in what it reports to NHTSA.
 Certainly all these companies are reporting more incidents than human drivers do.
-A high fraction of 0-mph incidents suggests a company reports more minor events
-This inflates the company's raw incident count relative to others and relative to the human baseline.
+A high fraction of 0-mph incidents suggests a driver reports more minor events
+This inflates the driver's raw incident count relative to others and relative to the human baseline.
 The "nonstationary" MPI metric filters these out.
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>Speed = 0 mph</th>
         <th>AV stopped</th>
         <th>Property damage only</th>
@@ -2425,20 +2396,20 @@ The "nonstationary" MPI metric filters these out.
     </table>`);
 
   // --- 8. Geographic scope ---
-  const geoByCompany = {};
-  for (const co of companies) {
-    const coRows = rows.filter(r => r.company === co);
+  const geoByDriver = {};
+  for (const co of ADS_DRIVERS) {
+    const coRows = rows.filter(r => r.driver === co);
     const cities = {};
     for (const r of coRows) {
       const loc = r.city && r.state ? (r.city + ", " + r.state) : "Unknown";
       cities[loc] = (cities[loc] || 0) + 1;
     }
     const sorted = Object.entries(cities).sort((a, b) => b[1] - a[1]);
-    geoByCompany[co] = sorted;
+    geoByDriver[co] = sorted;
   }
   const geoRows = [];
-  for (const co of companies) {
-    const locs = geoByCompany[co];
+  for (const co of ADS_DRIVERS) {
+    const locs = geoByDriver[co];
     if (locs.length === 0) continue;
     const cityList = locs.map(([loc, cnt]) =>
       `${escHtml(loc)}\u00a0(${cnt})`).join(", ");
@@ -2456,7 +2427,7 @@ Maybe that affects AVs too?
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th># cities</th>
         <th>Cities (incident count)</th>
       </tr></thead>
@@ -2465,8 +2436,8 @@ Maybe that affects AVs too?
 
   // --- 9. VMT sources ---
   const vmtSrcRows = [];
-  for (const co of companies) {
-    const coVmt = vmt.filter(r => r.company === co);
+  for (const co of ADS_DRIVERS) {
+    const coVmt = vmt.filter(r => r.driver === co);
     if (coVmt.length === 0) continue;
     // Use the rationale from the first row (they're all the same per company)
     const rationales = [...new Set(coVmt.map(r => r.rationale).filter(Boolean))];
@@ -2479,12 +2450,12 @@ Maybe that affects AVs too?
   sections.push(`
 <h3>VMT sources</h3>
 <p>
-Where the Vehicle Miles Traveled (VMT) estimates come from for each company.
+Where the Vehicle Miles Traveled (VMT) estimates come from for each driver.
 These are the denominators in every miles per incident (MPI) calculation, so any errors here matter a lot.
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>Source and methodology</th>
       </tr></thead>
       <tbody>${vmtSrcRows.join("")}</tbody>
@@ -2492,8 +2463,8 @@ These are the denominators in every miles per incident (MPI) calculation, so any
 
   // --- 10. Incident coverage for partial months ---
   const icRows = [];
-  for (const co of companies) {
-    const coVmt = vmt.filter(r => r.company === co);
+  for (const co of ADS_DRIVERS) {
+    const coVmt = vmt.filter(r => r.driver === co);
     const partial = coVmt.filter(r => r.incCov < 1);
     if (partial.length === 0) {
       icRows.push(`<tr>
@@ -2523,7 +2494,7 @@ When Monthly reports aren't yet available, the effective VMT is scaled down by t
 </p>
     <table>
       <thead><tr>
-        <th>Company</th>
+        <th>Driver</th>
         <th>Month</th>
         <th>Incident coverage (best)</th>
         <th>Range</th>
@@ -2639,11 +2610,11 @@ function initTooltips() {
   const DATE_RE = /^[A-Z]{3}-\d{4}$/;
   for (const inc of incidentData) {
     assert(inc !== null && typeof inc === "object", "incident must be an object");
-    assert(typeof inc.company === "string", "incident missing company");
-    assert(ADS_COMPANIES.includes(inc.company),
-      "inline incident data has unknown company", {company: inc.company});
+    assert(typeof inc.driver === "string", "incident missing driver");
+    assert(ADS_DRIVERS.includes(inc.driver),
+      "inline incident data has unknown driver", {driver: inc.driver});
     assert(typeof inc.reportId === "string" && inc.reportId.length > 0,
-      "incident missing reportId", {company: inc.company});
+      "incident missing reportId", {driver: inc.driver});
     assert(typeof inc.date === "string" && DATE_RE.test(inc.date),
       "incident date must match MMM-YYYY format", {reportId: inc.reportId, date: inc.date});
     assert(inc.speed === null || (typeof inc.speed === "number" && Number.isFinite(inc.speed) && inc.speed >= 0),

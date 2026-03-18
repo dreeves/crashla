@@ -31,7 +31,37 @@ Additional rules specific to this project:
 
 # Agent Scratchpad (human edits only above this line)
 
-## Plan for Crashla
+## Plan: company→driver rename + humans-as-driver anti-magic refactor
+
+### Phase 1: company → driver rename (mechanical) ✅ DONE
+Full rename of "company" to "driver" across the entire codebase: crashla.js, quals, index.html, style.css, data/slurp.py, data/vmt.js, data/incidents.js. Also fixed pre-existing qual (`contact-areas.qual.mjs:89` — `"?"` → `"n/a"`). All 20 quals pass.
+
+### Phase 2: anti-magic refactor (Humans as a driver)
+
+**Design**: Push MPI computation into the data layer. Every driver's per-month entry carries pre-computed `mpiByMetric`. Rendering code reads this uniformly.
+
+**Shared reference trick**: Build one `humanEntry` object with `flatline: true` and `mpiByMetric` computed once from `METRIC_DEFS[*].humanMPI`. Place the same JS object reference in every month's `drivers["Humans"]`. Zero data duplication, uniform code paths.
+
+**Key changes**:
+- `ALL_DRIVERS = [...ADS_DRIVERS, "Humans"]`
+- Humans color: `"#888"` → `"#c9a800"` (gold)
+- Add `mpiByMetric` pre-computed on all monthly entries in `monthSeriesData()`
+- Add Humans shared reference to every month
+- Add Humans to `monthlySummaryRows()` with `flatline: true`
+- Unify MPI chart (remove `humanRefLines` block)
+- Unify distribution chart (remove `humanCurves` block)
+- Unify summary cards (remove `humanCard` block)
+- Add Humans to legend toggles via `includedDrivers()` filtering `ALL_DRIVERS`
+- Delete `KNOWN_HUMAN_MPI`, `summaryMetricEstimate()`
+
+**Rendering conditionals (exhaustive)**:
+1. Tooltip: omit VMT lines when `vmtRawBest === 0`
+2. Summary card: omit "k incidents" when `k === null`
+3. No `if (driver === "Humans")` anywhere
+
+---
+
+## Original Plan for Crashla
 
 ### What the data looks like
 

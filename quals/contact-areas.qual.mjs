@@ -86,9 +86,9 @@ const tipFixedObj = vm.runInContext(`
 `, ctx);
 if (tipFixedObj !== null) {
   assert.ok(
-    tipFixedObj.includes("\u{1F4A5}") && tipFixedObj.includes("?"),
+    tipFixedObj.includes("\u{1F4A5}") && tipFixedObj.includes("n/a"),
     `Replicata: render fault tooltip for fixed-object crash (empty cpHit).
-Expectata: tooltip shows "svHit 💥 ?" for missing crash partner area.
+Expectata: tooltip shows "svHit 💥 n/a" for missing crash partner area.
 Resultata: tooltip was ${JSON.stringify(tipFixedObj.slice(-80))}.`,
   );
 }
