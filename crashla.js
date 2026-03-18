@@ -169,7 +169,6 @@ const METRIC_DEFS = [
     cardLabel: "All incidents",
     incField: "incTotal",
     marker: "solid-circle",
-    lineWidth: 2.5, lineOpacity: 1,
     defaultEnabled: true, primary: true,
     countFn: rec => rec.incidents.total,
     humanMPI: {lo: 103000, hi: 214000,
@@ -184,7 +183,6 @@ const METRIC_DEFS = [
     cardLabel: "Nonstationary",
     incField: "incNonstationary",
     marker: "hollow-circle",
-    lineWidth: 1.5, lineOpacity: 0.55,
     defaultEnabled: false, primary: false,
     countFn: rec => nonstationaryIncidentCount(rec.incidents.speeds),
     // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
@@ -199,7 +197,6 @@ const METRIC_DEFS = [
     cardLabel: "Nonstationary non-parking-lot",
     incField: "incRoadwayNonstationary",
     marker: "hollow-square",
-    lineWidth: 1.2, lineOpacity: 0.8,
     defaultEnabled: false, primary: false,
     countFn: rec => roadwayNonstationaryIncidentCount(rec),
     // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
@@ -214,7 +211,6 @@ const METRIC_DEFS = [
     cardLabel: "At-fault",
     incField: "incAtFault",
     marker: "hollow-triangle",
-    lineWidth: 1, lineOpacity: 0.3,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFault,
     // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
@@ -230,7 +226,6 @@ const METRIC_DEFS = [
     cardLabel: "At-fault injury",
     incField: "incAtFaultInjury",
     marker: "hollow-triangle",
-    lineWidth: 1, lineOpacity: 0.4,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFaultInjury,
     // At-fault injury: intersection of at-fault and injury crashes.
@@ -252,7 +247,6 @@ const METRIC_DEFS = [
     cardLabel: "Injury",
     incField: "incInjury",
     marker: "solid-circle",
-    lineWidth: 2, lineOpacity: 0.9,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.injury,
     // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
@@ -268,7 +262,6 @@ const METRIC_DEFS = [
     cardLabel: "Hospitalization",
     incField: "incHospitalization",
     marker: "solid-circle",
-    lineWidth: 1.5, lineOpacity: 0.7,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.hospitalization,
     // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
@@ -286,7 +279,6 @@ const METRIC_DEFS = [
     cardLabel: "Airbag deployment",
     incField: "incAirbag",
     marker: "solid-circle",
-    lineWidth: 1.2, lineOpacity: 0.6,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.airbag,
     // Airbag deployment in any vehicle. Waymo safety impact page: human
@@ -305,7 +297,6 @@ const METRIC_DEFS = [
     cardLabel: "Serious injury (SSI+)",
     incField: "incSeriousInjury",
     marker: "solid-circle",
-    lineWidth: 1.2, lineOpacity: 0.55,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.seriousInjury,
     // SSI+ (KABCO A+K): Moderate W/ Hospitalization + Fatality.
@@ -323,7 +314,6 @@ const METRIC_DEFS = [
     cardLabel: "Fatality",
     incField: "incFatality",
     marker: "solid-circle",
-    lineWidth: 1.2, lineOpacity: 0.5,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.fatality,
     // FARS national per-vehicle-adjusted (75M) to urban surface-street
@@ -338,8 +328,6 @@ const METRIC_DEFS = [
 ];
 
 // Derived accessors — consumed by rendering code throughout
-const LINE_STYLE = Object.fromEntries(
-  METRIC_DEFS.map(m => [m.key, {width: m.lineWidth, opacity: m.lineOpacity}]));
 const KNOWN_HUMAN_MPI = Object.fromEntries(
   METRIC_DEFS.filter(m => m.humanMPI).map(m => [m.key, m.humanMPI]));
 const METRIC_KEYS = METRIC_DEFS.map(m => m.key);
@@ -350,20 +338,15 @@ const STRESS_VERDICT_META = {
   worse: {label: "robustly worse", className: "worse"},
   ambiguous: {label: "ambiguous", className: "ambiguous"},
 };
-let monthMetricEnabled = Object.fromEntries(
-  METRIC_DEFS.map(m => [m.key, m.defaultEnabled]));
+let selectedMetricKey = METRIC_DEFS.find(m => m.defaultEnabled).key;
 const DEFAULT_START_MONTH = "2025-06"; // default slider start (NHTSA analysis window)
 let monthRangeStart = -1; // -1 = use DEFAULT_START_MONTH
 let monthRangeEnd = Infinity;
 let fullMonthSeries = null;
 let activeSeries = null;
 
-function metricLineStyle(company, metricKey) {
-  const s = LINE_STYLE[metricKey];
-  const color = MONTHLY_COMPANY_COLORS[company];
-  let style = `stroke:${color};stroke-width:${s.width}`;
-  if (s.opacity < 1) style += `;opacity:${s.opacity}`;
-  return style;
+function metricLineStyle(company) {
+  return `stroke:${MONTHLY_COMPANY_COLORS[company]};stroke-width:2`;
 }
 
 function metricMarkerColor(company) {
@@ -371,12 +354,8 @@ function metricMarkerColor(company) {
 }
 
 
-function metricErrStyle(company, metricKey) {
-  const s = LINE_STYLE[metricKey];
-  const color = MONTHLY_COMPANY_COLORS[company];
-  let style = `stroke:${color}`;
-  if (s.opacity < 1) style += `;opacity:${s.opacity}`;
-  return style;
+function metricErrStyle(company) {
+  return `stroke:${MONTHLY_COMPANY_COLORS[company]}`;
 }
 const CI_MASS_DEFAULT_PCT = 95;
 const CI_FAN_LEVELS = [0.50, 0.80, 0.95]; // nested CI bands from tight to wide
@@ -675,7 +654,7 @@ function monthMetricToggleId(metric) {
 }
 
 function includedMonthMetrics() {
-  return METRIC_DEFS.filter(metric => monthMetricEnabled[metric.key]);
+  return METRIC_DEFS.filter(metric => metric.key === selectedMetricKey);
 }
 
 function fmtWhole(n) {
@@ -1016,7 +995,7 @@ function renderAllCompaniesMpiChart(series) {
       d += `${penDown ? " L " : "M "}${mapX(i).toFixed(2)} ${mapY(mpi.mpiBest).toFixed(2)}`;
       penDown = true;
     }
-    return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.company, row.metric.key)}"></path>`;
+    return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.company)}"></path>`;
   }).join("");
 
   const errs = `<g clip-path="url(#mpi-clip)">` + seriesRows.map(row =>
@@ -1025,7 +1004,7 @@ function renderAllCompaniesMpiChart(series) {
       const x = mapX(i);
       const yLo = mapY(mpi.mpiMin);
       const yHi = mapY(mpi.mpiMax);
-      const errStyle = metricErrStyle(row.company, row.metric.key);
+      const errStyle = metricErrStyle(row.company);
       return `
         <line class="month-err" x1="${x.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${x.toFixed(2)}" y2="${yHi.toFixed(2)}" style="${errStyle}"></line>
         <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yLo.toFixed(2)}" style="${errStyle}"></line>
@@ -1039,7 +1018,7 @@ function renderAllCompaniesMpiChart(series) {
       if (mpi === null || mpi.incidentCount === 0) return "";
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
-      const color = metricMarkerColor(row.company, row.metric.key);
+      const color = metricMarkerColor(row.company);
       const marker = markerRenderer[row.metric.marker];
       assert(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
       const k = mpi.incidentCount;
@@ -1057,12 +1036,11 @@ function renderAllCompaniesMpiChart(series) {
   // Clamp to plot range so SVG coordinates stay reasonable.
   const clampY = v => Math.max(mTop, Math.min(mTop + pH, mapY(v)));
   const bands = seriesRows.map(row => {
-    const color = metricMarkerColor(row.company, row.metric.key);
-    const metricOpacity = LINE_STYLE[row.metric.key].opacity;
+    const color = metricMarkerColor(row.company);
     // Draw widest band first (95%), then 80%, then 50% on top
     return CI_FAN_LEVELS.slice().reverse().map((_level, li) => {
       const bandIdx = CI_FAN_LEVELS.length - 1 - li; // index into bands array
-      const bandOpacity = (0.10 * metricOpacity * (1 + li * 0.5)).toFixed(3);
+      const bandOpacity = (0.10 * (1 + li * 0.5)).toFixed(3);
       // Split into contiguous segments (skip null vals)
       const segments = [];
       let seg = [];
@@ -1099,18 +1077,16 @@ function renderAllCompaniesMpiChart(series) {
         const yLo = clampY(ref.lo);
         const yHi = clampY(ref.hi);
         const yMid = clampY(Math.sqrt(ref.lo * ref.hi)); // geometric mean
-        const s = LINE_STYLE[ref.metric.key];
-        const metricOpacity = s.opacity < 1 ? s.opacity : 1;
         // Shaded band between lo and hi
         const bandH = Math.abs(yLo - yHi);
         const bandTop = Math.min(yLo, yHi);
         return `
           <rect x="${mLeft}" y="${bandTop.toFixed(2)}" width="${pW}" height="${bandH.toFixed(2)}"
-            style="fill:#888;opacity:${(0.10 * metricOpacity).toFixed(3)}"></rect>
+            style="fill:#888;opacity:0.100"></rect>
           <line x1="${mLeft}" y1="${yMid.toFixed(2)}" x2="${mLeft + pW}" y2="${yMid.toFixed(2)}"
-            style="stroke:#888;stroke-width:${s.width};stroke-dasharray:6 4;opacity:${(0.5 * metricOpacity).toFixed(3)}"></line>
+            style="stroke:#888;stroke-width:2;stroke-dasharray:6 4;opacity:0.500"></line>
           <text x="${mLeft + pW - 4}" y="${(Math.min(yLo, yHi) - 3).toFixed(2)}" text-anchor="end"
-            style="fill:#888;font-size:9px;opacity:${(0.7 * metricOpacity).toFixed(3)}">${fmtMiles(ref.lo)}\u2013${fmtMiles(ref.hi)}</text>`;
+            style="fill:#888;font-size:9px;opacity:0.700">${fmtMiles(ref.lo)}\u2013${fmtMiles(ref.hi)}</text>`;
       }).join("")}</g>
     </svg>
   `;
@@ -1208,30 +1184,27 @@ function renderDistributionChart(series) {
 
   // Human benchmark curves (log-normal bell curves in gray)
   const humanFills = humanCurves.map(hc => {
-    const op = (0.12 * LINE_STYLE[hc.metric.key].opacity).toFixed(3);
     let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
     for (let i = 0; i < nPts; i++) {
       d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(hc.ys[i]).toFixed(2)}`;
     }
     d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
-    return `<path d="${d}" style="fill:#888;opacity:${op}"></path>`;
+    return `<path d="${d}" style="fill:#888;opacity:0.120"></path>`;
   }).join("");
 
   const humanStrokes = humanCurves.map(hc => {
-    const s = LINE_STYLE[hc.metric.key];
-    const op = s.opacity < 1 ? s.opacity : 1;
     let d = "";
     for (let i = 0; i < nPts; i++) {
       d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(hc.ys[i]).toFixed(2)}`;
     }
-    return `<path d="${d}" style="stroke:#888;stroke-width:${s.width};opacity:${(0.7 * op).toFixed(3)};fill:none"></path>`;
+    return `<path d="${d}" style="stroke:#888;stroke-width:2;opacity:0.700;fill:none"></path>`;
   }).join("");
 
   const humanMarkers = humanCurves.map(hc => {
     const x = mapX(hc.peakX);
     const y = mapY(hc.peakY);
     const geo = Math.sqrt(hc.lo * hc.hi);
-    const op = LINE_STYLE[hc.metric.key].opacity;
+    const op = 1;
     // TO-DO: Human vet distribution chart human benchmark tooltip below.
     const tip = `Humans (${hc.metric.cardLabel})\nGeometric mean: ${fmtMiles(geo)} MPI\n95% range: ${fmtMiles(hc.lo)} \u2013 ${fmtMiles(hc.hi)}`;
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:#888;stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>` +
@@ -1241,7 +1214,7 @@ function renderDistributionChart(series) {
   // Curve fills (low opacity) and strokes
   const fills = curves.map(c => {
     const color = MONTHLY_COMPANY_COLORS[c.company];
-    const op = (0.12 * LINE_STYLE[c.metric.key].opacity).toFixed(3);
+    const op = "0.120";
     let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
     for (let i = 0; i < nPts; i++) {
       d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
@@ -1255,7 +1228,7 @@ function renderDistributionChart(series) {
     for (let i = 0; i < nPts; i++) {
       d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
     }
-    return `<path d="${d}" style="${metricLineStyle(c.company, c.metric.key)};fill:none"></path>`;
+    return `<path d="${d}" style="${metricLineStyle(c.company)};fill:none"></path>`;
   }).join("");
 
   // Peak markers with tooltips
@@ -1452,7 +1425,7 @@ function renderMpiSummaryCards(series) {
         <div class="mpi-card-stress">Overall: <span class="stress-badge ${stress.className}">${stress.label}</span> ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>
         ${METRIC_DEFS.map(m => {
           const mpi = summaryMetricEstimate(row, m.key);
-          const hl = monthMetricEnabled[m.key] ? " highlighted" : "";
+          const hl = m.key === selectedMetricKey ? " highlighted" : "";
           const humanRange = KNOWN_HUMAN_MPI[m.key];
           const humanGeo = humanRange ? Math.sqrt(humanRange.lo * humanRange.hi) : null;
           const mult = humanGeo ? mpi.median / humanGeo : null;
@@ -1477,7 +1450,7 @@ function renderMpiSummaryCards(series) {
         const range = KNOWN_HUMAN_MPI[m.key];
         if (!range) return "";
         const geoMean = Math.sqrt(range.lo * range.hi);
-        const hl = monthMetricEnabled[m.key] ? " highlighted" : "";
+        const hl = m.key === selectedMetricKey ? " highlighted" : "";
         const srcLine = range.srcLinks
           ? range.srcLinks.map(s => `<a href="${s.url}">${s.label}</a>`).join(", ")
           : "";
@@ -1559,21 +1532,17 @@ function renderMonthlyLegends() {
 
   byId("month-legend-mpi-lines").innerHTML = `
     ${METRIC_DEFS.map(metric => {
-      const s = LINE_STYLE[metric.key];
-      const color = "#4a5264";
-      let keyStyle = `width:22px;height:0;display:inline-block;border-top:${s.width}px solid ${color}`;
-      if (s.opacity < 1) keyStyle += `;opacity:${s.opacity}`;
       return `
       <label class="month-legend-item month-company-toggle" for="${monthMetricToggleId(metric.key)}">
-        <input type="checkbox" id="${monthMetricToggleId(metric.key)}" ${monthMetricEnabled[metric.key] ? "checked" : ""}>
-        <span style="${keyStyle}"></span>${metric.label}
+        <input type="radio" name="month-metric" id="${monthMetricToggleId(metric.key)}" ${metric.key === selectedMetricKey ? "checked" : ""}>
+        ${metric.label}
       </label>`;
     }).join("")}
   `;
   for (const metric of METRIC_DEFS) {
     const input = byId(monthMetricToggleId(metric.key));
     input.addEventListener("change", () => {
-      monthMetricEnabled[metric.key] = input.checked;
+      selectedMetricKey = metric.key;
       buildMonthlyViews();
     });
   }
@@ -1879,7 +1848,7 @@ function encodeUiStateQuery() {
   params.set(URL_STATE_KEYS.sort, sortCol === null ? URL_STATE_SORT_NONE : sortCol);
   params.set(URL_STATE_KEYS.asc, sortAsc ? "1" : "0");
   params.set(URL_STATE_KEYS.companies, enabledKeyString(monthCompanyEnabled, ADS_COMPANIES));
-  params.set(URL_STATE_KEYS.metrics, enabledKeyString(monthMetricEnabled, METRIC_KEYS));
+  params.set(URL_STATE_KEYS.metrics, selectedMetricKey);
   const fullLen = fullMonthSeries ? fullMonthSeries.months.length : 0;
   const defaultStartIdx = fullMonthSeries
     ? Math.max(0, fullMonthSeries.months.indexOf(DEFAULT_START_MONTH))
@@ -1935,7 +1904,14 @@ function applyUiStateQuery(queryString) {
 
   const metricsVal = params.get(URL_STATE_KEYS.metrics);
   assert(metricsVal !== null, "Missing metrics URL state", {raw});
-  monthMetricEnabled = parseEnabledKeyString(metricsVal, METRIC_KEYS, "metrics");
+  if (METRIC_KEYS.includes(metricsVal)) {
+    selectedMetricKey = metricsVal;
+  } else {
+    // Fall back: try parsing old multi-key format, pick first enabled
+    const parsed = parseEnabledKeyString(metricsVal, METRIC_KEYS, "metrics");
+    const firstEnabled = METRIC_KEYS.find(k => parsed[k]);
+    if (firstEnabled) selectedMetricKey = firstEnabled;
+  }
 
   if (params.has(URL_STATE_KEYS.dateRange)) {
     const drVal = params.get(URL_STATE_KEYS.dateRange);

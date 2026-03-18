@@ -80,8 +80,7 @@ const metrics = vm.runInContext(`
       series.points.reduce((sum, p) => sum + (p.companies[company] ? p.companies[company].incidents.total : 0), 0),
     ]),
   );
-  // Enable all metrics so the chart renders all line variants
-  for (const m of METRIC_DEFS) monthMetricEnabled[m.key] = true;
+  selectedMetricKey = "all";
   buildMonthlyViews();
   return {
     months: series.months,
@@ -227,12 +226,12 @@ Expectata: airbag human benchmark has lo (400k\u2013600k) < hi (600k\u2013800k) 
 Resultata: ${JSON.stringify(humanAirbag)}.`,
 );
 
-// Verify chart renders airbag line data (stroke-width:1.2 from airbag LINE_STYLE)
+// Verify chart renders line data with standard stroke-width:2
 assert.ok(
-  plain.chartMpiAll.includes("stroke-width:1.2"),
-  `Replicata: render all-company MPI chart with all metrics enabled.
-Expectata: chart includes stroke-width:1.2 (used by airbag and fatality lines).
-Resultata: stroke-width:1.2 not found in rendered chart.`,
+  plain.chartMpiAll.includes("stroke-width:2"),
+  `Replicata: render all-company MPI chart with selected metric.
+Expectata: chart includes stroke-width:2 (standard line width).
+Resultata: stroke-width:2 not found in rendered chart.`,
 );
 
 // Serious injury (SSI+) assertions
@@ -288,14 +287,13 @@ Resultata: ${JSON.stringify(humanSsi)}.`,
 const metricDefCheck = vm.runInContext(`
   METRIC_DEFS.every(m =>
     m.key && m.label && m.cardLabel && m.incField && m.marker &&
-    typeof m.lineWidth === "number" && typeof m.lineOpacity === "number" &&
     typeof m.defaultEnabled === "boolean" && typeof m.primary === "boolean" &&
     typeof m.countFn === "function")
 `, ctx);
 assert.ok(
   metricDefCheck,
   `Replicata: validate METRIC_DEFS structure.
-Expectata: every metric def has key, label, cardLabel, incField, marker, lineWidth, lineOpacity, defaultEnabled, primary, countFn.
+Expectata: every metric def has key, label, cardLabel, incField, marker, defaultEnabled, primary, countFn.
 Resultata: some metric defs are missing required fields.`,
 );
 
@@ -311,12 +309,10 @@ const renderedAll = plain.chartMpiAll;
 assert.ok(
   renderedAll.includes("<svg") &&
     renderedAll.includes("month-mpi-all-line") &&
-    renderedAll.includes("stroke-width:2.5") &&
-    renderedAll.includes("stroke-width:1.5") &&
-    renderedAll.includes("stroke-width:1") &&
+    renderedAll.includes("stroke-width:2") &&
     renderedAll.includes("Miles Per Incident (MPI)"),
   `Replicata: render cross-company miles-per-incident chart.
-Expectata: chart includes all-company line traces with thick/medium/thin stroke-width variants, month labels, and the miles-per-incident axis.
+Expectata: chart includes all-company line traces with standard stroke-width, month labels, and the miles-per-incident axis.
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 

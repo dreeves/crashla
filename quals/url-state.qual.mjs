@@ -34,9 +34,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const state = vm.runInContext(`
 (() => {
   monthCompanyEnabled = {Tesla: true, Waymo: false, Zoox: true, Humans: true};
-  monthMetricEnabled = Object.fromEntries(METRIC_DEFS.map(m => [m.key, false]));
-  monthMetricEnabled.all = true;
-  monthMetricEnabled.injury = true;
+  selectedMetricKey = "injury";
   activeFilter = "Waymo";
   sortCol = "speed";
   sortAsc = false;
@@ -44,7 +42,7 @@ const state = vm.runInContext(`
   const query = encodeUiStateQuery();
 
   monthCompanyEnabled = {Tesla: true, Waymo: true, Zoox: true, Humans: true};
-  monthMetricEnabled = Object.fromEntries(METRIC_DEFS.map(m => [m.key, m.defaultEnabled]));
+  selectedMetricKey = "all";
   activeFilter = "All";
   sortCol = null;
   sortAsc = true;
@@ -59,7 +57,7 @@ const state = vm.runInContext(`
     sortCol,
     sortAsc,
     monthCompanyEnabled,
-    monthMetricEnabled,
+    selectedMetricKey,
   };
 })()
 `, ctx);
@@ -67,7 +65,7 @@ const plain = JSON.parse(JSON.stringify(state));
 
 assert.equal(
   plain.query,
-  "f=Waymo&s=speed&a=0&c=Tesla.Zoox&m=all.injury",
+  "f=Waymo&s=speed&a=0&c=Tesla.Zoox&m=injury",
   `Replicata: encode UI state to a query string.
 Expectata: query string exactly captures filter/sort/company/metric state.
 Resultata: query was ${plain.query}.`,
@@ -113,17 +111,12 @@ Expectata: company toggles restored (Tesla+Zoox on, Waymo off).
 Resultata: company toggles were ${JSON.stringify(plain.monthCompanyEnabled)}.`,
 );
 
-const metricSummary = {
-  all: plain.monthMetricEnabled.all,
-  injury: plain.monthMetricEnabled.injury,
-  nonstationary: plain.monthMetricEnabled.nonstationary,
-};
-assert.deepEqual(
-  metricSummary,
-  {all: true, injury: true, nonstationary: false},
-  `Replicata: apply encoded query to reset metric toggles.
-Expectata: all+injury enabled, nonstationary disabled.
-Resultata: metrics were ${JSON.stringify(metricSummary)}.`,
+assert.equal(
+  plain.selectedMetricKey,
+  "injury",
+  `Replicata: apply encoded query to reset metric selection.
+Expectata: selectedMetricKey restored to injury.
+Resultata: selectedMetricKey was ${plain.selectedMetricKey}.`,
 );
 
 // --- Date range URL state ---

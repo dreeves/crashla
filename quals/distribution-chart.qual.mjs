@@ -191,7 +191,7 @@ vm.runInContext(`
 incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
-for (const m of METRIC_DEFS) monthMetricEnabled[m.key] = true;
+selectedMetricKey = "all";
 for (const c of ADS_COMPANIES) monthCompanyEnabled[c] = true;
 activeSeries = monthSeriesData();
 `, ctx);

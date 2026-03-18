@@ -325,7 +325,8 @@ tr:hover { background: #f8f8ff; }
   cursor: pointer;
   user-select: none;
 }
-.month-company-toggle input[type="checkbox"] {
+.month-company-toggle input[type="checkbox"],
+.month-company-toggle input[type="radio"] {
   margin: 0 0.2rem 0 0;
 }
 .month-chip {
