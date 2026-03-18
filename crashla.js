@@ -618,6 +618,17 @@ const SERIOUS_INJURY_SEVERITIES = new Set([
   "Fatality",
 ]);
 
+// Ordinal ranking for sorting: higher = more severe
+const SEVERITY_RANK = {
+  "Property Damage. No Injured Reported": 0,
+  "Minor W/O Hospitalization": 1,
+  "Minor W/ Hospitalization": 2,
+  "Moderate": 3,
+  "Moderate W/O Hospitalization": 3,
+  "Moderate W/ Hospitalization": 4,
+  "Fatality": 5,
+};
+
 function linearTicks(min, max, count) {
   const out = [];
   for (let i = 0; i <= count; i++) {
@@ -1812,7 +1823,7 @@ const SORT_COLUMNS = [
     const v = weightedFaultVariance(r.reportId);
     return v !== null ? v : -1;
   }},
-  {key: "severity", val: r => r.severity || ""},
+  {key: "severity", val: r => SEVERITY_RANK[r.severity] ?? -1},
   {key: "narrative", val: r => r.narrative || ""},
 ];
 const SORT_COLUMN_KEYS = SORT_COLUMNS.map(col => col.key);
