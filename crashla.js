@@ -1655,7 +1655,7 @@ function buildMonthlyViews() {
   byId("chart-mpi-all").innerHTML = renderAllCompaniesMpiChart(activeSeries);
   byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
-  byId("chart-driver-series").innerHTML = ALL_DRIVERS.map(driver => `
+  byId("chart-driver-series").innerHTML = ADS_DRIVERS.map(driver => `
     <div class="month-chart">
       <h3>${driver}</h3>
       ${renderDriverMonthlyChart(activeSeries, driver)}
