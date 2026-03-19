@@ -164,7 +164,7 @@ assert.ok(
 Expectata: table has low/high VMT and range ratio columns.
 Resultata: expected columns not found.`);
 
-// --- Poisson dispersion: small-sample companies get "too few" ---
+// --- Poisson dispersion: small-sample drivers get "too few" ---
 const tooFewCount = (html.match(/too few incidents to tell/g) || []).length;
 assert.ok(
   tooFewCount >= 2,
@@ -214,7 +214,7 @@ assert.ok(
 Expectata: table has Low MPI, High MPI, and Derivation columns.
 Resultata: expected columns not found.`);
 
-// --- All three companies appear across tables ---
+// --- All three drivers appear across tables ---
 for (const co of ["Tesla", "Waymo", "Zoox"]) {
   const count = (html.match(new RegExp(`>${co}<`, "g")) || []).length;
   assert.ok(

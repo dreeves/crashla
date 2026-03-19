@@ -164,17 +164,6 @@ Expectata: summary totals report observed-window incidents (15 total, 11 nonstat
 Resultata: Tesla summary was ${JSON.stringify(summaryByDriver.Tesla)}.`,
 );
 assert.ok(
-  Math.abs(summaryByDriver.Tesla.milesPerIncident -
-    (summaryByDriver.Tesla.vmtBest / summaryByDriver.Tesla.incTotal)) < 1e-6 &&
-    Math.abs(summaryByDriver.Tesla.milesPerNonstationaryIncident -
-      (summaryByDriver.Tesla.vmtBest / summaryByDriver.Tesla.incNonstationary)) < 1e-6 &&
-    Math.abs(summaryByDriver.Tesla.milesPerRoadwayNonstationaryIncident -
-      (summaryByDriver.Tesla.vmtBest / summaryByDriver.Tesla.incRoadwayNonstationary)) < 1e-6,
-  `Replicata: compute Tesla summary miles-per-incident fields.
-Expectata: summary rows include overall, nonstationary, and nonstationary-roadway miles-per-incident values derived from best-VMT totals and observed-window incident totals.
-Resultata: Tesla summary was ${JSON.stringify(summaryByDriver.Tesla)}.`,
-);
-assert.ok(
   summaryByDriver.Waymo.incAirbag >= 30 &&
     summaryByDriver.Waymo.incAirbag <= 45 &&
     summaryByDriver.Tesla.incAirbag === 0 &&
@@ -320,7 +309,7 @@ Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`
 const airbagTitleChart = vm.runInContext(`
   (() => {
     selectedMetricKey = "airbag";
-    return renderAllCompaniesMpiChart(monthSeriesData());
+    return renderAllDriversMpiChart(monthSeriesData());
   })()
 `, ctx);
 assert.ok(

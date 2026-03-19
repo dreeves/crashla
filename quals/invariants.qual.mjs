@@ -67,8 +67,8 @@ mustThrowParse("coverage > 1",
 // negative vmt
 mustThrowParse("negative vmt",
   goodHeader + "\ntesla,2025-07,-100,200,80,120,1,1,1,1,test");
-// unknown company
-mustThrowParse("unknown company",
+// unknown driver
+mustThrowParse("unknown driver",
   goodHeader + "\nUnknownCo,2025-07,100,200,80,120,1,1,1,1,test");
 
 console.log("qual pass: fail-loud invariants and idempotent estimator rendering");

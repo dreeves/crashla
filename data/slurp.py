@@ -610,7 +610,7 @@ EXPECTED_DRIVER_TYPES = {
 }
 # All reporting entities in the NHTSA ADS CSV (current + archive).
 # Anti-Postel: if NHTSA adds a new driver, we want to crash and review.
-EXPECTED_COMPANIES = {
+EXPECTED_DRIVERS = {
     "Ambarella",
     "Apollo Autonomous Driving USA",
     "Apple Inc.",
@@ -686,9 +686,9 @@ def main():
              "unexpected Driver / Operator Type", row=i, value=dt,
              expected=sorted(EXPECTED_DRIVER_TYPES))
         driver = r["Reporting Entity"].strip()
-        must(driver in EXPECTED_COMPANIES,
+        must(driver in EXPECTED_DRIVERS,
              "unexpected Reporting Entity", row=i, value=driver,
-             expected=sorted(EXPECTED_COMPANIES))
+             expected=sorted(EXPECTED_DRIVERS))
         must(INCIDENT_DATE_RE.match(idate),
              "unexpected Incident Date format", row=i, value=idate)
         abbr = idate.split("-")[0]

@@ -399,7 +399,6 @@ const SPEED_BIN_COLORS = {
   },
 };
 // Movement-based partition of total incidents (sums to total)
-// TO-DO: Human vet segment labels below.
 const MOVEMENT_SEGMENTS = [
   {key: "roadwayNonstationary", label: "Non-parking-lot nonstationary", mpiKey: "roadwayNonstationary"},
   {key: "parkingLotNonstationary", label: "Parking-lot nonstationary", mpiKey: "nonstationary"},
@@ -424,7 +423,7 @@ const SEVERITY_COLORS = {
   Waymo: {fatality: "#0e3870", hospitalizationOnly: "#2060c0", injuryOnly: "#5a87d1", noInjury: "#99b4e5"},
   Zoox:  {fatality: "#14553a", hospitalizationOnly: "#2a8f57", injuryOnly: "#5ead7e", noInjury: "#98ccb0"},
 };
-// Legend colors (company-neutral)
+// Legend colors (driver-neutral)
 const MOVEMENT_LEGEND_COLORS = {
   roadwayNonstationary: "#505050", parkingLotNonstationary: "#909090", stationary: "#d0d0d0",
 };
@@ -456,7 +455,7 @@ const MONTH_TOKENS = {
 };
 const YM_RE = /^(\d{4})-(\d{2})$/;
 
-// Count incidents per company from loaded data
+// Count incidents per driver from loaded data
 function countByDriver(rows = incidents) {
   const counts = {};
   for (const inc of rows) {
@@ -535,7 +534,7 @@ function parseVmtCsv(text) {
     const coverage = Number(hit[7]); // fraction of month in NHTSA window
     // Incident reporting completeness (Poisson thinning factor).
     // When Monthly reports are structurally absent for the last month, this
-    // is the historical 5-Day fraction for the company.  Multiplied into
+    // is the historical 5-Day fraction for the driver.  Multiplied into
     // effective VMT so the Gamma posterior reflects the thinned observation.
     const incCov     = Number(hit[8]);  // best estimate
     const incCovMin  = Number(hit[9]);  // most pessimistic (smallest p)
@@ -665,10 +664,6 @@ function monthMetricToggleId(metric) {
   return "month-metric-toggle-" + metric;
 }
 
-function includedMonthMetrics() {
-  return METRIC_DEFS.filter(metric => metric.key === selectedMetricKey);
-}
-
 function selectedMonthMetric() {
   const metric = METRIC_BY_KEY[selectedMetricKey];
   assert(metric !== undefined, "Missing selected metric", {selectedMetricKey});
@@ -750,9 +745,6 @@ function monthlySummaryRows(series) {
       vmtRationales,
       ...incFields,
       mpiEstimates,
-      milesPerIncident: vmtBest > 0 ? vmtBest / incFields.incTotal : 0,
-      milesPerNonstationaryIncident: vmtBest > 0 ? vmtBest / incFields.incNonstationary : 0,
-      milesPerRoadwayNonstationaryIncident: vmtBest > 0 ? vmtBest / incFields.incRoadwayNonstationary : 0,
     };
   });
 }
@@ -979,7 +971,7 @@ function drawSingleMonthAxes(
   `;
 }
 
-function renderAllCompaniesMpiChart(series) {
+function renderAllDriversMpiChart(series) {
   const metric = selectedMonthMetric();
   const svgW = 900;
   const svgH = 520;
@@ -1014,17 +1006,15 @@ function renderAllCompaniesMpiChart(series) {
   let yMax = 1;
   for (const driver of includedDrivers()) {
     const rows = driverMonthRows(series, driver);
-    for (const metric of includedMonthMetrics()) {
-      const vals = rows.map(row => {
-        if (row === null) return null;
-        const mpi = row.mpiByMetric[metric.key];
-        if (!mpi) return null;
-        const k = mpi.incidentCount;
-        if (k !== 0) yMax = Math.max(yMax, mpi.mpiBest, mpi.mpiMax);
-        return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume};
-      });
-      seriesRows.push({driver, metric, vals});
-    }
+    const vals = rows.map(row => {
+      if (row === null) return null;
+      const mpi = row.mpiByMetric[metric.key];
+      if (!mpi) return null;
+      const k = mpi.incidentCount;
+      if (k !== 0) yMax = Math.max(yMax, mpi.mpiBest, mpi.mpiMax);
+      return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume};
+    });
+    seriesRows.push({driver, metric, vals});
   }
 
   // Subset metrics must have higher MPI (rarer events = more miles between).
@@ -1096,7 +1086,6 @@ function renderAllCompaniesMpiChart(series) {
       const marker = markerRenderer[row.metric.marker];
       assert(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
       const k = mpi.incidentCount;
-      // TO-DO: Human vet new tooltip mileage labels below.
       const ci95 = mpi.bands[mpi.bands.length - 1];
       const kLine = k !== null ? ` (${Number.isInteger(k) ? String(k) : k.toFixed(1)} incident${k === 1 ? "" : "s"})` : "";
       const vmtLines = mpi.vmtMonth > 0
@@ -1141,7 +1130,6 @@ function renderAllCompaniesMpiChart(series) {
   }).join("");
 
   return `
-    <!-- TO-DO: Human vet chart titles below. -->
     <h3>${metric.label} over time</h3>
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="mpi-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
@@ -1163,15 +1151,13 @@ function renderDistributionChart(series) {
   const curves = [];
   for (const row of summaryRows) {
     if (!monthDriverEnabled[row.driver]) continue;
-    for (const metric of includedMonthMetrics()) {
-      const est = row.mpiEstimates[metric.key];
-      if (!est) continue;
-      curves.push({
-        driver: row.driver, metric, est,
-        densityFn: est.densityFn,
-        xMin: est.xMin, xMax: est.xMax,
-      });
-    }
+    const est = row.mpiEstimates[metric.key];
+    if (!est) continue;
+    curves.push({
+      driver: row.driver, metric, est,
+      densityFn: est.densityFn,
+      xMin: est.xMin, xMax: est.xMax,
+    });
   }
   if (curves.length === 0) return "";
 
@@ -1258,13 +1244,11 @@ function renderDistributionChart(series) {
     const kLine = c.est.k !== null
       ? `\n${Number.isInteger(c.est.k) ? String(c.est.k) : c.est.k.toFixed(1)} incident${c.est.k === 1 ? "" : "s"}`
       : "";
-    // TO-DO: Human vet distribution chart tooltip labels below.
     const tip = `${c.driver} (${c.metric.cardLabel})\nMPI: ${fmtMiles(c.est.median)}\nRange: ${fmtMiles(c.est.lo)} \u2013 ${fmtMiles(c.est.hi)}${kLine}`;
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
   return `
-    <!-- TO-DO: Human vet chart titles below. -->
     <h3>${metric.label} using data from ${start} to ${end}</h3>
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
@@ -1337,7 +1321,6 @@ function renderDriverMonthlyChart(globalSeries, driver) {
   const barTotals = [];
   const errs = [];
   const halfBar = (barW - 1) / 2; // 1px gap between the two bars
-  // TO-DO: Human vet new lower-chart tooltip labels below.
   for (let i = 0; i < series.points.length; i++) {
     const row = rows[i];
     const month = series.months[i];
@@ -1429,7 +1412,6 @@ function renderDriverMonthlyChart(globalSeries, driver) {
   `;
 }
 
-// TO-DO: Human vet all end-user labels in these summary cards.
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   return rows.map(row => {
@@ -1553,9 +1535,8 @@ function renderMonthlyLegends() {
     });
   }
 
-  // CI fan legend: multi-stripe swatches showing each company's color at the
+  // CI fan legend: multi-stripe swatches showing each driver's color at the
   // band's rendered opacity level for each CI width (50%, 80%, 95%).
-  // TO-DO: Human vet legend labels below.
   const fanDrivers = includedDrivers();
   const fanLevels = CI_FAN_LEVELS.map((level, i) => {
     // Match the band rendering: reversed index li maps to bandOpacity =
@@ -1563,7 +1544,7 @@ function renderMonthlyLegends() {
     const li = CI_FAN_LEVELS.length - 1 - i;
     const opacity = (0.10 * (1 + li * 0.5)).toFixed(3);
     const pct = Math.round(level * 100);
-    // Build vertical stripe gradient from company colors
+    // Build vertical stripe gradient from driver colors
     const stripeW = 100 / fanDrivers.length;
     const stops = fanDrivers.map((c, j) => {
       const color = DRIVER_COLORS[c];
@@ -1583,7 +1564,6 @@ function renderMonthlyLegends() {
     </span>
   `;
 
-  // TO-DO: Human vet bar segment legend labels below.
   byId("month-legend-speed").innerHTML = `
     <span class="month-legend-label">Left bar (movement):</span>
     ${MOVEMENT_SEGMENTS.map(seg => `
@@ -1665,7 +1645,7 @@ function buildMonthlyViews() {
   fullMonthSeries = monthSeriesData();
   const fullSummary = monthlySummaryRows(fullMonthSeries);
   for (const row of fullSummary) {
-    if (row.vmtBest === 0) continue; // company has no data in incident window
+    if (row.vmtBest === 0) continue; // driver has no data in incident window
     assert(row.incTotal > 0, "full-series total incidents must be positive", {driver: row.driver});
     assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {driver: row.driver});
     assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {driver: row.driver});
@@ -1684,7 +1664,7 @@ function buildMonthlyViews() {
   activeSeries = isFullRange
     ? fullMonthSeries
     : sliceSeries(fullMonthSeries, startIdx, endIdx);
-  byId("chart-mpi-all").innerHTML = renderAllCompaniesMpiChart(activeSeries);
+  byId("chart-mpi-all").innerHTML = renderAllDriversMpiChart(activeSeries);
   byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
   byId("chart-driver-series").innerHTML = ADS_DRIVERS.map(driver => `
@@ -2339,21 +2319,20 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       if (expected > 0) chiSq += (d.count - expected) ** 2 / expected;
     }
     const df = monthData.length - 1;
-    const dispersion = (chiSq / df).toFixed(2);
-    const rates = monthData.map(d =>
-      d.vmt > 0 ? (d.count / d.vmt * 1e6).toFixed(1) : "\u2014");
+    const dispIdx = chiSq / df;
+    const rates = monthData.map(r =>
+      r.vmt > 0 ? (r.count / r.vmt * 1e6).toFixed(1) : "\u2014");
     // With few total incidents the test has no power; flag that
-    const d = chiSq / df;
     const verdict = totalK < 20 ? "too few incidents to tell"
-      : d < 0.5 ? "underdispersed"
-      : d < 2 ? "consistent with Poisson"
-      : d < 5 ? "mildly overdispersed"
+      : dispIdx < 0.5 ? "underdispersed"
+      : dispIdx < 2 ? "consistent with Poisson"
+      : dispIdx < 5 ? "mildly overdispersed"
       : "overdispersed";
     dispRows.push(`<tr>
       <td>${escHtml(co)}</td>
       <td>${rates.join(", ")}</td>
       <td>${(lambdaHat * 1e6).toFixed(1)}</td>
-      <td>${dispersion}</td>
+      <td>${dispIdx.toFixed(2)}</td>
       <td>${verdict}</td>
     </tr>`);
   }
@@ -2458,7 +2437,7 @@ Maybe that affects AVs too?
   for (const co of ADS_DRIVERS) {
     const coVmt = vmt.filter(r => r.driver === co);
     if (coVmt.length === 0) continue;
-    // Use the rationale from the first row (they're all the same per company)
+    // Use the rationale from the first row (they're all the same per driver)
     const rationales = [...new Set(coVmt.map(r => r.rationale).filter(Boolean))];
     const ratStr = rationales.map(r => escHtml(r)).join("<br>");
     vmtSrcRows.push(`<tr>

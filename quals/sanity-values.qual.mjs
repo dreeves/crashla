@@ -98,7 +98,7 @@ const html = getNode("sanity-checks").innerHTML;
 
 // --- Passenger counts must add up ---
 // Extract rows from the passenger presence table: each <tr> has
-// company, withPax, noPax, unk, total, %
+// driver, withPax, noPax, unk, total, %
 // The total column must equal withPax + noPax + unk
 const paxSection = html.split("<h3>Passenger presence</h3>")[1]
   .split("<h3>")[0];
@@ -118,10 +118,10 @@ Expectata: withPax(${withPax}) + noPax(${noPax}) + unk(${unk}) = total(${total})
 Resultata: sum is ${withPax + noPax + unk}.`);
 }
 
-// --- Severity counts add up per company ---
+// --- Severity counts add up per driver ---
 const sevSection = html.split("<h3>Severity breakdown</h3>")[1]
   .split("<h3>")[0];
-// Each row: company, propDmg (%), injOnly (%), hosp (%), fatal (%), total
+// Each row: driver, propDmg (%), injOnly (%), hosp (%), fatal (%), total
 const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
 const sevMatches = [...sevSection.matchAll(sevPattern)];
 assert.ok(
@@ -197,7 +197,7 @@ Expectata: chi-squared / df >= 0.
 Resultata: got ${idx}.`);
 }
 
-// --- Reporting threshold: speed=0 count <= total for each company ---
+// --- Reporting threshold: speed=0 count <= total for each driver ---
 const rptSection = html.split("<h3>Reporting threshold disparities</h3>")[1]
   .split("<h3>")[0];
 const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
@@ -216,9 +216,9 @@ Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
 }
 
 // --- Incident totals consistent across passenger, severity, CBI tables ---
-// Each table should have the same total per company
+// Each table should have the same total per driver
 const extractTotals = (section, colIndex) => {
-  // Get all <tr> rows and extract the company name + specified column
+  // Get all <tr> rows and extract the driver name + specified column
   const rows = [...section.matchAll(/<tr>\s*<td>([^<]+)<\/td>/g)];
   const totals = {};
   const trBlocks = section.split("<tr>").slice(1); // skip pre-first

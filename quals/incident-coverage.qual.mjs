@@ -87,7 +87,7 @@ for (const row of allSeriesData) {
 for (const raw of completeRows) {
   if (raw.coverage !== 1) continue; // partial months have different effective VMT
   const eff = allSeriesData.find(r => r.driver === raw.driver && r.month === raw.month);
-  if (!eff) continue; // company may not be present for this month
+  if (!eff) continue; // driver may not be present for this month
   assert.ok(
     Math.abs(eff.vmtBest - raw.vmtBest) < 1,
     `Replicata: check ${raw.driver} ${raw.month} effective VMT.
@@ -99,7 +99,7 @@ Resultata: effective=${eff.vmtBest}, raw=${raw.vmtBest}.`);
 // These activate when NHTSA Monthly reports haven't arrived for the last month.
 
 if (incompleteRows.length > 0) {
-  // Pick the first incomplete row per company
+  // Pick the first incomplete row per driver
   const byDriver = {};
   for (const row of incompleteRows) {
     if (!byDriver[row.driver]) byDriver[row.driver] = row;
