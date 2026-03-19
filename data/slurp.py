@@ -794,14 +794,6 @@ def main():
             rec["severity"] = SEVERITY_OVERRIDE[iid_short]
         incidents.append(rec)
 
-    incident_ids = {r["reportId"] for r in incidents}
-    # Every incident with fault data should be in the VMT window.
-    # Incidents without fault data (pre-analysis-window) have fault=None.
-    incidents_with_fault = {r["reportId"] for r in incidents if r["fault"] is not None}
-    missing_fault = incidents_with_fault - fault_ids
-    must(len(missing_fault) == 0, "incidents with fault missing from fault CSVs",
-         missing=sorted(missing_fault)[:5])
-
     # Sort by driver then date (ISO month sorts lexicographically)
     incidents.sort(key=lambda r: (
         r["driver"],

@@ -152,6 +152,8 @@ can you make a file called faultfrac-MODEL.csv that, for every Report ID in data
 
 This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox within the [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) time window (June 15, 2025 through January 15, 2026). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June (starting June 15) has full incident coverage.
 
+[[TODO --codex: The checked-in generated artifacts and runtime UI have drifted from this stated window. Reconcile this note with the current visible app range and current generated data before relying on it.]]
+
 Context:
 [agifriday.substack.com/crashla](https://agifriday.substack.com/crashla/) and
 [agifriday.substack.com/crashla2](https://agifriday.substack.com/crashla2/)
@@ -228,6 +230,8 @@ January has coverage=0.484 (15/31) because the VMT is given as a full-month figu
    Archival raw fetch snapshots live under `data/snapshots/`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
    After deduplication (keeping highest Report Version per Same Incident ID) and filtering to Driver/Operator Type = "None", we get 530 incidents: 503 Waymo, 14 Tesla, 13 Zoox.
+
+[[TODO --codex: This count is stale relative to the current generated artifacts. Recompute it from the current pipeline outputs before treating it as authoritative.]]
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
    Sourced from a Google Sheet and embedded in `data/vmt.js`.

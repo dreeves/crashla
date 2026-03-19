@@ -211,6 +211,7 @@ const METRIC_DEFS = [
     cardLabel: "At-fault",
     incField: "incAtFault",
     marker: "hollow-triangle",
+    needsFault: true,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFault,
     // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
@@ -226,6 +227,7 @@ const METRIC_DEFS = [
     cardLabel: "At-fault injury",
     incField: "incAtFaultInjury",
     marker: "hollow-triangle",
+    needsFault: true,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFaultInjury,
     // At-fault injury: intersection of at-fault and injury crashes.
@@ -667,6 +669,11 @@ function includedMonthMetrics() {
   return METRIC_DEFS.filter(metric => metric.key === selectedMetricKey);
 }
 
+function defaultStartMonthIndex(months) {
+  const idx = months.indexOf(DEFAULT_START_MONTH);
+  return idx >= 0 ? idx : 0;
+}
+
 function fmtWhole(n) {
   assert(Number.isFinite(n), "fmtWhole: invalid input", {n});
   return Math.round(n).toLocaleString();
@@ -689,20 +696,26 @@ function monthlySummaryRows(series) {
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
     const vmtMax = rows.reduce((sum, row) => sum + row.vmtMax, 0);
+    const metricRowsByKey = Object.fromEntries(
+      METRIC_DEFS.map(m => [m.key, rows.filter(row => row.mpiByMetric[m.key] !== null)]));
     // Auto-generate inc fields from METRIC_DEFS
     const incFields = Object.fromEntries(
-      METRIC_DEFS.map(m => [m.incField, rows.reduce((sum, row) => sum + m.countFn(row), 0)]));
+      METRIC_DEFS.map(m => [m.incField, metricRowsByKey[m.key].reduce((sum, row) => sum + m.countFn(row), 0)]));
 
     const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
     // Pre-compute MPI estimates for each metric (consumed by cards + distribution).
     // vmtBest > 0: Bayesian Gamma posterior from observed incidents + VMT.
     // vmtBest === 0: log-normal from literature CI (humanMPI on METRIC_DEFS).
     const mpiEstimates = Object.fromEntries(METRIC_DEFS.map(m => {
-      if (vmtBest > 0) {
+      const metricRows = metricRowsByKey[m.key];
+      const metricVmtMin = metricRows.reduce((sum, row) => sum + row.vmtMin, 0);
+      const metricVmtBest = metricRows.reduce((sum, row) => sum + row.vmtBest, 0);
+      const metricVmtMax = metricRows.reduce((sum, row) => sum + row.vmtMax, 0);
+      if (metricVmtBest > 0) {
         const k = incFields[m.incField];
         const alpha = k + 0.5;
-        const beta = vmtBest;
-        const est = estimateMpiWindow(k, vmtMin, vmtBest, vmtMax);
+        const beta = metricVmtBest;
+        const est = estimateMpiWindow(k, metricVmtMin, metricVmtBest, metricVmtMax);
         return [m.key, {
           ...est,
           densityFn: x => invGammaLogDensity(x, alpha, beta),
@@ -710,6 +723,7 @@ function monthlySummaryRows(series) {
           xMax: 1 / gammaquant(alpha, beta, 0.001),
         }];
       }
+      if (vmtBest > 0) return [m.key, null];
       if (!m.humanMPI) return [m.key, null];
       const h = m.humanMPI;
       const geo = Math.sqrt(h.lo * h.hi);
@@ -791,7 +805,7 @@ function monthSeriesData() {
     const key = inc.driver + "|" + month;
     let rec = incidentsByKey[key];
     if (rec === undefined) {
-      rec = {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
+      rec = {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
              atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0,
              seriousInjury: 0, fatality: 0};
       incidentsByKey[key] = rec;
@@ -813,6 +827,7 @@ function monthSeriesData() {
       assert(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
         "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
     }
+    rec.faultKnown += Number(atFaultFrac !== null);
     rec.atFault += atFaultFrac || 0;
     rec.atFaultInjury += (atFaultFrac || 0) * Number(INJURY_SEVERITIES.has(inc.severity));
     rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
@@ -841,7 +856,7 @@ function monthSeriesData() {
     vmtMin: 0, vmtBest: 0, vmtMax: 0,
     vmtRawMin: 0, vmtRawBest: 0, vmtRawMax: 0,
     vmtCume: 0, rationale: null,
-    incidents: {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
+    incidents: {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
                 atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0,
                 seriousInjury: 0, fatality: 0},
     mpiByMetric: humanMpiByMetric,
@@ -862,7 +877,7 @@ function monthSeriesData() {
       assert(vmt.vmtMin > 0, "vmt_min must be positive", {driver, month, vmtMin: vmt.vmtMin});
       assert(vmt.vmtBest > 0, "vmt must be positive", {driver, month, vmtBest: vmt.vmtBest});
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {driver, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
+      const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       // Incident coverage: when Monthly reports are absent for the last month,
       // the observed 5-Day count is a Poisson-thinned subset.  Scaling VMT by
@@ -884,6 +899,9 @@ function monthSeriesData() {
       };
       // Pre-compute MPI estimates for each metric (consumed by MPI chart)
       entry.mpiByMetric = Object.fromEntries(METRIC_DEFS.map(m => {
+        if (m.needsFault === true && entry.incidents.faultKnown !== entry.incidents.total) {
+          return [m.key, null];
+        }
         const k = m.countFn(entry);
         const a = k + 0.5;
         return [m.key, {
@@ -1315,7 +1333,9 @@ function renderDriverMonthlyChart(globalSeries, driver) {
 
     // MPI for each variant (used in hover text) — read pre-computed values
     const mpiByKey = Object.fromEntries(
-      METRIC_DEFS.map(m => [m.key, fmtMiles(row.mpiByMetric[m.key].mpiBest)]));
+      Object.entries(row.mpiByMetric)
+        .filter(([, est]) => est !== null)
+        .map(([key, est]) => [key, fmtMiles(est.mpiBest)]));
 
     // Render one stacked bar column
     const renderBar = (xLeft, w, segments, colors, counts) => {
@@ -1568,20 +1588,22 @@ function renderMonthlyLegends() {
 function renderDateRangeControls() {
   const container = byId("date-range-controls");
   const months = fullMonthSeries.months;
+  const defaultStartIdx = defaultStartMonthIndex(months);
   const maxIdx = months.length - 1;
-  const endIdx = Math.min(
-    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
-  const startIdx = Math.min(monthRangeStart, endIdx);
-  const lo = maxIdx > 0 ? (startIdx / maxIdx) * 100 : 0;
-  const w = maxIdx > 0 ? ((endIdx - startIdx) / maxIdx) * 100 : 100;
+  const endIdx = Math.max(defaultStartIdx, Math.min(
+    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx));
+  const startIdx = Math.max(defaultStartIdx, Math.min(monthRangeStart, endIdx));
+  const sliderSpan = Math.max(1, maxIdx - defaultStartIdx);
+  const lo = ((startIdx - defaultStartIdx) / sliderSpan) * 100;
+  const w = ((endIdx - startIdx) / sliderSpan) * 100;
   const rangeLabel = startIdx === endIdx
     ? months[startIdx]
     : `${months[startIdx]} \u2014 ${months[endIdx]}`;
   // Tick mark at DEFAULT_START_MONTH (when Tesla+Zoox VMT begins)
-  const defIdx = months.indexOf(DEFAULT_START_MONTH);
+  const defIdx = defaultStartIdx;
   // Range thumb is 16px wide so its center travels from 8px to (width-8px).
   // Use calc() to map the percentage into that inset region.
-  const defFrac = defIdx >= 0 && maxIdx > 0 ? defIdx / maxIdx : -1;
+  const defFrac = defIdx >= 0 ? 0 : -1;
   container.innerHTML = `
     <div class="date-range-header">
       <span class="date-range-label">${rangeLabel}</span>
@@ -1594,9 +1616,9 @@ function renderDateRangeControls() {
         <div class="date-range-tick-label">${DEFAULT_START_MONTH}</div>
       </div>` : ""}
       <input type="range" class="date-range-input date-range-input-min" id="date-range-min"
-             min="0" max="${maxIdx}" value="${startIdx}" step="1">
+             min="${defaultStartIdx}" max="${maxIdx}" value="${startIdx}" step="1">
       <input type="range" class="date-range-input date-range-input-max" id="date-range-max"
-             min="0" max="${maxIdx}" value="${endIdx}" step="1">
+             min="${defaultStartIdx}" max="${maxIdx}" value="${endIdx}" step="1">
     </div>
   `;
   const minInput = byId("date-range-min");
@@ -1606,8 +1628,8 @@ function renderDateRangeControls() {
   function updateLive() {
     const a = Math.min(Number(minInput.value), Number(maxInput.value));
     const b = Math.max(Number(minInput.value), Number(maxInput.value));
-    const fLeft = maxIdx > 0 ? (a / maxIdx) * 100 : 0;
-    const fWidth = maxIdx > 0 ? ((b - a) / maxIdx) * 100 : 100;
+    const fLeft = ((a - defaultStartIdx) / sliderSpan) * 100;
+    const fWidth = ((b - a) / sliderSpan) * 100;
     fill.style.left = fLeft.toFixed(2) + "%";
     fill.style.width = fWidth.toFixed(2) + "%";
     label.textContent = a === b ? months[a] : `${months[a]} \u2014 ${months[b]}`;
@@ -1635,15 +1657,13 @@ function buildMonthlyViews() {
     assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {driver: row.driver});
   }
   // Resolve default start month on first build
-  if (monthRangeStart === -1) {
-    const idx = fullMonthSeries.months.indexOf(DEFAULT_START_MONTH);
-    monthRangeStart = idx >= 0 ? idx : 0;
-  }
+  const defaultStartIdx = defaultStartMonthIndex(fullMonthSeries.months);
+  if (monthRangeStart === -1) monthRangeStart = defaultStartIdx;
   const maxIdx = fullMonthSeries.months.length - 1;
-  const endIdx = Math.min(
-    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
-  const startIdx = Math.min(monthRangeStart, endIdx);
-  const isFullRange = startIdx === 0 && endIdx === maxIdx;
+  const endIdx = Math.max(defaultStartIdx, Math.min(
+    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx));
+  const startIdx = Math.max(defaultStartIdx, Math.min(monthRangeStart, endIdx));
+  const isFullRange = startIdx === defaultStartIdx && endIdx === maxIdx;
   byId("month-panel").classList.toggle("date-filtered", !isFullRange);
   activeSeries = isFullRange
     ? fullMonthSeries
@@ -1769,7 +1789,7 @@ let sortAsc = true;
 
 const SORT_COLUMNS = [
   {key: "driver",  val: r => r.driver},
-  {key: "date",     val: r => r.date},
+  {key: "date",     val: r => monthKeyFromIncidentLabel(r.date)},
   {key: "location", val: r => (r.city + ", " + r.state)},
   {key: "crashWith",val: r => r.crashWith},
   {key: "speed",    val: r => r.speed !== null ? r.speed : -1},
