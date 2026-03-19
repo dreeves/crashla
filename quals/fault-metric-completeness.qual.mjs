@@ -105,7 +105,7 @@ const checks = vm.runInContext(`
   const janWaymo = activeSeries.points.find(p => p.month === "2026-01").drivers.Waymo;
   const febWaymo = activeSeries.points.find(p => p.month === "2026-02").drivers.Waymo;
   const fullWaymo = monthlySummaryRows(activeSeries).find(r => r.driver === "Waymo");
-  const startIdx = defaultStartMonthIndex(fullMonthSeries.months);
+  const startIdx = Math.max(0, fullMonthSeries.months.indexOf(DEFAULT_START_MONTH));
   const decIdx = fullMonthSeries.months.indexOf("2025-12");
   const trimmedWaymo = monthlySummaryRows(
     sliceSeries(fullMonthSeries, startIdx, decIdx),

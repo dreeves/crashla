@@ -669,11 +669,6 @@ function includedMonthMetrics() {
   return METRIC_DEFS.filter(metric => metric.key === selectedMetricKey);
 }
 
-function defaultStartMonthIndex(months) {
-  const idx = months.indexOf(DEFAULT_START_MONTH);
-  return idx >= 0 ? idx : 0;
-}
-
 function fmtWhole(n) {
   assert(Number.isFinite(n), "fmtWhole: invalid input", {n});
   return Math.round(n).toLocaleString();
@@ -689,9 +684,8 @@ function driverMonthRows(series, driver) {
 
 function monthlySummaryRows(series) {
   return ALL_DRIVERS.map(driver => {
-    // Only use incidentObservable months (all drivers have VMT) for MPI
     const rows = series.points
-      .filter(p => p.incidentObservable && p.drivers[driver] !== null)
+      .filter(p => p.drivers[driver] !== null)
       .map(p => p.drivers[driver]);
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
@@ -735,7 +729,7 @@ function monthlySummaryRows(series) {
         xMin: Math.exp(mu - 3.09 * sigma),
         xMax: Math.exp(mu + 3.09 * sigma),
       }];
-    }).filter(([, v]) => v !== null));
+    }));
     return {
       driver,
       vmtMin, vmtBest, vmtMax,
@@ -771,6 +765,7 @@ function driverHumanStress(row, metricKey) {
   const human = metric.humanMPI;
   assert(metric !== undefined && human !== undefined, "Missing stress metric inputs", {metricKey});
   const av = row.mpiEstimates[metricKey];
+  assert(av != null, "Missing AV stress estimate", {driver: row.driver, metricKey});
   const ratioLo = av.lo / human.hi;
   const ratioHi = av.hi / human.lo;
   const verdictKey = ratioLo > 1 ? "safer" : ratioHi < 1 ? "worse" : "ambiguous";
@@ -1461,7 +1456,7 @@ function renderMpiSummaryCards(series) {
 function renderStressTestTable(series) {
   const rows = monthlySummaryRows(series).filter(r => r.vmtBest > 0);
   const body = rows.flatMap(row =>
-    METRIC_KEYS.map(metricKey => {
+    METRIC_KEYS.filter(metricKey => row.mpiEstimates[metricKey] !== null).map(metricKey => {
       const stress = driverHumanStress(row, metricKey);
       return `<tr>
         <td>${escHtml(row.driver)}</td>
@@ -1588,22 +1583,20 @@ function renderMonthlyLegends() {
 function renderDateRangeControls() {
   const container = byId("date-range-controls");
   const months = fullMonthSeries.months;
-  const defaultStartIdx = defaultStartMonthIndex(months);
   const maxIdx = months.length - 1;
-  const endIdx = Math.max(defaultStartIdx, Math.min(
-    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx));
-  const startIdx = Math.max(defaultStartIdx, Math.min(monthRangeStart, endIdx));
-  const sliderSpan = Math.max(1, maxIdx - defaultStartIdx);
-  const lo = ((startIdx - defaultStartIdx) / sliderSpan) * 100;
-  const w = ((endIdx - startIdx) / sliderSpan) * 100;
+  const endIdx = Math.min(
+    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
+  const startIdx = Math.min(monthRangeStart, endIdx);
+  const lo = maxIdx > 0 ? (startIdx / maxIdx) * 100 : 0;
+  const w = maxIdx > 0 ? ((endIdx - startIdx) / maxIdx) * 100 : 100;
   const rangeLabel = startIdx === endIdx
     ? months[startIdx]
     : `${months[startIdx]} \u2014 ${months[endIdx]}`;
   // Tick mark at DEFAULT_START_MONTH (when Tesla+Zoox VMT begins)
-  const defIdx = defaultStartIdx;
+  const defIdx = months.indexOf(DEFAULT_START_MONTH);
   // Range thumb is 16px wide so its center travels from 8px to (width-8px).
   // Use calc() to map the percentage into that inset region.
-  const defFrac = defIdx >= 0 ? 0 : -1;
+  const defFrac = defIdx >= 0 && maxIdx > 0 ? defIdx / maxIdx : -1;
   container.innerHTML = `
     <div class="date-range-header">
       <span class="date-range-label">${rangeLabel}</span>
@@ -1616,9 +1609,9 @@ function renderDateRangeControls() {
         <div class="date-range-tick-label">${DEFAULT_START_MONTH}</div>
       </div>` : ""}
       <input type="range" class="date-range-input date-range-input-min" id="date-range-min"
-             min="${defaultStartIdx}" max="${maxIdx}" value="${startIdx}" step="1">
+             min="0" max="${maxIdx}" value="${startIdx}" step="1">
       <input type="range" class="date-range-input date-range-input-max" id="date-range-max"
-             min="${defaultStartIdx}" max="${maxIdx}" value="${endIdx}" step="1">
+             min="0" max="${maxIdx}" value="${endIdx}" step="1">
     </div>
   `;
   const minInput = byId("date-range-min");
@@ -1628,8 +1621,8 @@ function renderDateRangeControls() {
   function updateLive() {
     const a = Math.min(Number(minInput.value), Number(maxInput.value));
     const b = Math.max(Number(minInput.value), Number(maxInput.value));
-    const fLeft = ((a - defaultStartIdx) / sliderSpan) * 100;
-    const fWidth = ((b - a) / sliderSpan) * 100;
+    const fLeft = maxIdx > 0 ? (a / maxIdx) * 100 : 0;
+    const fWidth = maxIdx > 0 ? ((b - a) / maxIdx) * 100 : 100;
     fill.style.left = fLeft.toFixed(2) + "%";
     fill.style.width = fWidth.toFixed(2) + "%";
     label.textContent = a === b ? months[a] : `${months[a]} \u2014 ${months[b]}`;
@@ -1657,13 +1650,15 @@ function buildMonthlyViews() {
     assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {driver: row.driver});
   }
   // Resolve default start month on first build
-  const defaultStartIdx = defaultStartMonthIndex(fullMonthSeries.months);
-  if (monthRangeStart === -1) monthRangeStart = defaultStartIdx;
+  if (monthRangeStart === -1) {
+    const idx = fullMonthSeries.months.indexOf(DEFAULT_START_MONTH);
+    monthRangeStart = idx >= 0 ? idx : 0;
+  }
   const maxIdx = fullMonthSeries.months.length - 1;
-  const endIdx = Math.max(defaultStartIdx, Math.min(
-    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx));
-  const startIdx = Math.max(defaultStartIdx, Math.min(monthRangeStart, endIdx));
-  const isFullRange = startIdx === defaultStartIdx && endIdx === maxIdx;
+  const endIdx = Math.min(
+    monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
+  const startIdx = Math.min(monthRangeStart, endIdx);
+  const isFullRange = startIdx === 0 && endIdx === maxIdx;
   byId("month-panel").classList.toggle("date-filtered", !isFullRange);
   activeSeries = isFullRange
     ? fullMonthSeries

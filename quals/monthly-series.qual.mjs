@@ -92,7 +92,7 @@ const metrics = vm.runInContext(`
     airbagByDriverMonth: Object.fromEntries(
       ADS_DRIVERS.map(driver => [
         driver,
-        series.points.filter(p => p.incidentObservable && p.drivers[driver] !== null).map(p => p.drivers[driver].incidents.airbag),
+        series.points.filter(p => p.drivers[driver] !== null).map(p => p.drivers[driver].incidents.airbag),
       ]),
     ),
     summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
@@ -175,12 +175,12 @@ Expectata: summary rows include overall, nonstationary, and nonstationary-roadwa
 Resultata: Tesla summary was ${JSON.stringify(summaryByDriver.Tesla)}.`,
 );
 assert.ok(
-  summaryByDriver.Waymo.incAirbag >= 15 &&
-    summaryByDriver.Waymo.incAirbag <= 30 &&
+  summaryByDriver.Waymo.incAirbag >= 30 &&
+    summaryByDriver.Waymo.incAirbag <= 45 &&
     summaryByDriver.Tesla.incAirbag === 0 &&
     summaryByDriver.Zoox.incAirbag === 0,
   `Replicata: compute airbag deployment incident counts per driver.
-Expectata: Waymo has 15\u201330 airbag incidents; Tesla and Zoox have 0 (no airbag deployments in current data).
+Expectata: Waymo has 30\u201345 airbag incidents (all months with VMT); Tesla and Zoox have 0 (no airbag deployments in current data).
 Resultata: Waymo=${summaryByDriver.Waymo.incAirbag} Tesla=${summaryByDriver.Tesla.incAirbag} Zoox=${summaryByDriver.Zoox.incAirbag}.`,
 );
 
