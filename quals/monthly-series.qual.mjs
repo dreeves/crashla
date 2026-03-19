@@ -308,12 +308,26 @@ Resultata: Humans color not found in default chart render.`,
 const renderedAll = plain.chartMpiAll;
 assert.ok(
   renderedAll.includes("<svg") &&
+    renderedAll.includes("<h3>Miles per incident over time</h3>") &&
     renderedAll.includes("month-mpi-all-line") &&
     renderedAll.includes("stroke-width:2") &&
     renderedAll.includes("Miles Per Incident (MPI)"),
   `Replicata: render cross-driver miles-per-incident chart.
-Expectata: chart includes all-driver line traces with standard stroke-width, month labels, and the miles-per-incident axis.
+Expectata: chart includes the selected-metric title, all-driver line traces with standard stroke-width, month labels, and the miles-per-incident axis.
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
+);
+
+const airbagTitleChart = vm.runInContext(`
+  (() => {
+    selectedMetricKey = "airbag";
+    return renderAllCompaniesMpiChart(monthSeriesData());
+  })()
+`, ctx);
+assert.ok(
+  airbagTitleChart.includes("<h3>Miles per airbag-deploying crash over time</h3>"),
+  `Replicata: render the cross-driver chart with the airbag metric selected.
+Expectata: the chart title reuses the exact selected metric label from the radio buttons.
+Resultata: rendered snippets were ${JSON.stringify(airbagTitleChart.slice(0, 200))}.`,
 );
 
 assert.ok(

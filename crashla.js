@@ -669,6 +669,20 @@ function includedMonthMetrics() {
   return METRIC_DEFS.filter(metric => metric.key === selectedMetricKey);
 }
 
+function selectedMonthMetric() {
+  const metric = METRIC_BY_KEY[selectedMetricKey];
+  assert(metric !== undefined, "Missing selected metric", {selectedMetricKey});
+  return metric;
+}
+
+function seriesMonthBounds(series) {
+  assert(series.months.length > 0, "Missing series months");
+  return {
+    start: series.months[0],
+    end: series.months[series.months.length - 1],
+  };
+}
+
 function fmtWhole(n) {
   assert(Number.isFinite(n), "fmtWhole: invalid input", {n});
   return Math.round(n).toLocaleString();
@@ -966,6 +980,7 @@ function drawSingleMonthAxes(
 }
 
 function renderAllCompaniesMpiChart(series) {
+  const metric = selectedMonthMetric();
   const svgW = 900;
   const svgH = 520;
   const mLeft = 68;
@@ -1126,6 +1141,8 @@ function renderAllCompaniesMpiChart(series) {
   }).join("");
 
   return `
+    <!-- TO-DO: Human vet chart titles below. -->
+    <h3>${metric.label} over time</h3>
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="mpi-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${drawSingleMonthAxes(
@@ -1140,6 +1157,8 @@ function renderAllCompaniesMpiChart(series) {
 }
 
 function renderDistributionChart(series) {
+  const metric = selectedMonthMetric();
+  const {start, end} = seriesMonthBounds(series);
   const summaryRows = monthlySummaryRows(series);
   const curves = [];
   for (const row of summaryRows) {
@@ -1245,6 +1264,8 @@ function renderDistributionChart(series) {
   }).join("");
 
   return `
+    <!-- TO-DO: Human vet chart titles below. -->
+    <h3>${metric.label} using data from ${start} to ${end}</h3>
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}

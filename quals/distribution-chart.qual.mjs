@@ -242,6 +242,53 @@ Expectata: SVG includes gold (fill:#c9a800) human benchmark log-normal curves.
 Resultata: human curve color not found in output.`,
 );
 
+const seriousTitleChart = vm.runInContext(`
+(() => {
+  selectedMetricKey = "seriousInjury";
+  return {
+    start: activeSeries.months[0],
+    end: activeSeries.months[activeSeries.months.length - 1],
+    html: renderDistributionChart(activeSeries),
+  };
+})()
+`, ctx);
+
+assert.ok(
+  seriousTitleChart.html.includes(
+    `<h3>Miles per serious injury crash using data from ${seriousTitleChart.start} to ${seriousTitleChart.end}</h3>`
+  ),
+  `Replicata: render the overall uncertainty chart with the serious-injury metric selected.
+Expectata: the chart title reuses the exact selected metric label and active date window.
+Resultata: rendered snippets were ${JSON.stringify(seriousTitleChart.html.slice(0, 200))}.`,
+);
+
+const windowEffect = vm.runInContext(`
+(() => {
+  selectedMetricKey = "all";
+  const full = monthSeriesData();
+  const sliced = sliceSeries(full, 0, 5);
+  const fullWaymo = monthlySummaryRows(full).find(row => row.driver === "Waymo").mpiEstimates.all.median;
+  const slicedWaymo = monthlySummaryRows(sliced).find(row => row.driver === "Waymo").mpiEstimates.all.median;
+  return {
+    fullWaymo,
+    slicedWaymo,
+    html: renderDistributionChart(sliced),
+    start: sliced.months[0],
+    end: sliced.months[sliced.months.length - 1],
+  };
+})()
+`, ctx);
+
+assert.ok(
+  windowEffect.fullWaymo !== windowEffect.slicedWaymo &&
+    windowEffect.html.includes(
+      `<h3>Miles per incident using data from ${windowEffect.start} to ${windowEffect.end}</h3>`
+    ),
+  `Replicata: compare the all-incident distribution inputs for the full month window vs a sliced month window.
+Expectata: narrowing the month window changes the bell-curve inputs and the rendered title reflects the sliced date range.
+Resultata: fullWaymo=${windowEffect.fullWaymo}, slicedWaymo=${windowEffect.slicedWaymo}, html=${JSON.stringify(windowEffect.html.slice(0, 200))}.`,
+);
+
 // Edge case: no drivers enabled → empty string
 const emptyChart = vm.runInContext(`
 (() => {
