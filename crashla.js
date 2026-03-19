@@ -1572,46 +1572,46 @@ function renderDateRangeControls() {
   const endIdx = Math.min(
     monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
   const startIdx = Math.min(monthRangeStart, endIdx);
-  const isFullRange = startIdx === 0 && endIdx === maxIdx;
   const lo = maxIdx > 0 ? (startIdx / maxIdx) * 100 : 0;
   const w = maxIdx > 0 ? ((endIdx - startIdx) / maxIdx) * 100 : 100;
   const rangeLabel = startIdx === endIdx
     ? months[startIdx]
     : `${months[startIdx]} \u2014 ${months[endIdx]}`;
+  // Tick mark at DEFAULT_START_MONTH (when Tesla+Zoox VMT begins)
+  const defIdx = months.indexOf(DEFAULT_START_MONTH);
+  const defPct = defIdx >= 0 && maxIdx > 0 ? (defIdx / maxIdx) * 100 : -1;
   container.innerHTML = `
     <div class="date-range-header">
       <span class="date-range-label">${rangeLabel}</span>
-      <button class="date-range-reset" id="date-range-reset" 
-              style="${isFullRange ? "display:none" : ""}">Reset dates</button>
     </div>
     <div class="date-range-slider">
       <div class="date-range-track"></div>
       <div class="date-range-fill" id="date-range-fill" style="left:${lo.toFixed(2)}%;width:${w.toFixed(2)}%"></div>
+      ${defPct >= 0 ? `<div class="date-range-tick" style="left:${defPct.toFixed(2)}%">
+        <div class="date-range-tick-line"></div>
+        <div class="date-range-tick-label">${DEFAULT_START_MONTH}</div>
+      </div>` : ""}
       <input type="range" class="date-range-input date-range-input-min" id="date-range-min"
              min="0" max="${maxIdx}" value="${startIdx}" step="1">
       <input type="range" class="date-range-input date-range-input-max" id="date-range-max"
              min="0" max="${maxIdx}" value="${endIdx}" step="1">
     </div>
-    <div class="date-range-ticks">
-      ${months.length <= 12
-        ? months.map(m => `<span>${m}</span>`).join("")
-        : months.filter((_, i) => i === 0 || i === months.length - 1 || i === Math.round(months.length / 2))
-            .map(m => `<span>${m}</span>`).join("")}
-    </div>
   `;
   const minInput = byId("date-range-min");
   const maxInput = byId("date-range-max");
   const fill = byId("date-range-fill");
-  function updateFill() {
+  const label = container.querySelector(".date-range-label");
+  function updateLive() {
     const a = Math.min(Number(minInput.value), Number(maxInput.value));
     const b = Math.max(Number(minInput.value), Number(maxInput.value));
     const fLeft = maxIdx > 0 ? (a / maxIdx) * 100 : 0;
     const fWidth = maxIdx > 0 ? ((b - a) / maxIdx) * 100 : 100;
     fill.style.left = fLeft.toFixed(2) + "%";
     fill.style.width = fWidth.toFixed(2) + "%";
+    label.textContent = a === b ? months[a] : `${months[a]} \u2014 ${months[b]}`;
   }
-  minInput.addEventListener("input", updateFill);
-  maxInput.addEventListener("input", updateFill);
+  minInput.addEventListener("input", updateLive);
+  maxInput.addEventListener("input", updateLive);
   function onRangeChange() {
     const a = Number(minInput.value);
     const b = Number(maxInput.value);
@@ -1621,12 +1621,6 @@ function renderDateRangeControls() {
   }
   minInput.addEventListener("change", onRangeChange);
   maxInput.addEventListener("change", onRangeChange);
-  const resetBtn = byId("date-range-reset");
-  resetBtn.addEventListener("click", () => {
-    monthRangeStart = -1; // resolve to DEFAULT_START_MONTH
-    monthRangeEnd = Infinity;
-    buildMonthlyViews();
-  });
 }
 
 function buildMonthlyViews() {

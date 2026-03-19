@@ -179,22 +179,10 @@ tr:hover { background: #f8f8ff; }
   border-radius: 3px;
   color: #1a4a8a;
 }
-.date-range-reset {
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
-  border: 1px solid #b0b8c8;
-  border-radius: 3px;
-  background: #fff;
-  color: #5b6475;
-  cursor: pointer;
-}
-.date-range-reset:hover {
-  background: #eef1f6;
-  border-color: #8090a8;
-}
 .date-range-slider {
   position: relative;
   height: 24px;
+  margin-bottom: 20px;
 }
 .date-range-track {
   position: absolute;
@@ -262,13 +250,25 @@ tr:hover { background: #f8f8ff; }
   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
   cursor: grab;
 }
-.date-range-ticks {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 2px;
+.date-range-tick {
+  position: absolute;
+  top: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  pointer-events: none;
+}
+.date-range-tick-line {
+  width: 1px;
+  height: 14px;
+  background: #5b6475;
+  margin: -7px auto 0;
+}
+.date-range-tick-label {
   font-size: 10px;
   color: #5b6475;
-  user-select: none;
+  text-align: center;
+  margin-top: 1px;
+  white-space: nowrap;
 }
 
 .month-chart {
