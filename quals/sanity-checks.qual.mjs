@@ -215,13 +215,13 @@ Expectata: table has Low MPI, High MPI, and Derivation columns.
 Resultata: expected columns not found.`);
 
 // --- All three drivers appear across tables ---
-for (const co of ["Tesla", "Waymo", "Zoox"]) {
-  const count = (html.match(new RegExp(`>${co}<`, "g")) || []).length;
+for (const driver of ["Tesla", "Waymo", "Zoox"]) {
+  const count = (html.match(new RegExp(`>${driver}<`, "g")) || []).length;
   assert.ok(
     count >= 8,
-    `Replicata: check ${co} presence across sanity check tables.
-Expectata: ${co} appears in at least 8 table cells (one per section with driver rows).
-Resultata: ${co} appeared ${count} times.`);
+    `Replicata: check ${driver} presence across sanity check tables.
+Expectata: ${driver} appears in at least 8 table cells (one per section with driver rows).
+Resultata: ${driver} appeared ${count} times.`);
 }
 
 // --- Verify subsection count ---

@@ -192,7 +192,7 @@ incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
 selectedMetricKey = "all";
-for (const c of ADS_DRIVERS) monthDriverEnabled[c] = true;
+for (const d of ADS_DRIVERS) monthDriverEnabled[d] = true;
 activeSeries = monthSeriesData();
 `, ctx);
 
@@ -292,9 +292,9 @@ Resultata: fullWaymo=${windowEffect.fullWaymo}, slicedWaymo=${windowEffect.slice
 // Edge case: no drivers enabled → empty string
 const emptyChart = vm.runInContext(`
 (() => {
-  for (const c of ALL_DRIVERS) monthDriverEnabled[c] = false;
+  for (const d of ALL_DRIVERS) monthDriverEnabled[d] = false;
   const result = renderDistributionChart(activeSeries);
-  for (const c of ALL_DRIVERS) monthDriverEnabled[c] = true;
+  for (const d of ALL_DRIVERS) monthDriverEnabled[d] = true;
   return result;
 })()
 `, ctx);

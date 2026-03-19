@@ -237,19 +237,19 @@ const paxTotals = extractTotals(paxSection, 4);   // Total is 5th column (idx 4)
 const sevTotals = extractTotals(sevSection, 5);    // Total is 6th column (idx 5)
 const cbiTotals = extractTotals(cbiSection, 3);    // Total is 4th column (idx 3)
 
-for (const co of Object.keys(paxTotals)) {
-  if (sevTotals[co] !== undefined) {
+for (const driver of Object.keys(paxTotals)) {
+  if (sevTotals[driver] !== undefined) {
     assert.strictEqual(
-      paxTotals[co], sevTotals[co],
-      `Replicata: ${co} incident total consistent across tables.
-Expectata: passenger total (${paxTotals[co]}) = severity total (${sevTotals[co]}).
+      paxTotals[driver], sevTotals[driver],
+      `Replicata: ${driver} incident total consistent across tables.
+Expectata: passenger total (${paxTotals[driver]}) = severity total (${sevTotals[driver]}).
 Resultata: they differ.`);
   }
-  if (cbiTotals[co] !== undefined) {
+  if (cbiTotals[driver] !== undefined) {
     assert.strictEqual(
-      paxTotals[co], cbiTotals[co],
-      `Replicata: ${co} incident total consistent across tables.
-Expectata: passenger total (${paxTotals[co]}) = CBI total (${cbiTotals[co]}).
+      paxTotals[driver], cbiTotals[driver],
+      `Replicata: ${driver} incident total consistent across tables.
+Expectata: passenger total (${paxTotals[driver]}) = CBI total (${cbiTotals[driver]}).
 Resultata: they differ.`);
   }
 }

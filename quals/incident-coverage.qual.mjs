@@ -65,8 +65,8 @@ const allSeriesData = vm.runInContext(`
   (() => {
     const series = monthSeriesData();
     return series.points.flatMap(p =>
-      Object.entries(p.drivers).filter(([, d]) => d !== null && d.vmtBest > 0).map(([co, d]) => ({
-        driver: co, month: p.month,
+      Object.entries(p.drivers).filter(([, d]) => d !== null && d.vmtBest > 0).map(([name, d]) => ({
+        driver: name, month: p.month,
         vmtMin: d.vmtMin, vmtBest: d.vmtBest, vmtMax: d.vmtMax,
       }))
     );

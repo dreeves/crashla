@@ -481,8 +481,8 @@ def incident_coverage(nhtsa_rows, last_month):
     # Find last complete reference month per driver
     ref_month = {}  # driver -> (month, five, total)
     for driver in drivers:
-        for (co, mo), c in sorted(counts.items(), reverse=True):
-            if co != driver or mo >= last_month:
+        for (drv, mo), c in sorted(counts.items(), reverse=True):
+            if drv != driver or mo >= last_month:
                 continue
             if c["total"] > c["five"] and c["total"] >= 3:
                 ref_month[driver] = (mo, c["five"], c["total"])
@@ -492,9 +492,9 @@ def incident_coverage(nhtsa_rows, last_month):
     # reports.  Some drivers (e.g., Tesla) file Monthly reports early, so
     # their last-month data may already be approximately complete.
     last_month_has_monthly = {}
-    for (co, mo), c in counts.items():
+    for (drv, mo), c in counts.items():
         if mo == last_month:
-            last_month_has_monthly[co] = c["total"] > c["five"]
+            last_month_has_monthly[drv] = c["total"] > c["five"]
 
     result = {}
     for driver in drivers:

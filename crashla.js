@@ -367,37 +367,6 @@ const DRIVER_COLORS = {
   Waymo: "#2060c0",
   Zoox: "#2a8f57",
 };
-const SPEED_BINS = ["unknown", "31+", "11-30", "1-10", "0"];
-const SPEED_LABELS = {
-  "31+": "31+ mph",
-  "11-30": "11-30 mph",
-  "1-10": "1-10 mph",
-  unknown: "unknown",
-  "0": "0 mph",
-};
-const SPEED_BIN_COLORS = {
-  Tesla: {
-    unknown: "#383c46",
-    "31+": "#d13b2d",
-    "11-30": "#e06f66",
-    "1-10": "#efaaa4",
-    "0": "#d9d9d9",
-  },
-  Waymo: {
-    unknown: "#383c46",
-    "31+": "#2060c0",
-    "11-30": "#5a87d1",
-    "1-10": "#99b4e5",
-    "0": "#d9d9d9",
-  },
-  Zoox: {
-    unknown: "#383c46",
-    "31+": "#2a8f57",
-    "11-30": "#5ead7e",
-    "1-10": "#98ccb0",
-    "0": "#d9d9d9",
-  },
-};
 // Movement-based partition of total incidents (sums to total)
 const MOVEMENT_SEGMENTS = [
   {key: "roadwayNonstationary", label: "Non-parking-lot nonstationary", mpiKey: "roadwayNonstationary"},
@@ -453,7 +422,6 @@ const MONTH_TOKENS = {
   JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6,
   JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12,
 };
-const YM_RE = /^(\d{4})-(\d{2})$/;
 
 // Count incidents per driver from loaded data
 function countByDriver(rows = incidents) {
@@ -922,7 +890,7 @@ function monthSeriesData() {
       drivers[driver] = entry;
     }
     // incidentObservable: all ADS drivers have VMT data = the NHTSA incident window
-    const incidentObservable = ADS_DRIVERS.every(co => drivers[co] !== null);
+    const incidentObservable = ADS_DRIVERS.every(d => drivers[d] !== null);
     points.push({month, drivers, incidentObservable});
   }
   return {months, points};
@@ -1937,13 +1905,13 @@ function buildBrowser() {
   const filterDiv = byId("filters");
   filterDiv.replaceChildren();
   const allDrivers = ["All", ...ADS_DRIVERS];
-  for (const c of allDrivers) {
+  for (const label of allDrivers) {
     const btn = document.createElement("button");
-    const n = c === "All" ? rows.length : (counts[c] || 0);
-    btn.textContent = `${c} (${n})`;
-    btn.className = c === activeFilter ? "active" : "";
+    const n = label === "All" ? rows.length : (counts[label] || 0);
+    btn.textContent = `${label} (${n})`;
+    btn.className = label === activeFilter ? "active" : "";
     btn.addEventListener("click", () => {
-      activeFilter = c;
+      activeFilter = label;
       buildBrowser();
     });
     filterDiv.appendChild(btn);
@@ -2079,14 +2047,14 @@ function buildSanityChecks() {
 
   // --- 1. Passenger presence (existing) ---
   const paxTableRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coRows = rows.filter(r => r.driver === co);
-    const n = coRows.length;
+  for (const driver of ADS_DRIVERS) {
+    const driverRows = rows.filter(r => r.driver === driver);
+    const n = driverRows.length;
     if (n === 0) continue;
-    const withPax = coRows.filter(r =>
+    const withPax = driverRows.filter(r =>
       r.belted !== "Subject Vehicle - No Passenger In Vehicle" &&
       r.belted !== "Unknown" && r.belted !== "").length;
-    const noPax = coRows.filter(r =>
+    const noPax = driverRows.filter(r =>
       r.belted === "Subject Vehicle - No Passenger In Vehicle").length;
     const unk = n - withPax - noPax;
     // Range: low assumes all unknowns had no passenger, high assumes all did
@@ -2096,7 +2064,7 @@ function buildSanityChecks() {
       ? `${pctLo}%`
       : `${pctLo}\u2013${pctHi}%`;
     paxTableRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${withPax}</td>
       <td>${noPax}</td>
       <td>${unk}</td>
@@ -2130,14 +2098,14 @@ If the passenger-seat safety monitor (present in almost all Tesla robotaxi rides
 
   // --- 2. Narrative redaction (CBI) ---
   const cbiTableRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coRows = rows.filter(r => r.driver === co);
-    const n = coRows.length;
+  for (const driver of ADS_DRIVERS) {
+    const driverRows = rows.filter(r => r.driver === driver);
+    const n = driverRows.length;
     if (n === 0) continue;
-    const cbiCount = coRows.filter(r => r.narrativeCbi === "Y").length;
+    const cbiCount = driverRows.filter(r => r.narrativeCbi === "Y").length;
     const pct = Math.round(100 * cbiCount / n);
     cbiTableRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${cbiCount}</td>
       <td>${n - cbiCount}</td>
       <td>${n}</td>
@@ -2165,14 +2133,14 @@ It makes it hard to estimate fault, so we've tried to guess based on data we do 
 
   // --- 3. Fault model agreement ---
   const faultAgreeRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coRows = rows.filter(r => r.driver === co && r.fault !== null);
-    const n = coRows.length;
+  for (const driver of ADS_DRIVERS) {
+    const driverRows = rows.filter(r => r.driver === driver && r.fault !== null);
+    const n = driverRows.length;
     if (n === 0) continue;
     let sumMaxSpread = 0;
     let sumVariance = 0;
     let closeAgree = 0;
-    for (const r of coRows) {
+    for (const r of driverRows) {
       const vals = [r.fault.claude, r.fault.codex, r.fault.gemini].filter(v => v !== null);
       if (vals.length < 2) { closeAgree++; continue; }
       const spread = Math.max(...vals) - Math.min(...vals);
@@ -2184,7 +2152,7 @@ It makes it hard to estimate fault, so we've tried to guess based on data we do 
     const rmsd = Math.sqrt(sumVariance / n).toFixed(2);
     const agreePct = Math.round(100 * closeAgree / n);
     faultAgreeRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${avgSpread}</td>
       <td>${rmsd}</td>
       <td>${agreePct}%</td>
@@ -2217,21 +2185,21 @@ Sensor failures do count as the fault of the AV.
 
   // --- 4. Severity breakdown ---
   const sevTableRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coRows = rows.filter(r => r.driver === co);
-    const n = coRows.length;
+  for (const driver of ADS_DRIVERS) {
+    const driverRows = rows.filter(r => r.driver === driver);
+    const n = driverRows.length;
     if (n === 0) continue;
-    const propDmg = coRows.filter(r =>
+    const propDmg = driverRows.filter(r =>
       !INJURY_SEVERITIES.has(r.severity)).length;
-    const injOnly = coRows.filter(r =>
+    const injOnly = driverRows.filter(r =>
       INJURY_SEVERITIES.has(r.severity) &&
       !HOSPITALIZATION_SEVERITIES.has(r.severity)).length;
-    const hospOnly = coRows.filter(r =>
+    const hospOnly = driverRows.filter(r =>
       HOSPITALIZATION_SEVERITIES.has(r.severity) &&
       r.severity !== "Fatality").length;
-    const fatal = coRows.filter(r => r.severity === "Fatality").length;
+    const fatal = driverRows.filter(r => r.severity === "Fatality").length;
     sevTableRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${propDmg} (${Math.round(100 * propDmg / n)}%)</td>
       <td>${injOnly} (${Math.round(100 * injOnly / n)}%)</td>
       <td>${hospOnly} (${Math.round(100 * hospOnly / n)}%)</td>
@@ -2260,15 +2228,15 @@ Sensor failures do count as the fault of the AV.
   // Restrict to incidentObservable months for like-for-like comparison
   const obsMonths = new Set(series.points.filter(p => p.incidentObservable).map(p => p.month));
   const vmtUncRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coVmt = vmt.filter(r => r.driver === co && obsMonths.has(r.month));
-    if (coVmt.length === 0) continue;
-    const totalMin = coVmt.reduce((s, r) => s + r.vmtMin * r.coverage, 0);
-    const totalBest = coVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
-    const totalMax = coVmt.reduce((s, r) => s + r.vmtMax * r.coverage, 0);
+  for (const driver of ADS_DRIVERS) {
+    const driverVmt = vmt.filter(r => r.driver === driver && obsMonths.has(r.month));
+    if (driverVmt.length === 0) continue;
+    const totalMin = driverVmt.reduce((s, r) => s + r.vmtMin * r.coverage, 0);
+    const totalBest = driverVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
+    const totalMax = driverVmt.reduce((s, r) => s + r.vmtMax * r.coverage, 0);
     const ratio = (totalMax / totalMin).toFixed(1);
     vmtUncRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${fmtMiles(totalMin)}</td>
       <td>${fmtMiles(totalBest)}</td>
       <td>${fmtMiles(totalMax)}</td>
@@ -2298,12 +2266,12 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
   // where λ̂ = Σk_i / Σm_i is the MLE rate and m_i is monthly VMT.
   // Under the Poisson model, X²/(n-1) ≈ 1.
   const dispRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coVmt = vmt.filter(r => r.driver === co && obsMonths.has(r.month));
+  for (const driver of ADS_DRIVERS) {
+    const driverVmt = vmt.filter(r => r.driver === driver && obsMonths.has(r.month));
     const monthData = [];
-    for (const vmtRow of coVmt) {
+    for (const vmtRow of driverVmt) {
       const count = rows.filter(r =>
-        r.driver === co &&
+        r.driver === driver &&
         monthKeyFromIncidentLabel(r.date) === vmtRow.month).length;
       // Use effective VMT (calendar coverage * incident reporting completeness)
       // to match the MPI calculation's Poisson rate estimation
@@ -2329,7 +2297,7 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       : dispIdx < 5 ? "mildly overdispersed"
       : "overdispersed";
     dispRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${rates.join(", ")}</td>
       <td>${(lambdaHat * 1e6).toFixed(1)}</td>
       <td>${dispIdx.toFixed(2)}</td>
@@ -2357,16 +2325,16 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
 
   // --- 7. Reporting threshold asymmetry ---
   const rptRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coRows = rows.filter(r => r.driver === co);
-    const n = coRows.length;
+  for (const driver of ADS_DRIVERS) {
+    const driverRows = rows.filter(r => r.driver === driver);
+    const n = driverRows.length;
     if (n === 0) continue;
-    const zeroMph = coRows.filter(r => r.speed === 0).length;
-    const stopped = coRows.filter(r => r.svMovement === "Stopped").length;
-    const propDmgOnly = coRows.filter(r =>
+    const zeroMph = driverRows.filter(r => r.speed === 0).length;
+    const stopped = driverRows.filter(r => r.svMovement === "Stopped").length;
+    const propDmgOnly = driverRows.filter(r =>
       !INJURY_SEVERITIES.has(r.severity)).length;
     rptRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${zeroMph} (${Math.round(100 * zeroMph / n)}%)</td>
       <td>${stopped} (${Math.round(100 * stopped / n)}%)</td>
       <td>${propDmgOnly} (${Math.round(100 * propDmgOnly / n)}%)</td>
@@ -2395,24 +2363,24 @@ The "nonstationary" MPI metric filters these out.
 
   // --- 8. Geographic scope ---
   const geoByDriver = {};
-  for (const co of ADS_DRIVERS) {
-    const coRows = rows.filter(r => r.driver === co);
+  for (const driver of ADS_DRIVERS) {
+    const driverRows = rows.filter(r => r.driver === driver);
     const cities = {};
-    for (const r of coRows) {
+    for (const r of driverRows) {
       const loc = r.city && r.state ? (r.city + ", " + r.state) : "Unknown";
       cities[loc] = (cities[loc] || 0) + 1;
     }
     const sorted = Object.entries(cities).sort((a, b) => b[1] - a[1]);
-    geoByDriver[co] = sorted;
+    geoByDriver[driver] = sorted;
   }
   const geoRows = [];
-  for (const co of ADS_DRIVERS) {
-    const locs = geoByDriver[co];
+  for (const driver of ADS_DRIVERS) {
+    const locs = geoByDriver[driver];
     if (locs.length === 0) continue;
     const cityList = locs.map(([loc, cnt]) =>
       `${escHtml(loc)}\u00a0(${cnt})`).join(", ");
     geoRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${locs.length}</td>
       <td>${cityList}</td>
     </tr>`);
@@ -2434,14 +2402,14 @@ Maybe that affects AVs too?
 
   // --- 9. VMT sources ---
   const vmtSrcRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coVmt = vmt.filter(r => r.driver === co);
-    if (coVmt.length === 0) continue;
+  for (const driver of ADS_DRIVERS) {
+    const driverVmt = vmt.filter(r => r.driver === driver);
+    if (driverVmt.length === 0) continue;
     // Use the rationale from the first row (they're all the same per driver)
-    const rationales = [...new Set(coVmt.map(r => r.rationale).filter(Boolean))];
+    const rationales = [...new Set(driverVmt.map(r => r.rationale).filter(Boolean))];
     const ratStr = rationales.map(r => escHtml(r)).join("<br>");
     vmtSrcRows.push(`<tr>
-      <td>${escHtml(co)}</td>
+      <td>${escHtml(driver)}</td>
       <td>${ratStr}</td>
     </tr>`);
   }
@@ -2461,19 +2429,19 @@ These are the denominators in every miles per incident (MPI) calculation, so any
 
   // --- 10. Incident coverage for partial months ---
   const icRows = [];
-  for (const co of ADS_DRIVERS) {
-    const coVmt = vmt.filter(r => r.driver === co);
-    const partial = coVmt.filter(r => r.incCov < 1);
+  for (const driver of ADS_DRIVERS) {
+    const driverVmt = vmt.filter(r => r.driver === driver);
+    const partial = driverVmt.filter(r => r.incCov < 1);
     if (partial.length === 0) {
       icRows.push(`<tr>
-        <td>${escHtml(co)}</td>
+        <td>${escHtml(driver)}</td>
         <td colspan="4">All months have full incident coverage</td>
       </tr>`);
       continue;
     }
     for (const row of partial) {
       icRows.push(`<tr>
-        <td>${escHtml(co)}</td>
+        <td>${escHtml(driver)}</td>
         <td>${escHtml(row.month)}</td>
         <td>${(row.incCov * 100).toFixed(1)}%</td>
         <td>${(row.incCovMin * 100).toFixed(1)}%\u2013${(row.incCovMax * 100).toFixed(1)}%</td>
