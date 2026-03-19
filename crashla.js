@@ -1579,7 +1579,9 @@ function renderDateRangeControls() {
     : `${months[startIdx]} \u2014 ${months[endIdx]}`;
   // Tick mark at DEFAULT_START_MONTH (when Tesla+Zoox VMT begins)
   const defIdx = months.indexOf(DEFAULT_START_MONTH);
-  const defPct = defIdx >= 0 && maxIdx > 0 ? (defIdx / maxIdx) * 100 : -1;
+  // Range thumb is 16px wide so its center travels from 8px to (width-8px).
+  // Use calc() to map the percentage into that inset region.
+  const defFrac = defIdx >= 0 && maxIdx > 0 ? defIdx / maxIdx : -1;
   container.innerHTML = `
     <div class="date-range-header">
       <span class="date-range-label">${rangeLabel}</span>
@@ -1587,7 +1589,7 @@ function renderDateRangeControls() {
     <div class="date-range-slider">
       <div class="date-range-track"></div>
       <div class="date-range-fill" id="date-range-fill" style="left:${lo.toFixed(2)}%;width:${w.toFixed(2)}%"></div>
-      ${defPct >= 0 ? `<div class="date-range-tick" style="left:${defPct.toFixed(2)}%">
+      ${defFrac >= 0 ? `<div class="date-range-tick" style="left:calc(8px + (100% - 16px) * ${defFrac.toFixed(4)})">
         <div class="date-range-tick-line"></div>
         <div class="date-range-tick-label">${DEFAULT_START_MONTH}</div>
       </div>` : ""}
