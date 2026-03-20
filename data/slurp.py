@@ -711,9 +711,18 @@ def main():
     # Filter to driverless incidents only
     none_rows = [r for r in rows if r["Driver / Operator Type"] == "None"]
 
-    # Dedup: group by Same Incident ID, keep highest Report Version
-    by_incident = {}
+    # Dedup: group by Report ID first to safely handle when "Same Incident ID" changes
+    by_rid = {}
     for r in none_rows:
+        rid = r["Report ID"]
+        ver = int(r["Report Version"])
+        if rid not in by_rid or ver > by_rid[rid]["_ver"]:
+            by_rid[rid] = {"_ver": ver, "_row": r}
+
+    # Then deduplicate those by Same Incident ID
+    by_incident = {}
+    for entry in by_rid.values():
+        r = entry["_row"]
         iid = r["Same Incident ID"]
         ver = int(r["Report Version"])
         if iid not in by_incident or ver > by_incident[iid]["_ver"]:

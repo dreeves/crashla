@@ -1,0 +1,216 @@
+Total missing: 73
+ID: 30270-13657
+Speed: 0
+Crash With: Passenger Car
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 5:46 AM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in Los Angeles, California was in a collision involving a passenger car on [XXX] near [XXX]. 
+
+The Waymo AV was parked at the south curb facing northeast on [XXX]. While the Waymo AV remained parked, a passenger car traveling northeastbound on [XXX] maneuvered left towards the north curb and then maneuvered right to initiate a sweeping right turn across both lanes. As the passenger car was approximately perpendicular to the Waymo AV, the front right side of the passenger car made contact with the left side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: left | CP Hit: front left
+---
+ID: 30270-13850
+Speed: 6
+Crash With: Non-Motorist: Pedestrian
+Severity: Minor W/O Hospitalization
+Narrative: On January [XXX], 2026 at 8:28 AM a Waymo Autonomous Vehicle ("Waymo AV") operating in Santa Monica, California was in a collision involving a pedestrian on [XXX] near [XXX]. 
+
+The Waymo AV was proceeding northwestbound on [XXX], with vehicles stopped in the opposing lane of travel to the left of the Waymo AV. As the Waymo AV was approaching an SUV in the southwestbound travel lane, a pedestrian emerged from behind the SUV to cross [XXX], entering the Waymo AV's lane of travel. The Waymo AV applied hard braking, and the front of the Waymo AV made contact with the pedestrian. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The pedestrian reported minor injuries.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was struck by an involved vehicle. Waymo may supplement or correct its reporting with additional information as it may become available..
+SV Hit: front right | CP Hit: 
+---
+ID: 30270-13948
+Speed: 0
+Crash With: SUV
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 9:00 AM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in Los Angeles, California was in a collision involving an SUV on [XXX] near [XXX].
+
+The Waymo AV was stopped facing northeast on [XXX] in the second from the right lane in a queue of traffic for a red light at the intersection with [XXX] when a pedestrian approached the stationary Waymo AV and making contact with the front right sensor, causing the Waymo AV to remain stopped in lane. While the Waymo AV was stopped, an SUV that was stopped directly behind the Waymo AV proceeded to change lanes to the left lane and the right side of the SUV made contact with the rear left side of the stationary Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear | CP Hit: right
+---
+ID: 30270-13682
+Speed: 0
+Crash With: Heavy Truck
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 9:03 AM MT a Waymo Autonomous Vehicle ("Waymo AV") operating in Phoenix, Arizona was in a collision involving a heavy truck in a parking lot at [XXX].
+
+The Waymo AV was traveling southbound in a parking lot at [XXX] when it slowed to a stop with its hazard lights activated to yield to a heavy truck to the left of the Waymo AV that was facing south. While the Waymo AV remained stopped alongside the heavy truck, the heavy truck began executing a reversing turn into a loading dock parking stall at the east side of the parking lot. The Waymo AV reversed momentarily adjacent to the heavy truck as the heavy truck continued to reverse, and the rear right side of the heavy truck cab made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. 
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear | CP Hit: right
+---
+ID: 30270-13636
+Speed: 0
+Crash With: Bus
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 9:06 AM CT a Waymo Autonomous Vehicle ("Waymo AV") operating in Austin, Texas was in a collision involving a bus on [XXX] near [XXX].
+The Waymo AV was parked facing south on [XXX], partially in the parking lane and partially in the rightmost lane, with its hazard lights activated for a passenger drop-off. While the Waymo AV was stopped, a bus traveling southbound on [XXX] in the rightmost lane proceeded to pass to the left of the parked Waymo AV. As the bus was passing the Waymo AV, a passenger in the Waymo AV opened the rear left door and the right side of the bus made contact with the open rear left door of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. The two passengers in the Waymo AV were not belted at the time of the collision as they were exiting the vehicle. 
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear | CP Hit: right
+---
+ID: 30270-13654
+Speed: 0
+Crash With: Heavy Truck
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 9:14 AM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX].
+The Waymo AV was traveling southbound on [XXX] when it slowed to a stop to yield to a box truck that was turning right onto [XXX] from [XXX] and partially in the Waymo AV's lane of travel. While the Waymo AV was stopped, the box truck completed the turn and proceeded northbound on [XXX]. As the box truck was passing the Waymo AV, the left side of the box truck made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear | CP Hit: left
+---
+ID: 30270-13638
+Speed: 14
+Crash With: SUV
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 10:06 AM CT a Waymo Autonomous Vehicle ("Waymo AV") operating in Austin, Texas was in a collision involving an SUV on [XXX] at [XXX].
+The Waymo AV was traveling northwestbound on [XXX], in the leftmost of two designated left turn lanes, with its left turn signal activated as it initiated a protected left turn onto [XXX] at the green light. As the Waymo AV was turning left in the intersection, an SUV that was turning left in the rightmost of the two designated left turn lanes, to the right of the Waymo AV lost traction.  The SUV crossed the dashed white lane line and entered the Waymo AV's lane of travel as both vehicles approached the exit of the intersection. The SUV proceeded further into the Waymo AV's lane of travel as both vehicles exited the intersection, and the front left side of the SUV made contact with the front right side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: front left | CP Hit: front
+---
+ID: 30270-13623
+Speed: 0
+Crash With: Pickup Truck
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 10:22 AM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in San Francisco, California was in a collision involving a pickup truck on [XXX] near [XXX].
+
+The Waymo AV was traveling southeastbound in the second to the right lane on [XXX] when it changed lanes to the rightmost lane and slowed to a stop to yield to a pickup truck that was stopped facing southeast in the Waymo AV's lane of travel. While the Waymo AV was stopped, the pickup truck reversed, came to a stop, and then reversed again, and the rear of the pickup truck made contact with the front of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: front right | CP Hit: rear right
+---
+ID: 30270-13927
+Speed: 0
+Crash With: Heavy Truck
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 10:44 AM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX].
+
+The Waymo AV was traveling southbound on a narrow portion of [XXX], with vehicles parked at the curb in both directions, when it maneuvered to the right and slowed to a stop in-lane to yield to a heavy truck traveling northbound on [XXX]. As the Waymo AV remained stopped, the heavy truck proceeded to pass the Waymo AV to the left, and the left side of the heavy truck trailer made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear | CP Hit: left
+---
+ID: 30270-13958
+Speed: 9
+Crash With: SUV
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 11:19 AM MT a Waymo Autonomous Vehicle ("Waymo AV") operating in Phoenix, Arizona was in a collision involving an SUV on [XXX] near the [XXX] on-ramp.
+
+The Waymo AV was traveling southbound on [XXX] in the second from the right lane when it began to slow for a queue of traffic in the same lane. While the Waymo AV was slowing, an SUV traveling southbound on [XXX] in the leftmost lane changed lanes to the right across two lanes and entered the second from the right lane behind the Waymo AV. As the SUV approached the Waymo AV from behind the SUV continued maneuvering to the right, and the front left side of the SUV made contact with the rear right side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear left | CP Hit: front
+---
+ID: 30270-13769
+Speed: 23
+Crash With: Passenger Car
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 11:22 AM CT a Waymo Autonomous Vehicle ("Waymo AV") operating in Austin, Texas was in a collision involving a passenger car on [XXX] near [XXX].
+The Waymo AV was traveling southwestbound on [XXX] when it approached the exit of a parking garage at [XXX]. As the Waymo AV proceeded forward, a passenger car proceeded to exit the parking garage and, without stopping, initiated a left turn onto [XXX] and entered the Waymo AV's lane of travel. The front right side of the passenger car then made contact with the rear right side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear left | CP Hit: front left
+---
+ID: 30270-13845
+Speed: 0
+Crash With: SUV
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 11:30 AM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in San Francisco, California was in a collision involving an SUV on [XXX] near [XXX].
+
+The Waymo AV was parked in-lane facing south on [XXX] for a passenger drop-off with hazard lights activated. While the Waymo AV was stopped, a passenger in the Waymo AV opened the rear left door, and an SUV that was initially stopped directly behind the Waymo AV began to maneuver around the Waymo AV to the left. As the SUV was passing the stationary Waymo AV, the right side of the SUV made contact with the open rear left door of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The two passengers of the Waymo AV were not belted at the time of the collisions as they were exiting the vehicle. 
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear | CP Hit: right
+---
+ID: 30270-13766
+Speed: 0
+Crash With: SUV
+Severity: Minor W/O Hospitalization
+Narrative: On January [XXX], 2026 at 11:31 AM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in Venice, California was in a collision involving an SUV on [XXX] near [XXX]. 
+
+The Waymo AV was traveling southwestbound on [XXX] when it slowed to a stop to yield to a utility vehicle parked in-lane facing southwest at the north curb. The Waymo AV momentarily began to proceed forward and to the left to pass the parked utility vehicle, and then came to a stop to yield to the utility vehicle and an SUV that was initially parked on [XXX] facing southwest on the south curb. While the Waymo AV was stopped, the SUV reversed and maneuvered to the right, and the rear left side of the SUV made contact with the front left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged. Both vehicles sustained damage. The driver of the SUV alleged minor injuries.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: front | CP Hit: rear
+---
+ID: 30270-13610
+Speed: 0
+Crash With: Van
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 11:42 AM CT a Waymo Autonomous Vehicle ("Waymo AV") operating in Austin, Texas was in a collision involving a van on [XXX] at [XXX].
+The Waymo AV was stopped facing southwest in the rightmost lane on [XXX] for a red light at the intersection with [XXX]. While the Waymo AV was stopped, a van that was initially stopped directly behind the Waymo AV proceeded forward, and the front of the van made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear right | CP Hit: front right
+---
+ID: 30270-13606
+Speed: 0
+Crash With: SUV
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 12:36 PM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in Santa Monica, California was in a collision involving an SUV in a parking lot at [XXX]. 
+
+The Waymo AV was parked facing northwest with its hazard lights activated for a passenger dropoff in a parking lot at [XXX]. While the Waymo AV was parked, an SUV that was parked facing northeast in a parking stall behind and to the right of the Waymo AV reversed, and the rear left side of the SUV made contact with the rear right side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV was not belted at the time of the collision as they were preparing to exit the vehicle.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear left | CP Hit: rear
+---
+ID: 30270-13794
+Speed: 0
+Crash With: Other, see Narrative
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 1:11 PM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in Los Angeles, California was in a collision involving a tow truck on [XXX] near [XXX]. 
+
+The Waymo AV was traveling eastbound on a narrow portion of [XXX] when it slowed to a stop to yield to a tow truck traveling westbound on [XXX]. While the Waymo AV remained stopped, the tow truck proceeded forward to pass the Waymo AV and the left side of the tow truck made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear | CP Hit: left
+---
+ID: 30270-13903
+Speed: 0
+Crash With: Passenger Car
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 1:45 PM MT a Waymo Autonomous Vehicle ("Waymo AV") operating in Phoenix, Arizona was in a collision involving a passenger car on [XXX] near [XXX].
+
+The Waymo AV was traveling eastbound on [XXX] in the leftmost lane when it slowed to a stop to yield to a passenger car that was stopped in-lane in front of the Waymo AV. The passenger car began to reverse towards the stationary Waymo AV, then came to a stop, and the Waymo AV reversed and came to a stop. The passenger car then reversed and came to a stop again, and the Waymo AV briefly proceeded forward and came to a stop. While the Waymo AV remained stopped, the passenger car reversed again, and the rear left side of the passenger car made contact with the front right side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: front left | CP Hit: rear
+---
+ID: 30270-13852
+Speed: 3
+Crash With: Passenger Car
+Severity: Minor W/O Hospitalization
+Narrative: On January [XXX], 2026 at 2:24 PM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX].
+
+The Waymo AV was stopped facing northwest on [XXX] for a red light at the intersection with [XXX] with its right turn signal activated. After the light turned green and traffic cleared, the Waymo AV proceeded forward to initiate the right turn. As the Waymo AV entered the intersection, it began to yield to pedestrians crossing [XXX] from the north side of the street in the marked crosswalk. As the Waymo AV was slowing, a passenger car that was initially stopped behind the Waymo AV proceeded forward, and the front of the passenger car made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV alleged minor injury.
+
+Waymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: rear right | CP Hit: front right
+---
+ID: 30270-13973
+Speed: 23
+Crash With: Passenger Car
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 2:46 PM MT a Waymo Autonomous Vehicle ("Waymo AV") operating in Tempe, Arizona was in a collision involving a passenger car on [XXX] near [XXX].
+
+The Waymo AV was traveling northbound on [XXX] in the leftmost lane when a passenger car that was stopped facing north in a queue of traffic in the adjacent right lane, began to change lanes to the left and entered the Waymo AV's lane of travel, and the front left side of the passenger car made contact with the right side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: right | CP Hit: front
+---
+ID: 30270-13820
+Speed: 15
+Crash With: SUV
+Severity: Property Damage. No Injured Reported
+Narrative: On January [XXX], 2026 at 2:49 PM PT a Waymo Autonomous Vehicle ("Waymo AV") operating in Los Angeles, California was in a collision involving an SUV in an alley behind [XXX].
+
+The Waymo AV was traveling westbound in an alley behind [XXX] when an SUV traveling northbound in a parking lot at [XXX] exited the parking lot and entered the Waymo AV's lane of travel. The Waymo AV began to maneuver to the right and the front right side of the SUV made contact with the left side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.
+
+Waymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.
+SV Hit: left | CP Hit: front left
+---

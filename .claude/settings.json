@@ -6,7 +6,9 @@
       "WebSearch",
       "WebFetch(domain:www.cpuc.ca.gov)",
       "WebFetch(domain:ourworldindata.org)",
-      "WebFetch(domain:catalog.ourworldindata.org)"
+      "WebFetch(domain:catalog.ourworldindata.org)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)"
     ]
   }
 }
