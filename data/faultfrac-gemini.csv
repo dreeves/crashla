@@ -829,3 +829,43 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-13852,3,Passenger Car,rear right,front right,Minor W/O Hospitalization,0,As the Waymo AV was slowing. a passenger car that was initially stopped behind the Waymo AV proceeded forward. and the front of the passenger car made contact with the rear of the Waymo AV
 30270-13973,23,Passenger Car,right,front,Property Damage. No Injured Reported,0,The Waymo AV was traveling northbound on [XXX] in the leftmost lane when a passenger car that was stopped facing north in a queue of traffic in the adjacent right lane. began to change lanes to the left and entered the Waymo AV's lane of travel. and the front left side of the passenger car made contact with the right side of the Waymo AV
 30270-13820,15,SUV,left,front left,Property Damage. No Injured Reported,0,The Waymo AV began to maneuver to the right and the front right side of the SUV made contact with the left side of the Waymo AV
+30270-13925,0,Passenger Car,front,front,Property Damage. No Injured Reported,0,Waymo AV stopped for red light hit by passenger car avoiding SUV
+30270-13763,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped for pedestrian rear-ended by passenger car
+30270-13578,2,Pickup Truck,front right,rear right,Property Damage. No Injured Reported,0,Stationary Waymo AV hit by reversing pickup truck
+30270-13642,0,"Other, see Narrative",rear,rear,Property Damage. No Injured Reported,0,Stationary Waymo AV hit by passing motorhome
+30270-13847,0,Bus,rear,left,Property Damage. No Injured Reported,0,Stationary Waymo AV hit by passing bus
+30270-13843,9,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,1,Waymo AV damaged undercarriage by driving into pothole
+30270-13954,0,Pickup Truck,rear,right,Property Damage. No Injured Reported,0,Stationary Waymo AV hit by passing pickup truck
+30270-13605,0,Passenger Car,rear right,left,Minor W/ Hospitalization,0,Waymo AV stopped in traffic rear-ended by passenger car pushed by another car
+30270-13811,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,Waymo AV stopped for red light hit by reversing SUV
+30270-13688,0,Passenger Car,rear left,rear,Property Damage. No Injured Reported,0,Parked Waymo AV hit by reversing passenger car
+30270-13665,12,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0,Waymo AV hit rolling suitcase that fell from SUV in front
+30270-13795,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped for red light rear-ended by passenger car
+30270-13611,0,SUV,right,front,Property Damage. No Injured Reported,1,Passenger exited parked Waymo AV opening door into passing SUV
+30270-13947,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,Waymo AV stopped for red light hit by passing passenger car
+30270-13785,0,SUV,rear,front left,Property Damage. No Injured Reported,0,Parked Waymo AV hit by passing SUV
+30270-13664,0,SUV,rear,front left,Property Damage. No Injured Reported,0,Waymo AV stopped at intersection hit by SUV from behind
+30270-13848,0,Pickup Truck,front,rear left,Property Damage. No Injured Reported,0,Waymo AV slowing hit by reversing pickup truck
+30270-13905,1,Passenger Car,front right,front left,Property Damage. No Injured Reported,1,Waymo AV making unprotected left turn struck by oncoming car
+30270-13658,17,Van,rear,front left,Property Damage. No Injured Reported,0,Waymo AV turning left hit by van crossing lane line
+30270-13860,3,SUV,front,right,Property Damage. No Injured Reported,0,Waymo AV pulling away from curb hit by SUV pushed by another vehicle
+30270-13641,0,Bus,rear,right,Property Damage. No Injured Reported,0,Waymo AV stopped partially in right turn lane hit by passing bus
+30270-13877,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped at red light rear-ended by passenger car pushed by another car
+30270-13778,9,Other Fixed Object,bottom,,Property Damage. No Injured Reported,1,Waymo AV undercarriage contacted pavement while turning into driveway
+30270-13809,33,SUV,left,front,Minor W/O Hospitalization,0,Waymo AV proceeding on green hit by SUV making unprotected left turn
+30270-13979,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped yielding for left turn rear-ended by passenger car
+30270-13840,0,SUV,rear,right,Property Damage. No Injured Reported,1,Passenger exited parked Waymo AV opening door into passing SUV
+30270-13881,1,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV slowing for red light rear-ended by passenger car
+30270-13914,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,Parked Waymo AV hit by reversing SUV
+30270-13770,0,Passenger Car,rear,front left,Property Damage. No Injured Reported,0,Waymo AV stopped in queue hit by speeding passenger car
+30270-13764,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped in queue rear-ended by SUV
+30270-13799,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,Waymo AV stopped for pickup hit by passing box truck
+30270-13653,0,SUV,rear left,front,Property Damage. No Injured Reported,0,Waymo AV stopped for red light hit by SUV
+30270-13639,5,Passenger Car,front,front,Property Damage. No Injured Reported,0,Waymo AV hit by speeding oncoming passenger car crossing into its lane
+30270-13949,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,Parked Waymo AV hit by SUV pushed by pickup truck and then hit by pickup
+30270-13983,10,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV slowing for red light rear-ended by passenger car
+30270-13985,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped for red light rear-ended by passenger car pushed by SUV
+30270-13982,20,"Other, see Narrative",front left + rear left,unknown,Property Damage. No Injured Reported,1,Waymo AV damaged by driving over flat wooden object in roadway
+30270-14002,0,Bus,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped at green light rear-ended by bus
+30270-13955,56,Passenger Car,left,front,Unknown,0,Waymo AV on freeway hit by passenger car pushed across lanes by another collision
+30270-13976,0,Passenger Car,rear right,front left,Property Damage. No Injured Reported,0,Waymo AV stopped during right turn rear-ended by passenger car
