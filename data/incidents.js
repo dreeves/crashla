@@ -450,10 +450,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "claude": 0.9,
-      "codex": null,
+      "codex": 0.95,
       "gemini": 1.0,
       "rclaude": "AV lane departure into fixed object; should maintain lane position",
-      "rcodex": null,
+      "rcodex": "Redacted narrative and AV contacted fixed object while proceeding",
       "rgemini": "AV departed lane and ran into a fixed object."
     },
     "vehiclesInvolved": 2
@@ -44403,10 +44403,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front left",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "AV slowed in-lane for pickup and was rear-ended",
       "rgemini": "Waymo AV slowing for passenger pickup rear ended by passenger car"
     },
     "vehiclesInvolved": 2
@@ -44473,10 +44473,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Passenger car crossed double yellow into AV left-turn path",
       "rgemini": "Waymo AV turning left hit by passenger car crossing double yellow line into its lane"
     },
     "vehiclesInvolved": 2
@@ -44508,10 +44508,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "SUV attempted stop-sign pass around slowing AV and clipped side",
       "rgemini": "Waymo AV slowing for stop sign side-swiped by passing SUV"
     },
     "vehiclesInvolved": 2
@@ -44543,10 +44543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.1,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Parallel-turn passenger car crossed lane line into AV path",
       "rgemini": "Waymo AV turning left hit by passenger car proceeding straight from turn lane"
     },
     "vehiclesInvolved": 2
@@ -44648,10 +44648,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "SUV merged around slowing AV and clipped rear quarter",
       "rgemini": "Waymo AV slowing for red light hit by SUV maneuvering right"
     },
     "vehiclesInvolved": 2
@@ -44683,10 +44683,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Motorcycle cut across double yellow into AV path",
       "rgemini": "Waymo AV proceeding on green light hit motorcycle executing left turn across double yellow line"
     },
     "vehiclesInvolved": 2
@@ -44718,10 +44718,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Passenger car rear-ended slowing AV at yellow light",
       "rgemini": "Waymo AV slowing for red light rear ended by passenger car"
     },
     "vehiclesInvolved": 2
@@ -44858,10 +44858,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Red-light chain reaction struck stopped AV",
       "rgemini": "Waymo AV stopped at red light hit by speeding passenger car that ran red light and crashed into another car"
     },
     "vehiclesInvolved": 2
@@ -44928,10 +44928,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Passenger car rear-ended slowing AV for red light",
       "rgemini": "Waymo AV slowing rear ended by passenger car"
     },
     "vehiclesInvolved": 2
@@ -44998,11 +44998,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
-      "rgemini": "Waymo AV stopped hit in rear by SUV30270-13786"
+      "rcodex": "SUV rear-ended stationary AV at red light",
+      "rgemini": "Waymo AV stopped hit in rear by SUV"
     },
     "vehiclesInvolved": 2
   },
@@ -45031,7 +45031,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Sweeping-turn passenger car struck parked AV",
+      "rgemini": "As the passenger car was approximately perpendicular to the Waymo AV. the front right side of the passenger car made contact with the left side of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45061,10 +45068,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Pickup attempted to pass stopped AV and clipped rear quarter",
       "rgemini": "Stationary Waymo AV hit by pickup truck"
     },
     "vehiclesInvolved": 2
@@ -45096,10 +45103,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.1,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "AV stopped again to yield emergency vehicle and was rear-ended",
       "rgemini": "Stationary Waymo AV rear ended by SUV starting from behind"
     },
     "vehiclesInvolved": 2
@@ -45131,10 +45138,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.0,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Box truck reversed into parked AV",
       "rgemini": "Parked Waymo AV hit by reversing box truck"
     },
     "vehiclesInvolved": 2
@@ -45166,10 +45173,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.25,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Trash can deflected from SUV into AV lane at highway speed",
       "rgemini": "Waymo AV struck by trash can deflected into its path by SUV"
     },
     "vehiclesInvolved": 2
@@ -45201,10 +45208,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.05,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "Passenger car rear-ended slowing AV for red light",
       "rgemini": "Waymo AV slowing rear ended by passenger car"
     },
     "vehiclesInvolved": 2
@@ -45236,10 +45243,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.65,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "AV attempted to pass stopped curbside car and struck opening door",
       "rgemini": "Waymo AV passing car hit by passenger opening door"
     },
     "vehiclesInvolved": 2
@@ -45271,10 +45278,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.6,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
+      "rcodex": "AV nose protruded into travel lane while yielding at parking-lot exit",
       "rgemini": "Stationary Waymo AV hit by passing bus"
     },
     "vehiclesInvolved": 2
@@ -45341,11 +45348,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "claude": null,
-      "codex": null,
+      "codex": 0.1,
       "gemini": 0.0,
       "rclaude": null,
-      "rcodex": null,
-      "rgemini": "Waymo AV turning left hit by passenger car cross30270-13846"
+      "rcodex": "Adjacent left-turn car crossed lane line into AV",
+      "rgemini": "Waymo AV turning left hit by passenger car crossing lane line"
     },
     "vehiclesInvolved": 2
   },
@@ -45374,7 +45381,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.1,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Pedestrian emerged from behind SUV into AV path",
+      "rgemini": "The Waymo AV applied hard braking. and the front of the Waymo AV made contact with the pedestrian"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45402,7 +45416,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "SUV sideswiped stationary AV after pedestrian contact kept AV stopped",
+      "rgemini": "The Waymo AV was stopped facing northeast on [XXX] in the second from the right lane in a queue of traffic for a red light at the intersection with [XXX] when a pedestrian approached the stationary Waymo AV and making contact with the front right sensor. causing the Waymo AV to remain stopped in lane"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45430,7 +45451,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.25,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Both vehicles reversed during loading-dock maneuver",
+      "rgemini": "The Waymo AV reversed momentarily adjacent to the heavy truck as the heavy truck continued to reverse. and the rear right side of the heavy truck cab made contact with the rear left side of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45458,7 +45486,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 1.0,
+      "rclaude": null,
+      "rcodex": "AV passenger opened rear door into passing bus",
+      "rgemini": "As the bus was passing the Waymo AV. a passenger in the Waymo AV opened the rear left door and the right side of the bus made contact with the open rear left door of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45486,7 +45521,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Passing box truck struck stationary AV after completing turn",
+      "rgemini": "As the box truck was passing the Waymo AV. the left side of the box truck made contact with the rear left side of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45514,7 +45556,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "SUV lost traction and crossed turn-lane line into AV",
+      "rgemini": "The SUV proceeded further into the Waymo AV's lane of travel as both vehicles exited the intersection. and the front left side of the SUV made contact with the front right side of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45542,7 +45591,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Pickup reversed twice into stationary AV",
+      "rgemini": "While the Waymo AV was stopped. the pickup truck reversed. came to a stop. and then reversed again. and the rear of the pickup truck made contact with the front of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45570,7 +45626,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Heavy truck trailer clipped stopped AV on narrow street",
+      "rgemini": "As the Waymo AV remained stopped. the heavy truck proceeded to pass the Waymo AV to the left. and the left side of the heavy truck trailer made contact with the rear left side of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45598,7 +45661,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "SUV cut across two lanes and clipped slowing AV",
+      "rgemini": "As the SUV approached the Waymo AV from behind the SUV continued maneuvering to the right. and the front left side of the SUV made contact with the rear right side of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45626,7 +45696,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Passenger car exited garage without stopping and hit AV rear quarter",
+      "rgemini": "The front right side of the passenger car then made contact with the rear right side of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45654,7 +45731,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 1.0,
+      "rclaude": null,
+      "rcodex": "AV passenger opened rear door into passing SUV",
+      "rgemini": "As the SUV was passing the stationary Waymo AV. the right side of the SUV made contact with the open rear left door of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45682,7 +45766,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Reversing SUV struck stationary AV during cluttered curbside maneuver",
+      "rgemini": "While the Waymo AV was stopped. the SUV reversed and maneuvered to the right. and the rear left side of the SUV made contact with the front left side of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45710,7 +45801,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Van rear-ended stopped AV at red light",
+      "rgemini": "While the Waymo AV was stopped. a van that was initially stopped directly behind the Waymo AV proceeded forward. and the front of the van made contact with the rear of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45738,7 +45836,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "SUV reversed out of parking stall into parked AV",
+      "rgemini": "While the Waymo AV was parked. an SUV that was parked facing northeast in a parking stall behind and to the right of the Waymo AV reversed. and the rear left side of the SUV made contact with the rear right side of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45766,7 +45871,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Tow truck passing on narrow street struck stopped AV",
+      "rgemini": "Waymo AV stopped hit by reversing trailer"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45829,7 +45941,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.25,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Both vehicles repeatedly reversed before low-speed contact",
+      "rgemini": "While the Waymo AV remained stopped. the passenger car reversed again. and the rear left side of the passenger car made contact with the front right side of the stationary Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45857,7 +45976,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.15,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "AV initiated right turn then yielded to pedestrian and was rear-ended",
+      "rgemini": "As the Waymo AV was slowing. a passenger car that was initially stopped behind the Waymo AV proceeded forward. and the front of the passenger car made contact with the rear of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45885,7 +46011,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.1,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "Adjacent-lane passenger car changed left into AV lane",
+      "rgemini": "The Waymo AV was traveling northbound on [XXX] in the leftmost lane when a passenger car that was stopped facing north in a queue of traffic in the adjacent right lane. began to change lanes to the left and entered the Waymo AV's lane of travel. and the front left side of the passenger car made contact with the right side of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45913,7 +46046,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": 0.0,
+      "rclaude": null,
+      "rcodex": "SUV exited parking lot into alley AV lane",
+      "rgemini": "The Waymo AV began to maneuver to the right and the front right side of the SUV made contact with the left side of the Waymo AV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45941,7 +46081,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passenger car swerved over double yellow and hit stopped AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45969,7 +46116,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passenger car rear-ended AV stopped for pedestrian",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -45997,7 +46151,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.25,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Both vehicles repeatedly reversed before low-speed contact",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46025,7 +46186,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.15,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV repositioned at parking-lot entrance before motorhome clipped rear quarter",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46053,7 +46221,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Bus passing on narrow street clipped stopped AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46081,7 +46256,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.8,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV undercarriage struck pothole in parking lot",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46179,7 +46361,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passing pickup clipped stopped AV on narrow street",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46207,7 +46396,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Chain-reaction crash pushed passenger car into stopped AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46270,7 +46466,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV reversed into stopped AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46298,7 +46501,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Reversing passenger car out of stall struck parked AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46326,7 +46536,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.25,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Rolling suitcase fell from SUV into AV lane and AV ran it over",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46354,7 +46571,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passenger car rear-ended stopped AV in queue",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46382,7 +46606,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "right",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV passenger opened rear door into passing SUV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46410,7 +46641,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passing passenger car sideswiped stationary AV while changing lanes",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46438,7 +46676,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passing SUV clipped partially in-lane parked AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46501,7 +46746,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.2,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV stopped partially across lane while yielding to officer-directed traffic",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46564,7 +46816,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.1,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Shared low-speed backing conflict with pickup",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46592,7 +46851,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.7,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV entered in front of stopped bus and was struck by hidden oncoming car",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46620,7 +46886,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.1,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Adjacent turn-lane van crossed dashed line into AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46648,7 +46921,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV hit pickup while passing and was pushed into AV easing from curb",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46711,7 +46991,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.45,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV stopped straddling turn lane and bus lane during lane change",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46774,7 +47061,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Chain-reaction rear-end pushed stopped car into AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46802,7 +47096,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 1.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV undercarriage struck pavement at driveway entrance",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46900,7 +47201,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV turned left across AV path at green light",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46928,7 +47236,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.1,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV moved on green then stopped for unprotected left-turn yield",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -46956,7 +47271,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV passenger opened rear door into passing SUV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47019,7 +47341,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passenger car rear-ended slowing AV for yellow light",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47047,7 +47376,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV reversed into parked AV during drop-off",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47075,7 +47411,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "High-speed passenger car clipped rear of stopped AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47103,7 +47446,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV rear-ended stopped AV in queue",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47131,7 +47481,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passing box truck trailer clipped stopped curbside AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47159,7 +47516,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV struck stopped AV from behind at red light",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47187,7 +47551,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Oncoming passenger car crossed center turn lane into AV path",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47215,7 +47586,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Chain-reaction pickup and SUV impacts struck parked AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47243,7 +47621,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passenger car rear-ended slowing AV for red light",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47271,7 +47656,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Chain-reaction SUV pushed stopped car into stopped AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47299,7 +47691,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left + rear left",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.35,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV ran over flat wooden object lying in roadway",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47327,7 +47726,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.1,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV remained stopped after green and was rear-ended by bus",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47355,7 +47761,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.35,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Multi-vehicle chain pushed car into AV and AV later hit oversized-load sign",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47383,7 +47796,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.15,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV slowed through right turn and stopped for school bus",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47411,7 +47831,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.45,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV stopped across merge lanes during right-turn entry and truck advanced",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47439,7 +47866,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "rear left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV rolled backward into stopped AV on steep grade",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47467,7 +47901,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Pickup rear-ended stopped AV at yellow signal",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47495,7 +47936,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.1,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV moved on green then stopped for unprotected left-turn yield",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47523,7 +47971,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.65,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV passed pickup after reverse-yield interaction and pickup moved left",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47551,7 +48006,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "top",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Falling tree struck slowing AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47579,7 +48041,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV ran stop sign into AV after AV entered intersection",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47607,7 +48076,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV rear-ended stationary AV during lane-change avoidance",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47635,7 +48111,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Passenger car rear-ended stopped AV at red light",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47663,7 +48146,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.15,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "AV moved on green then stopped to yield pedestrian",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -47691,7 +48181,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.0,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Van rear-ended parked drop-off AV",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48342,7 +48839,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.3,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "Parked-car door opened into passing Zoox in door zone",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48370,7 +48874,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "claude": null,
+      "codex": 0.05,
+      "gemini": null,
+      "rclaude": null,
+      "rcodex": "SUV pulled out from parallel-park attempt into Zoox path",
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   }
 ]
