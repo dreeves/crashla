@@ -869,3 +869,16 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-14002,0,Bus,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped at green light rear-ended by bus
 30270-13955,56,Passenger Car,left,front,Unknown,0,Waymo AV on freeway hit by passenger car pushed across lanes by another collision
 30270-13976,0,Passenger Car,rear right,front left,Property Damage. No Injured Reported,0,Waymo AV stopped during right turn rear-ended by passenger car
+30270-13999,7,Heavy Truck,rear,front left,Property Damage. No Injured Reported,0,Waymo AV completing right turn hit by heavy truck proceeding from stop
+30270-14005,0,SUV,front,rear left,Property Damage. No Injured Reported,0,Waymo AV stopped hit by SUV rolling backwards
+30270-14004,0,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped at yellow light rear-ended by pickup truck
+30270-13957,0,Passenger Car,rear right,front right,Minor W/O Hospitalization,0,Waymo AV yielding for left turn rear-ended by passenger car
+30270-13975,12,Pickup Truck,right,front,Property Damage. No Injured Reported,0,Waymo AV completing turn hit by pickup truck maneuvering into its lane
+30270-14024,3,Pole / Tree,top,,Property Damage. No Injured Reported,0,Waymo AV hit by falling tree
+30270-14011,17,SUV,rear left,front,Property Damage. No Injured Reported,0,Waymo AV proceeding through intersection hit by SUV running stop sign
+30270-13956,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped at green light waiting to turn left rear-ended by SUV avoiding another car
+30270-14001,0,Passenger Car,rear right,front right,Minor W/O Hospitalization,0,Waymo AV stopped for red light rear-ended by passenger car
+30270-14007,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo AV stopped yielding to pedestrian rear-ended by passenger car
+30270-14003,0,Van,rear right,front right,Moderate W/ Hospitalization,0,Parked Waymo AV rear-ended by speeding van
+30610-13818,15,Passenger Car,right,left,Unknown,0,Zoox AV hit open door of parked car
+30610-14026,9,SUV,front left,front,Property Damage. No Injured Reported,0,Zoox AV hit SUV pulling out from parking space

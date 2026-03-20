@@ -47834,10 +47834,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.45,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "AV stopped across merge lanes during right-turn entry and truck advanced",
-      "rgemini": null
+      "rgemini": "Waymo AV completing right turn hit by heavy truck proceeding from stop"
     },
     "vehiclesInvolved": 2
   },
@@ -47869,10 +47869,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.0,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "SUV rolled backward into stopped AV on steep grade",
-      "rgemini": null
+      "rgemini": "Waymo AV stopped hit by SUV rolling backwards"
     },
     "vehiclesInvolved": 2
   },
@@ -47904,10 +47904,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.0,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "Pickup rear-ended stopped AV at yellow signal",
-      "rgemini": null
+      "rgemini": "Waymo AV stopped at yellow light rear-ended by pickup truck"
     },
     "vehiclesInvolved": 2
   },
@@ -47939,10 +47939,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.1,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "AV moved on green then stopped for unprotected left-turn yield",
-      "rgemini": null
+      "rgemini": "Waymo AV yielding for left turn rear-ended by passenger car"
     },
     "vehiclesInvolved": 2
   },
@@ -47974,10 +47974,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.65,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "AV passed pickup after reverse-yield interaction and pickup moved left",
-      "rgemini": null
+      "rgemini": "Waymo AV completing turn hit by pickup truck maneuvering into its lane"
     },
     "vehiclesInvolved": 2
   },
@@ -48009,10 +48009,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.0,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "Falling tree struck slowing AV",
-      "rgemini": null
+      "rgemini": "Waymo AV hit by falling tree"
     },
     "vehiclesInvolved": 2
   },
@@ -48044,10 +48044,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.05,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "SUV ran stop sign into AV after AV entered intersection",
-      "rgemini": null
+      "rgemini": "Waymo AV proceeding through intersection hit by SUV running stop sign"
     },
     "vehiclesInvolved": 2
   },
@@ -48079,10 +48079,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.0,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "SUV rear-ended stationary AV during lane-change avoidance",
-      "rgemini": null
+      "rgemini": "Waymo AV stopped at green light waiting to turn left rear-ended by SUV avoiding another car"
     },
     "vehiclesInvolved": 2
   },
@@ -48114,10 +48114,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.0,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "Passenger car rear-ended stopped AV at red light",
-      "rgemini": null
+      "rgemini": "Waymo AV stopped for red light rear-ended by passenger car"
     },
     "vehiclesInvolved": 2
   },
@@ -48149,10 +48149,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.15,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "AV moved on green then stopped to yield pedestrian",
-      "rgemini": null
+      "rgemini": "Waymo AV stopped yielding to pedestrian rear-ended by passenger car"
     },
     "vehiclesInvolved": 2
   },
@@ -48184,10 +48184,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.0,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "Van rear-ended parked drop-off AV",
-      "rgemini": null
+      "rgemini": "Parked Waymo AV rear-ended by speeding van"
     },
     "vehiclesInvolved": 2
   },
@@ -48842,10 +48842,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.3,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "Parked-car door opened into passing Zoox in door zone",
-      "rgemini": null
+      "rgemini": "Zoox AV hit open door of parked car"
     },
     "vehiclesInvolved": 2
   },
@@ -48877,10 +48877,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "claude": null,
       "codex": 0.05,
-      "gemini": null,
+      "gemini": 0.0,
       "rclaude": null,
       "rcodex": "SUV pulled out from parallel-park attempt into Zoox path",
-      "rgemini": null
+      "rgemini": "Zoox AV hit SUV pulling out from parking space"
     },
     "vehiclesInvolved": 2
   }
