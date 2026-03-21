@@ -29,86 +29,57 @@ Additional rules specific to this project:
 
 # Agent Scratchpad (human edits only above this line)
 
-## Plan: company→driver rename + humans-as-driver anti-magic refactor
+## Verified Waymo Safety Impact Notes
 
-### Phase 1: company → driver rename (mechanical) ✅ DONE
-Full rename of "company" to "driver" across the entire codebase: crashla.js, quals, index.html, style.css, data/slurp.py, data/vmt.js, data/incidents.js. Also fixed pre-existing qual (`contact-areas.qual.mjs:89` — `"?"` → `"n/a"`). All 20 quals pass.
+- Not an error: `127M` through Sep 2025 and `170.7M` through Dec 2025 are compatible cumulative snapshots. The checked-in Waymo VMT series reaches `127,000,000` at `2025-09` and `172,484,810` at `2025-12`, which is close to the current Waymo page's `170.7M`.
+- The current live Waymo page says:
+  - `170.7M` rider-only miles through Dec 2025.
+  - Rider-only miles are miles driven without a human driver in cities where Waymo operates ride-hailing service.
+  - The safety-impact comparisons are for surface streets, not freeways.
+  - The current all-location human benchmarks shown on the page are `3.90` any-injury IPMM, `1.63` airbag-in-any-vehicle IPMM, and `0.22` serious-injury-or-worse IPMM.
+  - `43%` of SGO collisions are under `1 mph` delta-V across all areas.
+  - The benchmark method is not just "surface streets in AV cities"; it uses a location-based dynamic benchmark adjustment tied to where Waymo actually drives.
+- The app/repo still contains stale or overstated claims:
+  - Several places cite the live Waymo page as if it were the source of the older `127M` / `3.97` / `1.66` / `0.23` / `45%` snapshot.
+  - README currently overstates that Waymo rider-only miles necessarily include deadhead/overhead and match CPUC `TotalVMTZEV`; the current Waymo page alone does not establish that.
+  - README and code describe our human benchmark method too loosely as if it were substantially the same as Waymo's current methodology.
+  - The app's default primary metric is still raw "all incidents", while the Waymo page emphasizes injury-causing crashes and surface-street alignment.
+  - The app's current aggregation for `incTotal` includes all incidents in the dataset month bucket; it does not currently reproduce Waymo's surface-street-only scope.
 
-### Phase 2: anti-magic refactor (Humans as a driver) ✅ DONE
+## Plan: Waymo Safety Impact Alignment
 
-**Design**: Push MPI computation into the data layer. Every driver's per-month entry carries pre-computed `mpiByMetric`. Rendering code reads this uniformly. No `if (driver === "Humans")` anywhere — all conditionals are data-driven (`vmtBest > 0`, `k !== null`).
+### Phase 1: factual cleanup with no model changes
 
-**Key changes**:
-- `ALL_DRIVERS = ["Humans", ...ADS_DRIVERS]` (Humans first for SVG z-ordering)
-- Humans color: `"#888"` → `"#c9a800"` (gold)
-- Add `mpiByMetric` pre-computed on all monthly entries in `monthSeriesData()`
-- Add Humans shared reference to every month (with zero-incidents object, not null)
-- Unify `monthlySummaryRows()` into single `ALL_DRIVERS.map()` loop
-- Unify MPI chart (remove `humanRefLines` block)
-- Unify distribution chart (remove `humanCurves` block)
-- Unify summary cards (remove `humanCard` block)
-- Per-driver charts include ALL_DRIVERS (Humans shows flat MPI lines, zero-height bars)
-- Per-driver chart reads pre-computed `mpiByMetric` (DRY, no recomputation)
-- `sliceSeries()` deep-copies uniformly, accumulates VMT for ALL_DRIVERS
-- Add Humans to legend toggles via `includedDrivers()` filtering `ALL_DRIVERS`
-- Delete `KNOWN_HUMAN_MPI`, `summaryMetricEstimate()`, `includedAdsDrivers()`
-- Company→Driver rename in all UI strings, table headers, variable names
+- Update README and source labels so they stop attributing the old Sep-2025 Waymo snapshot to the current live page.
+- Replace any text that intends to describe the current live Waymo page with the current checked values: `170.7M`, `3.90`, `1.63`, `0.22`, `43%`.
+- Keep the old `127M`-era numbers only if they are explicitly labeled as historical Waymo-hub snapshot values.
+- Remove or soften the unsupported claim that the Waymo page proves rider-only miles include deadhead/overhead and are definitionally identical to CPUC `TotalVMTZEV`.
 
-**Rendering conditionals (exhaustive, all data-driven)**:
-1. Tooltip: omit VMT lines when `vmtRawBest === 0`
-2. Summary card: omit "k incidents" when `k === null`
-3. No `if (driver === "Humans")` anywhere
+### Phase 2: methodology honesty
 
----
+- Relabel our current human benchmark bands as our own synthesis unless and until we truly implement Waymo's location-adjusted benchmark method.
+- Add an explicit note that the app is not currently a faithful reproduction of Waymo's safety-impact methodology.
+- Add an explicit note that the app's default comparison is broader than Waymo's surface-street injury-focused framing.
 
-## Original Plan for Crashla
+### Phase 3: scope decision requiring human approval
 
-### What the data looks like
+- Decide whether the goal is:
+  - keep the current cross-driver app and just describe the differences from Waymo's methodology honestly, or
+  - add a separate Waymo-only comparison mode that more faithfully reproduces Waymo's methodology.
+- This matters because Waymo's dynamic benchmark is Waymo-specific. Reusing it as a universal human baseline for Tesla and Zoox is not justified by the Waymo page.
 
-The NHTSA CSV has 481 rows. Filtering to Driver/Operator Type = "None" (the only rows we care about per the spec) gives 422 rows:
-- Waymo: 402 rows → 398 distinct incidents (4 have updated versions)
-- Tesla: 10 rows → 9 distinct incidents (1 has an updated version)
-- Zoox: 10 rows → 9 distinct incidents (1 has an updated version)
-- Avride: 0 rows with "None" (all 3 Avride rows have in-vehicle operators)
+### Phase 4: deeper alignment work if we choose to pursue it
 
-Dedup: group by Same Incident ID, take the row with the highest Report Version.
+- If the goal is actual methodological alignment with Waymo, use Waymo's downloadable data artifacts and papers, not prose summaries.
+- Verify what local data is required to reproduce surface-street-only scope and dynamic location weighting.
+- Do not claim full alignment unless we can support:
+  - surface-street scope,
+  - Waymo-specific location weighting,
+  - the same outcome definitions,
+  - and the same crashed-vehicle-rate framework.
 
-Tesla redacts all narratives as CBI. Waymo and Zoox provide full narratives.
+### Guardrails
 
-### Architecture
-
-Single-page static HTML app. No build step, no server. One Python script to pre-process the CSV into a JSON file that the page loads. Everything else is plain HTML/CSS/JS.
-
-Files:
-- `preprocess.py` — reads nhtsa-2025-jun-dec.csv, deduplicates, filters to Driver/Operator Type = "None", writes incidents.json
-- `index.html` — the interactive tool
-- `incidents.json` — generated data file
-
-### The two sections of the tool
-
-**1. Incident browser.** A table of all incidents, filterable by company. Columns: company, date, city/state, crash-with, speed, severity, narrative (truncated, expandable). This addresses "having a nice way to browse the data."
-
-**2. Rate estimator with sliders.** For each company, estimate miles per incident with a credible interval. The uncertain parameters controlled by sliders:
-
-For Tesla:
-- Total robotaxi miles in the period (default ~456k from robotaxitracker, slider range maybe 300k–600k)
-- Fraction of post-Sep-1 miles with empty driver's seat (unknown; slider 0%–100%, the key uncertainty)
-
-For Waymo:
-- Total driverless miles in the period (default ~50M, slider to adjust)
-
-For Zoox:
-- Total driverless miles in the period (default ~500k, slider to adjust)
-
-No fault weighting for now — all incidents count equally.
-
-### Statistical model
-
-Given k incidents in m miles, model the incident rate λ as Poisson. With a Jeffreys prior (Gamma(0.5, 0)), the posterior is Gamma(k + 0.5, m). From this we get:
-- Point estimate of miles per incident: m / (k + 0.5)
-- Credible interval for λ, inverted to get a credible interval for miles-per-incident
-
-This is straightforward to compute in JS using the gamma distribution quantile function (inverse CDF). We can use jstat or implement the gamma quantile directly (it's a few dozen lines).
-
-The output for each company: a visual display (inspired by aifuturesmodel.com) showing the estimated miles-per-incident with a 90% credible interval, updating live as sliders move.
-
+- Do not treat `127M` vs `170.7M` as a contradiction.
+- Do not silently swap in Waymo-specific benchmark logic as the shared human baseline for all drivers.
+- Do not strengthen provenance claims beyond what the cited source actually says.

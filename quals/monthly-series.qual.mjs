@@ -74,6 +74,20 @@ const metrics = vm.runInContext(`
 (() => {
   const series = monthSeriesData();
   const byMonth = Object.fromEntries(series.points.map(p => [p.month, p]));
+  const expectedTotalByDriver = Object.fromEntries(
+    ADS_DRIVERS.map(driver => [
+      driver,
+      (() => {
+        const driverMonths = new Set(
+          series.points
+            .filter(p => p.drivers[driver] !== null)
+            .map(p => p.month),
+        );
+        return INCIDENT_DATA.filter(inc =>
+          inc.driver === driver && driverMonths.has(monthKeyFromIncidentLabel(inc.date))).length;
+      })(),
+    ]),
+  );
   const totalByDriver = Object.fromEntries(
     ADS_DRIVERS.map(driver => [
       driver,
@@ -84,6 +98,7 @@ const metrics = vm.runInContext(`
   buildMonthlyViews();
   return {
     months: series.months,
+    expectedTotalByDriver,
     totalByDriver,
     janTeslaBins: byMonth["2026-01"].drivers.Tesla.incidents.speeds,
     janTeslaNonstationary: nonstationaryIncidentCount(byMonth["2026-01"].drivers.Tesla.incidents.speeds),
@@ -116,10 +131,10 @@ Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 
 assert.deepEqual(
   plain.totalByDriver,
-  { Tesla: 15, Waymo: 1498, Zoox: 15 },
+  plain.expectedTotalByDriver,
   `Replicata: sum monthly incident totals for each ADS driver.
-Expectata: month aggregation preserves totals within the VMT window (Tesla 15, Waymo 1498 incl pre-Jun, Zoox 15).
-Resultata: totals were ${JSON.stringify(plain.totalByDriver)}.`,
+Expectata: month aggregation preserves totals from the raw incident data within the VMT window.
+Resultata: expected=${JSON.stringify(plain.expectedTotalByDriver)} actual=${JSON.stringify(plain.totalByDriver)}.`,
 );
 
 assert.deepEqual(

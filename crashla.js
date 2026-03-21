@@ -1900,8 +1900,11 @@ function syncUrlState() {
 const HEADER_LABELS = ["Driver", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Fault variance", "Severity", "Narrative"];
 
 function buildBrowser() {
+  const {start, end} = seriesMonthBounds(activeSeries);
   const rows = activeIncidents();
   const counts = countByDriver(rows);
+  byId("incident-browser-heading").textContent =
+    `Incident browser using data from ${start} to ${end}`;
   const filterDiv = byId("filters");
   filterDiv.replaceChildren();
   const allDrivers = ["All", ...ADS_DRIVERS];

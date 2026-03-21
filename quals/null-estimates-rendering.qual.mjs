@@ -116,10 +116,15 @@ const checks = vm.runInContext(`
   const noUndefinedValues = summary.every(row =>
     METRIC_DEFS.every(m => row.mpiEstimates[m.key] !== undefined));
 
-  // Slice to ONLY fault-incomplete months (Jan-Feb 2026) to force null mpiEstimates
-  const janIdx = series.months.indexOf("2026-01");
-  const febIdx = series.months.indexOf("2026-02");
-  const faultSlice = sliceSeries(series, janIdx, febIdx);
+  // Slice to a Waymo month with incomplete fault judgments to force null mpiEstimates
+  const incompletePoint = series.points.find(p => {
+    const row = p.drivers.Waymo;
+    return row !== null && row.vmtBest > 0 &&
+      needsFaultKeys.some(k => row.mpiByMetric[k] === null);
+  });
+  const incompleteMonth = incompletePoint.month;
+  const faultIdx = series.months.indexOf(incompleteMonth);
+  const faultSlice = sliceSeries(series, faultIdx, faultIdx);
   const sliceSummary = monthlySummaryRows(faultSlice);
   const waymoSlice = sliceSummary.find(r => r.driver === "Waymo");
   const sliceNullCount = needsFaultKeys.filter(k => waymoSlice.mpiEstimates[k] === null).length;
@@ -140,6 +145,7 @@ const checks = vm.runInContext(`
     needsFaultKeys,
     allKeysPresent,
     noUndefinedValues,
+    incompleteMonth,
     sliceNullCount,
     waymoVmt: waymoSlice.vmtBest,
     stressDataRows,
@@ -161,7 +167,7 @@ Resultata: allKeysPresent=${plain.allKeysPresent}, noUndefinedValues=${plain.noU
 
 assert.ok(
   plain.waymoVmt > 0 && plain.sliceNullCount === plain.needsFaultKeys.length,
-  `Replicata: slice to Jan-Feb 2026 only (fault-incomplete months) and compute Waymo summary.
+  `Replicata: slice to the Waymo fault-incomplete month ${plain.incompleteMonth} and compute the Waymo summary.
 Expectata: Waymo has VMT but all needsFault metrics have null mpiEstimates.
 Resultata: vmtBest=${plain.waymoVmt}, nullFaultMetrics=${plain.sliceNullCount}/${plain.needsFaultKeys.length}.`,
 );

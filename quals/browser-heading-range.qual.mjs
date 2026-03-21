@@ -55,7 +55,10 @@ class ElementStub {
   }
 
   querySelector() {
-    return new ElementStub("queried");
+    return {
+      addEventListener() {},
+      classList: { toggle() {} },
+    };
   }
 
   set innerHTML(v) {
@@ -96,53 +99,31 @@ const ctx = vm.createContext({
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
-const checks = vm.runInContext(`
+const heading = vm.runInContext(`
 (() => {
   incidents = INCIDENT_DATA;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
   buildMonthlyViews();
-  const mayWaymo = fullMonthSeries.points.find(p => p.month === "2025-05").drivers.Waymo;
-  const mayIdx = fullMonthSeries.months.indexOf("2025-05");
-  const extendedWaymo = monthlySummaryRows(
-    sliceSeries(fullMonthSeries, mayIdx, fullMonthSeries.months.length - 1),
-  ).find(r => r.driver === "Waymo");
-  const defaultWaymo = monthlySummaryRows(activeSeries).find(r => r.driver === "Waymo");
+  const fullMonths = monthSeriesData().months;
+  monthRangeStart = fullMonths.indexOf("2025-07");
+  monthRangeEnd = fullMonths.indexOf("2026-01");
+  buildMonthlyViews();
   return {
-    mayAtfaultNull: mayWaymo.mpiByMetric.atfault === null,
-    mayAllPresent: mayWaymo.mpiByMetric.all !== null,
-    extendedIncTotal: extendedWaymo.incTotal,
-    defaultIncTotal: defaultWaymo.incTotal,
-    extendedIncAtFault: extendedWaymo.incAtFault,
-    defaultIncAtFault: defaultWaymo.incAtFault,
-    extendedMedian: extendedWaymo.mpiEstimates.atfault.median,
-    defaultMedian: defaultWaymo.mpiEstimates.atfault.median,
+    rendered: document.getElementById("incident-browser-heading").textContent,
+    expected: "Incident browser using data from 2025-07 to 2026-01",
   };
 })()
 `, ctx);
 
-const plain = JSON.parse(JSON.stringify(checks));
+const plain = JSON.parse(JSON.stringify(heading));
 
-assert.ok(
-  plain.mayAtfaultNull && plain.mayAllPresent,
-  `Replicata: inspect Waymo monthly metric availability in 2025-05.
-Expectata: raw all-incident MPI remains available, but at-fault MPI is unavailable for months with incomplete fault judgments.
-Resultata: ${JSON.stringify(plain)}.`,
+assert.equal(
+  plain.rendered,
+  plain.expected,
+  `Replicata: set the active month range to 2025-07 through 2026-01 and rebuild the incident browser.
+Expectata: the browser heading shows "Incident browser using data from 2025-07 to 2026-01".
+Resultata: the rendered heading was "${plain.rendered}".`,
 );
 
-assert.ok(
-  plain.extendedIncTotal > plain.defaultIncTotal,
-  `Replicata: compare Waymo all-incident summary counts for the default active range vs the same range extended back to 2025-05.
-Expectata: total incidents increase when 2025-05 is included.
-Resultata: extended=${plain.extendedIncTotal}, default=${plain.defaultIncTotal}.`,
-);
-
-assert.ok(
-  Math.abs(plain.extendedIncAtFault - plain.defaultIncAtFault) < 1e-9 &&
-    Math.abs(plain.extendedMedian - plain.defaultMedian) < 1e-9,
-  `Replicata: compare Waymo at-fault summary metrics for the default active range vs the same range extended back to 2025-05.
-Expectata: the incomplete 2025-05 month does not change the at-fault totals or MPI estimate.
-Resultata: extendedAtFault=${plain.extendedIncAtFault}, defaultAtFault=${plain.defaultIncAtFault}, extendedMedian=${plain.extendedMedian}, defaultMedian=${plain.defaultMedian}.`,
-);
-
-console.log("qual pass: fault-weighted metrics exclude months with incomplete fault judgments");
+console.log("qual pass: incident browser heading reflects active month range");
