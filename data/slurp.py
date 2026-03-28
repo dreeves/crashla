@@ -367,19 +367,37 @@ def nhtsa_month_to_iso(label):
     return f"{year}-{MONTH_ABBR_TO_NUM[abbr]}"
 
 
-def incident_coverage(nhtsa_rows, last_month):
-    """Compute incident reporting completeness per driver-month.
+def parse_vmt_values(raw_text):
+    """Extract per-driver-month best VMT estimates from the raw VMT CSV."""
+    result = {}  # (driver, month) -> vmt_best
+    for line in raw_text.splitlines()[1:]:  # skip header
+        if not line.strip():
+            continue
+        parts = line.split(",", 6)
+        driver_raw = parts[0].strip()
+        driver = next(
+            (v for k, v in DRIVER_SHORT.items()
+             if k.lower().startswith(driver_raw.lower())
+             or v.lower() == driver_raw.lower()),
+            driver_raw,
+        )
+        result[(driver, parts[1].strip())] = float(parts[2].strip())
+    return result
 
-    Under the NHTSA SGO, 5-Day reports are filed within 5 days; Monthly
-    reports are due by the 15th of the following month.  If the dataset
-    doesn't include submissions from the month AFTER a given incident month,
-    Monthly reports for that month are structurally absent.  By Poisson
-    thinning, the observed 5-Day count is Poisson(lambda * p * m) where p is
-    the fraction of incidents that generate 5-Day reports.  The posterior for
-    the full rate uses effective VMT = VMT * p.
+
+def incident_coverage(nhtsa_rows, last_month, vmt):
+    """Compute incident reporting completeness for the last month.
+
+    The best estimate assumes f = 1.0 — these could be all the incidents.
+    This avoids circularity: the dot shows MPI from the data we have,
+    no estimation of coverage.  The lo bound uses a rate-ratio comparison
+    against the most recent complete month to capture the possibility that
+    many more incidents are yet to be reported.  The CI thus incorporates
+    our ignorance about f without the central estimate depending on it.
 
     last_month: ISO month string (e.g. "2026-02") — the latest month with
     any incident data.  Derived from the data, not hardcoded.
+    vmt: dict from parse_vmt_values(), mapping (driver, iso_month) to VMT.
 
     Returns {(driver, iso_month): (best, lo, hi)} where best/lo/hi are the
     incident coverage fractions (1.0 for complete months).
@@ -406,126 +424,69 @@ def incident_coverage(nhtsa_rows, last_month):
     if not last_month_incomplete:
         return {}  # all months complete, no adjustments needed
 
-    # Count 5-Day vs total incidents per driver-month (post-dedup)
-    # We need pre-dedup Report Type info, so work from raw rows filtered to
-    # Driver/Operator Type = "None".
+    # Count incidents per driver-month (post-dedup, no report-type needed)
     none_rows = [r for r in nhtsa_rows
                  if r["Driver / Operator Type"] == "None"]
-    # Dedup: keep highest Report Version per Same Incident ID.
-    # For report_type, use the ORIGINAL (v1) classification, since later
-    # versions of 5-Day reports have type "Update" but should still count
-    # as 5-Day for computing the historical 5-Day fraction.
-    by_incident = {}  # iid -> {ver, min_ver, driver, month, report_type}
+    by_incident = {}  # iid -> {ver, driver, month}
     for r in none_rows:
         iid = r["Same Incident ID"]
         ver = int(r["Report Version"])
         driver = DRIVER_SHORT.get(r["Reporting Entity"].strip(),
                                    r["Reporting Entity"].strip())
         month = nhtsa_month_to_iso(r["Incident Date"].strip())
-        report_type = r["Report Type"].strip()
-        if iid not in by_incident:
-            by_incident[iid] = {
-                "ver": ver, "min_ver": ver,
-                "driver": driver, "month": month,
-                "report_type": report_type,
-            }
-        else:
-            rec = by_incident[iid]
-            if ver > rec["ver"]:
-                rec["ver"] = ver
-                rec["driver"] = driver
-                rec["month"] = month
-            if ver < rec["min_ver"]:
-                rec["min_ver"] = ver
-                rec["report_type"] = report_type
+        if iid not in by_incident or ver > by_incident[iid]["ver"]:
+            by_incident[iid] = {"ver": ver, "driver": driver, "month": month}
 
-    # Tally 5-Day fraction per driver-month
-    counts = {}  # (driver, month) -> {"five": n, "total": n}
+    counts = {}  # (driver, month) -> count
     for rec in by_incident.values():
-        # The original (v1) report type must be 5-Day or Monthly.
-        # "Update" should only appear on later versions, never on v1.
-        # Classify as 5-Day-like (quick) vs Monthly. "Update" and
-        # "10-Day Update" appear as v1 in the archive when the original
-        # filing predates the archive boundary; treat as quick reports.
-        QUICK_TYPES = {"1-Day", "5-Day", "Update", "10-Day Update"}
-        is_quick = rec["report_type"] in QUICK_TYPES
-        is_monthly = rec["report_type"] == "Monthly"
-        must(is_quick or is_monthly,
-             "unexpected original report type",
-             iid=rec.get("driver"), month=rec["month"],
-             report_type=rec["report_type"])
         key = (rec["driver"], rec["month"])
-        if key not in counts:
-            counts[key] = {"five": 0, "total": 0}
-        counts[key]["total"] += 1
-        if is_quick:
-            counts[key]["five"] += 1
+        counts[key] = counts.get(key, 0) + 1
 
-    # For each driver, estimate the 5-Day fraction from the single most
-    # recent complete month (has Monthly reports, total >= 3).  The fraction
-    # trends over time, so older months would bias the estimate.  Wilson
-    # score 95% CI gives lo/hi.
     import math
-    def wilson_ci(k, n, z=1.96):
-        """Wilson score 95% CI for binomial proportion k/n."""
-        p_hat = k / n
-        denom = 1 + z * z / n
-        centre = (p_hat + z * z / (2 * n)) / denom
-        spread = z * math.sqrt(
-            (p_hat * (1 - p_hat) + z * z / (4 * n)) / n) / denom
-        return (round(p_hat, 4),
-                round(max(centre - spread, 0.01), 4),
-                round(min(centre + spread, 1.0), 4))
-
     drivers = sorted(set(k[0] for k in counts))
-    # Find last complete reference month per driver
-    ref_month = {}  # driver -> (month, five, total)
-    for driver in drivers:
-        for (drv, mo), c in sorted(counts.items(), reverse=True):
-            if drv != driver or mo >= last_month:
-                continue
-            if c["total"] > c["five"] and c["total"] >= 3:
-                ref_month[driver] = (mo, c["five"], c["total"])
-                break
-
-    # Only adjust drivers whose last-month data is actually missing Monthly
-    # reports.  Some drivers (e.g., Tesla) file Monthly reports early, so
-    # their last-month data may already be approximately complete.
-    last_month_has_monthly = {}
-    for (drv, mo), c in counts.items():
-        if mo == last_month:
-            last_month_has_monthly[drv] = c["total"] > c["five"]
-
     result = {}
     for driver in drivers:
-        key = (driver, last_month)
-        if last_month_has_monthly.get(driver, False):
-            result[key] = (1.0, 1.0, 1.0)
+        last_key = (driver, last_month)
+        last_count = counts.get(last_key, 0)
+        last_vmt = vmt.get(last_key, 0)
+
+        if last_vmt == 0 or last_count == 0:
+            continue  # no VMT or no incidents → Gamma posterior handles it
+
+        # Find reference: most recent month before last_month with >= 3
+        # incidents and VMT data.
+        ref = None
+        for (drv, mo), c in sorted(counts.items(), key=lambda x: x[0][1],
+                                    reverse=True):
+            if drv == driver and mo < last_month and c >= 3:
+                ref_vmt = vmt.get((drv, mo), 0)
+                if ref_vmt > 0:
+                    ref = (mo, c, ref_vmt)
+                    break
+
+        if ref is None:
+            result[last_key] = (1.0, 1.0, 1.0)
             print(f"  {driver} {last_month} incident_coverage: 1.0"
-                  f" (Monthly reports present)")
+                  f" (no reference month with VMT)")
             continue
-        if driver not in ref_month:
-            result[key] = (1.0, 1.0, 1.0)
-            print(f"  {driver} {last_month} incident_coverage: 1.0"
-                  f" (no reference month)")
-            continue
-        mo, five, total = ref_month[driver]
-        p_best, p_lo, p_hi = wilson_ci(five, total)
-        # If the driver files ~0% as 5-Day (e.g., Tesla), the last month
-        # is unobservable via 5-Day reports; treat as complete — the 0
-        # observed incidents will produce a wide Gamma posterior naturally.
-        if p_best == 0:
-            result[key] = (1.0, 1.0, 1.0)
-            print(f"  {driver} {last_month} incident_coverage: 1.0"
-                  f" (0% 5-Day in ref month {mo}: {five}/{total})")
-            continue
-        must(0 < p_lo <= p_best <= p_hi <= 1,
-             "5-Day fraction out of range", driver=driver,
-             p_best=p_best, p_lo=p_lo, p_hi=p_hi)
-        result[key] = (p_best, p_lo, p_hi)
+
+        ref_mo, ref_count, ref_vmt = ref
+        expected = ref_count * (last_vmt / ref_vmt)
+        p_rate = min(1.0, last_count / expected)
+
+        # Best estimate: assume these are all the incidents (no circularity)
+        p_best = 1.0
+        p_hi = 1.0
+        # Lower bound: rate-ratio CI captures possibility of many more
+        # missing incidents than observed so far
+        se = p_rate * math.sqrt(1 / max(last_count, 1) + 1 / ref_count)
+        p_lo = max(0.01, p_rate - 1.96 * se)
+        result[last_key] = (round(p_best, 4), round(p_lo, 4),
+                            round(p_hi, 4))
         print(f"  {driver} {last_month} incident_coverage:"
-              f" best={p_best:.3f} lo={p_lo:.3f} hi={p_hi:.3f}"
-              f" (from {mo}: {five}/{total})")
+              f" best={p_best:.4f} lo={p_lo:.4f} hi={p_hi:.4f}"
+              f" (from {ref_mo}: {ref_count} inc / {ref_vmt:.0f} VMT;"
+              f" observed {last_count}, expected {expected:.1f})")
 
     return result
 
@@ -811,11 +772,12 @@ def main():
     ))
 
     # Compute incident reporting completeness before building VMT CSV.
-    # Use rows from vmt_months to estimate 5-Day fraction from recent history.
+    # Compare last month's observed rate to the reference month's rate.
     window_rows = [r for r in rows
                    if nhtsa_month_to_iso(r.get("Incident Date", "").strip())
                    in vmt_months]
-    inc_cov = incident_coverage(window_rows, last_month)
+    vmt_values = parse_vmt_values(vmt_raw)
+    inc_cov = incident_coverage(window_rows, last_month, vmt_values)
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"

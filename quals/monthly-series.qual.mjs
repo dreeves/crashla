@@ -290,14 +290,14 @@ Resultata: ${JSON.stringify(humanSsi)}.`,
 // Verify METRIC_DEFS refactor: all metrics have required fields
 const metricDefCheck = vm.runInContext(`
   METRIC_DEFS.every(m =>
-    m.key && m.label && m.cardLabel && m.incField && m.marker &&
+    m.key && m.label && m.cardLabel && m.incField &&
     typeof m.defaultEnabled === "boolean" && typeof m.primary === "boolean" &&
     typeof m.countFn === "function")
 `, ctx);
 assert.ok(
   metricDefCheck,
   `Replicata: validate METRIC_DEFS structure.
-Expectata: every metric def has key, label, cardLabel, incField, marker, defaultEnabled, primary, countFn.
+Expectata: every metric def has key, label, cardLabel, incField, defaultEnabled, primary, countFn.
 Resultata: some metric defs are missing required fields.`,
 );
 

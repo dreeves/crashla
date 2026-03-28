@@ -56,8 +56,8 @@ waymo,2025-10,13697521,140697521,9588265,17806777,1.0,1,1,1,"US est.: smooth int
 waymo,2025-11,14835759,155533280,10385031,19286487,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
 waymo,2025-12,16951530,172484810,11866071,22036989,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
 waymo,2026-01,18587646,191072456,13011352,24163940,1.0,1,1,1,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
-tesla,2026-02,185000,857500,120000,260000,1.0,1.0,1.0,1.0,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-zoox,2026-02,230000,1575000,115000,460000,1.0,0.6667,0.2077,0.9385,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-waymo,2026-02,20000000,211072456,14000000,26000000,1.0,0.6703,0.5686,0.7583,US est.: smooth interpolation of cumulative milestones; growth shape uncertain; ±30%
+tesla,2026-02,185000,857500,120000,260000,1.0,1,1,1,Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+zoox,2026-02,230000,1575000,115000,460000,1.0,1.0,0.01,1.0,US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+waymo,2026-02,20000000,211072456,14000000,26000000,1.0,1.0,0.0909,1.0,US est.: smooth interpolation of cumulative milestones; growth shape uncertain; ±30%
 `
 /* VMT_CSV_END */;

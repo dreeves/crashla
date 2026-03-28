@@ -40,12 +40,15 @@ Resultata: ${row.incCovMin} <= ${row.incCov} <= ${row.incCovMax}.`);
     `incCov must be in (0, 1] for ${row.driver} ${row.month}`);
 }
 
-// Identify months with incomplete coverage (if any)
-const incompleteRows = vmtData.filter(r => r.incCov < 1);
-const completeRows = vmtData.filter(r => r.incCov === 1);
+// Identify months with coverage uncertainty (incCovMin < 1 means the lo bound
+// is less than certain, even though p_best = 1.0 to avoid circularity)
+const incompleteRows = vmtData.filter(r => r.incCovMin < 1);
+const completeRows = vmtData.filter(r => r.incCovMin === 1);
 
 // All complete months must have incCov = incCovMin = incCovMax = 1
 for (const row of completeRows) {
+  assert.equal(row.incCov, 1,
+    `incCov for complete month ${row.driver} ${row.month} should be 1`);
   assert.equal(row.incCovMin, 1,
     `incident_coverage_min for complete month ${row.driver} ${row.month} should be 1`);
   assert.equal(row.incCovMax, 1,
@@ -106,43 +109,36 @@ if (incompleteRows.length > 0) {
   }
 
   for (const [driver, raw] of Object.entries(byDriver)) {
-    // Effective VMT must be less than coverage-only VMT
     const eff = allSeriesData.find(r => r.driver === driver && r.month === raw.month);
     if (!eff) continue;
-    const vmtWithoutIncCov = raw.vmtBest * raw.coverage;
-    assert.ok(
-      eff.vmtBest < vmtWithoutIncCov,
-      `Replicata: verify incCov shrinks effective vmtBest for ${driver} ${raw.month}.
-Expectata: vmtBest with incident coverage < vmtBest without it.
-Resultata: with=${eff.vmtBest}, without=${vmtWithoutIncCov}.`);
 
-    // Effective VMT = raw * coverage * incCov
-    const expected = raw.vmtBest * raw.coverage * raw.incCov;
+    // p_best = 1.0, so vmtBest is unaffected; but vmtMin uses incCovMin < 1,
+    // widening the CI to reflect coverage uncertainty
     assert.ok(
-      Math.abs(eff.vmtBest - expected) < 1,
-      `Replicata: check ${driver} ${raw.month} effective vmtBest.
-Expectata: vmtBest = raw * coverage * incCov = ${expected}.
-Resultata: got ${eff.vmtBest}.`);
+      eff.vmtMin < eff.vmtBest,
+      `Replicata: verify incCovMin widens CI for ${driver} ${raw.month}.
+Expectata: vmtMin < vmtBest because incCovMin < 1.
+Resultata: vmtMin=${eff.vmtMin}, vmtBest=${eff.vmtBest}.`);
 
-    // MPI with thinning should be lower than without
+    // MPI CI should be wider than it would be with incCovMin=1
     const mpiCheck = vm.runInContext(`
       (() => {
         const series = monthSeriesData();
         const byMonth = Object.fromEntries(series.points.map(p => [p.month, p]));
         const w = byMonth[${JSON.stringify(raw.month)}].drivers[${JSON.stringify(driver)}];
-        const withCov = estimateMpi(w.incidents.total, w.vmtBest, 0.95);
+        const withCov = estimateMpi(w.incidents.total, w.vmtMin, 0.95);
         const rawRow = parseVmtCsv(VMT_CSV_TEXT).find(
           r => r.driver === ${JSON.stringify(driver)} && r.month === ${JSON.stringify(raw.month)});
-        const mNoCov = rawRow.vmtBest * rawRow.coverage;
-        const withoutCov = estimateMpi(w.incidents.total, mNoCov, 0.95);
-        return { withMedian: withCov.median, withoutMedian: withoutCov.median };
+        const noCovMin = rawRow.vmtMin * rawRow.coverage;
+        const withoutCov = estimateMpi(w.incidents.total, noCovMin, 0.95);
+        return { withMin: withCov.median, withoutMin: withoutCov.median };
       })()
     `, ctx);
     assert.ok(
-      mpiCheck.withMedian < mpiCheck.withoutMedian,
-      `Replicata: verify Poisson thinning lowers MPI for ${driver} ${raw.month}.
-Expectata: Thinning reduces effective VMT, lowering MPI.
-Resultata: withCov median=${mpiCheck.withMedian.toFixed(0)}, withoutCov median=${mpiCheck.withoutMedian.toFixed(0)}.`);
+      mpiCheck.withMin < mpiCheck.withoutMin,
+      `Replicata: verify coverage uncertainty lowers MPI lo bound for ${driver} ${raw.month}.
+Expectata: incCovMin shrinks effective vmtMin, lowering the MPI lo bound.
+Resultata: withCovMin median=${mpiCheck.withMin.toFixed(0)}, withoutCovMin median=${mpiCheck.withoutMin.toFixed(0)}.`);
   }
 }
 

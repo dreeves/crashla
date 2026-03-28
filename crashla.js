@@ -168,7 +168,7 @@ const METRIC_DEFS = [
     label: "Miles per incident",
     cardLabel: "All incidents",
     incField: "incTotal",
-    marker: "solid-circle",
+
     defaultEnabled: true, primary: true,
     countFn: rec => rec.incidents.total,
     humanMPI: {lo: 103000, hi: 214000,
@@ -182,7 +182,7 @@ const METRIC_DEFS = [
     label: "Miles per nonstationary incident",
     cardLabel: "Nonstationary",
     incField: "incNonstationary",
-    marker: "hollow-circle",
+
     defaultEnabled: false, primary: false,
     countFn: rec => nonstationaryIncidentCount(rec.incidents.speeds),
     // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
@@ -196,7 +196,7 @@ const METRIC_DEFS = [
     label: "Miles per nonstationary non-parking-lot incident",
     cardLabel: "Nonstationary non-parking-lot",
     incField: "incRoadwayNonstationary",
-    marker: "hollow-square",
+
     defaultEnabled: false, primary: false,
     countFn: rec => roadwayNonstationaryIncidentCount(rec),
     // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
@@ -210,7 +210,7 @@ const METRIC_DEFS = [
     label: "Miles per at-fault incident",
     cardLabel: "At-fault",
     incField: "incAtFault",
-    marker: "hollow-triangle",
+
     needsFault: true,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFault,
@@ -226,7 +226,7 @@ const METRIC_DEFS = [
     label: "Miles per at-fault injury crash",
     cardLabel: "At-fault injury",
     incField: "incAtFaultInjury",
-    marker: "hollow-triangle",
+
     needsFault: true,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFaultInjury,
@@ -248,7 +248,7 @@ const METRIC_DEFS = [
     label: "Miles per injury crash",
     cardLabel: "Injury",
     incField: "incInjury",
-    marker: "solid-circle",
+
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.injury,
     // Waymo safety page benchmark (3.97 IPMM) to Kusano observed (1.91)
@@ -263,7 +263,7 @@ const METRIC_DEFS = [
     label: "Miles per hospitalization crash",
     cardLabel: "Hospitalization",
     incField: "incHospitalization",
-    marker: "solid-circle",
+
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.hospitalization,
     // Between airbag-deployment proxy (1.66 IPMM ≈ crashes with enough
@@ -280,7 +280,7 @@ const METRIC_DEFS = [
     label: "Miles per airbag-deploying crash",
     cardLabel: "Airbag deployment",
     incField: "incAirbag",
-    marker: "solid-circle",
+
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.airbag,
     // Airbag deployment in any vehicle. Waymo safety impact page: human
@@ -298,7 +298,7 @@ const METRIC_DEFS = [
     label: "Miles per serious injury crash",
     cardLabel: "Serious injury (SSI+)",
     incField: "incSeriousInjury",
-    marker: "solid-circle",
+
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.seriousInjury,
     // SSI+ (KABCO A+K): Moderate W/ Hospitalization + Fatality.
@@ -315,7 +315,7 @@ const METRIC_DEFS = [
     label: "Miles per fatal crash",
     cardLabel: "Fatality",
     incField: "incFatality",
-    marker: "solid-circle",
+
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.fatality,
     // FARS national per-vehicle-adjusted (75M) to urban surface-street
@@ -848,11 +848,12 @@ function monthSeriesData() {
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {driver, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
-      // Incident coverage: when Monthly reports are absent for the last month,
-      // the observed 5-Day count is a Poisson-thinned subset.  Scaling VMT by
-      // the thinning probability p gives the correct posterior Gamma(k+0.5, m*p).
-      // incCovMin (smallest p) pairs with vmtMin for the most pessimistic MPI;
-      // incCovMax (largest p) pairs with vmtMax for the most optimistic MPI.
+      // Incident coverage: for the last month, not all incidents may have been
+      // reported yet.  Scaling VMT by the coverage fraction f gives the
+      // posterior Gamma(k+0.5, VMT*f).  Since f is itself uncertain,
+      // incCovMin (smallest f) pairs with vmtMin for the most pessimistic MPI;
+      // incCovMax (= 1.0, all incidents could be in) pairs with vmtMax for
+      // the most optimistic.  The CI thus reflects ignorance about f.
       const entry = {
         // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * c * vmt.incCovMin,
@@ -949,25 +950,9 @@ function renderAllDriversMpiChart(series) {
   const mBot = 40;
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
-  const markerRenderer = {
-    "solid-circle": (x, y, color, s) => {
-      const r = 3.1 * s;
-      return `<circle class="month-dot" cx="${x}" cy="${y}" r="${r}" style="fill:${color};stroke:${color}"></circle>`;
-    },
-    "hollow-circle": (x, y, color, s) => {
-      const r = 3.1 * s;
-      return `<circle class="month-dot" cx="${x}" cy="${y}" r="${r}" style="fill:#fff;stroke:${color}"></circle>`;
-    },
-    "hollow-square": (x, y, color, s) => {
-      const r = 3.1 * s;
-      const d = 2 * r;
-      return `<rect class="month-dot" x="${(x - r).toFixed(2)}" y="${(y - r).toFixed(2)}" width="${d.toFixed(2)}" height="${d.toFixed(2)}" style="fill:#fff;stroke:${color}"></rect>`;
-    },
-    "hollow-triangle": (x, y, color, s) => {
-      const h = 3.8 * s;
-      const w = 3.4 * s;
-      return `<path class="month-mark-tri" d="M ${x} ${y - h} L ${x - w} ${y + (h * 0.74)} L ${x + w} ${y + (h * 0.74)} Z" style="fill:#fff;stroke:${color}"></path>`;
-    },
+  const renderDot = (x, y, color, s) => {
+    const r = 3.1 * s;
+    return `<circle class="month-dot" cx="${x}" cy="${y}" r="${r}" style="fill:${color};stroke:${color}"></circle>`;
   };
 
   const seriesRows = [];
@@ -1051,8 +1036,7 @@ function renderAllDriversMpiChart(series) {
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
       const color = metricMarkerColor(row.driver);
-      const marker = markerRenderer[row.metric.marker];
-      assert(typeof marker === "function", "missing marker renderer", {marker: row.metric.marker});
+      const marker = renderDot;
       const k = mpi.incidentCount;
       const ci95 = mpi.bands[mpi.bands.length - 1];
       const kLine = k !== null ? ` (${Number.isInteger(k) ? String(k) : k.toFixed(1)} incident${k === 1 ? "" : "s"})` : "";
