@@ -588,13 +588,17 @@ const SERIOUS_INJURY_SEVERITIES = new Set([
 
 // Ordinal ranking for sorting: higher = more severe
 const SEVERITY_RANK = {
+  "No Injuries Reported": 0,
+  "No Injured Reported": 0,
   "Property Damage. No Injured Reported": 0,
+  "Minor": 1,
   "Minor W/O Hospitalization": 1,
   "Minor W/ Hospitalization": 2,
   "Moderate": 3,
   "Moderate W/O Hospitalization": 3,
   "Moderate W/ Hospitalization": 4,
-  "Fatality": 5,
+  "Serious": 5,
+  "Fatality": 6,
 };
 
 function linearTicks(min, max, count) {

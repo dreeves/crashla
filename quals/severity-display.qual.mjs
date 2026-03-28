@@ -56,4 +56,24 @@ Expectata: "No injury".
 Resultata: ${JSON.stringify(short)}.`);
 }
 
+// Every known (non-Unknown) severity in the data must have a SEVERITY_RANK entry
+const rankKeys = vm.runInContext(`Object.keys(SEVERITY_RANK)`, ctx);
+for (const sev of severities) {
+  if (sev === "Unknown") continue;
+  assert.ok(
+    rankKeys.includes(sev),
+    `Replicata: check SEVERITY_RANK for ${JSON.stringify(sev)}.
+Expectata: severity string has an explicit rank entry.
+Resultata: missing from SEVERITY_RANK.`);
+}
+
+// Relative ordering: Serious < Fatality, Minor < Moderate, no-injury < Minor
+const rank = vm.runInContext(`(s) => SEVERITY_RANK[s]`, ctx);
+assert.ok(rank("Serious") < rank("Fatality"),
+  "Expectata: Serious ranks below Fatality.");
+assert.ok(rank("Minor") < rank("Moderate"),
+  "Expectata: Minor ranks below Moderate.");
+assert.ok(rank("No Injuries Reported") < rank("Minor"),
+  "Expectata: No Injuries Reported ranks below Minor.");
+
 console.log("qual pass: shortenSeverity handles all severity strings in the data");
