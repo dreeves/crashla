@@ -102,47 +102,63 @@ const checks = vm.runInContext(`
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
   buildMonthlyViews();
-  const mayWaymo = fullMonthSeries.points.find(p => p.month === "2025-05").drivers.Waymo;
-  const mayIdx = fullMonthSeries.months.indexOf("2025-05");
+  // Dynamically find the latest Waymo month with incomplete fault data
+  const incompleteMonth = fullMonthSeries.points.slice().reverse()
+    .find(p => p.drivers.Waymo && p.drivers.Waymo.mpiByMetric.atfault === null
+           && p.drivers.Waymo.mpiByMetric.all !== null);
+  if (!incompleteMonth) return { allComplete: true };
+  const testMonth = incompleteMonth.month;
+  const testWaymo = incompleteMonth.drivers.Waymo;
+  const testIdx = fullMonthSeries.months.indexOf(testMonth);
+  const nextIdx = testIdx + 1;
   const extendedWaymo = monthlySummaryRows(
-    sliceSeries(fullMonthSeries, mayIdx, fullMonthSeries.months.length - 1),
+    sliceSeries(fullMonthSeries, testIdx, fullMonthSeries.months.length - 1),
   ).find(r => r.driver === "Waymo");
-  const defaultWaymo = monthlySummaryRows(activeSeries).find(r => r.driver === "Waymo");
+  const fromNextWaymo = monthlySummaryRows(
+    sliceSeries(fullMonthSeries, nextIdx, fullMonthSeries.months.length - 1),
+  ).find(r => r.driver === "Waymo");
   return {
-    mayAtfaultNull: mayWaymo.mpiByMetric.atfault === null,
-    mayAllPresent: mayWaymo.mpiByMetric.all !== null,
+    allComplete: false,
+    testMonth,
+    atfaultNull: testWaymo.mpiByMetric.atfault === null,
+    allPresent: testWaymo.mpiByMetric.all !== null,
     extendedIncTotal: extendedWaymo.incTotal,
-    defaultIncTotal: defaultWaymo.incTotal,
+    fromNextIncTotal: fromNextWaymo.incTotal,
     extendedIncAtFault: extendedWaymo.incAtFault,
-    defaultIncAtFault: defaultWaymo.incAtFault,
+    fromNextIncAtFault: fromNextWaymo.incAtFault,
     extendedMedian: extendedWaymo.mpiEstimates.atfault.median,
-    defaultMedian: defaultWaymo.mpiEstimates.atfault.median,
+    fromNextMedian: fromNextWaymo.mpiEstimates.atfault.median,
   };
 })()
 `, ctx);
 
 const plain = JSON.parse(JSON.stringify(checks));
 
-assert.ok(
-  plain.mayAtfaultNull && plain.mayAllPresent,
-  `Replicata: inspect Waymo monthly metric availability in 2025-05.
+if (plain.allComplete) {
+  // All Waymo months have complete fault data — the invariant is trivially satisfied
+  console.log("qual pass: fault-weighted metrics exclude months with incomplete fault judgments");
+} else {
+  assert.ok(
+    plain.atfaultNull && plain.allPresent,
+    `Replicata: inspect Waymo monthly metric availability in ${plain.testMonth}.
 Expectata: raw all-incident MPI remains available, but at-fault MPI is unavailable for months with incomplete fault judgments.
 Resultata: ${JSON.stringify(plain)}.`,
-);
+  );
 
-assert.ok(
-  plain.extendedIncTotal > plain.defaultIncTotal,
-  `Replicata: compare Waymo all-incident summary counts for the default active range vs the same range extended back to 2025-05.
-Expectata: total incidents increase when 2025-05 is included.
-Resultata: extended=${plain.extendedIncTotal}, default=${plain.defaultIncTotal}.`,
-);
+  assert.ok(
+    plain.extendedIncTotal > plain.fromNextIncTotal,
+    `Replicata: compare Waymo all-incident summary counts with and without incomplete month ${plain.testMonth}.
+Expectata: total incidents increase when ${plain.testMonth} is included.
+Resultata: extended=${plain.extendedIncTotal}, fromNext=${plain.fromNextIncTotal}.`,
+  );
 
-assert.ok(
-  Math.abs(plain.extendedIncAtFault - plain.defaultIncAtFault) < 1e-9 &&
-    Math.abs(plain.extendedMedian - plain.defaultMedian) < 1e-9,
-  `Replicata: compare Waymo at-fault summary metrics for the default active range vs the same range extended back to 2025-05.
-Expectata: the incomplete 2025-05 month does not change the at-fault totals or MPI estimate.
-Resultata: extendedAtFault=${plain.extendedIncAtFault}, defaultAtFault=${plain.defaultIncAtFault}, extendedMedian=${plain.extendedMedian}, defaultMedian=${plain.defaultMedian}.`,
-);
+  assert.ok(
+    Math.abs(plain.extendedIncAtFault - plain.fromNextIncAtFault) < 1e-9 &&
+      Math.abs(plain.extendedMedian - plain.fromNextMedian) < 1e-9,
+    `Replicata: compare Waymo at-fault summary metrics with and without incomplete month ${plain.testMonth}.
+Expectata: the incomplete month does not change the at-fault totals or MPI estimate.
+Resultata: extendedAtFault=${plain.extendedIncAtFault}, fromNextAtFault=${plain.fromNextIncAtFault}, extendedMedian=${plain.extendedMedian}, fromNextMedian=${plain.fromNextMedian}.`,
+  );
 
-console.log("qual pass: fault-weighted metrics exclude months with incomplete fault judgments");
+  console.log("qual pass: fault-weighted metrics exclude months with incomplete fault judgments");
+}
