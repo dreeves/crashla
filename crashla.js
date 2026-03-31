@@ -968,8 +968,13 @@ function renderAllDriversMpiChart(series) {
       const mpi = row.mpiByMetric[metric.key];
       if (!mpi) return null;
       const k = mpi.incidentCount;
-      if (k !== 0) yMax = Math.max(yMax, mpi.mpiBest, mpi.mpiMax);
-      return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume};
+      // covRatio: how much of this month's incident coverage is known (1 = 
+      // fully reported, <1 = NHTSA monthly reports still pending). Drives dot
+      // opacity so incomplete months are visually demoted without a separate
+      // code path.
+      const covRatio = row.vmtRawMin > 0 ? row.vmtMin / row.vmtRawMin : 1;
+      if (k !== 0) yMax = Math.max(yMax, mpi.mpiBest);
+      return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume, covRatio};
     });
     seriesRows.push({driver, metric, vals});
   }
@@ -1040,15 +1045,20 @@ function renderAllDriversMpiChart(series) {
       const x = mapX(i);
       const y = mapY(mpi.mpiBest);
       const color = metricMarkerColor(row.driver);
-      const marker = renderDot;
       const k = mpi.incidentCount;
       const ci95 = mpi.bands[mpi.bands.length - 1];
       const kLine = k !== null ? ` (${Number.isInteger(k) ? String(k) : k.toFixed(1)} incident${k === 1 ? "" : "s"})` : "";
       const vmtLines = mpi.vmtMonth > 0
         ? `\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`
         : "";
-      const tip = `${row.driver} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)}${kLine}\nRange: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}${vmtLines}`;
-      return `<g>${marker(x, y, color, 1)}<circle cx="${x}" cy="${y}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle></g>`;
+      const incompleteNote = mpi.covRatio < 0.999 ? "\n(incomplete incident coverage)" : "";
+      const tip = `${row.driver} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)}${kLine}\nRange: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}${vmtLines}${incompleteNote}`;
+      const yc = Math.max(mTop, y); // clamp dot to chart area
+      const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
+      const qOpacity = (1 - mpi.covRatio).toFixed(3);
+      const dot = renderDot(x, yc, color, 1);
+      const qmark = `<text x="${x}" y="${(yc + 4).toFixed(2)}" text-anchor="middle" style="font-size:9px;font-weight:bold;fill:${color};opacity:${qOpacity};pointer-events:none">?</text>`;
+      return `<g opacity="${dotOpacity}">${dot}</g>${qmark}<circle cx="${x}" cy="${yc}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle>`;
     }).join("")
   ).join("");
 
