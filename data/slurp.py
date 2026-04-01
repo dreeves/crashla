@@ -474,8 +474,11 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         expected = ref_count * (last_vmt / ref_vmt)
         p_rate = min(1.0, last_count / expected)
 
-        # Best estimate: assume these are all the incidents (no circularity)
-        p_best = 1.0
+        # Best estimate: rate-ratio point estimate (clamped to [0, 1]).
+        # Using 1.0 here would assert "these are definitely all the incidents",
+        # which distorts the aggregate bell curve by adding full VMT with few
+        # incidents, making the incomplete month look anomalously safe.
+        p_best = p_rate
         p_hi = 1.0
         # Lower bound: rate-ratio CI captures possibility of many more
         # missing incidents than observed so far

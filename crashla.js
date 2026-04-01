@@ -973,7 +973,7 @@ function renderAllDriversMpiChart(series) {
       // opacity so incomplete months are visually demoted without a separate
       // code path.
       const covRatio = row.vmtRawMin > 0 ? row.vmtMin / row.vmtRawMin : 1;
-      if (k !== 0) yMax = Math.max(yMax, mpi.mpiBest);
+      if (k !== 0 && covRatio > 0.99) yMax = Math.max(yMax, mpi.mpiBest, mpi.mpiMax);
       return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume, covRatio};
     });
     seriesRows.push({driver, metric, vals});
@@ -1008,6 +1008,7 @@ function renderAllDriversMpiChart(series) {
     idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad,
   );
   const mapY = y => scaleLinear(y, 0, yMax, mTop + pH, mTop);
+  const clampY = v => Math.max(mTop, Math.min(mTop + pH, mapY(v)));
 
   const lines = seriesRows.map(row => {
     let d = "";
@@ -1018,7 +1019,7 @@ function renderAllDriversMpiChart(series) {
         penDown = false;
         continue;
       }
-      d += `${penDown ? " L " : "M "}${mapX(i).toFixed(2)} ${mapY(mpi.mpiBest).toFixed(2)}`;
+      d += `${penDown ? " L " : "M "}${mapX(i).toFixed(2)} ${clampY(mpi.mpiBest).toFixed(2)}`;
       penDown = true;
     }
     return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.driver)}"></path>`;
@@ -1043,7 +1044,6 @@ function renderAllDriversMpiChart(series) {
     row.vals.map((mpi, i) => {
       if (mpi === null || mpi.incidentCount === 0) return "";
       const x = mapX(i);
-      const y = mapY(mpi.mpiBest);
       const color = metricMarkerColor(row.driver);
       const k = mpi.incidentCount;
       const ci95 = mpi.bands[mpi.bands.length - 1];
@@ -1053,11 +1053,11 @@ function renderAllDriversMpiChart(series) {
         : "";
       const incompleteNote = mpi.covRatio < 0.999 ? "\n(incomplete incident coverage)" : "";
       const tip = `${row.driver} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)}${kLine}\nRange: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}${vmtLines}${incompleteNote}`;
-      const yc = Math.max(mTop, y); // clamp dot to chart area
+      const yc = clampY(mpi.mpiBest);
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
       const qOpacity = (1 - mpi.covRatio).toFixed(3);
       const dot = renderDot(x, yc, color, 1);
-      const qmark = `<text x="${x}" y="${(yc + 4).toFixed(2)}" text-anchor="middle" style="font-size:9px;font-weight:bold;fill:${color};opacity:${qOpacity};pointer-events:none">?</text>`;
+      const qmark = `<text x="${(x + 7).toFixed(2)}" y="${(yc - 3).toFixed(2)}" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#555;opacity:${qOpacity};pointer-events:none">?</text>`;
       return `<g opacity="${dotOpacity}">${dot}</g>${qmark}<circle cx="${x}" cy="${yc}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle>`;
     }).join("")
   ).join("");
@@ -1066,7 +1066,6 @@ function renderAllDriversMpiChart(series) {
   // Bands are always continuous — even months with k=0 have a valid posterior
   // (Gamma(0.5, m)), just with very high MPI and wide uncertainty.
   // Clamp to plot range so SVG coordinates stay reasonable.
-  const clampY = v => Math.max(mTop, Math.min(mTop + pH, mapY(v)));
   const bands = seriesRows.map(row => {
     const color = metricMarkerColor(row.driver);
     // Draw widest band first (95%), then 80%, then 50% on top
