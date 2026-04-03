@@ -1051,7 +1051,9 @@ function renderAllDriversMpiChart(series) {
       const vmtLines = mpi.vmtMonth > 0
         ? `\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`
         : "";
-      const incompleteNote = mpi.covRatio < 0.999 ? "\n(incomplete incident coverage)" : "";
+      const incompleteNote = mpi.covRatio < 0.999
+        ? `\nEstimated ${(mpi.covRatio * 100).toFixed(0)}% incident coverage so VMT scaled to ${fmtWhole(mpi.vmtMonthEff)}`
+        : "";
       const tip = `${row.driver} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)}${kLine}\nRange: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}${vmtLines}${incompleteNote}`;
       const yc = clampY(mpi.mpiBest);
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
