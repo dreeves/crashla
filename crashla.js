@@ -2212,7 +2212,7 @@ Sensor failures do count as the fault of the AV.
   sections.push(`
 <h3>Severity breakdown</h3>
 <p>
-(Note that the one fatality here was not the fault of the AV, which was stationary at the time.)
+(Note that in one fatality the AV was stationary and in the other the AV was turning at 8 mph; in both cases the AI fault estimates are near zero.)
 </p>
     <table>
       <thead><tr>
