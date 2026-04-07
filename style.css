@@ -573,6 +573,121 @@ tr:hover { background: #f8f8ff; }
   }
 }
 
+/* Prediction markets panel */
+.polymarket-panel {
+  margin: 0.5rem 0 1.5rem;
+}
+.polymarket-loading {
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
+}
+.polymarket-error {
+  font-size: 0.85rem;
+  color: #a04030;
+}
+.polymarket-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.pm-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  border-top: none;
+  padding: 0.45rem 0.65rem;
+}
+.pm-card:first-child { border-top: 1px solid #e3e8ee; border-radius: 4px 4px 0 0; }
+.pm-card:last-child { border-radius: 0 0 4px 4px; }
+.pm-card:only-child { border-top: 1px solid #e3e8ee; border-radius: 4px; }
+.pm-card-question {
+  font-size: 0.82rem;
+  line-height: 1.3;
+  flex: 1;
+  color: #3c4257;
+}
+.pm-card-question a {
+  color: #3c4257;
+  text-decoration: none;
+}
+.pm-card-question a:hover {
+  color: #556cd6;
+}
+.pm-card-odds {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 3em;
+  text-align: right;
+}
+.pm-card-odds.high { color: #0e6245; }
+.pm-card-odds.mid  { color: #9c6f19; }
+.pm-card-odds.low  { color: #cd3d64; }
+.pm-card-vol {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.68rem;
+  color: #8792a2;
+  white-space: nowrap;
+  min-width: 3.5em;
+  text-align: right;
+}
+.pm-subcard {
+  padding-left: 1.4rem;
+  background: #f7f8fa;
+}
+.pm-subcard .pm-card-question { font-size: 0.8rem; }
+.pm-subcard .pm-card-odds { font-size: 0.8rem; }
+.pm-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.75rem;
+  color: #697386;
+  margin-top: 0.45rem;
+  justify-content: flex-end;
+}
+.pm-footer a { color: #556cd6; text-decoration: none; }
+.pm-footer a:hover { text-decoration: underline; }
+.pm-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.pm-dot.fresh  { background: #2a7a3a; }
+.pm-dot.stale  { background: #c88a04; }
+.pm-dot.rotten { background: #cd3d64; }
+.pm-age {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: #697386;
+}
+.pm-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: 1px solid #e0e6ed;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #697386;
+  padding: 0;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.pm-refresh:hover { background: #f7f8fa; border-color: #c1c9d2; color: #3c4257; }
+.pm-refresh:disabled { cursor: default; opacity: 0.35; }
+
 .colophon {
   margin-top: 2rem;
   padding: 0.5rem 0;

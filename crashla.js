@@ -2569,6 +2569,192 @@ function initTooltips() {
   }, true);
 }
 
+// --- Prediction markets (Polymarket) ---
+
+let polymarketAgeTimer = null;
+
+function polymarketUrl(slug) {
+  return "https://polymarket.com/event/" + slug;
+}
+
+function oddsClass(p) {
+  return p >= 0.6 ? "high" : p >= 0.3 ? "mid" : "low";
+}
+
+function fmtPct(p) { return Math.round(p * 100) + "%"; }
+
+function fmtVol(v) {
+  return v >= 1e6 ? "$" + (v / 1e6).toFixed(1) + "M"
+       : v >= 1e3 ? "$" + Math.round(v / 1e3) + "K"
+       :            "$" + Math.round(v);
+}
+
+// Format elapsed time as compact string like "2d5h3m" or "<1m".
+// cls: fresh (<1h), stale (1h-7d), rotten (>7d).
+function fmtAge(isoStr) {
+  const ms = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.max(0, Math.floor(ms / 60000));
+  if (mins < 1) return {text: "<1m", cls: "fresh"};
+  const d = Math.floor(mins / 1440);
+  const h = Math.floor((mins % 1440) / 60);
+  const m = mins % 60;
+  const parts = [];
+  if (d) parts.push(d + "d");
+  if (h) parts.push(h + "h");
+  if (!d || m) parts.push(m + "m"); // skip minutes when showing days+hours
+  const text = parts.join("");
+  const cls = mins < 60 ? "fresh" : d <= 7 ? "stale" : "rotten";
+  return {text, cls};
+}
+
+function yesProbability(market) {
+  const prices = JSON.parse(market.outcomePrices || "[]");
+  const outcomes = JSON.parse(market.outcomes || "[]");
+  let idx = outcomes.indexOf("Yes");
+  if (idx < 0) idx = 0;
+  return parseFloat(prices[idx]) || 0;
+}
+
+function renderPolymarketCard(market, eventSlug) {
+  const prob = yesProbability(market);
+  const vol = parseFloat(market.volume) || 0;
+  const card = document.createElement("div");
+  card.className = "pm-card";
+  card.innerHTML =
+    `<span class="pm-card-question"><a href="${polymarketUrl(eventSlug)}" ` +
+    `target="_blank" rel="noopener">${market.question}</a></span>` +
+    `<span class="pm-card-odds ${oddsClass(prob)}">${fmtPct(prob)}</span>` +
+    `<span class="pm-card-vol">${fmtVol(vol)}</span>`;
+  return card;
+}
+
+function renderPolymarketPanel(config, isoDate) {
+  const panel = byId("polymarket-panel");
+  const grid = document.createElement("div");
+  grid.className = "polymarket-grid";
+
+  for (const ev of config) {
+    if (ev.enabled === false) continue; // skip disabled events
+    const markets = ev.markets || [];
+    if (!markets.length) continue;
+
+    if (ev.multi && markets.length > 1) {
+      const header = document.createElement("div");
+      header.className = "pm-card";
+      const totalVol = parseFloat(ev.volume) || 0;
+      header.innerHTML =
+        `<span class="pm-card-question"><a href="${polymarketUrl(ev.slug)}" ` +
+        `target="_blank" rel="noopener"><b>${ev.title}</b></a></span>` +
+        `<span class="pm-card-vol">${fmtVol(totalVol)}</span>`;
+      grid.appendChild(header);
+
+      const sorted = markets.slice().sort((a, b) =>
+        yesProbability(b) - yesProbability(a));
+      for (const m of sorted) {
+        const card = renderPolymarketCard(m, ev.slug);
+        card.classList.add("pm-subcard");
+        grid.appendChild(card);
+      }
+    } else {
+      grid.appendChild(renderPolymarketCard(markets[0], ev.slug));
+    }
+  }
+
+  panel.textContent = "";
+  panel.appendChild(grid);
+
+  const footer = document.createElement("div");
+  footer.className = "pm-footer";
+
+  const dot = document.createElement("span");
+  dot.className = "pm-dot";
+  const ageSpan = document.createElement("span");
+  ageSpan.className = "pm-age";
+  function tickAge() {
+    const {text, cls} = fmtAge(isoDate);
+    ageSpan.textContent = text;
+    dot.className = "pm-dot " + cls;
+  }
+  tickAge();
+  if (polymarketAgeTimer) clearInterval(polymarketAgeTimer);
+  polymarketAgeTimer = setInterval(tickAge, 60000);
+
+  const refreshBtn = document.createElement("button");
+  refreshBtn.className = "pm-refresh";
+  refreshBtn.title = "Refetch prediction market data";
+  refreshBtn.textContent = "\u21bb";
+  refreshBtn.addEventListener("click", refreshPolymarket);
+
+  const srcLink = document.createElement("a");
+  srcLink.href = "https://polymarket.com";
+  srcLink.target = "_blank";
+  srcLink.rel = "noopener";
+  srcLink.textContent = "Polymarket";
+
+  footer.append(dot, ageSpan, /* srcLink, */ refreshBtn);
+  panel.appendChild(footer);
+}
+
+// Fetch fresh data for a single slug via CORS proxy, returning the event
+// object with the same shape as our snapshot entries.
+async function fetchPolymarketEvent(slug, templateEntry) {
+  const proxy = "https://api.codetabs.com/v1/proxy/?quest=";
+  const apiUrl = "https://gamma-api.polymarket.com/events?slug=" +
+    encodeURIComponent(slug);
+  const resp = await fetch(proxy + encodeURIComponent(apiUrl));
+  assert(resp.ok, "CORS proxy request failed", {status: resp.status});
+  const events = await resp.json();
+  assert(events.length > 0, "No events returned for slug", {slug});
+  const ev = events[0];
+  // Only keep sub-markets that are in the curated snapshot.
+  const kept = new Set(templateEntry.markets.map(m => m.question));
+  const freshMarkets = (ev.markets || [])
+    .filter(m => kept.has(m.question))
+    .map(m => ({
+      question: m.question,
+      outcomes: m.outcomes,
+      outcomePrices: m.outcomePrices,
+      volume: m.volume || "0",
+    }));
+  return {
+    title: ev.title,
+    slug: ev.slug,
+    enabled: templateEntry.enabled,
+    multi: templateEntry.multi || false,
+    volume: ev.volume || 0,
+    markets: freshMarkets,
+  };
+}
+
+async function refreshPolymarket() {
+  const panel = byId("polymarket-panel");
+  const btn = panel.querySelector(".pm-refresh");
+  if (btn) { btn.disabled = true; btn.textContent = "\u231b"; }
+
+  const enabledEvents = POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false);
+  const fresh = [];
+  let ok = 0;
+  for (const entry of enabledEvents) {
+    try {
+      fresh.push(await fetchPolymarketEvent(entry.slug, entry));
+      ok++;
+    } catch (_) {
+      fresh.push(entry); // keep stale data for this one
+    }
+  }
+  const dateLabel = ok > 0
+    ? new Date().toISOString()
+    : POLYMARKET_SNAPSHOT_DATE;
+  renderPolymarketPanel(fresh, dateLabel);
+}
+
+function loadPolymarketData() {
+  assert(Array.isArray(POLYMARKET_SNAPSHOT), "POLYMARKET_SNAPSHOT must be an array");
+  assert(typeof POLYMARKET_SNAPSHOT_DATE === "string",
+    "POLYMARKET_SNAPSHOT_DATE must be a string");
+  renderPolymarketPanel(POLYMARKET_SNAPSHOT, POLYMARKET_SNAPSHOT_DATE);
+}
+
 // --- Init ---
 
 {
@@ -2619,4 +2805,5 @@ function initTooltips() {
   byId("colophon").textContent =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart}`;
   initTooltips();
+  loadPolymarketData();
 }
