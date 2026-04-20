@@ -735,7 +735,7 @@ def main():
         rec = {}
         for csv_field in FIELDS:
             key = KEY_MAP[csv_field]
-            val = r.get(csv_field, "").strip()
+            val = r.get(csv_field, "").strip().replace("\r\n", "\n").replace("\r", "\n")
             rec[key] = val
         # Shorten driver name
         rec["driver"] = DRIVER_SHORT.get(rec["driver"], rec["driver"])
