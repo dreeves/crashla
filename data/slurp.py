@@ -367,21 +367,41 @@ def nhtsa_month_to_iso(label):
     return f"{year}-{MONTH_ABBR_TO_NUM[abbr]}"
 
 
+def _vmt_data_rows(raw_text):
+    """Yield non-empty VMT data rows (header skipped) as field lists.
+
+    Uses a real CSV parser so quoted fields containing commas — e.g. a
+    thousands-separated "22,000,000" — survive intact instead of being
+    shredded by a naive line.split(",").
+    """
+    rows = csv.reader(io.StringIO(raw_text))
+    next(rows, None)  # skip header
+    for row in rows:
+        if any(cell.strip() for cell in row):
+            yield row
+
+
+def _vmt_number(cell):
+    """Parse a VMT numeric cell, tolerating thousands-separator commas."""
+    return float(cell.strip().replace(",", ""))
+
+
+def _canonical_driver(driver_raw):
+    """Map a VMT-sheet driver label to the canonical short name."""
+    return next(
+        (v for k, v in DRIVER_SHORT.items()
+         if k.lower().startswith(driver_raw.lower())
+         or v.lower() == driver_raw.lower()),
+        driver_raw,
+    )
+
+
 def parse_vmt_values(raw_text):
     """Extract per-driver-month best VMT estimates from the raw VMT CSV."""
     result = {}  # (driver, month) -> vmt_best
-    for line in raw_text.splitlines()[1:]:  # skip header
-        if not line.strip():
-            continue
-        parts = line.split(",", 6)
-        driver_raw = parts[0].strip()
-        driver = next(
-            (v for k, v in DRIVER_SHORT.items()
-             if k.lower().startswith(driver_raw.lower())
-             or v.lower() == driver_raw.lower()),
-            driver_raw,
-        )
-        result[(driver, parts[1].strip())] = float(parts[2].strip())
+    for row in _vmt_data_rows(raw_text):
+        result[(_canonical_driver(row[0].strip()), row[1].strip())] = \
+            _vmt_number(row[2])
     return result
 
 
@@ -425,10 +445,9 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         return {}  # all months complete, no adjustments needed
 
     # Count incidents per driver-month (post-dedup, no report-type needed)
-    none_rows = [r for r in nhtsa_rows
-                 if r["Driver / Operator Type"] == "None"]
+    counted_rows = [r for r in nhtsa_rows if is_public_service_incident(r)]
     by_incident = {}  # iid -> {ver, driver, month}
-    for r in none_rows:
+    for r in counted_rows:
         iid = r["Same Incident ID"]
         ver = int(r["Report Version"])
         driver = DRIVER_SHORT.get(r["Reporting Entity"].strip(),
@@ -505,13 +524,7 @@ def fetch_vmt_sheet_raw(stamp):
 
 def parse_vmt_months(raw_text):
     """Parse the set of ISO months from the raw VMT CSV text."""
-    months = set()
-    for line in raw_text.splitlines()[1:]:  # skip header
-        if not line.strip():
-            continue
-        parts = line.split(",", 2)
-        months.add(parts[1].strip())
-    return months
+    return {row[1].strip() for row in _vmt_data_rows(raw_text)}
 
 
 def build_vmt_csv(raw_text, inc_cov, active_months):
@@ -521,37 +534,35 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
     (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
     active_months: set of ISO months to include (months with incident data).
     """
-    lines = raw_text.splitlines()
-    must(len(lines) > 1, "VMT sheet CSV must include header and rows")
-    must(lines[0] == "driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,rationale",
-         "VMT sheet CSV header mismatch", header=lines[0])
-    new_header = lines[0].replace(
-        ",rationale",
-        ",coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
-    )
-    out = [new_header]
-    for line in lines[1:]:
-        if not line.strip():
+    rows = list(csv.reader(io.StringIO(raw_text)))
+    must(len(rows) > 1, "VMT sheet CSV must include header and rows")
+    expected_header = ["driver", "month", "vmt", "driver_cumulative_vmt",
+                       "vmt_min", "vmt_max", "rationale"]
+    must(rows[0] == expected_header,
+         "VMT sheet CSV header mismatch", header=rows[0])
+    out_buf = io.StringIO()
+    writer = csv.writer(out_buf, lineterminator="\n")
+    writer.writerow(["driver", "month", "vmt", "driver_cumulative_vmt",
+                     "vmt_min", "vmt_max", "coverage", "incident_coverage",
+                     "incident_coverage_min", "incident_coverage_max",
+                     "rationale"])
+    for row in rows[1:]:
+        if not any(cell.strip() for cell in row):
             continue
-        parts = line.split(",", 6)  # driver,month,vmt,cum,min,max,rationale
-        driver_raw = parts[0].strip()
-        driver = next(
-            (v for k, v in DRIVER_SHORT.items()
-             if k.lower().startswith(driver_raw.lower())
-             or v.lower() == driver_raw.lower()),
-            driver_raw,
-        )
-        month = parts[1].strip()
+        month = row[1].strip()
         if month not in active_months:
             continue
-        cov_str = "1.0"
-        ic_best, ic_lo, ic_hi = inc_cov.get((driver, month), (1, 1, 1))
-        parts.insert(6, cov_str)
-        parts.insert(7, str(ic_best))
-        parts.insert(8, str(ic_lo))
-        parts.insert(9, str(ic_hi))
-        out.append(",".join(parts))
-    return "\n".join(out)
+        ic_best, ic_lo, ic_hi = inc_cov.get(
+            (_canonical_driver(row[0].strip()), month), (1, 1, 1))
+        # Normalize the four numeric columns to plain integers: a
+        # thousands-separated "22,000,000" entered in the sheet becomes
+        # 22000000, matching the plain-integer convention of the rest of
+        # the data and keeping the emitted CSV safe for naive parsers.
+        nums = [cell.strip().replace(",", "") for cell in row[2:6]]
+        rationale = row[6] if len(row) > 6 else ""
+        writer.writerow([row[0], row[1], *nums, "1.0",
+                         ic_best, ic_lo, ic_hi, rationale])
+    return out_buf.getvalue().rstrip("\n")
 
 
 def js_template_literal(text):
@@ -624,6 +635,31 @@ EXPECTED_DRIVERS = {
     "WeRide Corp",
     "Zoox, Inc.",
 }
+# NHTSA's "Driver / Operator Type" values that count as a reporting entity's
+# public robotaxi service -- the service whose mileage the VMT sheet tracks,
+# which keeps incident counts matched to that denominator. Every operator's
+# public service runs driverless ("None"). Tesla's Austin robotaxi also
+# carries an in-vehicle safety monitor, which NHTSA files as "In-Vehicle
+# (Commercial / Test)", so that mode counts as public service for Tesla too.
+PUBLIC_SERVICE_OPERATOR_TYPES = {
+    "Tesla, Inc.": {"None", "In-Vehicle (Commercial / Test)"},
+}
+must(set(PUBLIC_SERVICE_OPERATOR_TYPES) <= EXPECTED_DRIVERS,
+     "PUBLIC_SERVICE_OPERATOR_TYPES names an unknown reporting entity",
+     unknown=set(PUBLIC_SERVICE_OPERATOR_TYPES) - EXPECTED_DRIVERS)
+must(all(types <= EXPECTED_DRIVER_TYPES
+         for types in PUBLIC_SERVICE_OPERATOR_TYPES.values()),
+     "PUBLIC_SERVICE_OPERATOR_TYPES names an unknown Driver / Operator Type")
+
+
+def is_public_service_incident(row):
+    """True if <row> is an incident from the reporting entity's public
+    robotaxi service (the service the VMT sheet measures)."""
+    counted = PUBLIC_SERVICE_OPERATOR_TYPES.get(
+        row["Reporting Entity"].strip(), {"None"})
+    return row["Driver / Operator Type"].strip() in counted
+
+
 INCIDENT_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
 SUBMISSION_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
 
@@ -673,11 +709,11 @@ def main():
     rows = valid_rows
 
     # Filter to driverless incidents only
-    none_rows = [r for r in rows if r["Driver / Operator Type"] == "None"]
+    counted_rows = [r for r in rows if is_public_service_incident(r)]
 
     # Dedup: group by Report ID first to safely handle when "Same Incident ID" changes
     by_rid = {}
-    for r in none_rows:
+    for r in counted_rows:
         rid = r["Report ID"]
         ver = int(r["Report Version"])
         if rid not in by_rid or ver > by_rid[rid]["_ver"]:
@@ -692,6 +728,30 @@ def main():
         if iid not in by_incident or ver > by_incident[iid]["_ver"]:
             by_incident[iid] = {"_ver": ver, "_row": r}
 
+    # Fetch VMT data up front so we can fail fast on stale VMT before any
+    # file writes (fault CSV sync below).
+    # The archive includes years of data; we only need months with VMT.
+    vmt_raw = fetch_vmt_sheet_raw(run_stamp)
+    vmt_months = parse_vmt_months(vmt_raw)
+
+    # Guard against stale VMT data. Incidents older than the VMT history are
+    # expected (the NHTSA archive goes back years) and get dropped quietly
+    # below. Incidents *newer* than the latest VMT month are different: NHTSA
+    # has published crashes the VMT sheet hasn't caught up to, and silently
+    # dropping them hides real data. Abort loudly so the VMT sheet gets
+    # updated instead.
+    vmt_latest = max(vmt_months)
+    stale = {}
+    for entry in by_incident.values():
+        m = nhtsa_month_to_iso(entry["_row"]["Incident Date"].strip())
+        if m > vmt_latest:
+            stale.setdefault(m, []).append(entry["_row"]["Report ID"])
+    must(not stale,
+         "VMT sheet is out of date: NHTSA reports incidents in months with no "
+         f"VMT data (latest VMT month is {vmt_latest}). Add VMT rows covering "
+         "these months to the VMT sheet, then re-run slurp.py.",
+         stale_months={m: sorted(rids) for m, rids in sorted(stale.items())})
+
     fault_target_ids = load_fault_report_ids()
     fault_master_rows = build_fault_master_rows(
         (entry["_row"] for entry in by_incident.values()),
@@ -702,10 +762,6 @@ def main():
     fault_models, fault_ids = load_fault_models()
 
     # Filter to months that have VMT data for any driver.
-    # The archive includes years of data; we only need months with VMT.
-    vmt_raw = fetch_vmt_sheet_raw(run_stamp)
-    vmt_months = parse_vmt_months(vmt_raw)
-
     # Derive last_month from the data: latest incident month that also has VMT.
     # Months with VMT but no incidents yet (beyond the NHTSA reporting frontier)
     # are excluded so we don't show 0-incident months with full VMT.

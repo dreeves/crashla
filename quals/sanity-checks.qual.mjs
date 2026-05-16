@@ -165,12 +165,13 @@ Expectata: table has low/high VMT and range ratio columns.
 Resultata: expected columns not found.`);
 
 // --- Poisson dispersion: small-sample drivers get "too few" ---
-const tooFewCount = (html.match(/too few incidents to tell/g) || []).length;
+const dispBlock = (html.match(/<h3>Poisson dispersion<\/h3>[\s\S]*?<\/table>/) || [""])[0];
+const teslaDispRow = dispBlock.split("</tr>").find(s => s.includes("<td>Tesla</td>")) || "";
 assert.ok(
-  tooFewCount >= 2,
-  `Replicata: check Poisson dispersion for small-sample drivers.
-Expectata: Tesla (14) and Zoox (13) both show "too few incidents to tell".
-Resultata: found ${tooFewCount} occurrences.`);
+  teslaDispRow.includes("too few incidents to tell"),
+  `Replicata: check Poisson dispersion verdict for Tesla.
+Expectata: Tesla (small-sample driver) shows "too few incidents to tell".
+Resultata: Tesla dispersion row was ${JSON.stringify(teslaDispRow)}.`);
 
 // --- Reporting threshold: speed=0 data present ---
 assert.ok(

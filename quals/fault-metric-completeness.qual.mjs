@@ -110,12 +110,12 @@ const checks = vm.runInContext(`
   const testMonth = incompleteMonth.month;
   const testWaymo = incompleteMonth.drivers.Waymo;
   const testIdx = fullMonthSeries.months.indexOf(testMonth);
-  const nextIdx = testIdx + 1;
+  // Window through the incomplete month vs. through the month before it.
   const extendedWaymo = monthlySummaryRows(
-    sliceSeries(fullMonthSeries, testIdx, fullMonthSeries.months.length - 1),
+    sliceSeries(fullMonthSeries, 0, testIdx),
   ).find(r => r.driver === "Waymo");
   const fromNextWaymo = monthlySummaryRows(
-    sliceSeries(fullMonthSeries, nextIdx, fullMonthSeries.months.length - 1),
+    sliceSeries(fullMonthSeries, 0, testIdx - 1),
   ).find(r => r.driver === "Waymo");
   return {
     allComplete: false,

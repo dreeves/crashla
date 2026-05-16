@@ -171,11 +171,11 @@ Expectata: summary rows include Tesla, Waymo, and Zoox.
 Resultata: summary rows were ${JSON.stringify(plain.summaryRows)}.`,
 );
 assert.ok(
-  Math.abs(summaryByDriver.Tesla.incTotal - 15) < 1e-6 &&
+  Math.abs(summaryByDriver.Tesla.incTotal - 17) < 1e-6 &&
     Math.abs(summaryByDriver.Tesla.incNonstationary - 11) < 1e-6 &&
     Math.abs(summaryByDriver.Tesla.incRoadwayNonstationary - 8) < 1e-6,
   `Replicata: compute Tesla summary incident totals.
-Expectata: summary totals report observed-window incidents (15 total, 11 nonstationary, 8 nonstationary-roadway) without incident scaling.
+Expectata: summary totals report observed-window incidents (17 total, 11 nonstationary, 8 nonstationary-roadway) without incident scaling.
 Resultata: Tesla summary was ${JSON.stringify(summaryByDriver.Tesla)}.`,
 );
 assert.ok(
