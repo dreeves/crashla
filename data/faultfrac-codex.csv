@@ -1,5 +1,5 @@
 reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
-13781-14043,9,Other Fixed Object,left + bottom,,Property Damage. No Injured Reported,0.95,Redacted narrative and AV contacted fixed object while proceeding
+13781-14043,9,Other Fixed Object,left + bottom,,Property Damage. No Injured Reported,1.00,Teleoperator took control and drove Tesla into construction barricade
 30270-13561,1,Passenger Car,rear,front left,Property Damage. No Injured Reported,0.05,AV slowed in-lane for pickup and was rear-ended
 30270-13656,6,Passenger Car,front,front right,Minor W/O Hospitalization,0.05,Passenger car crossed double yellow into AV left-turn path
 30270-13587,1,SUV,left,right,Property Damage. No Injured Reported,0.05,SUV attempted stop-sign pass around slowing AV and clipped side
@@ -130,11 +130,11 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-13321,0,Motorcycle,right,front,Property Damage. No Injured Reported,0.00,AV passenger door opening contributed to motorcycle contact
 30270-13279,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.00,Passenger car rear-ended stationary AV in queue
 30270-13445,0,Passenger Car,front right,rear right,Property Damage. No Injured Reported,0.00,Parallel-parking car reversed into parked AV
-13781-13647,17,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.90,Redacted narrative and crash with fixed object while AV proceeding
-13781-13648,0,Bus,front + left,front right,Property Damage. No Injured Reported,0.10,Redacted narrative with AV stopped and counterpart turning right
-13781-13646,2,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.95,Redacted narrative and AV backing into fixed object class
-13781-13645,1,Pole / Tree,rear right,,Property Damage. No Injured Reported,1.00,Redacted narrative and AV backing into pole/tree
-13781-13644,4,Heavy Truck,left,rear,Property Damage. No Injured Reported,0.90,Redacted narrative with counterpart parked and AV proceeding
+13781-13647,17,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.25,Uneven pavement punctured tire; curb contact occurred during pull-over
+13781-13648,0,Bus,front + left,front right,Property Damage. No Injured Reported,0.00,Tesla stopped at red light; turning bus bike rack sideswiped it
+13781-13646,2,Other Fixed Object,bottom,,Property Damage. No Injured Reported,1.00,Tesla reversed into curb while parking
+13781-13645,1,Pole / Tree,rear right,,Property Damage. No Injured Reported,1.00,Tesla reversed into wooden utility pole
+13781-13644,4,Heavy Truck,left,rear,Property Damage. No Injured Reported,0.90,Tesla mirror scraped parked tow truck on narrow street
 30270-13607,20,"Other, see Narrative",front right,unknown,Property Damage. No Injured Reported,0.05,Traffic cone was thrown into AV lane by another vehicle occupant
 30270-13586,17,Passenger Car,left,front right,Property Damage. No Injured Reported,0.05,Passenger car ran stop sign and entered AV path
 30270-13585,0,SUV,front left,front,Minor W/O Hospitalization,0.00,Stationary AV struck via chain-reaction collision
@@ -188,10 +188,10 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-13407,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0.05,Stationary AV struck by moving counterpart
 30270-13384,0,SUV,rear right,front right,Property Damage. No Injured Reported,0.05,Stationary AV struck by moving counterpart
 30270-13371,3,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.05,Following car struck AV from behind as AV slowed in intersection
-13781-11986,18,"Other, see Narrative",right,front right,Property Damage. No Injured Reported,0.50,Redacted narrative with unknown counterpart action while AV proceeding
+13781-11986,18,"Other, see Narrative",right,front right,Property Damage. No Injured Reported,0.70,Tesla mirror struck trailer gooseneck hitch protruding into street
 30270-13372,9,Passenger Car,rear right,front right,Minor W/ Hospitalization,0.20,AV lane-change maneuver to avoid dog preceded rear-end contact
 30270-13370,34,Passenger Car,rear left,front,Minor W/O Hospitalization,0.05,Counterpart right turn partially entered AV lane and clipped rear quarter
-13781-11375,2,SUV,rear right,front right,Minor W/ Hospitalization,0.40,Redacted narrative; estimate from CP=Making Right Turn and AV=Making Right Turn
+13781-11375,2,SUV,rear right,front right,Minor W/ Hospitalization,0.00,Tesla was yielding in slip lane and was rear-ended by SUV
 30270-13369,2,Passenger Car,rear left,left,Property Damage. No Injured Reported,0.15,Counterpart lane change into AV path
 30270-13364,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.00,Passenger car rear-ended AV while AV yielded to crosswalk pedestrian
 30270-13363,9,SUV,rear,front,Property Damage. No Injured Reported,0.00,Wrong-way counterpart entered AV lane and struck AV
@@ -261,7 +261,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-13242,0,Bus,rear,right,Property Damage. No Injured Reported,0.00,Bus passing on left struck stopped AV
 30270-13241,0,Bus,left,right,Property Damage. No Injured Reported,0.00,Bus in adjacent turn lane struck AV waiting at red
 30270-13240,23,Passenger Car,rear left,front,Property Damage. No Injured Reported,0.05,Passenger car changed lanes into AV path
-13781-13237,0,"Other, see Narrative",rear left + rear right,front right,No Injured Reported,0.05,Redacted narrative; estimate from CP=Making Right Turn and AV=Stopped
+13781-13237,0,"Other, see Narrative",rear left + rear right,front right,No Injured Reported,0.00,Tesla stopped at red light; motor-scooter struck its rear
 30270-13239,1,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.20,Rear vehicle hit AV during low-speed left-turn initiation; mostly rear-vehicle fault
 30270-13202,7,SUV,rear left,rear,Property Damage. No Injured Reported,0.10,Counterpart backing maneuver caused collision
 30270-13194,0,Passenger Car,left,right,Property Damage. No Injured Reported,0.00,Passing car side-swiped parked AV
@@ -420,7 +420,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11837,0,SUV,rear,left,Property Damage. No Injured Reported,0.00,SUV struck AV after attempting narrow pass while AV yielded
 30270-11842,0,SUV,rear,right,Property Damage. No Injured Reported,0.00,AV passenger opened rear door into passing SUV during drop-off
 30270-11836,1,Heavy Truck,front left,rear,Property Damage. No Injured Reported,1.00,AV struck parked flatbed while maneuvering around it
-13781-11787,27,Animal,front left,,No Injured Reported,0.25,Redacted narrative; estimate from CP=NM Crossing Roadway and AV=Stopped
+13781-11787,27,Animal,front left,,No Injured Reported,0.10,Dog ran into Tesla path; Tesla braked and steered before contact
 30270-11821,0,SUV,front right,rear right,Property Damage. No Injured Reported,0.00,Counterpart backed into stationary AV
 30270-11806,19,Non-Motorist: Cyclist,rear,,Minor W/ Hospitalization,0.05,Cyclist entered roadway from trail against stop control and hit AV rear side
 30270-11794,19,Pickup Truck,left,right,Minor W/ Hospitalization,0.00,Third-party red-light violator caused chain collision into AV
@@ -429,8 +429,8 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11789,0,SUV,front,front,Minor W/ Hospitalization,0.00,SUV crossed center line and struck stationary AV
 30270-11771,2,Heavy Truck,front,rear left,Property Damage. No Injured Reported,1.00,AV maneuvered into parked truck loading ramp
 30270-11766,9,"Other, see Narrative",rear left + bottom,unknown,Property Damage. No Injured Reported,1.00,AV undercarriage struck pavement at parking-lot entrance
-13781-11786,0,Non-Motorist: Cyclist,right,,Property Damage. No Injured Reported,0.05,Redacted narrative; estimate from cyclist moving alongside stopped AV
-13781-11784,6,Passenger Car,right,rear right,Property Damage. No Injured Reported,0.10,Redacted narrative; estimate from CP=Backing and AV=Proceeding Straight
+13781-11786,0,Non-Motorist: Cyclist,right,,Property Damage. No Injured Reported,0.00,Tesla stopped at red light; passing pedicab clipped right mirror
+13781-11784,6,Passenger Car,right,rear right,Property Damage. No Injured Reported,0.10,Wrong-way reversing car continued into Tesla despite evasive steering
 30270-11762,29,Passenger Car,front,right,Property Damage. No Injured Reported,0.05,Adjacent turning car changed lanes into AV during turn
 30270-11760,21,Passenger Car,rear left,front,Property Damage. No Injured Reported,0.05,Passenger car changed lanes into AV rear quarter
 30270-11756,0,Bus,rear,right,Property Damage. No Injured Reported,0.00,Bus proceeding through intersection struck stopped AV
@@ -464,7 +464,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11498,0,Passenger Car,rear left,rear,Property Damage. No Injured Reported,0.00,Counterpart backed into stationary AV
 30270-11496,0,Motorcycle,right,front right,Minor W/O Hospitalization,0.00,Motorcycle hit door of another car then fell into stationary AV
 30270-11502,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.00,Passenger car pulled from stall and struck parked AV
-13781-11687,6,Other Fixed Object,front right,,Property Damage. No Injured Reported,0.90,Redacted narrative; estimate from fixed-object contact during AV left turn
+13781-11687,6,Other Fixed Object,front right,,Property Damage. No Injured Reported,0.80,Tesla turned into parking-lot entrance and struck metal chain
 30270-11664,2,SUV,rear,right,Property Damage. No Injured Reported,0.60,AV moved forward while adjacent SUV door remained open into AV path
 30270-11637,20,SUV,left,front,Property Damage. No Injured Reported,0.05,SUV made unprotected left across AV path
 30270-11627,0,Van,left,right,Property Damage. No Injured Reported,0.00,AV rider opened rear door into passing van
@@ -493,7 +493,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11508,0,Pickup Truck,rear,left,Property Damage. No Injured Reported,0.00,Turning pickup-trailer clipped stopped in-lane AV
 30270-11501,7,Pickup Truck,right,left,Property Damage. No Injured Reported,0.30,Parked pickup door opened into passing AV in narrow gap
 30610-11513,0,Non-Motorist: Cyclist,rear left,,No Injured Reported,0.10,E-cyclist entered turn path and contacted near-stopped AV rear side
-13781-11507,0,SUV,rear right,front right,Property Damage. No Injured Reported,0.05,Redacted narrative; estimate from CP=Proceeding Straight and AV=Stopped
+13781-11507,0,SUV,rear right,front right,Property Damage. No Injured Reported,0.00,Tesla stopped at red light; SUV crept forward and rear-ended it
 30270-11452,0,Non-Motorist: Scooter - Skateboard,right,,Minor W/O Hospitalization,0.00,AV passenger opened door into passing scooter
 30270-11327,0,Passenger Car,rear right,front right,Minor W/O Hospitalization,0.00,Passenger car rear-ended stopped AV at red light
 30270-11455,0,SUV,rear,left,Property Damage. No Injured Reported,0.00,SUV passing on narrow road struck stopped AV
@@ -535,7 +535,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11456,0,Motorcycle,rear left,front right,Property Damage. No Injured Reported,0.00,Motorcycle lane change into leftmost lane struck parked AV
 30270-11433,0,Heavy Truck,rear,left,Minor W/ Hospitalization,0.00,Turning heavy truck struck AV that had reversed and stopped to yield
 30270-11450,0,SUV,front + left,front + left,Moderate W/O Hospitalization,0.00,Wrong-way SUV struck parked AV head-on
-13781-11459,8,Other Fixed Object,front right,,Minor W/O Hospitalization,0.80,Redacted narrative; estimate from fixed-object contact with AV in nonstandard maneuver
+13781-11459,8,Other Fixed Object,front right,,Minor W/O Hospitalization,1.00,Teleoperator took control and drove Tesla up curb into metal fence
 30270-11432,3,Heavy Truck,left,right,Property Damage. No Injured Reported,0.25,Truck turned right from incorrect lane during parallel right-turn
 30270-11430,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.00,Passenger car rear-ended AV stopped for queue
 30270-11424,5,SUV,front,right,Property Damage. No Injured Reported,0.70,AV pulled forward while adjacent AV was reversing from stall
@@ -622,3 +622,5 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11044,1,Non-Motorist: Cyclist,rear right,,No Injuries Reported,0.70,AV changing lanes at low speed; struck cyclist
 30270-11013,2,Passenger Car,rear,front,No Injuries Reported,0.25,Both proceeding straight at low speed; limited info from metadata
 30270-10998,0,Pickup Truck,rear left,front right,No Injuries Reported,0.00,AV parked; struck by pickup proceeding straight
+13781-14631,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.00,Tesla stopped yielding on flashing yellow; passenger car rear-ended it
+13781-14630,0,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0.00,Tesla stopped at stop sign; pickup truck rear-ended it
