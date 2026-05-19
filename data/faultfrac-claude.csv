@@ -1,18 +1,18 @@
 reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
-13781-11507,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,AV stopped; struck by other party
-13781-11459,8,Other Fixed Object,front right,,Minor W/O Hospitalization,0.9,AV struck fixed object; should detect and avoid
-13781-11375,2,SUV,rear right,front right,Minor W/ Hospitalization,0.3,Both turning; shared fault likely
-13781-11687,6,Other Fixed Object,front right,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
-13781-11786,0,Non-Motorist: Cyclist,right,,Property Damage. No Injured Reported,0,AV stopped; struck by other party
-13781-11787,27,Animal,front left,,No Injured Reported,0.5,Animal crossing; partially avoidable
-13781-11784,6,Passenger Car,right,rear right,Property Damage. No Injured Reported,0.1,Other vehicle backed into AV
-13781-11986,18,"Other, see Narrative",right,front right,Property Damage. No Injured Reported,0.4,AV proceeding; limited info from metadata
-13781-13237,0,"Other, see Narrative",rear left + rear right,front right,No Injured Reported,0,AV stopped; struck by other party
-13781-13647,17,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
-13781-13646,2,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
-13781-13648,0,Bus,front + left,front right,Property Damage. No Injured Reported,0,AV stopped; struck by other party
-13781-13644,4,Heavy Truck,left,rear,Property Damage. No Injured Reported,0.8,AV drove into parked object
-13781-13645,1,Pole / Tree,rear right,,Property Damage. No Injured Reported,0.9,AV struck fixed object; should detect and avoid
+13781-11507,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,Tesla stopped at red light; rear-ended by SUV
+13781-11459,8,Other Fixed Object,front right,,Minor W/O Hospitalization,0.9,Teleoperator took control and drove Tesla up curb into fence
+13781-11375,2,SUV,rear right,front right,Minor W/ Hospitalization,0,Tesla yielding at yield sign; rear-ended by following SUV
+13781-11687,6,Other Fixed Object,front right,,Property Damage. No Injured Reported,0.8,Tesla drove into near-invisible chain across parking-lot entrance
+13781-11786,0,Non-Motorist: Cyclist,right,,Property Damage. No Injured Reported,0,Tesla stopped at red light; passing pedicab clipped its mirror
+13781-11787,27,Animal,front left,,No Injured Reported,0.1,Dog darted into road; Tesla braked and steered but contact unavoidable
+13781-11784,6,Passenger Car,right,rear right,Property Damage. No Injured Reported,0.1,Car reversed wrong-way into Tesla; Tesla braked and steered to evade
+13781-11986,18,"Other, see Narrative",right,front right,Property Damage. No Injured Reported,0.7,Tesla mirror struck trailer gooseneck hitch protruding into street
+13781-13237,0,"Other, see Narrative",rear left + rear right,front right,No Injured Reported,0,Tesla stopped at red light; motor-scooter struck its rear
+13781-13647,17,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.3,Road defect punctured tire; curb contact during minimal-risk pullover
+13781-13646,2,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.9,Tesla reversed into a curb while parking
+13781-13648,0,Bus,front + left,front right,Property Damage. No Injured Reported,0,Tesla stopped at red light; turning bus bike rack sideswiped it
+13781-13644,4,Heavy Truck,left,rear,Property Damage. No Injured Reported,0.9,Tesla misjudged clearance and scraped legally parked tow truck
+13781-13645,1,Pole / Tree,rear right,,Property Damage. No Injured Reported,0.9,Tesla reversed into a wooden utility pole
 30270-11297,5,"Other, see Narrative",front right + bottom,unknown,Property Damage. No Injured Reported,0.9,AV drove into chain/barrier; should detect
 30270-11244,8,SUV,front,front right,Property Damage. No Injured Reported,0.1,Other turned left into AV path
 30270-11239,7,"Other, see Narrative",front right,unknown,Property Damage. No Injured Reported,0.9,AV drove into chain/barrier; should detect
@@ -530,7 +530,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-11044,1,Non-Motorist: Cyclist,rear right,,No Injuries Reported,0.7,AV changing lanes at low speed; struck cyclist
 30270-11013,2,Passenger Car,rear,front,No Injuries Reported,0.3,Both proceeding straight at low speed; shared fault likely
 30270-10998,0,Pickup Truck,rear left,front right,No Injuries Reported,0,AV parked; struck by pickup proceeding straight
-13781-14043,9,Other Fixed Object,left + bottom,,Property Damage. No Injured Reported,0.9,AV lane departure into fixed object; should maintain lane position
+13781-14043,9,Other Fixed Object,left + bottom,,Property Damage. No Injured Reported,0.9,Teleoperator took control and drove Tesla into construction barricade
 30270-14003,0,Van,rear right,front right,Moderate W/ Hospitalization,0.1,AV parked; passenger opened door into path of approaching van
 30270-14007,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0.1,AV stopped for pedestrian in crosswalk; rear-ended by following vehicle
 30270-14001,0,Passenger Car,rear right,front right,Minor W/O Hospitalization,0,AV stopped at red light; rear-ended by following vehicle
@@ -1524,3 +1524,5 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-4880,0,First Responder Vehicle,rear left,right,No Injuries Reported,0,Tow truck reversed into stopped Waymo in parking lot
 30270-4363,11,Other Fixed Object,front left + front + front right + right + rear right,,No Injuries Reported,0.6,Waymo hit parking lot barrier arm; should detect barrier
 30270-4484,0,Heavy Truck,rear left,front left,No Injuries Reported,0,Garbage truck sideswiped stopped Waymo while passing
+13781-14630,0,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0,Tesla stopped at stop sign; rear-ended by pickup truck
+13781-14631,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Tesla stopped yielding on flashing yellow; rear-ended by car

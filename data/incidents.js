@@ -32,7 +32,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped; struck by other party",
+      "rclaude": "Tesla stopped at red light; rear-ended by SUV",
       "rcodex": "Redacted narrative; estimate from CP=Proceeding Straight and AV=Stopped",
       "rgemini": "Redacted narrative; SV speed was 0"
     },
@@ -67,7 +67,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.9,
       "codex": 0.8,
       "gemini": 1.0,
-      "rclaude": "AV struck fixed object; should detect and avoid",
+      "rclaude": "Teleoperator took control and drove Tesla up curb into fence",
       "rcodex": "Redacted narrative; estimate from fixed-object contact with AV in nonstandard maneuver",
       "rgemini": "Redacted narrative; AV hit fixed object"
     },
@@ -99,10 +99,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
-      "claude": 0.3,
+      "claude": 0.0,
       "codex": 0.4,
       "gemini": 0.0,
-      "rclaude": "Both turning; shared fault likely",
+      "rclaude": "Tesla yielding at yield sign; rear-ended by following SUV",
       "rcodex": "Redacted narrative; estimate from CP=Making Right Turn and AV=Making Right Turn",
       "rgemini": "Redacted narrative; CP turned into AV's rear right"
     },
@@ -134,10 +134,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front right",
     "cpHit": "",
     "fault": {
-      "claude": 0.9,
+      "claude": 0.8,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV struck fixed object; should detect and avoid",
+      "rclaude": "Tesla drove into near-invisible chain across parking-lot entrance",
       "rcodex": "Redacted narrative; estimate from fixed-object contact during AV left turn",
       "rgemini": "Redacted narrative; AV hit fixed object while turning"
     },
@@ -172,7 +172,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped; struck by other party",
+      "rclaude": "Tesla stopped at red light; passing pedicab clipped its mirror",
       "rcodex": "Redacted narrative; estimate from cyclist moving alongside stopped AV",
       "rgemini": "Redacted narrative; SV speed was 0"
     },
@@ -204,10 +204,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front left",
     "cpHit": "",
     "fault": {
-      "claude": 0.5,
+      "claude": 0.1,
       "codex": 0.25,
       "gemini": 0.0,
-      "rclaude": "Animal crossing; partially avoidable",
+      "rclaude": "Dog darted into road; Tesla braked and steered but contact unavoidable",
       "rcodex": "Redacted narrative; estimate from CP=NM Crossing Roadway and AV=Stopped",
       "rgemini": "Redacted narrative; AV hit animal"
     },
@@ -242,7 +242,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.1,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "Other vehicle backed into AV",
+      "rclaude": "Car reversed wrong-way into Tesla; Tesla braked and steered to evade",
       "rcodex": "Redacted narrative; estimate from CP=Backing and AV=Proceeding Straight",
       "rgemini": "Redacted narrative; CP backed into AV"
     },
@@ -274,10 +274,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "right",
     "cpHit": "front right",
     "fault": {
-      "claude": 0.4,
+      "claude": 0.7,
       "codex": 0.5,
       "gemini": 0.5,
-      "rclaude": "AV proceeding; limited info from metadata",
+      "rclaude": "Tesla mirror struck trailer gooseneck hitch protruding into street",
       "rcodex": "Redacted narrative with unknown counterpart action while AV proceeding",
       "rgemini": "Redacted narrative; sideswipe/ambiguous"
     },
@@ -312,7 +312,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.05,
       "gemini": 0.0,
-      "rclaude": "AV stopped; struck by other party",
+      "rclaude": "Tesla stopped at red light; motor-scooter struck its rear",
       "rcodex": "Redacted narrative; estimate from CP=Making Right Turn and AV=Stopped",
       "rgemini": "Redacted narrative; SV speed was 0"
     },
@@ -344,10 +344,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
-      "claude": 0.9,
+      "claude": 0.3,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV struck fixed object; should detect and avoid",
+      "rclaude": "Road defect punctured tire; curb contact during minimal-risk pullover",
       "rcodex": "Redacted narrative and crash with fixed object while AV proceeding",
       "rgemini": "Redacted narrative; AV hit fixed object (bottom)"
     },
@@ -382,7 +382,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.9,
       "codex": 0.95,
       "gemini": 1.0,
-      "rclaude": "AV struck fixed object; should detect and avoid",
+      "rclaude": "Tesla reversed into a curb while parking",
       "rcodex": "Redacted narrative and AV backing into fixed object class",
       "rgemini": "Redacted narrative; AV backed over fixed object"
     },
@@ -417,7 +417,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.0,
       "codex": 0.1,
       "gemini": 0.0,
-      "rclaude": "AV stopped; struck by other party",
+      "rclaude": "Tesla stopped at red light; turning bus bike rack sideswiped it",
       "rcodex": "Redacted narrative with AV stopped and counterpart turning right",
       "rgemini": "Redacted narrative; SV speed was 0"
     },
@@ -452,7 +452,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.9,
       "codex": 0.95,
       "gemini": 1.0,
-      "rclaude": "AV lane departure into fixed object; should maintain lane position",
+      "rclaude": "Teleoperator took control and drove Tesla into construction barricade",
       "rcodex": "Redacted narrative and AV contacted fixed object while proceeding",
       "rgemini": "AV departed lane and ran into a fixed object."
     },
@@ -484,10 +484,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "left",
     "cpHit": "rear",
     "fault": {
-      "claude": 0.8,
+      "claude": 0.9,
       "codex": 0.9,
       "gemini": 1.0,
-      "rclaude": "AV drove into parked object",
+      "rclaude": "Tesla misjudged clearance and scraped legally parked tow truck",
       "rcodex": "Redacted narrative with counterpart parked and AV proceeding",
       "rgemini": "Redacted narrative; SV hit Parked CP"
     },
@@ -522,7 +522,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "claude": 0.9,
       "codex": 1.0,
       "gemini": 1.0,
-      "rclaude": "AV struck fixed object; should detect and avoid",
+      "rclaude": "Tesla reversed into a wooden utility pole",
       "rcodex": "Redacted narrative and AV backing into pole/tree",
       "rgemini": "Redacted narrative; AV backed into pole/tree"
     },
@@ -553,7 +553,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": 0.0,
+      "codex": null,
+      "gemini": null,
+      "rclaude": "Tesla stopped yielding on flashing yellow; rear-ended by car",
+      "rcodex": null,
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -581,7 +588,14 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "claude": 0.0,
+      "codex": null,
+      "gemini": null,
+      "rclaude": "Tesla stopped at stop sign; rear-ended by pickup truck",
+      "rcodex": null,
+      "rgemini": null
+    },
     "vehiclesInvolved": 2
   },
   {
