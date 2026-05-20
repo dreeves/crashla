@@ -135,7 +135,7 @@ Please give your best estimates of the unsupervised mileage in that time frame f
 
 ---
 
-can you make a file called faultfrac-MODEL.csv that, for every Report ID in data/snapshots/nhtsa-2025-jun-2026-jan.csv for which Operator=None, gives an estimated fraction at-fault for the AV? make sure to use the latest version of each incident. it should have the following columns:
+can you make a file called faultfrac.csv that, for every Report ID in data/snapshots/nhtsa-2025-jun-2026-jan.csv for which Operator=None, gives an estimated fraction at-fault for the AV? make sure to use the latest version of each incident. it should have the following columns:
 
 * reportID [from the NHTSA dataset; must be unique]
 * speed [mph of subject vehicle]
@@ -172,7 +172,7 @@ Raw working sheet: [Google Sheet (VMT + assumptions)](https://docs.google.com/sp
 - The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper lambda quantile, and the upper MPI bound uses vmt_max with the lower lambda quantile. This yields the widest possible band.
 - For partial months (June 15–30 and January 1–15), VMT is pro-rated by the calendar coverage fraction. For January, incident coverage is also adjusted because Monthly-track NHTSA reports may not yet be available (see the "incident coverage" sanity check on the page).
 - The point estimate shown in the line is the Bayesian posterior median of 1/lambda, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.
-- Fault-weighted incidents (thin line): each incident contributes its fault fraction (equal-weight average of Claude, Codex, and Gemini estimates) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.
+- Fault-weighted incidents (thin line): each incident contributes its fault fraction (Claude's at-fault estimate) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.
 - **Tesla safety-monitor caveat:** Most Tesla robotaxi rides include a passenger-seat safety monitor. Tesla classifies these as unsupervised (no operator) for NHTSA reporting, but the monitors may intervene to prevent incidents. If so, Tesla's true unsupervised MPI would be lower (worse) than shown.
 
 ### Human Comparison Methodology
@@ -241,9 +241,9 @@ January has coverage=0.484 (15/31) because the VMT is given as a full-month figu
    - **Zoox**: Rough US estimates based on limited public data from California CPUC and Las Vegas operations (0.5×–2× error band).
 
 3. **AI fault-fraction estimates** (for fault-weighted MPI).
-   Three AI models (Claude, Codex, Gemini) each estimated how at-fault the AV was for every incident, on a 0–1 scale.
-   Stored in `data/faultfrac-claude.csv`, `data/faultfrac-codex.csv`, `data/faultfrac-gemini.csv`.
-   These are used to compute fault-weighted incident counts and fault-variance columns.
+   Claude estimated how at-fault the AV was for every incident, on a 0–1 scale.
+   Stored in `data/faultfrac.csv`.
+   These are used to compute fault-weighted incident counts.
    Passenger-caused incidents (e.g., passenger opened door into traffic) are scored 0 — only the AV driving system's fault counts.
 
 ---

@@ -2,7 +2,7 @@ import sys, csv
 sys.path.insert(0, './data')
 import slurp
 nhtsa = slurp.fetch_nhtsa_csv(slurp.latest_snapshot_path("nhtsa-current-"))
-rows = slurp.read_fault_csv_rows("data/faultfrac-gemini.csv")
+rows = slurp.read_fault_csv_rows("data/faultfrac.csv")
 rids = {r["reportID"] for r in rows}
 missing = []
 for row in nhtsa:

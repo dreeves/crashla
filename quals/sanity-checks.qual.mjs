@@ -102,7 +102,6 @@ const html = getNode("sanity-checks").innerHTML;
 const expectedHeadings = [
   "Passenger presence",
   "Narrative redaction",
-  "Fault variance",
   "Severity breakdown",
   "VMT uncertainty",
   "Poisson dispersion",
@@ -135,15 +134,6 @@ assert.ok(
   `Replicata: check narrative redaction content.
 Expectata: Tesla redacts all narratives, so table includes "100%".
 Resultata: expected content not found.`);
-
-// --- Fault variance has expected metrics ---
-assert.ok(
-  html.includes("Avg max spread") &&
-    html.includes("RMSD") &&
-    html.includes("Close agreement"),
-  `Replicata: check fault variance table structure.
-Expectata: table includes spread, RMSD, and agreement columns.
-Resultata: expected columns not found.`);
 
 // --- Severity breakdown has all categories ---
 assert.ok(

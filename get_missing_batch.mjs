@@ -5,12 +5,12 @@ const incidents = JSON.parse(dataStr);
 
 const TARGET_START = new Date("2025-06-01");
 
-const geminiMissing = incidents.filter(i => {
+const faultMissing = incidents.filter(i => {
     if (new Date(i.date) < TARGET_START) return false;
-    return !i.fault || i.fault.gemini === null;
+    return !i.fault;
 });
-console.log("Total missing:", geminiMissing.length);
-for (const row of geminiMissing.slice(0, 20)) {
+console.log("Total missing:", faultMissing.length);
+for (const row of faultMissing.slice(0, 20)) {
     console.log(`ID: ${row.reportId}`);
     console.log(`Speed: ${row.speed}`);
     console.log(`Crash With: ${row.crashWith}`);

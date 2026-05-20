@@ -132,7 +132,7 @@ function estimateMpi(k, m, massFrac) {
 
 let incidents = [];
 let vmtRows = [];
-let faultData = {}; // reportId -> {claude, codex, gemini, rclaude, rcodex, rgemini}
+let faultData = {}; // reportId -> {faultfrac, reasoning}
 let monthDriverEnabled = {Humans: true, Tesla: true, Waymo: true, Zoox: true};
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
@@ -794,10 +794,8 @@ function monthSeriesData() {
     if (inc.fault !== null) {
       assert(typeof inc.fault === "object",
         "incident fault must be null or object", {reportId: inc.reportId});
-      atFaultFrac = weightedFaultFromValues(
-        inc.fault.claude, inc.fault.codex, inc.fault.gemini,
-      );
-      assert(atFaultFrac === null || (atFaultFrac >= 0 && atFaultFrac <= 1),
+      atFaultFrac = Number(inc.fault.faultfrac);
+      assert(Number.isFinite(atFaultFrac) && atFaultFrac >= 0 && atFaultFrac <= 1,
         "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
     }
     rec.faultKnown += Number(atFaultFrac !== null);
@@ -1657,63 +1655,20 @@ function buildFaultDataFromIncidents(rows) {
     if (row.fault === null) continue; // pre-analysis-window incidents lack fault data
     assert(typeof row.fault === "object",
       "incident fault must be null or object", {reportId: row.reportId});
-    const claude = row.fault.claude === null ? null : Number(row.fault.claude);
-    const codex = row.fault.codex === null ? null : Number(row.fault.codex);
-    const gemini = row.fault.gemini === null ? null : Number(row.fault.gemini);
-    for (const [name, val] of [["claude", claude], ["codex", codex], ["gemini", gemini]]) {
-      assert(val === null || (Number.isFinite(val) && val >= 0 && val <= 1),
-        `incident fault.${name} out of range`, {reportId: row.reportId, val});
-    }
-    for (const [name, key] of [["rclaude", "rclaude"], ["rcodex", "rcodex"], ["rgemini", "rgemini"]]) {
-      assert(row.fault[key] === null || typeof row.fault[key] === "string",
-        `incident fault.${name} invalid`, {reportId: row.reportId});
-    }
+    const faultfrac = Number(row.fault.faultfrac);
+    assert(Number.isFinite(faultfrac) && faultfrac >= 0 && faultfrac <= 1,
+      "incident faultfrac out of range", {reportId: row.reportId, faultfrac});
+    assert(typeof row.fault.reasoning === "string",
+      "incident fault reasoning invalid", {reportId: row.reportId});
     assert(data[row.reportId] === undefined, "duplicate reportId in incidents", {reportId: row.reportId});
-    data[row.reportId] = {
-      claude,
-      codex,
-      gemini,
-      rclaude: row.fault.rclaude,
-      rcodex: row.fault.rcodex,
-      rgemini: row.fault.rgemini,
-    };
+    data[row.reportId] = {faultfrac, reasoning: row.fault.reasoning};
   }
   return data;
 }
 
-function weightedFaultFromValues(claude, codex, gemini) {
-  const vals = [];
-  for (const v of [claude, codex, gemini]) {
-    if (v === null) continue;
-    const n = Number(v);
-    assert(Number.isFinite(n) && n >= 0 && n <= 1, "fault value out of range", {v});
-    vals.push(n);
-  }
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-}
-
-function weightedFault(reportId) {
+function faultFrac(reportId) {
   const fd = faultData[reportId];
-  if (!fd) return null;
-  return weightedFaultFromValues(fd.claude, fd.codex, fd.gemini);
-}
-
-function weightedFaultVarianceFromValues(claude, codex, gemini) {
-  const vals = [];
-  for (const v of [claude, codex, gemini]) {
-    if (v === null) continue;
-    const n = Number(v);
-    assert(Number.isFinite(n) && n >= 0 && n <= 1, "fault value out of range", {v});
-    vals.push(n);
-  }
-  if (vals.length < 2) return 0;
-  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-  return vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length;
-}
-
-function weightedFaultVariance(reportId) {
-  const fd = faultData[reportId];
-  return fd ? weightedFaultVarianceFromValues(fd.claude, fd.codex, fd.gemini) : null;
+  return fd ? fd.faultfrac : null;
 }
 
 function faultColor(frac) {
@@ -1729,14 +1684,7 @@ function faultColor(frac) {
 function faultTooltip(inc) {
   const fd = faultData[inc.reportId];
   if (!fd) return "";
-  const lines = [];
-  for (const [label, val, reason] of [
-    ["Claude", fd.claude, fd.rclaude],
-    ["Codex", fd.codex, fd.rcodex],
-    ["Gemini", fd.gemini, fd.rgemini],
-  ]) {
-    if (val !== null) lines.push(`${label}: ${val.toFixed(2)} — ${reason}`);
-  }
+  const lines = [`${fd.faultfrac.toFixed(2)} — ${fd.reasoning}`];
   if (inc.svHit || inc.cpHit) {
     lines.push(`${inc.svHit || "n/a"} \u{1F4A5} ${inc.cpHit || "n/a"}`);
   }
@@ -1756,11 +1704,7 @@ const SORT_COLUMNS = [
   {key: "location", val: r => (r.city + ", " + r.state)},
   {key: "crashWith",val: r => r.crashWith},
   {key: "speed",    val: r => r.speed !== null ? r.speed : -1},
-  {key: "fault",    val: r => { const f = weightedFault(r.reportId); return f !== null ? f : -1; }},
-  {key: "faultVariance", val: r => {
-    const v = weightedFaultVariance(r.reportId);
-    return v !== null ? v : -1;
-  }},
+  {key: "fault",    val: r => { const f = faultFrac(r.reportId); return f !== null ? f : -1; }},
   {key: "severity", val: r => SEVERITY_RANK[r.severity] ?? -1},
   {key: "narrative", val: r => r.narrative || ""},
 ];
@@ -1896,7 +1840,7 @@ function syncUrlState() {
   window.history.replaceState(null, "", `${window.location.pathname}?${encodeUiStateQuery()}`);
 }
 
-const HEADER_LABELS = ["Driver", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Fault variance", "Severity", "Narrative"];
+const HEADER_LABELS = ["Driver", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
 
 function buildBrowser() {
   const {start, end} = seriesMonthBounds(activeSeries);
@@ -1984,12 +1928,10 @@ function renderTable() {
       : (r.narrative || "");
     const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
 
-    const fault = weightedFault(r.reportId);
+    const fault = faultFrac(r.reportId);
     const faultHtml = fault !== null
       ? `<span class="fault-bar" style="width:${Math.round(fault * 40)}px;background:${faultColor(fault)}"></span>${fault.toFixed(2)}`
       : "—";
-    const faultVariance = weightedFaultVariance(r.reportId);
-    const faultVarianceHtml = faultVariance !== null ? faultVariance.toFixed(3) : "—";
     const faultTip = escAttr(faultTooltip(r));
 
     tr.innerHTML = `
@@ -1999,7 +1941,6 @@ function renderTable() {
       <td>${escHtml(r.crashWith)}</td>
       <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
       <td class="fault-cell" data-tip="${faultTip}">${faultHtml}</td>
-      <td class="fault-var-cell">${faultVarianceHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
       <td class="${narrativeClass}">${escHtml(narrativeText)}</td>
     `;
@@ -2133,59 +2074,7 @@ It makes it hard to estimate fault, so we've tried to guess based on data we do 
       <tbody>${cbiTableRows.join("")}</tbody>
     </table>`);
 
-  // --- 3. Fault model agreement ---
-  const faultAgreeRows = [];
-  for (const driver of ADS_DRIVERS) {
-    const driverRows = rows.filter(r => r.driver === driver && r.fault !== null);
-    const n = driverRows.length;
-    if (n === 0) continue;
-    let sumMaxSpread = 0;
-    let sumVariance = 0;
-    let closeAgree = 0;
-    for (const r of driverRows) {
-      const vals = [r.fault.claude, r.fault.codex, r.fault.gemini].filter(v => v !== null);
-      if (vals.length < 2) { closeAgree++; continue; }
-      const spread = Math.max(...vals) - Math.min(...vals);
-      sumMaxSpread += spread;
-      sumVariance += weightedFaultVarianceFromValues(r.fault.claude, r.fault.codex, r.fault.gemini);
-      if (spread <= 0.1) closeAgree++;
-    }
-    const avgSpread = (sumMaxSpread / n).toFixed(2);
-    const rmsd = Math.sqrt(sumVariance / n).toFixed(2);
-    const agreePct = Math.round(100 * closeAgree / n);
-    faultAgreeRows.push(`<tr>
-      <td>${escHtml(driver)}</td>
-      <td>${avgSpread}</td>
-      <td>${rmsd}</td>
-      <td>${agreePct}%</td>
-    </tr>`);
-  }
-  sections.push(`
-<h3>Fault variance</h3>
-<p>
-We estimate fault by averaging the assessment of three different LLMs (Claude Opus 4.6, GPT-Codex-5.3-Thinking, Gemini 3.1 Pro).
-We record this as a fault fraction for each incident: 
-the fractional/probalistic blame we subjectively assign to the AI driver specifically.
-Fault of the AV passenger doesn't count, like opening a door into traffic.
-Nor do mechanical failures like the wheels falling off the car count as the AV's fault.
-Sensor failures do count as the fault of the AV.
-</p>
-<p>
-"Avg max spread" is the average of (max &minus; min) across the three models per incident.
-"RMSD" is the root-mean-square deviation of individual model scores from their per-incident mean.
-"Close agreement" is the fraction of incidents where all three models are within 0.1 of each other.
-</p>
-    <table>
-      <thead><tr>
-        <th>Driver</th>
-        <th>Avg max spread</th>
-        <th>RMSD</th>
-        <th>Close agreement (&le;0.1)</th>
-      </tr></thead>
-      <tbody>${faultAgreeRows.join("")}</tbody>
-    </table>`);
-
-  // --- 4. Severity breakdown ---
+  // --- 3. Severity breakdown ---
   const sevTableRows = [];
   for (const driver of ADS_DRIVERS) {
     const driverRows = rows.filter(r => r.driver === driver);
@@ -2226,7 +2115,7 @@ Sensor failures do count as the fault of the AV.
       <tbody>${sevTableRows.join("")}</tbody>
     </table>`);
 
-  // --- 5. VMT uncertainty ---
+  // --- 4. VMT uncertainty ---
   // Restrict to incidentObservable months for like-for-like comparison
   const obsMonths = new Set(series.points.filter(p => p.incidentObservable).map(p => p.month));
   const vmtUncRows = [];
@@ -2263,7 +2152,7 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       <tbody>${vmtUncRows.join("")}</tbody>
     </table>`);
 
-  // --- 6. Poisson dispersion (VMT-normalized) ---
+  // --- 5. Poisson dispersion (VMT-normalized) ---
   // Pearson chi-squared dispersion test: X² = Σ(k_i - λ̂·m_i)² / (λ̂·m_i)
   // where λ̂ = Σk_i / Σm_i is the MLE rate and m_i is monthly VMT.
   // Under the Poisson model, X²/(n-1) ≈ 1.
@@ -2325,7 +2214,7 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
       <tbody>${dispRows.join("")}</tbody>
     </table>`);
 
-  // --- 7. Reporting threshold asymmetry ---
+  // --- 6. Reporting threshold asymmetry ---
   const rptRows = [];
   for (const driver of ADS_DRIVERS) {
     const driverRows = rows.filter(r => r.driver === driver);
@@ -2363,7 +2252,7 @@ The "nonstationary" MPI metric filters these out.
       <tbody>${rptRows.join("")}</tbody>
     </table>`);
 
-  // --- 8. Geographic scope ---
+  // --- 7. Geographic scope ---
   const geoByDriver = {};
   for (const driver of ADS_DRIVERS) {
     const driverRows = rows.filter(r => r.driver === driver);
@@ -2402,7 +2291,7 @@ Maybe that affects AVs too?
       <tbody>${geoRows.join("")}</tbody>
     </table>`);
 
-  // --- 9. VMT sources ---
+  // --- 8. VMT sources ---
   const vmtSrcRows = [];
   for (const driver of ADS_DRIVERS) {
     const driverVmt = vmt.filter(r => r.driver === driver);
@@ -2429,7 +2318,7 @@ These are the denominators in every miles per incident (MPI) calculation, so any
       <tbody>${vmtSrcRows.join("")}</tbody>
     </table>`);
 
-  // --- 10. Incident coverage for partial months ---
+  // --- 9. Incident coverage for partial months ---
   const icRows = [];
   for (const driver of ADS_DRIVERS) {
     const driverVmt = vmt.filter(r => r.driver === driver);
@@ -2471,10 +2360,10 @@ When Monthly reports aren't yet available, the effective VMT is scaled down by t
       <tbody>${icRows.join("")}</tbody>
     </table>`);
 
-  // --- 11. Human benchmark derivations ---
+  // --- 10. Human benchmark derivations ---
   sections.push(renderHumanBenchmarkTable());
 
-  // --- 12. Skeptical stress test of conclusions ---
+  // --- 11. Skeptical stress test of conclusions ---
   sections.push(renderStressTestTable(series));
 
   byId("sanity-checks").innerHTML = sections.join("");
@@ -2786,12 +2675,12 @@ function loadPolymarketData() {
     assert(typeof inc.cpHit === "string",
       "incident missing cpHit", {reportId: inc.reportId});
     if (inc.fault !== null) {
-      for (const model of ["claude", "codex", "gemini"]) {
-        const f = inc.fault[model];
-        assert(f === null || (typeof f === "number" && f >= 0 && f <= 1),
-          `incident fault.${model} must be null or number in [0, 1]`,
-          {reportId: inc.reportId, value: f});
-      }
+      const f = inc.fault.faultfrac;
+      assert(typeof f === "number" && f >= 0 && f <= 1,
+        "incident fault.faultfrac must be a number in [0, 1]",
+        {reportId: inc.reportId, value: f});
+      assert(typeof inc.fault.reasoning === "string",
+        "incident fault.reasoning must be a string", {reportId: inc.reportId});
     }
   }
   incidents = incidentData;

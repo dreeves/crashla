@@ -31,14 +31,14 @@ The slurp pipeline is:
 3. Filter to `Driver / Operator Type == "None"`
 4. Deduplicate by `Same Incident ID`, keeping the highest `Report Version`
 5. Restrict to the app's VMT analysis window
-6. Join in local fault-fraction inputs from `data/faultfrac-claude.csv`, `data/faultfrac-codex.csv`, and `data/faultfrac-gemini.csv`
+6. Join in local fault-fraction inputs from `data/faultfrac.csv`
 7. Fetch the VMT sheet directly from Google Sheets
 8. Inject the resulting incident data into `data/incidents.js`
 9. Inject the resulting VMT CSV text into `data/vmt.js`
 
 ## Fault CSV synchronization
 
-The `faultfrac-*.csv` files are partly local judgment and partly mirrored NHTSA data.
+The `faultfrac.csv` file is partly local judgment and partly mirrored NHTSA data.
 
 Their schema is:
 
@@ -49,17 +49,17 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 The rule is:
 
 - The first six columns come from the latest deduplicated NHTSA master data
-- The last two columns (`faultfrac`, `reasoning`) are the model-owned judgment columns
+- The last two columns (`faultfrac`, `reasoning`) are the judgment columns
 
-When `data/slurp.py` runs, it synchronizes the first six columns of every
-`faultfrac-*.csv` file from the live NHTSA master rows before loading the fault
+When `data/slurp.py` runs, it synchronizes the first six columns of
+`faultfrac.csv` from the live NHTSA master rows before loading the fault
 fractions into the app pipeline.
 
 That means:
 
 - contact-area formatting stays consistent across models
 - speed / crash partner / severity stay aligned with the latest NHTSA version
-- the model-owned `faultfrac` and `reasoning` columns are preserved
+- the judgment columns `faultfrac` and `reasoning` are preserved
 
 ## What the checked-in NHTSA CSV files are for
 
@@ -120,7 +120,7 @@ the repo.
 - raw files under `data/snapshots/` intentionally do not get in-band comments,
   because those files are meant to remain archival snapshots of the fetched
   upstream bytes
-- `data/faultfrac-*.csv` stays plain CSV; its provenance is documented here
+- `data/faultfrac.csv` stays plain CSV; its provenance is documented here
   instead of being encoded with a nonstandard CSV comment convention
 
 ## Practical source-of-truth rule

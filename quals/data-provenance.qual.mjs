@@ -3,9 +3,7 @@ import fs from "node:fs";
 
 const incidentsJs = fs.readFileSync("data/incidents.js", "utf8");
 const vmtJs = fs.readFileSync("data/vmt.js", "utf8");
-const faultClaude = fs.readFileSync("data/faultfrac-claude.csv", "utf8");
-const faultCodex = fs.readFileSync("data/faultfrac-codex.csv", "utf8");
-const faultGemini = fs.readFileSync("data/faultfrac-gemini.csv", "utf8");
+const faultFrac = fs.readFileSync("data/faultfrac.csv", "utf8");
 const snapshotsDoc = fs.readFileSync("data/snapshots/README.md", "utf8");
 
 assert.ok(
@@ -22,20 +20,13 @@ Expectata: the generated VMT artifact declares that data/slurp.py built it from 
 Resultata: the file header was ${JSON.stringify(vmtJs.split("\\n", 1)[0])}.`,
 );
 
-for (const [name, text] of [
-  ["claude", faultClaude],
-  ["codex", faultCodex],
-  ["gemini", faultGemini],
-]) {
-  const lines = text.split("\n");
-  assert.equal(
-    lines[0],
-    "reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning",
-    `Replicata: inspect the header row of data/faultfrac-${name}.csv.
-Expectata: each editable fault CSV stays plain canonical CSV with the standard header on line 1.
-Resultata: the header row was ${JSON.stringify(lines[0])}.`,
-  );
-}
+assert.equal(
+  faultFrac.split("\n")[0],
+  "reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning",
+  `Replicata: inspect the header row of data/faultfrac.csv.
+Expectata: the editable fault CSV stays plain canonical CSV with the standard header on line 1.
+Resultata: the header row was ${JSON.stringify(faultFrac.split("\n")[0])}.`,
+);
 
 assert.ok(
   snapshotsDoc.includes("intentionally kept as raw fetched payloads") &&

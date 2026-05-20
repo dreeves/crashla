@@ -42,11 +42,7 @@ VMT_SHEET_URL = (
     f"https://docs.google.com/spreadsheets/d/{VMT_SHEET_ID}/export"
     f"?format=csv&gid={VMT_SHEET_GID}"
 )
-FAULT_INPUTS = {
-    "claude": DATA_DIR / "faultfrac-claude.csv",
-    "codex": DATA_DIR / "faultfrac-codex.csv",
-    "gemini": DATA_DIR / "faultfrac-gemini.csv",
-}
+FAULT_INPUT = DATA_DIR / "faultfrac.csv"
 FAULT_CSV_FIELDS = [
     "reportID", "speed", "crashwith", "svhit", "cphit", "severity",
     "faultfrac", "reasoning",
@@ -268,15 +264,9 @@ def parse_fault_csv(path):
     return data
 
 
-def load_fault_models():
-    models = {}
-    for model, path in FAULT_INPUTS.items():
-        models[model] = parse_fault_csv(path)
-    # Union of all model IDs — models may have different sets
-    ids = set()
-    for model in models:
-        ids |= set(models[model])
-    return models, ids
+def load_fault_data():
+    data = parse_fault_csv(FAULT_INPUT)
+    return data, set(data)
 
 
 def read_fault_csv_rows(path):
@@ -289,12 +279,9 @@ def read_fault_csv_rows(path):
 
 
 def load_fault_report_ids():
-    ids = set()
-    for path in FAULT_INPUTS.values():
-        rows = read_fault_csv_rows(path)
-        must(len(rows) > 0, "fault csv has no rows", path=path)
-        ids.update(row["reportID"].strip() for row in rows)
-    return ids
+    rows = read_fault_csv_rows(FAULT_INPUT)
+    must(len(rows) > 0, "fault csv has no rows", path=FAULT_INPUT)
+    return {row["reportID"].strip() for row in rows}
 
 
 def fault_master_row(row):
@@ -350,8 +337,7 @@ def sync_fault_csv(path, master_rows):
 
 
 def sync_fault_csvs(master_rows):
-    for path in FAULT_INPUTS.values():
-        sync_fault_csv(path, master_rows)
+    sync_fault_csv(FAULT_INPUT, master_rows)
 
 
 # Month labels in the NHTSA CSV use "JAN-2026"; VMT CSV uses "2026-01".
@@ -759,7 +745,7 @@ def main():
     )
 
     sync_fault_csvs(fault_master_rows)
-    fault_models, fault_ids = load_fault_models()
+    fault_data, fault_ids = load_fault_data()
 
     # Filter to months that have VMT data for any driver.
     # Derive last_month from the data: latest incident month that also has VMT.
@@ -808,12 +794,8 @@ def main():
         rid = rec["reportId"]
         if rid in fault_ids:
             rec["fault"] = {
-                "claude": fault_models["claude"][rid]["faultfrac"] if rid in fault_models["claude"] else None,
-                "codex": fault_models["codex"][rid]["faultfrac"] if rid in fault_models["codex"] else None,
-                "gemini": fault_models["gemini"][rid]["faultfrac"] if rid in fault_models["gemini"] else None,
-                "rclaude": fault_models["claude"][rid]["reasoning"] if rid in fault_models["claude"] else None,
-                "rcodex": fault_models["codex"][rid]["reasoning"] if rid in fault_models["codex"] else None,
-                "rgemini": fault_models["gemini"][rid]["reasoning"] if rid in fault_models["gemini"] else None,
+                "faultfrac": fault_data[rid]["faultfrac"],
+                "reasoning": fault_data[rid]["reasoning"],
             }
         else:
             rec["fault"] = None

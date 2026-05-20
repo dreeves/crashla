@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, './data')
 import slurp
 
-rows = slurp.read_fault_csv_rows("data/faultfrac-gemini.csv")
+rows = slurp.read_fault_csv_rows("data/faultfrac.csv")
 rids = {r["reportID"] for r in rows}
 
 nhtsa_rows, _ = slurp.fetch_nhtsa_csv(None)

@@ -76,14 +76,7 @@ vmtRows = [
   {driver: "Waymo", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
 ];
 faultData = {
-  R1: {
-    claude: 0,
-    codex: 1,
-    gemini: 0,
-    rclaude: "a",
-    rcodex: "b",
-    rgemini: "c",
-  },
+  R1: { faultfrac: 0.3, reasoning: "Waymo turned into the crash partner" },
 };
 activeSeries = { months: ["2025-06"] };
 buildBrowser();
@@ -91,10 +84,18 @@ buildBrowser();
 
 const headers = getNode("incidents-head").children[0].children.map(node => node.textContent);
 assert.equal(
-  headers.includes("Fault variance"),
+  headers.includes("Fault"),
   true,
   `Replicata: render the incident browser header row.
-Expectata: columns include the new "Fault variance" header.
+Expectata: columns include the "Fault" header.
+Resultata: headers were ${JSON.stringify(headers)}.`,
+);
+
+assert.equal(
+  headers.includes("Fault variance"),
+  false,
+  `Replicata: render the incident browser header row after consolidating to a single fault estimate.
+Expectata: the obsolete "Fault variance" column is gone.
 Resultata: headers were ${JSON.stringify(headers)}.`,
 );
 
@@ -109,11 +110,19 @@ Resultata: row count was ${bodyRows.length}.`,
 
 const bodyHtml = bodyRows[0].innerHTML;
 assert.equal(
-  bodyHtml.includes('<td class="fault-var-cell">0.222</td>'),
+  bodyHtml.includes(">0.30</td>"),
   true,
-  `Replicata: render one incident with fault values Claude=0, Codex=1, Gemini=0 and equal model weights.
-Expectata: weighted fault variance renders as 0.222 in the incident browser row.
+  `Replicata: render one incident with fault fraction 0.3.
+Expectata: the single fault estimate renders as 0.30 in the incident browser row.
 Resultata: row HTML was ${JSON.stringify(bodyHtml)}.`,
 );
 
-console.log("qual pass: incident browser renders fault variance column");
+assert.equal(
+  bodyHtml.includes("fault-var-cell"),
+  false,
+  `Replicata: render one incident row in the incident browser.
+Expectata: no fault-variance cell is emitted.
+Resultata: row HTML was ${JSON.stringify(bodyHtml)}.`,
+);
+
+console.log("qual pass: incident browser renders a single fault column with no variance column");
