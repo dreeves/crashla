@@ -25,7 +25,7 @@ If a symbol (variable, constant, field name, function, etc) is localized to a fe
 
 Additional rules specific to this project:
 
-19. Each AI agent should only edit its own faultfrac file (faultfrac-claude.csv for Claude, etc). Never edit another agent's fault assignments.
+(none currently)
 
 # Agent Scratchpad (human edits only above this line)
 

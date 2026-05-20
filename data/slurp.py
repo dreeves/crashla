@@ -135,6 +135,17 @@ VEHICLES_INVOLVED = {
     "dc166aecd5b4265": 3,
 }
 
+# Tesla appends this disclaimer to the front of every redacted-update narrative.
+# It conveys no incident facts; strip it so the narrative cell shows the actual
+# story. Trailing space is intentional: it sits between the boilerplate and the
+# real narrative in the source CSV.
+NARRATIVE_BOILERPLATE = (
+    "Summary: This updated report does not report a new incident or make any "
+    "material changes to the factual record. It only removes confidential or "
+    "personally identifying information to make the incident narrative "
+    "publicly available. "
+)
+
 # Manual severity overrides keyed by Same Incident ID. The NHTSA field
 # "Highest Injury Severity Alleged" is sometimes "Unknown"; we resolve it
 # from the narrative, counting only human injuries (not animal).
@@ -788,6 +799,7 @@ def main():
             rec["speed"] = None
         # Convert airbag field to boolean (any vehicle deployment)
         rec["airbagAny"] = "Yes" in rec["airbagAny"]
+        rec["narrative"] = rec["narrative"].removeprefix(NARRATIVE_BOILERPLATE)
         # Compact contact area summaries from NHTSA boolean columns
         rec["svHit"] = _contact_areas(r, "SV Contact Area")
         rec["cpHit"] = _contact_areas(r, "CP Contact Area")
