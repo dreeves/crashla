@@ -12,6 +12,7 @@ import datetime
 import io
 import json
 import math
+import re
 import urllib.request
 from collections import Counter
 from pathlib import Path
@@ -144,6 +145,30 @@ NARRATIVE_BOILERPLATE = (
     "material changes to the factual record. It only removes confidential or "
     "personally identifying information to make the incident narrative "
     "publicly available. "
+)
+
+# NHTSA's published CSV bytes contain several mojibake patterns where the
+# source intended common characters (NBSP, curly quotes). Looks like Latin-1
+# / Windows-1252 / UTF-8 double-encoding upstream that they then republished
+# as UTF-8, preserving the corruption. Normalize each known pattern to its
+# intended character. Keyed by codepoint to survive editor mangling.
+NARRATIVE_MOJIBAKE = {
+    "Â ": " ",                                  # was NBSP (U+00A0)
+    "¢ÂÂ": "“",                       # was left curly quote U+201C
+    "Ã¢ÂÂ": "”",                      # was right curly quote U+201D
+}
+
+# Tesla also appends a meta-correction note when an earlier filing had wrong
+# airbag/tow flags. Once the structured fields are corrected, the prose note
+# is just edit history and adds nothing for a reader of the narrative. Strip
+# it. Captures any MM/DD/YYYY date and any AV name (Tesla/Waymo/Zoox).
+NARRATIVE_AIRBAG_CORRECTION = re.compile(
+    r"\s*On \d{2}/\d{2}/\d{4}, while submitting this report and removing "
+    r"confidential or personally identifying information, the report was "
+    r"submitted in error indicating airbag deployment and tow for the "
+    r"subject vehicle\. This is in error and the reports were updated to "
+    r"reflect that no airbags were deployed and no tow of the "
+    r"(?:Tesla|Waymo|Zoox) vehicle was conducted\.\s*$"
 )
 
 # Manual severity overrides keyed by Same Incident ID. The NHTSA field
@@ -799,7 +824,11 @@ def main():
             rec["speed"] = None
         # Convert airbag field to boolean (any vehicle deployment)
         rec["airbagAny"] = "Yes" in rec["airbagAny"]
-        rec["narrative"] = rec["narrative"].removeprefix(NARRATIVE_BOILERPLATE)
+        nar = NARRATIVE_AIRBAG_CORRECTION.sub(
+            "", rec["narrative"].removeprefix(NARRATIVE_BOILERPLATE))
+        for bad, good in NARRATIVE_MOJIBAKE.items():
+            nar = nar.replace(bad, good)
+        rec["narrative"] = nar
         # Compact contact area summaries from NHTSA boolean columns
         rec["svHit"] = _contact_areas(r, "SV Contact Area")
         rec["cpHit"] = _contact_areas(r, "CP Contact Area")

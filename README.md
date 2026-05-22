@@ -177,7 +177,7 @@ Raw working sheet: [Google Sheet (VMT + assumptions)](https://docs.google.com/sp
 
 ### Human Comparison Methodology
 
-Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows [Kusano & Scanlon (2024)](https://arxiv.org/abs/2312.12675), as discussed in [this analysis](https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos): surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from [Waymo's safety impact page](https://waymo.com/safety/impact/) (127M rider-only miles through Sep 2025) are also incorporated.
+Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The methodology follows [Kusano & Scanlon (2024)](https://arxiv.org/abs/2312.12675), as discussed in [this analysis](https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos): surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting. Updated benchmarks from [Waymo's safety impact page](https://waymo.com/safety/impact/) (170.7M rider-only miles through Dec 2025) are also incorporated.
 
 - **Band interpretation:** The low end uses Blincoe-adjusted rates (correcting for ~60% underreporting of minor crashes); the high end uses police-reported or observed rates. The true apples-to-apples MPI should fall within each band.
 - **Surface streets, not nationwide:** Human benchmarks are restricted to surface streets in AV operating areas (higher crash rates, lower fatality rates than the national average), following the Kusano/Scanlon approach.
