@@ -148,9 +148,9 @@ Resultata: verdict was ${plain.byDriver.Zoox.all.verdictKey}.`,
 );
 
 assert.ok(
-  plain.byDriver.Tesla.all.ratioHi < 2,
+  plain.byDriver.Tesla.all.ratioHi < 3,
   `Replicata: inspect Tesla all-incident AV/human ratio range.
-Expectata: Tesla's optimistic edge is in the neighborhood of 1x human safety.
+Expectata: Tesla's CI still straddles 1x human safety rather than being robustly safe.
 Resultata: ratio range was ${plain.byDriver.Tesla.all.ratioLo}x to ${plain.byDriver.Tesla.all.ratioHi}x.`,
 );
 

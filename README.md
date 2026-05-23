@@ -331,3 +331,27 @@ Phoenix 44.5%, San Francisco 30.6%, Los Angeles 20.1%, Austin 5.0%.
 - Kusano & Scanlon 56.7M-mile paper: https://pubmed.ncbi.nlm.nih.gov/40378124/
 - Driverless Digest analysis: https://www.thedriverlessdigest.com/p/waymo-stats-2025-funding-growth-coverage
 - Driverless Digest CPUC deadheading: https://www.thedriverlessdigest.com/p/what-cpuc-data-reveals-about-waymos
+
+
+## SCRATCH AREA
+
+Old VMT data replaced on 2026-05-22:
+
+tesla	2025-06	1806	1806	1625.4	1986.6	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla	2025-07	16715.5	18521.5	12650	20781	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla	2025-08	68200	86721.5	57970	78430	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla	2025-09	90202	176923.5	88550	91854	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla	2025-10	80061	256984.5	67965	92157	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla	2025-11	103800	360784.5	88230	119370	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla	2025-12	146870.5	507655	111351	182390	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+tesla	2026-01	164845	672500	92690	237000	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+
+tesla	2026-02	185000	857500	120000	260000	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
+zoox	2026-02	230000	1575000	115000	460000	US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
+waymo	2026-02	20000000	211072456	14000000	26000000	US est.: smooth interpolation of cumulative milestones; growth shape uncertain; ±30%
+tesla	2026-03	210000	857500	120000	260000	GPT-5.5 guesses
+zoox	2026-03	500000	2075000	250000	1000000	GPT-5.5 guesses
+waymo	2026-03	22,000,000	233,072,456	15,400,000	28,600,000	GPT-5.5 guesses
+tesla	2026-04	235,000	1,302,500	140,000	340,000	GPT-5.5 guesses
+zoox	2026-04	600,000	2,675,000	300,000	1,200,000	GPT-5.5 guesses
+waymo	2026-04	24,000,000	284,587,646	16,800,000	31,200,000	GPT-5.5 guesses
