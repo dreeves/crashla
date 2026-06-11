@@ -83,3 +83,10 @@ Additional rules specific to this project:
 - Do not treat `127M` vs `170.7M` as a contradiction.
 - Do not silently swap in Waymo-specific benchmark logic as the shared human baseline for all drivers.
 - Do not strengthen provenance claims beyond what the cited source actually says.
+
+### Status (2026-06-10)
+
+- Phase 1 done: README no longer attributes the 127M-era snapshot to the live Waymo page (now labeled historical); `45%` sub-1mph share corrected to `43%`; CPUC `TotalVMTZEV` equivalence relabeled as our assumption; stale window text, stale incident counts (now 1,641: 1,593 Waymo / 17 Tesla / 31 Zoox), and stale Waymo uncertainty bands reconciled with the checked-in `vmt.js`; both `[[TODO --codex]]` items resolved.
+- Phase 2 done: README "Human Comparison Methodology" relabeled as our own synthesis with explicit non-reproduction and broader-default-metric notes; same note added to the app's "Specific human benchmark derivations" section (Latin, per microcopy rule, with recommended English in a code comment).
+- Phase 3 still awaiting human decision (cross-driver app with honest caveats vs separate Waymo-faithful mode).
+- Open data task: Tesla VMT sheet rows are Austin-only while `slurp.py` would count a Dallas/Houston incident if one is filed (none exist as of 2026-06-10). Add Dallas/Houston VMT to Tesla rows from 2026-04 onward to keep scopes matched.
