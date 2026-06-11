@@ -1469,8 +1469,9 @@ function renderHumanBenchmarkTable() {
   return `
     <h3>Specific human benchmark derivations</h3>
     <p>
-Nota bene: hae zonae comparationis humanae sunt synthesis nostra propria ex fontibus publicis confecta (Kusano &amp; Scanlon, pagina securitatis Waymo, FARS), non methodus ipsius Waymo, quae comparatione dynamica locis aptata utitur.
-Praeterea metrica praedefinita ("omnia incidentia") latior est quam comparatio Waymo, quae ad collisiones cum iniuriis in viis urbanis spectat.
+Sources: Kusano & Scanlon, Waymo's safety impact page, FARS.
+This differs from Waymo's location-adjusted safety-impact methodology.
+The all-incidents comparison is broader than Waymo's surface-street, injury-focused framing.
     </p>
     <table class="source-table">
       <thead><tr><th>Metric</th><th>Low MPI</th><th>High MPI</th><th>Derivation</th></tr></thead>
