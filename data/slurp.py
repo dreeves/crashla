@@ -3,8 +3,9 @@
 
 Fetches current + archive ADS incident CSVs from NHTSA, filters to Driver /
 Operator Type = "None", deduplicates by Same Incident ID (keeping highest
-Report Version), and injects the data into data/incidents.js and data/vmt.js
-(between marker comments).
+Report Version), joins in the in-repo VMT master (data/vmt.csv) and fault
+inputs (data/faultfrac.csv), and injects the data into data/incidents.js and
+data/vmt.js (between marker comments).
 """
 
 import csv
@@ -37,12 +38,10 @@ NHTSA_ADS_ARCHIVE_URL = (
 )
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
-VMT_SHEET_ID = "1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w"
-VMT_SHEET_GID = "844581871"
-VMT_SHEET_URL = (
-    f"https://docs.google.com/spreadsheets/d/{VMT_SHEET_ID}/export"
-    f"?format=csv&gid={VMT_SHEET_GID}"
-)
+# In-repo master for the VMT estimates (one row per driver-month).
+# Formerly a Google Sheet; moved into the repo 2026-06-11 so edits happen
+# here and git history is the archive.
+VMT_MASTER = DATA_DIR / "vmt.csv"
 FAULT_INPUT = DATA_DIR / "faultfrac.csv"
 FAULT_CSV_FIELDS = [
     "reportID", "speed", "crashwith", "svhit", "cphit", "severity",
@@ -409,7 +408,7 @@ def _vmt_number(cell):
 
 
 def _canonical_driver(driver_raw):
-    """Map a VMT-sheet driver label to the canonical short name."""
+    """Map a VMT-master driver label to the canonical short name."""
     return next(
         (v for k, v in DRIVER_SHORT.items()
          if k.lower().startswith(driver_raw.lower())
@@ -535,13 +534,9 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
     return result
 
 
-def fetch_vmt_sheet_raw(stamp):
-    """Fetch raw VMT CSV text from Google Sheets (and snapshot it)."""
-    with urllib.request.urlopen(VMT_SHEET_URL, timeout=30) as resp:
-        payload = resp.read()
-    text = payload.decode("utf-8")
-    snapshot_csv_if_changed("vmt-sheet", text, stamp)
-    return text
+def read_vmt_master():
+    """Read raw VMT CSV text from the in-repo master (data/vmt.csv)."""
+    return VMT_MASTER.read_text()
 
 
 def parse_vmt_months(raw_text):
@@ -557,11 +552,11 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
     active_months: set of ISO months to include (months with incident data).
     """
     rows = list(csv.reader(io.StringIO(raw_text)))
-    must(len(rows) > 1, "VMT sheet CSV must include header and rows")
+    must(len(rows) > 1, "VMT master CSV must include header and rows")
     expected_header = ["driver", "month", "vmt", "driver_cumulative_vmt",
                        "vmt_min", "vmt_max", "rationale"]
     must(rows[0] == expected_header,
-         "VMT sheet CSV header mismatch", header=rows[0])
+         "VMT master CSV header mismatch", header=rows[0])
     out_buf = io.StringIO()
     writer = csv.writer(out_buf, lineterminator="\n")
     writer.writerow(["driver", "month", "vmt", "driver_cumulative_vmt",
@@ -577,7 +572,7 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
         ic_best, ic_lo, ic_hi = inc_cov.get(
             (_canonical_driver(row[0].strip()), month), (1, 1, 1))
         # Normalize the four numeric columns to plain integers: a
-        # thousands-separated "22,000,000" entered in the sheet becomes
+        # thousands-separated "22,000,000" entered in the master CSV becomes
         # 22000000, matching the plain-integer convention of the rest of
         # the data and keeping the emitted CSV safe for naive parsers.
         nums = [cell.strip().replace(",", "") for cell in row[2:6]]
@@ -658,7 +653,7 @@ EXPECTED_DRIVERS = {
     "Zoox, Inc.",
 }
 # NHTSA's "Driver / Operator Type" values that count as a reporting entity's
-# public robotaxi service -- the service whose mileage the VMT sheet tracks,
+# public robotaxi service -- the service whose mileage the VMT master tracks,
 # which keeps incident counts matched to that denominator. Every operator's
 # public service runs driverless ("None"). Tesla's Austin robotaxi also
 # carries an in-vehicle safety monitor, which NHTSA files as "In-Vehicle
@@ -676,7 +671,7 @@ must(all(types <= EXPECTED_DRIVER_TYPES
 
 def is_public_service_incident(row):
     """True if <row> is an incident from the reporting entity's public
-    robotaxi service (the service the VMT sheet measures)."""
+    robotaxi service (the service the VMT master measures)."""
     counted = PUBLIC_SERVICE_OPERATOR_TYPES.get(
         row["Reporting Entity"].strip(), {"None"})
     return row["Driver / Operator Type"].strip() in counted
@@ -750,17 +745,17 @@ def main():
         if iid not in by_incident or ver > by_incident[iid]["_ver"]:
             by_incident[iid] = {"_ver": ver, "_row": r}
 
-    # Fetch VMT data up front so we can fail fast on stale VMT before any
+    # Load VMT data up front so we can fail fast on stale VMT before any
     # file writes (fault CSV sync below).
     # The archive includes years of data; we only need months with VMT.
-    vmt_raw = fetch_vmt_sheet_raw(run_stamp)
+    vmt_raw = read_vmt_master()
     vmt_months = parse_vmt_months(vmt_raw)
 
     # Guard against stale VMT data. Incidents older than the VMT history are
     # expected (the NHTSA archive goes back years) and get dropped quietly
     # below. Incidents *newer* than the latest VMT month are different: NHTSA
-    # has published crashes the VMT sheet hasn't caught up to, and silently
-    # dropping them hides real data. Abort loudly so the VMT sheet gets
+    # has published crashes the VMT master hasn't caught up to, and silently
+    # dropping them hides real data. Abort loudly so data/vmt.csv gets
     # updated instead.
     vmt_latest = max(vmt_months)
     stale = {}
@@ -769,9 +764,9 @@ def main():
         if m > vmt_latest:
             stale.setdefault(m, []).append(entry["_row"]["Report ID"])
     must(not stale,
-         "VMT sheet is out of date: NHTSA reports incidents in months with no "
-         f"VMT data (latest VMT month is {vmt_latest}). Add VMT rows covering "
-         "these months to the VMT sheet, then re-run slurp.py.",
+         "data/vmt.csv is out of date: NHTSA reports incidents in months with "
+         f"no VMT data (latest VMT month is {vmt_latest}). Add VMT rows "
+         "covering these months to data/vmt.csv, then re-run slurp.py.",
          stale_months={m: sorted(rids) for m, rids in sorted(stale.items())})
 
     fault_target_ids = load_fault_report_ids()

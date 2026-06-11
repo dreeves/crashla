@@ -12,7 +12,9 @@ Snapshot sources:
 
 - `nhtsa-current-*.csv`: the live current ADS incident CSV from NHTSA
 - `nhtsa-archive-*.csv`: the live archive ADS incident CSV from NHTSA
-- `vmt-sheet-*.csv`: the live VMT Google Sheet CSV export
+- `vmt-sheet-*.csv`: historical snapshots of the retired VMT Google Sheet CSV
+  export, from before the VMT master moved into the repo at `data/vmt.csv`
+  (2026-06-11)
 - `nhtsa-2025-jun-dec.csv` and `nhtsa-2025-jun-2026-jan.csv`: legacy
   descriptive-name current-CSV snapshots from before the timestamped naming
   scheme

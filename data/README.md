@@ -16,25 +16,51 @@ When you run `python3 data/slurp.py`, it fetches:
 
 - The current ADS incident CSV from NHTSA
 - The archive ADS incident CSV from NHTSA
-- The VMT CSV export from the Google Sheet
 
 The live URLs are defined in `data/slurp.py` as:
 
 - `NHTSA_ADS_CSV_URL`
 - `NHTSA_ADS_ARCHIVE_URL`
-- `VMT_SHEET_URL`
+
+It also reads two local input files:
+
+- `data/vmt.csv` — the in-repo VMT master (see "VMT master" below)
+- `data/faultfrac.csv` — the fault-fraction judgments
 
 The slurp pipeline is:
 
 1. Fetch current + archive NHTSA CSVs directly from NHTSA
 2. Normalize archive-only column-name differences
-3. Filter to `Driver / Operator Type == "None"`
+3. Filter to each company's public robotaxi service (`Driver / Operator Type == "None"`, plus `"In-Vehicle (Commercial / Test)"` for Tesla's monitored Austin service)
 4. Deduplicate by `Same Incident ID`, keeping the highest `Report Version`
 5. Restrict to the app's VMT analysis window
 6. Join in local fault-fraction inputs from `data/faultfrac.csv`
-7. Fetch the VMT sheet directly from Google Sheets
+7. Read the VMT master from `data/vmt.csv`
 8. Inject the resulting incident data into `data/incidents.js`
 9. Inject the resulting VMT CSV text into `data/vmt.js`
+
+## VMT master
+
+`data/vmt.csv` is the in-repo master for the monthly VMT estimates.
+It was migrated verbatim (field-for-field) from the old VMT Google Sheet on
+2026-06-11; git history is now the archive for VMT edits.
+
+Its schema is:
+
+```text
+driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,rationale
+```
+
+Editing rules:
+
+- One row per driver-month; `month` is ISO `YYYY-MM`
+- `vmt_min <= vmt <= vmt_max`, all non-negative (asserted downstream)
+- Thousands-separator commas in numbers are tolerated (quote the field);
+  slurp normalizes them to plain integers in the generated artifact
+- `rationale` is free text explaining the estimate's source and uncertainty
+
+To change VMT data: edit `data/vmt.csv`, run `python3 data/slurp.py`, and
+commit the master together with the regenerated artifacts.
 
 ## Fault CSV synchronization
 
@@ -96,7 +122,11 @@ That includes:
 
 - the raw current NHTSA ADS CSV
 - the raw archive NHTSA ADS CSV
-- the raw VMT sheet CSV export
+
+(The `vmt-sheet-*.csv` snapshots are historical: they archived the VMT Google
+Sheet export back when that sheet was the master. The master now lives at
+`data/vmt.csv`, where git history serves as the archive, so no new VMT
+snapshots are written.)
 
 If a newly fetched CSV is identical to the latest stored snapshot for that
 source, no new file is written.
@@ -104,8 +134,8 @@ source, no new file is written.
 If the fetched CSV differs from the latest stored snapshot for that source, a
 new timestamped snapshot file is created.
 
-New snapshots use timestamped filenames like `nhtsa-current-*.csv`,
-`nhtsa-archive-*.csv`, and `vmt-sheet-*.csv`.
+New snapshots use timestamped filenames like `nhtsa-current-*.csv` and
+`nhtsa-archive-*.csv`.
 
 For the current NHTSA CSV, `data/slurp.py` still compares against the latest of
 the two legacy `nhtsa-2025-*.csv` snapshots until a timestamped
@@ -120,15 +150,17 @@ the repo.
 - raw files under `data/snapshots/` intentionally do not get in-band comments,
   because those files are meant to remain archival snapshots of the fetched
   upstream bytes
-- `data/faultfrac.csv` stays plain CSV; its provenance is documented here
-  instead of being encoded with a nonstandard CSV comment convention
+- `data/faultfrac.csv` and `data/vmt.csv` stay plain CSV; their provenance is
+  documented here instead of being encoded with a nonstandard CSV comment
+  convention
 
 ## Practical source-of-truth rule
 
 If the question is "what data does the app currently use?", the answer is:
 
 - `data/incidents.js` and `data/vmt.js` are the generated artifacts the app uses at runtime
-- `data/slurp.py` is the code that regenerates those artifacts from live upstream sources
+- `data/slurp.py` is the code that regenerates those artifacts from live NHTSA data plus the local masters
+- `data/vmt.csv` is the in-repo master for VMT estimates; `data/faultfrac.csv` is the master for fault judgments
 - the checked-in `nhtsa-*.csv` files under `data/snapshots/` are archival snapshots, not inputs to the current slurp run
 
 ## Regeneration
@@ -139,4 +171,5 @@ To regenerate the app data, run:
 python3 data/slurp.py
 ```
 
-That command requires network access because it fetches NHTSA and Google Sheets data live.
+That command requires network access because it fetches NHTSA data live.
+VMT comes from the local `data/vmt.csv` master, so no Google access is needed.

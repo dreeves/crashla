@@ -156,7 +156,7 @@ Context:
 [agifriday.substack.com/crashla](https://agifriday.substack.com/crashla/) and
 [agifriday.substack.com/crashla2](https://agifriday.substack.com/crashla2/)
 
-Raw working sheet: [Google Sheet (VMT + assumptions)](https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871)
+VMT master data: `data/vmt.csv` in this repo. (Formerly maintained in a [Google Sheet](https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871), migrated verbatim into the repo 2026-06-11; the sheet is now retired.)
 
 - Top chart: lines differentiated by thickness show MPI for each selected metric. Shaded fan bands show 50%/80%/95% Bayesian credible intervals; error bars show the effect of VMT uncertainty (`vmt_min`/`vmt_max`) on the posterior median.
 - Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.
@@ -230,7 +230,7 @@ For the latest month, NHTSA's Monthly-track reports may not all be filed yet, so
    After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 1,641 incidents as of the 2026-06-10 fetch: 1,593 Waymo, 17 Tesla, 31 Zoox. These counts grow with each slurp run.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
-   Sourced from a Google Sheet and embedded in `data/vmt.js`.
+   Maintained in `data/vmt.csv` (the in-repo master) and embedded in `data/vmt.js` by `data/slurp.py`.
    Each company's mileage comes from different public sources:
    - **Tesla**: robotaxitracker.com cumulative deltas (Austin only; Bay Area excluded per Tesla's Q3 earnings call).
    - **Waymo**: See "Waymo VMT Methodology" section below.
