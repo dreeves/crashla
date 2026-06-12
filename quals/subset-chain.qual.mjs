@@ -60,4 +60,23 @@ Resultata: lo ok=${mpi[subset].lo >= mpi[parent].lo}, hi ok=${mpi[subset].hi >= 
   }
 }
 
+// At-fault band universe-matching: the lo anchor uses the any-property-damage
+// universe where the at-fault share → ~1, so it collapses to the all-crash lo.
+// The hi anchor stays in the police-reported universe with a 50% share, so it
+// must exceed the all-crash hi. Guards against regressing to a single share
+// applied across mismatched universes (the pre-2026-06-12 derivation).
+for (const [cohort, mpi] of Object.entries(mpiByCohort)) {
+  assert.equal(
+    mpi.atfault.lo,
+    mpi.all.lo,
+    `Replicata: compare ${cohort} at-fault band lo to the all-crash band lo.
+Expectata: equal (at-fault share → ~1 in the any-property-damage universe).
+Resultata: atfault.lo=${mpi.atfault.lo}, all.lo=${mpi.all.lo}.`);
+  assert.ok(
+    mpi.atfault.hi > mpi.all.hi,
+    `Replicata: compare ${cohort} at-fault band hi to the all-crash band hi.
+Expectata: strictly greater (50% at-fault share in the police-reported universe).
+Resultata: atfault.hi=${mpi.atfault.hi}, all.hi=${mpi.all.hi}.`);
+}
+
 console.log("qual pass: humanMPI subset chain ordering is consistent");

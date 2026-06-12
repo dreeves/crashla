@@ -240,18 +240,25 @@ const METRIC_DEFS = [
     needsFault: true,
     defaultEnabled: true, primary: false,
     countFn: rec => rec.incidents.atFault,
-    // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
-    // multi-vehicle ~50%; weighted mix gives 50-65%)
+    // At-fault MPI = all-crash MPI / at-fault share, where the share must
+    // match the universe of the anchor it divides. Police-reported universe:
+    // ~50-65% of involvements are at-fault (single-vehicle 100%,
+    // multi-vehicle ~50%). Any-property-damage universe (what SGO captures):
+    // the marginal unreported/sub-threshold contacts are predominantly
+    // single-vehicle/self-inflicted (curb strikes, fixed objects), so the
+    // share rises toward ~1 and the lo anchor collapses to the all-crash lo.
     humanMPI: {
-      HumansAV: {lo: 160000, hi: 430000,
-        src: '50\u201365% at-fault share (single-vehicle 100%, multi ~50%)',
+      HumansAV: {lo: 103000, hi: 430000,
+        src: 'lo: all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity; marginal unreported contacts are mostly self-inflicted); hi: all-crash hi / 50% police-reported-universe share',
         srcLinks: [
           {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
         ]},
-      HumansUS: {lo: 215000, hi: 600000,
-        src: '50\u201365% at-fault share applied to US-average all-crash range',
+      HumansUS: {lo: 140000, hi: 600000,
+        src: 'lo: US-average all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity); hi: US-average all-crash hi / 50% police-reported-universe share',
         srcLinks: [
           {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
         ]},
     },
   },
@@ -1032,6 +1039,17 @@ function drawSingleMonthAxes(
   `;
 }
 
+// Chip legend for a chart: one entry per helmer that actually renders there
+function helmerChipLegend(helmers) {
+  return `
+    <div class="month-legend">
+      ${helmers.map(helmer => `
+      <span class="month-legend-item">
+        <span class="month-chip" style="background:${HELMER_COLORS[helmer]}"></span>${helmerLabel(helmer)}
+      </span>`).join("")}
+    </div>`;
+}
+
 function renderAllHelmersMpiChart(series) {
   const metric = selectedMonthMetric();
   const svgW = 900;
@@ -1188,6 +1206,7 @@ function renderAllHelmersMpiChart(series) {
 
   return `
     <h3>${metric.label} over time</h3>
+    ${helmerChipLegend(seriesRows.filter(row => row.vals.some(v => v !== null)).map(row => row.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="mpi-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${drawSingleMonthAxes(
@@ -1305,18 +1324,9 @@ function renderDistributionChart(series) {
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
-  // Legend: one entry per rendered curve, in curve order
-  const legend = `
-    <div class="month-legend">
-      ${curves.map(c => `
-      <span class="month-legend-item">
-        <span class="month-chip" style="background:${HELMER_COLORS[c.helmer]}"></span>${helmerLabel(c.helmer)}
-      </span>`).join("")}
-    </div>`;
-
   return `
     <h3>${metric.label} using data from ${start} to ${end}</h3>
-    ${legend}
+    ${helmerChipLegend(curves.map(c => c.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}

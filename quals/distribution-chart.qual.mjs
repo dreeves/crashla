@@ -337,4 +337,34 @@ Expectata: returns empty string or SVG without helmer curves.
 Resultata: output was ${JSON.stringify(emptyChart.slice(0, 200))}.`,
 );
 
+// --- 5. Both top charts share one legend (same markup for the same state) ---
+
+const legendPair = vm.runInContext(`
+(() => {
+  const grab = html => {
+    const hit = /<div class="month-legend">[\\s\\S]*?<\\/div>/.exec(html);
+    return hit === null ? null : hit[0];
+  };
+  return {
+    mpiAll: grab(renderAllHelmersMpiChart(activeSeries)),
+    dist: grab(renderDistributionChart(activeSeries)),
+  };
+})()
+`, ctx);
+
+assert.ok(
+  legendPair.mpiAll !== null && legendPair.mpiAll.includes("month-legend-item"),
+  `Replicata: render the cross-helmer MPI chart and extract its legend div.
+Expectata: chart contains a non-empty month-legend.
+Resultata: legend was ${JSON.stringify(legendPair.mpiAll)}.`,
+);
+
+assert.equal(
+  legendPair.mpiAll,
+  legendPair.dist,
+  `Replicata: render both top charts with identical helmer/metric state and extract each legend div.
+Expectata: byte-identical legend markup (both come from helmerChipLegend).
+Resultata: mpiAll=${JSON.stringify(legendPair.mpiAll)} dist=${JSON.stringify(legendPair.dist)}.`,
+);
+
 console.log("qual pass: distribution chart renders inverse-gamma and log-normal density curves");
