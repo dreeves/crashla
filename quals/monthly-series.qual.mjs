@@ -382,6 +382,41 @@ Expectata: every k=0 helmer-month renders a dot with a "(0 incidents)" tooltip (
 Resultata: ${jeffreysZero.zeroDotTips} zero-incident tooltips for ${jeffreysZero.zeroMonths} k=0 helmer-months.`,
 );
 
+// Error bars are clamped like every other layer, never clipped away.
+// Replicates the bug where deselecting Waymo squished Tesla's k=0 at-fault
+// dots against the top of the plot and their error bars vanished entirely
+// (bars used raw mapY + clip-path while dots/lines/bands used clampY).
+const clampedBars = vm.runInContext(`
+  (() => {
+    const savedMetric = selectedMetricKey;
+    const savedEnabled = {...monthHelmerEnabled};
+    selectedMetricKey = "atfault";
+    monthHelmerEnabled = {HumansAV: true, HumansUS: false, Tesla: true, Waymo: false, Zoox: false};
+    const html = renderAllHelmersMpiChart(monthSeriesData());
+    selectedMetricKey = savedMetric;
+    monthHelmerEnabled = savedEnabled;
+    const svgH = Number(/viewBox="0 0 \\d+ (\\d+)"/.exec(html)[1]);
+    const dotCount = (html.match(/class="month-dot"/g) || []).length;
+    const barYs = [...html.matchAll(/class="month-err" x1="[\\d.]+" y1="(-?[\\d.]+)" x2="[\\d.]+" y2="(-?[\\d.]+)"/g)]
+      .map(m => [Number(m[1]), Number(m[2])]);
+    return {svgH, dotCount, barCount: barYs.length,
+      outOfPlot: barYs.filter(([y1, y2]) => y1 < 0 || y1 > svgH || y2 < 0 || y2 > svgH).length};
+  })()
+`, ctx);
+assert.ok(
+  clampedBars.dotCount > 0 && clampedBars.barCount === clampedBars.dotCount,
+  `Replicata: render the at-fault MPI chart with Waymo deselected (Tesla + HumansAV only).
+Expectata: exactly one error bar per rendered dot, including Tesla's k=0 months above the y-range.
+Resultata: ${clampedBars.barCount} bars for ${clampedBars.dotCount} dots.`,
+);
+assert.equal(
+  clampedBars.outOfPlot,
+  0,
+  `Replicata: inspect error-bar y-coordinates in the Waymo-deselected at-fault chart.
+Expectata: all bar endpoints clamped inside the SVG (no bars rendered off-plot where the clip would hide them).
+Resultata: ${clampedBars.outOfPlot} of ${clampedBars.barCount} bars have endpoints outside [0, ${clampedBars.svgH}].`,
+);
+
 assert.ok(
   appScript.includes("Monthly VMT:") &&
     appScript.includes("Cumulative VMT:"),

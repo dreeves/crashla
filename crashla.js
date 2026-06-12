@@ -1133,20 +1133,21 @@ function renderAllHelmersMpiChart(series) {
     return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.helmer)}"></path>`;
   }).join("");
 
-  const errs = `<g clip-path="url(#mpi-clip)">` + seriesRows.map(row =>
+  // Error bars: the 95% credible interval (same quantity as the widest fan
+  // level and the tooltip's "Range" line), clamped to the plot like every
+  // other layer. Capless: a cap at a clamped endpoint would assert a CI
+  // boundary that isn't there. Bar opacity matches the dot's coverage fade.
+  const errs = seriesRows.map(row =>
     row.vals.map((mpi, i) => {
       if (mpi === null) return "";
       const x = mapX(i);
-      const yLo = mapY(mpi.mpiMin);
-      const yHi = mapY(mpi.mpiMax);
-      const errStyle = metricErrStyle(row.helmer);
+      const ci95 = mpi.bands[mpi.bands.length - 1];
+      const barOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
       return `
-        <line class="month-err" x1="${x.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${x.toFixed(2)}" y2="${yHi.toFixed(2)}" style="${errStyle}"></line>
-        <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yLo.toFixed(2)}" style="${errStyle}"></line>
-        <line class="month-err" x1="${(x - 3).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(x + 3).toFixed(2)}" y2="${yHi.toFixed(2)}" style="${errStyle}"></line>
+        <line class="month-err" x1="${x.toFixed(2)}" y1="${clampY(ci95.lo).toFixed(2)}" x2="${x.toFixed(2)}" y2="${clampY(ci95.hi).toFixed(2)}" style="${metricErrStyle(row.helmer)};opacity:${barOpacity}"></line>
       `;
     }).join("")
-  ).join("") + `</g>`;
+  ).join("");
 
   const marks = seriesRows.map(row =>
     row.vals.map((mpi, i) => {
@@ -1208,7 +1209,6 @@ function renderAllHelmersMpiChart(series) {
     <h3>${metric.label} over time</h3>
     ${helmerChipLegend(seriesRows.filter(row => row.vals.some(v => v !== null)).map(row => row.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
-      <defs><clipPath id="mpi-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${drawSingleMonthAxes(
         series.months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, fmtMiles, "Miles Per Incident (MPI)",
       )}
