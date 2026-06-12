@@ -48,12 +48,15 @@ It was migrated verbatim (field-for-field) from the old VMT Google Sheet on
 Its schema is:
 
 ```text
-driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,rationale
+helmer,month,vmt,helmer_cumulative_vmt,vmt_min,vmt_max,rationale
 ```
+
+("Helmer" is this project's jargon for who or what is at the helm:
+tesla, waymo, or zoox in this file; the app adds human benchmark cohorts.)
 
 Editing rules:
 
-- One row per driver-month; `month` is ISO `YYYY-MM`
+- One row per helmer-month; `month` is ISO `YYYY-MM`
 - `vmt_min <= vmt <= vmt_max`, all non-negative (asserted downstream)
 - Thousands-separator commas in numbers are tolerated (quote the field);
   slurp normalizes them to plain integers in the generated artifact

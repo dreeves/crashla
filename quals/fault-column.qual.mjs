@@ -62,7 +62,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 vm.runInContext(`
 incidents = [{
   reportId: "R1",
-  driver: "Waymo",
+  helmer: "Waymo",
   date: "JUN-2025",
   city: "X",
   state: "CA",
@@ -73,7 +73,7 @@ incidents = [{
   narrative: "x"
 }];
 vmtRows = [
-  {driver: "Waymo", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
+  {helmer: "Waymo", month: "2025-06", vmtMin: 1, vmtBest: 1, vmtMax: 1},
 ];
 faultData = {
   R1: { faultfrac: 0.3, reasoning: "Waymo turned into the crash partner" },

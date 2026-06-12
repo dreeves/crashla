@@ -109,13 +109,13 @@ const checks = vm.runInContext(`
 
   // For each Waymo month, check faultKnown vs total
   const waymoMonths = series.points
-    .filter(p => p.drivers.Waymo !== null)
+    .filter(p => p.helmers.Waymo !== null)
     .map(p => ({
       month: p.month,
-      total: p.drivers.Waymo.incidents.total,
-      faultKnown: p.drivers.Waymo.incidents.faultKnown,
-      atfaultMpi: p.drivers.Waymo.mpiByMetric.atfault,
-      allMpi: p.drivers.Waymo.mpiByMetric.all,
+      total: p.helmers.Waymo.incidents.total,
+      faultKnown: p.helmers.Waymo.incidents.faultKnown,
+      atfaultMpi: p.helmers.Waymo.mpiByMetric.atfault,
+      allMpi: p.helmers.Waymo.mpiByMetric.all,
     }));
 
   // Separate into complete and incomplete months
@@ -128,7 +128,7 @@ const checks = vm.runInContext(`
   const faultKnownNonNeg = waymoMonths.every(m => m.faultKnown >= 0);
 
   // Cross-check: count incidents with non-null fault in the raw data
-  const waymoIncidents = INCIDENT_DATA.filter(inc => inc.driver === "Waymo");
+  const waymoIncidents = INCIDENT_DATA.filter(inc => inc.helmer === "Waymo");
   const rawFaultKnown = waymoIncidents.filter(inc => inc.fault !== null).length;
   const rawFaultNull = waymoIncidents.filter(inc => inc.fault === null).length;
   const seriesFaultKnown = waymoMonths.reduce((s, m) => s + m.faultKnown, 0);

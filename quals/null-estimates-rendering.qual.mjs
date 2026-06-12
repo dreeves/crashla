@@ -99,7 +99,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 // When fault data is incomplete for some months, needsFault metrics produce
 // null mpiEstimates.  All rendering functions must handle this gracefully:
 // stress test table skips null rows, distribution chart skips null curves,
-// per-driver chart omits null metrics from hover text.
+// per-helmer chart omits null metrics from hover text.
 const checks = vm.runInContext(`
 (() => {
   incidents = INCIDENT_DATA;
@@ -118,7 +118,7 @@ const checks = vm.runInContext(`
 
   // Slice to a Waymo month with incomplete fault judgments to force null mpiEstimates
   const incompletePoint = series.points.find(p => {
-    const row = p.drivers.Waymo;
+    const row = p.helmers.Waymo;
     return row !== null && row.vmtBest > 0 &&
       needsFaultKeys.some(k => row.mpiByMetric[k] === null);
   });
@@ -145,7 +145,7 @@ const checks = vm.runInContext(`
   const faultIdx = series.months.indexOf(incompleteMonth);
   const faultSlice = sliceSeries(series, faultIdx, faultIdx);
   const sliceSummary = monthlySummaryRows(faultSlice);
-  const waymoSlice = sliceSummary.find(r => r.driver === "Waymo");
+  const waymoSlice = sliceSummary.find(r => r.helmer === "Waymo");
   const sliceNullCount = needsFaultKeys.filter(k => waymoSlice.mpiEstimates[k] === null).length;
 
   // Render all views on the fault-incomplete slice — must not crash
@@ -180,7 +180,7 @@ const plain = JSON.parse(JSON.stringify(checks));
 
 assert.ok(
   plain.allKeysPresent && plain.noUndefinedValues,
-  `Replicata: inspect mpiEstimates for every driver and metric in the full-series summary.
+  `Replicata: inspect mpiEstimates for every helmer and metric in the full-series summary.
 Expectata: every metric key is present (null or object, never undefined).
 Resultata: allKeysPresent=${plain.allKeysPresent}, noUndefinedValues=${plain.noUndefinedValues}.`,
 );

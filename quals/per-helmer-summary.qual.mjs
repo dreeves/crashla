@@ -96,8 +96,8 @@ const ctx = vm.createContext({
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
-// monthlySummaryRows uses per-driver filtering (drivers[driver] !== null),
-// NOT the cross-driver incidentObservable flag.  This means Waymo's summary
+// monthlySummaryRows uses per-helmer filtering (helmers[helmer] !== null),
+// NOT the cross-helmer incidentObservable flag.  This means Waymo's summary
 // includes pre-window months where only Waymo has VMT, while Tesla/Zoox
 // correctly show zero for those months.
 const checks = vm.runInContext(`
@@ -109,22 +109,22 @@ const checks = vm.runInContext(`
 
   // Find a pre-window month where Waymo has data but Tesla/Zoox don't
   const preWindowMonth = series.points.find(p =>
-    p.drivers.Waymo !== null && p.drivers.Tesla === null);
+    p.helmers.Waymo !== null && p.helmers.Tesla === null);
 
   // Compute summary from the full series
   const summary = Object.fromEntries(
-    monthlySummaryRows(series).map(r => [r.driver, r]));
+    monthlySummaryRows(series).map(r => [r.helmer, r]));
 
   // Compute summary from a Waymo-only slice (pre-window months)
   const startIdx = 0;
   const defIdx = series.months.indexOf(DEFAULT_START_MONTH);
   const preSlice = sliceSeries(series, startIdx, defIdx - 1);
   const preSummary = Object.fromEntries(
-    monthlySummaryRows(preSlice).map(r => [r.driver, r]));
+    monthlySummaryRows(preSlice).map(r => [r.helmer, r]));
 
-  // Count months where each driver has data in the full series
-  const waymoMonths = series.points.filter(p => p.drivers.Waymo !== null).length;
-  const teslaMonths = series.points.filter(p => p.drivers.Tesla !== null).length;
+  // Count months where each helmer has data in the full series
+  const waymoMonths = series.points.filter(p => p.helmers.Waymo !== null).length;
+  const teslaMonths = series.points.filter(p => p.helmers.Tesla !== null).length;
   const obsMonths = series.points.filter(p => p.incidentObservable).length;
 
   return {
@@ -151,14 +151,14 @@ Resultata: no such month found.`,
 assert.ok(
   plain.waymoMonths > plain.obsMonths,
   `Replicata: compare Waymo's month count against the incidentObservable month count.
-Expectata: Waymo has data in more months than the cross-driver observable window (${plain.obsMonths}).
+Expectata: Waymo has data in more months than the cross-helmer observable window (${plain.obsMonths}).
 Resultata: Waymo months=${plain.waymoMonths}, observable months=${plain.obsMonths}.`,
 );
 
 assert.ok(
   plain.preWaymoVmt > 0 && plain.preWaymoInc > 0,
   `Replicata: compute Waymo's summary for a pre-window slice (before DEFAULT_START_MONTH).
-Expectata: Waymo has positive VMT and incidents because monthlySummaryRows uses per-driver filtering.
+Expectata: Waymo has positive VMT and incidents because monthlySummaryRows uses per-helmer filtering.
 Resultata: vmtBest=${plain.preWaymoVmt}, incTotal=${plain.preWaymoInc}.`,
 );
 
@@ -169,4 +169,4 @@ Expectata: Tesla has zero VMT because it has no data in those months.
 Resultata: vmtBest=${plain.preTeslaVmt}.`,
 );
 
-console.log("qual pass: monthlySummaryRows uses per-driver filtering not incidentObservable");
+console.log("qual pass: monthlySummaryRows uses per-helmer filtering not incidentObservable");

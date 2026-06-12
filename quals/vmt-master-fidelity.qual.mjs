@@ -5,7 +5,7 @@ import { appScript, dataScript } from "./load-app.mjs";
 
 // Master-to-app fidelity: every row of data/vmt.csv (the editable VMT master)
 // must flow through data/slurp.py into data/vmt.js and from there into the
-// rendered per-driver charts unchanged — same central VMT, same min/max
+// rendered per-helmer charts unchanged — same central VMT, same min/max
 // range, same cumulative, same rationale. The only master rows allowed to be
 // absent from the app are future months awaiting NHTSA incident data.
 
@@ -35,12 +35,12 @@ const num = s => Number(String(s).replace(/,/g, ""));
 const masterRows = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 assert.deepEqual(
   masterRows[0],
-  ["driver", "month", "vmt", "driver_cumulative_vmt", "vmt_min", "vmt_max", "rationale"],
+  ["helmer", "month", "vmt", "helmer_cumulative_vmt", "vmt_min", "vmt_max", "rationale"],
   `Replicata: read the header of data/vmt.csv.
 Expectata: canonical master header.
 Resultata: ${JSON.stringify(masterRows[0])}.`);
 const master = masterRows.slice(1).map(r => ({
-  driver: r[0], month: r[1], vmt: num(r[2]), cume: num(r[3]),
+  helmer: r[0], month: r[1], vmt: num(r[2]), cume: num(r[3]),
   lo: num(r[4]), hi: num(r[5]), rationale: r[6],
 }));
 
@@ -100,9 +100,9 @@ monthRangeEnd = Infinity;
 buildMonthlyViews();
 ({
   months: fullMonthSeries.months,
-  driverCharts: document.getElementById("chart-driver-series").innerHTML,
+  helmerCharts: document.getElementById("chart-helmer-series").innerHTML,
   vmtJsRows: vmtRows.map(r => ({
-    driver: r.driver, month: r.month, vmt: r.vmtBest, cume: r.vmtCume,
+    helmer: r.helmer, month: r.month, vmt: r.vmtBest, cume: r.vmtCume,
     lo: r.vmtMin, hi: r.vmtMax, coverage: r.coverage, rationale: r.rationale,
   })),
 })
@@ -111,9 +111,9 @@ buildMonthlyViews();
 const cutoff = rendered.months[rendered.months.length - 1];
 
 // --- 1. vmt.js rows match the master row-for-row on shared months ---
-const masterByKey = Object.fromEntries(master.map(r => [`${r.driver}|${r.month}`, r]));
+const masterByKey = Object.fromEntries(master.map(r => [`${r.helmer}|${r.month}`, r]));
 for (const r of rendered.vmtJsRows) {
-  const key = `${r.driver.toLowerCase()}|${r.month}`;
+  const key = `${r.helmer.toLowerCase()}|${r.month}`;
   const m = masterByKey[key];
   assert.ok(m !== undefined,
     `Replicata: look up vmt.js row ${key} in data/vmt.csv.
@@ -129,40 +129,40 @@ Resultata: master ${JSON.stringify(m)} vs generated ${JSON.stringify(r)}.`);
 
 // --- 2. Master rows absent from vmt.js are strictly-future months ---
 const generatedKeys = new Set(
-  rendered.vmtJsRows.map(r => `${r.driver.toLowerCase()}|${r.month}`));
+  rendered.vmtJsRows.map(r => `${r.helmer.toLowerCase()}|${r.month}`));
 for (const m of master) {
-  if (generatedKeys.has(`${m.driver}|${m.month}`)) continue;
+  if (generatedKeys.has(`${m.helmer}|${m.month}`)) continue;
   assert.ok(m.month > cutoff,
-    `Replicata: find master row ${m.driver} ${m.month} in vmt.js.
+    `Replicata: find master row ${m.helmer} ${m.month} in vmt.js.
 Expectata: only months after the last incident month (${cutoff}) may be absent.
-Resultata: ${m.driver} ${m.month} is missing despite being in range.`);
+Resultata: ${m.helmer} ${m.month} is missing despite being in range.`);
 }
 
-// --- 3. Rendered driver charts show the master values verbatim ---
-// Each driver-month renders a VMT tooltip:
-//   "<Driver> <month> (VMT)\nMonthly VMT (central estimate): <vmt*coverage>\n
+// --- 3. Rendered helmer charts show the master values verbatim ---
+// Each helmer-month renders a VMT tooltip:
+//   "<Helmer> <month> (VMT)\nMonthly VMT (central estimate): <vmt*coverage>\n
 //    Monthly VMT range: <lo> – <hi>\n...\nCumulative VMT: <cume>..."
 const tipRe = /data-tip="(Tesla|Waymo|Zoox) (\d{4}-\d{2}) \(VMT\)\nMonthly VMT \(central estimate\): ([\d,]+)\nMonthly VMT range: ([\d,]+) – ([\d,]+)\n[^"]*\nCumulative VMT: ([\d,]+)/g;
 const seen = {};
-for (const hit of rendered.driverCharts.matchAll(tipRe)) {
+for (const hit of rendered.helmerCharts.matchAll(tipRe)) {
   seen[`${hit[1].toLowerCase()}|${hit[2]}`] =
     { vmt: num(hit[3]), lo: num(hit[4]), hi: num(hit[5]), cume: num(hit[6]) };
 }
 const inRange = master.filter(m => m.month <= cutoff);
 assert.equal(Object.keys(seen).length, inRange.length,
-  `Replicata: extract VMT tooltips from the rendered per-driver charts.
+  `Replicata: extract VMT tooltips from the rendered per-helmer charts.
 Expectata: one tooltip per master row up to ${cutoff} (${inRange.length}).
 Resultata: found ${Object.keys(seen).length}.`);
 for (const m of inRange) {
-  const got = seen[`${m.driver}|${m.month}`];
+  const got = seen[`${m.helmer}|${m.month}`];
   const cov = rendered.vmtJsRows.find(r =>
-    r.driver.toLowerCase() === m.driver && r.month === m.month).coverage;
+    r.helmer.toLowerCase() === m.helmer && r.month === m.month).coverage;
   const expected = {
     vmt: Math.round(m.vmt * cov), lo: Math.round(m.lo * cov),
     hi: Math.round(m.hi * cov), cume: m.cume,
   };
   assert.deepEqual(got, expected,
-    `Replicata: read the rendered VMT tooltip for ${m.driver} ${m.month} (full date range).
+    `Replicata: read the rendered VMT tooltip for ${m.helmer} ${m.month} (full date range).
 Expectata: chart shows the master values ${JSON.stringify(expected)}.
 Resultata: chart shows ${JSON.stringify(got)}.`);
 }

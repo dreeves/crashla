@@ -25,9 +25,9 @@ const monthKey = mmmYYYY => {
   return Number(yyyy) * 12 + MONTH_NUM[mmm];
 };
 
-const byDriver = {};
+const byHelmer = {};
 for (const r of incidents) {
-  const d = byDriver[r.driver] ??= {};
+  const d = byHelmer[r.helmer] ??= {};
   const m = d[r.date] ??= { total: 0, missing: 0, missingIds: [] };
   m.total += 1;
   if (!rated.has(r.reportId)) {
@@ -36,7 +36,7 @@ for (const r of incidents) {
   }
 }
 
-const summary = Object.entries(byDriver).map(([driver, months]) => {
+const summary = Object.entries(byHelmer).map(([helmer, months]) => {
   const ordered = Object.entries(months).sort(
     ([a], [b]) => monthKey(a) - monthKey(b),
   );
@@ -44,15 +44,15 @@ const summary = Object.entries(byDriver).map(([driver, months]) => {
     .filter(([, m]) => m.missing > 0)
     .map(([month, m]) => `${month} ${m.missing}/${m.total}`);
   const totalMissing = ordered.reduce((s, [, m]) => s + m.missing, 0);
-  return { driver, totalMissing, gaps };
+  return { helmer, totalMissing, gaps };
 });
 
-for (const { driver, totalMissing, gaps } of summary) {
+for (const { helmer, totalMissing, gaps } of summary) {
   assert.equal(
     totalMissing, 0,
-    `Replicata: scan ${driver} incidents in data/incidents.js for reportIds absent from data/faultfrac.csv.
+    `Replicata: scan ${helmer} incidents in data/incidents.js for reportIds absent from data/faultfrac.csv.
 Expectata: every incident has a fault assessment row.
-Resultata: ${totalMissing} unrated incident(s) in ${driver}; gaps by month: ${gaps.join(", ")}.`,
+Resultata: ${totalMissing} unrated incident(s) in ${helmer}; gaps by month: ${gaps.join(", ")}.`,
   );
 }
 

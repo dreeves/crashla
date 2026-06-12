@@ -106,18 +106,18 @@ const preWindow = vm.runInContext(`
   monthRangeStart = 0;
   monthRangeEnd = 5;
   buildMonthlyViews();
-  const summaryByDriver = Object.fromEntries(
-    monthlySummaryRows(activeSeries).map(row => [row.driver, row]),
+  const summaryByHelmer = Object.fromEntries(
+    monthlySummaryRows(activeSeries).map(row => [row.helmer, row]),
   );
   return {
     requestedMonths,
     activeMonths: [...activeSeries.months],
     sliderHtml: document.getElementById("date-range-controls").innerHTML,
     query: encodeUiStateQuery(),
-    waymoVmt: summaryByDriver.Waymo.vmtBest,
-    waymoInc: summaryByDriver.Waymo.incTotal,
-    teslaVmt: summaryByDriver.Tesla.vmtBest,
-    teslaInc: summaryByDriver.Tesla.incTotal,
+    waymoVmt: summaryByHelmer.Waymo.vmtBest,
+    waymoInc: summaryByHelmer.Waymo.incTotal,
+    teslaVmt: summaryByHelmer.Tesla.vmtBest,
+    teslaInc: summaryByHelmer.Tesla.incTotal,
   };
 })()
 `, ctx);

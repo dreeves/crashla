@@ -38,7 +38,7 @@ NHTSA_ADS_ARCHIVE_URL = (
 )
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
-# In-repo master for the VMT estimates (one row per driver-month).
+# In-repo master for the VMT estimates (one row per helmer-month).
 # Formerly a Google Sheet; moved into the repo 2026-06-11 so edits happen
 # here and git history is the archive.
 VMT_MASTER = DATA_DIR / "vmt.csv"
@@ -79,7 +79,7 @@ FIELDS = [
 KEY_MAP = {
     "Report ID":                     "reportId",
     "Report Version":                "version",
-    "Reporting Entity":              "driver",
+    "Reporting Entity":              "helmer",
     "Incident Date":                 "date",
     "Incident Time (24:00)":         "time",
     "Same Incident ID":              "incidentId",
@@ -119,8 +119,9 @@ def _contact_areas(row, prefix):
     return " + ".join(parts)
 
 
-# Canonical short names for drivers (reporting entities)
-DRIVER_SHORT = {
+# Canonical short names for helmers (reporting entities). "Helmer" is our
+# jargon for who/what is at the helm: Tesla, Waymo, Zoox, or humans.
+HELMER_SHORT = {
     "Waymo LLC":    "Waymo",
     "Tesla, Inc.":  "Tesla",
     "Zoox, Inc.":   "Zoox",
@@ -407,21 +408,21 @@ def _vmt_number(cell):
     return float(cell.strip().replace(",", ""))
 
 
-def _canonical_driver(driver_raw):
-    """Map a VMT-master driver label to the canonical short name."""
+def _canonical_helmer(helmer_raw):
+    """Map a VMT-master helmer label to the canonical short name."""
     return next(
-        (v for k, v in DRIVER_SHORT.items()
-         if k.lower().startswith(driver_raw.lower())
-         or v.lower() == driver_raw.lower()),
-        driver_raw,
+        (v for k, v in HELMER_SHORT.items()
+         if k.lower().startswith(helmer_raw.lower())
+         or v.lower() == helmer_raw.lower()),
+        helmer_raw,
     )
 
 
 def parse_vmt_values(raw_text):
-    """Extract per-driver-month best VMT estimates from the raw VMT CSV."""
-    result = {}  # (driver, month) -> vmt_best
+    """Extract per-helmer-month best VMT estimates from the raw VMT CSV."""
+    result = {}  # (helmer, month) -> vmt_best
     for row in _vmt_data_rows(raw_text):
-        result[(_canonical_driver(row[0].strip()), row[1].strip())] = \
+        result[(_canonical_helmer(row[0].strip()), row[1].strip())] = \
             _vmt_number(row[2])
     return result
 
@@ -438,9 +439,9 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
 
     last_month: ISO month string (e.g. "2026-02") — the latest month with
     any incident data.  Derived from the data, not hardcoded.
-    vmt: dict from parse_vmt_values(), mapping (driver, iso_month) to VMT.
+    vmt: dict from parse_vmt_values(), mapping (helmer, iso_month) to VMT.
 
-    Returns {(driver, iso_month): (best, lo, hi)} where best/lo/hi are the
+    Returns {(helmer, iso_month): (best, lo, hi)} where best/lo/hi are the
     incident coverage fractions (1.0 for complete months).
     """
     # Determine which submission months are present in the dataset
@@ -465,28 +466,28 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
     if not last_month_incomplete:
         return {}  # all months complete, no adjustments needed
 
-    # Count incidents per driver-month (post-dedup, no report-type needed)
+    # Count incidents per helmer-month (post-dedup, no report-type needed)
     counted_rows = [r for r in nhtsa_rows if is_public_service_incident(r)]
-    by_incident = {}  # iid -> {ver, driver, month}
+    by_incident = {}  # iid -> {ver, helmer, month}
     for r in counted_rows:
         iid = r["Same Incident ID"]
         ver = int(r["Report Version"])
-        driver = DRIVER_SHORT.get(r["Reporting Entity"].strip(),
+        helmer = HELMER_SHORT.get(r["Reporting Entity"].strip(),
                                    r["Reporting Entity"].strip())
         month = nhtsa_month_to_iso(r["Incident Date"].strip())
         if iid not in by_incident or ver > by_incident[iid]["ver"]:
-            by_incident[iid] = {"ver": ver, "driver": driver, "month": month}
+            by_incident[iid] = {"ver": ver, "helmer": helmer, "month": month}
 
-    counts = {}  # (driver, month) -> count
+    counts = {}  # (helmer, month) -> count
     for rec in by_incident.values():
-        key = (rec["driver"], rec["month"])
+        key = (rec["helmer"], rec["month"])
         counts[key] = counts.get(key, 0) + 1
 
     import math
-    drivers = sorted(set(k[0] for k in counts))
+    helmers = sorted(set(k[0] for k in counts))
     result = {}
-    for driver in drivers:
-        last_key = (driver, last_month)
+    for helmer in helmers:
+        last_key = (helmer, last_month)
         last_count = counts.get(last_key, 0)
         last_vmt = vmt.get(last_key, 0)
 
@@ -498,7 +499,7 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         ref = None
         for (drv, mo), c in sorted(counts.items(), key=lambda x: x[0][1],
                                     reverse=True):
-            if drv == driver and mo < last_month and c >= 3:
+            if drv == helmer and mo < last_month and c >= 3:
                 ref_vmt = vmt.get((drv, mo), 0)
                 if ref_vmt > 0:
                     ref = (mo, c, ref_vmt)
@@ -506,7 +507,7 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
 
         if ref is None:
             result[last_key] = (1.0, 1.0, 1.0)
-            print(f"  {driver} {last_month} incident_coverage: 1.0"
+            print(f"  {helmer} {last_month} incident_coverage: 1.0"
                   f" (no reference month with VMT)")
             continue
 
@@ -526,7 +527,7 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         p_lo = max(0.01, p_rate - 1.96 * se)
         result[last_key] = (round(p_best, 4), round(p_lo, 4),
                             round(p_hi, 4))
-        print(f"  {driver} {last_month} incident_coverage:"
+        print(f"  {helmer} {last_month} incident_coverage:"
               f" best={p_best:.4f} lo={p_lo:.4f} hi={p_hi:.4f}"
               f" (from {ref_mo}: {ref_count} inc / {ref_vmt:.0f} VMT;"
               f" observed {last_count}, expected {expected:.1f})")
@@ -547,19 +548,19 @@ def parse_vmt_months(raw_text):
 def build_vmt_csv(raw_text, inc_cov, active_months):
     """Add coverage + incident_coverage columns to the raw VMT CSV text.
 
-    inc_cov: dict from incident_coverage(), mapping (driver, iso_month) to
+    inc_cov: dict from incident_coverage(), mapping (helmer, iso_month) to
     (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
     active_months: set of ISO months to include (months with incident data).
     """
     rows = list(csv.reader(io.StringIO(raw_text)))
     must(len(rows) > 1, "VMT master CSV must include header and rows")
-    expected_header = ["driver", "month", "vmt", "driver_cumulative_vmt",
+    expected_header = ["helmer", "month", "vmt", "helmer_cumulative_vmt",
                        "vmt_min", "vmt_max", "rationale"]
     must(rows[0] == expected_header,
          "VMT master CSV header mismatch", header=rows[0])
     out_buf = io.StringIO()
     writer = csv.writer(out_buf, lineterminator="\n")
-    writer.writerow(["driver", "month", "vmt", "driver_cumulative_vmt",
+    writer.writerow(["helmer", "month", "vmt", "helmer_cumulative_vmt",
                      "vmt_min", "vmt_max", "coverage", "incident_coverage",
                      "incident_coverage_min", "incident_coverage_max",
                      "rationale"])
@@ -570,7 +571,7 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
         if month not in active_months:
             continue
         ic_best, ic_lo, ic_hi = inc_cov.get(
-            (_canonical_driver(row[0].strip()), month), (1, 1, 1))
+            (_canonical_helmer(row[0].strip()), month), (1, 1, 1))
         # Normalize the four numeric columns to plain integers: a
         # thousands-separated "22,000,000" entered in the master CSV becomes
         # 22000000, matching the plain-integer convention of the rest of
@@ -601,8 +602,8 @@ EXPECTED_DRIVER_TYPES = {
     "Unknown",
 }
 # All reporting entities in the NHTSA ADS CSV (current + archive).
-# Anti-Postel: if NHTSA adds a new driver, we want to crash and review.
-EXPECTED_DRIVERS = {
+# Anti-Postel: if NHTSA adds a new reporting entity, we want to crash and review.
+EXPECTED_HELMERS = {
     "Ambarella",
     "Apollo Autonomous Driving USA",
     "Apple Inc.",
@@ -661,9 +662,9 @@ EXPECTED_DRIVERS = {
 PUBLIC_SERVICE_OPERATOR_TYPES = {
     "Tesla, Inc.": {"None", "In-Vehicle (Commercial / Test)"},
 }
-must(set(PUBLIC_SERVICE_OPERATOR_TYPES) <= EXPECTED_DRIVERS,
+must(set(PUBLIC_SERVICE_OPERATOR_TYPES) <= EXPECTED_HELMERS,
      "PUBLIC_SERVICE_OPERATOR_TYPES names an unknown reporting entity",
-     unknown=set(PUBLIC_SERVICE_OPERATOR_TYPES) - EXPECTED_DRIVERS)
+     unknown=set(PUBLIC_SERVICE_OPERATOR_TYPES) - EXPECTED_HELMERS)
 must(all(types <= EXPECTED_DRIVER_TYPES
          for types in PUBLIC_SERVICE_OPERATOR_TYPES.values()),
      "PUBLIC_SERVICE_OPERATOR_TYPES names an unknown Driver / Operator Type")
@@ -703,9 +704,9 @@ def main():
              "unexpected Driver / Operator Type", row=i, value=dt,
              expected=sorted(EXPECTED_DRIVER_TYPES))
         driver = r["Reporting Entity"].strip()
-        must(driver in EXPECTED_DRIVERS,
+        must(driver in EXPECTED_HELMERS,
              "unexpected Reporting Entity", row=i, value=driver,
-             expected=sorted(EXPECTED_DRIVERS))
+             expected=sorted(EXPECTED_HELMERS))
         must(INCIDENT_DATE_RE.match(idate),
              "unexpected Incident Date format", row=i, value=idate)
         abbr = idate.split("-")[0]
@@ -778,7 +779,7 @@ def main():
     sync_fault_csvs(fault_master_rows)
     fault_data, fault_ids = load_fault_data()
 
-    # Filter to months that have VMT data for any driver.
+    # Filter to months that have VMT data for any helmer.
     # Derive last_month from the data: latest incident month that also has VMT.
     # Months with VMT but no incidents yet (beyond the NHTSA reporting frontier)
     # are excluded so we don't show 0-incident months with full VMT.
@@ -810,8 +811,8 @@ def main():
             key = KEY_MAP[csv_field]
             val = r.get(csv_field, "").strip().replace("\r\n", "\n").replace("\r", "\n")
             rec[key] = val
-        # Shorten driver name
-        rec["driver"] = DRIVER_SHORT.get(rec["driver"], rec["driver"])
+        # Shorten helmer name
+        rec["helmer"] = HELMER_SHORT.get(rec["helmer"], rec["helmer"])
         # Parse speed as number
         try:
             rec["speed"] = int(rec["speed"])
@@ -841,9 +842,9 @@ def main():
             rec["severity"] = SEVERITY_OVERRIDE[iid_short]
         incidents.append(rec)
 
-    # Sort by driver then date (ISO month sorts lexicographically)
+    # Sort by helmer then date (ISO month sorts lexicographically)
     incidents.sort(key=lambda r: (
-        r["driver"],
+        r["helmer"],
         nhtsa_month_to_iso(r["date"]),
         r["time"],
     ))
@@ -893,18 +894,18 @@ def main():
         f.write(vmt_js)
 
     # Summary
-    counts = Counter(r["driver"] for r in incidents)
+    counts = Counter(r["helmer"] for r in incidents)
     total = len(incidents)
     if nhtsa_modified_date:
         print(f"NHTSA file last modified: {nhtsa_modified_date}")
     print(f"Injected {total} incidents into {relpath(INCIDENT_JS)} and VMT into {relpath(VMT_JS)}")
-    for driver, n in counts.most_common():
-        print(f"  {driver}: {n}")
+    for helmer, n in counts.most_common():
+        print(f"  {helmer}: {n}")
 
-    # Passenger occupancy summary per driver
+    # Passenger occupancy summary per helmer
     print("\nPassenger occupancy at time of crash:")
-    for driver in sorted(counts):
-        co_incidents = [r for r in incidents if r["driver"] == driver]
+    for helmer in sorted(counts):
+        co_incidents = [r for r in incidents if r["helmer"] == helmer]
         n = len(co_incidents)
         with_pax = sum(1 for r in co_incidents
                        if r["belted"] not in
@@ -915,7 +916,7 @@ def main():
                      "Subject Vehicle - No Passenger In Vehicle")
         unk = n - with_pax - no_pax
         pct = f"{100*with_pax/n:.0f}%" if n else "n/a"
-        print(f"  {driver}: {with_pax}/{n} with passenger ({pct})"
+        print(f"  {helmer}: {with_pax}/{n} with passenger ({pct})"
               f"  [no passenger: {no_pax}, unknown: {unk}]")
 
 

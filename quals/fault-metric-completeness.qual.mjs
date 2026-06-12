@@ -104,19 +104,19 @@ const checks = vm.runInContext(`
   buildMonthlyViews();
   // Dynamically find the latest Waymo month with incomplete fault data
   const incompleteMonth = fullMonthSeries.points.slice().reverse()
-    .find(p => p.drivers.Waymo && p.drivers.Waymo.mpiByMetric.atfault === null
-           && p.drivers.Waymo.mpiByMetric.all !== null);
+    .find(p => p.helmers.Waymo && p.helmers.Waymo.mpiByMetric.atfault === null
+           && p.helmers.Waymo.mpiByMetric.all !== null);
   if (!incompleteMonth) return { allComplete: true };
   const testMonth = incompleteMonth.month;
-  const testWaymo = incompleteMonth.drivers.Waymo;
+  const testWaymo = incompleteMonth.helmers.Waymo;
   const testIdx = fullMonthSeries.months.indexOf(testMonth);
   // Window through the incomplete month vs. through the month before it.
   const extendedWaymo = monthlySummaryRows(
     sliceSeries(fullMonthSeries, 0, testIdx),
-  ).find(r => r.driver === "Waymo");
+  ).find(r => r.helmer === "Waymo");
   const fromNextWaymo = monthlySummaryRows(
     sliceSeries(fullMonthSeries, 0, testIdx - 1),
-  ).find(r => r.driver === "Waymo");
+  ).find(r => r.helmer === "Waymo");
   return {
     allComplete: false,
     testMonth,

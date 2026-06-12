@@ -1,4 +1,11 @@
 const POLYMARKET_SNAPSHOT_DATE = "2026-04-04T12:00:00Z";
+// [SNAPSHOT VINTAGE] This checked-in snapshot is frozen at the date above;
+// the page's age dot shows it as stale and the user-facing refresh button
+// refetches live prices at runtime (not persisted). To update the snapshot:
+// for each slug below, fetch
+//   https://gamma-api.polymarket.com/events?slug=<slug>
+// and refresh outcomePrices/volume (and POLYMARKET_SNAPSHOT_DATE). Drop or
+// disable (enabled: false) any market whose resolution date has passed.
 // To show/hide a market, set enabled to true/false.
 // To expand a multi-outcome event into subcards, set multi to true.
 const POLYMARKET_SNAPSHOT = [

@@ -102,9 +102,10 @@ const stress = vm.runInContext(`
   buildMonthlyViews();
   buildSanityChecks();
   return {
-    byDriver: Object.fromEntries(rows.map(row => [
-      row.driver,
-      Object.fromEntries(METRIC_KEYS.map(key => [key, driverHumanStress(row, key)])),
+    byHelmer: Object.fromEntries(rows.filter(row => row.vmtBest > 0).map(row => [
+      row.helmer,
+      Object.fromEntries(METRIC_KEYS.filter(key => row.mpiEstimates[key] !== null)
+        .map(key => [key, helmerHumanStress(row, key)])),
     ])),
     summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
     sanityHtml: document.getElementById("sanity-checks").innerHTML,
@@ -114,51 +115,51 @@ const stress = vm.runInContext(`
 const plain = JSON.parse(JSON.stringify(stress));
 
 assert.equal(
-  plain.byDriver.Tesla.all.verdictKey,
+  plain.byHelmer.Tesla.all.verdictKey,
   "ambiguous",
   `Replicata: compute stress-test verdict for Tesla on all incidents.
 Expectata: Tesla all-incident claim is assumption-sensitive (Feb 2026 VMT widens CI).
-Resultata: verdict was ${plain.byDriver.Tesla.all.verdictKey}.`,
+Resultata: verdict was ${plain.byHelmer.Tesla.all.verdictKey}.`,
 );
 
 assert.equal(
-  plain.byDriver.Waymo.all.verdictKey,
+  plain.byHelmer.Waymo.all.verdictKey,
   "ambiguous",
   `Replicata: compute stress-test verdict for Waymo on all incidents.
 Expectata: Waymo all-incident claim remains assumption-sensitive rather than robust.
-Resultata: verdict was ${plain.byDriver.Waymo.all.verdictKey}.`,
+Resultata: verdict was ${plain.byHelmer.Waymo.all.verdictKey}.`,
 );
 
 for (const key of ["atfault", "injury", "airbag", "seriousInjury"]) {
   assert.equal(
-    plain.byDriver.Waymo[key].verdictKey,
+    plain.byHelmer.Waymo[key].verdictKey,
     "safer",
     `Replicata: compute stress-test verdict for Waymo on ${key}.
 Expectata: Waymo is robustly safer than humans on ${key}.
-Resultata: verdict was ${plain.byDriver.Waymo[key].verdictKey}.`,
+Resultata: verdict was ${plain.byHelmer.Waymo[key].verdictKey}.`,
   );
 }
 
 assert.equal(
-  plain.byDriver.Zoox.all.verdictKey,
+  plain.byHelmer.Zoox.all.verdictKey,
   "ambiguous",
   `Replicata: compute stress-test verdict for Zoox on all incidents.
 Expectata: Zoox remains ambiguous on the all-incident metric.
-Resultata: verdict was ${plain.byDriver.Zoox.all.verdictKey}.`,
+Resultata: verdict was ${plain.byHelmer.Zoox.all.verdictKey}.`,
 );
 
 assert.ok(
-  plain.byDriver.Tesla.all.ratioHi < 3,
+  plain.byHelmer.Tesla.all.ratioHi < 3,
   `Replicata: inspect Tesla all-incident AV/human ratio range.
 Expectata: Tesla's CI still straddles 1x human safety rather than being robustly safe.
-Resultata: ratio range was ${plain.byDriver.Tesla.all.ratioLo}x to ${plain.byDriver.Tesla.all.ratioHi}x.`,
+Resultata: ratio range was ${plain.byHelmer.Tesla.all.ratioLo}x to ${plain.byHelmer.Tesla.all.ratioHi}x.`,
 );
 
 assert.ok(
-  plain.byDriver.Waymo.atfault.ratioLo > 1,
+  plain.byHelmer.Waymo.atfault.ratioLo > 1,
   `Replicata: inspect Waymo at-fault AV/human ratio range.
 Expectata: even Waymo's pessimistic edge remains above 1x human safety.
-Resultata: ratio range was ${plain.byDriver.Waymo.atfault.ratioLo}x to ${plain.byDriver.Waymo.atfault.ratioHi}x.`,
+Resultata: ratio range was ${plain.byHelmer.Waymo.atfault.ratioLo}x to ${plain.byHelmer.Waymo.atfault.ratioHi}x.`,
 );
 
 assert.ok(

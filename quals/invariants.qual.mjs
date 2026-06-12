@@ -27,7 +27,7 @@ Resultata: no throw.`,
 
 // --- Anti-Postel: parseVmtCsv rejects malformed inputs ---
 
-const goodHeader = "driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale";
+const goodHeader = "helmer,month,vmt,helmer_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale";
 const goodRow = "tesla,2025-07,100,200,80,120,1,1,1,1,test";
 
 function mustThrowParse(label, csv) {
@@ -45,7 +45,7 @@ function mustThrowParse(label, csv) {
 mustThrowParse("wrong header", "bad_header\n" + goodRow);
 // Missing incident_coverage columns
 mustThrowParse("old-format header missing incident_coverage",
-  "driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,coverage,rationale\ntesla,2025-07,100,200,80,120,1,test");
+  "helmer,month,vmt,helmer_cumulative_vmt,vmt_min,vmt_max,coverage,rationale\ntesla,2025-07,100,200,80,120,1,test");
 // vmt_min > vmt (violates ordering)
 mustThrowParse("vmt_min > vmt",
   goodHeader + "\ntesla,2025-07,100,200,120,80,1,1,1,1,test");
@@ -67,8 +67,8 @@ mustThrowParse("coverage > 1",
 // negative vmt
 mustThrowParse("negative vmt",
   goodHeader + "\ntesla,2025-07,-100,200,80,120,1,1,1,1,test");
-// unknown driver
-mustThrowParse("unknown driver",
+// unknown helmer
+mustThrowParse("unknown helmer",
   goodHeader + "\nUnknownCo,2025-07,100,200,80,120,1,1,1,1,test");
 
 console.log("qual pass: fail-loud invariants and idempotent estimator rendering");

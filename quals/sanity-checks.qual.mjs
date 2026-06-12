@@ -101,7 +101,8 @@ const html = getNode("sanity-checks").innerHTML;
 // --- All expected subsection headings are present ---
 const expectedHeadings = [
   "Passenger presence",
-  "Narrative redaction",
+  // "Narrative redaction" removed from expected headings 2026-06-11:
+  // table commented out in the app (0% CBI everywhere); see cbi-watch qual.
   "Severity breakdown",
   "VMT uncertainty",
   "Poisson dispersion",
@@ -128,12 +129,16 @@ assert.ok(
 Expectata: table has "With passenger" and "No passenger" columns.
 Resultata: columns not found.`);
 
+// Commented out 2026-06-11 with the app's redaction table (and its stale
+// Expectata: Tesla is no longer 100% redacted; everyone is at 0%).
+/*
 // --- Narrative redaction: Tesla should show 100% redacted ---
 assert.ok(
   html.includes("Redacted (CBI)") && html.includes("100%"),
   `Replicata: check narrative redaction content.
 Expectata: Tesla redacts all narratives, so table includes "100%".
 Resultata: expected content not found.`);
+*/
 
 // --- Severity breakdown has all categories ---
 assert.ok(
@@ -154,13 +159,13 @@ assert.ok(
 Expectata: table has low/high VMT and range ratio columns.
 Resultata: expected columns not found.`);
 
-// --- Poisson dispersion: small-sample drivers get "too few" ---
+// --- Poisson dispersion: small-sample helmers get "too few" ---
 const dispBlock = (html.match(/<h3>Poisson dispersion<\/h3>[\s\S]*?<\/table>/) || [""])[0];
 const teslaDispRow = dispBlock.split("</tr>").find(s => s.includes("<td>Tesla</td>")) || "";
 assert.ok(
   teslaDispRow.includes("too few incidents to tell"),
   `Replicata: check Poisson dispersion verdict for Tesla.
-Expectata: Tesla (small-sample driver) shows "too few incidents to tell".
+Expectata: Tesla (small-sample helmer) shows "too few incidents to tell".
 Resultata: Tesla dispersion row was ${JSON.stringify(teslaDispRow)}.`);
 
 // --- Reporting threshold: speed=0 data present ---
@@ -205,22 +210,24 @@ assert.ok(
 Expectata: table has Low MPI, High MPI, and Derivation columns.
 Resultata: expected columns not found.`);
 
-// --- All three drivers appear across tables ---
-for (const driver of ["Tesla", "Waymo", "Zoox"]) {
-  const count = (html.match(new RegExp(`>${driver}<`, "g")) || []).length;
+// --- All three helmers appear across tables ---
+for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
+  const count = (html.match(new RegExp(`>${helmer}<`, "g")) || []).length;
   assert.ok(
     count >= 8,
-    `Replicata: check ${driver} presence across sanity check tables.
-Expectata: ${driver} appears in at least 8 table cells (one per section with driver rows).
-Resultata: ${driver} appeared ${count} times.`);
+    `Replicata: check ${helmer} presence across sanity check tables.
+Expectata: ${helmer} appears in at least 8 table cells (one per section with helmer rows).
+Resultata: ${helmer} appeared ${count} times.`);
 }
 
 // --- Verify subsection count ---
 const h3Count = (html.match(/<h3>/g) || []).length;
+// 10 since 2026-06-11: the Narrative redaction table is commented out
+// (0% CBI everywhere; see quals/cbi-watch.qual.mjs).
 assert.ok(
-  h3Count >= 11,
+  h3Count >= 10,
   `Replicata: count sanity check subsections.
-Expectata: at least 11 subsections (h3 headings).
+Expectata: at least 10 subsections (h3 headings).
 Resultata: found ${h3Count} h3 tags.`);
 
 console.log("qual pass: sanity checks section renders all subsections with expected content");

@@ -33,7 +33,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 const state = vm.runInContext(`
 (() => {
-  monthDriverEnabled = {Humans: true, Tesla: true, Waymo: false, Zoox: true};
+  monthHelmerEnabled = {HumansAV: true, HumansUS: false, Tesla: true, Waymo: false, Zoox: true};
   selectedMetricKey = "injury";
   activeFilter = "Waymo";
   sortCol = "speed";
@@ -41,7 +41,7 @@ const state = vm.runInContext(`
 
   const query = encodeUiStateQuery();
 
-  monthDriverEnabled = {Humans: true, Tesla: true, Waymo: true, Zoox: true};
+  monthHelmerEnabled = {HumansAV: true, HumansUS: true, Tesla: true, Waymo: true, Zoox: true};
   selectedMetricKey = "all";
   activeFilter = "All";
   sortCol = null;
@@ -56,7 +56,7 @@ const state = vm.runInContext(`
     activeFilter,
     sortCol,
     sortAsc,
-    monthDriverEnabled,
+    monthHelmerEnabled,
     selectedMetricKey,
   };
 })()
@@ -65,9 +65,9 @@ const plain = JSON.parse(JSON.stringify(state));
 
 assert.equal(
   plain.query,
-  "f=Waymo&s=speed&a=0&c=Humans.Tesla.Zoox&m=injury",
+  "f=Waymo&s=speed&a=0&c=HumansAV.Tesla.Zoox&m=injury",
   `Replicata: encode UI state to a query string.
-Expectata: query string exactly captures filter/sort/driver/metric state.
+Expectata: query string exactly captures filter/sort/helmer/metric state.
 Resultata: query was ${plain.query}.`,
 );
 
@@ -104,11 +104,11 @@ Resultata: sortAsc was ${plain.sortAsc}.`,
 );
 
 assert.deepEqual(
-  plain.monthDriverEnabled,
-  {Humans: true, Tesla: true, Waymo: false, Zoox: true},
-  `Replicata: apply encoded query to reset driver toggles.
-Expectata: driver toggles restored (Tesla+Zoox on, Waymo off).
-Resultata: driver toggles were ${JSON.stringify(plain.monthDriverEnabled)}.`,
+  plain.monthHelmerEnabled,
+  {HumansAV: true, HumansUS: false, Tesla: true, Waymo: false, Zoox: true},
+  `Replicata: apply encoded query to reset helmer toggles.
+Expectata: helmer toggles restored (Tesla+Zoox on, Waymo off).
+Resultata: helmer toggles were ${JSON.stringify(plain.monthHelmerEnabled)}.`,
 );
 
 assert.equal(

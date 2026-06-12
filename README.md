@@ -158,6 +158,7 @@ Context:
 
 VMT master data: `data/vmt.csv` in this repo. (Formerly maintained in a [Google Sheet](https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871), migrated verbatim into the repo 2026-06-11; the sheet is now retired.)
 
+- Jargon: the code calls the entity at the wheel a "helmer" (Tesla, Waymo, Zoox, or one of two human benchmark cohorts); the user-facing label for it is "helmsbeing".
 - Top chart: lines differentiated by thickness show MPI for each selected metric. Shaded fan bands show 50%/80%/95% Bayesian credible intervals; error bars show the effect of VMT uncertainty (`vmt_min`/`vmt_max`) on the posterior median.
 - Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.
 - Tesla mileage assumptions are anchored to tracker sources ([robotaxitracker.com](https://robotaxitracker.com/) and [robotaxi-safety-tracker.com](https://robotaxi-safety-tracker.com/)) and then aligned to this same NHTSA window for apples-to-apples comparison. Dallas/Houston service (unsupervised launch Apr 18, 2026) is included from 2026-04 onward.
@@ -175,7 +176,7 @@ VMT master data: `data/vmt.csv` in this repo. (Formerly maintained in a [Google 
 
 ### Human Comparison Methodology
 
-Human baselines are shown as shaded bands (range of plausible values) rather than single lines. The bands are our own synthesis of published sources: [Kusano & Scanlon (2024)](https://arxiv.org/abs/2312.12675), as discussed in [this analysis](https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos) (surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting), plus benchmarks from [Waymo's safety impact page](https://waymo.com/safety/impact/) (170.7M rider-only miles through Dec 2025). They are not a reproduction of Waymo's safety-impact methodology: Waymo's current comparisons use a location-based dynamic benchmark tied to where Waymo actually drives, which we do not implement. Note also that the app's default metric ("all incidents") is broader than Waymo's surface-street, injury-focused framing.
+Human baselines are shown as shaded bands (range of plausible values) rather than single lines, and since 2026-06-11 come in two cohorts displayed as separate "helmers" (two shades of gold): **Humans (AV cities)** — the bands described below, surface streets in AV operating areas — and **Humans (US average)** — nationwide CRSS/FARS crashed-vehicle rates across all road types, Blincoe-adjusted at the low end. The US-average cohort has no bands for the hospitalization, airbag, and serious-injury metrics (no clean national equivalents exist), and the stress test plus the "Nx vs humans" card multipliers compare against the AV-cities cohort, the more apples-to-apples baseline. Neither cohort replicates Waymo's location-weighted dynamic benchmark; AV-cities approximates it. The bands are our own synthesis of published sources: [Kusano & Scanlon (2024)](https://arxiv.org/abs/2312.12675), as discussed in [this analysis](https://www.theargumentmag.com/p/we-absolutely-do-know-that-waymos) (surface streets only, passenger vehicles only, Blincoe-adjusted for underreporting), plus benchmarks from [Waymo's safety impact page](https://waymo.com/safety/impact/) (170.7M rider-only miles through Dec 2025). They are not a reproduction of Waymo's safety-impact methodology: Waymo's current comparisons use a location-based dynamic benchmark tied to where Waymo actually drives, which we do not implement. Note also that the app's default metric ("all incidents") is broader than Waymo's surface-street, injury-focused framing.
 
 - **Band interpretation:** The low end uses Blincoe-adjusted rates (correcting for ~60% underreporting of minor crashes); the high end uses police-reported or observed rates. The true apples-to-apples MPI should fall within each band.
 - **Surface streets, not nationwide:** Human benchmarks are restricted to surface streets in AV operating areas (higher crash rates, lower fatality rates than the national average), following the Kusano/Scanlon approach.
@@ -254,10 +255,14 @@ Waymo's US monthly VMT is estimated by combining two data sources:
    The California Public Utilities Commission requires quarterly data reports from AV operators.
    Downloadable as ZIP archives from [cpuc.ca.gov](https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting).
    Each filing contains a `Month-Level` CSV with monthly VMT broken into three periods:
-   - `TotalVMTPeriod1`: miles with a passenger aboard
-   - `TotalVMTPeriod2`: deadhead miles (driving to pickup)
-   - `TotalVMTPeriod3`: overhead miles (repositioning, charging, etc.)
+   - `TotalVMTPeriod1`: idle/repositioning miles after a trip, before the next assignment
+   - `TotalVMTPeriod2`: deadhead miles (en route to pickup)
+   - `TotalVMTPeriod3`: miles with a passenger aboard
    - `TotalVMTZEV`: sum of all three = total driverless CA VMT
+
+   (Period numbering follows the CPUC/TNC convention: P3 is the passenger-aboard
+   period. P1+P2 — Waymo's deadheading — was 44.3% of CA driverless VMT in
+   Sep 2025, down from 51.5% in Jan 2024, per Driverless Digest's CPUC analysis.)
 
    This is exactly the right denominator for MPI: all driverless miles, not just revenue miles.
    Waymo files under two programs: **deployment** (commercial, fare-charging) and **pilot** (no fares).
@@ -331,25 +336,3 @@ Phoenix 44.5%, San Francisco 30.6%, Los Angeles 20.1%, Austin 5.0%.
 - Driverless Digest CPUC deadheading: https://www.thedriverlessdigest.com/p/what-cpuc-data-reveals-about-waymos
 
 
-## SCRATCH AREA
-
-Old VMT data replaced on 2026-05-22:
-
-tesla	2025-06	1806	1806	1625.4	1986.6	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla	2025-07	16715.5	18521.5	12650	20781	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla	2025-08	68200	86721.5	57970	78430	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla	2025-09	90202	176923.5	88550	91854	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla	2025-10	80061	256984.5	67965	92157	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla	2025-11	103800	360784.5	88230	119370	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla	2025-12	146870.5	507655	111351	182390	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-tesla	2026-01	164845	672500	92690	237000	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-
-tesla	2026-02	185000	857500	120000	260000	Austin only: robotaxitracker end-of-month cumulative delta; assume already netted to empty driver-seat miles.
-zoox	2026-02	230000	1575000	115000	460000	US rough est.: no month-level public VMT series; placeholder based on limited public ops; 0.5x–2x band.
-waymo	2026-02	20000000	211072456	14000000	26000000	US est.: smooth interpolation of cumulative milestones; growth shape uncertain; ±30%
-tesla	2026-03	210000	857500	120000	260000	GPT-5.5 guesses
-zoox	2026-03	500000	2075000	250000	1000000	GPT-5.5 guesses
-waymo	2026-03	22,000,000	233,072,456	15,400,000	28,600,000	GPT-5.5 guesses
-tesla	2026-04	235,000	1,302,500	140,000	340,000	GPT-5.5 guesses
-zoox	2026-04	600,000	2,675,000	300,000	1,200,000	GPT-5.5 guesses
-waymo	2026-04	24,000,000	284,587,646	16,800,000	31,200,000	GPT-5.5 guesses

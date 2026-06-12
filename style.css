@@ -272,7 +272,7 @@ tr:hover { background: #f8f8ff; }
 .month-chart h3 {
   margin: 0 0 0.35rem;
 }
-.month-driver-grid {
+.month-helmer-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.9rem;
@@ -295,7 +295,7 @@ tr:hover { background: #f8f8ff; }
 #month-legend-speed {
   row-gap: 0.25rem;
 }
-#month-legend-mpi-drivers {
+#month-legend-mpi-helmers {
   gap: 1.5rem;
 }
 #month-legend-mpi-lines {
@@ -316,12 +316,12 @@ tr:hover { background: #f8f8ff; }
   flex-basis: 100%;
   height: 0;
 }
-.month-driver-toggle {
+.month-helmer-toggle {
   cursor: pointer;
   user-select: none;
 }
-.month-driver-toggle input[type="checkbox"],
-.month-driver-toggle input[type="radio"] {
+.month-helmer-toggle input[type="checkbox"],
+.month-helmer-toggle input[type="radio"] {
   margin: 0 0.2rem 0 0;
 }
 .month-chip {
@@ -424,7 +424,7 @@ tr:hover { background: #f8f8ff; }
   border-left: 3px solid #999;
   padding: 0.5rem 0.65rem;
 }
-.mpi-card-driver {
+.mpi-card-helmer {
   font-weight: 600;
   font-size: 0.85rem;
   margin-bottom: 0.15rem;

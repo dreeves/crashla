@@ -23,7 +23,7 @@ Resultata: the file header was ${JSON.stringify(vmtJs.split("\\n", 1)[0])}.`,
 const vmtMaster = fs.readFileSync("data/vmt.csv", "utf8");
 assert.equal(
   vmtMaster.split("\n")[0],
-  "driver,month,vmt,driver_cumulative_vmt,vmt_min,vmt_max,rationale",
+  "helmer,month,vmt,helmer_cumulative_vmt,vmt_min,vmt_max,rationale",
   `Replicata: inspect the header row of data/vmt.csv.
 Expectata: the editable VMT master stays plain canonical CSV with the standard header on line 1.
 Resultata: the header row was ${JSON.stringify(vmtMaster.split("\n")[0])}.`,

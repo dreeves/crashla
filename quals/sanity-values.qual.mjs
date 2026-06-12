@@ -98,15 +98,15 @@ const html = getNode("sanity-checks").innerHTML;
 
 // --- Passenger counts must add up ---
 // Extract rows from the passenger presence table: each <tr> has
-// driver, withPax, noPax, unk, total, %
+// helmer, withPax, noPax, unk, total, %
 // The total column must equal withPax + noPax + unk
 const paxSection = html.split("<h3>Passenger presence</h3>")[1]
   .split("<h3>")[0];
 const paxTrMatches = [...paxSection.matchAll(/<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>/g)];
 assert.ok(
   paxTrMatches.length >= 3,
-  `Replicata: passenger presence table has driver rows.
-Expectata: at least 3 driver rows (Tesla, Waymo, Zoox).
+  `Replicata: passenger presence table has helmer rows.
+Expectata: at least 3 helmer rows (Tesla, Waymo, Zoox).
 Resultata: found ${paxTrMatches.length} rows.`);
 
 for (const m of paxTrMatches) {
@@ -118,15 +118,15 @@ Expectata: withPax(${withPax}) + noPax(${noPax}) + unk(${unk}) = total(${total})
 Resultata: sum is ${withPax + noPax + unk}.`);
 }
 
-// --- Severity counts add up per driver ---
+// --- Severity counts add up per helmer ---
 const sevSection = html.split("<h3>Severity breakdown</h3>")[1]
   .split("<h3>")[0];
-// Each row: driver, propDmg (%), injOnly (%), hosp (%), fatal (%), total
+// Each row: helmer, propDmg (%), injOnly (%), hosp (%), fatal (%), total
 const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
 const sevMatches = [...sevSection.matchAll(sevPattern)];
 assert.ok(
   sevMatches.length >= 3,
-  `Replicata: severity table has driver rows.
+  `Replicata: severity table has helmer rows.
 Expectata: at least 3 rows.
 Resultata: found ${sevMatches.length}.`);
 
@@ -141,12 +141,17 @@ Resultata: sum is ${propDmg + injOnly + hosp + fatal}.`);
 }
 
 // --- Narrative redaction counts add up ---
+// Commented out 2026-06-11 with the app's Narrative redaction table: all
+// narratives are currently 0% CBI (Tesla un-redacted via update reports).
+// quals/cbi-watch.qual.mjs fails loudly if redaction returns; re-enable
+// this block together with the table in crashla.js buildSanityChecks.
+/*
 const cbiSection = html.split("<h3>Narrative redaction</h3>")[1]
   .split("<h3>")[0];
 const cbiPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>/g;
 const cbiMatches = [...cbiSection.matchAll(cbiPattern)];
 assert.ok(cbiMatches.length >= 3,
-  `Replicata: CBI table has driver rows.
+  `Replicata: CBI table has helmer rows.
 Expectata: at least 3.
 Resultata: found ${cbiMatches.length}.`);
 
@@ -158,6 +163,7 @@ for (const m of cbiMatches) {
 Expectata: redacted(${redacted}) + full(${full}) = total(${total}).
 Resultata: sum is ${redacted + full}.`);
 }
+*/
 
 // --- VMT range ratio is always >= 1 ---
 const vmtSection = html.split("<h3>VMT uncertainty</h3>")[1]
@@ -184,7 +190,7 @@ const dispSection = html.split("<h3>Poisson dispersion</h3>")[1]
 const dispPattern = /<td>([\d.]+)<\/td>\s*<td>(too few|underdispersed|consistent|mildly|overdispersed)/g;
 const dispMatches = [...dispSection.matchAll(dispPattern)];
 assert.ok(dispMatches.length >= 3,
-  `Replicata: Poisson dispersion table has driver rows.
+  `Replicata: Poisson dispersion table has helmer rows.
 Expectata: at least 3.
 Resultata: found ${dispMatches.length}.`);
 
@@ -197,13 +203,13 @@ Expectata: chi-squared / df >= 0.
 Resultata: got ${idx}.`);
 }
 
-// --- Reporting threshold: speed=0 count <= total for each driver ---
+// --- Reporting threshold: speed=0 count <= total for each helmer ---
 const rptSection = html.split("<h3>Reporting threshold disparities</h3>")[1]
   .split("<h3>")[0];
 const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
 const rptMatches = [...rptSection.matchAll(rptPattern)];
 assert.ok(rptMatches.length >= 3,
-  `Replicata: reporting threshold table has driver rows.
+  `Replicata: reporting threshold table has helmer rows.
 Expectata: at least 3.
 Resultata: found ${rptMatches.length}.`);
 
@@ -216,18 +222,18 @@ Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
 }
 
 // --- Incident totals consistent across passenger, severity, CBI tables ---
-// Each table should have the same total per driver
+// Each table should have the same total per helmer
 const extractTotals = (section, colIndex) => {
-  // Get all <tr> rows and extract the driver name + specified column
+  // Get all <tr> rows and extract the helmer name + specified column
   const rows = [...section.matchAll(/<tr>\s*<td>([^<]+)<\/td>/g)];
   const totals = {};
   const trBlocks = section.split("<tr>").slice(1); // skip pre-first
   for (const block of trBlocks) {
     const tds = [...block.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(m => m[1]);
     if (tds.length >= colIndex + 1) {
-      const driver = tds[0].trim();
+      const helmer = tds[0].trim();
       const val = parseInt(tds[colIndex], 10);
-      if (!isNaN(val)) totals[driver] = val;
+      if (!isNaN(val)) totals[helmer] = val;
     }
   }
   return totals;
@@ -235,21 +241,21 @@ const extractTotals = (section, colIndex) => {
 
 const paxTotals = extractTotals(paxSection, 4);   // Total is 5th column (idx 4)
 const sevTotals = extractTotals(sevSection, 5);    // Total is 6th column (idx 5)
-const cbiTotals = extractTotals(cbiSection, 3);    // Total is 4th column (idx 3)
+const cbiTotals = {}; // CBI table commented out 2026-06-11; see cbi-watch qual
 
-for (const driver of Object.keys(paxTotals)) {
-  if (sevTotals[driver] !== undefined) {
+for (const helmer of Object.keys(paxTotals)) {
+  if (sevTotals[helmer] !== undefined) {
     assert.strictEqual(
-      paxTotals[driver], sevTotals[driver],
-      `Replicata: ${driver} incident total consistent across tables.
-Expectata: passenger total (${paxTotals[driver]}) = severity total (${sevTotals[driver]}).
+      paxTotals[helmer], sevTotals[helmer],
+      `Replicata: ${helmer} incident total consistent across tables.
+Expectata: passenger total (${paxTotals[helmer]}) = severity total (${sevTotals[helmer]}).
 Resultata: they differ.`);
   }
-  if (cbiTotals[driver] !== undefined) {
+  if (cbiTotals[helmer] !== undefined) {
     assert.strictEqual(
-      paxTotals[driver], cbiTotals[driver],
-      `Replicata: ${driver} incident total consistent across tables.
-Expectata: passenger total (${paxTotals[driver]}) = CBI total (${cbiTotals[driver]}).
+      paxTotals[helmer], cbiTotals[helmer],
+      `Replicata: ${helmer} incident total consistent across tables.
+Expectata: passenger total (${paxTotals[helmer]}) = CBI total (${cbiTotals[helmer]}).
 Resultata: they differ.`);
   }
 }

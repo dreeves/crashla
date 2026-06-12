@@ -192,7 +192,7 @@ incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
 selectedMetricKey = "all";
-for (const d of ADS_DRIVERS) monthDriverEnabled[d] = true;
+for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
 activeSeries = monthSeriesData();
 `, ctx);
 
@@ -200,7 +200,7 @@ const distChart = vm.runInContext(`renderDistributionChart(activeSeries)`, ctx);
 
 assert.ok(
   distChart.includes("<svg"),
-  `Replicata: call renderDistributionChart with all metrics and drivers enabled.
+  `Replicata: call renderDistributionChart with all metrics and helmers enabled.
 Expectata: result contains an SVG element.
 Resultata: no <svg found in output.`,
 );
@@ -216,9 +216,9 @@ assert.ok(
   distChart.includes("#d13b2d") &&
     distChart.includes("#2060c0") &&
     distChart.includes("#2a8f57"),
-  `Replicata: call renderDistributionChart with all drivers enabled.
-Expectata: SVG includes driver colors (Tesla #d13b2d, Waymo #2060c0, Zoox #2a8f57).
-Resultata: one or more driver colors missing.`,
+  `Replicata: call renderDistributionChart with all helmers enabled.
+Expectata: SVG includes helmer colors (Tesla #d13b2d, Waymo #2060c0, Zoox #2a8f57).
+Resultata: one or more helmer colors missing.`,
 );
 
 assert.ok(
@@ -267,8 +267,8 @@ const windowEffect = vm.runInContext(`
   selectedMetricKey = "all";
   const full = monthSeriesData();
   const sliced = sliceSeries(full, 0, 5);
-  const fullWaymo = monthlySummaryRows(full).find(row => row.driver === "Waymo").mpiEstimates.all.median;
-  const slicedWaymo = monthlySummaryRows(sliced).find(row => row.driver === "Waymo").mpiEstimates.all.median;
+  const fullWaymo = monthlySummaryRows(full).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
+  const slicedWaymo = monthlySummaryRows(sliced).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
   return {
     fullWaymo,
     slicedWaymo,
@@ -289,20 +289,20 @@ Expectata: narrowing the month window changes the bell-curve inputs and the rend
 Resultata: fullWaymo=${windowEffect.fullWaymo}, slicedWaymo=${windowEffect.slicedWaymo}, html=${JSON.stringify(windowEffect.html.slice(0, 200))}.`,
 );
 
-// Edge case: no drivers enabled → empty string
+// Edge case: no helmers enabled → empty string
 const emptyChart = vm.runInContext(`
 (() => {
-  for (const d of ALL_DRIVERS) monthDriverEnabled[d] = false;
+  for (const d of ALL_HELMERS) monthHelmerEnabled[d] = false;
   const result = renderDistributionChart(activeSeries);
-  for (const d of ALL_DRIVERS) monthDriverEnabled[d] = true;
+  for (const d of ALL_HELMERS) monthHelmerEnabled[d] = true;
   return result;
 })()
 `, ctx);
 
 assert.ok(
   emptyChart === "" || !emptyChart.includes("#d13b2d"),
-  `Replicata: call renderDistributionChart with all drivers disabled.
-Expectata: returns empty string or SVG without driver curves.
+  `Replicata: call renderDistributionChart with all helmers disabled.
+Expectata: returns empty string or SVG without helmer curves.
 Resultata: output was ${JSON.stringify(emptyChart.slice(0, 200))}.`,
 );
 
