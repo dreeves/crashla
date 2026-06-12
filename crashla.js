@@ -1585,12 +1585,7 @@ function renderStressTestTable(series) {
       </tr>`;
     })
   ).join("");
-  // Faultfrac sensitivity sub-table. TODO recommended English for the Latin
-  // copy below — intro: "How wrong would Claude's fault judgments have to be
-  // to change a verdict? The multiplier is the smallest factor by which the
-  // true at-fault mass would need to exceed the judged mass before the
-  // At-fault verdict above changes." Headers: "Company", "Judged fault
-  // mass", "Current verdict", "Flip multiplier", "Verdict after flip".
+  // Faultfrac sensitivity sub-table.
   const faultRows = rows
     .filter(row => row.mpiEstimates.atfault !== null)
     .map(row => {
@@ -1611,12 +1606,11 @@ function renderStressTestTable(series) {
     }).join("");
   const faultSensitivity = `
     <p>
-Quam erronea esse deberent iudicia culpae (a Claude facta) ut sententia mutaretur?
-Multiplicator minimus monstratur quo vera massa culpae maior esse deberet quam iudicata,
-antequam sententia metricae "At-fault" supra mutetur.
+How wrong Claude's fault judgments would have to be to change the verdicts.
+The multiplier is the smallest factor that the true at-fault fraction would need to exceed the judged at-fault fraction before changing the the at-fault verdict.
     </p>
     <table class="source-table stress-table">
-      <thead><tr><th>Societas</th><th>Massa culpae iudicata</th><th>Sententia hodierna</th><th>Multiplicator</th><th>Sententia nova</th></tr></thead>
+      <thead><tr><th>Company</th><th>Judged fault</th><th>Current verdict</th><th>Flip multiplier</th><th>Verdict after flip</th></tr></thead>
       <tbody>${faultRows}</tbody>
     </table>`;
   return `
@@ -1825,14 +1819,9 @@ function buildMonthlyViews() {
     : sliceSeries(fullMonthSeries, startIdx, endIdx);
   byId("chart-mpi-all").innerHTML = renderAllHelmersMpiChart(activeSeries);
   // Pooled estimates assume a constant rate, so alongside the full-window
-  // distribution we repeat it for the trailing RECENT_MONTHS — current form
+  // distribution we repeat it for the trailing RECENT_MONTHS -- current form
   // vs lifetime average. The second chart is skipped when the selected
   // window is already that short (it would duplicate the first exactly).
-  // TODO recommended English for the Latin note below: "These density curves
-  // (and the summary cards below) pool the whole selected window and assume
-  // a constant incident rate; the monthly chart above shows how the rate
-  // actually moves. The second chart repeats the estimate for only the most
-  // recent six months — current form rather than lifetime average."
   const RECENT_MONTHS = 6;
   const recentStart = activeSeries.months.length - RECENT_MONTHS;
   const distCharts = [renderDistributionChart(activeSeries)];
@@ -1841,7 +1830,9 @@ function buildMonthlyViews() {
       sliceSeries(activeSeries, recentStart, activeSeries.months.length - 1)));
   }
   byId("chart-distributions").innerHTML = `
-    <p class="dist-note">Hae curvae densitatis (et chartulae summariae infra) totam fenestram selectam congregant, ratam casuum constantem praesumentes; charta menstrua supra motum verum ratae monstrat. Charta altera aestimationem solis sex mensibus novissimis repetit — forma hodierna, non media totius aetatis.</p>
+    <p class="dist-note">The density curves and summary cards below pool the whole selected date range and assume a constant incident rate.
+    The monthly chart above shows how the rate actually changes over time.
+    The second chart repeats the estimate with trailing 6-month window.</p>
     ${distCharts.join("")}
   `;
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
