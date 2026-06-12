@@ -1,9 +1,0 @@
-tesla	2026-02	300000	1213047	210000	420000	Austin only; Q1-2026 anchored to Tesla Q1 earnings (paid robotaxi miles ~doubled sequentially, so Q1 all-driverless ~2x Q4); Dallas/Houston (Apr launch) excluded.
-zoox	2026-02	235000	1580000	117500	470000	US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
-waymo	2026-02	19500000	210572456	13650000	25350000	US est.: anchored to 200M-mile milestone (~mid-Feb 2026) and ~500k paid trips/week (Mar 2026); ±30%
-tesla	2026-03	350000	1563047	245000	490000	Austin only; Q1-2026 anchored to Tesla Q1 earnings (paid robotaxi miles ~doubled sequentially, so Q1 all-driverless ~2x Q4); Dallas/Houston (Apr launch) excluded.
-zoox	2026-03	250000	1830000	125000	500000	US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
-waymo	2026-03	20500000	231072456	14350000	26650000	US est.: anchored to 200M-mile milestone (~mid-Feb 2026) and ~500k paid trips/week (Mar 2026); ±30%
-tesla	2026-04	400000	1963047	240000	600000	Austin only; continued Austin ramp per Tesla Q1 earnings; Dallas/Houston (Apr launch, ramping unsupervised) NOT yet included though their incidents now count.
-zoox	2026-04	270000	2100000	135000	540000	US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
-waymo	2026-04	21500000	252572456	15050000	27950000	US est.: extrapolated from 200M milestone + trip-rate growth; ±30%
