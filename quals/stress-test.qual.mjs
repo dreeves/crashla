@@ -220,9 +220,11 @@ Resultata: flip was ${JSON.stringify(flips.out.Zoox)}.`,
 );
 
 assert.ok(
-  plain.sanityHtml.includes("Multiplicator") && plain.sanityHtml.includes("Societas"),
+  plain.sanityHtml.includes("Flip multiplier") &&
+    plain.sanityHtml.includes("Judged fault") &&
+    plain.sanityHtml.includes("Verdict after flip"),
   `Replicata: render the sanity-checks sensitivity subsection.
-Expectata: the faultfrac sensitivity table (Latin headers) renders under the Sensitivity analysis h3.
+Expectata: the faultfrac sensitivity table (human-finalized English headers) renders under the Sensitivity analysis h3.
 Resultata: sanity HTML lacks the fault sensitivity table.`,
 );
 

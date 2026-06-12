@@ -297,21 +297,25 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFaultInjury,
     // At-fault injury: intersection of at-fault and injury crashes.
-    // lo: injury lo (256k) / ~85% at-fault share in injury crashes ≈ 300k
-    // hi: injury hi (524k) / 50% at-fault share ≈ 1,050k
-    //   50% = same lower bound as all-crash at-fault (single-vehicle 100%,
-    //   multi-vehicle ~50%). Cross-check: atfault hi (430k) × 524k/214k ≈ 1,053k.
+    // Shares use the expert-avoidability standard to match the faultfrac
+    // criterion (P(expert human avoids)), not legal allocation:
+    // lo: injury lo (256k) / ~94% share (NHTSA critical reason: driver error
+    //   in ~94% of crashes; an expert avoids at least those) ≈ 272k
+    // hi: injury hi (524k) / 50% share ≈ 1,050k
+    //   50% = legal-allocation floor (single-vehicle 100%, multi ~50%);
+    //   expert-avoidability can't be lower. Cross-check: 524k/214k × atfault
+    //   hi (430k) ≈ 1,053k.
     humanMPI: {
-      HumansAV: {lo: 300000, hi: 1050000,
-        src: 'lo: injury lo (256k) / ~85% at-fault share; hi: injury hi (524k) / 50% at-fault share (same lower bound as all-crash at-fault)',
+      HumansAV: {lo: 272000, hi: 1050000,
+        src: 'lo: injury lo (256k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (524k) / 50% legal-allocation floor',
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
           {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
           {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
           {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
         ]},
-      HumansUS: {lo: 920000, hi: 2180000,
-        src: 'lo: US injury lo (780k) / ~85% at-fault share; hi: US injury hi (1.09M) / 50% at-fault share',
+      HumansUS: {lo: 830000, hi: 2180000,
+        src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
         srcLinks: [
           {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
         ]},
@@ -2732,20 +2736,30 @@ function yesProbability(market) {
   return parseFloat(prices[idx]) || 0;
 }
 
-function renderPolymarketCard(market, eventSlug) {
-  const prob = yesProbability(market);
-  const vol = parseFloat(market.volume) || 0;
+// Manifold volume is play-money mana (Ṁ), not USD
+function fmtMana(v) {
+  return "Ṁ" + (v >= 1e6 ? (v / 1e6).toFixed(1) + "M"
+       : v >= 1e3 ? Math.round(v / 1e3) + "K"
+       :            String(Math.round(v)));
+}
+
+function renderMarketCard(question, url, prob, volText) {
   const card = document.createElement("div");
   card.className = "pm-card";
   card.innerHTML =
-    `<span class="pm-card-question"><a href="${polymarketUrl(eventSlug)}" ` +
-    `target="_blank" rel="noopener">${market.question}</a></span>` +
+    `<span class="pm-card-question"><a href="${url}" ` +
+    `target="_blank" rel="noopener">${question}</a></span>` +
     `<span class="pm-card-odds ${oddsClass(prob)}">${fmtPct(prob)}</span>` +
-    `<span class="pm-card-vol">${fmtVol(vol)}</span>`;
+    `<span class="pm-card-vol">${volText}</span>`;
   return card;
 }
 
-function renderPolymarketPanel(config, isoDate) {
+function renderPolymarketCard(market, eventSlug) {
+  return renderMarketCard(market.question, polymarketUrl(eventSlug),
+    yesProbability(market), fmtVol(parseFloat(market.volume) || 0));
+}
+
+function renderPolymarketPanel(config, manifold, isoDate) {
   const panel = byId("polymarket-panel");
   const grid = document.createElement("div");
   grid.className = "polymarket-grid";
@@ -2775,6 +2789,11 @@ function renderPolymarketPanel(config, isoDate) {
     } else {
       grid.appendChild(renderPolymarketCard(markets[0], ev.slug));
     }
+  }
+
+  for (const m of manifold) {
+    if (m.enabled === false) continue; // skip disabled markets
+    grid.appendChild(renderMarketCard(m.question, m.url, m.probability, fmtMana(m.volume)));
   }
 
   panel.textContent = "";
@@ -2812,14 +2831,15 @@ function renderPolymarketPanel(config, isoDate) {
   panel.appendChild(footer);
 }
 
-// Fetch fresh data for a single slug via CORS proxy, returning the event
-// object with the same shape as our snapshot entries.
+// Fetch fresh data for a single slug, returning the event object with the
+// same shape as our snapshot entries. (gamma-api serves
+// access-control-allow-origin: * as of 2026-06, so no CORS proxy is needed;
+// the third-party proxy this used to go through is dead.)
 async function fetchPolymarketEvent(slug, templateEntry) {
-  const proxy = "https://api.codetabs.com/v1/proxy/?quest=";
   const apiUrl = "https://gamma-api.polymarket.com/events?slug=" +
     encodeURIComponent(slug);
-  const resp = await fetch(proxy + encodeURIComponent(apiUrl));
-  assert(resp.ok, "CORS proxy request failed", {status: resp.status});
+  const resp = await fetch(apiUrl);
+  assert(resp.ok, "Polymarket API request failed", {status: resp.status, slug});
   const events = await resp.json();
   assert(events.length > 0, "No events returned for slug", {slug});
   const ev = events[0];
@@ -2843,33 +2863,64 @@ async function fetchPolymarketEvent(slug, templateEntry) {
   };
 }
 
+// Fetch fresh data for a single Manifold market (binary only).
+async function fetchManifoldMarket(templateEntry) {
+  const resp = await fetch("https://api.manifold.markets/v0/slug/" +
+    encodeURIComponent(templateEntry.slug));
+  assert(resp.ok, "Manifold API request failed",
+    {status: resp.status, slug: templateEntry.slug});
+  const m = await resp.json();
+  assert(m.outcomeType === "BINARY", "Manifold market must be binary",
+    {slug: templateEntry.slug, outcomeType: m.outcomeType});
+  return {
+    question: m.question,
+    slug: templateEntry.slug,
+    url: m.url,
+    enabled: templateEntry.enabled,
+    probability: m.probability,
+    volume: m.volume || 0,
+  };
+}
+
 async function refreshPolymarket() {
   const panel = byId("polymarket-panel");
   const btn = panel.querySelector(".pm-refresh");
   if (btn) { btn.disabled = true; btn.textContent = "\u231b"; }
 
-  const enabledEvents = POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false);
-  const fresh = [];
-  let ok = 0;
-  for (const entry of enabledEvents) {
+  let failures = 0;
+  const fetchOrKeep = async (entry, fetcher) => {
     try {
-      fresh.push(await fetchPolymarketEvent(entry.slug, entry));
-      ok++;
-    } catch (_) {
-      fresh.push(entry); // keep stale data for this one
+      return await fetcher(entry);
+    } catch (err) {
+      failures++;
+      console.error("prediction market refresh failed", entry.slug, err);
+      return entry; // keep snapshot data for this one
     }
+  };
+  const fresh = [];
+  for (const entry of POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false)) {
+    fresh.push(await fetchOrKeep(entry, e => fetchPolymarketEvent(e.slug, e)));
   }
-  const dateLabel = ok > 0
+  const freshManifold = [];
+  for (const entry of MANIFOLD_SNAPSHOT.filter(e => e.enabled !== false)) {
+    freshManifold.push(await fetchOrKeep(entry, fetchManifoldMarket));
+  }
+  // The age label advances only when every market refreshed; any failure
+  // keeps the snapshot date so the staleness dot stays honest.
+  const dateLabel = failures === 0
     ? new Date().toISOString()
     : POLYMARKET_SNAPSHOT_DATE;
-  renderPolymarketPanel(fresh, dateLabel);
+  renderPolymarketPanel(fresh, freshManifold, dateLabel);
 }
 
 function loadPolymarketData() {
   assert(Array.isArray(POLYMARKET_SNAPSHOT), "POLYMARKET_SNAPSHOT must be an array");
+  assert(Array.isArray(MANIFOLD_SNAPSHOT), "MANIFOLD_SNAPSHOT must be an array");
   assert(typeof POLYMARKET_SNAPSHOT_DATE === "string",
     "POLYMARKET_SNAPSHOT_DATE must be a string");
-  renderPolymarketPanel(POLYMARKET_SNAPSHOT, POLYMARKET_SNAPSHOT_DATE);
+  renderPolymarketPanel(POLYMARKET_SNAPSHOT, MANIFOLD_SNAPSHOT, POLYMARKET_SNAPSHOT_DATE);
+  // Snapshot renders instantly; live prices replace it without a click.
+  void refreshPolymarket();
 }
 
 // --- Init ---
