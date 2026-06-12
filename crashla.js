@@ -1460,12 +1460,6 @@ function renderHumanBenchmarkTable() {
       const derivation = escHtml(h.src) + (links ? ` (${links})` : "");
       return `<tr><td>${escHtml(m.cardLabel)}</td><td>${fmtMiles(h.lo)}</td><td>${fmtMiles(h.hi)}</td><td>${derivation}</td></tr>`;
     }).join("");
-  // TODO: recommended English for the note below: "Note: these human
-  // benchmark bands are our own synthesis of published sources (Kusano &
-  // Scanlon, Waymo's safety impact page, FARS), not a reproduction of
-  // Waymo's location-adjusted safety-impact methodology. The default
-  // all-incidents comparison is also broader than Waymo's surface-street,
-  // injury-focused framing."
   return `
     <h3>Specific human benchmark derivations</h3>
     <p>

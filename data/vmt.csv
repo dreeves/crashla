@@ -53,13 +53,16 @@ waymo,2025-09,11642773,127000000,8732080,14553466,US est.: smooth interpolation 
 waymo,2025-10,13697521,140697521,9588265,17806777,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
 waymo,2025-11,14835759,155533280,10385031,19286487,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
 waymo,2025-12,16951530,172484810,11866071,22036989,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
-waymo,2026-01,18587646,191072456,13011352,24163940,"US est.: smooth interpolation of 13 cumulative milestones (incl 100M Jul 15); 4.5-month interval, growth shape uncertain; ±30%"
+waymo,2026-01,16600000,189084810,12450000,20750000,"US est.: anchored to 200M cumulative milestone (crossed between Feb 6 and Feb 23, 2026 per Waymo posts) and co-CEO's >4M rider-only mi/week at ~500k paid trips/week (late Mar 2026); ±25%"
 tesla,2026-02,300000,1213047,210000,420000,"Austin only; Q1-2026 anchored to Tesla Q1 earnings (paid robotaxi miles ~doubled sequentially, so Q1 all-driverless ~2x Q4); Dallas/Houston (Apr launch) excluded."
 zoox,2026-02,235000,1580000,117500,470000,US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
-waymo,2026-02,19500000,210572456,13650000,25350000,US est.: anchored to 200M-mile milestone (~mid-Feb 2026) and ~500k paid trips/week (Mar 2026); ±30%
+waymo,2026-02,15600000,204684810,11700000,19500000,"US est.: anchored to 200M cumulative milestone (crossed between Feb 6 and Feb 23, 2026 per Waymo posts) and co-CEO's >4M rider-only mi/week at ~500k paid trips/week (late Mar 2026); ±25%"
 tesla,2026-03,350000,1563047,245000,490000,"Austin only; Q1-2026 anchored to Tesla Q1 earnings (paid robotaxi miles ~doubled sequentially, so Q1 all-driverless ~2x Q4); Dallas/Houston (Apr launch) excluded."
 zoox,2026-03,250000,1830000,125000,500000,US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
-waymo,2026-03,20500000,231072456,14350000,26650000,US est.: anchored to 200M-mile milestone (~mid-Feb 2026) and ~500k paid trips/week (Mar 2026); ±30%
-tesla,2026-04,400000,1963047,240000,600000,"Austin only; continued Austin ramp per Tesla Q1 earnings; Dallas/Houston (Apr launch, ramping unsupervised) NOT yet included though their incidents now count."
+waymo,2026-03,17800000,222484810,13350000,22250000,"US est.: anchored to 200M cumulative milestone (crossed between Feb 6 and Feb 23, 2026 per Waymo posts) and co-CEO's >4M rider-only mi/week at ~500k paid trips/week (late Mar 2026); ±25%"
+tesla,2026-04,408000,1971047,242000,620000,"Austin + Dallas/Houston (unsupervised D/H launch Apr 18, 2026; ~3+3 cars by end-Apr ≈ 7k mi). Austin ramp per Tesla Q1 deck (paid robotaxi miles ~2x Q4)."
 zoox,2026-04,270000,2100000,135000,540000,US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
-waymo,2026-04,21500000,252572456,15050000,27950000,US est.: extrapolated from 200M milestone + trip-rate growth; ±30%
+waymo,2026-04,19000000,241484810,13300000,24700000,"US est.: extrapolated from >4M rider-only mi/week (late Mar 2026) with modest growth (~3,000 cars per co-CEO); ±30%"
+tesla,2026-05,440000,2411047,210000,660000,"Austin + Dallas/Houston; TX unsupervised fleet 25 (end-Apr) to 42 (Jun 2) vehicles with low utilization, total active TX fleet ~58 incl driver-seat-monitor mode (Electrek); D/H ~11 cars ≈ 40k mi; high uncertainty."
+zoox,2026-05,285000,2385000,142500,570000,"US rough est.: LV expanded to 15 Strip stops + LAS airport testing (May 2026), SF coverage growing, Austin/Miami employee rides; still free. Zoox cited ~2M cumulative autonomous miles (late Mar 2026) vs our 1.83M through Mar, corroborating scale; 0.5x–2x band."
+waymo,2026-05,20500000,261984810,14350000,26650000,"US est.: extrapolated from >4M rider-only mi/week (late Mar 2026) with modest growth (~3,000 cars per co-CEO); ±30%"
