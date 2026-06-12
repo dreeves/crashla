@@ -427,8 +427,20 @@ tr:hover { background: #f8f8ff; }
   transform: translateY(1px);
 }
 .month-err {
-  stroke-width: 1.4;
-  opacity: 0.9;
+  stroke-width: 1;
+  opacity: 0.8;
+}
+.errbar-key {
+  width: 3px;
+  height: 12px;
+  display: inline-block;
+  background: #5b6475;
+  opacity: 0.8;
+}
+.dist-note {
+  font-size: 0.78rem;
+  color: #5b6475;
+  margin: 0.5rem 0 0.2rem;
 }
 .month-mark-tri {
   stroke-width: 1.4;

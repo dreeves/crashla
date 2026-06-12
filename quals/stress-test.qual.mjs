@@ -179,4 +179,61 @@ Expectata: sanity HTML includes the English heading, ratio column, and safer ver
 Resultata: sanity HTML snippet was ${JSON.stringify(plain.sanityHtml.slice(0, 500))}.`,
 );
 
+// Faultfrac sensitivity: smallest multiplier on the judged at-fault mass that
+// changes the verdict. (Serialized as strings because Infinity doesn't
+// survive JSON.)
+const flips = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const rows = monthlySummaryRows(monthSeriesData()).filter(r => r.vmtBest > 0);
+  const out = {};
+  for (const row of rows) {
+    const stress = helmerHumanStress(row, "atfault");
+    const flip = faultFlipMultiplier(stress.av, stress.human);
+    out[row.helmer] = flip === null ? null : {mult: String(flip.mult), flipped: flip.flipped};
+  }
+  return {out, distHtml: document.getElementById("chart-distributions").innerHTML};
+})()
+`, ctx)));
+
+assert.ok(
+  flips.out.Waymo !== null &&
+    Number(flips.out.Waymo.mult) > 1 && Number.isFinite(Number(flips.out.Waymo.mult)) &&
+    flips.out.Waymo.flipped === "ambiguous",
+  `Replicata: compute the faultfrac flip multiplier for Waymo's at-fault verdict.
+Expectata: a finite multiplier > 1 at which "robustly safer" degrades to "ambiguous".
+Resultata: flip was ${JSON.stringify(flips.out.Waymo)}.`,
+);
+
+assert.ok(
+  flips.out.Tesla !== null && flips.out.Tesla.flipped === "worse",
+  `Replicata: compute the faultfrac flip multiplier for Tesla's at-fault verdict.
+Expectata: scaling Tesla's judged fault mass up eventually flips ambiguous to robustly worse.
+Resultata: flip was ${JSON.stringify(flips.out.Tesla)}.`,
+);
+
+assert.equal(
+  flips.out.Zoox,
+  null,
+  `Replicata: compute the faultfrac flip multiplier for Zoox (judged at-fault mass 0).
+Expectata: null — scaling zero mass can never change the verdict.
+Resultata: flip was ${JSON.stringify(flips.out.Zoox)}.`,
+);
+
+assert.ok(
+  plain.sanityHtml.includes("Multiplicator") && plain.sanityHtml.includes("Societas"),
+  `Replicata: render the sanity-checks sensitivity subsection.
+Expectata: the faultfrac sensitivity table (Latin headers) renders under the Sensitivity analysis h3.
+Resultata: sanity HTML lacks the fault sensitivity table.`,
+);
+
+// Pooled-window disclosure: the distributions container renders the full
+// window AND a trailing-6-month companion, prefaced by the constant-rate note.
+assert.ok(
+  flips.distHtml.includes("dist-note") &&
+    (flips.distHtml.match(/<h3>/g) || []).length === 2,
+  `Replicata: build monthly views and inspect the chart-distributions container.
+Expectata: a dist-note plus two distribution charts (full window and trailing 6 months).
+Resultata: ${(flips.distHtml.match(/<h3>/g) || []).length} h3s, note ${flips.distHtml.includes("dist-note") ? "present" : "missing"}.`,
+);
+
 console.log("qual pass: skeptical stress test classifies headline safety claims");

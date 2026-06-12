@@ -818,11 +818,39 @@ function estimateMpiWindow(k, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAUL
   const a = k + 0.5;
   const tail = (1 - massFrac) / 2;
   return {
-    k,
+    k, vmtMin, vmtBest, vmtMax,
     median: 1 / gammaquant(a, vmtBest, 0.5),
     lo: 1 / gammaquant(a, vmtMin, 1 - tail),
     hi: 1 / gammaquant(a, vmtMax, tail),
   };
+}
+
+// Faultfrac sensitivity: the faultfracs are Claude's judgments from
+// company-written narratives, so ask how undercounted the true at-fault mass
+// would have to be to change the stress verdict. Returns the smallest
+// multiplier s > 1 on the judged mass at which the verdict (vs the AV-cities
+// band) changes, plus the verdict it changes to; null when k = 0 (scaling
+// zero mass changes nothing); mult Infinity when no s <= 10^4 flips it.
+function faultFlipMultiplier(est, human) {
+  if (est.k === 0) return null;
+  const verdictAt = s => {
+    const scaled = estimateMpiWindow(est.k * s, est.vmtMin, est.vmtBest, est.vmtMax);
+    return scaled.lo / human.hi > 1 ? "safer" : scaled.hi / human.lo < 1 ? "worse" : "ambiguous";
+  };
+  const base = verdictAt(1);
+  let lo = 1;
+  let hi = null;
+  for (let e = 1; e <= 80; e++) {
+    const s = Math.pow(10, e / 20);
+    if (verdictAt(s) !== base) { hi = s; break; }
+    lo = s;
+  }
+  if (hi === null) return {mult: Infinity, flipped: null};
+  for (let i = 0; i < 40; i++) {
+    const mid = Math.sqrt(lo * hi);
+    if (verdictAt(mid) === base) lo = mid; else hi = mid;
+  }
+  return {mult: hi, flipped: verdictAt(hi)};
 }
 
 function fmtRatio(n) {
@@ -1329,13 +1357,15 @@ function renderDistributionChart(series) {
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
+  // Unique per rendered window: the chart appears twice (full + recent)
+  const clipId = `dist-clip-${start}-${end}`;
   return `
     <h3>${metric.label} using data from ${start} to ${end}</h3>
     ${helmerChipLegend(curves.map(c => c.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
-      <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
+      <defs><clipPath id="${clipId}"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}
-      <g clip-path="url(#dist-clip)">
+      <g clip-path="url(#${clipId})">
       ${fills}
       ${strokes}
       ${markers}
@@ -1555,6 +1585,40 @@ function renderStressTestTable(series) {
       </tr>`;
     })
   ).join("");
+  // Faultfrac sensitivity sub-table. TODO recommended English for the Latin
+  // copy below — intro: "How wrong would Claude's fault judgments have to be
+  // to change a verdict? The multiplier is the smallest factor by which the
+  // true at-fault mass would need to exceed the judged mass before the
+  // At-fault verdict above changes." Headers: "Company", "Judged fault
+  // mass", "Current verdict", "Flip multiplier", "Verdict after flip".
+  const faultRows = rows
+    .filter(row => row.mpiEstimates.atfault !== null)
+    .map(row => {
+      const stress = helmerHumanStress(row, "atfault");
+      const flip = faultFlipMultiplier(stress.av, stress.human);
+      const multCell = flip === null ? "—"
+        : flip.mult === Infinity ? "∞"
+        : `${fmtRatio(flip.mult)}x`;
+      const flippedCell = flip === null || flip.flipped === null ? "—"
+        : `<span class="stress-badge ${STRESS_VERDICT_META[flip.flipped].className}">${STRESS_VERDICT_META[flip.flipped].label}</span>`;
+      return `<tr>
+        <td>${escHtml(row.helmer)}</td>
+        <td>${fmtCount(stress.av.k)}</td>
+        <td><span class="stress-badge ${stress.className}">${stress.label}</span></td>
+        <td>${multCell}</td>
+        <td>${flippedCell}</td>
+      </tr>`;
+    }).join("");
+  const faultSensitivity = `
+    <p>
+Quam erronea esse deberent iudicia culpae (a Claude facta) ut sententia mutaretur?
+Multiplicator minimus monstratur quo vera massa culpae maior esse deberet quam iudicata,
+antequam sententia metricae "At-fault" supra mutetur.
+    </p>
+    <table class="source-table stress-table">
+      <thead><tr><th>Societas</th><th>Massa culpae iudicata</th><th>Sententia hodierna</th><th>Multiplicator</th><th>Sententia nova</th></tr></thead>
+      <tbody>${faultRows}</tbody>
+    </table>`;
   return `
     <h3>Sensitivity analysis</h3>
     <p>
@@ -1564,7 +1628,8 @@ If the whole range is above 1, we call that "robustly safer".
     <table class="source-table stress-table">
       <thead><tr><th>Company</th><th>Metric</th><th>k</th><th>MPI AV (median; 95%)</th><th>Human MPI (AV cities)</th><th>AV/human ratio</th><th>Verdict</th></tr></thead>
       <tbody>${body}</tbody>
-    </table>`;
+    </table>
+    ${faultSensitivity}`;
 }
 
 function renderHumanBenchmarkTable() {
@@ -1638,9 +1703,12 @@ function renderMonthlyLegends() {
       return `${color} ${(j * stripeW).toFixed(1)}% ${((j + 1) * stripeW).toFixed(1)}%`;
     }).join(", ");
     const grad = `linear-gradient(to right, ${stops})`;
+    // The error bars draw the widest CI level, so its legend item also gets
+    // the bar glyph.
+    const barKey = i === CI_FAN_LEVELS.length - 1 ? '<span class="errbar-key"></span>' : "";
     return `
       <span class="month-legend-item">
-        <span class="ci-fan-swatch" style="background:${grad};opacity:${opacity}"></span>${pct}% CI
+        <span class="ci-fan-swatch" style="background:${grad};opacity:${opacity}"></span>${barKey}${pct}% CI
       </span>`;
   });
   byId("month-legend-ci-fan").innerHTML = fanLevels.join("");
@@ -1756,7 +1824,26 @@ function buildMonthlyViews() {
     ? fullMonthSeries
     : sliceSeries(fullMonthSeries, startIdx, endIdx);
   byId("chart-mpi-all").innerHTML = renderAllHelmersMpiChart(activeSeries);
-  byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
+  // Pooled estimates assume a constant rate, so alongside the full-window
+  // distribution we repeat it for the trailing RECENT_MONTHS — current form
+  // vs lifetime average. The second chart is skipped when the selected
+  // window is already that short (it would duplicate the first exactly).
+  // TODO recommended English for the Latin note below: "These density curves
+  // (and the summary cards below) pool the whole selected window and assume
+  // a constant incident rate; the monthly chart above shows how the rate
+  // actually moves. The second chart repeats the estimate for only the most
+  // recent six months — current form rather than lifetime average."
+  const RECENT_MONTHS = 6;
+  const recentStart = activeSeries.months.length - RECENT_MONTHS;
+  const distCharts = [renderDistributionChart(activeSeries)];
+  if (recentStart > 0) {
+    distCharts.push(renderDistributionChart(
+      sliceSeries(activeSeries, recentStart, activeSeries.months.length - 1)));
+  }
+  byId("chart-distributions").innerHTML = `
+    <p class="dist-note">Hae curvae densitatis (et chartulae summariae infra) totam fenestram selectam congregant, ratam casuum constantem praesumentes; charta menstrua supra motum verum ratae monstrat. Charta altera aestimationem solis sex mensibus novissimis repetit — forma hodierna, non media totius aetatis.</p>
+    ${distCharts.join("")}
+  `;
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
   byId("chart-helmer-series").innerHTML = ADS_HELMERS.map(helmer => `
     <div class="month-chart">
