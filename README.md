@@ -158,7 +158,7 @@ Context:
 
 VMT master data: `data/vmt.csv` in this repo. (Formerly maintained in a [Google Sheet](https://docs.google.com/spreadsheets/d/1VX87LYQYDP2YnRzxt_dCHfBq8Y1iVKpk_rBi--JY44w/edit?gid=844581871#gid=844581871), migrated verbatim into the repo 2026-06-11; the sheet is now retired.)
 
-- Jargon: the code calls the entity at the wheel a "helmer" (Tesla, Waymo, Zoox, or one of two human benchmark cohorts); the user-facing label for it is "helmsbeing".
+- Jargon: the code calls the entity at the wheel a "helmer" (Tesla, Waymo, Zoox, or one of two human benchmark cohorts); the user-facing label for it is "helmsbeing". Or just "Company" if human drivers aren't included.
 - Top chart: lines differentiated by thickness show MPI for each selected metric. Shaded fan bands show 50%/80%/95% Bayesian credible intervals; error bars show the effect of VMT uncertainty (`vmt_min`/`vmt_max`) on the posterior median.
 - Three company charts: VMT line (with error bars) and incident bars by speed bucket, where darker sections indicate higher or unknown speed.
 - Tesla mileage assumptions are anchored to tracker sources ([robotaxitracker.com](https://robotaxitracker.com/) and [robotaxi-safety-tracker.com](https://robotaxi-safety-tracker.com/)) and then aligned to this same NHTSA window for apples-to-apples comparison. Dallas/Houston service (unsupervised launch Apr 18, 2026) is included from 2026-04 onward.

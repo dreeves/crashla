@@ -1671,10 +1671,14 @@ function renderDateRangeControls() {
         <div class="date-range-tick-line"></div>
         <div class="date-range-tick-label">${DEFAULT_START_MONTH}</div>
       </div>` : ""}
+      <span class="date-range-end-label min">${months[0]}</span>
+      <span class="date-range-end-label max">${months[maxIdx]}</span>
       <input type="range" class="date-range-input date-range-input-min" id="date-range-min"
-             min="0" max="${maxIdx}" value="${startIdx}" step="1">
+             min="0" max="${maxIdx}" value="${startIdx}" step="1"
+             aria-label="Start month">
       <input type="range" class="date-range-input date-range-input-max" id="date-range-max"
-             min="0" max="${maxIdx}" value="${endIdx}" step="1">
+             min="0" max="${maxIdx}" value="${endIdx}" step="1"
+             aria-label="End month">
     </div>
   `;
   const minInput = byId("date-range-min");
@@ -1974,7 +1978,11 @@ function renderHeaders() {
       label += sortAsc ? " \u25B2" : " \u25BC";
     }
     th.textContent = label;
-    th.addEventListener("click", () => {
+    th.tabIndex = 0;
+    if (sortCol === col.key) {
+      th.setAttribute("aria-sort", sortAsc ? "ascending" : "descending");
+    }
+    const sortBy = () => {
       if (sortCol === col.key) {
         sortAsc = !sortAsc;
       } else {
@@ -1983,6 +1991,12 @@ function renderHeaders() {
       }
       renderHeaders();
       renderTable();
+    };
+    th.addEventListener("click", sortBy);
+    th.addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      sortBy();
     });
     tr.appendChild(th);
   }
