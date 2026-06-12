@@ -228,6 +228,37 @@ Expectata: SVG includes peak markers with data-tip tooltips.
 Resultata: no data-tip attributes found.`,
 );
 
+// Legend: one entry per rendered curve, chip-colored and labeled
+const legendItemCount = (distChart.match(/month-legend-item/g) || []).length;
+const peakMarkerCount = (distChart.match(/<circle/g) || []).length;
+assert.ok(
+  legendItemCount > 0 && legendItemCount === peakMarkerCount,
+  `Replicata: call renderDistributionChart and count legend items vs peak markers.
+Expectata: exactly one month-legend-item per rendered curve (peak marker).
+Resultata: ${legendItemCount} legend items, ${peakMarkerCount} peak markers.`,
+);
+
+for (const [helmer, color, label] of [
+  ["HumansAV", "#c9a800", "Humans (AV cities)"],
+  ["Tesla", "#d13b2d", "Tesla"],
+  ["Waymo", "#2060c0", "Waymo"],
+  ["Zoox", "#2a8f57", "Zoox"],
+]) {
+  assert.ok(
+    distChart.includes(`month-chip" style="background:${color}"></span>${label}`),
+    `Replicata: render the distribution chart with ${helmer} enabled.
+Expectata: legend shows a ${color} chip labeled "${label}".
+Resultata: chip+label pair not found in output.`,
+  );
+}
+
+assert.ok(
+  !distChart.includes("Humans (US average)"),
+  `Replicata: render the distribution chart with HumansUS disabled (default).
+Expectata: legend has no "Humans (US average)" entry.
+Resultata: found "Humans (US average)" in output.`,
+);
+
 assert.ok(
   distChart.includes("Probability Density for True MPI"),
   `Replicata: call renderDistributionChart and inspect y-axis label.

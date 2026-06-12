@@ -133,7 +133,7 @@ function estimateMpi(k, m, massFrac) {
 let incidents = [];
 let vmtRows = [];
 let faultData = {}; // reportId -> {faultfrac, reasoning}
-let monthHelmerEnabled = {HumansAV: true, HumansUS: true, Tesla: true, Waymo: true, Zoox: true};
+let monthHelmerEnabled = {HumansAV: true, HumansUS: false, Tesla: true, Waymo: true, Zoox: false};
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
 // count function, and whether it's enabled by default.
@@ -169,7 +169,7 @@ const METRIC_DEFS = [
     cardLabel: "All incidents",
     incField: "incTotal",
 
-    defaultEnabled: true, primary: true,
+    defaultEnabled: false, primary: true,
     countFn: rec => rec.incidents.total,
     humanMPI: {
       HumansAV: {lo: 103000, hi: 214000,
@@ -238,7 +238,7 @@ const METRIC_DEFS = [
     incField: "incAtFault",
 
     needsFault: true,
-    defaultEnabled: false, primary: false,
+    defaultEnabled: true, primary: false,
     countFn: rec => rec.incidents.atFault,
     // ~50-65% of crash involvements are at-fault (single-vehicle 100%,
     // multi-vehicle ~50%; weighted mix gives 50-65%)
@@ -1305,8 +1305,18 @@ function renderDistributionChart(series) {
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
+  // Legend: one entry per rendered curve, in curve order
+  const legend = `
+    <div class="month-legend">
+      ${curves.map(c => `
+      <span class="month-legend-item">
+        <span class="month-chip" style="background:${HELMER_COLORS[c.helmer]}"></span>${helmerLabel(c.helmer)}
+      </span>`).join("")}
+    </div>`;
+
   return `
     <h3>${metric.label} using data from ${start} to ${end}</h3>
+    ${legend}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}
