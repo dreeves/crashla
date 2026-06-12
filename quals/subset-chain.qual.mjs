@@ -79,4 +79,16 @@ Expectata: strictly greater (50% at-fault share in the police-reported universe)
 Resultata: atfault.hi=${mpi.atfault.hi}, all.hi=${mpi.all.hi}.`);
 }
 
+// Display order: METRIC_DEFS lists each superset before its subsets, so the
+// metric radios / cards / tables read in increasing-severity (rarity) order
+// (e.g. at-fault injury after injury, not before).
+const metricOrder = vm.runInContext(`METRIC_DEFS.map(m => m.key)`, ctx);
+for (const [parent, subset] of subsetPairs) {
+  assert.ok(
+    metricOrder.indexOf(parent) < metricOrder.indexOf(subset),
+    `Replicata: compare METRIC_DEFS positions of ${parent} (superset) and ${subset} (subset).
+Expectata: ${parent} listed before ${subset} (severity order).
+Resultata: order is ${JSON.stringify(metricOrder)}.`);
+}
+
 console.log("qual pass: humanMPI subset chain ordering is consistent");

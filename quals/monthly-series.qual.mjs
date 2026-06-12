@@ -417,6 +417,39 @@ Expectata: all bar endpoints clamped inside the SVG (no bars rendered off-plot w
 Resultata: ${clampedBars.outOfPlot} of ${clampedBars.barCount} bars have endpoints outside [0, ${clampedBars.svgH}].`,
 );
 
+// The y-range always fits the plotted medians, even when every month is k=0.
+// Replicates the bug where Tesla-only + fatality (k=0 in all months) left
+// yMax at its init value of 1: the axis read 0..1, every dot clamped to the
+// top ("MPI=1"), and every error bar collapsed to zero length.
+const allZeroK = vm.runInContext(`
+  (() => {
+    const savedMetric = selectedMetricKey;
+    const savedEnabled = {...monthHelmerEnabled};
+    selectedMetricKey = "fatality";
+    monthHelmerEnabled = {HumansAV: false, HumansUS: false, Tesla: true, Waymo: false, Zoox: false};
+    const html = renderAllHelmersMpiChart(monthSeriesData());
+    selectedMetricKey = savedMetric;
+    monthHelmerEnabled = savedEnabled;
+    const dotYs = [...html.matchAll(/class="month-dot" cx="[\\d.]+" cy="([\\d.]+)"/g)]
+      .map(m => Number(m[1]));
+    const barLens = [...html.matchAll(/class="month-err" x1="[\\d.]+" y1="([\\d.]+)" x2="[\\d.]+" y2="([\\d.]+)"/g)]
+      .map(m => Math.abs(Number(m[2]) - Number(m[1])));
+    return {dotYs, barLens};
+  })()
+`, ctx);
+assert.ok(
+  allZeroK.dotYs.length > 0 && allZeroK.dotYs.some(y => y > 20),
+  `Replicata: render the fatality MPI chart with only Tesla enabled (k=0 every month).
+Expectata: the y-axis fits the plotted medians, so dots spread below the top edge.
+Resultata: dot cy values were ${JSON.stringify(allZeroK.dotYs)}.`,
+);
+assert.ok(
+  allZeroK.barLens.length === allZeroK.dotYs.length && allZeroK.barLens.every(len => len > 5),
+  `Replicata: inspect error bars in the Tesla-only fatality chart.
+Expectata: one non-degenerate bar per dot (k=0 CIs are wide, so bars span well over 5px).
+Resultata: bar lengths were ${JSON.stringify(allZeroK.barLens.map(Math.round))}.`,
+);
+
 assert.ok(
   appScript.includes("Monthly VMT:") &&
     appScript.includes("Cumulative VMT:"),

@@ -262,6 +262,32 @@ const METRIC_DEFS = [
         ]},
     },
   },
+  { key: "injury",
+    label: "Miles per injury crash",
+    cardLabel: "Injury",
+    incField: "incInjury",
+
+    defaultEnabled: false, primary: false,
+    countFn: rec => rec.incidents.injury,
+    // Waymo safety page benchmark (3.90 IPMM) to Kusano observed (1.91)
+    humanMPI: {
+      HumansAV: {lo: 256000, hi: 524000,
+        src: 'lo: 1M/3.90 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
+        srcLinks: [
+          {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+        ]},
+      // CRSS national: ~1.66M injury crashes/yr * ~1.77 vehicles / ~3.2T VMT
+      // -> ~0.92 injury-crashed vehicles per M mi police-reported; Blincoe
+      // (~25-32% of injury crashes unreported) -> ~1.28 per M mi.
+      HumansUS: {lo: 780000, hi: 1090000,
+        src: 'lo: ~1.28 IPMM Blincoe-adjusted injury crashed-vehicle rate; hi: ~0.92 IPMM police-reported (CRSS national)',
+        srcLinks: [
+          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
+        ]},
+    },
+  },
   { key: "atfaultInjury",
     label: "Miles per at-fault injury crash",
     cardLabel: "At-fault injury",
@@ -288,32 +314,6 @@ const METRIC_DEFS = [
         src: 'lo: US injury lo (780k) / ~85% at-fault share; hi: US injury hi (1.09M) / 50% at-fault share',
         srcLinks: [
           {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
-        ]},
-    },
-  },
-  { key: "injury",
-    label: "Miles per injury crash",
-    cardLabel: "Injury",
-    incField: "incInjury",
-
-    defaultEnabled: false, primary: false,
-    countFn: rec => rec.incidents.injury,
-    // Waymo safety page benchmark (3.90 IPMM) to Kusano observed (1.91)
-    humanMPI: {
-      HumansAV: {lo: 256000, hi: 524000,
-        src: 'lo: 1M/3.90 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
-        srcLinks: [
-          {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
-          {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-        ]},
-      // CRSS national: ~1.66M injury crashes/yr * ~1.77 vehicles / ~3.2T VMT
-      // -> ~0.92 injury-crashed vehicles per M mi police-reported; Blincoe
-      // (~25-32% of injury crashes unreported) -> ~1.28 per M mi.
-      HumansUS: {lo: 780000, hi: 1090000,
-        src: 'lo: ~1.28 IPMM Blincoe-adjusted injury crashed-vehicle rate; hi: ~0.92 IPMM police-reported (CRSS national)',
-        srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
-          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
         ]},
     },
   },
@@ -1079,7 +1079,12 @@ function renderAllHelmersMpiChart(series) {
       // opacity so incomplete months are visually demoted without a separate
       // code path.
       const covRatio = row.vmtRawMin > 0 ? row.vmtMin / row.vmtRawMin : 1;
-      if (k !== 0 && covRatio > 0.99) yMax = Math.max(yMax, mpi.mpiBest, mpi.mpiMax);
+      // The single y-range decision: every plotted point contributes at least
+      // its median, so dots are always on-scale (an axis can never exclude
+      // the data it draws). Informative points (k ≠ 0 and fully reported;
+      // humans' k=null counts) also contribute their VMT-uncertainty spread.
+      // Prior-driven k=0 medians and partial months can't blow up the axis.
+      yMax = Math.max(yMax, k !== 0 && covRatio > 0.99 ? mpi.mpiMax : mpi.mpiBest);
       return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume, covRatio};
     });
     seriesRows.push({helmer, metric, vals});
