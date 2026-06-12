@@ -1105,7 +1105,7 @@ function renderAllHelmersMpiChart(series) {
     let penDown = false;
     for (let i = 0; i < row.vals.length; i++) {
       const mpi = row.vals[i];
-      if (mpi === null || mpi.incidentCount === 0) {
+      if (mpi === null) {
         penDown = false;
         continue;
       }
@@ -1117,7 +1117,7 @@ function renderAllHelmersMpiChart(series) {
 
   const errs = `<g clip-path="url(#mpi-clip)">` + seriesRows.map(row =>
     row.vals.map((mpi, i) => {
-      if (mpi === null || mpi.incidentCount === 0) return "";
+      if (mpi === null) return "";
       const x = mapX(i);
       const yLo = mapY(mpi.mpiMin);
       const yHi = mapY(mpi.mpiMax);
@@ -1132,7 +1132,7 @@ function renderAllHelmersMpiChart(series) {
 
   const marks = seriesRows.map(row =>
     row.vals.map((mpi, i) => {
-      if (mpi === null || mpi.incidentCount === 0) return "";
+      if (mpi === null) return "";
       const x = mapX(i);
       const color = metricMarkerColor(row.helmer);
       const k = mpi.incidentCount;

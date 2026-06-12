@@ -37,6 +37,16 @@ class ElementStub {
 
   querySelector() { return new ElementStub("queried"); }
 
+  // Mirror the browser: after setting textContent, innerHTML reads back as
+  // the &/</> -escaped text. escHtml round-trips through a div this way.
+  set textContent(v) {
+    this._textContent = String(v);
+    this._innerHTML = this._textContent
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  get textContent() { return this._textContent; }
+
   set innerHTML(v) {
     this._innerHTML = v;
     this.children = [];
@@ -332,6 +342,44 @@ assert.ok(
   `Replicata: render the cross-helmer chart with the airbag metric selected.
 Expectata: the chart title reuses the exact selected metric label from the radio buttons.
 Resultata: rendered snippets were ${JSON.stringify(airbagTitleChart.slice(0, 200))}.`,
+);
+
+// k=0 months render a datapoint from the Jeffreys posterior (Gamma(0.5, m))
+// instead of being skipped (e.g. a month whose incidents are all 0% at-fault).
+const jeffreysZero = vm.runInContext(`
+  (() => {
+    const savedMetric = selectedMetricKey;
+    const savedEnabled = {...monthHelmerEnabled};
+    selectedMetricKey = "atfault";
+    for (const h of ALL_HELMERS) monthHelmerEnabled[h] = true;
+    const series = monthSeriesData();
+    let zeroMonths = 0;
+    for (const p of series.points) {
+      for (const h of ADS_HELMERS) {
+        const e = p.helmers[h];
+        if (e === null) continue;
+        const mpi = e.mpiByMetric.atfault;
+        if (mpi !== null && mpi.incidentCount === 0) zeroMonths++;
+      }
+    }
+    const html = renderAllHelmersMpiChart(series);
+    selectedMetricKey = savedMetric;
+    monthHelmerEnabled = savedEnabled;
+    return {zeroMonths, zeroDotTips: (html.match(/\\(0 incidents\\)/g) || []).length};
+  })()
+`, ctx);
+assert.ok(
+  jeffreysZero.zeroMonths > 0,
+  `Replicata: count helmer-months whose at-fault incident count is exactly 0.
+Expectata: at least one such month exists in the data (else this qual tests nothing).
+Resultata: zeroMonths was ${jeffreysZero.zeroMonths}.`,
+);
+assert.equal(
+  jeffreysZero.zeroDotTips,
+  jeffreysZero.zeroMonths,
+  `Replicata: render the cross-helmer at-fault MPI chart with all helmers enabled.
+Expectata: every k=0 helmer-month renders a dot with a "(0 incidents)" tooltip (Jeffreys posterior, not skipped).
+Resultata: ${jeffreysZero.zeroDotTips} zero-incident tooltips for ${jeffreysZero.zeroMonths} k=0 helmer-months.`,
 );
 
 assert.ok(
