@@ -1611,7 +1611,7 @@ function renderStressTestTable(series) {
   const faultSensitivity = `
     <p>
 How wrong Claude's fault judgments would have to be to change the verdicts.
-The multiplier is the smallest factor that the true at-fault fraction would need to exceed the judged at-fault fraction before changing the the at-fault verdict.
+The multiplier is the smallest factor that the true at-fault fraction would need to exceed the judged at-fault fraction before changing the at-fault verdict.
     </p>
     <table class="source-table stress-table">
       <thead><tr><th>Company</th><th>Judged fault</th><th>Current verdict</th><th>Flip multiplier</th><th>Verdict after flip</th></tr></thead>
