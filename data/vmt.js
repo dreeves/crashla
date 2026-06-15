@@ -63,7 +63,10 @@ tesla,2026-03,350000,1563047,245000,490000,1.0,1,1,1,"Austin only; Q1-2026 ancho
 zoox,2026-03,250000,1830000,125000,500000,1.0,1,1,1,US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
 waymo,2026-03,17800000,222484810,13350000,22250000,1.0,1,1,1,"US est.: anchored to 200M cumulative milestone (crossed between Feb 6 and Feb 23, 2026 per Waymo posts) and co-CEO's >4M rider-only mi/week at ~500k paid trips/week (late Mar 2026); ±25%"
 tesla,2026-04,408000,1971047,242000,620000,1.0,1,1,1,"Austin + Dallas/Houston (unsupervised D/H launch Apr 18, 2026; ~3+3 cars by end-Apr ≈ 7k mi). Austin ramp per Tesla Q1 deck (paid robotaxi miles ~2x Q4)."
-zoox,2026-04,270000,2100000,135000,540000,1.0,0.1543,0.01,1.0,US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
-waymo,2026-04,19000000,241484810,13300000,24700000,1.0,0.039,0.01,1.0,"US est.: extrapolated from >4M rider-only mi/week (late Mar 2026) with modest growth (~3,000 cars per co-CEO); ±30%"
+zoox,2026-04,270000,2100000,135000,540000,1.0,1,1,1,US rough est.: modest growth; free rides only (paid LV ~late Jun 2026); no month-level public VMT; 0.5x–2x band.
+waymo,2026-04,19000000,241484810,13300000,24700000,1.0,1,1,1,"US est.: extrapolated from >4M rider-only mi/week (late Mar 2026) with modest growth (~3,000 cars per co-CEO); ±30%"
+tesla,2026-05,440000,2411047,210000,660000,1.0,1,1,1,"Austin + Dallas/Houston; TX unsupervised fleet 25 (end-Apr) to 42 (Jun 2) vehicles with low utilization, total active TX fleet ~58 incl driver-seat-monitor mode (Electrek); D/H ~11 cars ≈ 40k mi; high uncertainty."
+zoox,2026-05,285000,2385000,142500,570000,1.0,0.1096,0.01,1.0,"US rough est.: LV expanded to 15 Strip stops + LAS airport testing (May 2026), SF coverage growing, Austin/Miami employee rides; still free. Zoox cited ~2M cumulative autonomous miles (late Mar 2026) vs our 1.83M through Mar, corroborating scale; 0.5x–2x band."
+waymo,2026-05,20500000,261984810,14350000,26650000,1.0,0.1275,0.0587,1.0,"US est.: extrapolated from >4M rider-only mi/week (late Mar 2026) with modest growth (~3,000 cars per co-CEO); ±30%"
 `
 /* VMT_CSV_END */;

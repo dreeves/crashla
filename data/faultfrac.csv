@@ -1640,3 +1640,4 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-14296,39,SUV,rear,front left,Minor W/O Hospitalization,0,AV proceeding; speeding SUV clipped its rear left changing lanes from behind
 30270-14578,0,Pickup Truck,rear,left,No Injured Reported,0,AV stopped on narrow road; passing pickup clipped its rear left
 30270-14623,4,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,AV slowing for jaywalking ped; car behind rear-ended it
+13781-15017,0,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0,Tesla stopped at red left-turn arrow; rear-ended by pickup truck
