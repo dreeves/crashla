@@ -1257,7 +1257,7 @@ function renderAllHelmersMpiChart(series) {
   `;
 }
 
-function renderDistributionChart(series) {
+function renderDistributionChart(series, titleSuffix = "") {
   const metric = selectedMonthMetric();
   const {start, end} = seriesMonthBounds(series);
   const summaryRows = monthlySummaryRows(series);
@@ -1364,7 +1364,7 @@ function renderDistributionChart(series) {
   // Unique per rendered window: the chart appears twice (full + recent)
   const clipId = `dist-clip-${start}-${end}`;
   return `
-    <h3>${metric.label} using data from ${start} to ${end}</h3>
+    <h3>${metric.label} using data from ${start} to ${end}${titleSuffix}</h3>
     ${helmerChipLegend(curves.map(c => c.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="${clipId}"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
@@ -1828,10 +1828,11 @@ function buildMonthlyViews() {
   // window is already that short (it would duplicate the first exactly).
   const RECENT_MONTHS = 6;
   const recentStart = activeSeries.months.length - RECENT_MONTHS;
-  const distCharts = [renderDistributionChart(activeSeries)];
+  const distCharts = [renderDistributionChart(activeSeries, " (Fully Aggregated)")];
   if (recentStart > 0) {
     distCharts.push(renderDistributionChart(
-      sliceSeries(activeSeries, recentStart, activeSeries.months.length - 1)));
+      sliceSeries(activeSeries, recentStart, activeSeries.months.length - 1),
+      " (6-Month Trailing Window)"));
   }
   byId("chart-distributions").innerHTML = `
     <p class="dist-note">The density curves and summary cards below pool the whole selected date range and assume a constant incident rate.

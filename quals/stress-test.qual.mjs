@@ -211,13 +211,31 @@ Expectata: scaling Tesla's judged fault mass up eventually flips ambiguous to ro
 Resultata: flip was ${JSON.stringify(flips.out.Tesla)}.`,
 );
 
+// The k=0 branch: scaling zero judged at-fault mass can never change a
+// verdict. Tested with a synthetic estimate rather than whichever helmer
+// happens to have zero mass this month (Zoox was zero until its incidents
+// were rated).
+const zeroMassFlip = vm.runInContext(
+  `faultFlipMultiplier({k: 0, vmtMin: 1e5, vmtBest: 2e5, vmtMax: 4e5, lo: 1, hi: 1}, {lo: 1e5, hi: 3e5})`,
+  ctx);
 assert.equal(
-  flips.out.Zoox,
+  zeroMassFlip,
   null,
-  `Replicata: compute the faultfrac flip multiplier for Zoox (judged at-fault mass 0).
+  `Replicata: call faultFlipMultiplier with a synthetic estimate whose judged at-fault mass k is 0.
 Expectata: null — scaling zero mass can never change the verdict.
-Resultata: flip was ${JSON.stringify(flips.out.Zoox)}.`,
+Resultata: flip was ${JSON.stringify(zeroMassFlip)}.`,
 );
+
+// Every helmer with VMT yields a usable flip entry (non-null once it has any
+// judged mass); guards against the table silently dropping a row.
+for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
+  assert.ok(
+    flips.out[helmer] !== null && flips.out[helmer] !== undefined,
+    `Replicata: read the faultfrac flip entry for ${helmer}.
+Expectata: a non-null flip entry (all three helmers now have judged at-fault mass > 0).
+Resultata: entry was ${JSON.stringify(flips.out[helmer])}.`,
+  );
+}
 
 assert.ok(
   plain.sanityHtml.includes("Flip multiplier") &&
@@ -232,10 +250,12 @@ Resultata: sanity HTML lacks the fault sensitivity table.`,
 // window AND a trailing-6-month companion, prefaced by the constant-rate note.
 assert.ok(
   flips.distHtml.includes("dist-note") &&
-    (flips.distHtml.match(/<h3>/g) || []).length === 2,
+    (flips.distHtml.match(/<h3>/g) || []).length === 2 &&
+    flips.distHtml.includes(" (Fully Aggregated)</h3>") &&
+    flips.distHtml.includes(" (6-Month Trailing Window)</h3>"),
   `Replicata: build monthly views and inspect the chart-distributions container.
-Expectata: a dist-note plus two distribution charts (full window and trailing 6 months).
-Resultata: ${(flips.distHtml.match(/<h3>/g) || []).length} h3s, note ${flips.distHtml.includes("dist-note") ? "present" : "missing"}.`,
+Expectata: a dist-note plus two distribution charts titled "... (Fully Aggregated)" and "... (6-Month Trailing Window)".
+Resultata: ${(flips.distHtml.match(/<h3>/g) || []).length} h3s, note ${flips.distHtml.includes("dist-note") ? "present" : "missing"}, titles ${JSON.stringify((flips.distHtml.match(/<h3>[^<]*<\/h3>/g) || []))}.`,
 );
 
 console.log("qual pass: skeptical stress test classifies headline safety claims");

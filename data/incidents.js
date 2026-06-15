@@ -48419,7 +48419,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo stopped straddling two lanes at red; passing SUV struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48478,7 +48481,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Wrong-way car on off-ramp struck Waymo head-on; Waymo braking"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48537,7 +48543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo entering intersection from stop; speeding car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48565,7 +48574,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo proceeding for right turn from stop; SUV behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48624,7 +48636,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo proceeding from green; SUV behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48714,7 +48729,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; oncoming pickup crossed double yellow into front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48897,7 +48915,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.05,
+      "reasoning": "Car exited lot without stopping into Waymo's path; clipped rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48956,7 +48977,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; garbage truck reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -48984,7 +49008,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing for stop sign; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49012,7 +49039,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.3,
+      "reasoning": "Waymo maneuvering around parked truck struck its raised liftgate"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49040,7 +49070,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.5,
+      "reasoning": "Waymo passing tree in alley; front tire dropped into pothole"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49068,7 +49101,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV crossed multiple lanes into Waymo's lane; struck right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49127,7 +49163,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Car cut into Waymo's lane and abruptly stopped; Waymo struck its rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49217,7 +49256,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV exited parking garage into Waymo's path; struck right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49307,7 +49349,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; pickup passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49335,7 +49380,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked for pickup; car reversed out of stall into it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49425,7 +49473,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.8,
+      "reasoning": "Waymo clipped a construction sign at roadside in work zone"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49515,7 +49566,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Waymo exiting lot stall as SUV reversed; minor shared lot maneuver"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49543,7 +49597,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at stop sign; car passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49571,7 +49628,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo in queue; van reversing out of garage struck rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49599,7 +49659,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; SUV crossed centerline to pass and clipped rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49658,7 +49721,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; pickup behind proceeded into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49686,7 +49752,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo changed into right-turn lane; pickup behind drove into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49714,7 +49783,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped on narrow road; pickup passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49742,7 +49814,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; SUV changing lanes into median clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49770,7 +49845,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo mid lane-change straddling lanes; SUV in lane struck front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49829,7 +49907,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Speeding SUV overtaking from behind changed lanes into rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -49857,7 +49938,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo proceeding from stop; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50009,7 +50093,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; bus crossed center to pass and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50037,7 +50124,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in queue; bus ahead reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50065,7 +50155,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped; bus passed on left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50124,7 +50217,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding past parked van; pickup passed and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50245,7 +50341,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.9,
+      "reasoning": "Waymo maneuvered toward curb and struck it with front tire"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50366,7 +50465,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; heavy truck passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50394,7 +50496,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; passing SUV's trailer clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50422,7 +50527,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo passing driveway; SUV reversed out into right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50450,7 +50558,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in queue; car changing lanes clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50478,7 +50589,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at light; SUV crossed double yellow to pass and clipped rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50506,7 +50620,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "right",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.3,
+      "reasoning": "Waymo stopped at red; passenger opened door into passing cyclist"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50534,7 +50651,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing to yield on left turn; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50562,7 +50682,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left + right",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; truck's wide right turn swung trailer into front right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50590,7 +50713,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding to peds; turning bus clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50618,7 +50744,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car changing lanes clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50677,7 +50806,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.25,
+      "reasoning": "Waymo passed SUV mid multi-point turn; SUV reversed into left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50736,7 +50868,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing for queue; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50795,7 +50930,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.3,
+      "reasoning": "Waymo reversing for room as SUV behind proceeded; struck rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50854,7 +50992,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; pickup passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50882,7 +51023,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at stop sign yielding; pickup rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50910,7 +51054,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV exited lot across lanes into Waymo's path; struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50938,7 +51085,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo turning left; car behind also turning rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50966,7 +51116,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo mid lane-change straddling lanes; pickup in lane struck left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -50994,7 +51147,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; pickup rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51053,7 +51209,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; SUV behind proceeded into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51081,7 +51240,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.05,
+      "reasoning": "Car cut across lanes for right turn into lot; clipped Waymo rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51171,7 +51333,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; bus ahead reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51292,7 +51457,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at rail crossing; car behind rear-ended it twice"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51320,7 +51488,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; SUV rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51348,7 +51519,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV changed lanes into Waymo's lane; struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51376,7 +51550,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Adjacent left-turning car crossed line into Waymo's lane; struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51404,7 +51581,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "rear left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped for reversing car; car backed into left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51432,7 +51612,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo crossed centerline to pass stopped van; van pulled out into it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51615,7 +51798,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51643,7 +51829,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Waymo stopped for dropoff; passenger opened door into passing car"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51671,7 +51860,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; pickup rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51699,7 +51891,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; SUV behind proceeded into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51727,7 +51922,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked in-lane; car rear-ended rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51755,7 +51953,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped as SUV ahead reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51783,7 +51984,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo tire struck debris in roadway"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51811,7 +52015,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Wrong-way SUV reversing along curb struck stopped Waymo's front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51839,7 +52046,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Car passed in opposing lane then cut into Waymo's left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51867,7 +52077,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Speeding wrong-way car made wide turn into stopped Waymo's left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51895,7 +52108,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; pickup ahead reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51923,7 +52139,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked in lot; SUV maneuvering struck rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51951,7 +52170,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Car ran red into Waymo's left-turn path; Waymo braking"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -51979,7 +52201,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52007,7 +52232,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV exited lot without stopping into Waymo's path; struck right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52035,7 +52263,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Van turned right from adjacent lane across Waymo; struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52063,7 +52294,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; truck ahead reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52091,7 +52325,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; SUV ahead reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52119,7 +52356,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in work zone with hazards; pickup passed and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52147,7 +52387,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo tire struck debris in roadway"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52175,7 +52418,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Wrong-way truck reversed into Waymo's path; Waymo braking and reversing"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52203,7 +52449,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped; garbage truck overlapping lane passed and clipped right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52231,7 +52480,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.5,
+      "reasoning": "Waymo undercarriage struck temporary speed bump in roundabout"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52259,7 +52511,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in-lane; van rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52287,7 +52542,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing in queue; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52315,7 +52573,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at green; truck overlapping lane clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52343,7 +52604,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing for traffic; car behind rear-ended rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52371,7 +52635,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Truck turned right from adjacent lane across Waymo; struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52399,7 +52666,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; SUV behind proceeded into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52427,7 +52697,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV tried to pass merging Waymo on left; struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52455,7 +52728,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing in queue; SUV shoved into its rear by car behind"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52483,7 +52759,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Car reversed out of driveway into passing Waymo's right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52511,7 +52790,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Oncoming SUV crossed double yellow into Waymo; Waymo braking"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52539,7 +52821,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; heavy truck passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52567,7 +52852,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Car passing on right changed lanes into Waymo; struck front right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52595,7 +52883,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo stopped straddling lanes after wide right turn; SUV struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52623,7 +52914,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.3,
+      "reasoning": "Waymo proceeded over worker's tape measure still strung across lane"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52651,7 +52945,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped behind truck; truck reversed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52679,7 +52976,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; SUV changing lanes clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52707,7 +53007,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing in queue; car shoved into its rear by another crash"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52735,7 +53038,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Oncoming pickup turned left across Waymo's path; struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52763,7 +53069,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked for dropoff; van passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52791,7 +53100,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped for reversing car; car backed into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52819,7 +53131,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red arrow; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52847,7 +53162,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in queue at red; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52875,7 +53193,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.8,
+      "reasoning": "Waymo undercarriage grounded on raised lot driveway entrance"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52903,7 +53224,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked with hazards; passing truck's trailer clipped rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52962,7 +53286,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Loose skateboard rolled across crosswalk into Waymo's path"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -52990,7 +53317,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.4,
+      "reasoning": "Waymo slowed and maneuvered but struck fallen utility line in lane"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53018,7 +53348,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo mid lane-change straddling lanes; truck in lane struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53046,7 +53379,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo proceeding from green; pickup behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53074,7 +53410,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red arrow; pickup rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53102,7 +53441,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.8,
+      "reasoning": "Waymo undercarriage grounded on raised lot driveway entrance"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53130,7 +53472,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped mid-turn for peds; car behind passed and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53158,7 +53503,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing in queue; car shoved into its rear by pickup behind"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53186,7 +53534,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Waymo parked for dropoff; passenger opened door into passing bus"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53214,7 +53565,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo merging into gap; SUV in lane proceeded into rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53242,7 +53596,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car behind proceeded into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53270,7 +53627,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.05,
+      "reasoning": "Cross pickup ran stop sign turning right; struck Waymo's rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53298,7 +53658,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; pickup ahead reversed into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53326,7 +53689,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo mid lane-change straddling lanes; SUV in lane struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53354,7 +53720,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in queue; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53382,7 +53751,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped for HAWK beacon; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53410,7 +53782,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding; second SUV passed left and clipped left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53438,7 +53813,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "rear left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at stop sign; truck ahead reversed into front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53466,7 +53844,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in freeway queue; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53494,7 +53875,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left + rear",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.05,
+      "reasoning": "Oncoming pickup turned left across Waymo; clipped rear then spun it into SUV"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53522,7 +53906,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in slip-lane yielding; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53550,7 +53937,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV entered Waymo's lane at T-intersection without stopping; struck right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53578,7 +53968,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing; car crossed double yellow to pass and clipped left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53606,7 +53999,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53665,7 +54061,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo proceeding from stop; pickup shoved into its rear by car behind"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53693,7 +54092,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing to yield on left turn; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53721,7 +54123,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.8,
+      "reasoning": "Waymo undercarriage grounded on raised lot driveway entrance"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53749,7 +54154,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Waymo yielding to right-turning truck; trailer swung into right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53777,7 +54185,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo creeping to yield; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53805,7 +54216,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car behind proceeded into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53833,7 +54247,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding after left turn; passing truck clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53861,7 +54278,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped with hazards after debris; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53889,7 +54309,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car behind proceeded into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53917,7 +54340,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front left",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Airborne debris from opposite roadway landed in lane; Waymo struck it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53945,7 +54371,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Car changed lanes into Waymo's lane; struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -53973,7 +54402,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at stop sign; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54001,7 +54433,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "left",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked for pickup; bus passed left and struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54029,7 +54464,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Waymo pulled forward in lot as parked car reversed into right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54057,7 +54495,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at stop sign; pickup rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54085,7 +54526,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "bottom",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.8,
+      "reasoning": "Waymo undercarriage struck raised pavement around utility cover in alley"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54113,7 +54557,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; motorcycle rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54141,7 +54588,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked for dropoff; van passed left and clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54169,7 +54619,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked for dropoff; car ahead reversed while unparking into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54197,7 +54650,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left + rear",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo turning left from stop; SUV behind drove into rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54225,7 +54681,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Waymo's unprotected left; oncoming car emerged from behind bus nearly clear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54253,7 +54712,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front left + front + left + rear",
     "cpHit": "front + left + rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Oncoming SUV with no lights crossed into Waymo; pushed it into parked car"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54281,7 +54743,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right",
     "cpHit": "right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Lead car right-hooked into Waymo's lane toward garage; struck front right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54309,7 +54774,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car rear-ended rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54337,7 +54805,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.8,
+      "reasoning": "Waymo undercarriage grounded on pavement completing right turn"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54365,7 +54836,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo tire struck debris and deflated"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54393,7 +54867,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked for dropoff; turning SUV rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54421,7 +54898,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing for red; SUV behind rear-ended rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54449,7 +54929,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Adjacent left-turning car crossed line into Waymo's lane; struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54477,7 +54960,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "left",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Lead car right-turned from wrong lane into Waymo; struck left side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54505,7 +54991,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding to queue; pickup rear-ended rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54533,7 +55022,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54561,7 +55053,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing to yield on left turn; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54589,7 +55084,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Car shoved across intersection by red-runner into stopped Waymo"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54617,7 +55115,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo parked for dropoff; SUV with no lights rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54645,7 +55146,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo maneuvering past stopped car; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54673,7 +55177,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped yielding on left turn; car behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54701,7 +55208,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.3,
+      "reasoning": "Waymo struck downed utility line hanging across road at speed"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54729,7 +55239,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear left",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car passed right and clipped rear right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54757,7 +55270,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "front left + top",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Car straddling centerline rear-ended Waymo and flipped"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54785,7 +55301,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; truck's wide right turn clipped rear left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54813,7 +55332,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.2,
+      "reasoning": "Police-directed intersection; car waved through struck Waymo's front right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54841,7 +55363,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.3,
+      "reasoning": "Waymo's left turn from stop across oncoming car with right of way; struck right"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54869,7 +55394,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "unknown",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.5,
+      "reasoning": "Waymo front tire dropped into pothole turning into lot driveway"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54897,7 +55425,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV turned left from stop across Waymo's path; struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54925,7 +55456,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo slowing for queue; van behind rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54953,7 +55487,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front",
     "cpHit": "front",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Oncoming SUV crossed double yellow into Waymo; struck front left"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -54981,7 +55518,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front right",
     "cpHit": "rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at red; car ahead rolled back into front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -55009,7 +55549,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Parked SUV pulled out of stall into Waymo's path in lot; struck right side"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -55037,7 +55580,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - All Belted",
     "svHit": "front right + rear right",
     "cpHit": "front right + rear right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped in queue; chain-reaction crash shoved car into its rear"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -55065,7 +55611,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front",
     "cpHit": "",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.5,
+      "reasoning": "Waymo front tire dropped into pothole and deflated"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -55093,7 +55642,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "rear",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo passing parked Waymo; the parked Waymo's door opened into it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -55121,7 +55673,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Waymo stopped at stop sign; car rear-ended it"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -56048,7 +56603,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Zoox stopped for pickup; door opened into unparking car's bumper"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -56107,7 +56665,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear",
     "cpHit": "front left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Zoox stopped at PUDO; SUV passed left and swiped rear corner"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -56135,7 +56696,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left + front + front right",
     "cpHit": "left",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Zoox slowed for reversing tractor-trailer; trailer swung into its front"
+    },
     "vehiclesInvolved": 2
   },
   {
@@ -56194,7 +56758,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "left",
     "cpHit": "front + front right",
-    "fault": null,
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Pickup made abrupt left turn across Zoox's right of way on green; unavoidable"
+    },
     "vehiclesInvolved": 2
   }
 ]

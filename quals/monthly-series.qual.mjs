@@ -180,13 +180,40 @@ assert.ok(
 Expectata: summary rows include Tesla, Waymo, and Zoox.
 Resultata: summary rows were ${JSON.stringify(plain.summaryRows)}.`,
 );
+// Tesla summary counts must equal the raw in-window incident counts —
+// integers, with no coverage scaling — rather than a hardcoded snapshot that
+// goes stale every NHTSA refresh. Recompute the expected counts by a flat
+// filter over INCIDENT_DATA (independent of the summary's month-by-month
+// aggregation path), so a scaling bug would surface as a mismatch or a
+// non-integer.
+const expTesla = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const series = monthSeriesData();
+  const teslaMonths = new Set(
+    series.points.filter(p => p.helmers.Tesla !== null).map(p => p.month));
+  const inWin = INCIDENT_DATA.filter(i =>
+    i.helmer === "Tesla" && teslaMonths.has(monthKeyFromIncidentLabel(i.date)));
+  return {
+    total: inWin.length,
+    nonstationary: inWin.filter(i => speedBinForIncident(i.speed) !== "0").length,
+    roadway: inWin.filter(i =>
+      speedBinForIncident(i.speed) !== "0" && i.road !== "Parking Lot").length,
+  };
+})()
+`, ctx)));
+const teslaSummary = summaryByHelmer.Tesla;
 assert.ok(
-  Math.abs(summaryByHelmer.Tesla.incTotal - 17) < 1e-6 &&
-    Math.abs(summaryByHelmer.Tesla.incNonstationary - 11) < 1e-6 &&
-    Math.abs(summaryByHelmer.Tesla.incRoadwayNonstationary - 8) < 1e-6,
-  `Replicata: compute Tesla summary incident totals.
-Expectata: summary totals report observed-window incidents (17 total, 11 nonstationary, 8 nonstationary-roadway) without incident scaling.
-Resultata: Tesla summary was ${JSON.stringify(summaryByHelmer.Tesla)}.`,
+  Number.isInteger(teslaSummary.incTotal) &&
+    Number.isInteger(teslaSummary.incNonstationary) &&
+    Number.isInteger(teslaSummary.incRoadwayNonstationary) &&
+    teslaSummary.incTotal === expTesla.total &&
+    teslaSummary.incNonstationary === expTesla.nonstationary &&
+    teslaSummary.incRoadwayNonstationary === expTesla.roadway &&
+    teslaSummary.incRoadwayNonstationary <= teslaSummary.incNonstationary &&
+    teslaSummary.incNonstationary <= teslaSummary.incTotal,
+  `Replicata: compute Tesla summary incident totals and compare to a flat in-window count of INCIDENT_DATA.
+Expectata: integer, unscaled counts matching the raw data (total=${expTesla.total}, nonstationary=${expTesla.nonstationary}, nonstationary-roadway=${expTesla.roadway}), with roadway <= nonstationary <= total.
+Resultata: Tesla summary was ${JSON.stringify({incTotal: teslaSummary.incTotal, incNonstationary: teslaSummary.incNonstationary, incRoadwayNonstationary: teslaSummary.incRoadwayNonstationary})}.`,
 );
 assert.ok(
   summaryByHelmer.Waymo.incAirbag >= 30 &&
