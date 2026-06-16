@@ -273,51 +273,64 @@ Expectata: SVG includes gold (fill:#c9a800) human benchmark log-normal curves.
 Resultata: human curve color not found in output.`,
 );
 
-const seriousTitleChart = vm.runInContext(`
+// The distribution title now lives in the collapsible section header
+// (#dist-heading), set by renderWindowedViews — so the title tracks the
+// selected metric and active window there, not in the chart body.
+const seriousTitle = vm.runInContext(`
 (() => {
   selectedMetricKey = "seriousInjury";
+  fullMonthSeries = monthSeriesData();
+  monthRangeStart = 0; monthRangeEnd = Infinity;
+  renderWindowedViews();
   return {
+    heading: document.getElementById("dist-heading").textContent,
+    chartHtml: document.getElementById("chart-distributions").innerHTML,
     start: activeSeries.months[0],
     end: activeSeries.months[activeSeries.months.length - 1],
-    html: renderDistributionChart(activeSeries),
   };
 })()
 `, ctx);
 
+assert.equal(
+  seriousTitle.heading,
+  `Miles per serious injury crash using data from ${seriousTitle.start} to ${seriousTitle.end}`,
+  `Replicata: render the windowed views with the serious-injury metric selected.
+Expectata: the section header reuses the exact selected metric label and active date window.
+Resultata: heading was ${JSON.stringify(seriousTitle.heading)}.`,
+);
+
 assert.ok(
-  seriousTitleChart.html.includes(
-    `<h3>Miles per serious injury crash using data from ${seriousTitleChart.start} to ${seriousTitleChart.end}</h3>`
-  ),
-  `Replicata: render the overall uncertainty chart with the serious-injury metric selected.
-Expectata: the chart title reuses the exact selected metric label and active date window.
-Resultata: rendered snippets were ${JSON.stringify(seriousTitleChart.html.slice(0, 200))}.`,
+  !seriousTitle.chartHtml.includes("<h3>"),
+  `Replicata: inspect the distribution chart body after rendering.
+Expectata: the title is in the section header, not duplicated as an <h3> in the chart body.
+Resultata: chart body was ${JSON.stringify(seriousTitle.chartHtml.slice(0, 120))}.`,
 );
 
 const windowEffect = vm.runInContext(`
 (() => {
   selectedMetricKey = "all";
-  const full = monthSeriesData();
-  const sliced = sliceSeries(full, 0, 5);
-  const fullWaymo = monthlySummaryRows(full).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
-  const slicedWaymo = monthlySummaryRows(sliced).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
+  fullMonthSeries = monthSeriesData();
+  const fullWaymo = monthlySummaryRows(fullMonthSeries).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
+  monthRangeStart = 0; monthRangeEnd = 5;
+  renderWindowedViews();
+  const slicedWaymo = monthlySummaryRows(activeSeries).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
   return {
     fullWaymo,
     slicedWaymo,
-    html: renderDistributionChart(sliced),
-    start: sliced.months[0],
-    end: sliced.months[sliced.months.length - 1],
+    heading: document.getElementById("dist-heading").textContent,
+    start: activeSeries.months[0],
+    end: activeSeries.months[activeSeries.months.length - 1],
   };
 })()
 `, ctx);
 
 assert.ok(
   windowEffect.fullWaymo !== windowEffect.slicedWaymo &&
-    windowEffect.html.includes(
-      `<h3>Miles per incident using data from ${windowEffect.start} to ${windowEffect.end}</h3>`
-    ),
+    windowEffect.heading ===
+      `Miles per incident using data from ${windowEffect.start} to ${windowEffect.end}`,
   `Replicata: compare the all-incident distribution inputs for the full month window vs a sliced month window.
-Expectata: narrowing the month window changes the bell-curve inputs and the rendered title reflects the sliced date range.
-Resultata: fullWaymo=${windowEffect.fullWaymo}, slicedWaymo=${windowEffect.slicedWaymo}, html=${JSON.stringify(windowEffect.html.slice(0, 200))}.`,
+Expectata: narrowing the month window changes the bell-curve inputs and the section header reflects the sliced date range.
+Resultata: fullWaymo=${windowEffect.fullWaymo}, slicedWaymo=${windowEffect.slicedWaymo}, heading=${JSON.stringify(windowEffect.heading)}.`,
 );
 
 // Edge case: no helmers enabled → empty string

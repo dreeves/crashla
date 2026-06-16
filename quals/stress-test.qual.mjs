@@ -191,7 +191,9 @@ const flips = JSON.parse(JSON.stringify(vm.runInContext(`
     const flip = faultFlipMultiplier(stress.av, stress.human);
     out[row.helmer] = flip === null ? null : {mult: String(flip.mult), flipped: flip.flipped};
   }
-  return {out, distHtml: document.getElementById("chart-distributions").innerHTML};
+  return {out,
+    distHtml: document.getElementById("chart-distributions").innerHTML,
+    distHeading: document.getElementById("dist-heading").textContent};
 })()
 `, ctx)));
 
@@ -248,16 +250,17 @@ Resultata: sanity HTML lacks the fault sensitivity table.`,
 
 // The distributions container holds exactly one chart for the slider-selected
 // window: no second trailing-window chart, no constant-rate note, no title
-// suffix. Recency is controlled by the date-range slider; the monthly chart
-// above carries the over-time view.
+// suffix, and no in-body heading (the title is in the #dist-heading section
+// header). Recency is controlled by the date-range slider.
 assert.ok(
-  (flips.distHtml.match(/<h3>/g) || []).length === 1 &&
+  !flips.distHtml.includes("<h3>") &&
     !flips.distHtml.includes("dist-note") &&
     !flips.distHtml.includes("Aggregated") &&
-    !flips.distHtml.includes("Trailing"),
-  `Replicata: build monthly views and inspect the chart-distributions container.
-Expectata: exactly one distribution chart, no note, no "(Fully Aggregated)"/"(Trailing Window)" suffix.
-Resultata: ${(flips.distHtml.match(/<h3>/g) || []).length} h3s; titles ${JSON.stringify((flips.distHtml.match(/<h3>[^<]*<\/h3>/g) || []))}.`,
+    !flips.distHtml.includes("Trailing") &&
+    flips.distHeading.includes("using data from"),
+  `Replicata: build monthly views and inspect the chart-distributions container and #dist-heading.
+Expectata: one chart body with no in-body <h3>/note/suffix; the title lives in the section header.
+Resultata: heading ${JSON.stringify(flips.distHeading)}; body head ${JSON.stringify(flips.distHtml.slice(0, 120))}.`,
 );
 
 console.log("qual pass: skeptical stress test classifies headline safety claims");

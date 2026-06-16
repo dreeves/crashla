@@ -133,11 +133,11 @@ function estimateMpi(k, m, massFrac) {
 let incidents = [];
 let vmtRows = [];
 let faultData = {}; // reportId -> {faultfrac, reasoning}
-let monthHelmerEnabled = {HumansAV: true, HumansUS: false, Tesla: true, Waymo: true, Zoox: false};
+let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, Waymo: true, Zoox: false};
 // Collapsible page sections (each <section class="collapsible" id="sec-<id>">).
 // Collapsed set is shareable via the URL so a link can foreground one section.
-const SECTION_IDS = ["browser", "markets", "sanity"];
-let sectionCollapsed = {browser: false, markets: false, sanity: false};
+const SECTION_IDS = ["controls", "mpi", "dist", "summary", "vmt", "browser", "markets", "sanity"];
+let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
 // count function, and whether it's enabled by default.
@@ -408,9 +408,43 @@ const METRIC_DEFS = [
         srcLinks: [
           {label: 'NHTSA FARS 2023', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
         ]},
+      // The one rideshare-specific per-mile rate that is published (the
+      // safety reports otherwise cover only fatalities and assaults).
+      HumansRideshare: {lo: 106000000, hi: 161000000,
+        src: 'Uber & Lyft US Safety Reports: 0.62–0.94 fatalities per 100M VMT (2019–2022)',
+        srcLinks: [
+          {label: 'Uber US Safety Report', url: 'https://www.uber.com/us/en/safety/usr/'},
+          {label: 'Lyft Safety Transparency Report', url: 'https://www.lyft.com/safety-transparency-report'},
+        ]},
     },
   },
 ];
+
+// Humans (Uber/Lyft): a rideshare driver is NOT the generic AV-cities human
+// driver. On fatalities — the one published rideshare per-mile rate (set
+// explicitly above) — they run ~1.2x safer, because they're sober, working,
+// rated, and in inspected vehicles. No rideshare rate exists for non-fatal
+// crashes, so for the general crash metrics we lean the AV-cities band safer
+// with a wide range: as bad as ~1.2x worse (heavy low-speed urban exposure and
+// in-app distraction can raise minor-crash frequency) up to ~1.5x safer (the
+// driver self-selection seen in the fatality data). Severity-tail metrics
+// (hospitalization/airbag/serious-injury) have no rideshare or national
+// source, so they're omitted — same coverage as Humans (US average), which is
+// why the derivation keys off metrics that also carry a HumansUS band.
+const RIDESHARE_WORST = 1.2; // band floor: up to 1.2x MORE crashes than AV cities
+const RIDESHARE_BEST = 1.5;  // band ceiling: up to 1.5x FEWER
+const sig2 = x => { const p = 10 ** (Math.floor(Math.log10(x)) - 1); return Math.round(x / p) * p; };
+for (const m of METRIC_DEFS) {
+  const h = m.humanMPI;
+  if (h && h.HumansAV && h.HumansUS && !h.HumansRideshare) {
+    h.HumansRideshare = {
+      lo: sig2(h.HumansAV.lo / RIDESHARE_WORST),
+      hi: sig2(h.HumansAV.hi * RIDESHARE_BEST),
+      src: 'Leaned off the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction; no rideshare-specific non-fatal rate published',
+      srcLinks: h.HumansAV.srcLinks,
+    };
+  }
+}
 
 // Derived accessors — consumed by rendering code throughout
 const METRIC_KEYS = METRIC_DEFS.map(m => m.key);
@@ -447,11 +481,15 @@ const ADS_HELMERS = ["Tesla", "Waymo", "Zoox"];
 // operating cities (Kusano/Scanlon + Waymo safety hub); HumansUS = the
 // nationwide average (CRSS/FARS, all road types). Same "driver", two
 // reference populations.
-const HUMAN_HELMERS = ["HumansAV", "HumansUS"];
+// HumansRideshare = a rider's typical alternative to an AV (human-driven
+// Uber/Lyft). Same urban surface streets as the AVs; see the humanMPI proxy
+// derivation below the metric defs.
+const HUMAN_HELMERS = ["HumansAV", "HumansUS", "HumansRideshare"];
 const ALL_HELMERS = [...HUMAN_HELMERS, ...ADS_HELMERS];
 const HELMER_LABELS = {
   HumansAV: "Humans (AV cities)",
   HumansUS: "Humans (US average)",
+  HumansRideshare: "Humans (Uber/Lyft)",
   Tesla: "Tesla",
   Waymo: "Waymo",
   Zoox: "Zoox",
@@ -464,6 +502,7 @@ function helmerLabel(helmer) {
 const HELMER_COLORS = {
   HumansAV: "#c9a800",
   HumansUS: "#8a7400",
+  HumansRideshare: "#cc7a00",
   Tesla: "#d13b2d",
   Waymo: "#2060c0",
   Zoox: "#2a8f57",
@@ -1246,8 +1285,9 @@ function renderAllHelmersMpiChart(series) {
     }).join("");
   }).join("");
 
+  // Title lives in the collapsible section header (#mpi-heading), set by
+  // renderWindowedViews, so it stays visible when the section is collapsed.
   return `
-    <h3>${metric.label} over time</h3>
     ${helmerChipLegend(seriesRows.filter(row => row.vals.some(v => v !== null)).map(row => row.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       ${drawSingleMonthAxes(
@@ -1365,8 +1405,9 @@ function renderDistributionChart(series) {
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
+  // Title lives in the collapsible section header (#dist-heading), set by
+  // renderWindowedViews, so it stays visible when the section is collapsed.
   return `
-    <h3>${metric.label} using data from ${start} to ${end}</h3>
     ${helmerChipLegend(curves.map(c => c.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
@@ -1832,6 +1873,12 @@ function renderWindowedViews() {
   activeSeries = isFullRange
     ? fullMonthSeries
     : sliceSeries(fullMonthSeries, startIdx, endIdx);
+  // Section headers carry the (dynamic) chart titles so they stay visible when
+  // a section is collapsed. Exact strings preserved from the former chart h3s.
+  const metric = selectedMonthMetric();
+  const {start, end} = seriesMonthBounds(activeSeries);
+  byId("mpi-heading").textContent = `${metric.label} over time`;
+  byId("dist-heading").textContent = `${metric.label} using data from ${start} to ${end}`;
   byId("chart-mpi-all").innerHTML = renderAllHelmersMpiChart(activeSeries);
   // Pools the slider-selected window; narrow the date range to weight recent
   // data. The monthly chart above shows how the rate moves over time.

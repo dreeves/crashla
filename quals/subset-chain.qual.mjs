@@ -18,12 +18,45 @@ const mpiByCohort = vm.runInContext(`
     Object.fromEntries(METRIC_DEFS.filter(m => m.humanMPI && m.humanMPI[hh])
       .map(m => [m.key, m.humanMPI[hh]]))]))`, ctx);
 
-// Both cohorts must exist and HumansAV must cover every metric with bands
+// All cohorts must exist and HumansAV must cover every metric with bands
+const cohortCount = vm.runInContext("HUMAN_HELMERS.length", ctx);
 assert.ok(
-  Object.keys(mpiByCohort).length === 2 && Object.keys(mpiByCohort.HumansAV).length >= 10,
+  Object.keys(mpiByCohort).length === cohortCount && Object.keys(mpiByCohort.HumansAV).length >= 10,
   `Replicata: collect humanMPI bands per cohort from METRIC_DEFS.
-Expectata: two cohorts, with HumansAV covering all metrics.
+Expectata: ${cohortCount} cohorts, with HumansAV covering all metrics.
 Resultata: cohorts ${JSON.stringify(Object.keys(mpiByCohort))}, HumansAV metrics ${Object.keys(mpiByCohort.HumansAV || {}).length}.`);
+
+// Humans (Uber/Lyft) must be DISTINCT from Humans (AV cities), not a clone:
+//  - fatality: the sourced rideshare rate (safer than AV cities);
+//  - general crash metrics: leaned off the AV-cities band but wider on both
+//    sides (lo lower, hi higher) — never byte-identical;
+//  - severity-tail metrics (the AV-only ones): omitted entirely.
+const rideshare = mpiByCohort.HumansRideshare;
+const av = mpiByCohort.HumansAV;
+const us = mpiByCohort.HumansUS;
+assert.ok(
+  rideshare && rideshare.fatality &&
+    rideshare.fatality.lo > av.fatality.hi === false && // sanity: not nonsense
+    (rideshare.fatality.lo !== av.fatality.lo || rideshare.fatality.hi !== av.fatality.hi),
+  `Replicata: compare HumansRideshare fatality band to HumansAV.
+Expectata: rideshare fatality is the sourced Uber/Lyft rate, distinct from AV cities.
+Resultata: rideshare ${JSON.stringify(rideshare && rideshare.fatality)}, AV ${JSON.stringify(av.fatality)}.`);
+for (const key of Object.keys(av)) {
+  if (key === "fatality") continue;
+  if (us[key]) { // general metric → rideshare present and strictly wider than AV
+    assert.ok(
+      rideshare[key] && rideshare[key].lo < av[key].lo && rideshare[key].hi > av[key].hi,
+      `Replicata: compare HumansRideshare.${key} to HumansAV.${key}.
+Expectata: rideshare band leans wider on both sides (lo lower, hi higher), not a clone.
+Resultata: rideshare ${JSON.stringify(rideshare[key])}, AV ${JSON.stringify(av[key])}.`);
+  } else { // AV-only severity-tail metric → rideshare omits it
+    assert.ok(
+      !rideshare[key],
+      `Replicata: check HumansRideshare for the AV-only metric ${key}.
+Expectata: omitted (no rideshare or national source).
+Resultata: rideshare ${key} was ${JSON.stringify(rideshare[key])}.`);
+  }
+}
 
 // Subset ordering: if B ⊂ A (fewer incidents), then MPI-B ≥ MPI-A.
 // Each pair is [parent, subset] where subset.lo ≥ parent.lo and

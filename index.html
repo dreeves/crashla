@@ -49,16 +49,45 @@
 -->
 
 <div class="month-panel" id="month-panel">
-  <div class="month-legend" id="month-legend-mpi-helmers"></div>
-  <div class="month-legend" id="month-legend-mpi-lines"></div>
-  <div class="month-legend" id="month-legend-ci-fan"></div>
-  <div id="date-range-controls"></div>
-  <div id="chart-mpi-all" class="month-chart"></div>
-  <div id="chart-distributions" class="month-chart"></div>
-  <div id="mpi-summary-cards"></div>
-  <div id="chart-helmer-series" class="month-helmer-grid"></div>
-  <div class="month-legend" id="month-legend-lines"></div>
-  <div class="month-legend" id="month-legend-speed"></div>
+  <section class="collapsible" id="sec-controls">
+  <h2 class="sec-head">What to compare</h2>
+  <div class="sec-body">
+    <div class="month-legend" id="month-legend-mpi-helmers"></div>
+    <div class="month-legend" id="month-legend-mpi-lines"></div>
+    <div id="date-range-controls"></div>
+  </div>
+  </section>
+
+  <section class="collapsible" id="sec-mpi">
+  <h2 class="sec-head" id="mpi-heading"></h2>
+  <div class="sec-body">
+    <div class="month-legend" id="month-legend-ci-fan"></div>
+    <div id="chart-mpi-all" class="month-chart"></div>
+  </div>
+  </section>
+
+  <section class="collapsible" id="sec-dist">
+  <h2 class="sec-head" id="dist-heading"></h2>
+  <div class="sec-body">
+    <div id="chart-distributions" class="month-chart"></div>
+  </div>
+  </section>
+
+  <section class="collapsible" id="sec-summary">
+  <h2 class="sec-head">Summary statistics</h2>
+  <div class="sec-body">
+    <div id="mpi-summary-cards"></div>
+  </div>
+  </section>
+
+  <section class="collapsible" id="sec-vmt">
+  <h2 class="sec-head">Vehicle Miles Traveled</h2>
+  <div class="sec-body">
+    <div id="chart-helmer-series" class="month-helmer-grid"></div>
+    <div class="month-legend" id="month-legend-lines"></div>
+    <div class="month-legend" id="month-legend-speed"></div>
+  </div>
+  </section>
 </div>
 
 <section class="collapsible" id="sec-browser">

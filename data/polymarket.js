@@ -128,5 +128,13 @@ const MANIFOLD_SNAPSHOT = [
     "enabled": true,
     "probability": 0.14782785142383092,
     "volume": 506.916709702358
+  },
+  {
+    "question": "Waymo in Portland in 2026?",
+    "slug": "waymo-in-portland-in-2026",
+    "url": "https://manifold.markets/dreev/waymo-in-portland-in-2026",
+    "enabled": true,
+    "probability": 0.7,
+    "volume": 0
   }
 ];

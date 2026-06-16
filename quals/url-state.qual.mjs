@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import vm from "node:vm";
 import { appScript } from "./load-app.mjs";
 
@@ -105,9 +106,9 @@ Resultata: sortAsc was ${plain.sortAsc}.`,
 
 assert.deepEqual(
   plain.monthHelmerEnabled,
-  {HumansAV: true, HumansUS: false, Tesla: true, Waymo: false, Zoox: true},
+  {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, Waymo: false, Zoox: true},
   `Replicata: apply encoded query to reset helmer toggles.
-Expectata: helmer toggles restored (Tesla+Zoox on, Waymo off).
+Expectata: helmer toggles restored (Tesla+Zoox on, Waymo off, rideshare off).
 Resultata: helmer toggles were ${JSON.stringify(plain.monthHelmerEnabled)}.`,
 );
 
@@ -238,16 +239,17 @@ Resultata: no throw.`,
 
 const collapseState = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
-  sectionCollapsed = {browser: false, markets: false, sanity: false};
+  const allOpen = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
+  sectionCollapsed = {...allOpen};
   const defaultQuery = encodeUiStateQuery();
 
-  sectionCollapsed = {browser: true, markets: false, sanity: true};
+  sectionCollapsed = {...allOpen, browser: true, sanity: true};
   const collapsedQuery = encodeUiStateQuery();
 
-  sectionCollapsed = {browser: false, markets: false, sanity: false};
+  sectionCollapsed = {...allOpen};
   applyUiStateQuery(collapsedQuery);
-  const restored = sectionCollapsed;
-  return {defaultQuery, collapsedQuery, restored};
+  return {defaultQuery, collapsedQuery, restored: sectionCollapsed,
+    expected: {...allOpen, browser: true, sanity: true}};
 })()
 `, ctx)));
 
@@ -267,9 +269,9 @@ Resultata: query was ${collapseState.collapsedQuery}.`,
 
 assert.deepEqual(
   collapseState.restored,
-  {browser: true, markets: false, sanity: true},
+  collapseState.expected,
   `Replicata: apply a query with x=browser.sanity.
-Expectata: sectionCollapsed restored (browser+sanity collapsed, markets open).
+Expectata: sectionCollapsed restored (browser+sanity collapsed, all others open).
 Resultata: sectionCollapsed was ${JSON.stringify(collapseState.restored)}.`,
 );
 
@@ -326,6 +328,38 @@ assert.ok(
   `Replicata: sync URL state.
 Expectata: replaceState called with encoded query.
 Resultata: replaceState URL was ${replaceUrl}.`,
+);
+
+// Every SECTION_ID must have matching collapsible markup in index.html, and
+// vice versa — so the collapse machinery can't drift from the page structure.
+const sectionIds = JSON.parse(JSON.stringify(vm.runInContext("SECTION_IDS", ctx)));
+const indexHtml = fs.readFileSync("index.html", "utf8");
+for (const id of sectionIds) {
+  const re = new RegExp(`<section class="collapsible" id="sec-${id}">`);
+  assert.ok(
+    re.test(indexHtml),
+    `Replicata: search index.html for the collapsible section sec-${id}.
+Expectata: a <section class="collapsible" id="sec-${id}"> wrapper exists.
+Resultata: not found.`,
+  );
+}
+const htmlSectionIds = [...indexHtml.matchAll(/<section class="collapsible" id="sec-([a-z]+)">/g)]
+  .map(m => m[1]);
+assert.deepEqual(
+  htmlSectionIds.slice().sort(),
+  sectionIds.slice().sort(),
+  `Replicata: collect collapsible section ids from index.html and from SECTION_IDS.
+Expectata: the two sets match exactly (no orphan markup or unbacked id).
+Resultata: html=${JSON.stringify(htmlSectionIds)}, SECTION_IDS=${JSON.stringify(sectionIds)}.`,
+);
+// Each collapsible section needs a clickable .sec-head (the collapse toggle).
+const headCount = (indexHtml.match(/class="sec-head"/g) || []).length;
+assert.equal(
+  headCount,
+  sectionIds.length,
+  `Replicata: count class="sec-head" headers in index.html.
+Expectata: one per collapsible section (${sectionIds.length}).
+Resultata: found ${headCount}.`,
 );
 
 console.log("qual pass: URL state round-trips and fails loudly on invalid query params");

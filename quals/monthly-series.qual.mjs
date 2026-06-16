@@ -121,6 +121,7 @@ const metrics = vm.runInContext(`
       ]),
     ),
     summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
+    mpiHeading: document.getElementById("mpi-heading").textContent,
     chartMpiAll: document.getElementById("chart-mpi-all").innerHTML,
     chartHelmerSeries: document.getElementById("chart-helmer-series").innerHTML,
     legendMpiHelmers: document.getElementById("month-legend-mpi-helmers").innerHTML,
@@ -349,26 +350,38 @@ Resultata: Humans color not found in default chart render.`,
 const renderedAll = plain.chartMpiAll;
 assert.ok(
   renderedAll.includes("<svg") &&
-    renderedAll.includes("<h3>Miles per incident over time</h3>") &&
+    !renderedAll.includes("<h3>") &&
     renderedAll.includes("month-mpi-all-line") &&
     renderedAll.includes("stroke-width:2") &&
     renderedAll.includes("Miles Per Incident (MPI)"),
   `Replicata: render cross-helmer miles-per-incident chart.
-Expectata: chart includes the selected-metric title, all-helmer line traces with standard stroke-width, month labels, and the miles-per-incident axis.
+Expectata: chart body has all-helmer line traces, month labels, and the MPI axis, with the title in the section header (not an <h3> in the body).
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 
-const airbagTitleChart = vm.runInContext(`
+// The cross-helmer chart title lives in the section header (#mpi-heading), set
+// by renderWindowedViews, so it stays visible when the section is collapsed.
+assert.equal(
+  plain.mpiHeading,
+  "Miles per incident over time",
+  `Replicata: read the #mpi-heading section header after buildMonthlyViews with the all-incident metric.
+Expectata: header reads "Miles per incident over time".
+Resultata: header was ${JSON.stringify(plain.mpiHeading)}.`,
+);
+
+const airbagHeading = vm.runInContext(`
   (() => {
     selectedMetricKey = "airbag";
-    return renderAllHelmersMpiChart(monthSeriesData());
+    buildMonthlyViews();
+    return document.getElementById("mpi-heading").textContent;
   })()
 `, ctx);
-assert.ok(
-  airbagTitleChart.includes("<h3>Miles per airbag-deploying crash over time</h3>"),
-  `Replicata: render the cross-helmer chart with the airbag metric selected.
-Expectata: the chart title reuses the exact selected metric label from the radio buttons.
-Resultata: rendered snippets were ${JSON.stringify(airbagTitleChart.slice(0, 200))}.`,
+assert.equal(
+  airbagHeading,
+  "Miles per airbag-deploying crash over time",
+  `Replicata: select the airbag metric and rebuild; read the #mpi-heading header.
+Expectata: header reuses the exact selected metric label.
+Resultata: header was ${JSON.stringify(airbagHeading)}.`,
 );
 
 // k=0 months render a datapoint from the Jeffreys posterior (Gamma(0.5, m))
