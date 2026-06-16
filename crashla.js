@@ -134,6 +134,10 @@ let incidents = [];
 let vmtRows = [];
 let faultData = {}; // reportId -> {faultfrac, reasoning}
 let monthHelmerEnabled = {HumansAV: true, HumansUS: false, Tesla: true, Waymo: true, Zoox: false};
+// Collapsible page sections (each <section class="collapsible" id="sec-<id>">).
+// Collapsed set is shareable via the URL so a link can foreground one section.
+const SECTION_IDS = ["browser", "markets", "sanity"];
+let sectionCollapsed = {browser: false, markets: false, sanity: false};
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
 // count function, and whether it's enabled by default.
@@ -1257,7 +1261,7 @@ function renderAllHelmersMpiChart(series) {
   `;
 }
 
-function renderDistributionChart(series, titleSuffix = "") {
+function renderDistributionChart(series) {
   const metric = selectedMonthMetric();
   const {start, end} = seriesMonthBounds(series);
   const summaryRows = monthlySummaryRows(series);
@@ -1361,15 +1365,13 @@ function renderDistributionChart(series, titleSuffix = "") {
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
-  // Unique per rendered window: the chart appears twice (full + recent)
-  const clipId = `dist-clip-${start}-${end}`;
   return `
-    <h3>${metric.label} using data from ${start} to ${end}${titleSuffix}</h3>
+    <h3>${metric.label} using data from ${start} to ${end}</h3>
     ${helmerChipLegend(curves.map(c => c.helmer))}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
-      <defs><clipPath id="${clipId}"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
+      <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}
-      <g clip-path="url(#${clipId})">
+      <g clip-path="url(#dist-clip)">
       ${fills}
       ${strokes}
       ${markers}
@@ -1776,39 +1778,48 @@ function renderDateRangeControls() {
   const maxInput = byId("date-range-max");
   const fill = byId("date-range-fill");
   const label = container.querySelector(".date-range-label");
+  let rangeRafPending = false;
+  const rangeRaf = typeof requestAnimationFrame === "function"
+    ? requestAnimationFrame : (fn) => fn();
+  // Live drag: update the slider visuals immediately and re-render the
+  // window-dependent charts on the next frame (coalescing rapid input events).
+  // The slider DOM, incident table, sanity checks, and URL are left untouched
+  // so the drag isn't interrupted; those commit on release (the change event).
   function updateLive() {
     const a = Math.min(Number(minInput.value), Number(maxInput.value));
     const b = Math.max(Number(minInput.value), Number(maxInput.value));
+    monthRangeStart = a;
+    monthRangeEnd = b;
     const fLeft = maxIdx > 0 ? (a / maxIdx) * 100 : 0;
     const fWidth = maxIdx > 0 ? ((b - a) / maxIdx) * 100 : 100;
     fill.style.left = fLeft.toFixed(2) + "%";
     fill.style.width = fWidth.toFixed(2) + "%";
     label.textContent = a === b ? months[a] : `${months[a]} \u2014 ${months[b]}`;
+    if (!rangeRafPending) {
+      rangeRafPending = true;
+      rangeRaf(() => { rangeRafPending = false; renderWindowedViews(); });
+    }
   }
   minInput.addEventListener("input", updateLive);
   maxInput.addEventListener("input", updateLive);
-  function onRangeChange() {
-    const a = Number(minInput.value);
-    const b = Number(maxInput.value);
-    monthRangeStart = Math.min(a, b);
-    monthRangeEnd = Math.max(a, b);
-    buildMonthlyViews();
+  function commitRange() {
+    monthRangeStart = Math.min(Number(minInput.value), Number(maxInput.value));
+    monthRangeEnd = Math.max(Number(minInput.value), Number(maxInput.value));
+    renderWindowedViews();
+    syncUrlState();
+    buildSanityChecks();
+    buildBrowser();
   }
-  minInput.addEventListener("change", onRangeChange);
-  maxInput.addEventListener("change", onRangeChange);
+  minInput.addEventListener("change", commitRange);
+  maxInput.addEventListener("change", commitRange);
 }
 
-function buildMonthlyViews() {
-  fullMonthSeries = monthSeriesData();
-  const fullSummary = monthlySummaryRows(fullMonthSeries);
-  for (const row of fullSummary) {
-    if (row.vmtBest === 0) continue; // helmer has no data in incident window
-    assert(row.incTotal > 0, "full-series total incidents must be positive", {helmer: row.helmer});
-    assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {helmer: row.helmer});
-    assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {helmer: row.helmer});
-  }
-  // Resolve default start month on first build
-  if (monthRangeStart === -1) {
+// Renders only the views that depend on the selected date window. Used both by
+// the full rebuild and by the live slider drag, which re-slices the
+// already-computed fullMonthSeries without rebuilding the slider, incident
+// table, or URL (so an in-progress drag isn't interrupted).
+function renderWindowedViews() {
+  if (monthRangeStart === -1) { // resolve default start month on first build
     const idx = fullMonthSeries.months.indexOf(DEFAULT_START_MONTH);
     monthRangeStart = idx >= 0 ? idx : 0;
   }
@@ -1822,24 +1833,9 @@ function buildMonthlyViews() {
     ? fullMonthSeries
     : sliceSeries(fullMonthSeries, startIdx, endIdx);
   byId("chart-mpi-all").innerHTML = renderAllHelmersMpiChart(activeSeries);
-  // Pooled estimates assume a constant rate, so alongside the full-window
-  // distribution we repeat it for the trailing RECENT_MONTHS -- current form
-  // vs lifetime average. The second chart is skipped when the selected
-  // window is already that short (it would duplicate the first exactly).
-  const RECENT_MONTHS = 6;
-  const recentStart = activeSeries.months.length - RECENT_MONTHS;
-  const distCharts = [renderDistributionChart(activeSeries, " (Fully Aggregated)")];
-  if (recentStart > 0) {
-    distCharts.push(renderDistributionChart(
-      sliceSeries(activeSeries, recentStart, activeSeries.months.length - 1),
-      " (6-Month Trailing Window)"));
-  }
-  byId("chart-distributions").innerHTML = `
-    <p class="dist-note">The density curves and summary cards below pool the whole selected date range and assume a constant incident rate.
-    The monthly chart above shows how the rate actually changes over time.
-    The second chart repeats the estimate with trailing 6-month window.</p>
-    ${distCharts.join("")}
-  `;
+  // Pools the slider-selected window; narrow the date range to weight recent
+  // data. The monthly chart above shows how the rate moves over time.
+  byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
   byId("chart-helmer-series").innerHTML = ADS_HELMERS.map(helmer => `
     <div class="month-chart">
@@ -1847,6 +1843,18 @@ function buildMonthlyViews() {
       ${renderHelmerMonthlyChart(activeSeries, helmer)}
     </div>
   `).join("");
+}
+
+function buildMonthlyViews() {
+  fullMonthSeries = monthSeriesData();
+  const fullSummary = monthlySummaryRows(fullMonthSeries);
+  for (const row of fullSummary) {
+    if (row.vmtBest === 0) continue; // helmer has no data in incident window
+    assert(row.incTotal > 0, "full-series total incidents must be positive", {helmer: row.helmer});
+    assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {helmer: row.helmer});
+    assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {helmer: row.helmer});
+  }
+  renderWindowedViews();
   renderMonthlyLegends();
   renderDateRangeControls();
   syncUrlState();
@@ -1925,6 +1933,7 @@ const URL_STATE_KEYS = {
   helmers: "c",
   metrics: "m",
   dateRange: "d",
+  collapsed: "x",
 };
 const URL_STATE_REQUIRED = ["f", "s", "a", "c", "m"];
 const URL_STATE_SORT_NONE = "-";
@@ -1963,6 +1972,8 @@ function encodeUiStateQuery() {
       : monthRangeEnd;
     params.set(URL_STATE_KEYS.dateRange, `${monthRangeStart}-${endClamped}`);
   }
+  const collapsed = enabledKeyString(sectionCollapsed, SECTION_IDS);
+  if (collapsed !== "") params.set(URL_STATE_KEYS.collapsed, collapsed);
   return params.toString();
 }
 
@@ -2026,6 +2037,13 @@ function applyUiStateQuery(queryString) {
     monthRangeStart = drStart;
     monthRangeEnd = drEnd;
   }
+
+  if (params.has(URL_STATE_KEYS.collapsed)) {
+    sectionCollapsed = {
+      ...sectionCollapsed,
+      ...parseEnabledKeyString(params.get(URL_STATE_KEYS.collapsed), SECTION_IDS, "collapsed"),
+    };
+  }
 }
 
 function canSyncUrlState() {
@@ -2047,6 +2065,27 @@ function loadUiStateFromLocation() {
 function syncUrlState() {
   if (!canSyncUrlState()) return;
   window.history.replaceState(null, "", `${window.location.pathname}?${encodeUiStateQuery()}`);
+}
+
+function applyCollapsedState() {
+  for (const id of SECTION_IDS) {
+    const sec = byId("sec-" + id);
+    if (sec) sec.classList.toggle("collapsed", sectionCollapsed[id]);
+  }
+}
+
+function initCollapsibles() {
+  for (const id of SECTION_IDS) {
+    const sec = byId("sec-" + id);
+    if (sec === null) continue;
+    const head = sec.querySelector(".sec-head");
+    head.addEventListener("click", () => {
+      sectionCollapsed[id] = !sectionCollapsed[id];
+      sec.classList.toggle("collapsed", sectionCollapsed[id]);
+      syncUrlState();
+    });
+  }
+  applyCollapsedState();
 }
 
 const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
@@ -2974,5 +3013,6 @@ function loadPolymarketData() {
   byId("colophon").textContent =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart}`;
   initTooltips();
+  initCollapsibles();
   loadPolymarketData();
 }

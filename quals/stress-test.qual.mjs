@@ -246,16 +246,18 @@ Expectata: the faultfrac sensitivity table (human-finalized English headers) ren
 Resultata: sanity HTML lacks the fault sensitivity table.`,
 );
 
-// Pooled-window disclosure: the distributions container renders the full
-// window AND a trailing-6-month companion, prefaced by the constant-rate note.
+// The distributions container holds exactly one chart for the slider-selected
+// window: no second trailing-window chart, no constant-rate note, no title
+// suffix. Recency is controlled by the date-range slider; the monthly chart
+// above carries the over-time view.
 assert.ok(
-  flips.distHtml.includes("dist-note") &&
-    (flips.distHtml.match(/<h3>/g) || []).length === 2 &&
-    flips.distHtml.includes(" (Fully Aggregated)</h3>") &&
-    flips.distHtml.includes(" (6-Month Trailing Window)</h3>"),
+  (flips.distHtml.match(/<h3>/g) || []).length === 1 &&
+    !flips.distHtml.includes("dist-note") &&
+    !flips.distHtml.includes("Aggregated") &&
+    !flips.distHtml.includes("Trailing"),
   `Replicata: build monthly views and inspect the chart-distributions container.
-Expectata: a dist-note plus two distribution charts titled "... (Fully Aggregated)" and "... (6-Month Trailing Window)".
-Resultata: ${(flips.distHtml.match(/<h3>/g) || []).length} h3s, note ${flips.distHtml.includes("dist-note") ? "present" : "missing"}, titles ${JSON.stringify((flips.distHtml.match(/<h3>[^<]*<\/h3>/g) || []))}.`,
+Expectata: exactly one distribution chart, no note, no "(Fully Aggregated)"/"(Trailing Window)" suffix.
+Resultata: ${(flips.distHtml.match(/<h3>/g) || []).length} h3s; titles ${JSON.stringify((flips.distHtml.match(/<h3>[^<]*<\/h3>/g) || []))}.`,
 );
 
 console.log("qual pass: skeptical stress test classifies headline safety claims");

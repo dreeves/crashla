@@ -221,7 +221,7 @@ Resultata: no throw.`,
 let threwUnknownKey = false;
 try {
   vm.runInContext(
-    `applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&x=1")`,
+    `applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&z=1")`,
     ctx,
   );
 } catch (_err) {
@@ -229,7 +229,62 @@ try {
 }
 assert.ok(
   threwUnknownKey,
-  `Replicata: apply URL state containing unknown key x.
+  `Replicata: apply URL state containing unknown key z.
+Expectata: immediate throw.
+Resultata: no throw.`,
+);
+
+// --- Collapsed-section URL state (optional key x) ---
+
+const collapseState = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  sectionCollapsed = {browser: false, markets: false, sanity: false};
+  const defaultQuery = encodeUiStateQuery();
+
+  sectionCollapsed = {browser: true, markets: false, sanity: true};
+  const collapsedQuery = encodeUiStateQuery();
+
+  sectionCollapsed = {browser: false, markets: false, sanity: false};
+  applyUiStateQuery(collapsedQuery);
+  const restored = sectionCollapsed;
+  return {defaultQuery, collapsedQuery, restored};
+})()
+`, ctx)));
+
+assert.ok(
+  !collapseState.defaultQuery.includes("x="),
+  `Replicata: encode UI state with no sections collapsed.
+Expectata: query omits the x= key.
+Resultata: query was ${collapseState.defaultQuery}.`,
+);
+
+assert.ok(
+  collapseState.collapsedQuery.includes("x=browser.sanity"),
+  `Replicata: encode UI state with the browser and sanity sections collapsed.
+Expectata: query contains x=browser.sanity.
+Resultata: query was ${collapseState.collapsedQuery}.`,
+);
+
+assert.deepEqual(
+  collapseState.restored,
+  {browser: true, markets: false, sanity: true},
+  `Replicata: apply a query with x=browser.sanity.
+Expectata: sectionCollapsed restored (browser+sanity collapsed, markets open).
+Resultata: sectionCollapsed was ${JSON.stringify(collapseState.restored)}.`,
+);
+
+let threwBadCollapse = false;
+try {
+  vm.runInContext(
+    `applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&x=bogus")`,
+    ctx,
+  );
+} catch (_err) {
+  threwBadCollapse = true;
+}
+assert.ok(
+  threwBadCollapse,
+  `Replicata: apply URL state with an unknown collapsed-section id x=bogus.
 Expectata: immediate throw.
 Resultata: no throw.`,
 );

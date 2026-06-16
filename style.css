@@ -28,6 +28,18 @@ h1 { margin-bottom: 0.5rem; }
 }
 h2 { margin: 1.5rem 0 0.75rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.25rem; }
 h3 { margin: 0.75rem 0 0.5rem; }
+.sec-head { cursor: pointer; user-select: none; }
+.sec-head::before {
+  content: "\25be"; /* ▾ */
+  display: inline-block;
+  width: 0.85em;
+  margin-right: 0.1em;
+  font-size: 0.8em;
+  color: #8090a8;
+  transition: transform 0.15s;
+}
+.collapsible.collapsed > .sec-head::before { transform: rotate(-90deg); }
+.collapsible.collapsed > .sec-body { display: none; }
 .ai-explainer {
   margin: 0.5rem 0 1rem;
   padding: 0.9rem 1rem;
@@ -436,11 +448,6 @@ tr:hover { background: #f8f8ff; }
   display: inline-block;
   background: #5b6475;
   opacity: 0.8;
-}
-.dist-note {
-  font-size: 0.78rem;
-  color: #5b6475;
-  margin: 0.5rem 0 0.2rem;
 }
 .month-mark-tri {
   stroke-width: 1.4;
