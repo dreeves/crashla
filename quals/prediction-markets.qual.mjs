@@ -3,7 +3,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 
-const marketScript = fs.readFileSync("data/polymarket.js", "utf8");
+const marketScript = fs.readFileSync("data/predmarkets.js", "utf8");
 
 class ElementStub {
   constructor(tagName) {
@@ -55,17 +55,17 @@ const ctx = vm.createContext({
   },
 });
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
-vm.runInContext(marketScript, ctx, { filename: "polymarket.js" });
+vm.runInContext(marketScript, ctx, { filename: "predmarkets.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 // --- 1. Snapshot integrity ---
 
 const snap = JSON.parse(JSON.stringify(vm.runInContext(
-  `({pm: POLYMARKET_SNAPSHOT, mani: MANIFOLD_SNAPSHOT, date: POLYMARKET_SNAPSHOT_DATE})`, ctx)));
+  `({pm: POLYMARKET_SNAPSHOT, mani: MANIFOLD_SNAPSHOT, date: PREDMARKET_SNAPSHOT_DATE})`, ctx)));
 
 assert.ok(
   snap.pm.length > 0 && snap.mani.length > 0 && !Number.isNaN(Date.parse(snap.date)),
-  `Replicata: load data/polymarket.js snapshots.
+  `Replicata: load data/predmarkets.js snapshots.
 Expectata: non-empty Polymarket and Manifold snapshots with a parseable date.
 Resultata: pm=${snap.pm.length}, mani=${snap.mani.length}, date=${snap.date}.`,
 );
@@ -109,8 +109,8 @@ Resultata: ${JSON.stringify(mana)}.`,
 
 const panelStats = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
-  renderPolymarketPanel(POLYMARKET_SNAPSHOT, MANIFOLD_SNAPSHOT, POLYMARKET_SNAPSHOT_DATE);
-  const panel = document.getElementById("polymarket-panel");
+  renderPredmarketsPanel(POLYMARKET_SNAPSHOT, MANIFOLD_SNAPSHOT, PREDMARKET_SNAPSHOT_DATE);
+  const panel = document.getElementById("predmarket-panel");
   const grid = panel.children[0];
   const cardHtml = grid.children.map(c => c.innerHTML);
   const expected = POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false)
@@ -154,8 +154,8 @@ Resultata: codetabs proxy still referenced.`,
 );
 
 assert.ok(
-  appScript.includes("void refreshPolymarket()"),
-  `Replicata: inspect loadPolymarketData source.
+  appScript.includes("void refreshPredmarkets()"),
+  `Replicata: inspect loadPredmarketData source.
 Expectata: live prices auto-refresh on page load (not only via the refresh button).
 Resultata: no auto-refresh call found.`,
 );

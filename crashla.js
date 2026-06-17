@@ -2777,9 +2777,9 @@ function initTooltips() {
   }, true);
 }
 
-// --- Prediction markets (Polymarket) ---
+// --- Prediction markets (Polymarket + Manifold) ---
 
-let polymarketAgeTimer = null;
+let predmarketsAgeTimer = null;
 
 function polymarketUrl(slug) {
   return "https://polymarket.com/event/" + slug;
@@ -2846,10 +2846,10 @@ function renderPolymarketCard(market, eventSlug) {
     yesProbability(market), fmtVol(parseFloat(market.volume) || 0));
 }
 
-function renderPolymarketPanel(config, manifold, isoDate) {
-  const panel = byId("polymarket-panel");
+function renderPredmarketsPanel(config, manifold, isoDate) {
+  const panel = byId("predmarket-panel");
   const grid = document.createElement("div");
-  grid.className = "polymarket-grid";
+  grid.className = "predmarket-grid";
 
   for (const ev of config) {
     if (ev.enabled === false) continue; // skip disabled events
@@ -2899,14 +2899,14 @@ function renderPolymarketPanel(config, manifold, isoDate) {
     dot.className = "pm-dot " + cls;
   }
   tickAge();
-  if (polymarketAgeTimer) clearInterval(polymarketAgeTimer);
-  polymarketAgeTimer = setInterval(tickAge, 60000);
+  if (predmarketsAgeTimer) clearInterval(predmarketsAgeTimer);
+  predmarketsAgeTimer = setInterval(tickAge, 60000);
 
   const refreshBtn = document.createElement("button");
   refreshBtn.className = "pm-refresh";
   refreshBtn.title = "Refetch prediction market data";
   refreshBtn.textContent = "\u21bb";
-  refreshBtn.addEventListener("click", refreshPolymarket);
+  refreshBtn.addEventListener("click", refreshPredmarkets);
 
   const srcLink = document.createElement("a");
   srcLink.href = "https://polymarket.com";
@@ -2969,8 +2969,8 @@ async function fetchManifoldMarket(templateEntry) {
   };
 }
 
-async function refreshPolymarket() {
-  const panel = byId("polymarket-panel");
+async function refreshPredmarkets() {
+  const panel = byId("predmarket-panel");
   const btn = panel.querySelector(".pm-refresh");
   if (btn) { btn.disabled = true; btn.textContent = "\u231b"; }
 
@@ -2996,18 +2996,18 @@ async function refreshPolymarket() {
   // keeps the snapshot date so the staleness dot stays honest.
   const dateLabel = failures === 0
     ? new Date().toISOString()
-    : POLYMARKET_SNAPSHOT_DATE;
-  renderPolymarketPanel(fresh, freshManifold, dateLabel);
+    : PREDMARKET_SNAPSHOT_DATE;
+  renderPredmarketsPanel(fresh, freshManifold, dateLabel);
 }
 
-function loadPolymarketData() {
+function loadPredmarketData() {
   assert(Array.isArray(POLYMARKET_SNAPSHOT), "POLYMARKET_SNAPSHOT must be an array");
   assert(Array.isArray(MANIFOLD_SNAPSHOT), "MANIFOLD_SNAPSHOT must be an array");
-  assert(typeof POLYMARKET_SNAPSHOT_DATE === "string",
-    "POLYMARKET_SNAPSHOT_DATE must be a string");
-  renderPolymarketPanel(POLYMARKET_SNAPSHOT, MANIFOLD_SNAPSHOT, POLYMARKET_SNAPSHOT_DATE);
+  assert(typeof PREDMARKET_SNAPSHOT_DATE === "string",
+    "PREDMARKET_SNAPSHOT_DATE must be a string");
+  renderPredmarketsPanel(POLYMARKET_SNAPSHOT, MANIFOLD_SNAPSHOT, PREDMARKET_SNAPSHOT_DATE);
   // Snapshot renders instantly; live prices replace it without a click.
-  void refreshPolymarket();
+  void refreshPredmarkets();
 }
 
 // --- Init ---
@@ -3061,5 +3061,5 @@ function loadPolymarketData() {
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart}`;
   initTooltips();
   initCollapsibles();
-  loadPolymarketData();
+  loadPredmarketData();
 }

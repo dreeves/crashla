@@ -164,11 +164,7 @@ tr:hover { background: #f8f8ff; }
 
 /* Monthly views */
 .month-panel {
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  padding: 1rem;
   margin-bottom: 1rem;
-  background: #fafafa;
 }
 .month-note {
   font-size: 0.9rem;
@@ -189,10 +185,6 @@ tr:hover { background: #f8f8ff; }
   font-size: 0.82rem;
   color: #5b6475;
   font-weight: 600;
-}
-.month-panel.date-filtered {
-  border-color: #2060c0;
-  background: #f8faff;
 }
 .date-filtered .date-range-label {
   background: #e0ecff;
@@ -600,9 +592,6 @@ tr:hover { background: #f8f8ff; }
   body {
     padding: 0.75rem;
   }
-  .month-panel {
-    padding: 0.75rem;
-  }
   .month-tick {
     font-size: 11px;
   }
@@ -618,19 +607,19 @@ tr:hover { background: #f8f8ff; }
 }
 
 /* Prediction markets panel */
-.polymarket-panel {
+.predmarket-panel {
   margin: 0.5rem 0 1.5rem;
 }
-.polymarket-loading {
+.predmarket-loading {
   font-size: 0.85rem;
   color: #888;
   font-style: italic;
 }
-.polymarket-error {
+.predmarket-error {
   font-size: 0.85rem;
   color: #a04030;
 }
-.polymarket-grid {
+.predmarket-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
