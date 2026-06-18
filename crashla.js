@@ -1641,13 +1641,6 @@ function renderMonthlyLegends() {
       </span>`;
   });
   byId("month-legend-ci-fan").innerHTML = fanLevels.join("");
-
-  byId("month-legend-lines").innerHTML = `
-    <span class="month-legend-item">
-      <span class="month-linekey solid"></span>VMT (central estimate)
-    </span>
-  `;
-
 }
 
 function renderDateRangeControls() {
@@ -1757,7 +1750,9 @@ function renderWindowedViews() {
   // data. The monthly chart above shows how the rate moves over time.
   byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
-  byId("chart-helmer-series").innerHTML = ADS_HELMERS.map(helmer => `
+  byId("chart-helmer-series").innerHTML = ADS_HELMERS
+    .filter(helmer => monthHelmerEnabled[helmer])
+    .map(helmer => `
     <div class="month-chart">
       <h3>${helmer}</h3>
       ${renderHelmerMonthlyChart(activeSeries, helmer)}

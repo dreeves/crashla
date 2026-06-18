@@ -144,4 +144,26 @@ Expectata: a non-empty SVG with Tesla's legend chip grayed and no density curves
 Resultata: isSvg=${distOnly.isSvg}, teslaGrayed=${distOnly.teslaGrayed}, hasCurve=${distOnly.hasCurve}.`,
 );
 
+// Distinct from the empty-in-range case above: unchecking a helmer at the top is
+// the explicit show/hide control, so its per-helmer VMT chart should disappear
+// from the grid entirely (matching the MPI/distribution charts), not stay grayed.
+const grid = vm.runInContext(`
+(() => {
+  for (const d of ALL_HELMERS) monthHelmerEnabled[d] = false;
+  monthHelmerEnabled.Waymo = true;
+  monthHelmerEnabled.Zoox = true; // Tesla left unchecked
+  monthRangeStart = 0; monthRangeEnd = Infinity;
+  renderWindowedViews();
+  return document.getElementById("chart-helmer-series").innerHTML;
+})()
+`, ctx);
+
+assert.ok(
+  grid.includes("<h3>Waymo</h3>") && grid.includes("<h3>Zoox</h3>") &&
+    !grid.includes("<h3>Tesla</h3>"),
+  `Replicata: uncheck Tesla (leave Waymo + Zoox checked) and render the VMT chart grid.
+Expectata: the grid shows Waymo and Zoox VMT charts but no Tesla chart at all.
+Resultata: grid had Tesla=${grid.includes("<h3>Tesla</h3>")}, Waymo=${grid.includes("<h3>Waymo</h3>")}, Zoox=${grid.includes("<h3>Zoox</h3>")}.`,
+);
+
 console.log("qual pass: selected-but-empty helmers stay visible (grayed legend chip, empty VMT chart)");

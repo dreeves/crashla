@@ -394,21 +394,6 @@ tr:hover { background: #f8f8ff; }
   stroke: #fff;
   stroke-width: 1.5;
 }
-.month-linekey {
-  width: 22px;
-  height: 0;
-  border-top: 2.5px solid #4a5264;
-  display: inline-block;
-}
-.month-linekey.solid {
-  border-top-width: 2.5px;
-}
-.month-linekey.dashed {
-  border-top-width: 1.5px;
-}
-.month-linekey.atfault {
-  border-top-width: 1px;
-}
 .month-tri {
   width: 0;
   height: 0;

@@ -97,6 +97,9 @@ incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 monthRangeStart = 0;
 monthRangeEnd = Infinity;
+// The per-helmer VMT grid respects the checkboxes (Zoox is off by default);
+// enable all ADS helmers so every master row is rendered for this fidelity check.
+for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
 buildMonthlyViews();
 ({
   months: fullMonthSeries.months,

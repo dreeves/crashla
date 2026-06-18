@@ -123,10 +123,8 @@ const metrics = vm.runInContext(`
     summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
     mpiHeading: document.getElementById("mpi-heading").textContent,
     chartMpiAll: document.getElementById("chart-mpi-all").innerHTML,
-    chartHelmerSeries: document.getElementById("chart-helmer-series").innerHTML,
     legendMpiHelmers: document.getElementById("month-legend-mpi-helmers").innerHTML,
     legendMpiLines: document.getElementById("month-legend-mpi-lines").innerHTML,
-    legendLines: document.getElementById("month-legend-lines").innerHTML,
   };
 })()
 `, ctx);
@@ -504,7 +502,19 @@ Expectata: source includes the VMT range label.
 Resultata: expected strings missing from source.`,
 );
 
-const rendered = plain.chartHelmerSeries;
+// The grid now respects the helmer checkboxes (Zoox is off by default), so
+// enable all ADS helmers to exercise every per-helmer chart.
+const rendered = vm.runInContext(`
+(() => {
+  const saved = {...monthHelmerEnabled};
+  for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
+  renderWindowedViews();
+  const html = document.getElementById("chart-helmer-series").innerHTML;
+  Object.assign(monthHelmerEnabled, saved);
+  renderWindowedViews();
+  return html;
+})()
+`, ctx);
 assert.ok(
   rendered.includes("<svg") &&
     rendered.includes("Tesla") &&
@@ -541,11 +551,10 @@ assert.ok(
   plain.legendMpiLines.includes("Miles per nonstationary non-parking-lot incident") &&
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendMpiLines.includes("Miles per airbag-deploying crash") &&
-  plain.legendMpiLines.includes("Miles per serious injury crash") &&
-  plain.legendLines.includes("VMT (central estimate)"),
+  plain.legendMpiLines.includes("Miles per serious injury crash"),
   `Replicata: render monthly legends.
-Expectata: legends include helmer colors, cross-helmer metric styles, per-helmer line styles, and the VMT line key.
-Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}, line legend=${JSON.stringify(plain.legendLines)}.`,
+Expectata: legends include helmer colors and cross-helmer metric line styles.
+Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}.`,
 );
 
 console.log("qual pass: monthly charts render cross-helmer and per-helmer incident-rate views");
