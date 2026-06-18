@@ -150,7 +150,7 @@ can you make a file called faultfrac.csv that, for every Report ID in data/snaps
 
 ## [AI TEXT] Explanatory Note
 
-This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox using [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) incident reports. The analysis window rolls forward as NHTSA publishes new data: the default view starts June 15, 2025 and currently extends through April 2026 (the date slider reaches back to November 2022 for Waymo). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June 2025 (starting June 15) has full incident coverage.
+This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox using [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) incident reports. The analysis window rolls forward as NHTSA publishes new data: the default view starts June 15, 2025 and currently extends through April 2026 (the date slider reaches back to July 2021 for Waymo). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June 2025 (starting June 15) has full incident coverage.
 
 Context:
 [agifriday.substack.com/crashla](https://agifriday.substack.com/crashla/) and
@@ -228,7 +228,7 @@ For the latest month, NHTSA's Monthly-track reports may not all be filed yet, so
    Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `data/slurp.py`.
    Archival raw fetch snapshots live under `data/snapshots/`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
-   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 1,641 incidents as of the 2026-06-10 fetch: 1,593 Waymo, 17 Tesla, 31 Zoox. These counts grow with each slurp run.
+   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 1,836 incidents as of the 2026-06-17 fetch: 1,783 Waymo, 18 Tesla, 35 Zoox. These counts grow with each slurp run.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
    Maintained in `data/vmt.csv` (the in-repo master) and embedded in `data/vmt.js` by `data/slurp.py`.
@@ -275,7 +275,7 @@ Waymo's US monthly VMT is estimated by combining two data sources:
 
    | Date | Cumulative US Driverless Miles | Source |
    |------|------------------------------:|--------|
-   | End 2022 | ~1M | Waymo blog |
+   | ~Jan 2023 | ~1M (first crossed) | Waymo blog |
    | End Oct 2023 | 7.14M | Waymo safety paper (NHTSA SGO data) |
    | End 2023 | ~9.3M | Driverless Digest / Waymo |
    | End Jun 2024 | 22M | Waymo Safety Hub |
@@ -314,6 +314,7 @@ Phoenix 44.5%, San Francisco 30.6%, Los Angeles 20.1%, Austin 5.0%.
 
 ### Uncertainty bands
 
+- **Jul 2021–Oct 2022** (0.5x–2x): Pre-CPUC pilot era, before the CPUC-scaled anchors begin. No monthly CA driverless VMT exists to scale from, so monthly all-driverless miles are interpolated from the Oct 2020 Phoenix rider-only launch (~0), the tens of thousands of first-year Phoenix rider-only trips (KTAR, Oct 2021), and the ~1M rider-only milestone (first crossed Jan 2023), ramping smoothly into the Nov 2022 CPUC-anchored figure. The window starts at July 2021 because that is the NHTSA SGO reporting floor (the earliest incident in the dataset); earlier Waymo miles exist but have no reportable-incident numerator. Bands are the widest in the series.
 - **Nov 2022–Nov 2023** (±50%): Sparse milestones, pilot era. Pilot-only CA VMT is very small (17K–255K/month). The CA share is uncertain (~14%) and the proportional distribution within milestone intervals may not capture intra-interval growth patterns.
 - **Dec 2023–Jun 2024** (±35%): First deployment period. CA share was shifting as LA launched (~24% → ~33%). Cumulative milestone endpoints are known but monthly allocation is approximate.
 - **Jul 2024–Sep 2025** (±25%): Tight milestone brackets. CA share is stable (~52–55%).

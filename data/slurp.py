@@ -527,10 +527,10 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         p_lo = max(0.01, p_rate - 1.96 * se)
         result[last_key] = (round(p_best, 4), round(p_lo, 4),
                             round(p_hi, 4))
-        print(f"  {helmer} {last_month} incident_coverage:"
-              f" best={p_best:.4f} lo={p_lo:.4f} hi={p_hi:.4f}"
-              f" (from {ref_mo}: {ref_count} inc / {ref_vmt:.0f} VMT;"
-              f" observed {last_count}, expected {expected:.1f})")
+        #print(f"  {helmer} {last_month} incident_coverage:"
+        #      f" best={p_best:.4f} lo={p_lo:.4f} hi={p_hi:.4f}"
+        #      f" (from {ref_mo}: {ref_count} inc / {ref_vmt:.0f} VMT;"
+        #      f" observed {last_count}, expected {expected:.1f})")
 
     return result
 
@@ -790,7 +790,7 @@ def main():
             incident_months_with_vmt.add(m)
     last_month = max(incident_months_with_vmt)
     vmt_months = {m for m in vmt_months if m <= last_month}
-    print(f"  Last incident month: {last_month}")
+    print(f"Last incident month: {last_month}")
 
     window_by_incident = {}
     excluded_count = 0
@@ -801,7 +801,7 @@ def main():
             continue
         window_by_incident[iid] = entry
     if excluded_count > 0:
-        print(f"  Excluded {excluded_count} incidents outside VMT window")
+        print(f"Excluded {excluded_count} incidents outside VMT window")
 
     incidents = []
     for iid, entry in window_by_incident.items():
@@ -898,12 +898,13 @@ def main():
     total = len(incidents)
     if nhtsa_modified_date:
         print(f"NHTSA file last modified: {nhtsa_modified_date}")
-    print(f"Injected {total} incidents into {relpath(INCIDENT_JS)} and VMT into {relpath(VMT_JS)}")
+    print(f"Updated {relpath(INCIDENT_JS)} and {relpath(VMT_JS)}")
+    print(f"Total incidents: {total}")
     for helmer, n in counts.most_common():
         print(f"  {helmer}: {n}")
 
     # Passenger occupancy summary per helmer
-    print("\nPassenger occupancy at time of crash:")
+    print("\nPassenger occupancy at time of incident:")
     for helmer in sorted(counts):
         co_incidents = [r for r in incidents if r["helmer"] == helmer]
         n = len(co_incidents)

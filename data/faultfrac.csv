@@ -1830,3 +1830,8 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30610-14662,0,SUV,rear,front left,Property Damage. No Injured Reported,0,Zoox stopped at PUDO; SUV passed left and swiped rear corner
 30610-14732,0,Heavy Truck,front left + front + front right,left,Property Damage. No Injured Reported,0,Zoox slowed for reversing tractor-trailer; trailer swung into its front
 30610-15018,8,Pickup Truck,left,front + front right,Property Damage. No Injured Reported,0,Pickup made abrupt left turn across Zoox's right of way on green; unavoidable
+30270-1501,0,Passenger Car,left,unknown,No Injuries Reported,0,stationary AV waiting for pickup; car reversed out of spot into its side
+30270-1730,0,SUV,rear + rear right,unknown,No Injuries Reported,0,stopped AV; SUV reversed out of driveway into its trunk
+30270-1583,21,Passenger Car,front left + front,rear left + rear + rear right,No Injuries Reported,0.1,car cut into AV lane at yellow then braked; AV rear-ended despite max braking
+30270-3838,0,Pickup Truck,rear right,rear left,No Injuries Reported,0,stopped AV dropping off; parked pickup reversed into rear quarter panel
+30270-3842,0,SUV,rear left + rear,front,No Injuries Reported,0,AV stopped to yield at merge; SUV rear-ended it
