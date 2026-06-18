@@ -347,6 +347,11 @@ tr:hover { background: #f8f8ff; }
   flex-direction: column;
   gap: 0.25rem;
 }
+.metric-select { cursor: pointer; }
+#month-metric-select {
+  font: inherit;
+  cursor: pointer;
+}
 .month-legend-item {
   display: inline-flex;
   align-items: center;

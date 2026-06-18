@@ -360,9 +360,9 @@ Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`
 // by renderWindowedViews, so it stays visible when the section is collapsed.
 assert.equal(
   plain.mpiHeading,
-  "Miles per incident over time",
+  "Miles per any incident over time",
   `Replicata: read the #mpi-heading section header after buildMonthlyViews with the all-incident metric.
-Expectata: header reads "Miles per incident over time".
+Expectata: header reads "Miles per any incident over time".
 Resultata: header was ${JSON.stringify(plain.mpiHeading)}.`,
 );
 
@@ -375,7 +375,7 @@ const airbagHeading = vm.runInContext(`
 `, ctx);
 assert.equal(
   airbagHeading,
-  "Miles per airbag-deploying crash over time",
+  "Miles per airbag-deploying incident over time",
   `Replicata: select the airbag metric and rebuild; read the #mpi-heading header.
 Expectata: header reuses the exact selected metric label.
 Resultata: header was ${JSON.stringify(airbagHeading)}.`,
@@ -532,6 +532,14 @@ Resultata: rendered snippets were ${JSON.stringify(rendered.slice(0, 400))}.`,
 );
 
 
+// The metric selector is a dropdown: a "Miles per ___ incident" label wrapping
+// one <option value="key">blank</option> per metric. Derived from METRIC_DEFS
+// so this self-updates as metrics change.
+const metricOptions = vm.runInContext(`METRIC_DEFS.map(m => ({key: m.key, blank: m.blank}))`, ctx);
+const allMetricOptionsPresent = metricOptions.length === 10 && metricOptions.every(o =>
+  plain.legendMpiLines.includes(`value="${o.key}"`) &&
+  plain.legendMpiLines.includes(`>${o.blank}</option>`));
+
 assert.ok(
   plain.legendMpiHelmers.includes("Tesla") &&
   plain.legendMpiHelmers.includes("Waymo") &&
@@ -539,20 +547,12 @@ assert.ok(
   plain.legendMpiHelmers.includes("Humans (AV cities)") &&
     plain.legendMpiHelmers.includes("Humans (US average)") &&
   plain.legendMpiHelmers.includes("type=\"checkbox\"") &&
-  plain.legendMpiLines.includes("month-metric-toggle-all") &&
-  plain.legendMpiLines.includes("month-metric-toggle-nonstationary") &&
-  plain.legendMpiLines.includes("month-metric-toggle-roadwayNonstationary") &&
-  plain.legendMpiLines.includes("month-metric-toggle-atfault") &&
-  plain.legendMpiLines.includes("month-metric-toggle-airbag") &&
-  plain.legendMpiLines.includes("month-metric-toggle-seriousInjury") &&
-  plain.legendMpiLines.includes("Miles per incident") &&
-    plain.legendMpiLines.includes("Miles per nonstationary incident") &&
-  plain.legendMpiLines.includes("Miles per nonstationary non-parking-lot incident") &&
-  plain.legendMpiLines.includes("Miles per at-fault incident") &&
-  plain.legendMpiLines.includes("Miles per airbag-deploying crash") &&
-  plain.legendMpiLines.includes("Miles per serious injury crash"),
+  plain.legendMpiLines.includes("<select id=\"month-metric-select\"") &&
+  plain.legendMpiLines.includes("Miles per") &&
+  plain.legendMpiLines.includes("incident</label>") &&
+  allMetricOptionsPresent,
   `Replicata: render monthly legends.
-Expectata: legends include helmer colors and cross-helmer metric line styles.
+Expectata: helmer legend has colors+checkboxes; the metric selector is a "Miles per ___ incident" dropdown with one option per metric.
 Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}.`,
 );
 

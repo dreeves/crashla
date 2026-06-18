@@ -169,7 +169,7 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // apples-to-apples than the raw national numbers.
 const METRIC_DEFS = [
   { key: "all",
-    label: "Miles per incident",
+    blank: "any",
     cardLabel: "All incidents",
     incField: "incTotal",
 
@@ -195,7 +195,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "nonstationary",
-    label: "Miles per nonstationary incident",
+    blank: "nonstationary",
     cardLabel: "Nonstationary",
     incField: "incNonstationary",
 
@@ -216,7 +216,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "roadwayNonstationary",
-    label: "Miles per nonstationary non-parking-lot incident",
+    blank: "nonstationary non-parking-lot",
     cardLabel: "Nonstationary non-parking-lot",
     incField: "incRoadwayNonstationary",
 
@@ -237,7 +237,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "atfault",
-    label: "Miles per at-fault incident",
+    blank: "at-fault",
     cardLabel: "At-fault",
     incField: "incAtFault",
 
@@ -267,7 +267,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "injury",
-    label: "Miles per injury crash",
+    blank: "injury-causing",
     cardLabel: "Injury",
     incField: "incInjury",
 
@@ -293,7 +293,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "atfaultInjury",
-    label: "Miles per at-fault injury crash",
+    blank: "at-fault injury-causing",
     cardLabel: "At-fault injury",
     incField: "incAtFaultInjury",
 
@@ -326,7 +326,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "hospitalization",
-    label: "Miles per hospitalization crash",
+    blank: "hospitalization",
     cardLabel: "Hospitalization",
     incField: "incHospitalization",
 
@@ -347,7 +347,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "airbag",
-    label: "Miles per airbag-deploying crash",
+    blank: "airbag-deploying",
     cardLabel: "Airbag deployment",
     incField: "incAirbag",
 
@@ -368,7 +368,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "seriousInjury",
-    label: "Miles per serious injury crash",
+    blank: "serious-injury-causing",
     cardLabel: "Serious injury (SSI+)",
     incField: "incSeriousInjury",
 
@@ -389,7 +389,7 @@ const METRIC_DEFS = [
     },
   },
   { key: "fatality",
-    label: "Miles per fatal crash",
+    blank: "fatal",
     cardLabel: "Fatality",
     incField: "incFatality",
 
@@ -419,6 +419,10 @@ const METRIC_DEFS = [
     },
   },
 ];
+
+// Every metric's user-facing label is "Miles per ___ incident", with m.blank
+// filling the slot; that same slot text is the metric dropdown's option label.
+for (const m of METRIC_DEFS) m.label = `Miles per ${m.blank} incident`;
 
 // Humans (Uber/Lyft): a rideshare driver is NOT the generic AV-cities human
 // driver. On fatalities — the one published rideshare per-mile rate (set
@@ -737,10 +741,6 @@ function monthHelmerToggleId(helmer) {
 
 function includedHelmers() {
   return ALL_HELMERS.filter(helmer => monthHelmerEnabled[helmer]);
-}
-
-function monthMetricToggleId(metric) {
-  return "month-metric-toggle-" + metric;
 }
 
 function selectedMonthMetric() {
@@ -1622,21 +1622,16 @@ function renderMonthlyLegends() {
   }
 
   byId("month-legend-mpi-lines").innerHTML = `
-    ${METRIC_DEFS.map(metric => {
-      return `
-      <label class="month-legend-item month-helmer-toggle" for="${monthMetricToggleId(metric.key)}">
-        <input type="radio" name="month-metric" id="${monthMetricToggleId(metric.key)}" ${metric.key === selectedMetricKey ? "checked" : ""}>
-        ${metric.label}
-      </label>`;
-    }).join("")}
+    <label class="month-legend-item metric-select" for="month-metric-select">Miles per
+      <select id="month-metric-select">${METRIC_DEFS.map(metric =>
+        `<option value="${metric.key}"${metric.key === selectedMetricKey ? " selected" : ""}>${metric.blank}</option>`
+      ).join("")}</select>
+      incident</label>
   `;
-  for (const metric of METRIC_DEFS) {
-    const input = byId(monthMetricToggleId(metric.key));
-    input.addEventListener("change", () => {
-      selectedMetricKey = metric.key;
-      buildMonthlyViews();
-    });
-  }
+  byId("month-metric-select").addEventListener("change", e => {
+    selectedMetricKey = e.target.value;
+    buildMonthlyViews();
+  });
 
   // CI fan legend: multi-stripe swatches showing each helmer's color at the
   // band's rendered opacity level for each CI width (50%, 80%, 95%).
