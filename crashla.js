@@ -507,56 +507,6 @@ const HELMER_COLORS = {
   Waymo: "#2060c0",
   Zoox: "#2a8f57",
 };
-// Movement-based partition of total incidents (sums to total)
-const MOVEMENT_SEGMENTS = [
-  {key: "roadwayNonstationary", label: "Non-parking-lot nonstationary", mpiKey: "roadwayNonstationary"},
-  {key: "parkingLotNonstationary", label: "Parking-lot nonstationary", mpiKey: "nonstationary"},
-  {key: "stationary",           label: "Stationary",               mpiKey: "all"},
-];
-// Severity-based partition of total incidents (sums to total)
-const SEVERITY_SEGMENTS = [
-  {key: "fatality",             label: "Fatality",                 mpiKey: "fatality"},
-  {key: "hospitalizationOnly",  label: "Hospitalization (non-fatal)", mpiKey: "hospitalization"},
-  {key: "injuryOnly",           label: "Injury (non-hosp.)",       mpiKey: "injury"},
-  {key: "noInjury",             label: "No injury",                mpiKey: "all"},
-];
-// Colors for movement segments (darkest = most relevant to MPI)
-const MOVEMENT_COLORS = {
-  Tesla: {roadwayNonstationary: "#d13b2d", parkingLotNonstationary: "#e06f66", stationary: "#d9d9d9"},
-  Waymo: {roadwayNonstationary: "#2060c0", parkingLotNonstationary: "#5a87d1", stationary: "#d9d9d9"},
-  Zoox:  {roadwayNonstationary: "#2a8f57", parkingLotNonstationary: "#5ead7e", stationary: "#d9d9d9"},
-};
-// Colors for severity segments (darkest = most severe)
-const SEVERITY_COLORS = {
-  Tesla: {fatality: "#8b1a10", hospitalizationOnly: "#d13b2d", injuryOnly: "#e06f66", noInjury: "#efaaa4"},
-  Waymo: {fatality: "#0e3870", hospitalizationOnly: "#2060c0", injuryOnly: "#5a87d1", noInjury: "#99b4e5"},
-  Zoox:  {fatality: "#14553a", hospitalizationOnly: "#2a8f57", injuryOnly: "#5ead7e", noInjury: "#98ccb0"},
-};
-// Legend colors (helmer-neutral)
-const MOVEMENT_LEGEND_COLORS = {
-  roadwayNonstationary: "#505050", parkingLotNonstationary: "#909090", stationary: "#d0d0d0",
-};
-const SEVERITY_LEGEND_COLORS = {
-  fatality: "#383c46", hospitalizationOnly: "#606060", injuryOnly: "#909090", noInjury: "#c8c8c8",
-};
-
-// Compute movement and severity segment counts from an incident record
-function movementSegmentCounts(rec) {
-  const nonstationary = nonstationaryIncidentCount(rec.speeds);
-  return {
-    roadwayNonstationary: rec.roadwayNonstationary,
-    parkingLotNonstationary: nonstationary - rec.roadwayNonstationary,
-    stationary: rec.total - nonstationary,
-  };
-}
-function severitySegmentCounts(rec) {
-  return {
-    fatality: rec.fatality,
-    hospitalizationOnly: rec.hospitalization - rec.fatality,
-    injuryOnly: rec.injury - rec.hospitalization,
-    noInjury: rec.total - rec.injury,
-  };
-}
 
 const MONTH_TOKENS = {
   JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6,
@@ -1434,29 +1384,6 @@ function renderDistributionChart(series) {
   `;
 }
 
-function drawDualMonthAxes(
-  months, svgH, mLeft, mTop, pW, pH, mapX,
-  leftTicks, mapLeftY, leftFmt, leftLabel,
-) {
-  const axisY = mTop + pH;
-  const rightX = mLeft + pW;
-  const midY = mTop + pH / 2;
-  const labelStep = months.length <= 12 ? 1 : months.length <= 24 ? 2 : 3;
-  return `
-    ${months.map((month, i) => `
-      <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"${i % labelStep !== 0 ? ' style="opacity:0.3"' : ""}></line>
-      ${i % labelStep === 0 || i === months.length - 1 ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
-    `).join("")}
-    ${leftTicks.map(y => `
-      <line class="month-grid" x1="${mLeft}" y1="${mapLeftY(y)}" x2="${rightX}" y2="${mapLeftY(y)}"></line>
-      <text class="month-tick" x="${mLeft - 8}" y="${mapLeftY(y) + 4}" text-anchor="end">${leftFmt(y)}</text>
-    `).join("")}
-    <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${axisY}"></line>
-    <line class="month-axis" x1="${mLeft}" y1="${axisY}" x2="${rightX}" y2="${axisY}"></line>
-    <text class="month-label" x="12" y="${midY}" transform="rotate(-90 12 ${midY})" text-anchor="middle">${leftLabel}</text>
-  `;
-}
-
 function renderHelmerMonthlyChart(globalSeries, helmer) {
   // Filter to months where this helmer has VMT data
   const presentIndices = [];
@@ -1465,7 +1392,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   }
   // No months with data in range: fall back to the full window so the chart
   // still renders as empty axes instead of vanishing (Anti-Magic Principle).
-  // The bar/line/mark loops skip the resulting null rows, so it stays one path.
+  // The line/mark loops skip the resulting null rows, so it stays one path.
   const indices = presentIndices.length > 0
     ? presentIndices
     : globalSeries.points.map((_, i) => i);
@@ -1483,77 +1410,20 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const pH = svgH - mTop - mBot;
   const rows = helmerMonthRows(series, helmer);
   const vmtMax = Math.max(1, ...rows.map(row => row ? row.vmtRawMax : 0));
-  const incidentMax = Math.max(1, ...rows.map(row => row ? row.incidents.total : 0));
-  const leftTicks = linearTicks(0, vmtMax, 4);
-  const monthStep = pW / ((series.months.length - 1) || 1);
-  const barW = Math.min(30, monthStep * 0.56);
-  const xPad = barW / 2 + 2; // inset so edge bars don't overlap axes
+  const yTicks = linearTicks(0, vmtMax, 4);
+  const xPad = 28; // match the cross-helmer MPI chart's edge inset
   const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad);
   const mapVmtY = y => scaleLinear(y, 0, vmtMax, mTop + pH, mTop);
-  const mapIncidentY = y => scaleLinear(y, 0, incidentMax, mTop + pH, mTop);
   const vmtColor = HELMER_COLORS[helmer];
 
-  const bars = [];
-  const barCounts = [];
-  const barTotals = [];
   const errs = [];
-  const halfBar = (barW - 1) / 2; // 1px gap between the two bars
   for (let i = 0; i < series.points.length; i++) {
     const row = rows[i];
     if (!row) continue; // no data for this helmer this month (empty-range fallback)
-    const month = series.months[i];
     const cx = mapX(i);
-    const rec = row.incidents;
-    const monthVmtBest = fmtWhole(row.vmtRawBest);
-    const monthVmtCume = fmtWhole(row.vmtCume);
-    const monthVmtEff = fmtWhole(row.vmtBest);
-
-    // MPI for each variant (used in hover text) — read pre-computed values
-    const mpiByKey = Object.fromEntries(
-      Object.entries(row.mpiByMetric)
-        .filter(([, est]) => est !== null)
-        .map(([key, est]) => [key, fmtMiles(est.mpiBest)]));
-
-    // Render one stacked bar column
-    const renderBar = (xLeft, w, segments, colors, counts) => {
-      let stack = 0;
-      for (const seg of segments) {
-        const count = counts[seg.key];
-        const next = stack + count;
-        const y0 = mapIncidentY(stack);
-        const y1 = mapIncidentY(next);
-        const h = y0 - y1;
-        stack = next;
-        if (h <= 0) continue;
-        const mpiLabel = `Miles per incident (MPI, ${seg.label.toLowerCase()}): ${mpiByKey[seg.mpiKey]}`;
-        const barTip = `${helmer} ${month} \u2014 ${seg.label}\nSegment: ${fmtCount(count)} incidents\nTotal: ${fmtCount(rec.total)} incidents\n${mpiLabel}\nMonthly VMT: ${monthVmtBest}\nCoverage-adjusted VMT for MPI: ${monthVmtEff}\nCumulative VMT: ${monthVmtCume}`;
-        bars.push(`
-          <rect class="month-inc-bar" x="${xLeft.toFixed(2)}" y="${y1.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}"
-                fill="${colors[seg.key]}" stroke="${vmtColor}" stroke-width="0.8" data-tip="${escAttr(barTip)}"></rect>
-        `);
-        const centerY = y1 + h / 2;
-        barCounts.push(`
-          <text class="month-inc-count" x="${(xLeft + w / 2).toFixed(2)}" y="${centerY.toFixed(2)}">${fmtCount(count)}</text>
-        `);
-      }
-    };
-
-    // Left bar: movement partition
-    const moveCounts = movementSegmentCounts(rec);
-    renderBar(cx - barW / 2, halfBar, MOVEMENT_SEGMENTS, MOVEMENT_COLORS[helmer], moveCounts);
-
-    // Right bar: severity partition
-    const sevCounts = severitySegmentCounts(rec);
-    renderBar(cx - barW / 2 + halfBar + 1, halfBar, SEVERITY_SEGMENTS, SEVERITY_COLORS[helmer], sevCounts);
-
-    if (rec.total > 0) {
-      const labelX = cx;
-      const labelY = Math.max(mapIncidentY(rec.total) - 7, mTop + 7);
-      barTotals.push(`<text class="month-inc-total" x="${labelX.toFixed(2)}" y="${labelY.toFixed(2)}">${fmtCount(rec.total)}</text>`);
-    }
     const yLo = mapVmtY(row.vmtRawMin);
     const yHi = mapVmtY(row.vmtRawMax);
-    const vmtTip = vmtTooltip(helmer, month, row, rec);
+    const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents);
     errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}" data-tip="${escAttr(vmtTip)}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
@@ -1578,14 +1448,11 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
 
   return `
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
-      ${bars.join("")}
-      ${barCounts.join("")}
-      ${barTotals.join("")}
       ${errs.join("")}
       <path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>
       ${vmtMarks}
-      ${drawDualMonthAxes(
-        series.months, svgH, mLeft, mTop, pW, pH, mapX, leftTicks, mapVmtY, fmtMiles,
+      ${drawSingleMonthAxes(
+        series.months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapVmtY, fmtMiles,
         "Vehicle Miles Traveled (VMT)",
       )}
     </svg>
@@ -1781,21 +1648,6 @@ function renderMonthlyLegends() {
     </span>
   `;
 
-  byId("month-legend-speed").innerHTML = `
-    <span class="month-legend-label">Left bar (movement):</span>
-    ${MOVEMENT_SEGMENTS.map(seg => `
-      <span class="month-legend-item">
-        <span class="month-chip" style="background:${MOVEMENT_LEGEND_COLORS[seg.key]}"></span>${seg.label}
-      </span>
-    `).join("")}
-    <span class="month-legend-break" aria-hidden="true"></span>
-    <span class="month-legend-label">Right bar (severity):</span>
-    ${SEVERITY_SEGMENTS.map(seg => `
-      <span class="month-legend-item">
-        <span class="month-chip" style="background:${SEVERITY_LEGEND_COLORS[seg.key]}"></span>${seg.label}
-      </span>
-    `).join("")}
-  `;
 }
 
 function renderDateRangeControls() {

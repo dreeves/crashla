@@ -127,7 +127,6 @@ const metrics = vm.runInContext(`
     legendMpiHelmers: document.getElementById("month-legend-mpi-helmers").innerHTML,
     legendMpiLines: document.getElementById("month-legend-mpi-lines").innerHTML,
     legendLines: document.getElementById("month-legend-lines").innerHTML,
-    legendSpeed: document.getElementById("month-legend-speed").innerHTML,
   };
 })()
 `, ctx);
@@ -499,10 +498,9 @@ Resultata: labels missing from source.`,
 );
 
 assert.ok(
-  appScript.includes("Monthly VMT range:") &&
-    appScript.includes("Segment:"),
-  `Replicata: inspect source for lower-chart tooltip labels.
-Expectata: source includes lower-chart tooltip labels for VMT range and segment counts.
+  appScript.includes("Monthly VMT range:"),
+  `Replicata: inspect source for the per-helmer VMT chart tooltip labels.
+Expectata: source includes the VMT range label.
 Resultata: expected strings missing from source.`,
 );
 
@@ -514,14 +512,13 @@ assert.ok(
     rendered.includes("Zoox") &&
     rendered.includes("data-tip=") &&
     rendered.includes("month-vmt-line") &&
-    rendered.includes("month-inc-bar") &&
-    rendered.includes("month-inc-count") &&
-    rendered.includes("month-inc-total") &&
+    rendered.includes("month-dot") &&
     rendered.includes("Vehicle Miles Traveled (VMT)") &&
     rendered.includes("month-err") &&
-    rendered.includes("month-axis"),
+    rendered.includes("month-axis") &&
+    !rendered.includes("month-inc-bar"),
   `Replicata: render monthly charts per helmer.
-Expectata: each helmer chart renders a left VMT axis, a VMT line, stacked incident bars with count labels, and error bars.
+Expectata: each helmer chart is VMT-only — a left VMT axis, a VMT line with dots and error bars, and no incident bars.
 Resultata: rendered snippets were ${JSON.stringify(rendered.slice(0, 400))}.`,
 );
 
@@ -545,18 +542,10 @@ assert.ok(
   plain.legendMpiLines.includes("Miles per at-fault incident") &&
   plain.legendMpiLines.includes("Miles per airbag-deploying crash") &&
   plain.legendMpiLines.includes("Miles per serious injury crash") &&
-  plain.legendLines.includes("VMT (central estimate)") &&
-  plain.legendSpeed.includes("Left bar (movement)") &&
-  plain.legendSpeed.includes("month-legend-break") &&
-  plain.legendSpeed.indexOf("month-legend-break") < plain.legendSpeed.indexOf("Right bar (severity)") &&
-  plain.legendSpeed.includes("Right bar (severity)") &&
-  plain.legendSpeed.includes("Non-parking-lot nonstationary") &&
-  plain.legendSpeed.includes("Stationary") &&
-  plain.legendSpeed.includes("Fatality") &&
-    plain.legendSpeed.includes("No injury"),
+  plain.legendLines.includes("VMT (central estimate)"),
   `Replicata: render monthly legends.
-Expectata: legends include helmer colors, cross-helmer metric styles, per-helmer line styles, and bar segment types.
-Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}, line legend=${JSON.stringify(plain.legendLines)}, speed legend=${JSON.stringify(plain.legendSpeed)}.`,
+Expectata: legends include helmer colors, cross-helmer metric styles, per-helmer line styles, and the VMT line key.
+Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}, line legend=${JSON.stringify(plain.legendLines)}.`,
 );
 
 console.log("qual pass: monthly charts render cross-helmer and per-helmer incident-rate views");

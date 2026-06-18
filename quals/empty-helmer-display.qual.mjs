@@ -107,16 +107,16 @@ Expectata: a non-empty SVG (empty axes) renders instead of vanishing.
 Resultata: output was ${JSON.stringify(out.teslaChart.slice(0, 80))}.`,
 );
 assert.ok(
-  !out.teslaChart.includes("month-inc-bar"),
-  `Replicata: inspect the empty Tesla VMT chart for incident bars.
-Expectata: no incident bars, since Tesla has no data in this window.
-Resultata: found a month-inc-bar in the empty chart.`,
+  !out.teslaChart.includes("month-dot"),
+  `Replicata: inspect the empty Tesla VMT chart for data points.
+Expectata: no VMT dots, since Tesla has no data in this window.
+Resultata: found a month-dot in the empty chart.`,
 );
 assert.ok(
-  out.waymoChart.includes("month-inc-bar"),
+  out.waymoChart.includes("month-dot"),
   `Replicata: call renderHelmerMonthlyChart for Waymo (has data in this window).
-Expectata: the control chart still renders incident bars normally.
-Resultata: no month-inc-bar found in the Waymo chart.`,
+Expectata: the control chart still renders VMT dots normally.
+Resultata: no month-dot found in the Waymo chart.`,
 );
 
 // Consistency: when the ONLY selected helmer is empty in range, the distribution
