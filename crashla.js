@@ -456,6 +456,7 @@ const STRESS_VERDICT_META = {
   ambiguous: {label: "ambiguous", className: "ambiguous"},
 };
 let selectedMetricKey = METRIC_DEFS.find(m => m.defaultEnabled).key;
+let vmtCumulative = false; // per-helmer VMT charts: false = monthly, true = cumulative
 const DEFAULT_START_MONTH = "2025-06"; // default slider start (NHTSA analysis window)
 let monthRangeStart = -1; // -1 = use DEFAULT_START_MONTH
 let monthRangeEnd = Infinity;
@@ -756,8 +757,11 @@ function fmtWhole(n) {
   return Math.round(n).toLocaleString();
 }
 
-function vmtTooltip(helmer, month, row, rec) {
-  return `${helmer} ${month} (VMT)\nMonthly VMT (central estimate): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)} (range ${fmtWhole(row.kyoomMin)} – ${fmtWhole(row.kyoomMax)})\nTotal incidents: ${fmtCount(rec.total)}`;
+function vmtTooltip(helmer, month, row, rec, cumulative) {
+  const [label, best, lo, hi] = cumulative
+    ? ["Cumulative VMT", row.vmtCume, row.kyoomMin, row.kyoomMax]
+    : ["Monthly VMT", row.vmtRawBest, row.vmtRawMin, row.vmtRawMax];
+  return `${helmer} ${month}\n${label}: ${fmtWhole(best)} (${fmtWhole(lo)} \u2013 ${fmtWhole(hi)})\nIncidents: ${fmtCount(rec.total)}`;
 }
 
 function helmerMonthRows(series, helmer) {
@@ -1046,14 +1050,9 @@ function sliceSeries(series, startIdx, endIdx) {
     }
     return {month: point.month, helmers, incidentObservable: point.incidentObservable};
   });
-  for (const helmer of ALL_HELMERS) {
-    let cume = 0;
-    for (const point of points) {
-      if (point.helmers[helmer] === null) continue;
-      cume += point.helmers[helmer].vmtRawBest;
-      point.helmers[helmer].vmtCume = cume;
-    }
-  }
+  // vmtCume and the kyoom band stay all-time (not reset to the window start):
+  // "cumulative VMT" means total miles, and the authored cumulative anchors
+  // (e.g. Tesla Q1) are all-time, so the cumulative view shows them faithfully.
   return {months, points};
 }
 
@@ -1422,7 +1421,13 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
   const rows = helmerMonthRows(series, helmer);
-  const vmtMax = Math.max(1, ...rows.map(row => row ? row.vmtRawMax : 0));
+  // Monthly vs cumulative VMT view (global toggle). Cumulative plots the kyoom
+  // band, which is monotone, so its floors don't wiggle like the monthly bars.
+  const best = row => vmtCumulative ? row.vmtCume : row.vmtRawBest;
+  const lo = row => vmtCumulative ? row.kyoomMin : row.vmtRawMin;
+  const hi = row => vmtCumulative ? row.kyoomMax : row.vmtRawMax;
+  const yLabel = vmtCumulative ? "Cumulative VMT" : "Vehicle Miles Traveled (VMT)";
+  const vmtMax = Math.max(1, ...rows.map(row => row ? hi(row) : 0));
   const yTicks = linearTicks(0, vmtMax, 4);
   const xPad = 28; // match the cross-helmer MPI chart's edge inset
   const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad);
@@ -1434,9 +1439,9 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     const row = rows[i];
     if (!row) continue; // no data for this helmer this month (empty-range fallback)
     const cx = mapX(i);
-    const yLo = mapVmtY(row.vmtRawMin);
-    const yHi = mapVmtY(row.vmtRawMax);
-    const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents);
+    const yLo = mapVmtY(lo(row));
+    const yHi = mapVmtY(hi(row));
+    const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents, vmtCumulative);
     errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}" data-tip="${escAttr(vmtTip)}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
@@ -1447,15 +1452,15 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   let vmtPath = "";
   for (let i = 0; i < series.points.length; i++) {
     if (!rows[i]) continue;
-    const y = mapVmtY(rows[i].vmtRawBest);
+    const y = mapVmtY(best(rows[i]));
     vmtPath += `${vmtPath ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
   }
 
   const vmtMarks = rows.map((row, i) => {
     if (!row) return "";
     const x = mapX(i);
-    const y = mapVmtY(row.vmtRawBest);
-    const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents);
+    const y = mapVmtY(best(row));
+    const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents, vmtCumulative);
     return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}" data-tip="${escAttr(vmtTip)}"></circle>`;
   }).join("");
 
@@ -1466,7 +1471,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
       ${vmtMarks}
       ${drawSingleMonthAxes(
         series.months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapVmtY, fmtMiles,
-        "Vehicle Miles Traveled (VMT)",
+        yLabel,
       )}
     </svg>
   `;
@@ -1654,6 +1659,23 @@ function renderMonthlyLegends() {
       </span>`;
   });
   byId("month-legend-ci-fan").innerHTML = fanLevels.join("");
+
+  // Per-helmer VMT view toggle: monthly vs cumulative VMT. (Rule-8 deviation:
+  // "Monthly VMT"/"Cumulative VMT" are the user's terms, kept English to match
+  // the other VMT labels.) Lives outside renderWindowedViews so toggling it
+  // doesn't rebuild the radios.
+  byId("vmt-mode-toggle").innerHTML = `
+    <label class="month-legend-item month-helmer-toggle" for="vmt-mode-monthly">
+      <input type="radio" name="vmt-mode" id="vmt-mode-monthly" ${!vmtCumulative ? "checked" : ""}>
+      Monthly VMT
+    </label>
+    <label class="month-legend-item month-helmer-toggle" for="vmt-mode-cumulative">
+      <input type="radio" name="vmt-mode" id="vmt-mode-cumulative" ${vmtCumulative ? "checked" : ""}>
+      Cumulative VMT
+    </label>
+  `;
+  byId("vmt-mode-monthly").addEventListener("change", () => { vmtCumulative = false; renderWindowedViews(); });
+  byId("vmt-mode-cumulative").addEventListener("change", () => { vmtCumulative = true; renderWindowedViews(); });
 }
 
 function renderDateRangeControls() {
@@ -1757,7 +1779,7 @@ function renderWindowedViews() {
   const metric = selectedMonthMetric();
   const {start, end} = seriesMonthBounds(activeSeries);
   byId("mpi-heading").textContent = `${metric.label} over time`;
-  byId("dist-heading").textContent = `${metric.label} using data from ${start} to ${end}`;
+  byId("dist-heading").textContent = `${metric.label} probability distributions using data from ${start} to ${end}`;
   byId("chart-mpi-all").innerHTML = renderAllHelmersMpiChart(activeSeries);
   // Pools the slider-selected window; narrow the date range to weight recent
   // data. The monthly chart above shows how the rate moves over time.

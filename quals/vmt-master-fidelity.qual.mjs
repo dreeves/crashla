@@ -100,10 +100,15 @@ monthRangeEnd = Infinity;
 // The per-helmer VMT grid respects the checkboxes (Zoox is off by default);
 // enable all ADS helmers so every master row is rendered for this fidelity check.
 for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
-buildMonthlyViews();
+vmtCumulative = false; buildMonthlyViews();
+const monthlyCharts = document.getElementById("chart-helmer-series").innerHTML;
+vmtCumulative = true; renderWindowedViews();
+const cumulativeCharts = document.getElementById("chart-helmer-series").innerHTML;
+vmtCumulative = false;
 ({
   months: fullMonthSeries.months,
-  helmerCharts: document.getElementById("chart-helmer-series").innerHTML,
+  helmerCharts: monthlyCharts,
+  helmerChartsCumulative: cumulativeCharts,
   vmtJsRows: vmtRows.map(r => ({
     helmer: r.helmer, month: r.month, vmt: r.vmtBest, cume: r.vmtCume,
     lo: r.vmtMin, hi: r.vmtMax, coverage: r.coverage, rationale: r.rationale,
@@ -141,33 +146,35 @@ Expectata: only months after the last incident month (${cutoff}) may be absent.
 Resultata: ${m.helmer} ${m.month} is missing despite being in range.`);
 }
 
-// --- 3. Rendered helmer charts show the master values verbatim ---
-// Each helmer-month renders a VMT tooltip:
-//   "<Helmer> <month> (VMT)\nMonthly VMT (central estimate): <vmt*coverage>\n
-//    Monthly VMT range: <lo> – <hi>\n...\nCumulative VMT: <cume>..."
-const tipRe = /data-tip="(Tesla|Waymo|Zoox) (\d{4}-\d{2}) \(VMT\)\nMonthly VMT \(central estimate\): ([\d,]+)\nMonthly VMT range: ([\d,]+) – ([\d,]+)\n[^"]*\nCumulative VMT: ([\d,]+)/g;
-const seen = {};
-for (const hit of rendered.helmerCharts.matchAll(tipRe)) {
-  seen[`${hit[1].toLowerCase()}|${hit[2]}`] =
-    { vmt: num(hit[3]), lo: num(hit[4]), hi: num(hit[5]), cume: num(hit[6]) };
-}
+// --- 3. Rendered charts show master values verbatim, in BOTH view modes ---
+// Monthly tooltip:    "<Helmer> <month>\nMonthly VMT: <vmt> (<lo> – <hi>)\n..."
+// Cumulative tooltip: "<Helmer> <month>\nCumulative VMT: <cume> (<kmin> – <kmax>)\n..."
+const grab = (html, label) => {
+  const re = new RegExp(
+    `data-tip="(Tesla|Waymo|Zoox) (\\d{4}-\\d{2})\\n${label}: ([\\d,]+) \\(([\\d,]+)[^\\d,]+([\\d,]+)\\)`, "g");
+  const out = {};
+  for (const h of html.matchAll(re)) out[`${h[1].toLowerCase()}|${h[2]}`] = [num(h[3]), num(h[4]), num(h[5])];
+  return out;
+};
+const monthly = grab(rendered.helmerCharts, "Monthly VMT");
+const cumulative = grab(rendered.helmerChartsCumulative, "Cumulative VMT");
 const inRange = master.filter(m => m.month <= cutoff);
-assert.equal(Object.keys(seen).length, inRange.length,
-  `Replicata: extract VMT tooltips from the rendered per-helmer charts.
+for (const [name, got] of [["monthly", monthly], ["cumulative", cumulative]]) {
+  assert.equal(Object.keys(got).length, inRange.length,
+    `Replicata: extract ${name} VMT tooltips from the rendered charts.
 Expectata: one tooltip per master row up to ${cutoff} (${inRange.length}).
-Resultata: found ${Object.keys(seen).length}.`);
+Resultata: found ${Object.keys(got).length}.`);
+}
 for (const m of inRange) {
-  const got = seen[`${m.helmer}|${m.month}`];
-  const cov = rendered.vmtJsRows.find(r =>
-    r.helmer.toLowerCase() === m.helmer && r.month === m.month).coverage;
-  const expected = {
-    vmt: Math.round(m.vmt * cov), lo: Math.round(m.lo * cov),
-    hi: Math.round(m.hi * cov), cume: m.cume,
-  };
-  assert.deepEqual(got, expected,
-    `Replicata: read the rendered VMT tooltip for ${m.helmer} ${m.month} (full date range).
-Expectata: chart shows the master values ${JSON.stringify(expected)}.
-Resultata: chart shows ${JSON.stringify(got)}.`);
+  const key = `${m.helmer}|${m.month}`;
+  assert.deepEqual(monthly[key], [m.vmt, m.lo, m.hi],
+    `Replicata: read the monthly VMT tooltip for ${m.helmer} ${m.month}.
+Expectata: master monthly values [${m.vmt}, ${m.lo}, ${m.hi}].
+Resultata: ${JSON.stringify(monthly[key])}.`);
+  assert.deepEqual(cumulative[key], [m.cume, m.kmin, m.kmax],
+    `Replicata: read the cumulative VMT tooltip for ${m.helmer} ${m.month} (cumulative mode).
+Expectata: master cumulative band [${m.cume}, ${m.kmin}, ${m.kmax}].
+Resultata: ${JSON.stringify(cumulative[key])}.`);
 }
 
 console.log("qual pass: data/vmt.csv flows unchanged into vmt.js and the rendered VMT charts");

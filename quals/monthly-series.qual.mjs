@@ -496,10 +496,10 @@ Resultata: labels missing from source.`,
 );
 
 assert.ok(
-  appScript.includes("Monthly VMT range:"),
-  `Replicata: inspect source for the per-helmer VMT chart tooltip labels.
-Expectata: source includes the VMT range label.
-Resultata: expected strings missing from source.`,
+  appScript.includes('"Monthly VMT"') && appScript.includes('"Cumulative VMT"'),
+  `Replicata: inspect vmtTooltip source for the per-helmer VMT chart view labels.
+Expectata: the tooltip offers both a Monthly VMT and a Cumulative VMT view.
+Resultata: expected labels missing from source.`,
 );
 
 // The grid now respects the helmer checkboxes (Zoox is off by default), so

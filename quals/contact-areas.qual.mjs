@@ -95,22 +95,31 @@ Resultata: tooltip was ${JSON.stringify(tipFixedObj.slice(-80))}.`,
 
 // Verify vmtTooltip helper produces expected format
 const vmtTip = vm.runInContext(`
-  vmtTooltip("TestCo", "2025-07", {
-    vmtRawBest: 12345, vmtRawMin: 10000, vmtRawMax: 15000,
-    vmtBest: 11000, vmtCume: 50000, kyoomMin: 40000, kyoomMax: 60000,
-  }, {total: 3});
+  (() => {
+    const row = { vmtRawBest: 12345, vmtRawMin: 10000, vmtRawMax: 15000,
+      vmtBest: 11000, vmtCume: 50000, kyoomMin: 40000, kyoomMax: 60000 };
+    return { monthly: vmtTooltip("TestCo", "2025-07", row, {total: 3}, false),
+             cumulative: vmtTooltip("TestCo", "2025-07", row, {total: 3}, true) };
+  })();
 `, ctx);
 assert.ok(
-  vmtTip.includes("TestCo 2025-07 (VMT)") &&
-    vmtTip.includes("Monthly VMT (central estimate):") &&
-    vmtTip.includes("Monthly VMT range:") &&
-    vmtTip.includes("Coverage-adjusted VMT for MPI:") &&
-    vmtTip.includes("Cumulative VMT:") &&
-    vmtTip.includes("(range ") &&
-    vmtTip.includes("Total incidents:"),
-  `Replicata: call vmtTooltip with sample data.
-Expectata: tooltip includes all expected labels (monthly, range, effective, cumulative, incidents).
-Resultata: tooltip was ${JSON.stringify(vmtTip)}.`,
+  vmtTip.monthly.includes("TestCo 2025-07") &&
+    vmtTip.monthly.includes("Monthly VMT: 12,345 (10,000") &&
+    vmtTip.monthly.includes("15,000)") &&
+    vmtTip.monthly.includes("Incidents: 3") &&
+    !vmtTip.monthly.includes("Cumulative"),
+  `Replicata: call vmtTooltip in monthly mode.
+Expectata: a single monthly VMT range line and incident count, no cumulative line.
+Resultata: tooltip was ${JSON.stringify(vmtTip.monthly)}.`,
+);
+assert.ok(
+  vmtTip.cumulative.includes("Cumulative VMT: 50,000 (40,000") &&
+    vmtTip.cumulative.includes("60,000)") &&
+    vmtTip.cumulative.includes("Incidents: 3") &&
+    !vmtTip.cumulative.includes("Monthly"),
+  `Replicata: call vmtTooltip in cumulative mode.
+Expectata: a single cumulative VMT band line and incident count.
+Resultata: tooltip was ${JSON.stringify(vmtTip.cumulative)}.`,
 );
 
 console.log("qual pass: contact areas in fault tooltip and vmtTooltip helper");
