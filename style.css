@@ -341,6 +341,11 @@ tr:hover { background: #f8f8ff; }
   align-items: center;
   gap: 0.35rem;
 }
+/* Helmer selected but with no data in the current window: shown grayed out
+   rather than dropped from the legend (Anti-Magic Principle). */
+.month-legend-item-empty {
+  opacity: 0.4;
+}
 .month-legend-label {
   font-weight: 600;
   font-size: 0.78rem;

@@ -1115,11 +1115,14 @@ function drawSingleMonthAxes(
 }
 
 // Chip legend for a chart: one entry per helmer that actually renders there
-function helmerChipLegend(helmers) {
+// Legend chips for the selected helmers. Helmers in <emptyHelmers> have no data
+// in the current window; per the Anti-Magic Principle they stay visible but
+// grayed out rather than being dropped from the legend.
+function helmerChipLegend(helmers, emptyHelmers = new Set()) {
   return `
     <div class="month-legend">
       ${helmers.map(helmer => `
-      <span class="month-legend-item">
+      <span class="month-legend-item${emptyHelmers.has(helmer) ? " month-legend-item-empty" : ""}">
         <span class="month-chip" style="background:${HELMER_COLORS[helmer]}"></span>${helmerLabel(helmer)}
       </span>`).join("")}
     </div>`;
@@ -1288,7 +1291,10 @@ function renderAllHelmersMpiChart(series) {
   // Title lives in the collapsible section header (#mpi-heading), set by
   // renderWindowedViews, so it stays visible when the section is collapsed.
   return `
-    ${helmerChipLegend(seriesRows.filter(row => row.vals.some(v => v !== null)).map(row => row.helmer))}
+    ${helmerChipLegend(
+      seriesRows.map(row => row.helmer),
+      new Set(seriesRows.filter(row => !row.vals.some(v => v !== null)).map(row => row.helmer)),
+    )}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       ${drawSingleMonthAxes(
         series.months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, fmtMiles, "Miles Per Incident (MPI)",
@@ -1316,14 +1322,16 @@ function renderDistributionChart(series) {
       xMin: est.xMin, xMax: est.xMax,
     });
   }
-  if (curves.length === 0) return "";
-
-  // X-axis range from all curves' density extents
+  // X-axis range from all curves' density extents. With no curves (every
+  // selected helmer is empty in this window, or none are selected) fall back to
+  // a default log span so the chart still draws its axes instead of vanishing
+  // (Anti-Magic Principle), matching the cross-helmer MPI chart.
   let xMin = Infinity, xMax = 0;
   for (const c of curves) {
     xMin = Math.min(xMin, c.xMin);
     xMax = Math.max(xMax, c.xMax);
   }
+  if (!Number.isFinite(xMin)) { xMin = 1e4; xMax = 1e8; }
   assert(xMin < xMax, "distribution chart: degenerate x range", {xMin, xMax});
 
   // Sample on log-uniform grid
@@ -1342,7 +1350,7 @@ function renderDistributionChart(series) {
     c.peakY = c.ys[peakIdx];
     yMax = Math.max(yMax, c.peakY);
   }
-  if (yMax === 0) return "";
+  yMax = yMax || 1; // no curves to scale against: default so the axes still draw
 
   const svgW = 900, svgH = 280;
   const mLeft = 68, mRight = 16, mTop = 14, mBot = 40;
@@ -1408,7 +1416,12 @@ function renderDistributionChart(series) {
   // Title lives in the collapsible section header (#dist-heading), set by
   // renderWindowedViews, so it stays visible when the section is collapsed.
   return `
-    ${helmerChipLegend(curves.map(c => c.helmer))}
+    ${helmerChipLegend(
+      summaryRows.filter(r => monthHelmerEnabled[r.helmer]).map(r => r.helmer),
+      new Set(summaryRows
+        .filter(r => monthHelmerEnabled[r.helmer] && !curves.some(c => c.helmer === r.helmer))
+        .map(r => r.helmer)),
+    )}
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}
@@ -1450,10 +1463,15 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   for (let i = 0; i < globalSeries.points.length; i++) {
     if (globalSeries.points[i].helmers[helmer] !== null) presentIndices.push(i);
   }
-  if (presentIndices.length === 0) return "";
+  // No months with data in range: fall back to the full window so the chart
+  // still renders as empty axes instead of vanishing (Anti-Magic Principle).
+  // The bar/line/mark loops skip the resulting null rows, so it stays one path.
+  const indices = presentIndices.length > 0
+    ? presentIndices
+    : globalSeries.points.map((_, i) => i);
   const series = {
-    months: presentIndices.map(i => globalSeries.months[i]),
-    points: presentIndices.map(i => globalSeries.points[i]),
+    months: indices.map(i => globalSeries.months[i]),
+    points: indices.map(i => globalSeries.points[i]),
   };
   const svgW = 900;
   const svgH = 250;
@@ -1464,8 +1482,8 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
   const rows = helmerMonthRows(series, helmer);
-  const vmtMax = Math.max(1, ...rows.map(row => row.vmtRawMax));
-  const incidentMax = Math.max(1, ...rows.map(row => row.incidents.total));
+  const vmtMax = Math.max(1, ...rows.map(row => row ? row.vmtRawMax : 0));
+  const incidentMax = Math.max(1, ...rows.map(row => row ? row.incidents.total : 0));
   const leftTicks = linearTicks(0, vmtMax, 4);
   const monthStep = pW / ((series.months.length - 1) || 1);
   const barW = Math.min(30, monthStep * 0.56);
@@ -1482,6 +1500,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const halfBar = (barW - 1) / 2; // 1px gap between the two bars
   for (let i = 0; i < series.points.length; i++) {
     const row = rows[i];
+    if (!row) continue; // no data for this helmer this month (empty-range fallback)
     const month = series.months[i];
     const cx = mapX(i);
     const rec = row.incidents;
@@ -1544,11 +1563,13 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
 
   let vmtPath = "";
   for (let i = 0; i < series.points.length; i++) {
+    if (!rows[i]) continue;
     const y = mapVmtY(rows[i].vmtRawBest);
-    vmtPath += `${i ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
+    vmtPath += `${vmtPath ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
   }
 
   const vmtMarks = rows.map((row, i) => {
+    if (!row) return "";
     const x = mapX(i);
     const y = mapVmtY(row.vmtRawBest);
     const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents);
