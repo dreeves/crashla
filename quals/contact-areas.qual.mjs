@@ -97,7 +97,7 @@ Resultata: tooltip was ${JSON.stringify(tipFixedObj.slice(-80))}.`,
 const vmtTip = vm.runInContext(`
   vmtTooltip("TestCo", "2025-07", {
     vmtRawBest: 12345, vmtRawMin: 10000, vmtRawMax: 15000,
-    vmtBest: 11000, vmtCume: 50000,
+    vmtBest: 11000, vmtCume: 50000, kyoomMin: 40000, kyoomMax: 60000,
   }, {total: 3});
 `, ctx);
 assert.ok(
@@ -106,6 +106,7 @@ assert.ok(
     vmtTip.includes("Monthly VMT range:") &&
     vmtTip.includes("Coverage-adjusted VMT for MPI:") &&
     vmtTip.includes("Cumulative VMT:") &&
+    vmtTip.includes("(range ") &&
     vmtTip.includes("Total incidents:"),
   `Replicata: call vmtTooltip with sample data.
 Expectata: tooltip includes all expected labels (monthly, range, effective, cumulative, incidents).

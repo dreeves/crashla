@@ -570,7 +570,7 @@ function csvUnquote(field) {
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   assert(lines.length > 1, "VMT sheet CSV must include header and rows");
-  assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
+  assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
     "VMT sheet CSV header mismatch", {header: lines[0]});
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -578,7 +578,7 @@ function parseVmtCsv(text) {
     if (line === "") continue;
     const N = "\\d+(?:\\.\\d+)?"; // number pattern
     const re = new RegExp(
-      `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`
+      `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`
     );
     const hit = re.exec(line);
     assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
@@ -587,20 +587,29 @@ function parseVmtCsv(text) {
     assert(helmer !== undefined, "VMT sheet CSV has unknown helmer", {helmerRaw});
     const vmtBest = Number(hit[3]);
     const vmtCume = Number(hit[4]);
-    const vmtMin = Number(hit[5]);
-    const vmtMax = Number(hit[6]);
-    const coverage = Number(hit[7]); // fraction of month in NHTSA window
+    const kyoomMin = Number(hit[5]); // min of cumulative VMT (the kyoom band)
+    const kyoomMax = Number(hit[6]); // max of cumulative VMT
+    const vmtMin = Number(hit[7]);
+    const vmtMax = Number(hit[8]);
+    const coverage = Number(hit[9]); // fraction of month in NHTSA window
     // Incident reporting completeness (Poisson thinning factor).
     // When Monthly reports are structurally absent for the last month, this
     // is the historical 5-Day fraction for the helmer.  Multiplied into
     // effective VMT so the Gamma posterior reflects the thinned observation.
-    const incCov     = Number(hit[8]);  // best estimate
-    const incCovMin  = Number(hit[9]);  // most pessimistic (smallest p)
-    const incCovMax  = Number(hit[10]); // most optimistic (largest p)
+    const incCov     = Number(hit[10]); // best estimate
+    const incCovMin  = Number(hit[11]); // most pessimistic (smallest p)
+    const incCovMax  = Number(hit[12]); // most optimistic (largest p)
     assert(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
       {lineNo: i + 1, vmtBest});
     assert(Number.isFinite(vmtCume) && vmtCume >= 0,
       "helmer_cumulative_vmt must be non-negative number", {lineNo: i + 1, vmtCume});
+    assert(Number.isFinite(kyoomMin) && kyoomMin >= 0, "kyoom_min must be non-negative number",
+      {lineNo: i + 1, kyoomMin});
+    assert(Number.isFinite(kyoomMax) && kyoomMax >= 0, "kyoom_max must be non-negative number",
+      {lineNo: i + 1, kyoomMax});
+    assert(kyoomMin <= vmtCume && vmtCume <= kyoomMax,
+      "expected kyoom_min <= helmer_cumulative_vmt <= kyoom_max",
+      {lineNo: i + 1, kyoomMin, vmtCume, kyoomMax});
     assert(Number.isFinite(vmtMin) && vmtMin >= 0, "vmt_min must be non-negative number",
       {lineNo: i + 1, vmtMin});
     assert(Number.isFinite(vmtMax) && vmtMax >= 0, "vmt_max must be non-negative number",
@@ -620,6 +629,8 @@ function parseVmtCsv(text) {
     rows.push({
       helmer,
       month: hit[2],
+      kyoomMin,
+      kyoomMax,
       vmtMin,
       vmtBest,
       vmtMax,
@@ -628,7 +639,7 @@ function parseVmtCsv(text) {
       incCov,
       incCovMin,
       incCovMax,
-      rationale: csvUnquote(hit[11]),
+      rationale: csvUnquote(hit[13]),
     });
   }
   assert(rows.length > 0, "VMT sheet CSV has no data rows");
@@ -746,7 +757,7 @@ function fmtWhole(n) {
 }
 
 function vmtTooltip(helmer, month, row, rec) {
-  return `${helmer} ${month} (VMT)\nMonthly VMT (central estimate): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)}\nTotal incidents: ${fmtCount(rec.total)}`;
+  return `${helmer} ${month} (VMT)\nMonthly VMT (central estimate): ${fmtWhole(row.vmtRawBest)}\nMonthly VMT range: ${fmtWhole(row.vmtRawMin)} \u2013 ${fmtWhole(row.vmtRawMax)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(row.vmtBest)}\nCumulative VMT: ${fmtWhole(row.vmtCume)} (range ${fmtWhole(row.kyoomMin)} – ${fmtWhole(row.kyoomMax)})\nTotal incidents: ${fmtCount(rec.total)}`;
 }
 
 function helmerMonthRows(series, helmer) {
@@ -988,6 +999,8 @@ function monthSeriesData() {
         vmtRawBest: vmt.vmtBest * c,
         vmtRawMax: vmt.vmtMax * c,
         vmtCume: vmt.vmtCume,
+        kyoomMin: vmt.kyoomMin, // cumulative VMT band (the kyoom band)
+        kyoomMax: vmt.kyoomMax,
         rationale: vmt.rationale,
         incidents: inc,
       };

@@ -35,13 +35,13 @@ const num = s => Number(String(s).replace(/,/g, ""));
 const masterRows = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 assert.deepEqual(
   masterRows[0],
-  ["helmer", "month", "vmt", "helmer_cumulative_vmt", "vmt_min", "vmt_max", "rationale"],
+  ["helmer", "month", "vmt", "helmer_cumulative_vmt", "kyoom_min", "kyoom_max", "vmt_min", "vmt_max", "rationale"],
   `Replicata: read the header of data/vmt.csv.
 Expectata: canonical master header.
 Resultata: ${JSON.stringify(masterRows[0])}.`);
 const master = masterRows.slice(1).map(r => ({
   helmer: r[0], month: r[1], vmt: num(r[2]), cume: num(r[3]),
-  lo: num(r[4]), hi: num(r[5]), rationale: r[6],
+  kmin: num(r[4]), kmax: num(r[5]), lo: num(r[6]), hi: num(r[7]), rationale: r[8],
 }));
 
 // --- Load the app with DOM stubs and render the full date range ---

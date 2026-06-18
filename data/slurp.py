@@ -555,13 +555,15 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
     rows = list(csv.reader(io.StringIO(raw_text)))
     must(len(rows) > 1, "VMT master CSV must include header and rows")
     expected_header = ["helmer", "month", "vmt", "helmer_cumulative_vmt",
-                       "vmt_min", "vmt_max", "rationale"]
+                       "kyoom_min", "kyoom_max", "vmt_min", "vmt_max",
+                       "rationale"]
     must(rows[0] == expected_header,
          "VMT master CSV header mismatch", header=rows[0])
     out_buf = io.StringIO()
     writer = csv.writer(out_buf, lineterminator="\n")
     writer.writerow(["helmer", "month", "vmt", "helmer_cumulative_vmt",
-                     "vmt_min", "vmt_max", "coverage", "incident_coverage",
+                     "kyoom_min", "kyoom_max", "vmt_min", "vmt_max",
+                     "coverage", "incident_coverage",
                      "incident_coverage_min", "incident_coverage_max",
                      "rationale"])
     for row in rows[1:]:
@@ -572,12 +574,12 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
             continue
         ic_best, ic_lo, ic_hi = inc_cov.get(
             (_canonical_helmer(row[0].strip()), month), (1, 1, 1))
-        # Normalize the four numeric columns to plain integers: a
+        # Normalize the six numeric columns to plain integers: a
         # thousands-separated "22,000,000" entered in the master CSV becomes
         # 22000000, matching the plain-integer convention of the rest of
         # the data and keeping the emitted CSV safe for naive parsers.
-        nums = [cell.strip().replace(",", "") for cell in row[2:6]]
-        rationale = row[6] if len(row) > 6 else ""
+        nums = [cell.strip().replace(",", "") for cell in row[2:8]]
+        rationale = row[8] if len(row) > 8 else ""
         writer.writerow([row[0], row[1], *nums, "1.0",
                          ic_best, ic_lo, ic_hi, rationale])
     return out_buf.getvalue().rstrip("\n")
