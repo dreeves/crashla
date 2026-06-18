@@ -486,13 +486,16 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
     import math
     helmers = sorted(set(k[0] for k in counts))
     result = {}
+    pooled_obs = 0.0   # Σ observed incidents across helmers in the incomplete month
+    pooled_exp = 0.0   # Σ expected-if-complete incidents
+    pooled_lo = 1.0
     for helmer in helmers:
         last_key = (helmer, last_month)
         last_count = counts.get(last_key, 0)
         last_vmt = vmt.get(last_key, 0)
 
         if last_vmt == 0 or last_count == 0:
-            continue  # no VMT or no incidents → Gamma posterior handles it
+            continue  # zero-incident helmers get the pooled coverage below
 
         # Find reference: most recent month before last_month with >= 3
         # incidents and VMT data.
@@ -527,10 +530,25 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         p_lo = max(0.01, p_rate - 1.96 * se)
         result[last_key] = (round(p_best, 4), round(p_lo, 4),
                             round(p_hi, 4))
-        #print(f"  {helmer} {last_month} incident_coverage:"
-        #      f" best={p_best:.4f} lo={p_lo:.4f} hi={p_hi:.4f}"
-        #      f" (from {ref_mo}: {ref_count} inc / {ref_vmt:.0f} VMT;"
-        #      f" observed {last_count}, expected {expected:.1f})")
+        pooled_obs += last_count
+        pooled_exp += expected
+        pooled_lo = min(pooled_lo, p_lo)
+
+    # Incompleteness is a property of the reporting cycle, not of any one helmer.
+    # A helmer with ZERO observed incidents in the incomplete last month must not
+    # keep full VMT credit -- that would overstate its safety merely because the
+    # reporting window is immature. Give it the pooled month-level reporting
+    # maturity (observed/expected across the helmers that do have incidents).
+    if pooled_exp > 0:
+        month_p = max(0.01, min(1.0, pooled_obs / pooled_exp))
+        month_lo = max(0.01, min(month_p, pooled_lo))
+        for helmer in helmers:
+            last_key = (helmer, last_month)
+            if last_key in result or vmt.get(last_key, 0) == 0:
+                continue
+            result[last_key] = (round(month_p, 4), round(month_lo, 4), 1.0)
+            print(f"  {helmer} {last_month} incident_coverage (0 incidents,"
+                  f" pooled): best={month_p:.4f} lo={month_lo:.4f}")
 
     return result
 

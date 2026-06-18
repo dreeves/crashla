@@ -1758,6 +1758,38 @@ function renderDateRangeControls() {
   }
   minInput.addEventListener("change", commitRange);
   maxInput.addEventListener("change", commitRange);
+
+  // Drag the filled middle to slide the whole window at fixed width. The
+  // endpoint thumbs (above, z-index 2/3) still drag independently.
+  fill.style.cursor = "grab";
+  let dragX = null, dragA = 0, dragB = 0;
+  fill.addEventListener("pointerdown", (e) => {
+    if (maxIdx <= 0) return;
+    dragX = e.clientX;
+    dragA = Math.min(Number(minInput.value), Number(maxInput.value));
+    dragB = Math.max(Number(minInput.value), Number(maxInput.value));
+    fill.setPointerCapture(e.pointerId);
+    fill.style.cursor = "grabbing";
+    e.preventDefault();
+  });
+  fill.addEventListener("pointermove", (e) => {
+    if (dragX === null) return;
+    const sliderW = fill.parentElement.getBoundingClientRect().width;
+    const delta = Math.round(((e.clientX - dragX) / sliderW) * maxIdx);
+    const width = dragB - dragA;
+    const a = Math.max(0, Math.min(dragA + delta, maxIdx - width));
+    minInput.value = String(a);
+    maxInput.value = String(a + width);
+    updateLive();
+  });
+  const endDrag = () => {
+    if (dragX === null) return;
+    dragX = null;
+    fill.style.cursor = "grab";
+    commitRange();
+  };
+  fill.addEventListener("pointerup", endDrag);
+  fill.addEventListener("pointercancel", endDrag);
 }
 
 // Renders only the views that depend on the selected date window. Used both by
@@ -2964,8 +2996,9 @@ function loadPredmarketData() {
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}`
     : "";
-  byId("colophon").textContent =
-    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart}`;
+  byId("colophon").innerHTML =
+    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} · ` +
+    `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a>`;
   initTooltips();
   initCollapsibles();
   loadPredmarketData();
