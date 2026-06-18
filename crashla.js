@@ -136,7 +136,7 @@ let faultData = {}; // reportId -> {faultfrac, reasoning}
 let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, Waymo: true, Zoox: false};
 // Collapsible page sections (each <section class="collapsible" id="sec-<id>">).
 // Collapsed set is shareable via the URL so a link can foreground one section.
-const SECTION_IDS = ["controls", "mpi", "dist", "summary", "vmt", "browser", "markets", "sanity"];
+const SECTION_IDS = ["controls", "vmt", "mpi", "dist", "browser", "markets", "summary", "sanity"];
 let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
