@@ -97,18 +97,23 @@ incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 monthRangeStart = 0;
 monthRangeEnd = Infinity;
-// The per-helmer VMT grid respects the checkboxes (Zoox is off by default);
-// enable all ADS helmers so every master row is rendered for this fidelity check.
+// Enable all ADS helmers so every master row is rendered for this fidelity check.
 for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
-vmtCumulative = false; buildMonthlyViews();
-const monthlyCharts = document.getElementById("chart-helmer-series").innerHTML;
-vmtCumulative = true; renderWindowedViews();
-const cumulativeCharts = document.getElementById("chart-helmer-series").innerHTML;
+buildMonthlyViews();
+// Tooltips no longer carry the helmer name, so render each helmer's chart
+// separately, in each view mode, to verify master values flow through.
+const perHelmer = {};
+for (const h of ADS_HELMERS) {
+  vmtCumulative = false;
+  const monthly = renderHelmerMonthlyChart(fullMonthSeries, h);
+  vmtCumulative = true;
+  const cumulative = renderHelmerMonthlyChart(fullMonthSeries, h);
+  perHelmer[h] = { monthly, cumulative };
+}
 vmtCumulative = false;
 ({
   months: fullMonthSeries.months,
-  helmerCharts: monthlyCharts,
-  helmerChartsCumulative: cumulativeCharts,
+  perHelmer,
   vmtJsRows: vmtRows.map(r => ({
     helmer: r.helmer, month: r.month, vmt: r.vmtBest, cume: r.vmtCume,
     lo: r.vmtMin, hi: r.vmtMax, coverage: r.coverage, rationale: r.rationale,
@@ -147,34 +152,39 @@ Resultata: ${m.helmer} ${m.month} is missing despite being in range.`);
 }
 
 // --- 3. Rendered charts show master values verbatim, in BOTH view modes ---
-// Monthly tooltip:    "<Helmer> <month>\nMonthly VMT: <vmt> (<lo> – <hi>)\n..."
-// Cumulative tooltip: "<Helmer> <month>\nCumulative VMT: <cume> (<kmin> – <kmax>)\n..."
-const grab = (html, label) => {
-  const re = new RegExp(
-    `data-tip="(Tesla|Waymo|Zoox) (\\d{4}-\\d{2})\\n${label}: ([\\d,]+) \\(([\\d,]+)[^\\d,]+([\\d,]+)\\)`, "g");
+// Each datapoint renders minimal "<month>\n<value> miles" tooltips: the dot
+// carries the central value, the two error-bar ends carry lo/hi. So each
+// helmer-month should expose its {central, lo, hi} as "<n> miles" tooltips.
+const adsName = lc => Object.keys(rendered.perHelmer).find(h => h.toLowerCase() === lc);
+const milesByMonth = html => {
   const out = {};
-  for (const h of html.matchAll(re)) out[`${h[1].toLowerCase()}|${h[2]}`] = [num(h[3]), num(h[4]), num(h[5])];
+  for (const h of html.matchAll(/data-tip="(\d{4}-\d{2})\n([\d,]+) miles/g)) {
+    (out[h[1]] ??= new Set()).add(num(h[2]));
+  }
   return out;
 };
-const monthly = grab(rendered.helmerCharts, "Monthly VMT");
-const cumulative = grab(rendered.helmerChartsCumulative, "Cumulative VMT");
+const parsed = {};
+for (const h of Object.keys(rendered.perHelmer)) parsed[h] = {
+  monthly: milesByMonth(rendered.perHelmer[h].monthly),
+  cumulative: milesByMonth(rendered.perHelmer[h].cumulative),
+};
 const inRange = master.filter(m => m.month <= cutoff);
-for (const [name, got] of [["monthly", monthly], ["cumulative", cumulative]]) {
-  assert.equal(Object.keys(got).length, inRange.length,
-    `Replicata: extract ${name} VMT tooltips from the rendered charts.
-Expectata: one tooltip per master row up to ${cutoff} (${inRange.length}).
-Resultata: found ${Object.keys(got).length}.`);
-}
 for (const m of inRange) {
-  const key = `${m.helmer}|${m.month}`;
-  assert.deepEqual(monthly[key], [m.vmt, m.lo, m.hi],
-    `Replicata: read the monthly VMT tooltip for ${m.helmer} ${m.month}.
-Expectata: master monthly values [${m.vmt}, ${m.lo}, ${m.hi}].
-Resultata: ${JSON.stringify(monthly[key])}.`);
-  assert.deepEqual(cumulative[key], [m.cume, m.kmin, m.kmax],
-    `Replicata: read the cumulative VMT tooltip for ${m.helmer} ${m.month} (cumulative mode).
-Expectata: master cumulative band [${m.cume}, ${m.kmin}, ${m.kmax}].
-Resultata: ${JSON.stringify(cumulative[key])}.`);
+  const p = parsed[adsName(m.helmer)];
+  const monthlySet = p.monthly[m.month] || new Set();
+  const cumSet = p.cumulative[m.month] || new Set();
+  for (const v of [m.vmt, m.lo, m.hi]) {
+    assert.ok(monthlySet.has(v),
+      `Replicata: read ${m.helmer} ${m.month} monthly VMT tooltips.
+Expectata: a "${v.toLocaleString()} miles" tooltip (master monthly value) is present.
+Resultata: tooltips had ${JSON.stringify([...monthlySet])}.`);
+  }
+  for (const v of [m.cume, m.kmin, m.kmax]) {
+    assert.ok(cumSet.has(v),
+      `Replicata: read ${m.helmer} ${m.month} cumulative VMT tooltips.
+Expectata: a "${v.toLocaleString()} miles" tooltip (master cumulative value) is present.
+Resultata: tooltips had ${JSON.stringify([...cumSet])}.`);
+  }
 }
 
 console.log("qual pass: data/vmt.csv flows unchanged into vmt.js and the rendered VMT charts");

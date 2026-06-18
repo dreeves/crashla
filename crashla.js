@@ -726,6 +726,11 @@ function fmtCount(n) {
   return rounded.toFixed(1);
 }
 
+// Pluralize a count: splur(1, "incident") -> "1 incident"; splur(2) -> "2 incidents".
+function splur(n, singular, plural = singular + "s") {
+  return `${fmtCount(n)} ${n === 1 ? singular : plural}`;
+}
+
 function monthHelmerToggleId(helmer) {
   return "month-helmer-toggle-" + helmer.toLowerCase();
 }
@@ -757,11 +762,10 @@ function fmtWhole(n) {
   return Math.round(n).toLocaleString();
 }
 
-function vmtTooltip(helmer, month, row, rec, cumulative) {
-  const [label, best, lo, hi] = cumulative
-    ? ["Cumulative VMT", row.vmtCume, row.kyoomMin, row.kyoomMax]
-    : ["Monthly VMT", row.vmtRawBest, row.vmtRawMin, row.vmtRawMax];
-  return `${helmer} ${month}\n${label}: ${fmtWhole(best)} (${fmtWhole(lo)} \u2013 ${fmtWhole(hi)})\nIncidents: ${fmtCount(rec.total)}`;
+function vmtTooltip(month, miles, incidents) {
+  // Minimal (x, y): month, the value in miles, and (for dots only) the incident count.
+  const inc = incidents === undefined ? "" : `\n${splur(incidents, "incident")}`;
+  return `${month}\n${fmtWhole(miles)} miles${inc}`;
 }
 
 function helmerMonthRows(series, helmer) {
@@ -1201,14 +1205,12 @@ function renderAllHelmersMpiChart(series) {
       const color = metricMarkerColor(row.helmer);
       const k = mpi.incidentCount;
       const ci95 = mpi.bands[mpi.bands.length - 1];
-      const kLine = k !== null ? ` (${Number.isInteger(k) ? String(k) : k.toFixed(1)} incident${k === 1 ? "" : "s"})` : "";
-      const vmtLines = mpi.vmtMonth > 0
-        ? `\nMonthly VMT: ${fmtWhole(mpi.vmtMonth)}\nCoverage-adjusted VMT for MPI: ${fmtWhole(mpi.vmtMonthEff)}\nCumulative VMT: ${fmtWhole(mpi.vmtCume)}`
-        : "";
+      const kLine = k !== null ? ` (${splur(k, "incident")})` : "";
+      const ciLabel = k !== null ? "95% CI" : "Range";
       const incompleteNote = mpi.covRatio < 0.999
-        ? `\nEstimated ${(mpi.covRatio * 100).toFixed(0)}% incident coverage so VMT scaled to ${fmtWhole(mpi.vmtMonthEff)}`
+        ? `\n~${(mpi.covRatio * 100).toFixed(0)}% incident coverage`
         : "";
-      const tip = `${helmerLabel(row.helmer)} ${series.months[i]} (${row.metric.label})\nMPI: ${fmtMiles(mpi.mpiBest)}${kLine}\nRange: ${fmtMiles(ci95.lo)} \u2013 ${fmtMiles(ci95.hi)}${vmtLines}${incompleteNote}`;
+      const tip = `${helmerLabel(row.helmer)} ${series.months[i]}\nMPI: ${fmtMiles(mpi.mpiBest)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${incompleteNote}`;
       const yc = clampY(mpi.mpiBest);
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
       const qOpacity = (1 - mpi.covRatio).toFixed(3);
@@ -1368,10 +1370,9 @@ function renderDistributionChart(series) {
     const color = HELMER_COLORS[c.helmer];
     const x = mapX(c.peakX);
     const y = mapY(c.peakY);
-    const kLine = c.est.k !== null
-      ? `\n${Number.isInteger(c.est.k) ? String(c.est.k) : c.est.k.toFixed(1)} incident${c.est.k === 1 ? "" : "s"}`
-      : "";
-    const tip = `${helmerLabel(c.helmer)} (${c.metric.cardLabel})\nMPI: ${fmtMiles(c.est.median)}\nRange: ${fmtMiles(c.est.lo)} \u2013 ${fmtMiles(c.est.hi)}${kLine}`;
+    const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})` : "";
+    const ciLabel = c.est.k !== null ? "95% CI" : "Range";
+    const tip = `${helmerLabel(c.helmer)}\nMPI: ${fmtMiles(c.est.median)}${kLine}\n${ciLabel}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}`;
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
@@ -1441,11 +1442,14 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     const cx = mapX(i);
     const yLo = mapVmtY(lo(row));
     const yHi = mapVmtY(hi(row));
-    const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents, vmtCumulative);
+    const loTip = vmtTooltip(series.months[i], lo(row));
+    const hiTip = vmtTooltip(series.months[i], hi(row));
     errs.push(`
-      <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}" data-tip="${escAttr(vmtTip)}"></line>
+      <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <circle cx="${cx.toFixed(2)}" cy="${yLo.toFixed(2)}" r="5" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(loTip)}"></circle>
+      <circle cx="${cx.toFixed(2)}" cy="${yHi.toFixed(2)}" r="5" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(hiTip)}"></circle>
     `);
   }
 
@@ -1460,7 +1464,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     if (!row) return "";
     const x = mapX(i);
     const y = mapVmtY(best(row));
-    const vmtTip = vmtTooltip(helmer, series.months[i], row, row.incidents, vmtCumulative);
+    const vmtTip = vmtTooltip(series.months[i], best(row), row.incidents.total);
     return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}" data-tip="${escAttr(vmtTip)}"></circle>`;
   }).join("");
 

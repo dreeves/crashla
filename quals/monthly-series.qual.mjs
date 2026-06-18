@@ -488,17 +488,16 @@ Resultata: bar lengths were ${JSON.stringify(allZeroK.barLens.map(Math.round))}.
 );
 
 assert.ok(
-  appScript.includes("Monthly VMT:") &&
-    appScript.includes("Cumulative VMT:"),
-  `Replicata: inspect cross-helmer MPI datapoint tooltip source.
-Expectata: tooltip source includes monthly and cumulative mileage labels.
-Resultata: labels missing from source.`,
+  appScript.includes("95% CI"),
+  `Replicata: inspect the MPI / distribution datapoint tooltip source.
+Expectata: confidence intervals are labeled "95% CI".
+Resultata: "95% CI" label missing from source.`,
 );
 
 assert.ok(
-  appScript.includes('"Monthly VMT"') && appScript.includes('"Cumulative VMT"'),
-  `Replicata: inspect vmtTooltip source for the per-helmer VMT chart view labels.
-Expectata: the tooltip offers both a Monthly VMT and a Cumulative VMT view.
+  appScript.includes("Monthly VMT") && appScript.includes("Cumulative VMT"),
+  `Replicata: inspect source for the VMT view toggle labels.
+Expectata: the per-helmer VMT charts offer Monthly VMT and Cumulative VMT views.
 Resultata: expected labels missing from source.`,
 );
 

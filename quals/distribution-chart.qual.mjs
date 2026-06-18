@@ -293,7 +293,7 @@ const seriousTitle = vm.runInContext(`
 
 assert.equal(
   seriousTitle.heading,
-  `Miles per serious injury crash using data from ${seriousTitle.start} to ${seriousTitle.end}`,
+  `Miles per serious injury crash probability distributions using data from ${seriousTitle.start} to ${seriousTitle.end}`,
   `Replicata: render the windowed views with the serious-injury metric selected.
 Expectata: the section header reuses the exact selected metric label and active date window.
 Resultata: heading was ${JSON.stringify(seriousTitle.heading)}.`,
@@ -327,7 +327,7 @@ const windowEffect = vm.runInContext(`
 assert.ok(
   windowEffect.fullWaymo !== windowEffect.slicedWaymo &&
     windowEffect.heading ===
-      `Miles per incident using data from ${windowEffect.start} to ${windowEffect.end}`,
+      `Miles per incident probability distributions using data from ${windowEffect.start} to ${windowEffect.end}`,
   `Replicata: compare the all-incident distribution inputs for the full month window vs a sliced month window.
 Expectata: narrowing the month window changes the bell-curve inputs and the section header reflects the sliced date range.
 Resultata: fullWaymo=${windowEffect.fullWaymo}, slicedWaymo=${windowEffect.slicedWaymo}, heading=${JSON.stringify(windowEffect.heading)}.`,

@@ -95,31 +95,24 @@ Resultata: tooltip was ${JSON.stringify(tipFixedObj.slice(-80))}.`,
 
 // Verify vmtTooltip helper produces expected format
 const vmtTip = vm.runInContext(`
-  (() => {
-    const row = { vmtRawBest: 12345, vmtRawMin: 10000, vmtRawMax: 15000,
-      vmtBest: 11000, vmtCume: 50000, kyoomMin: 40000, kyoomMax: 60000 };
-    return { monthly: vmtTooltip("TestCo", "2025-07", row, {total: 3}, false),
-             cumulative: vmtTooltip("TestCo", "2025-07", row, {total: 3}, true) };
-  })();
+  ({ dot: vmtTooltip("2026-05", 1234567, 1),
+     dot2: vmtTooltip("2026-05", 1234567, 2),
+     cap: vmtTooltip("2026-05", 1000000) })
 `, ctx);
-assert.ok(
-  vmtTip.monthly.includes("TestCo 2025-07") &&
-    vmtTip.monthly.includes("Monthly VMT: 12,345 (10,000") &&
-    vmtTip.monthly.includes("15,000)") &&
-    vmtTip.monthly.includes("Incidents: 3") &&
-    !vmtTip.monthly.includes("Cumulative"),
-  `Replicata: call vmtTooltip in monthly mode.
-Expectata: a single monthly VMT range line and incident count, no cumulative line.
-Resultata: tooltip was ${JSON.stringify(vmtTip.monthly)}.`,
+assert.equal(vmtTip.dot, "2026-05\n1,234,567 miles\n1 incident",
+  `Replicata: call vmtTooltip for a dot (value + incident count).
+Expectata: "<month>\\n<miles> miles\\n1 incident" (splur singular).
+Resultata: ${JSON.stringify(vmtTip.dot)}.`,
 );
-assert.ok(
-  vmtTip.cumulative.includes("Cumulative VMT: 50,000 (40,000") &&
-    vmtTip.cumulative.includes("60,000)") &&
-    vmtTip.cumulative.includes("Incidents: 3") &&
-    !vmtTip.cumulative.includes("Monthly"),
-  `Replicata: call vmtTooltip in cumulative mode.
-Expectata: a single cumulative VMT band line and incident count.
-Resultata: tooltip was ${JSON.stringify(vmtTip.cumulative)}.`,
+assert.equal(vmtTip.cap, "2026-05\n1,000,000 miles",
+  `Replicata: call vmtTooltip for an error-bar end (no count).
+Expectata: just "<month>\\n<miles> miles", no incident line.
+Resultata: ${JSON.stringify(vmtTip.cap)}.`,
+);
+assert.ok(vmtTip.dot2.endsWith("2 incidents"),
+  `Replicata: call vmtTooltip with 2 incidents.
+Expectata: splur pluralizes to "2 incidents".
+Resultata: ${JSON.stringify(vmtTip.dot2)}.`,
 );
 
 console.log("qual pass: contact areas in fault tooltip and vmtTooltip helper");
