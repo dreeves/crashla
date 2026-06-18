@@ -337,12 +337,19 @@ const METRIC_DEFS = [
     // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
     // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
     humanMPI: {
-      // AV-cities cohort only: SGO's hospitalization definition has no
-      // national-statistics equivalent.
+      // No direct national "transported to hospital" per-mile rate; HumansUS is
+      // estimated by log-interpolation between the national injury and fatality
+      // anchors (positioned by the AV-cities severity ladder) with a wide band.
+      // HumansRideshare is leaned off HumansAV by the loop below.
       HumansAV: {lo: 613000, hi: 4545000,
         src: 'lo: 1M/1.63 airbag-deploy IPMM; hi: 1M/0.22 SSI+ IPMM',
         srcLinks: [
           {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+        ]},
+      HumansUS: {lo: 1400000, hi: 6000000,
+        src: 'No national hospital-transport per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
+        srcLinks: [
+          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
         ]},
     },
   },
@@ -359,11 +366,19 @@ const METRIC_DEFS = [
     // triggered and rarely underreported). Range accounts for modest
     // geographic/methodological variation.
     humanMPI: {
-      // AV-cities cohort only: no national airbag-deployment rate published.
+      // No published national airbag-deployment per-mile rate; HumansUS is
+      // estimated by log-interpolation between the national injury and fatality
+      // anchors (positioned by the AV-cities severity ladder) with a wide band.
+      // HumansRideshare is leaned off HumansAV by the loop below.
       HumansAV: {lo: 500000, hi: 700000,
         src: 'Waymo safety impact: 1.63 IPMM police-reported airbag-deploy rate in AV operating counties',
         srcLinks: [
           {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+        ]},
+      HumansUS: {lo: 820000, hi: 2400000,
+        src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
+        srcLinks: [
+          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
         ]},
     },
   },
@@ -379,12 +394,19 @@ const METRIC_DEFS = [
     // definition, SGO "Moderate" may include some KABCO B cases) to
     // 0.15 IPMM (narrower, only most severe subset).
     humanMPI: {
-      // AV-cities cohort only: SSI+ definition is tied to the SGO severity
-      // scale; no clean national equivalent.
+      // No clean national SSI+ (KABCO A+K) per-mile rate; HumansUS is estimated
+      // by log-interpolation between the national injury and fatality anchors
+      // (positioned by the AV-cities severity ladder) with a wide band.
+      // HumansRideshare is leaned off HumansAV by the loop below.
       HumansAV: {lo: 3300000, hi: 6700000,
         src: 'Waymo safety impact SSI+ 0.22 IPMM; range 0.15\u20130.30 for definitional uncertainty',
         srcLinks: [
           {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+        ]},
+      HumansUS: {lo: 3000000, hi: 14000000,
+        src: 'No clean national SSI+ (KABCO A+K) per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
+        srcLinks: [
+          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
         ]},
     },
   },
@@ -431,10 +453,10 @@ for (const m of METRIC_DEFS) m.label = `Miles per ${m.blank} incident`;
 // crashes, so for the general crash metrics we lean the AV-cities band safer
 // with a wide range: as bad as ~1.2x worse (heavy low-speed urban exposure and
 // in-app distraction can raise minor-crash frequency) up to ~1.5x safer (the
-// driver self-selection seen in the fatality data). Severity-tail metrics
-// (hospitalization/airbag/serious-injury) have no rideshare or national
-// source, so they're omitted — same coverage as Humans (US average), which is
-// why the derivation keys off metrics that also carry a HumansUS band.
+// driver self-selection seen in the fatality data). Every non-fatality metric
+// now carries a HumansUS band (sourced or estimated), so this loop covers the
+// severity-tail metrics too; the self-selection advantage is, if anything,
+// larger for severe crashes, where impairment dominates the human baseline.
 const RIDESHARE_WORST = 1.2; // band floor: up to 1.2x MORE crashes than AV cities
 const RIDESHARE_BEST = 1.5;  // band ceiling: up to 1.5x FEWER
 const sig2 = x => { const p = 10 ** (Math.floor(Math.log10(x)) - 1); return Math.round(x / p) * p; };

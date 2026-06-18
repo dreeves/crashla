@@ -26,11 +26,12 @@ assert.ok(
 Expectata: ${cohortCount} cohorts, with HumansAV covering all metrics.
 Resultata: cohorts ${JSON.stringify(Object.keys(mpiByCohort))}, HumansAV metrics ${Object.keys(mpiByCohort.HumansAV || {}).length}.`);
 
-// Humans (Uber/Lyft) must be DISTINCT from Humans (AV cities), not a clone:
-//  - fatality: the sourced rideshare rate (safer than AV cities);
-//  - general crash metrics: leaned off the AV-cities band but wider on both
-//    sides (lo lower, hi higher) — never byte-identical;
-//  - severity-tail metrics (the AV-only ones): omitted entirely.
+// No elision: every metric HumansAV covers is also covered by HumansUS
+// (sourced, or estimated with wide bands where no national rate is published)
+// and by HumansRideshare. HumansRideshare must be DISTINCT from HumansAV:
+//  - fatality: the sourced Uber/Lyft rate (safer than AV cities);
+//  - every other metric: leaned off the AV-cities band but wider on both sides
+//    (lo lower, hi higher) — never byte-identical.
 const rideshare = mpiByCohort.HumansRideshare;
 const av = mpiByCohort.HumansAV;
 const us = mpiByCohort.HumansUS;
@@ -42,26 +43,23 @@ assert.ok(
 Expectata: rideshare fatality is the sourced Uber/Lyft rate, distinct from AV cities.
 Resultata: rideshare ${JSON.stringify(rideshare && rideshare.fatality)}, AV ${JSON.stringify(av.fatality)}.`);
 for (const key of Object.keys(av)) {
+  assert.ok(
+    us[key],
+    `Replicata: check HumansUS coverage of the metric ${key}.
+Expectata: present — no metric is elided; missing national rates are estimated with wide bands.
+Resultata: HumansUS ${key} was ${JSON.stringify(us[key])}.`);
   if (key === "fatality") continue;
-  if (us[key]) { // general metric → rideshare present and strictly wider than AV
-    assert.ok(
-      rideshare[key] && rideshare[key].lo < av[key].lo && rideshare[key].hi > av[key].hi,
-      `Replicata: compare HumansRideshare.${key} to HumansAV.${key}.
+  assert.ok(
+    rideshare[key] && rideshare[key].lo < av[key].lo && rideshare[key].hi > av[key].hi,
+    `Replicata: compare HumansRideshare.${key} to HumansAV.${key}.
 Expectata: rideshare band leans wider on both sides (lo lower, hi higher), not a clone.
 Resultata: rideshare ${JSON.stringify(rideshare[key])}, AV ${JSON.stringify(av[key])}.`);
-  } else { // AV-only severity-tail metric → rideshare omits it
-    assert.ok(
-      !rideshare[key],
-      `Replicata: check HumansRideshare for the AV-only metric ${key}.
-Expectata: omitted (no rideshare or national source).
-Resultata: rideshare ${key} was ${JSON.stringify(rideshare[key])}.`);
-  }
 }
 
 // Subset ordering: if B ⊂ A (fewer incidents), then MPI-B ≥ MPI-A.
 // Each pair is [parent, subset] where subset.lo ≥ parent.lo and
-// subset.hi ≥ parent.hi. Pairs skip when a cohort lacks a metric
-// (HumansUS has no hospitalization/airbag/seriousInjury bands).
+// subset.hi ≥ parent.hi. All three cohorts now cover the full chain; the
+// skip guard below only matters if a future cohort lacks a metric.
 const subsetPairs = [
   ["all", "nonstationary"],
   ["nonstationary", "roadwayNonstationary"],
@@ -91,6 +89,19 @@ Resultata: lo=${val.lo}, hi=${val.hi}.`);
 Expectata: ${subset}.lo (${mpi[subset].lo}) ≥ ${parent}.lo (${mpi[parent].lo}) and ${subset}.hi (${mpi[subset].hi}) ≥ ${parent}.hi (${mpi[parent].hi}).
 Resultata: lo ok=${mpi[subset].lo >= mpi[parent].lo}, hi ok=${mpi[subset].hi >= mpi[parent].hi}.`);
   }
+}
+
+// The three severity-tail HumansUS bands are estimates (no published national
+// per-mile rate), so they must keep appropriately wide error bars — guard
+// against a later regression to false precision. (Sourced bands like injury
+// run a ~1.4x lo→hi spread; these estimated ones are deliberately wider.)
+for (const key of ["airbag", "hospitalization", "seriousInjury"]) {
+  const b = us[key];
+  assert.ok(
+    b.hi / b.lo >= 2.5,
+    `Replicata: measure the HumansUS ${key} band width (hi/lo).
+Expectata: ≥ 2.5x — an estimated band carrying honest, wide uncertainty.
+Resultata: lo=${b.lo}, hi=${b.hi}, ratio=${(b.hi / b.lo).toFixed(2)}.`);
 }
 
 // At-fault band universe-matching: the lo anchor uses the any-property-damage
