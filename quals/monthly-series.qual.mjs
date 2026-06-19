@@ -381,8 +381,9 @@ Expectata: header reuses the exact selected metric label.
 Resultata: header was ${JSON.stringify(airbagHeading)}.`,
 );
 
-// k=0 months render a datapoint from the Jeffreys posterior (Gamma(0.5, m))
-// instead of being skipped (e.g. a month whose incidents are all 0% at-fault).
+// k=0 months have no point estimate (MLE = miles/0 = ∞); they render a "≥ lo"
+// up-arrow marker (with a "(0 incidents)" tooltip), not a finite dot, and are
+// never skipped (e.g. a month whose incidents are all 0% at-fault).
 const jeffreysZero = vm.runInContext(`
   (() => {
     const savedMetric = selectedMetricKey;
@@ -415,7 +416,7 @@ assert.equal(
   jeffreysZero.zeroDotTips,
   jeffreysZero.zeroMonths,
   `Replicata: render the cross-helmer at-fault MPI chart with all helmers enabled.
-Expectata: every k=0 helmer-month renders a dot with a "(0 incidents)" tooltip (Jeffreys posterior, not skipped).
+Expectata: every k=0 helmer-month renders a marker with a "(0 incidents)" tooltip (up-arrow, not skipped).
 Resultata: ${jeffreysZero.zeroDotTips} zero-incident tooltips for ${jeffreysZero.zeroMonths} k=0 helmer-months.`,
 );
 
@@ -454,10 +455,10 @@ Expectata: all bar endpoints clamped inside the SVG (no bars rendered off-plot w
 Resultata: ${clampedBars.outOfPlot} of ${clampedBars.barCount} bars have endpoints outside [0, ${clampedBars.svgH}].`,
 );
 
-// The y-range always fits the plotted medians, even when every month is k=0.
-// Replicates the bug where Tesla-only + fatality (k=0 in all months) left
-// yMax at its init value of 1: the axis read 0..1, every dot clamped to the
-// top ("MPI=1"), and every error bar collapsed to zero length.
+// When every month is k=0 (no point estimate), each renders an up-arrow pinned
+// at the ceiling, and the y-range anchors on the inner credible-band floor so
+// the "≥ lo" whiskers stay visible. Replicates the bug where Tesla-only +
+// fatality left yMax at its init value of 1 and every error bar collapsed.
 const allZeroK = vm.runInContext(`
   (() => {
     const savedMetric = selectedMetricKey;
@@ -467,23 +468,24 @@ const allZeroK = vm.runInContext(`
     const html = renderAllHelmersMpiChart(monthSeriesData());
     selectedMetricKey = savedMetric;
     monthHelmerEnabled = savedEnabled;
-    const dotYs = [...html.matchAll(/class="month-dot" cx="[\\d.]+" cy="([\\d.]+)"/g)]
+    const svgH = Number(/viewBox="0 0 \\d+ (\\d+)"/.exec(html)[1]);
+    const arrowYs = [...html.matchAll(/class="month-dot" d="M [\\d.]+ ([\\d.]+) L/g)]
       .map(m => Number(m[1]));
     const barLens = [...html.matchAll(/class="month-err" x1="[\\d.]+" y1="([\\d.]+)" x2="[\\d.]+" y2="([\\d.]+)"/g)]
       .map(m => Math.abs(Number(m[2]) - Number(m[1])));
-    return {dotYs, barLens};
+    return {svgH, arrowYs, barLens};
   })()
 `, ctx);
 assert.ok(
-  allZeroK.dotYs.length > 0 && allZeroK.dotYs.some(y => y > 20),
+  allZeroK.arrowYs.length > 0 && allZeroK.arrowYs.every(y => y < allZeroK.svgH * 0.15),
   `Replicata: render the fatality MPI chart with only Tesla enabled (k=0 every month).
-Expectata: the y-axis fits the plotted medians, so dots spread below the top edge.
-Resultata: dot cy values were ${JSON.stringify(allZeroK.dotYs)}.`,
+Expectata: every k=0 month is an up-arrow pinned near the ceiling (no finite dot).
+Resultata: arrow apex y values were ${JSON.stringify(allZeroK.arrowYs)} (svgH ${allZeroK.svgH}).`,
 );
 assert.ok(
-  allZeroK.barLens.length === allZeroK.dotYs.length && allZeroK.barLens.every(len => len > 5),
+  allZeroK.barLens.length === allZeroK.arrowYs.length && allZeroK.barLens.every(len => len > 5),
   `Replicata: inspect error bars in the Tesla-only fatality chart.
-Expectata: one non-degenerate bar per dot (k=0 CIs are wide, so bars span well over 5px).
+Expectata: one non-degenerate "≥ lo" whisker per up-arrow (k=0 CIs are wide, so whiskers span well over 5px).
 Resultata: bar lengths were ${JSON.stringify(allZeroK.barLens.map(Math.round))}.`,
 );
 
