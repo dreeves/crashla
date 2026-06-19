@@ -489,6 +489,60 @@ Expectata: one non-degenerate "≥ lo" whisker per up-arrow (k=0 CIs are wide, s
 Resultata: bar lengths were ${JSON.stringify(allZeroK.barLens.map(Math.round))}.`,
 );
 
+// A PARTIAL month that HAS incidents (k>0) is not a k=0 case: it keeps a finite
+// MLE point — rendered as a dot, not a "≥ lo" up-arrow — pessimistically lowered
+// by the incomplete reporting (incident_coverage shrinks the effective VMT).
+// Guards the case that arrives the moment NHTSA partially reports a month that
+// had crashes (which is when the partial-coverage path actually fires for k>0).
+const partialK = vm.runInContext(`
+  (() => {
+    const savedMetric = selectedMetricKey;
+    const savedEnabled = {...monthHelmerEnabled};
+    const savedRows = vmtRows;
+    selectedMetricKey = "all";
+    monthHelmerEnabled = {HumansAV:false, HumansUS:false, HumansRideshare:false, Tesla:true, Waymo:false, Zoox:false};
+    // First Tesla month with k>0 for "all" (derived, so it self-updates).
+    const fullSeries = monthSeriesData();
+    const tgt = fullSeries.points.find(p =>
+      p.helmers.Tesla && p.helmers.Tesla.mpiByMetric.all.incidentCount > 0).month;
+    const fullK = fullSeries.points.find(p => p.month === tgt).helmers.Tesla.mpiByMetric.all;
+    const fullHtml = renderAllHelmersMpiChart(fullSeries);
+    // Mark that month as only ~40% reported and re-render.
+    vmtRows = parseVmtCsv(VMT_CSV_TEXT).map(r =>
+      (r.helmer === "Tesla" && r.month === tgt)
+        ? {...r, incCov: 0.4, incCovMin: 0.2, incCovMax: 1.0} : r);
+    const partSeries = monthSeriesData();
+    const partK = partSeries.points.find(p => p.month === tgt).helmers.Tesla.mpiByMetric.all;
+    const partHtml = renderAllHelmersMpiChart(partSeries);
+    vmtRows = savedRows; selectedMetricKey = savedMetric; monthHelmerEnabled = savedEnabled;
+    const arrows = h => (h.match(/path class="month-dot"/g) || []).length;
+    const dots = h => (h.match(/circle class="month-dot"/g) || []).length;
+    return {
+      tgt, k: partK.incidentCount, finite: Number.isFinite(partK.mpiBest),
+      partMpi: partK.mpiBest, fullMpi: fullK.mpiBest,
+      glyphsUnchanged: arrows(partHtml) === arrows(fullHtml) && dots(partHtml) === dots(fullHtml),
+    };
+  })()
+`, ctx);
+assert.ok(
+  partialK.k > 0 && partialK.finite,
+  `Replicata: mark the first k>0 Tesla month (${partialK.tgt}) as partially reported (incCov 0.4) and read its point.
+Expectata: k>0 ⇒ a finite MLE point (an up-arrow is reserved for k=0, where there is no point).
+Resultata: k=${partialK.k}, finite=${partialK.finite}.`,
+);
+assert.ok(
+  partialK.glyphsUnchanged,
+  `Replicata: compare up-arrow/dot glyph counts for ${partialK.tgt} partially-reported vs fully-reported.
+Expectata: unchanged — a partially-reported k>0 month stays a dot, never flips to a k=0 up-arrow.
+Resultata: glyphsUnchanged was ${partialK.glyphsUnchanged}.`,
+);
+assert.ok(
+  partialK.partMpi < partialK.fullMpi,
+  `Replicata: compare the partial-month MLE to the same month fully reported.
+Expectata: incomplete reporting shrinks the effective VMT, so the partial-month MLE is lower (pessimistic).
+Resultata: partial=${Math.round(partialK.partMpi)}, full=${Math.round(partialK.fullMpi)}.`,
+);
+
 assert.ok(
   appScript.includes("95% CI"),
   `Replicata: inspect the MPI / distribution datapoint tooltip source.

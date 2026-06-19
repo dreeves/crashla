@@ -784,11 +784,12 @@ function fmtWhole(n) {
   return Math.round(n).toLocaleString();
 }
 
-// A k=0 month/window has no point estimate (the MLE miles/incidents is
-// infinite), so report the lower credible bound as "≥ L". k≥1 and humans
-// (k===null) use their finite point estimate. `fmt` formats the numbers.
-function mpiPoint(k, point, loBound, fmt) {
-  return k === 0 ? `≥ ${fmt(loBound)}` : fmt(point);
+// A point estimate that isn't finite means there's none to report: the MLE
+// miles/incidents is infinite at k=0, so show the lower credible bound as
+// "≥ L". A finite point (k≥1, or a human cohort's literature median) shows
+// as-is. `fmt` formats the numbers.
+function mpiPoint(point, loBound, fmt) {
+  return Number.isFinite(point) ? fmt(point) : `≥ ${fmt(loBound)}`;
 }
 
 function vmtTooltip(month, miles, incidents) {
@@ -994,7 +995,7 @@ function monthSeriesData() {
         const h = m.humanMPI[cohort];
         const geo = Math.sqrt(h.lo * h.hi);
         return [m.key, {
-          mpiMin: h.lo, mpiBest: geo, mpiMax: h.hi,
+          mpiBest: geo, mpiMax: h.hi,
           incidentCount: null,
           bands: CI_FAN_LEVELS.map(() => ({lo: h.lo, hi: h.hi})),
         }];
@@ -1053,7 +1054,6 @@ function monthSeriesData() {
         // the ceiling (see the marks/line code). The bands stay the Jeffreys
         // credible interval, which is finite and well-defined even at k=0.
         return [m.key, {
-          mpiMin:  entry.vmtMin  / k,
           mpiBest: entry.vmtBest / k,
           mpiMax:  entry.vmtMax  / k,
           incidentCount: k,
@@ -1154,20 +1154,19 @@ function renderAllHelmersMpiChart(series) {
       if (row === null) return null;
       const mpi = row.mpiByMetric[metric.key];
       if (!mpi) return null;
-      const k = mpi.incidentCount;
-      // covRatio: how much of this month's incident coverage is known (1 = 
+      // covRatio: how much of this month's incident coverage is known (1 =
       // fully reported, <1 = NHTSA monthly reports still pending). Drives dot
       // opacity so incomplete months are visually demoted without a separate
       // code path.
       const covRatio = row.vmtRawMin > 0 ? row.vmtMin / row.vmtRawMin : 1;
-      // Y-range: finite point estimates (k≥1, and humans' k=null) put their
-      // dot on-scale; fully-reported k≥1 months also contribute their VMT
-      // spread. A k=0 month's point is ∞ (off the top by design), so it
+      // Y-range: a finite point estimate (k≥1, and humans' literature median)
+      // puts its dot on-scale; fully-reported k≥1 months also contribute their
+      // VMT spread. A k=0 month's point is ∞ (off the top by design), so it
       // anchors the axis on its inner (50%) credible-band floor — above the
       // 95% floor the whisker descends to, so the "≥ lo" whisker stays visible.
-      yMax = Math.max(yMax, k === 0 ? mpi.bands[0].lo
+      yMax = Math.max(yMax, !Number.isFinite(mpi.mpiBest) ? mpi.bands[0].lo
                            : covRatio > 0.99 ? mpi.mpiMax : mpi.mpiBest);
-      return {...mpi, vmtMonth: row.vmtRawBest, vmtMonthEff: row.vmtBest, vmtCume: row.vmtCume, covRatio};
+      return {...mpi, covRatio};
     });
     seriesRows.push({helmer, metric, vals});
   }
@@ -1187,11 +1186,11 @@ function renderAllHelmersMpiChart(series) {
         const a = humanMpi.mpiByMetric[chain[i-1]];
         const b = humanMpi.mpiByMetric[chain[i]];
         if (!a || !b) continue;
-        assert(a.mpiMin <= b.mpiMin,
+        assert(a.mpiBest <= b.mpiBest,
           "human MPI ordering violated", {
             cohort,
-            lesser: chain[i-1], lesserMpi: a.mpiMin,
-            greater: chain[i], greaterMpi: b.mpiMin,
+            lesser: chain[i-1], lesserMpi: a.mpiBest,
+            greater: chain[i], greaterMpi: b.mpiBest,
           });
       }
     }
@@ -1250,12 +1249,13 @@ function renderAllHelmersMpiChart(series) {
       const incompleteNote = mpi.covRatio < 0.999
         ? `\n~${(mpi.covRatio * 100).toFixed(0)}% incident coverage`
         : "";
-      const tip = `${helmerLabel(row.helmer)} ${series.months[i]}\nMPI: ${mpiPoint(k, mpi.mpiBest, ci95.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${incompleteNote}`;
-      // k=0 ⇒ mpiBest = ∞ ⇒ clampY pins yc to the ceiling, drawn as an up-arrow.
+      const tip = `${helmerLabel(row.helmer)} ${series.months[i]}\nMPI: ${mpiPoint(mpi.mpiBest, ci95.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${incompleteNote}`;
+      // No finite point (k=0 ⇒ mpiBest = ∞) ⇒ clampY pins yc to the ceiling,
+      // drawn as an up-arrow; otherwise a normal dot.
       const yc = clampY(mpi.mpiBest);
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
       const qOpacity = (1 - mpi.covRatio).toFixed(3);
-      const glyph = k === 0 ? renderUpArrow(x, yc, color) : renderDot(x, yc, color, 1);
+      const glyph = Number.isFinite(mpi.mpiBest) ? renderDot(x, yc, color, 1) : renderUpArrow(x, yc, color);
       const qmark = `<text x="${(x + 7).toFixed(2)}" y="${(yc - 3).toFixed(2)}" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#555;opacity:${qOpacity};pointer-events:none">?</text>`;
       return `<g opacity="${dotOpacity}">${glyph}</g>${qmark}<circle cx="${x}" cy="${yc}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle>`;
     }).join("")
@@ -1413,7 +1413,7 @@ function renderDistributionChart(series) {
     const y = mapY(c.peakY);
     const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})` : "";
     const ciLabel = c.est.k !== null ? "95% CI" : "Range";
-    const tip = `${helmerLabel(c.helmer)}\nMPI: ${mpiPoint(c.est.k, c.est.median, c.est.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}`;
+    const tip = `${helmerLabel(c.helmer)}\nMPI: ${mpiPoint(c.est.median, c.est.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}`;
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
@@ -1543,10 +1543,12 @@ function renderMpiSummaryCards(series) {
           const humanBench = m.humanMPI && m.humanMPI[row.helmer]; // this row's cohort (human cards)
           const humanRef = m.humanMPI && m.humanMPI.HumansAV; // ADS "Nx vs humans" baseline
           const humanGeo = humanRef ? Math.sqrt(humanRef.lo * humanRef.hi) : null;
-          // k=0 has no point multiple; use the lower-bound MPI for a "≥ Nx".
-          const mult = (humanGeo && est.k !== null) ? (est.k === 0 ? est.lo : est.median) / humanGeo : null;
+          // No finite point (k=0) ⇒ no point multiple; use the lower-bound MPI
+          // for a "≥ Nx". (est.k===null excludes humans, who don't self-compare.)
+          const finite = Number.isFinite(est.median);
+          const mult = (humanGeo && est.k !== null) ? (finite ? est.median : est.lo) / humanGeo : null;
           const multStr = mult !== null
-            ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${est.k === 0 ? "≥ " : ""}${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
+            ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${finite ? "" : "≥ "}${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
             : "";
           const kLine = est.k !== null ? `${fmtCount(est.k)} incidents \u2192 ` : "";
           const ciLabel = est.k !== null ? "95% CI" : "Range";
@@ -1558,7 +1560,7 @@ function renderMpiSummaryCards(series) {
             : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
-            <div>${m.cardLabel}: ${kLine}<span class="mpi-card-mpi">${mpiPoint(est.k, est.median, est.lo, fmtWhole)} MPI</span>${multStr}</div>
+            <div>${m.cardLabel}: ${kLine}<span class="mpi-card-mpi">${mpiPoint(est.median, est.lo, fmtWhole)} MPI</span>${multStr}</div>
             <div class="mpi-card-ci">${ciLabel}: ${fmtWhole(est.lo)} \u2013 ${fmtWhole(est.hi)}${srcHint}</div>
             ${srcLine}
           </div>`;
@@ -1577,7 +1579,7 @@ function renderStressTestTable(series) {
         <td>${escHtml(row.helmer)}</td>
         <td>${escHtml(stress.metric.cardLabel)}</td>
         <td>${fmtCount(stress.av.k)}</td>
-        <td>${mpiPoint(stress.av.k, stress.av.median, stress.av.lo, fmtWhole)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
+        <td>${mpiPoint(stress.av.median, stress.av.lo, fmtWhole)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
         <td>${fmtWhole(stress.human.lo)} \u2013 ${fmtWhole(stress.human.hi)}</td>
         <td>${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</td>
         <td><span class="stress-badge ${stress.className}">${stress.label}</span></td>
