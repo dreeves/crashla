@@ -139,14 +139,29 @@ const marginTests = vm.runInContext(`
     return { mass: m0, varLog: m2 / m0 - (m1 / m0) ** 2 };
   };
   const point = moments(x => invGammaLogDensity(x, alpha, best));
-  const marg = moments(x => marginalMpiLogDensity(x, alpha, lo, hi));
+  const marg = moments(x => marginalMpiLogDensity(x, alpha, lo, best, hi));
   // Degenerate band must match the point density bit-for-bit at sample points.
   const xs = [3e5, 1.3e6, 9e6];
   const degenMatchesPoint = xs.every(x =>
-    marginalMpiLogDensity(x, alpha, best, best) === invGammaLogDensity(x, alpha, best));
-  return { point, marg, degenMatchesPoint };
+    marginalMpiLogDensity(x, alpha, best, best, best) === invGammaLogDensity(x, alpha, best));
+  // Mesa regression: a data-rich helmer (large alpha => narrow sampling bell)
+  // against a wide VMT band must stay PEAKED, not a flat-topped plateau (which a
+  // log-uniform VMT prior produced). Peak must clearly exceed its shoulders.
+  const bigA = 200.5, sig = (Math.log(hi) - Math.log(lo)) / (2 * 1.96);
+  const peakX = best / bigA; // approx mode of MPI for large alpha
+  const dBig = xx => marginalMpiLogDensity(xx, bigA, lo, best, hi);
+  const peaked = dBig(peakX) > 1.1 * dBig(peakX * Math.exp(-sig)) &&
+                 dBig(peakX) > 1.1 * dBig(peakX * Math.exp(sig));
+  return { point, marg, degenMatchesPoint, peaked };
 })()
 `, ctx);
+
+assert.ok(
+  marginTests.peaked,
+  `Replicata: evaluate the VMT-marginal for a large alpha (narrow bell) over a wide band.
+Expectata: a smooth peaked bell -- the center density exceeds its shoulders (no flat-topped mesa).
+Resultata: marginal was flat across the band center (mesa); check the VMT prior is smooth, not log-uniform.`,
+);
 
 assert.ok(
   Math.abs(marginTests.marg.mass - 1) < 0.02,

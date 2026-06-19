@@ -117,25 +117,31 @@ function logNormalLogDensity(x, mu, sigma) {
 }
 
 // Marginal density of true MPI over the VMT band: integrates the inverse-gamma
-// posterior InvGamma(alpha, VMT) against a log-uniform prior on VMT across
-// [vmtMin, vmtMax]. The point-estimate curve (InvGamma at vmtBest alone) shows
-// only Poisson/sampling uncertainty; marginalizing folds in exposure uncertainty
-// too, so the drawn bell is the posterior over true MPI rather than a posterior
-// conditional on knowing VMT exactly. Log-uniform is the max-entropy prior for a
-// scale parameter on a bounded support, and the curve is near-insensitive to that
-// choice (the at-fault count alpha dominates the width). Returns a density w.r.t.
-// log(x), matching invGammaLogDensity so the two compose on the same log axis.
-const VMT_MARGIN_NODES = 41; // odd, for Simpson's rule over log(VMT)
-function marginalMpiLogDensity(x, alpha, vmtMin, vmtMax) {
-  if (vmtMin === vmtMax) return invGammaLogDensity(x, alpha, vmtMin);
-  const lnMin = Math.log(vmtMin), lnMax = Math.log(vmtMax);
-  const h = (lnMax - lnMin) / (VMT_MARGIN_NODES - 1);
+// posterior InvGamma(alpha, VMT) against a log-normal prior on VMT (median
+// vmtBest, with [vmtMin, vmtMax] as its ~95% interval). The point-estimate curve
+// (InvGamma at vmtBest alone) shows only Poisson/sampling uncertainty;
+// marginalizing folds in exposure uncertainty too, so the drawn bell is the
+// posterior over true MPI rather than one conditional on knowing VMT exactly.
+// A log-UNIFORM prior's hard edges show through as a flat-topped "mesa" whenever
+// the sampling bell is narrower than the band (e.g. data-rich Waymo), so the prior
+// must be smooth. Returns a density w.r.t. log(x), matching invGammaLogDensity so
+// the two compose on the same log axis.
+const VMT_MARGIN_NODES = 81;  // Simpson nodes over log(VMT); odd
+const VMT_MARGIN_SIGMAS = 4;  // integrate the prior over ± this many sigma
+function marginalMpiLogDensity(x, alpha, vmtMin, vmtBest, vmtMax) {
+  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
+  if (!(sigma > 0)) return invGammaLogDensity(x, alpha, vmtBest);
+  const mu = Math.log(vmtBest);
+  const h = 2 * VMT_MARGIN_SIGMAS * sigma / (VMT_MARGIN_NODES - 1);
   let sum = 0;
   for (let i = 0; i < VMT_MARGIN_NODES; i++) {
+    const u = mu - VMT_MARGIN_SIGMAS * sigma + i * h;
     const w = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
-    sum += w * invGammaLogDensity(x, alpha, Math.exp(lnMin + i * h));
+    const z = (u - mu) / sigma;
+    const prior = Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+    sum += w * invGammaLogDensity(x, alpha, Math.exp(u)) * prior;
   }
-  return sum * h / 3 / (lnMax - lnMin); // Simpson, normalized by the log-uniform prior
+  return sum * h / 3; // Simpson; the log-normal prior integrates to ~1 over ±4 sigma
 }
 
 // Compute miles-per-incident estimate with credible interval.
@@ -850,17 +856,18 @@ function monthlySummaryRows(series) {
       if (metricVmtBest > 0) {
         const k = incFields[m.incField];
         const alpha = k + 0.5;
-        const beta = metricVmtBest;
         const est = estimateMpiWindow(k, metricVmtMin, metricVmtBest, metricVmtMax);
         return [m.key, {
           ...est,
           // Bell marginalizes over the VMT band (see marginalMpiLogDensity) so it
           // shows exposure uncertainty too, not just Poisson uncertainty at vmtBest.
-          // xMin/xMax stay at the point estimate (plot extent only; the marginal is
-          // a hair wider but ~0 at these tails, and beta keeps the shared axis stable).
-          densityFn: x => marginalMpiLogDensity(x, alpha, metricVmtMin, metricVmtMax),
-          xMin: 1 / gammaquant(alpha, beta, 0.999),
-          xMax: 1 / gammaquant(alpha, beta, 0.001),
+          // For data-rich helmers the marginal is much wider than the sampling bell,
+          // so the plot extent must bracket it: combine the sampling tails with the
+          // VMT band extremes (vmtMin = low-MPI edge, vmtMax = high-MPI edge) so the
+          // full widened bell draws without clipping.
+          densityFn: x => marginalMpiLogDensity(x, alpha, metricVmtMin, metricVmtBest, metricVmtMax),
+          xMin: 1 / gammaquant(alpha, metricVmtMin, 0.999),
+          xMax: 1 / gammaquant(alpha, metricVmtMax, 0.001),
         }];
       }
       if (vmtBest > 0) return [m.key, null];
