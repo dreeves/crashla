@@ -10,13 +10,22 @@ class ElementStub {
     this.parentNode = null;
     this.className = "";
     this.dataset = {};
-    this.textContent = "";
+    this._textContent = "";
     this.listeners = {};
     this._innerHTML = "";
     this.style = {};
     this.value = "0";
     this.classList = { toggle() {} };
   }
+
+  // escHtml() round-trips through textContent->innerHTML, so the stub must escape
+  // here or every escAttr()'d data-tip would render empty (and tooltip checks moot).
+  set textContent(v) {
+    this._textContent = v;
+    this._innerHTML = String(v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  get textContent() { return this._textContent; }
 
   appendChild(child) {
     child.parentNode = this;
@@ -494,5 +503,78 @@ assert.ok(
 Expectata: a single rise-then-fall (unimodal) -- no quadrature bumps, no flat-topped mesa.
 Resultata: ${JSON.stringify(bumpy)}.`,
 );
+
+// --- 7. Peak-marker dot sits at the MPI value its own tooltip reports ---
+// The dot must be at mapX(markerX) where markerX = the MLE point estimate (or its
+// lower bound when k=0 makes the MLE infinite) -- the same finite/∞ split mpiPoint
+// uses for the displayed number -- NOT at the curve's mode (which sits left of the
+// stated MPI on a right-skewed bell). Replicates the chart's own mapX exactly.
+const markerCheck = vm.runInContext(`
+(() => {
+  incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
+  monthRangeStart = 0; monthRangeEnd = Infinity;
+  const out = {};
+  for (const mk of ["atfault", "fatality"]) {              // skewed finite-median + k=0 cases
+    selectedMetricKey = mk;
+    for (const d of ALL_HELMERS) monthHelmerEnabled[d] = false;
+    for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
+    monthHelmerEnabled.HumansAV = true;
+    const series = monthSeriesData();
+    const sr = monthlySummaryRows(series);
+    const curves = sr.filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk])
+      .map(r => ({ label: helmerLabel(r.helmer), e: r.mpiEstimates[mk] }));
+    const xMin = Math.min(...curves.map(c => c.e.xMin)), xMax = Math.max(...curves.map(c => c.e.xMax));
+    const mLeft = 68, svgW = 900, mRight = 16, pW = svgW - mLeft - mRight;
+    const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
+    const expected = curves.map(c => {
+      const markerX = Number.isFinite(c.e.median) ? c.e.median : c.e.lo;
+      const n = 800, lm = Math.log(c.e.xMin), lM = Math.log(c.e.xMax), st = (lM - lm) / (n - 1);
+      let peak = -1, modeX = c.e.xMin;
+      for (let i = 0; i < n; i++) { const xx = Math.exp(lm + st * i); const d = c.e.densityFn(xx); if (d > peak) { peak = d; modeX = xx; } }
+      return { label: c.label, finite: Number.isFinite(c.e.median), cxExpected: mapX(markerX), cxMode: mapX(modeX) };
+    });
+    const html = renderDistributionChart(series);
+    const circles = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
+      .map(m => ({ cx: Number(m[1]), tip: m[2], label: m[2].split("\\n")[0] }));
+    out[mk] = { expected, circles, frame: [mLeft, svgW - mRight] };
+  }
+  return out;
+})()
+`, ctx);
+
+for (const mk of ["atfault", "fatality"]) {
+  const { expected, circles, frame } = markerCheck[mk];
+  assert.equal(circles.length, expected.length,
+    `Replicata: render the ${mk} distribution and count peak markers vs curves.
+Expectata: one circle per curve.
+Resultata: ${circles.length} circles, ${expected.length} curves.`);
+  for (const exp of expected) {
+    const circle = circles.find(c => c.label === exp.label);
+    assert.ok(circle && Math.abs(circle.cx - exp.cxExpected) < 0.05,
+      `Replicata: find the ${exp.label} dot in the ${mk} distribution and read its cx.
+Expectata: cx = mapX(stated MPI) = ${exp.cxExpected?.toFixed(2)} (the value in its tooltip).
+Resultata: cx = ${circle ? circle.cx : "no circle"}.`);
+  }
+  for (const c of circles) {
+    assert.ok(c.cx >= frame[0] && c.cx <= frame[1],
+      `Replicata: check the ${c.label} dot is inside the ${mk} plot frame [${frame}].
+Expectata: marker x within the axes.
+Resultata: cx = ${c.cx}.`);
+  }
+}
+
+// The fix is visible: for skewed Zoox at-fault (k=0.1) the dot is well right of the
+// curve's mode (where it used to sit), and the k=0 fatality dots show the "≥" form.
+const zoox = markerCheck.atfault.expected.find(e => e.label === "Zoox");
+assert.ok(zoox && zoox.finite && Math.abs(zoox.cxExpected - zoox.cxMode) > 10,
+  `Replicata: compare the Zoox at-fault dot position to the curve's mode.
+Expectata: the dot sits at the MLE, clearly right of the mode (>10px), not on the peak.
+Resultata: cxExpected=${zoox?.cxExpected?.toFixed(1)} cxMode=${zoox?.cxMode?.toFixed(1)}.`);
+const k0 = markerCheck.fatality.circles.filter(c => c.tip.includes("≥"));
+assert.ok(k0.length > 0,
+  `Replicata: inspect fatality-metric tooltips for k=0 helmers.
+Expectata: at least one "≥ lo" tooltip (infinite MLE), its dot placed at the lower bound.
+Resultata: no "≥" tooltips found among ${markerCheck.fatality.circles.length} markers.`);
 
 console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy)`);

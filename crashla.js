@@ -1465,8 +1465,13 @@ function renderDistributionChart(series) {
   // Peak markers with tooltips
   const markers = curves.map(c => {
     const color = HELMER_COLORS[c.helmer];
-    const x = mapX(c.peakX);
-    const y = mapY(c.peakY);
+    // Place the dot at the value its tooltip reports -- the MLE point estimate, or
+    // its lower bound when k=0 makes the MLE infinite (same finite/∞ split as
+    // mpiPoint). Otherwise the curve's mode would sit left of the stated MPI on a
+    // right-skewed bell, so the dot and its number wouldn't coincide.
+    const markerX = Number.isFinite(c.est.median) ? c.est.median : c.est.lo;
+    const x = mapX(markerX);
+    const y = mapY(c.densityFn(markerX));
     const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})` : "";
     const ciLabel = c.est.k !== null ? "95% CI" : "Range";
     const tip = `${helmerLabel(c.helmer)}\nMPI: ${mpiPoint(c.est.median, c.est.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}`;
