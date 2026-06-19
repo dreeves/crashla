@@ -119,6 +119,56 @@ Expectata: integral approximates 1 (within 2%).
 Resultata: integral was ${invGammaTests.integral}.`,
 );
 
+// --- 1b. marginalMpiLogDensity: VMT-band marginalization for the bell ---
+// The drawn bell integrates InvGamma(alpha, VMT) over a log-uniform VMT prior on
+// [vmtMin, vmtMax], so it must (i) stay a normalized density, (ii) be WIDER (more
+// log-variance) than the point-estimate curve at vmtBest, and (iii) reduce exactly
+// to invGammaLogDensity when the band is degenerate (vmtMin == vmtMax).
+const marginTests = vm.runInContext(`
+(() => {
+  const alpha = 1.5, best = 2e6, lo = 1e6, hi = 4e6; // 0.5x-2x band, alpha for k=1
+  const moments = densFn => {
+    const nPts = 8000, logMin = Math.log(100), logMax = Math.log(1e10);
+    const step = (logMax - logMin) / (nPts - 1);
+    let m0 = 0, m1 = 0, m2 = 0;
+    for (let i = 0; i < nPts; i++) {
+      const u = logMin + step * i;
+      const d = densFn(Math.exp(u)) * step;
+      m0 += d; m1 += u * d; m2 += u * u * d;
+    }
+    return { mass: m0, varLog: m2 / m0 - (m1 / m0) ** 2 };
+  };
+  const point = moments(x => invGammaLogDensity(x, alpha, best));
+  const marg = moments(x => marginalMpiLogDensity(x, alpha, lo, hi));
+  // Degenerate band must match the point density bit-for-bit at sample points.
+  const xs = [3e5, 1.3e6, 9e6];
+  const degenMatchesPoint = xs.every(x =>
+    marginalMpiLogDensity(x, alpha, best, best) === invGammaLogDensity(x, alpha, best));
+  return { point, marg, degenMatchesPoint };
+})()
+`, ctx);
+
+assert.ok(
+  Math.abs(marginTests.marg.mass - 1) < 0.02,
+  `Replicata: numerically integrate marginalMpiLogDensity over a log grid.
+Expectata: the VMT-marginal stays a normalized density (integral ~1 within 2%).
+Resultata: integral was ${marginTests.marg.mass}.`,
+);
+
+assert.ok(
+  marginTests.marg.varLog > marginTests.point.varLog,
+  `Replicata: compare log-variance of the VMT-marginal bell vs the point-estimate bell at vmtBest.
+Expectata: marginalizing over the VMT band widens the bell (more log-variance).
+Resultata: marginal varLog=${marginTests.marg.varLog}, point varLog=${marginTests.point.varLog}.`,
+);
+
+assert.ok(
+  marginTests.degenMatchesPoint,
+  `Replicata: evaluate marginalMpiLogDensity with vmtMin == vmtMax == vmtBest.
+Expectata: a degenerate band reduces exactly to invGammaLogDensity at vmtBest.
+Resultata: degenerate marginal did not equal the point density at all sample points.`,
+);
+
 // --- 2. logNormalLogDensity math correctness ---
 
 const logNormalTests = vm.runInContext(`
