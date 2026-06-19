@@ -120,10 +120,12 @@ Resultata: integral was ${invGammaTests.integral}.`,
 );
 
 // --- 1b. marginalMpiLogDensity: VMT-band marginalization for the bell ---
-// The drawn bell integrates InvGamma(alpha, VMT) over a log-uniform VMT prior on
-// [vmtMin, vmtMax], so it must (i) stay a normalized density, (ii) be WIDER (more
-// log-variance) than the point-estimate curve at vmtBest, and (iii) reduce exactly
-// to invGammaLogDensity when the band is degenerate (vmtMin == vmtMax).
+// The drawn bell integrates InvGamma(alpha, VMT) over a log-normal VMT prior with
+// [vmtMin, vmtMax] as its 95% interval, so it must (i) stay a normalized density,
+// (ii) be WIDER (more log-variance) than the point-estimate curve at vmtBest,
+// (iii) reduce exactly to invGammaLogDensity when the band is degenerate
+// (vmtMin == vmtMax), and (iv) stay PEAKED (no flat-topped mesa) even when a
+// narrow sampling bell sits inside a wide band.
 const marginTests = vm.runInContext(`
 (() => {
   const alpha = 1.5, best = 2e6, lo = 1e6, hi = 4e6; // 0.5x-2x band, alpha for k=1
@@ -445,4 +447,52 @@ Expectata: byte-identical legend markup (both come from helmerChipLegend).
 Resultata: mpiAll=${JSON.stringify(legendPair.mpiAll)} dist=${JSON.stringify(legendPair.dist)}.`,
 );
 
-console.log("qual pass: distribution chart renders inverse-gamma and log-normal density curves");
+// --- 6. Every real (helmer × metric) marginal bell is healthy ---
+// Exercise the actual app inputs (alpha from 0.6 for Zoox at-fault up to ~1800 for
+// Waymo all-incident, each with its real VMT band): every drawn bell must stay a
+// normalized density and stay unimodal (no quadrature bumps, no mesa) over its own
+// plotted extent. This is the broad regression net behind the unit checks above.
+const comboHealth = vm.runInContext(`
+(() => {
+  for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
+  monthRangeStart = 0; monthRangeEnd = Infinity;
+  const sr = monthlySummaryRows(monthSeriesData());
+  const rows = [];
+  for (const mk of METRIC_KEYS) for (const h of ADS_HELMERS) {
+    const e = sr.find(r => r.helmer === h).mpiEstimates[mk];
+    if (!e || !e.densityFn) continue;
+    const n = 8000, L0 = Math.log(1), L1 = Math.log(1e13), st = (L1 - L0) / (n - 1);
+    let mass = 0;
+    for (let i = 0; i < n; i++) mass += e.densityFn(Math.exp(L0 + st * i)) * st;
+    const N2 = 400, a = Math.log(e.xMin), b = Math.log(e.xMax), ys = [];
+    for (let i = 0; i < N2; i++) ys.push(e.densityFn(Math.exp(a + (b - a) * i / (N2 - 1))));
+    const pk = Math.max(...ys);
+    let sc = 0, prev = 0;
+    for (let i = 1; i < N2; i++) {
+      const dd = ys[i] - ys[i - 1];
+      const s = Math.abs(dd) < pk * 1e-6 ? prev : Math.sign(dd);
+      if (s !== 0 && s !== prev && prev !== 0) sc++;
+      if (s !== 0) prev = s;
+    }
+    rows.push({ mk, h, mass, signChanges: sc });
+  }
+  return rows;
+})()
+`, ctx);
+
+const badMass = comboHealth.filter(r => Math.abs(r.mass - 1) > 0.02);
+assert.ok(
+  badMass.length === 0,
+  `Replicata: integrate every real helmer×metric marginal bell over a wide log grid.
+Expectata: each is a normalized density (integral ~1 within 2%).
+Resultata: ${JSON.stringify(badMass)}.`,
+);
+const bumpy = comboHealth.filter(r => r.signChanges > 1);
+assert.ok(
+  bumpy.length === 0,
+  `Replicata: walk every real helmer×metric marginal bell across its plotted extent.
+Expectata: a single rise-then-fall (unimodal) -- no quadrature bumps, no flat-topped mesa.
+Resultata: ${JSON.stringify(bumpy)}.`,
+);
+
+console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy)`);

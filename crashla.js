@@ -126,22 +126,45 @@ function logNormalLogDensity(x, mu, sigma) {
 // the sampling bell is narrower than the band (e.g. data-rich Waymo), so the prior
 // must be smooth. Returns a density w.r.t. log(x), matching invGammaLogDensity so
 // the two compose on the same log axis.
-const VMT_MARGIN_NODES = 81;  // Simpson nodes over log(VMT); odd
+const VMT_MARGIN_NODES = 81;  // Simpson nodes over log(VMT); odd. Driven by SMOOTHNESS
+                              // of the highest-alpha curve (Waymo all-incident): fewer
+                              // nodes leave point-accuracy fine but let the narrow
+                              // sampling spike drift between nodes, putting sub-pixel
+                              // bumps in the bell (61 -> non-unimodal; 81 is clean).
 const VMT_MARGIN_SIGMAS = 4;  // integrate the prior over ± this many sigma
-function marginalMpiLogDensity(x, alpha, vmtMin, vmtBest, vmtMax) {
+// Build a density function for true MPI marginalized over the VMT band. All the
+// alpha/band-dependent work (lgamma, node positions, log-normal prior weights) is
+// hoisted here so the returned closure's per-x hot loop is just one exp per node —
+// the distribution chart evaluates it ~250x per curve, live, on the slider drag.
+// Each node's exponent stays combined in a single exp (the large alpha*u, lgamma,
+// and alpha*ln(x) terms cancel) to avoid overflow at large alpha.
+function makeMarginalMpiDensity(alpha, vmtMin, vmtBest, vmtMax) {
   const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
-  if (!(sigma > 0)) return invGammaLogDensity(x, alpha, vmtBest);
+  if (!(sigma > 0)) return x => invGammaLogDensity(x, alpha, vmtBest);
   const mu = Math.log(vmtBest);
   const h = 2 * VMT_MARGIN_SIGMAS * sigma / (VMT_MARGIN_NODES - 1);
-  let sum = 0;
+  const lnNorm = -Math.log(sigma * Math.sqrt(2 * Math.PI));
+  const lg = lgamma(alpha);
+  const betas = new Float64Array(VMT_MARGIN_NODES); // VMT at each node
+  const logW = new Float64Array(VMT_MARGIN_NODES);  // ln(simpson_w · prior) + alpha·u − lgamma
   for (let i = 0; i < VMT_MARGIN_NODES; i++) {
     const u = mu - VMT_MARGIN_SIGMAS * sigma + i * h;
-    const w = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
+    const sw = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
     const z = (u - mu) / sigma;
-    const prior = Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
-    sum += w * invGammaLogDensity(x, alpha, Math.exp(u)) * prior;
+    betas[i] = Math.exp(u);
+    logW[i] = Math.log(sw) + lnNorm - 0.5 * z * z + alpha * u - lg;
   }
-  return sum * h / 3; // Simpson; the log-normal prior integrates to ~1 over ±4 sigma
+  const hOver3 = h / 3;
+  return x => {
+    const alnx = alpha * Math.log(x), invX = 1 / x;
+    let sum = 0;
+    for (let i = 0; i < VMT_MARGIN_NODES; i++) sum += Math.exp(logW[i] - alnx - betas[i] * invX);
+    return sum * hOver3; // Simpson; the log-normal prior integrates to ~1 over ±4 sigma
+  };
+}
+// Convenience point-evaluator (rebuilds the closure for one x); used by quals.
+function marginalMpiLogDensity(x, alpha, vmtMin, vmtBest, vmtMax) {
+  return makeMarginalMpiDensity(alpha, vmtMin, vmtBest, vmtMax)(x);
 }
 
 // Compute miles-per-incident estimate with credible interval.
@@ -865,7 +888,7 @@ function monthlySummaryRows(series) {
           // so the plot extent must bracket it: combine the sampling tails with the
           // VMT band extremes (vmtMin = low-MPI edge, vmtMax = high-MPI edge) so the
           // full widened bell draws without clipping.
-          densityFn: x => marginalMpiLogDensity(x, alpha, metricVmtMin, metricVmtBest, metricVmtMax),
+          densityFn: makeMarginalMpiDensity(alpha, metricVmtMin, metricVmtBest, metricVmtMax),
           xMin: 1 / gammaquant(alpha, metricVmtMin, 0.999),
           xMax: 1 / gammaquant(alpha, metricVmtMax, 0.001),
         }];
