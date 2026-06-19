@@ -2819,9 +2819,47 @@ function renderMarketCard(question, url, prob, volText) {
   return card;
 }
 
-function renderPolymarketCard(market, eventSlug) {
-  return renderMarketCard(market.question, polymarketUrl(eventSlug),
-    yesProbability(market), fmtVol(parseFloat(market.volume) || 0));
+// Append one market to the grid. A single-outcome market is one inline card; a
+// multi-outcome market is a bold header card plus one subcard per outcome, in
+// source order (chronological for the Manifold "what year" date markets). This
+// is the one rendering path for every source — a Polymarket event's curated
+// sub-markets and a Manifold market's binary/answers list both flow in as the
+// `outcomes` list [{label, prob, volText?}]; volText is the per-outcome volume
+// (Polymarket sub-markets have their own; Manifold answers share the market's).
+function appendMarketGroup(grid, title, url, volText, outcomes) {
+  assert(outcomes.length > 0, "market group needs at least one outcome", {title});
+  if (outcomes.length === 1) {
+    grid.appendChild(renderMarketCard(title, url, outcomes[0].prob, volText));
+    return;
+  }
+  const header = document.createElement("div");
+  header.className = "pm-card";
+  header.innerHTML =
+    `<span class="pm-card-question"><a href="${url}" ` +
+    `target="_blank" rel="noopener"><b>${title}</b></a></span>` +
+    `<span class="pm-card-vol">${volText}</span>`;
+  grid.appendChild(header);
+  for (const o of outcomes) {
+    const card = renderMarketCard(o.label, url, o.prob, o.volText || "");
+    card.classList.add("pm-subcard");
+    grid.appendChild(card);
+  }
+}
+
+function polymarketOutcomes(ev) {
+  return ev.markets.map(m => ({
+    label: m.question,
+    prob: yesProbability(m),
+    volText: fmtVol(parseFloat(m.volume) || 0),
+  }));
+}
+
+// A Manifold market is either binary (one Yes probability) or multi-answer
+// (an `answers` list of {label, prob}, e.g. the "what year" DATE markets).
+// Normalize both to the outcome list. The binary outcome's label is unused (the
+// single-card path shows the question), so "Yes" is just self-documenting.
+function manifoldOutcomes(m) {
+  return m.answers || [{label: "Yes", prob: m.probability}];
 }
 
 function renderPredmarketsPanel(config, manifold, isoDate) {
@@ -2831,34 +2869,14 @@ function renderPredmarketsPanel(config, manifold, isoDate) {
 
   for (const ev of config) {
     if (ev.enabled === false) continue; // skip disabled events
-    const markets = ev.markets || [];
-    if (!markets.length) continue;
-
-    if (ev.multi && markets.length > 1) {
-      const header = document.createElement("div");
-      header.className = "pm-card";
-      const totalVol = parseFloat(ev.volume) || 0;
-      header.innerHTML =
-        `<span class="pm-card-question"><a href="${polymarketUrl(ev.slug)}" ` +
-        `target="_blank" rel="noopener"><b>${ev.title}</b></a></span>` +
-        `<span class="pm-card-vol">${fmtVol(totalVol)}</span>`;
-      grid.appendChild(header);
-
-      const sorted = markets.slice().sort((a, b) =>
-        yesProbability(b) - yesProbability(a));
-      for (const m of sorted) {
-        const card = renderPolymarketCard(m, ev.slug);
-        card.classList.add("pm-subcard");
-        grid.appendChild(card);
-      }
-    } else {
-      grid.appendChild(renderPolymarketCard(markets[0], ev.slug));
-    }
+    if (!(ev.markets || []).length) continue;
+    appendMarketGroup(grid, ev.title, polymarketUrl(ev.slug),
+      fmtVol(parseFloat(ev.volume) || 0), polymarketOutcomes(ev));
   }
 
   for (const m of manifold) {
     if (m.enabled === false) continue; // skip disabled markets
-    grid.appendChild(renderMarketCard(m.question, m.url, m.probability, fmtMana(m.volume)));
+    appendMarketGroup(grid, m.question, m.url, fmtMana(m.volume), manifoldOutcomes(m));
   }
 
   panel.textContent = "";
@@ -2922,27 +2940,35 @@ async function fetchPolymarketEvent(slug, templateEntry) {
     title: ev.title,
     slug: ev.slug,
     enabled: templateEntry.enabled,
-    multi: templateEntry.multi || false,
     volume: ev.volume || 0,
     markets: freshMarkets,
   };
 }
 
-// Fetch fresh data for a single Manifold market (binary only).
+// Fetch fresh data for a single Manifold market. Binary markets carry one Yes
+// probability; multi-answer markets (e.g. the "what year" DATE markets) carry
+// an answers list. The returned shape mirrors the snapshot entry so the render
+// path (manifoldOutcomes) handles both without a special case.
 async function fetchManifoldMarket(templateEntry) {
   const resp = await fetch("https://api.manifold.markets/v0/slug/" +
     encodeURIComponent(templateEntry.slug));
   assert(resp.ok, "Manifold API request failed",
     {status: resp.status, slug: templateEntry.slug});
   const m = await resp.json();
-  assert(m.outcomeType === "BINARY", "Manifold market must be binary",
+  const binary = m.outcomeType === "BINARY";
+  assert(binary || Array.isArray(m.answers),
+    "Manifold market must be binary or carry answers",
     {slug: templateEntry.slug, outcomeType: m.outcomeType});
+  const answers = binary ? undefined : m.answers
+    .slice().sort((a, b) => a.index - b.index)
+    .map(a => ({label: a.text, prob: a.probability}));
   return {
     question: m.question,
     slug: templateEntry.slug,
     url: m.url,
     enabled: templateEntry.enabled,
     probability: m.probability,
+    answers,
     volume: m.volume || 0,
   };
 }

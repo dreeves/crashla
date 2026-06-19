@@ -84,12 +84,15 @@ Resultata: outcomes=${JSON.stringify(outcomes)}, prices=${JSON.stringify(prices)
 }
 
 for (const m of snap.mani) {
+  // Binary markets carry one probability; multi-answer markets an answers list.
+  const outcomes = m.answers || [{label: "Yes", prob: m.probability}];
   assert.ok(
-    m.url.startsWith("https://manifold.markets/") &&
-      m.probability > 0 && m.probability < 1 && m.volume >= 0,
+    m.url.startsWith("https://manifold.markets/") && m.volume >= 0 &&
+      outcomes.length > 0 &&
+      outcomes.every(o => typeof o.label === "string" && o.prob > 0 && o.prob < 1),
     `Replicata: inspect Manifold snapshot entry ${JSON.stringify(m.slug)}.
-Expectata: manifold.markets URL and probability strictly inside (0, 1).
-Resultata: url=${m.url}, p=${m.probability}, volume=${m.volume}.`,
+Expectata: manifold.markets URL, non-negative volume, every outcome a labeled probability strictly inside (0, 1).
+Resultata: url=${m.url}, outcomes=${JSON.stringify(outcomes)}, volume=${m.volume}.`,
   );
 }
 
@@ -113,16 +116,23 @@ const panelStats = JSON.parse(JSON.stringify(vm.runInContext(`
   const panel = document.getElementById("predmarket-panel");
   const grid = panel.children[0];
   const cardHtml = grid.children.map(c => c.innerHTML);
-  const expected = POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false)
-    .reduce((sum, ev) => sum + (ev.multi && ev.markets.length > 1
-      ? ev.markets.length + 1 : 1), 0)
-    + MANIFOLD_SNAPSHOT.filter(m => m.enabled !== false).length;
+  // A single-outcome market is 1 card; a multi-outcome market is a header card
+  // plus one subcard per outcome.
+  const polyCards = ev => ev.markets.length > 1 ? ev.markets.length + 1 : 1;
+  const maniCards = m => m.answers ? m.answers.length + 1 : 1;
+  const polys = POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false);
+  const manis = MANIFOLD_SNAPSHOT.filter(m => m.enabled !== false);
   return {
     nCards: grid.children.length,
-    expected,
+    expected: polys.reduce((s, ev) => s + polyCards(ev), 0)
+            + manis.reduce((s, m) => s + maniCards(m), 0),
     manifoldCards: cardHtml.filter(h => h.includes("manifold.markets")).length,
+    expectedManifoldCards: manis.reduce((s, m) => s + maniCards(m), 0),
     manaCards: cardHtml.filter(h => h.includes("Ṁ")).length,
-    enabledManifold: MANIFOLD_SNAPSHOT.filter(m => m.enabled !== false).length,
+    enabledManifold: manis.length,
+    headerCards: cardHtml.filter(h => h.includes("<b>")).length,
+    expectedHeaders: polys.filter(ev => ev.markets.length > 1).length
+                   + manis.filter(m => m.answers).length,
   };
 })()
 `, ctx)));
@@ -131,16 +141,24 @@ assert.equal(
   panelStats.nCards,
   panelStats.expected,
   `Replicata: render the prediction markets panel from both snapshots.
-Expectata: one card per enabled market (plus one header per multi event).
+Expectata: one card per single-outcome market, plus a header + one subcard per outcome for each multi-outcome market.
 Resultata: ${panelStats.nCards} cards, expected ${panelStats.expected}.`,
 );
 
 assert.ok(
-  panelStats.manifoldCards === panelStats.enabledManifold &&
+  panelStats.manifoldCards === panelStats.expectedManifoldCards &&
     panelStats.manaCards === panelStats.enabledManifold,
   `Replicata: inspect rendered Manifold cards.
-Expectata: every enabled Manifold market renders one card linking to manifold.markets with a Ṁ volume.
-Resultata: ${panelStats.manifoldCards} manifold links, ${panelStats.manaCards} mana volumes, ${panelStats.enabledManifold} enabled.`,
+Expectata: every Manifold card (single, header, or subcard) links to manifold.markets, and each market shows exactly one Ṁ volume (on its single card or header, never its subcards).
+Resultata: ${panelStats.manifoldCards} manifold links (expected ${panelStats.expectedManifoldCards}), ${panelStats.manaCards} mana volumes, ${panelStats.enabledManifold} enabled.`,
+);
+
+assert.equal(
+  panelStats.headerCards,
+  panelStats.expectedHeaders,
+  `Replicata: count the bold header cards rendered for multi-outcome markets (e.g. the Manifold "what year" date markets).
+Expectata: one header per multi-outcome market and none for single-outcome markets.
+Resultata: ${panelStats.headerCards} headers, expected ${panelStats.expectedHeaders}.`,
 );
 
 // --- 4. Refresh path regressions (source-level: the network calls themselves
