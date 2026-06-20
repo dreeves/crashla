@@ -1317,7 +1317,7 @@ function renderAllHelmersMpiChart(series) {
       const incompleteNote = mpi.covRatio < 0.999
         ? `\n~${(mpi.covRatio * 100).toFixed(0)}% incident coverage`
         : "";
-      const tip = `${helmerLabel(row.helmer)} ${series.months[i]}\nMPI: ${mpiPoint(mpi.mpiBest, ci95.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${incompleteNote}`;
+      const tip = `${series.months[i]}\nMPI: ${mpiPoint(mpi.mpiBest, ci95.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${incompleteNote}`;
       // No finite point (k=0 ⇒ mpiBest = ∞) ⇒ clampY pins yc to the ceiling,
       // drawn as an up-arrow; otherwise a normal dot.
       const yc = clampY(mpi.mpiBest);
@@ -1498,19 +1498,27 @@ function renderDistributionChart(series) {
     return `<path d="${d}" style="${metricLineStyle(c.helmer)};fill:none"></path>`;
   }).join("");
 
-  // Median markers with tooltips
+  // Two markers per curve: the visual peak ("most likely") and the posterior median.
+  // They coincide for well-determined curves and separate for skewed near-zero-data
+  // ones (the gap = the skew). Tooltip says which point it is plus the other central
+  // values (mean & MLE are ∞ for k<=0.5, the very curves where they'd matter). No
+  // helmer name — the dot colour + legend identify the curve.
+  const infOr = v => Number.isFinite(v) ? fmtMiles(v) : "∞";
   const markers = curves.map(c => {
     const color = HELMER_COLORS[c.helmer];
-    // Mark the posterior median: finite and inside the bell's mass, so the dot sits
-    // on the curve. (The MLE est.median = vmtBest/k is ∞ at k=0 — parking the dot at
-    // the far-left lo — and far out in the right tail for small k.)
-    const markerX = c.est.postMedian;
-    const x = mapX(markerX);
-    const y = mapY(c.densityFn(markerX));
     const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})` : "";
-    const ciLabel = c.est.k !== null ? "95% CI" : "Range";
-    const tip = `${helmerLabel(c.helmer)}\nMPI: ${fmtMiles(markerX)}${kLine}\n${ciLabel}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}`;
-    return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
+    const ciLine = `${c.est.k !== null ? "95% CI" : "Range"}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}${kLine}`;
+    const mle = c.est.k !== null ? c.est.median : NaN; // vmtBest/k, ∞ at k=0
+    const mean = c.est.k !== null && c.est.k > 0.5 ? c.est.vmtBest / (c.est.k - 0.5) : (c.est.k !== null ? Infinity : NaN);
+    const tail = c.est.k !== null ? ` · mean ${infOr(mean)} · MLE ${infOr(mle)}` : "";
+    const dots = [
+      ["Mode", c.peakX, `median ${fmtMiles(c.est.postMedian)}`],
+      ["Median", c.est.postMedian, `mode ${fmtMiles(c.peakX)}`],
+    ];
+    return dots.map(([label, mx, other]) => {
+      const tip = `${label}: ${fmtMiles(mx)}${c.est.k !== null ? `\n${other}${tail}` : ""}\n${ciLine}`;
+      return `<circle cx="${mapX(mx).toFixed(2)}" cy="${mapY(c.densityFn(mx)).toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
+    }).join("");
   }).join("");
 
   // Title lives in the collapsible section header (#dist-heading), set by

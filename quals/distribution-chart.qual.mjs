@@ -304,14 +304,14 @@ Expectata: SVG includes peak markers with data-tip tooltips.
 Resultata: no data-tip attributes found.`,
 );
 
-// Legend: one entry per rendered curve, chip-colored and labeled
+// Legend: one entry per curve; two markers per curve (mode + median).
 const legendItemCount = (distChart.match(/month-legend-item/g) || []).length;
 const peakMarkerCount = (distChart.match(/<circle/g) || []).length;
 assert.ok(
-  legendItemCount > 0 && legendItemCount === peakMarkerCount,
-  `Replicata: call renderDistributionChart and count legend items vs peak markers.
-Expectata: exactly one month-legend-item per rendered curve (peak marker).
-Resultata: ${legendItemCount} legend items, ${peakMarkerCount} peak markers.`,
+  legendItemCount > 0 && peakMarkerCount === 2 * legendItemCount,
+  `Replicata: call renderDistributionChart and count legend items vs markers.
+Expectata: two markers (mode + median) per legend entry.
+Resultata: ${legendItemCount} legend items, ${peakMarkerCount} markers.`,
 );
 
 for (const [helmer, color, label] of [
@@ -521,61 +521,54 @@ const markerCheck = vm.runInContext(`
     for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
     monthHelmerEnabled.HumansAV = true;
     const series = monthSeriesData();
-    const sr = monthlySummaryRows(series);
-    const curves = sr.filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk])
-      .map(r => ({ label: helmerLabel(r.helmer), e: r.mpiEstimates[mk] }));
-    const {xMin, xMax} = distributionExtent(curves.map(c => c.e)); // same visible-band extent the chart uses
+    const curves = monthlySummaryRows(series)
+      .filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]).map(r => r.mpiEstimates[mk]);
+    const {xMin, xMax} = distributionExtent(curves); // same visible-band extent the chart uses
     const mLeft = 68, svgW = 900, mRight = 16, pW = svgW - mLeft - mRight;
     const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
-    const expected = curves.map(c => {
-      const markerX = c.e.postMedian; // the dot marks the posterior median
-      return { label: c.label, cxExpected: mapX(markerX),
-               finite: Number.isFinite(markerX), inCI: markerX >= c.e.lo && markerX <= c.e.hi };
-    });
+    const medians = curves.map(e => ({ cx: mapX(e.postMedian),
+      finite: Number.isFinite(e.postMedian), inCI: e.postMedian >= e.lo && e.postMedian <= e.hi }));
     const html = renderDistributionChart(series);
     const circles = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
-      .map(m => ({ cx: Number(m[1]), tip: m[2], label: m[2].split("\\n")[0] }));
-    out[mk] = { expected, circles, frame: [mLeft, svgW - mRight] };
+      .map(m => ({ cx: Number(m[1]), tip: m[2], head: m[2].split("\\n")[0] }));
+    out[mk] = { nCurves: curves.length, medians, circles,
+      frame: [mLeft, svgW - mRight], helmers: ALL_HELMERS.map(h => helmerLabel(h)) };
   }
   return out;
 })()
 `, ctx);
 
 for (const mk of ["atfault", "fatality"]) {
-  const { expected, circles, frame } = markerCheck[mk];
-  assert.equal(circles.length, expected.length,
-    `Replicata: render the ${mk} distribution and count peak markers vs curves.
-Expectata: one circle per curve.
-Resultata: ${circles.length} circles, ${expected.length} curves.`);
-  for (const exp of expected) {
-    const circle = circles.find(c => c.label === exp.label);
-    assert.ok(circle && Math.abs(circle.cx - exp.cxExpected) < 0.05,
-      `Replicata: find the ${exp.label} dot in the ${mk} distribution and read its cx.
-Expectata: cx = mapX(stated MPI) = ${exp.cxExpected?.toFixed(2)} (the value in its tooltip).
-Resultata: cx = ${circle ? circle.cx : "no circle"}.`);
-  }
+  const { nCurves, medians, circles, frame, helmers } = markerCheck[mk];
+  // Two markers per curve, each labeled "Most likely"/"Median", none naming a helmer,
+  // none using the "≥" bound form, all inside the plot frame.
+  assert.equal(circles.length, 2 * nCurves,
+    `Replicata: render the ${mk} distribution and count markers.
+Expectata: two markers (mode + median) per curve = ${2 * nCurves}.
+Resultata: ${circles.length}.`);
   for (const c of circles) {
+    assert.ok(/^(Mode|Median): /.test(c.head),
+      `Replicata: read a ${mk} marker tooltip's first line.
+Expectata: it leads with "Most likely:" or "Median:".
+Resultata: ${JSON.stringify(c.head)}.`);
+    assert.ok(!helmers.some(h => c.tip.includes(h)),
+      `Replicata: scan a ${mk} marker tooltip for a helmer name.
+Expectata: none — the dot colour identifies the curve.
+Resultata: ${JSON.stringify(c.tip)}.`);
+    assert.ok(!c.tip.includes("≥"),
+      `Replicata: scan ${mk} tooltips for the "≥ lo" bound form. Expectata: none. Resultata: found one.`);
     assert.ok(c.cx >= frame[0] && c.cx <= frame[1],
-      `Replicata: check the ${c.label} dot is inside the ${mk} plot frame [${frame}].
-Expectata: marker x within the axes.
-Resultata: cx = ${c.cx}.`);
+      `Replicata: check a ${mk} marker is inside the plot frame [${frame}]. Resultata: cx=${c.cx}.`);
   }
-}
-
-// The dot marks the posterior median: finite for every curve (even k=0, which used to
-// park it at the far-left lo — off-frame once the extent tightened), always inside the
-// 95% CI, and reported verbatim (no "≥" bound form).
-for (const mk of ["atfault", "fatality"]) {
-  for (const e of markerCheck[mk].expected) {
-    assert.ok(e.finite && e.inCI,
-      `Replicata: check the ${e.label} ${mk} median marker.
-Expectata: a finite posterior median inside the [lo, hi] credible interval.
-Resultata: finite=${e.finite}, inCI=${e.inCI}.`);
+  // Each curve's median dot sits exactly at mapX(postMedian), finite and inside the CI.
+  for (const m of medians) {
+    assert.ok(m.finite && m.inCI,
+      `Replicata: check a ${mk} posterior median. Expectata: finite and within [lo,hi]. Resultata: finite=${m.finite} inCI=${m.inCI}.`);
+    assert.ok(circles.some(c => c.head.startsWith("Median:") && Math.abs(c.cx - m.cx) < 0.05),
+      `Replicata: find the Median dot at mapX(postMedian)=${m.cx.toFixed(2)} in the ${mk} chart.
+Expectata: a "Median:" marker there (dot sits at the value it reports).
+Resultata: none within 0.05px.`);
   }
-  assert.ok(!markerCheck[mk].circles.some(c => c.tip.includes("≥")),
-    `Replicata: scan ${mk} tooltips for the "≥ lo" bound form.
-Expectata: none — the posterior median is finite for every curve, so the dot and its number are exact.
-Resultata: found a "≥" tooltip.`);
 }
 
 console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy)`);
