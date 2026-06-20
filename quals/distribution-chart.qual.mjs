@@ -571,4 +571,25 @@ Resultata: none within 0.05px.`);
   }
 }
 
+// --- 8. k=0 (prior-only) curves are de-emphasised: dashed stroke + hollow dots ---
+const k0vis = vm.runInContext(`
+(() => {
+  selectedMetricKey = "fatality";                 // Tesla & Zoox have 0 fatalities
+  for (const d of ALL_HELMERS) monthHelmerEnabled[d] = false;
+  for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
+  const series = monthSeriesData();
+  const k0 = monthlySummaryRows(series).filter(r => monthHelmerEnabled[r.helmer]
+    && r.mpiEstimates.fatality && r.mpiEstimates.fatality.k === 0).length;
+  const html = renderDistributionChart(series);
+  return { k0, dashed: (html.match(/stroke-dasharray/g) || []).length,
+    hollow: (html.match(/fill:none;stroke:#/g) || []).length };
+})()
+`, ctx);
+assert.ok(
+  k0vis.k0 > 0 && k0vis.dashed === k0vis.k0 && k0vis.hollow === 2 * k0vis.k0,
+  `Replicata: render the fatality distribution (some helmers k=0) and count dashed strokes + hollow dots.
+Expectata: one dashed stroke and two hollow dots per k=0 curve (${k0vis.k0}).
+Resultata: ${k0vis.dashed} dashed, ${k0vis.hollow} hollow.`,
+);
+
 console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy)`);

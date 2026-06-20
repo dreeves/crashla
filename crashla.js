@@ -1385,7 +1385,7 @@ function renderAllHelmersMpiChart(series) {
 // uncertain curve can't lower the tallest peak, so its thin tail gets cut where it's
 // a sliver relative to the confident curves) where quantile/CI-based extents blow out
 // to billions for the k<0.5 (alpha<1) at-fault posteriors.
-const DIST_VIS_FLOOR = 0.01;
+const DIST_VIS_FLOOR = 0.05;
 // X-range for the distribution chart: the window where some curve's density clears
 // DIST_VIS_FLOOR of the tallest peak. Coarse probe over the curves' own density
 // extents finds the tallest peak, then the visible band.
@@ -1487,7 +1487,10 @@ function renderDistributionChart(series) {
       d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
     }
     d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
-    return `<path d="${d}" style="fill:${color};opacity:0.120"></path>`;
+    // k=0 curves carry no event data — they're just the Jeffreys prior shaped by VMT,
+    // so two similar-mileage helmers coincide. Fade + dash them so they don't read as
+    // a real overlap claim.
+    return `<path d="${d}" style="fill:${color};opacity:${c.est.k === 0 ? 0.04 : 0.120}"></path>`;
   }).join("");
 
   const strokes = curves.map(c => {
@@ -1495,7 +1498,8 @@ function renderDistributionChart(series) {
     for (let i = 0; i < nPts; i++) {
       d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
     }
-    return `<path d="${d}" style="${metricLineStyle(c.helmer)};fill:none"></path>`;
+    const dash = c.est.k === 0 ? ";stroke-dasharray:6 4" : ""; // prior-only: no event data
+    return `<path d="${d}" style="${metricLineStyle(c.helmer)};fill:none${dash}"></path>`;
   }).join("");
 
   // Two markers per curve: the visual peak ("most likely") and the posterior median.
@@ -1515,9 +1519,10 @@ function renderDistributionChart(series) {
       ["Mode", c.peakX, `median ${fmtMiles(c.est.postMedian)}`],
       ["Median", c.est.postMedian, `mode ${fmtMiles(c.peakX)}`],
     ];
+    const dotStyle = c.est.k === 0 ? `fill:none;stroke:${color}` : `fill:${color};stroke:#fff`; // k=0: hollow (prior only)
     return dots.map(([label, mx, other]) => {
       const tip = `${label}: ${fmtMiles(mx)}${c.est.k !== null ? `\n${other}${tail}` : ""}\n${ciLine}`;
-      return `<circle cx="${mapX(mx).toFixed(2)}" cy="${mapY(c.densityFn(mx)).toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
+      return `<circle cx="${mapX(mx).toFixed(2)}" cy="${mapY(c.densityFn(mx)).toFixed(2)}" r="3.5" style="${dotStyle};stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
     }).join("");
   }).join("");
 
