@@ -187,4 +187,39 @@ Resultata: tooltips had ${JSON.stringify([...cumSet])}.`);
   }
 }
 
-console.log("qual pass: data/vmt.csv flows unchanged into vmt.js and the rendered VMT charts");
+// --- 4. No orphan incidents: every in-scope incident has a VMT denominator ---
+// An SGO incident in a (helmer, month) with no VMT row gets silently dropped from
+// every rate (the pre-2025-06 Zoox bug). Pin it on the data directly, and verify
+// monthSeriesData() now fails loudly rather than vanishing the incident.
+const orphans = vm.runInContext(`
+(() => {
+  const keys = new Set(parseVmtCsv(VMT_CSV_TEXT).map(r => r.helmer.toLowerCase() + "|" + r.month));
+  return INCIDENT_DATA
+    .filter(i => !keys.has(i.helmer.toLowerCase() + "|" + monthKeyFromIncidentLabel(i.date)))
+    .map(i => i.reportId + " (" + i.helmer + " " + i.date + ")");
+})()
+`, ctx);
+assert.equal(
+  orphans.length, 0,
+  `Replicata: map every in-scope incident to its (helmer, month) and look it up in the VMT data.
+Expectata: every incident has a VMT row for its helmer-month (no orphan numerators).
+Resultata: ${orphans.length} orphan(s): ${orphans.slice(0, 8).join(", ")}.`);
+
+// The runtime guard must actually fire: inject a Zoox incident in a Waymo-only
+// month (2021-09, in the VMT month set but with no Zoox VMT) and expect a throw.
+const guardThrows = vm.runInContext(`
+(() => {
+  const saved = incidents;
+  incidents = [{ ...saved[0], helmer: "Zoox", date: "SEP-2021", reportId: "synthetic-orphan", fault: null }];
+  try { monthSeriesData(); return "no throw"; }
+  catch (e) { return /orphan/.test(e.message) ? "orphan-throw" : "other: " + e.message; }
+  finally { incidents = saved; }
+})()
+`, ctx);
+assert.equal(
+  guardThrows, "orphan-throw",
+  `Replicata: inject a Zoox incident in 2021-09 (no Zoox VMT) and call monthSeriesData().
+Expectata: a loud "orphan" assertion failure, not a silent drop.
+Resultata: ${guardThrows}.`);
+
+console.log("qual pass: data/vmt.csv flows unchanged into vmt.js and the rendered VMT charts; no orphan incidents");

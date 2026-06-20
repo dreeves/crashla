@@ -891,6 +891,10 @@ function monthlySummaryRows(series) {
           densityFn: makeMarginalMpiDensity(alpha, metricVmtMin, metricVmtBest, metricVmtMax),
           xMin: 1 / gammaquant(alpha, metricVmtMin, 0.999),
           xMax: 1 / gammaquant(alpha, metricVmtMax, 0.001),
+          // Posterior median: finite even at k=0 and inside the bell's mass, unlike the
+          // MLE (est.median = vmtBest/k, which is ∞ at k=0 and far out in the tail for
+          // small k). The distribution chart marks this so the dot sits on the bell.
+          postMedian: 1 / gammaquant(alpha, metricVmtBest, 0.5),
         }];
       }
       if (vmtBest > 0) return [m.key, null];
@@ -901,6 +905,7 @@ function monthlySummaryRows(series) {
       const sigma = (Math.log(h.hi) - Math.log(h.lo)) / (2 * 1.96);
       return [m.key, {
         median: geo, lo: h.lo, hi: h.hi, k: null,
+        postMedian: geo, // log-normal median (= geo); the curve's peak
         densityFn: x => logNormalLogDensity(x, mu, sigma),
         xMin: Math.exp(mu - 3.09 * sigma),
         xMax: Math.exp(mu + 3.09 * sigma),
@@ -1069,6 +1074,13 @@ function monthSeriesData() {
       const key = helmer + "|" + month;
       const vmt = vmtByKey[key];
       if (vmt === undefined) {
+        // Anti-Postel: no VMT this month is fine ONLY if the helmer also had no
+        // incidents. An incident with no denominator (e.g. an SGO incident in a
+        // month before the helmer's VMT series begins) must fail loudly, not vanish
+        // — that silent drop is exactly the Zoox-pre-2025-06 bug.
+        assert(incidentsByKey[key] === undefined,
+          "orphan incident(s): in-scope incident with no VMT denominator — add a VMT row for this helmer/month",
+          {helmer, month, incidentTotal: incidentsByKey[key] && incidentsByKey[key].total});
         helmers[helmer] = null;
         continue;
       }
@@ -1368,6 +1380,35 @@ function renderAllHelmersMpiChart(series) {
   `;
 }
 
+// Draw each density curve only while it clears this fraction of the TALLEST curve's
+// peak (~2px of height) — a visibility floor. It's robust to heavy tails (a short,
+// uncertain curve can't lower the tallest peak, so its thin tail gets cut where it's
+// a sliver relative to the confident curves) where quantile/CI-based extents blow out
+// to billions for the k<0.5 (alpha<1) at-fault posteriors.
+const DIST_VIS_FLOOR = 0.01;
+// X-range for the distribution chart: the window where some curve's density clears
+// DIST_VIS_FLOOR of the tallest peak. Coarse probe over the curves' own density
+// extents finds the tallest peak, then the visible band.
+function distributionExtent(curves) {
+  let pMin = Infinity, pMax = 0;
+  for (const c of curves) { pMin = Math.min(pMin, c.xMin); pMax = Math.max(pMax, c.xMax); }
+  if (!Number.isFinite(pMin)) return {xMin: 1e4, xMax: 1e8}; // no curves: default span
+  const probe = 160, lo = Math.log(pMin), hi = Math.log(pMax);
+  const at = i => Math.exp(lo + (hi - lo) * i / (probe - 1));
+  let yMax = 0;
+  const cols = curves.map(c => {
+    const col = new Float64Array(probe);
+    for (let i = 0; i < probe; i++) { col[i] = c.densityFn(at(i)); if (col[i] > yMax) yMax = col[i]; }
+    return col;
+  });
+  const floor = DIST_VIS_FLOOR * yMax;
+  let xMin = Infinity, xMax = 0;
+  for (const col of cols) for (let i = 0; i < probe; i++) if (col[i] >= floor) {
+    const x = at(i); if (x < xMin) xMin = x; if (x > xMax) xMax = x;
+  }
+  return xMin < xMax ? {xMin, xMax} : {xMin: pMin, xMax: pMax};
+}
+
 function renderDistributionChart(series) {
   const metric = selectedMonthMetric();
   const {start, end} = seriesMonthBounds(series);
@@ -1383,16 +1424,11 @@ function renderDistributionChart(series) {
       xMin: est.xMin, xMax: est.xMax,
     });
   }
-  // X-axis range from all curves' density extents. With no curves (every
-  // selected helmer is empty in this window, or none are selected) fall back to
-  // a default log span so the chart still draws its axes instead of vanishing
-  // (Anti-Magic Principle), matching the cross-helmer MPI chart.
-  let xMin = Infinity, xMax = 0;
-  for (const c of curves) {
-    xMin = Math.min(xMin, c.xMin);
-    xMax = Math.max(xMax, c.xMax);
-  }
-  if (!Number.isFinite(xMin)) { xMin = 1e4; xMax = 1e8; }
+  // X-axis range = the visible band (see distributionExtent): where some curve clears
+  // ~1% of the tallest peak. Frames where the curves are visibly present instead of
+  // letting one heavy-tailed posterior stretch the axis to billions. With no curves it
+  // falls back to a default span so the axes still draw (Anti-Magic Principle).
+  const {xMin, xMax} = distributionExtent(curves);
   assert(xMin < xMax, "distribution chart: degenerate x range", {xMin, xMax});
 
   // Sample on log-uniform grid
@@ -1462,19 +1498,18 @@ function renderDistributionChart(series) {
     return `<path d="${d}" style="${metricLineStyle(c.helmer)};fill:none"></path>`;
   }).join("");
 
-  // Peak markers with tooltips
+  // Median markers with tooltips
   const markers = curves.map(c => {
     const color = HELMER_COLORS[c.helmer];
-    // Place the dot at the value its tooltip reports -- the MLE point estimate, or
-    // its lower bound when k=0 makes the MLE infinite (same finite/∞ split as
-    // mpiPoint). Otherwise the curve's mode would sit left of the stated MPI on a
-    // right-skewed bell, so the dot and its number wouldn't coincide.
-    const markerX = Number.isFinite(c.est.median) ? c.est.median : c.est.lo;
+    // Mark the posterior median: finite and inside the bell's mass, so the dot sits
+    // on the curve. (The MLE est.median = vmtBest/k is ∞ at k=0 — parking the dot at
+    // the far-left lo — and far out in the right tail for small k.)
+    const markerX = c.est.postMedian;
     const x = mapX(markerX);
     const y = mapY(c.densityFn(markerX));
     const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})` : "";
     const ciLabel = c.est.k !== null ? "95% CI" : "Range";
-    const tip = `${helmerLabel(c.helmer)}\nMPI: ${mpiPoint(c.est.median, c.est.lo, fmtMiles)}${kLine}\n${ciLabel}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}`;
+    const tip = `${helmerLabel(c.helmer)}\nMPI: ${fmtMiles(markerX)}${kLine}\n${ciLabel}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}`;
     return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" style="fill:${color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 

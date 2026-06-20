@@ -524,15 +524,13 @@ const markerCheck = vm.runInContext(`
     const sr = monthlySummaryRows(series);
     const curves = sr.filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk])
       .map(r => ({ label: helmerLabel(r.helmer), e: r.mpiEstimates[mk] }));
-    const xMin = Math.min(...curves.map(c => c.e.xMin)), xMax = Math.max(...curves.map(c => c.e.xMax));
+    const {xMin, xMax} = distributionExtent(curves.map(c => c.e)); // same visible-band extent the chart uses
     const mLeft = 68, svgW = 900, mRight = 16, pW = svgW - mLeft - mRight;
     const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
     const expected = curves.map(c => {
-      const markerX = Number.isFinite(c.e.median) ? c.e.median : c.e.lo;
-      const n = 800, lm = Math.log(c.e.xMin), lM = Math.log(c.e.xMax), st = (lM - lm) / (n - 1);
-      let peak = -1, modeX = c.e.xMin;
-      for (let i = 0; i < n; i++) { const xx = Math.exp(lm + st * i); const d = c.e.densityFn(xx); if (d > peak) { peak = d; modeX = xx; } }
-      return { label: c.label, finite: Number.isFinite(c.e.median), cxExpected: mapX(markerX), cxMode: mapX(modeX) };
+      const markerX = c.e.postMedian; // the dot marks the posterior median
+      return { label: c.label, cxExpected: mapX(markerX),
+               finite: Number.isFinite(markerX), inCI: markerX >= c.e.lo && markerX <= c.e.hi };
     });
     const html = renderDistributionChart(series);
     const circles = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
@@ -564,17 +562,20 @@ Resultata: cx = ${c.cx}.`);
   }
 }
 
-// The fix is visible: for skewed Zoox at-fault (k=0.1) the dot is well right of the
-// curve's mode (where it used to sit), and the k=0 fatality dots show the "≥" form.
-const zoox = markerCheck.atfault.expected.find(e => e.label === "Zoox");
-assert.ok(zoox && zoox.finite && Math.abs(zoox.cxExpected - zoox.cxMode) > 10,
-  `Replicata: compare the Zoox at-fault dot position to the curve's mode.
-Expectata: the dot sits at the MLE, clearly right of the mode (>10px), not on the peak.
-Resultata: cxExpected=${zoox?.cxExpected?.toFixed(1)} cxMode=${zoox?.cxMode?.toFixed(1)}.`);
-const k0 = markerCheck.fatality.circles.filter(c => c.tip.includes("≥"));
-assert.ok(k0.length > 0,
-  `Replicata: inspect fatality-metric tooltips for k=0 helmers.
-Expectata: at least one "≥ lo" tooltip (infinite MLE), its dot placed at the lower bound.
-Resultata: no "≥" tooltips found among ${markerCheck.fatality.circles.length} markers.`);
+// The dot marks the posterior median: finite for every curve (even k=0, which used to
+// park it at the far-left lo — off-frame once the extent tightened), always inside the
+// 95% CI, and reported verbatim (no "≥" bound form).
+for (const mk of ["atfault", "fatality"]) {
+  for (const e of markerCheck[mk].expected) {
+    assert.ok(e.finite && e.inCI,
+      `Replicata: check the ${e.label} ${mk} median marker.
+Expectata: a finite posterior median inside the [lo, hi] credible interval.
+Resultata: finite=${e.finite}, inCI=${e.inCI}.`);
+  }
+  assert.ok(!markerCheck[mk].circles.some(c => c.tip.includes("≥")),
+    `Replicata: scan ${mk} tooltips for the "≥ lo" bound form.
+Expectata: none — the posterior median is finite for every curve, so the dot and its number are exact.
+Resultata: found a "≥" tooltip.`);
+}
 
 console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy)`);
