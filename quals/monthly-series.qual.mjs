@@ -455,10 +455,10 @@ Expectata: all bar endpoints clamped inside the SVG (no bars rendered off-plot w
 Resultata: ${clampedBars.outOfPlot} of ${clampedBars.barCount} bars have endpoints outside [0, ${clampedBars.svgH}].`,
 );
 
-// When every month is k=0 (no point estimate), each renders an up-arrow pinned
-// at the ceiling, and the y-range anchors on the inner credible-band floor so
-// the "≥ lo" whiskers stay visible. Replicates the bug where Tesla-only +
-// fatality left yMax at its init value of 1 and every error bar collapsed.
+// When every month is k=0 (no events), each renders a finite HOLLOW median dot
+// (prior-only), and the y-range scales to those medians. Replicates the bug where
+// Tesla-only + fatality left yMax at its init value of 1 and every error bar
+// collapsed — now the medians anchor the axis so the wide-CI whiskers stay visible.
 const allZeroK = vm.runInContext(`
   (() => {
     const savedMetric = selectedMetricKey;
@@ -469,23 +469,23 @@ const allZeroK = vm.runInContext(`
     selectedMetricKey = savedMetric;
     monthHelmerEnabled = savedEnabled;
     const svgH = Number(/viewBox="0 0 \\d+ (\\d+)"/.exec(html)[1]);
-    const arrowYs = [...html.matchAll(/class="month-dot" d="M [\\d.]+ ([\\d.]+) L/g)]
+    const hollowYs = [...html.matchAll(/class="month-dot" cx="[\\d.]+" cy="([\\d.]+)" r="[\\d.]+" style="fill:none;stroke:/g)]
       .map(m => Number(m[1]));
     const barLens = [...html.matchAll(/class="month-err" x1="[\\d.]+" y1="([\\d.]+)" x2="[\\d.]+" y2="([\\d.]+)"/g)]
       .map(m => Math.abs(Number(m[2]) - Number(m[1])));
-    return {svgH, arrowYs, barLens};
+    return {svgH, hollowYs, barLens};
   })()
 `, ctx);
 assert.ok(
-  allZeroK.arrowYs.length > 0 && allZeroK.arrowYs.every(y => y < allZeroK.svgH * 0.15),
+  allZeroK.hollowYs.length > 0 && allZeroK.hollowYs.every(y => y > 0 && y < allZeroK.svgH),
   `Replicata: render the fatality MPI chart with only Tesla enabled (k=0 every month).
-Expectata: every k=0 month is an up-arrow pinned near the ceiling (no finite dot).
-Resultata: arrow apex y values were ${JSON.stringify(allZeroK.arrowYs)} (svgH ${allZeroK.svgH}).`,
+Expectata: every k=0 month is a finite hollow median dot, on-scale (not a ceiling-pinned arrow).
+Resultata: hollow dot y values were ${JSON.stringify(allZeroK.hollowYs)} (svgH ${allZeroK.svgH}).`,
 );
 assert.ok(
-  allZeroK.barLens.length === allZeroK.arrowYs.length && allZeroK.barLens.every(len => len > 5),
+  allZeroK.barLens.length === allZeroK.hollowYs.length && allZeroK.barLens.every(len => len > 5),
   `Replicata: inspect error bars in the Tesla-only fatality chart.
-Expectata: one non-degenerate "≥ lo" whisker per up-arrow (k=0 CIs are wide, so whiskers span well over 5px).
+Expectata: one non-degenerate CI whisker per dot (k=0 CIs are wide, so whiskers span well over 5px).
 Resultata: bar lengths were ${JSON.stringify(allZeroK.barLens.map(Math.round))}.`,
 );
 
