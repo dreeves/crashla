@@ -1310,7 +1310,7 @@ function renderAllHelmersMpiChart(series) {
       const qOpacity = (1 - mpi.covRatio).toFixed(3);
       const glyph = renderDot(x, yc, color, 1, k === 0);
       const qmark = `<text x="${(x + 7).toFixed(2)}" y="${(yc - 3).toFixed(2)}" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#555;opacity:${qOpacity};pointer-events:none">?</text>`;
-      return `<g opacity="${dotOpacity}">${glyph}</g>${qmark}<circle cx="${x}" cy="${yc}" r="12" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(tip)}"></circle>`;
+      return `<g opacity="${dotOpacity}">${glyph}</g>${qmark}<circle cx="${x}" cy="${yc}" r="12" fill="none" data-tip="${escAttr(tip)}"></circle>`;
     }).join("")
   ).join("");
 
@@ -1583,8 +1583,8 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
-      <circle cx="${cx.toFixed(2)}" cy="${yLo.toFixed(2)}" r="5" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(loTip)}"></circle>
-      <circle cx="${cx.toFixed(2)}" cy="${yHi.toFixed(2)}" r="5" fill="none" pointer-events="all" style="cursor:pointer" data-tip="${escAttr(hiTip)}"></circle>
+      <circle cx="${cx.toFixed(2)}" cy="${yLo.toFixed(2)}" r="5" fill="none" data-tip="${escAttr(loTip)}"></circle>
+      <circle cx="${cx.toFixed(2)}" cy="${yHi.toFixed(2)}" r="5" fill="none" data-tip="${escAttr(hiTip)}"></circle>
     `);
   }
 

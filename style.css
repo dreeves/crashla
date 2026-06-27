@@ -712,6 +712,14 @@ tr:hover { background: #f8f8ff; }
   text-align: center;
 }
 
+/* Every tooltip target — chart dots, error-bar caps, summary cards, table
+   cells — behaves uniformly on hover. pointer-events:all gives a full-geometry
+   hit area, so a hollow (fill:none) dot is as easy to hit as a solid one
+   instead of only its ~1.5px stroke ring; cursor:help is the single, consistent
+   tooltip cursor. This is the source of truth: per-element inline cursor and
+   pointer-events were removed in favour of this rule. */
+[data-tip] { cursor: help; pointer-events: all; }
+
 /* Floating tooltip (replaces SVG <title> for mobile support) */
 .chart-tip {
   display: none;
