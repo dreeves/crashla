@@ -601,6 +601,26 @@ EXPECTED_DRIVER_TYPES = {
     "Remote (Commercial / Test)",
     "Unknown",
 }
+# NHTSA "Highest Injury Severity Alleged" values across current + archive CSVs.
+# Anti-Postel: a new severity string must crash here so a human classifies it.
+# The app-side counterpart is SEVERITY_INFO in crashla.js (which drives the
+# injury/hospitalization/serious-injury metrics); "" never survives into the
+# kept robotaxi incidents. Keep the two in sync when NHTSA adds a value.
+EXPECTED_SEVERITIES = {
+    "",
+    "No Injuries Reported",
+    "No Injured Reported",
+    "Property Damage. No Injured Reported",
+    "Unknown",
+    "Minor",
+    "Minor W/O Hospitalization",
+    "Minor W/ Hospitalization",
+    "Moderate",
+    "Moderate W/O Hospitalization",
+    "Moderate W/ Hospitalization",
+    "Serious",
+    "Fatality",
+}
 # All reporting entities in the NHTSA ADS CSV (current + archive).
 # Anti-Postel: if NHTSA adds a new reporting entity, we want to crash and review.
 EXPECTED_HELMERS = {
@@ -707,6 +727,10 @@ def main():
         must(driver in EXPECTED_HELMERS,
              "unexpected Reporting Entity", row=i, value=driver,
              expected=sorted(EXPECTED_HELMERS))
+        sev = r["Highest Injury Severity Alleged"].strip()
+        must(sev in EXPECTED_SEVERITIES,
+             "unexpected Highest Injury Severity Alleged", row=i, value=sev,
+             expected=sorted(EXPECTED_SEVERITIES))
         must(INCIDENT_DATE_RE.match(idate),
              "unexpected Incident Date format", row=i, value=idate)
         abbr = idate.split("-")[0]

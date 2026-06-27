@@ -386,7 +386,7 @@ const METRIC_DEFS = [
     // Between airbag-deployment proxy (1.68 IPMM ≈ crashes with enough
     // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
     // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
-    // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
+    // visits for minor injuries — most Waymo hosp are "Minor W/ Hosp").
     humanMPI: {
       // No direct national "transported to hospital" per-mile rate; HumansUS is
       // estimated by log-interpolation between the national injury and fatality
@@ -440,10 +440,9 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.seriousInjury,
-    // SSI+ (KABCO A+K): Moderate W/ Hospitalization + Fatality.
-    // Waymo safety impact page: 0.23 IPMM. Range: 0.30 IPMM (broader
-    // definition, SGO "Moderate" may include some KABCO B cases) to
-    // 0.15 IPMM (narrower, only most severe subset).
+    // SSI+ (KABCO A+K): "Serious" + "Fatality" (suspected serious injury or
+    // worse). Waymo safety impact page: 0.23 IPMM. Range: 0.30 IPMM (broader
+    // definition) to 0.15 IPMM (narrower, only the most severe subset).
     humanMPI: {
       // No clean national SSI+ (KABCO A+K) per-mile rate; HumansUS is estimated
       // by log-interpolation between the national injury and fatality anchors
@@ -745,40 +744,42 @@ function emptySpeedBins() {
   return {"31+": 0, "11-30": 0, "1-10": 0, unknown: 0, "0": 0};
 }
 
-// Severity classification for SGO data
-const INJURY_SEVERITIES = new Set([
-  "Minor W/O Hospitalization",
-  "Minor W/ Hospitalization",
-  "Moderate",
-  "Moderate W/O Hospitalization",
-  "Moderate W/ Hospitalization",
-  "Fatality",
-]);
-const HOSPITALIZATION_SEVERITIES = new Set([
-  "Minor W/ Hospitalization",
-  "Moderate W/ Hospitalization",
-  "Fatality",
-]);
-// SSI+ (KABCO A+K): suspected serious injury or worse
-const SERIOUS_INJURY_SEVERITIES = new Set([
-  "Moderate W/ Hospitalization",
-  "Fatality",
-]);
-
-// Ordinal ranking for sorting: higher = more severe
-const SEVERITY_RANK = {
-  "No Injuries Reported": 0,
-  "No Injured Reported": 0,
-  "Property Damage. No Injured Reported": 0,
-  "Minor": 1,
-  "Minor W/O Hospitalization": 1,
-  "Minor W/ Hospitalization": 2,
-  "Moderate": 3,
-  "Moderate W/O Hospitalization": 3,
-  "Moderate W/ Hospitalization": 4,
-  "Serious": 5,
-  "Fatality": 6,
+// Severity classification for the SGO "Highest Injury Severity Alleged" field
+// — the SINGLE SOURCE OF TRUTH. Every severity string in INCIDENT_DATA must
+// have a row here (asserted per-incident at load); the per-metric sets below
+// are DERIVED from these flags, so a value can never be silently dropped from
+// one classification while counted in another. That silent-drop bug hid 58
+// injury crashes — bare "Minor" (the older NHTSA encoding) and "Serious" —
+// from the injury and serious-injury metrics until it was caught 2026-06.
+//   rank:   ordinal severity for sorting (higher = more severe)
+//   injury: any reported injury (KABCO B+); bare "Minor"/"Moderate" are the
+//           older NHTSA encoding, the "W/ Hospitalization" variants the newer
+//   hosp:   occupant transported to a hospital (the SGO "W/ Hospitalization"
+//           flag; "Serious"/"Fatality" imply transport)
+//   ssi:    suspected serious injury or worse (KABCO A+K) = "Serious"/"Fatality"
+//   fatal:  a fatality
+const SEVERITY_INFO = {
+  "No Injuries Reported":                 {rank: 0},
+  "No Injured Reported":                  {rank: 0},
+  "Property Damage. No Injured Reported": {rank: 0},
+  "Unknown":                              {rank: 0},
+  "Minor":                                {rank: 1, injury: true},
+  "Minor W/O Hospitalization":            {rank: 1, injury: true},
+  "Minor W/ Hospitalization":             {rank: 2, injury: true, hosp: true},
+  "Moderate":                             {rank: 3, injury: true},
+  "Moderate W/O Hospitalization":         {rank: 3, injury: true},
+  "Moderate W/ Hospitalization":          {rank: 4, injury: true, hosp: true},
+  "Serious":                              {rank: 5, injury: true, hosp: true, ssi: true},
+  "Fatality":                             {rank: 6, injury: true, hosp: true, ssi: true, fatal: true},
 };
+const severitiesWhere = flag =>
+  new Set(Object.keys(SEVERITY_INFO).filter(s => SEVERITY_INFO[s][flag]));
+// Derived per-metric sets (DRY — never hand-edit; change SEVERITY_INFO instead).
+const INJURY_SEVERITIES = severitiesWhere("injury");
+const HOSPITALIZATION_SEVERITIES = severitiesWhere("hosp");
+const SERIOUS_INJURY_SEVERITIES = severitiesWhere("ssi");  // SSI+ = KABCO A+K
+const SEVERITY_RANK =
+  Object.fromEntries(Object.entries(SEVERITY_INFO).map(([s, i]) => [s, i.rank]));
 
 function linearTicks(min, max, count) {
   const out = [];
@@ -3128,6 +3129,10 @@ function loadPredmarketData() {
       "incident missing road type", {reportId: inc.reportId});
     assert(typeof inc.severity === "string" && inc.severity.length > 0,
       "incident missing severity", {reportId: inc.reportId});
+    assert(SEVERITY_INFO[inc.severity] !== undefined,
+      "incident severity is not classified in SEVERITY_INFO — it would be " +
+      "silently dropped from the injury/hospitalization/serious-injury metrics",
+      {reportId: inc.reportId, severity: inc.severity});
     assert(inc.fault === null || typeof inc.fault === "object",
       "incident fault must be null or object", {reportId: inc.reportId});
     assert(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
