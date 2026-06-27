@@ -208,8 +208,8 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //   Kusano/Scanlon 7.1M-mi paper (arxiv 2312.12675, Table 3):
 //     All crashes: Blincoe-adj 9.67 IPMM, police-reported 4.68 IPMM
 //     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.91 IPMM
-//   Waymo safety impact page (waymo.com/safety/impact, 170.7M mi, Dec 2025):
-//     Any-injury 3.90 IPMM, airbag deploy 1.63 IPMM, SSI+ 0.22 IPMM
+//   Waymo safety impact page (waymo.com/safety/impact, 220.6M mi, Mar 2026):
+//     Any-injury 3.91 IPMM, airbag deploy 1.68 IPMM, SSI+ 0.23 IPMM
 //   FARS 2023: national 1.26 fatalities/100M VMT; urban ~0.7-1.15/100M VMT
 //
 // Derived metrics use the subset-bounding approach: if metric B is a subset
@@ -324,12 +324,12 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.injury,
-    // Waymo safety page benchmark (3.90 IPMM) to Kusano observed (1.91)
+    // Waymo safety page benchmark (3.91 IPMM) to Kusano observed (1.91)
     humanMPI: {
       HumansAV: {lo: 256000, hi: 524000,
-        src: 'lo: 1M/3.90 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
+        src: 'lo: 1M/3.91 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
         srcLinks: [
-          {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
         ]},
       // CRSS national: ~1.66M injury crashes/yr * ~1.77 vehicles / ~3.2T VMT
@@ -365,7 +365,7 @@ const METRIC_DEFS = [
         src: 'lo: injury lo (256k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (524k) / 50% legal-allocation floor',
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-          {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
           {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
           {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
         ]},
@@ -383,8 +383,8 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.hospitalization,
-    // Between airbag-deployment proxy (1.63 IPMM ≈ crashes with enough
-    // force to likely send someone to ER) and SSI+ (0.22 IPMM = KABCO
+    // Between airbag-deployment proxy (1.68 IPMM ≈ crashes with enough
+    // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
     // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
     // visits for minor injuries — 16/19 Waymo hosp are "Minor W/ Hosp").
     humanMPI: {
@@ -392,10 +392,10 @@ const METRIC_DEFS = [
       // estimated by log-interpolation between the national injury and fatality
       // anchors (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is leaned off HumansAV by the loop below.
-      HumansAV: {lo: 613000, hi: 4545000,
-        src: 'lo: 1M/1.63 airbag-deploy IPMM; hi: 1M/0.22 SSI+ IPMM',
+      HumansAV: {lo: 595000, hi: 4348000,
+        src: 'lo: 1M/1.68 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM',
         srcLinks: [
-          {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
         ]},
       HumansUS: {lo: 1400000, hi: 6000000,
         src: 'No national hospital-transport per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
@@ -412,7 +412,7 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.airbag,
     // Airbag deployment in any vehicle. Waymo safety impact page: human
-    // benchmark 1.63 IPMM (police-reported, AV operating counties, no
+    // benchmark 1.68 IPMM (police-reported, AV operating counties, no
     // underreporting adjustment — airbag deployments are mechanically
     // triggered and rarely underreported). Range accounts for modest
     // geographic/methodological variation.
@@ -422,9 +422,9 @@ const METRIC_DEFS = [
       // anchors (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is leaned off HumansAV by the loop below.
       HumansAV: {lo: 500000, hi: 700000,
-        src: 'Waymo safety impact: 1.63 IPMM police-reported airbag-deploy rate in AV operating counties',
+        src: 'Waymo safety impact: 1.68 IPMM police-reported airbag-deploy rate in AV operating counties',
         srcLinks: [
-          {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
         ]},
       HumansUS: {lo: 820000, hi: 2400000,
         src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
@@ -441,7 +441,7 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.seriousInjury,
     // SSI+ (KABCO A+K): Moderate W/ Hospitalization + Fatality.
-    // Waymo safety impact page: 0.22 IPMM. Range: 0.30 IPMM (broader
+    // Waymo safety impact page: 0.23 IPMM. Range: 0.30 IPMM (broader
     // definition, SGO "Moderate" may include some KABCO B cases) to
     // 0.15 IPMM (narrower, only most severe subset).
     humanMPI: {
@@ -450,9 +450,9 @@ const METRIC_DEFS = [
       // (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is leaned off HumansAV by the loop below.
       HumansAV: {lo: 3300000, hi: 6700000,
-        src: 'Waymo safety impact SSI+ 0.22 IPMM; range 0.15\u20130.30 for definitional uncertainty',
+        src: 'Waymo safety impact SSI+ 0.23 IPMM; range 0.15\u20130.30 for definitional uncertainty',
         srcLinks: [
-          {label: 'Waymo safety impact (170.7M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
         ]},
       HumansUS: {lo: 3000000, hi: 14000000,
         src: 'No clean national SSI+ (KABCO A+K) per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',

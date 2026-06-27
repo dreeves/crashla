@@ -29,6 +29,8 @@ Additional rules specific to this project:
 
 # Agent Scratchpad (human edits only above this line)
 
+- 2026-06-26: Waymo Safety Impact advanced to 220.6M rider-only miles through Mar 2026 (Jun 24, 2026 update; Atlanta added as a 5th geography; per-city PHX 80.6M/SF 67.1M/LA 51.8M/ATX 15.8M/ATL 5.4M). (a) Recalibrated Waymo VMT Oct 2025–May 2026 in data/vmt.csv + data/vmt.js: pinned cumulative to the published anchors (170.7M end-Dec-2025, 220.6M end-Mar-2026), reshaped Oct–Dec down ~10%, kept the Jan–Mar growth (the 170.7→220.6 interval ≈ the prior 50M), re-extrapolated Apr–May from the new base; the pre-recalibration estimate was 225.2M through Mar (~2% high — methodology validated). (b) crashla.js human benchmarks refreshed to the new page's IPMMs: any-injury 3.90→3.91, airbag 1.63→1.68, SSI+ 0.22→0.23 (hospitalization HumansAV endpoints recomputed 613k/4545k→595k/4348k; injury/airbag/SSI bands stay within margin); six "(170.7M mi)" source labels → "(220.6M mi)". (c) Zoox vmt rationales: "paid LV ~late Jun 2026" → "blocked pending FMVSS exemption; no date" (still free as of Jun 2026 — FMVSS bars charging for a vehicle with no steering wheel/pedals; denominator unchanged, free miles still count). (d) README: added the 220.6M milestone row + per-city geographic breakdown + a Jun-2026 Waymo freeway-construction recall (~3,900 vehicles) note; refreshed the Piper-comparison IPMMs. (e) Deleted orphan vmt-comparison.html (unlinked; stale 127M/73M figures). The "current live Waymo page" reference values in the notes/plan below are updated to 220.6M/3.91/1.68/0.23 (the 170.7M-era figures are now historical). 38 quals pass.
+
 - 2026-06-20 (later): MPI-over-time line now BREAKS at k=0 months again (condition: mpi===null || incidentCount===0) — my median-unify change had made it connect through prior-only months; restored the original deliberate break so a k=0 month shows only its hollow median dot, not a fake trend segment. Verified live via playwright (reinstalled playwright-core --no-save; chromium_headless_shell-1208 cached; /tmp/shot_verify.mjs serves localhost:8642 + screenshots #chart-distributions/#chart-mpi-all): Zoox at-fault = scattered hollow dots no line, Waymo = solid, Tesla = line only across its data months. Distribution chart also visually confirmed: 1% axis readable (~100K-30M not billions), mode+median dots split for skewed Zoox, k=0 at-fault-injury (Tesla/Zoox) dashed+hollow. 38 pass.
 
 - 2026-06-20: Point estimate UNIFIED on the posterior median app-wide. Cards/stress/multiplier switched from mpiPoint(est.median=MLE) to fmtWhole(est.postMedian); multiplier no longer has the k=0 "≥ Nx" branch. MPI-over-time chart: added mpiMedian (1/gammaquant(a, vmtBest, .5)) to per-month mpiByMetric (+ humans' = geo); line/dots/tooltip/yMax now use it instead of mpiBest (MLE). k=0 months render HOLLOW median dots (renderDot gained a hollow arg) instead of up-arrows — matches the distribution chart. Deleted now-dead mpiPoint() and renderUpArrow(). mpiBest kept only for the human subset-chain assert. monthly-series qual rewritten (was: all-k=0 -> up-arrows pinned at ceiling; now: hollow median dots on-scale, non-degenerate CI whiskers). No more "≥ lo" form anywhere. 38 pass. Pending #1 (point-estimate split) RESOLVED.
@@ -64,12 +66,12 @@ Additional rules specific to this project:
 
 ## Verified Waymo Safety Impact Notes
 
-- Not an error: `127M` through Sep 2025 and `170.7M` through Dec 2025 are compatible cumulative snapshots. The checked-in Waymo VMT series reaches `127,000,000` at `2025-09` and `172,484,810` at `2025-12`, which is close to the current Waymo page's `170.7M`.
-- The current live Waymo page says:
-  - `170.7M` rider-only miles through Dec 2025.
+- Not an error: `127M` through Sep 2025, `170.7M` through Dec 2025, and `220.6M` through Mar 2026 are compatible cumulative snapshots. The checked-in Waymo VMT series is pinned to these published anchors: `127,000,000` at `2025-09`, `170,700,000` at `2025-12`, and `220,600,000` at `2026-03`.
+- The current live Waymo page (Jun 24, 2026 update) says:
+  - `220.6M` rider-only miles through Mar 2026 (per-city: PHX 80.6M, SF 67.1M, LA 51.8M, ATX 15.8M, ATL 5.4M). The earlier `170.7M` through Dec 2025 and `127M` through Sep 2025 are now historical snapshots.
   - Rider-only miles are miles driven without a human driver in cities where Waymo operates ride-hailing service.
   - The safety-impact comparisons are for surface streets, not freeways.
-  - The current all-location human benchmarks shown on the page are `3.90` any-injury IPMM, `1.63` airbag-in-any-vehicle IPMM, and `0.22` serious-injury-or-worse IPMM.
+  - The current all-location human benchmarks shown on the page are `3.91` any-injury IPMM, `1.68` airbag-in-any-vehicle IPMM, and `0.23` serious-injury-or-worse IPMM (Waymo's own rates: `0.71` / `0.30` / `0.01`).
   - `43%` of SGO collisions are under `1 mph` delta-V across all areas.
   - The benchmark method is not just "surface streets in AV cities"; it uses a location-based dynamic benchmark adjustment tied to where Waymo actually drives.
 - The app/repo still contains stale or overstated claims:
@@ -84,7 +86,7 @@ Additional rules specific to this project:
 ### Phase 1: factual cleanup with no model changes
 
 - Update README and source labels so they stop attributing the old Sep-2025 Waymo snapshot to the current live page.
-- Replace any text that intends to describe the current live Waymo page with the current checked values: `170.7M`, `3.90`, `1.63`, `0.22`, `43%`.
+- Replace any text that intends to describe the current live Waymo page with the current checked values: `220.6M` (through Mar 2026), `3.91`, `1.68`, `0.23`, `43%`. (The `170.7M` / `3.90` / `1.63` / `0.22` Dec-2025 figures are now historical.)
 - Keep the old `127M`-era numbers only if they are explicitly labeled as historical Waymo-hub snapshot values.
 - Remove or soften the unsupported claim that the Waymo page proves rider-only miles include deadhead/overhead and are definitionally identical to CPUC `TotalVMTZEV`.
 
