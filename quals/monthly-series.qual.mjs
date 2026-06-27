@@ -308,9 +308,9 @@ Resultata: classification was ${JSON.stringify(moderateSeverityCheck)}.`,
 );
 
 assert.ok(
-  plain.summaryCardHtml.includes("Serious injury (SSI+)"),
+  plain.summaryCardHtml.includes("Serious injury+"),
   `Replicata: render summary cards with all metrics enabled.
-Expectata: summary cards include "Serious injury (SSI+)" label.
+Expectata: summary cards include "Serious injury+" label.
 Resultata: label not found in card HTML.`,
 );
 

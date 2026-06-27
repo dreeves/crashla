@@ -378,7 +378,7 @@ const METRIC_DEFS = [
   },
   { key: "hospitalization",
     blank: "hospitalization",
-    cardLabel: "Hospitalization",
+    cardLabel: "Hospitalization+",
     incField: "incHospitalization",
 
     defaultEnabled: false, primary: false,
@@ -435,7 +435,7 @@ const METRIC_DEFS = [
   },
   { key: "seriousInjury",
     blank: "serious-injury-causing",
-    cardLabel: "Serious injury (SSI+)",
+    cardLabel: "Serious injury+",
     incField: "incSeriousInjury",
 
     defaultEnabled: false, primary: false,
@@ -2358,6 +2358,17 @@ function escAttr(s) {
 
 // --- Sanity Checks ---
 
+// Waymo's own published per-million-mile incident rates (waymo.com/safety/impact,
+// Jun 24 2026 update; 220.6M rider-only mi through Mar 2026), used only for the
+// Waymo published-rate cross-check sanity diagnostic. These are WAYMO's rates,
+// not the human benchmark (that lives in METRIC_DEFS' humanMPI). ssi is Waymo's
+// rounded 0.01. Airbag is intentionally omitted: our airbagAny is the SUBJECT
+// (Waymo) vehicle's airbag only (slurp uses the SGO "SV Any Air Bags Deployed?"
+// column and drops the archive's "CP Any Air Bags Deployed?"), so it matches
+// neither Waymo's any-vehicle 0.30 nor cleanly its Waymo-vehicle 0.06. Keep in
+// sync with the page.
+const WAYMO_PUBLISHED_IPMM = { injury: 0.71, ssi: 0.01 };
+
 function buildSanityChecks() {
   const rows = activeIncidents();
   const vmt = activeVmt();
@@ -2748,6 +2759,39 @@ When Monthly reports aren't yet available, the effective VMT is scaled down by t
         <th>Calendar coverage</th>
       </tr></thead>
       <tbody>${icRows.join("")}</tbody>
+    </table>`);
+
+  // --- 9b. Waymo published-rate cross-check ---
+  // Coarse cross-check: our full-history Waymo SGO rates vs Waymo's own
+  // published rates (WAYMO_PUBLISHED_IPMM). Scopes differ (all-roads SGO
+  // self-reported severity vs Waymo's surface-street, location-weighted), so
+  // closeness — not equality — is the signal; gross drift flags a counting bug,
+  // e.g. the 2026-06 Minor/Serious silent-drop where our injury rate sagged to
+  // ~0.40 vs Waymo's 0.71. waymo-reconciliation.qual bounds the ratios. Airbag
+  // is deliberately not cross-checked — see WAYMO_PUBLISHED_IPMM.
+  const wayAll = incidents.filter(r => r.helmer === "Waymo");
+  const wayVmtM = vmtRows.filter(r => r.helmer === "Waymo")
+    .reduce((s, r) => s + r.vmtBest, 0) / 1e6;
+  const wayXChecks = [
+    ["Any injury", wayAll.filter(r => INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.injury],
+    ["Serious injury+", wayAll.filter(r => SERIOUS_INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.ssi],
+  ];
+  const wayXRows = wayXChecks.map(([label, k, pub]) =>
+    `<tr><td>${label}</td><td>${(k / wayVmtM).toFixed(2)}</td><td>${pub.toFixed(2)}</td><td>${(k / wayVmtM / pub).toFixed(1)}x</td></tr>`);
+  sections.push(`
+<h3>Waymo cross-check</h3>
+<p>
+Our full-history Waymo rates (${wayAll.length} incidents over ${fmtMiles(wayVmtM * 1e6)} miles; SGO self-reported) vs Waymo's own published rates (surface-street only? location-weighted).
+A ratio very different from 1 suggests a problem.
+</p>
+    <table>
+      <thead><tr>
+        <th>Metric</th>
+        <th>Ours (per M mi)</th>
+        <th>Waymo published</th>
+        <th>Ratio</th>
+      </tr></thead>
+      <tbody>${wayXRows.join("")}</tbody>
     </table>`);
 
   // --- 10. Human benchmark derivations ---

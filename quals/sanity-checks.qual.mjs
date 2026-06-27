@@ -110,6 +110,7 @@ const expectedHeadings = [
   "Geography",
   "VMT sources",
   "Incident coverage for partial months",
+  "Waymo cross-check",
   "human benchmark derivations",
   "Sensitivity analysis",
 ];
