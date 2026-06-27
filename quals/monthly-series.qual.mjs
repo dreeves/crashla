@@ -213,13 +213,17 @@ assert.ok(
 Expectata: integer, unscaled counts matching the raw data (total=${expTesla.total}, nonstationary=${expTesla.nonstationary}, nonstationary-roadway=${expTesla.roadway}), with roadway <= nonstationary <= total.
 Resultata: Tesla summary was ${JSON.stringify({incTotal: teslaSummary.incTotal, incNonstationary: teslaSummary.incNonstationary, incRoadwayNonstationary: teslaSummary.incRoadwayNonstationary})}.`,
 );
+// De-magicked: recompute the expected per-helmer airbag count from INCIDENT_DATA
+// (airbagAny is any-vehicle since the archive SV|CP fix), so this self-updates
+// instead of going stale on a hardcoded range.
+const expAirbag = h => vm.runInContext(
+  `INCIDENT_DATA.filter(r => r.helmer === ${JSON.stringify(h)} && r.airbagAny).length`, ctx);
 assert.ok(
-  summaryByHelmer.Waymo.incAirbag >= 30 &&
-    summaryByHelmer.Waymo.incAirbag <= 45 &&
-    summaryByHelmer.Tesla.incAirbag === 0 &&
-    summaryByHelmer.Zoox.incAirbag === 0,
-  `Replicata: compute airbag deployment incident counts per helmer.
-Expectata: Waymo has 30\u201345 airbag incidents (all months with VMT); Tesla and Zoox have 0 (no airbag deployments in current data).
+  summaryByHelmer.Waymo.incAirbag === expAirbag("Waymo") &&
+    summaryByHelmer.Tesla.incAirbag === expAirbag("Tesla") &&
+    summaryByHelmer.Zoox.incAirbag === expAirbag("Zoox"),
+  `Replicata: compare per-helmer incAirbag to a flat airbagAny count of INCIDENT_DATA.
+Expectata: integer, unscaled airbag counts matching the raw data (Waymo=${expAirbag("Waymo")}, Tesla=${expAirbag("Tesla")}, Zoox=${expAirbag("Zoox")}).
 Resultata: Waymo=${summaryByHelmer.Waymo.incAirbag} Tesla=${summaryByHelmer.Tesla.incAirbag} Zoox=${summaryByHelmer.Zoox.incAirbag}.`,
 );
 

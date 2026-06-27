@@ -5,10 +5,9 @@
 // methodology gaps. The injury bound is tighter because all-injury rates should
 // track closely: it would have caught the 2026-06 silent-drop bug, where our
 // Waymo injury rate sagged to ~0.40 vs Waymo's 0.71 (ratio 0.56, below 0.6).
-// Airbag is NOT cross-checked: our airbagAny is the subject (Waymo) vehicle's
-// airbag only, comparable to neither Waymo's any-vehicle nor cleanly its
-// Waymo-vehicle figure (see WAYMO_PUBLISHED_IPMM). The precise guard against the
-// silent-drop class is severity-classification.qual.
+// Airbag ("any vehicle") is comparable since the archive SV|CP fix
+// (_normalize_archive_row). The precise guard against the silent-drop class is
+// severity-classification.qual.
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
@@ -39,6 +38,7 @@ const stats = vm.runInContext(`(() => {
   return {
     vmtM,
     injury: way.filter(r => INJURY_SEVERITIES.has(r.severity)).length / vmtM,
+    airbag: way.filter(r => r.airbagAny).length / vmtM,
     ssi: way.filter(r => SERIOUS_INJURY_SEVERITIES.has(r.severity)).length / vmtM,
   };
 })()`, ctx);
@@ -49,6 +49,7 @@ assert.ok(stats.vmtM > 100,
 // [metric, published key, lo ratio, hi ratio]
 const checks = [
   ["injury", "injury", 0.6, 1.6],
+  ["airbag", "airbag", 0.5, 1.8],  // any-vehicle; some scope slack (all-severity SGO vs Waymo's)
   ["ssi", "ssi", 0.3, 4.5],
 ];
 for (const [metric, key, lo, hi] of checks) {
@@ -60,4 +61,4 @@ Expectata: ratio in [${lo}, ${hi}] (loose cross-check; a breach means a real div
 Resultata: ratio ${ratio.toFixed(2)}x.`);
 }
 
-console.log(`qual pass: full-history Waymo rates within bounds of Waymo's published figures (injury ${(stats.injury / pub.injury).toFixed(2)}x, serious+ ${(stats.ssi / pub.ssi).toFixed(2)}x)`);
+console.log(`qual pass: full-history Waymo rates within bounds of Waymo's published figures (injury ${(stats.injury / pub.injury).toFixed(2)}x, airbag ${(stats.airbag / pub.airbag).toFixed(2)}x, serious+ ${(stats.ssi / pub.ssi).toFixed(2)}x)`);

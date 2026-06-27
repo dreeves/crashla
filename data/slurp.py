@@ -213,6 +213,12 @@ def _normalize_archive_row(row):
     for archive_key, current_key in ARCHIVE_COLUMN_MAP.items():
         if current_key not in row and archive_key in row:
             row[current_key] = row[archive_key]
+    # The current CSV's single "Any Air Bags Deployed?" means ANY involved
+    # vehicle; the archive splits it into SV + CP and ARCHIVE_COLUMN_MAP copies
+    # only SV. OR in the crash-partner column so archive-era airbag deployments
+    # in the OTHER vehicle aren't dropped (airbagAny is defined as any-vehicle).
+    if "Yes" in (row.get("CP Any Air Bags Deployed?") or ""):
+        row["Any Air Bags Deployed?"] = "Yes"
     return row
 
 

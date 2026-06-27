@@ -2362,12 +2362,9 @@ function escAttr(s) {
 // Jun 24 2026 update; 220.6M rider-only mi through Mar 2026), used only for the
 // Waymo published-rate cross-check sanity diagnostic. These are WAYMO's rates,
 // not the human benchmark (that lives in METRIC_DEFS' humanMPI). ssi is Waymo's
-// rounded 0.01. Airbag is intentionally omitted: our airbagAny is the SUBJECT
-// (Waymo) vehicle's airbag only (slurp uses the SGO "SV Any Air Bags Deployed?"
-// column and drops the archive's "CP Any Air Bags Deployed?"), so it matches
-// neither Waymo's any-vehicle 0.30 nor cleanly its Waymo-vehicle 0.06. Keep in
-// sync with the page.
-const WAYMO_PUBLISHED_IPMM = { injury: 0.71, ssi: 0.01 };
+// rounded 0.01; airbag is "any vehicle" — comparable to our airbagAny now that
+// the archive SV|CP drop is fixed (_normalize_archive_row). Keep in sync.
+const WAYMO_PUBLISHED_IPMM = { injury: 0.71, airbag: 0.30, ssi: 0.01 };
 
 function buildSanityChecks() {
   const rows = activeIncidents();
@@ -2767,13 +2764,13 @@ When Monthly reports aren't yet available, the effective VMT is scaled down by t
   // self-reported severity vs Waymo's surface-street, location-weighted), so
   // closeness — not equality — is the signal; gross drift flags a counting bug,
   // e.g. the 2026-06 Minor/Serious silent-drop where our injury rate sagged to
-  // ~0.40 vs Waymo's 0.71. waymo-reconciliation.qual bounds the ratios. Airbag
-  // is deliberately not cross-checked — see WAYMO_PUBLISHED_IPMM.
+  // ~0.40 vs Waymo's 0.71. waymo-reconciliation.qual bounds the ratios.
   const wayAll = incidents.filter(r => r.helmer === "Waymo");
   const wayVmtM = vmtRows.filter(r => r.helmer === "Waymo")
     .reduce((s, r) => s + r.vmtBest, 0) / 1e6;
   const wayXChecks = [
     ["Any injury", wayAll.filter(r => INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.injury],
+    ["Airbag deployment", wayAll.filter(r => r.airbagAny).length, WAYMO_PUBLISHED_IPMM.airbag],
     ["Serious injury+", wayAll.filter(r => SERIOUS_INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.ssi],
   ];
   const wayXRows = wayXChecks.map(([label, k, pub]) =>
