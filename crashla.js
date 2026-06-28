@@ -467,11 +467,11 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.fatality,
-    // FARS national per-vehicle-adjusted (75M) to urban surface-street
-    // estimate (~130M, using urban fatality rate ~0.7-1.15 per 100M VMT)
+    // FLEET deaths-per-VMT basis, matching the fractional-death AV count above
+    // (Koopman/Piper). Urban surface-street fatality ~0.77-1.15 deaths/100M VMT.
     humanMPI: {
       HumansAV: {lo: 87000000, hi: 130000000,
-        src: 'urban surface-street fatality rate ~0.77\u20131.15 per 100M VMT',
+        src: 'urban surface-street fatality rate ~0.77 to 1.15 deaths per 100M VMT',
         srcLinks: [
           {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
         ]},
@@ -483,7 +483,7 @@ const METRIC_DEFS = [
       // The one rideshare-specific per-mile rate that is published (the
       // safety reports otherwise cover only fatalities and assaults).
       HumansRideshare: {lo: 106000000, hi: 161000000,
-        src: 'Uber & Lyft US Safety Reports: 0.62–0.94 fatalities per 100M VMT (2019–2022)',
+        src: 'Uber & Lyft US Safety Reports 0.62 to 0.94 fatalities per 100M VMT (2019-2022)',
         srcLinks: [
           {label: 'Uber US Safety Report', url: 'https://www.uber.com/us/en/safety/usr/'},
           {label: 'Lyft Safety Transparency Report', url: 'https://www.lyft.com/safety-transparency-report'},
@@ -1028,10 +1028,14 @@ function monthSeriesData() {
     rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
     rec.airbag += Number(inc.airbagAny === true);
     rec.seriousInjury += Number(SERIOUS_INJURY_SEVERITIES.has(inc.severity));
-    // Per-vehicle fatality: divide by number of vehicles involved to match
-    // fleet-wide fatality rate methodology (see theargumentmag.com article).
-    // vehiclesInvolved defaults to 2; overridden in preprocess.py when the
-    // narrative reveals more vehicles (e.g., 3 for the Tempe fatality).
+    // Fractional-death attribution (Koopman's method, endorsed by Piper): a
+    // fatal crash counts as 1/(vehicles involved) on the AV's account. The human
+    // fatality benchmark below is a FLEET metric -- total deaths / total VMT,
+    // each death counted once across all vehicles' miles. Most fatal crashes are
+    // multi-vehicle, so counting each fatal-crash involvement as a whole death
+    // would overstate the AV against that fleet rate; the fraction makes them
+    // comparable (a 2-vehicle fatal crash = 0.5, a 3-vehicle = 0.33). See
+    // theargumentmag.com/p/we-absolutely-do-know-that-waymos.
     rec.fatality += Number(inc.severity === "Fatality") / inc.vehiclesInvolved;
   }
 
@@ -2366,6 +2370,24 @@ function escAttr(s) {
 // the archive SV|CP drop is fixed (_normalize_archive_row). Keep in sync.
 const WAYMO_PUBLISHED_IPMM = { injury: 0.71, airbag: 0.30, ssi: 0.01 };
 
+// Passenger-presence inference from the SGO "Were All Passengers Belted?" field
+// (stored as `belted`). TWO distinct encodings mean no passenger; PAX_PRESENT
+// means a passenger was aboard. Classified EXPLICITLY so a new/variant value
+// fails passenger-classification.qual instead of silently defaulting to "with
+// passenger" — the bug that miscounted 485 no-passenger incidents ("No
+// Passengers in Vehicle" vs "Subject Vehicle - No Passenger In Vehicle").
+const PAX_NONE = new Set([
+  "No Passengers in Vehicle",
+  "Subject Vehicle - No Passenger In Vehicle",
+]);
+const PAX_PRESENT = new Set([
+  "Subject Vehicle - All Belted",
+  "Subject Vehicle - Not Belted - see Narrative",
+  "Yes",
+  "No, see Narrative",
+]);
+const PAX_UNKNOWN = new Set(["Unknown", ""]);
+
 function buildSanityChecks() {
   const rows = activeIncidents();
   const vmt = activeVmt();
@@ -2383,11 +2405,8 @@ function buildSanityChecks() {
     const helmerRows = rows.filter(r => r.helmer === helmer);
     const n = helmerRows.length;
     if (n === 0) continue;
-    const withPax = helmerRows.filter(r =>
-      r.belted !== "Subject Vehicle - No Passenger In Vehicle" &&
-      r.belted !== "Unknown" && r.belted !== "").length;
-    const noPax = helmerRows.filter(r =>
-      r.belted === "Subject Vehicle - No Passenger In Vehicle").length;
+    const withPax = helmerRows.filter(r => PAX_PRESENT.has(r.belted)).length;
+    const noPax = helmerRows.filter(r => PAX_NONE.has(r.belted)).length;
     const unk = n - withPax - noPax;
     // Range: low assumes all unknowns had no passenger, high assumes all did
     const pctLo = Math.round(100 * withPax / n);
