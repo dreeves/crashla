@@ -208,8 +208,9 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //   Kusano/Scanlon 7.1M-mi paper (arxiv 2312.12675, Table 3):
 //     All crashes: Blincoe-adj 9.67 IPMM, police-reported 4.68 IPMM
 //     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.91 IPMM
-//   Waymo safety impact page (waymo.com/safety/impact, 220.6M mi, Mar 2026):
-//     Any-injury 3.91 IPMM, airbag deploy 1.68 IPMM, SSI+ 0.23 IPMM
+//   Kusano & Scanlon 56.7M (arxiv 2505.01515), location-weighted human IPMM,
+//   per-city (Phoenix..SF) -> mileage-blended: Any-injury 2.09..8.02 -> 4.04;
+//   Airbag 1.42..2.31 -> 1.69; SSI+ 0.12..0.46 -> 0.24. (Waymo page concurs.)
 //   FARS 2023: national 1.26 fatalities/100M VMT; urban ~0.7-1.15/100M VMT
 //
 // Derived metrics use the subset-bounding approach: if metric B is a subset
@@ -324,13 +325,15 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.injury,
-    // Waymo safety page benchmark (3.91 IPMM) to Kusano observed (1.91)
+    // AV-cities band = Kusano & Scanlon 56.7M per-city human benchmark range
+    // (SF 8.02 to Phoenix 2.09 IPMM; Blincoe-adjusted, location-weighted),
+    // mileage-blended central 4.04. Band edges = 1M / per-city IPMM.
     humanMPI: {
-      HumansAV: {lo: 256000, hi: 524000,
-        src: 'lo: 1M/3.91 Waymo benchmark IPMM; hi: 1M/1.91 Kusano observed IPMM',
+      HumansAV: {lo: 125000, hi: 478000,
+        src: 'Kusano & Scanlon 56.7M: human any-injury 2.09 (Phoenix) to 8.02 (SF) IPMM, blended 4.04 (Blincoe-adjusted, location-weighted)',
         srcLinks: [
-          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
-          {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+          {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
+          {label: 'Waymo safety impact', url: 'https://waymo.com/safety/impact/'},
         ]},
       // CRSS national: ~1.66M injury crashes/yr * ~1.77 vehicles / ~3.2T VMT
       // -> ~0.92 injury-crashed vehicles per M mi police-reported; Blincoe
@@ -411,20 +414,20 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.airbag,
-    // Airbag deployment in any vehicle. Waymo safety impact page: human
-    // benchmark 1.68 IPMM (police-reported, AV operating counties, no
-    // underreporting adjustment — airbag deployments are mechanically
-    // triggered and rarely underreported). Range accounts for modest
-    // geographic/methodological variation.
+    // Airbag deployment in any vehicle. AV-cities band = Kusano 56.7M per-city
+    // human benchmark (1.42 Phoenix to 2.31 SF IPMM, observed; airbags are
+    // mechanically triggered and rarely underreported, so no Blincoe
+    // adjustment), mileage-blended 1.69.
     humanMPI: {
       // No published national airbag-deployment per-mile rate; HumansUS is
       // estimated by log-interpolation between the national injury and fatality
       // anchors (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is leaned off HumansAV by the loop below.
-      HumansAV: {lo: 500000, hi: 700000,
-        src: 'Waymo safety impact: 1.68 IPMM police-reported airbag-deploy rate in AV operating counties',
+      HumansAV: {lo: 433000, hi: 704000,
+        src: 'Kusano & Scanlon 56.7M: human airbag 1.42 (Phoenix) to 2.31 (SF) IPMM, blended 1.69 (observed, location-weighted)',
         srcLinks: [
-          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
+          {label: 'Waymo safety impact', url: 'https://waymo.com/safety/impact/'},
         ]},
       HumansUS: {lo: 820000, hi: 2400000,
         src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
@@ -441,17 +444,18 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.seriousInjury,
     // SSI+ (KABCO A+K): "Serious" + "Fatality" (suspected serious injury or
-    // worse). Waymo safety impact page: 0.23 IPMM. Range: 0.30 IPMM (broader
-    // definition) to 0.15 IPMM (narrower, only the most severe subset).
+    // worse). AV-cities band = Kusano 56.7M per-city human SSI+ range (SF 0.46
+    // to Phoenix 0.12 IPMM; observed, location-weighted), blended 0.24.
     humanMPI: {
       // No clean national SSI+ (KABCO A+K) per-mile rate; HumansUS is estimated
       // by log-interpolation between the national injury and fatality anchors
       // (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is leaned off HumansAV by the loop below.
-      HumansAV: {lo: 3300000, hi: 6700000,
-        src: 'Waymo safety impact SSI+ 0.23 IPMM; range 0.15\u20130.30 for definitional uncertainty',
+      HumansAV: {lo: 2170000, hi: 8330000,
+        src: 'Kusano & Scanlon 56.7M: human SSI+ 0.12 (Phoenix) to 0.46 (SF) IPMM, blended 0.24 (observed, location-weighted)',
         srcLinks: [
-          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
+          {label: 'Waymo safety impact', url: 'https://waymo.com/safety/impact/'},
         ]},
       HumansUS: {lo: 3000000, hi: 14000000,
         src: 'No clean national SSI+ (KABCO A+K) per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',

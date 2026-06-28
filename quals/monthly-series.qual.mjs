@@ -320,9 +320,9 @@ Resultata: label not found in card HTML.`,
 
 const humanSsi = vm.runInContext("METRIC_DEFS.find(m => m.key === 'seriousInjury').humanMPI.HumansAV", ctx);
 assert.ok(
-  humanSsi && humanSsi.lo >= 3000000 && humanSsi.hi <= 7000000 && humanSsi.lo < humanSsi.hi,
+  humanSsi && humanSsi.lo >= 1800000 && humanSsi.hi <= 9000000 && humanSsi.lo < humanSsi.hi,
   `Replicata: inspect humanMPI for seriousInjury metric.
-Expectata: SSI+ human benchmark lo (3M\u20134M) < hi (6M\u20137M) based on ~0.23 IPMM.
+Expectata: SSI+ human benchmark spans the Kusano 56.7M per-city range ~2.2M (SF 0.46 IPMM) to ~8.3M (Phoenix 0.12 IPMM), blended ~0.24. (waymo-reconciliation / human-benchmark provenance qual pins the exact edges.)
 Resultata: ${JSON.stringify(humanSsi)}.`,
 );
 
