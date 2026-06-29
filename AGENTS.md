@@ -78,66 +78,16 @@ Additional rules specific to this project:
 - 2026-06-12 (later): atfaultInjury lo shares moved from legal-allocation 85% to expert-avoidability ~94% (matches faultfrac criterion; NHTSA critical-reason source already linked): HumansAV lo 300K→272K, HumansUS lo 920K→830K; his unchanged (50% legal-allocation floor). Phase 3 (Waymo-faithful mode) CLOSED per human 2026-06-12: the HumansAV/HumansUS cohort split plus the non-reproduction notes serve the purpose; no separate Waymo-faithful mode. Note the residual difference: Waymo's official method also does location-dynamic weighting and surface-street-only scoping, which the cohort split does not reproduce — documented, not implemented.
 - 2026-06-12 (later): Prediction markets fixed + extended. Root cause of "not refreshing": refresh went through the api.codetabs.com CORS proxy which now returns 400, and per-event failures were silently swallowed, so the button re-rendered the stale 2026-04-04 snapshot. gamma-api now serves access-control-allow-origin:* so the proxy is gone (direct fetch). Auto-refresh on page load (snapshot renders instantly, live prices replace it); failures console.error and the age label only advances when ALL fetches succeed. Added MANIFOLD_SNAPSHOT (4 curated binary markets: tesla-serves-more-fully-autonomous, will-tesla-count-as-a-waymo-competi (dreev's own), tesla-robotaxi-service-atfault-acci, will-a-waymo-selfdriving-car-be-inv) fetched live from api.manifold.markets/v0/slug/ (open CORS), rendered with Ṁ mana volumes via fmtMana. Polymarket snapshot re-fetched fresh (2026-06-12). New qual prediction-markets.qual.mjs (snapshot integrity, per-market cards, fmtMana, no-proxy + auto-refresh source checks). HEADS-UP: 4 of 5 Polymarket events and the Waymo-fatality Manifold market resolve around June 30 / July 1, 2026 — disable or replace them after they resolve (per the data/polymarket.js header convention).
 
-## Verified Waymo Safety Impact Notes
+## Waymo benchmark reference (current)
 
-- Not an error: `127M` through Sep 2025, `170.7M` through Dec 2025, and `220.6M` through Mar 2026 are compatible cumulative snapshots. The checked-in Waymo VMT series is pinned to these published anchors: `127,000,000` at `2025-09`, `170,700,000` at `2025-12`, and `220,600,000` at `2026-03`.
-- The current live Waymo page (Jun 24, 2026 update) says:
-  - `220.6M` rider-only miles through Mar 2026 (per-city: PHX 80.6M, SF 67.1M, LA 51.8M, ATX 15.8M, ATL 5.4M). The earlier `170.7M` through Dec 2025 and `127M` through Sep 2025 are now historical snapshots.
-  - Rider-only miles are miles driven without a human driver in cities where Waymo operates ride-hailing service.
-  - The safety-impact comparisons are for surface streets, not freeways.
-  - The current all-location human benchmarks shown on the page are `3.91` any-injury IPMM, `1.68` airbag-in-any-vehicle IPMM, and `0.23` serious-injury-or-worse IPMM (Waymo's own rates: `0.71` / `0.30` / `0.01`).
-  - `43%` of SGO collisions are under `1 mph` delta-V across all areas.
-  - The benchmark method is not just "surface streets in AV cities"; it uses a location-based dynamic benchmark adjustment tied to where Waymo actually drives.
-- The app/repo still contains stale or overstated claims:
-  - Several places cite the live Waymo page as if it were the source of the older `127M` / `3.97` / `1.66` / `0.23` / `45%` snapshot.
-  - README currently overstates that Waymo rider-only miles necessarily include deadhead/overhead and match CPUC `TotalVMTZEV`; the current Waymo page alone does not establish that.
-  - README and code describe our human benchmark method too loosely as if it were substantially the same as Waymo's current methodology.
-  - The app's default primary metric is still raw "all incidents", while the Waymo page emphasizes injury-causing crashes and surface-street alignment.
-  - The app's current aggregation for `incTotal` includes all incidents in the dataset month bucket; it does not currently reproduce Waymo's surface-street-only scope.
+- Cumulative Waymo VMT is pinned to Waymo's published anchors (compatible snapshots, not contradictions): 127M end-Sep-2025, 170.7M end-Dec-2025, 220.6M end-Mar-2026 (per-city PHX 80.6M / SF 67.1M / LA 51.8M / ATX 15.8M / ATL 5.4M).
+- AV-cities human benchmarks for injury/airbag/serious-injury+ come from Kusano & Scanlon 56.7M (arxiv 2505.01515), location-weighted per-city, pinned by human-benchmark-provenance.qual: mileage-blended any-injury 4.04, airbag 1.69, SSI+ 0.24 IPMM (the Waymo safety page concurs ~3.91 / 1.68 / 0.23; Waymo's own ADS rates 0.71 / 0.30 / 0.01). all-crashes uses the Kusano observed-to-Blincoe synthesis; fatality uses fleet deaths/VMT with Koopman/Piper fractional-death attribution (the /vehiclesInvolved is correct -- see the 2026-06-27 entry).
+- Definitions: rider-only = miles with no human driver in Waymo's ride-hail cities; Waymo's published comparisons are surface-street and location-weighted (dynamic, intra-city); ~43% of SGO collisions are <1 mph delta-V.
 
-## Plan: Waymo Safety Impact Alignment
+## Waymo-alignment plan (closed)
 
-### Phase 1: factual cleanup with no model changes
+Phases 1-2 done (sourcing + labels made honest). Phase 3 closed per human 2026-06-12: keep the cross-driver app with honest caveats, NO separate Waymo-faithful mode (the dynamic benchmark is Waymo-specific, not a universal human baseline for Tesla/Zoox). Phase 4 partially realized 2026-06-28 (injury/airbag/serious AV-cities bands now use Kusano 56.7M directly). Standing guardrails: don't reuse Waymo's dynamic benchmark as the shared human baseline for all drivers; don't strengthen provenance claims beyond the cited source.
 
-- Update README and source labels so they stop attributing the old Sep-2025 Waymo snapshot to the current live page.
-- Replace any text that intends to describe the current live Waymo page with the current checked values: `220.6M` (through Mar 2026), `3.91`, `1.68`, `0.23`, `43%`. (The `170.7M` / `3.90` / `1.63` / `0.22` Dec-2025 figures are now historical.)
-- Keep the old `127M`-era numbers only if they are explicitly labeled as historical Waymo-hub snapshot values.
-- Remove or soften the unsupported claim that the Waymo page proves rider-only miles include deadhead/overhead and are definitionally identical to CPUC `TotalVMTZEV`.
-
-### Phase 2: methodology honesty
-
-- Relabel our current human benchmark bands as our own synthesis unless and until we truly implement Waymo's location-adjusted benchmark method.
-- Add an explicit note that the app is not currently a faithful reproduction of Waymo's safety-impact methodology.
-- Add an explicit note that the app's default comparison is broader than Waymo's surface-street injury-focused framing.
-
-### Phase 3: scope decision requiring human approval
-
-- Decide whether the goal is:
-  - keep the current cross-driver app and just describe the differences from Waymo's methodology honestly, or
-  - add a separate Waymo-only comparison mode that more faithfully reproduces Waymo's methodology.
-- This matters because Waymo's dynamic benchmark is Waymo-specific. Reusing it as a universal human baseline for Tesla and Zoox is not justified by the Waymo page.
-
-### Phase 4: deeper alignment work if we choose to pursue it
-
-- If the goal is actual methodological alignment with Waymo, use Waymo's downloadable data artifacts and papers, not prose summaries.
-- Verify what local data is required to reproduce surface-street-only scope and dynamic location weighting.
-- Do not claim full alignment unless we can support:
-  - surface-street scope,
-  - Waymo-specific location weighting,
-  - the same outcome definitions,
-  - and the same crashed-vehicle-rate framework.
-
-### Guardrails
-
-- Do not treat `127M` vs `170.7M` as a contradiction.
-- Do not silently swap in Waymo-specific benchmark logic as the shared human baseline for all drivers.
-- Do not strengthen provenance claims beyond what the cited source actually says.
-
-### Status (2026-06-10)
-
-- Phase 1 done: README no longer attributes the 127M-era snapshot to the live Waymo page (now labeled historical); `45%` sub-1mph share corrected to `43%`; CPUC `TotalVMTZEV` equivalence relabeled as our assumption; stale window text, stale incident counts (now 1,641: 1,593 Waymo / 17 Tesla / 31 Zoox), and stale Waymo uncertainty bands reconciled with the checked-in `vmt.js`; both `[[TODO --codex]]` items resolved.
-- Phase 2 done: README "Human Comparison Methodology" relabeled as our own synthesis with explicit non-reproduction and broader-default-metric notes; same note added to the app's "Specific human benchmark derivations" section (Latin, per microcopy rule, with recommended English in a code comment).
-- Phase 3 still awaiting human decision (cross-driver app with honest caveats vs separate Waymo-faithful mode).
 - Resolved 2026-06-11: Tesla VMT rows include Dallas/Houston from 2026-04 (unsupervised D/H launch Apr 18, 2026 per Electrek), matching the incident-counting scope. 2026-05 rows added for all three drivers (held out of the app until NHTSA publishes May incidents). Waymo Jan–Apr 2026 re-anchored to the 200M milestone (crossed Feb 6–23) plus the co-CEO's >4M rider-only mi/week (late Mar 2026); old rows were ~10–15% above those anchors. New qual `vmt-master-fidelity` verifies data/vmt.csv flows unchanged into the rendered charts.
 - Open wording nit: Tesla 2025 row rationales say "netted to empty driver-seat miles", but the numerator includes the driver-seat-monitor mode (NHTSA "In-Vehicle (Commercial / Test)") from Sep 2025 highway rides. Whether robotaxitracker's mileage model includes those highway miles is unverified; numbers left untouched.
 - 2026-06-11 (later): repo-wide rename "driver" -> "helmer" (code identifiers, incidents.js `helmer` key, vmt.csv header `helmer`/`helmer_cumulative_vmt`, DOM ids/classes, UI labels, qual file per-helmer-summary). NHTSA's own field names ("Driver / Operator Type") and human prose ("human drivers") untouched. Old shared URLs (c=Humans..., s=driver) now fail loudly per anti-Postel.

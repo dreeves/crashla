@@ -1629,7 +1629,7 @@ function renderMpiSummaryCards(series) {
   return rows.map(row => {
     const vmtLine = row.vmtBest > 0
       ? `<div class="mpi-card-vmt" data-tip="${escAttr(row.vmtRationales.join('\n'))}">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
-      : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${s.url}">${s.label}</a>`))].join(", ")}</div>`;
+      : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
     const stressLine = row.vmtBest > 0
       ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: <span class="stress-badge ${stress.className}">${stress.label}</span> ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
       : "";
@@ -1654,10 +1654,10 @@ function renderMpiSummaryCards(series) {
           const kLine = est.k !== null ? `${fmtCount(est.k)} incidents \u2192 ` : "";
           const ciLabel = est.k !== null ? "95% CI" : "Range";
           const srcLine = (est.k === null && humanBench && humanBench.srcLinks)
-            ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(s => `<a href="${s.url}">${s.label}</a>`).join(", ")}</div>`
+            ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`).join(", ")}</div>`
             : "";
           const srcHint = (est.k === null && humanBench && humanBench.src)
-            ? ` <span class="mpi-card-src" title="${humanBench.src}">[?]</span>`
+            ? ` <span class="mpi-card-src" title="${escAttr(humanBench.src)}">[?]</span>`
             : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
@@ -1734,7 +1734,7 @@ function renderHumanBenchmarkTable() {
     .map(m => {
       const h = m.humanMPI[hh];
       const links = (h.srcLinks || [])
-        .map(s => `<a href="${s.url}">${escHtml(s.label)}</a>`).join(", ");
+        .map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`).join(", ");
       const derivation = escHtml(h.src) + (links ? ` (${links})` : "");
       return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td>${fmtMiles(h.lo)}</td><td>${fmtMiles(h.hi)}</td><td>${derivation}</td></tr>`;
     })).join("");
@@ -2215,6 +2215,11 @@ function initCollapsibles() {
 }
 
 const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
+// renderHeaders loops HEADER_LABELS and indexes SORT_COLUMNS[i] in lockstep, so a
+// divergence must fail loud at load, not silently misalign a header with its sort.
+assert(HEADER_LABELS.length === SORT_COLUMNS.length,
+  "HEADER_LABELS and SORT_COLUMNS must stay parallel",
+  {labels: HEADER_LABELS.length, columns: SORT_COLUMNS.length});
 
 function buildBrowser() {
   const {start, end} = seriesMonthBounds(activeSeries);
@@ -2969,8 +2974,8 @@ function renderMarketCard(question, url, prob, volText) {
   const card = document.createElement("div");
   card.className = "pm-card";
   card.innerHTML =
-    `<span class="pm-card-question"><a href="${url}" ` +
-    `target="_blank" rel="noopener">${question}</a></span>` +
+    `<span class="pm-card-question"><a href="${escAttr(url)}" ` +
+    `target="_blank" rel="noopener">${escHtml(question)}</a></span>` +
     `<span class="pm-card-odds ${oddsClass(prob)}">${fmtPct(prob)}</span>` +
     `<span class="pm-card-vol">${volText}</span>`;
   return card;
@@ -2992,8 +2997,8 @@ function appendMarketGroup(grid, title, url, volText, outcomes) {
   const header = document.createElement("div");
   header.className = "pm-card";
   header.innerHTML =
-    `<span class="pm-card-question"><a href="${url}" ` +
-    `target="_blank" rel="noopener"><b>${title}</b></a></span>` +
+    `<span class="pm-card-question"><a href="${escAttr(url)}" ` +
+    `target="_blank" rel="noopener"><b>${escHtml(title)}</b></a></span>` +
     `<span class="pm-card-vol">${volText}</span>`;
   grid.appendChild(header);
   for (const o of outcomes) {
