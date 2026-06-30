@@ -19,7 +19,7 @@ https://electrek.co/2026/01/29/teslas-own-robotaxi-data-confirms-crash-rate-3x-w
 
 NHTSA data source:
 https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
-(2025 June 15 through 2025 December 15) [AI note: the window now rolls forward as NHTSA publishes data; incidents currently run through 2026-04. There is no longer a fixed window-end constant in the code.]
+(2025 June 15 through 2025 December 15) [AI note: the window now rolls forward as NHTSA publishes data — it always runs through the most recent month available, with no fixed window-end constant in the code.]
 https://docs.google.com/spreadsheets/d/1r4hEVKOzE9sLLWmbB0Tzwzpo7aoUadmhxDY1imd5tb8/edit?usp=sharing
 518 incidents after deduping and filtering to operator=none
 
@@ -43,7 +43,7 @@ UNKNOWN: fraction of the Sep 1+ rides with empty driver's seat.
 
 ## Finding the Denominators
 
-For each of these self-driving car companies, we need a lower bound and upper bound on the total miles they drove in the US at SAE level 3+ from 2025-06-15 thru 2025-12-15: [AI note: window now rolls forward monthly; currently through 2026-04]
+For each of these self-driving car companies, we need a lower bound and upper bound on the total miles they drove in the US at SAE level 3+ from 2025-06-15 thru 2025-12-15: [AI note: window now rolls forward monthly as NHTSA publishes new data]
 
 1. Waymo
 2. Tesla
@@ -150,7 +150,7 @@ can you make a file called faultfrac.csv that, for every Report ID in data/snaps
 
 ## [AI TEXT] Explanatory Note
 
-This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox using [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) incident reports. The analysis window rolls forward as NHTSA publishes new data: the default view starts June 15, 2025 and currently extends through April 2026 (the date slider reaches back to July 2021 for Waymo). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June 2025 (starting June 15) has full incident coverage.
+This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox using [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) incident reports. The analysis window rolls forward as NHTSA publishes new data: the default view starts June 15, 2025 and extends through the most recent month NHTSA has published (the date slider reaches back to July 2021 for Waymo). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June 2025 (starting June 15) has full incident coverage.
 
 Context:
 [agifriday.substack.com/crashla](https://agifriday.substack.com/crashla/) and
@@ -200,7 +200,7 @@ Her claims, sourced from Waymo's own safety page and the Kusano/Scanlon paper:
 
 How our data compares:
 
-1. **Default view roughly agrees with her multiples (since 2026-06-12).** Our default metric is now at-fault MPI, where Waymo shows ~12x the AV-cities human geometric-mean benchmark (robust range 3.3–46.7x against the band edges). That's consistent with — if anything stronger than — Piper's 5–10x serious-crash multiples, though measured on a different construct (fault-weighted incidents of any severity vs injury severity tiers). The raw "all incidents" view, formerly the default, still shows only roughly 1–2.5x, reflecting reporting-threshold mismatch more than safety.
+1. **Default view roughly agrees with her multiples (since 2026-06-12).** Our default metric is now at-fault MPI, where Waymo shows roughly an order of magnitude more at-fault miles per incident than the AV-cities human geometric-mean benchmark; stress-testing against the band edges, the robust range stays well above parity at its low edge and reaches into the tens at its high edge. That sits at the upper end of Piper's 5–10x serious-crash multiples, though measured on a different construct (fault-weighted incidents of any severity vs injury severity tiers). The raw "all incidents" view, formerly the default, hovers around parity (roughly half-x to a couple-x across the band), reflecting reporting-threshold mismatch more than safety. (Live figures are on the page; we keep prose qualitative here because the exact multiples drift with each data refresh.)
 
 2. **Miles are compatible — and now confirmed well past 200M.** Piper said "over 200 million" for Waymo total; that milestone was confirmed Feb 23, 2026 (https://www.benzinga.com/markets/tech/26/03/50953948), and Waymo's Jun 24, 2026 Safety Impact update reports 220.6M rider-only miles through end of March 2026 (per-city: Phoenix 80.6M, SF Bay 67.1M, LA 51.8M, Austin 15.8M, Atlanta 5.4M). Earlier snapshots: 127M through Sep 2025, 170.7M through Dec 2025. Waymo defines "rider-only miles" as miles without a human driver in cities where it operates; we treat that as including deadhead and overhead, matching the CPUC `TotalVMTZEV` definition — an assumption our VMT estimates depend on but that the Waymo page alone does not establish. Our Waymo VMT series is now anchored to land on 220.6M cumulative through Mar 2026 by construction; before this recalibration it estimated 225.2M (~2% high), confirming the methodology was well-calibrated.
 
@@ -220,7 +220,7 @@ Sources:
 
 ## [AI TEXT] June and the Different Datasets
 
-The NHTSA Standing General Order (SGO) analysis window starts **June 15, 2025** (the default view) and rolls forward as NHTSA publishes new data; it currently extends through **April 2026**.
+The NHTSA Standing General Order (SGO) analysis window starts **June 15, 2025** (the default view) and rolls forward as NHTSA publishes new data, always extending through the most recent published month.
 June 2025 is therefore a partial month (June 15–30 only).
 Its VMT figure is pre-adjusted to match that partial window, so coverage=1.0 in the VMT data means "VMT and incidents are already aligned" — no further pro-rating needed.
 For the latest month, NHTSA's Monthly-track reports may not all be filed yet, so an incident-coverage factor thins the effective VMT instead (see the "Incident coverage for partial months" sanity check on the page).
@@ -231,7 +231,7 @@ For the latest month, NHTSA's Monthly-track reports may not all be filed yet, so
    Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `data/slurp.py`.
    Archival raw fetch snapshots live under `data/snapshots/`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
-   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 1,836 incidents as of the 2026-06-17 fetch: 1,783 Waymo, 18 Tesla, 35 Zoox. These counts grow with each slurp run.
+   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 1,836 incidents as of the latest fetch: 1,783 Waymo, 18 Tesla, 35 Zoox. These counts grow with each slurp run.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
    Maintained in `data/vmt.csv` (the in-repo master) and embedded in `data/vmt.js` by `data/slurp.py`.
@@ -293,6 +293,8 @@ Waymo's US monthly VMT is estimated by combining two data sources:
 
    Note: Waymo defines "rider-only miles" as miles with no human driver in cities where Waymo operates. We treat this as including deadhead and overhead — i.e., all driverless VMT, the CPUC `TotalVMTZEV` definition — which is an assumption of this methodology; the Waymo page alone does not establish that equivalence.
 
+   Note: through end-Sep-2025 these published figures are encoded as lower-bound *floors* (the `kyoom_min` column), with the best-estimate cumulative running a near-constant ~2.7M above them (e.g. ~129.7M best vs the 127M Sep floor); the Dec-2025 (170.7M) and Mar-2026 (220.6M) anchors are instead pinned as exact *central* estimates. So the best-estimate line sits a little above the older milestones and lands exactly on the two most recent ones by construction. That ~2.7M offset traces to the early Jul-2021-onward ramp (see the early-ramp caveat under "Uncertainty bands"); its effect on the default-window MPI is ~1.7%, and it is well inside the older months' wide bands.
+
 ### Scaling methodology
 
 For each interval between consecutive US milestones:
@@ -321,11 +323,11 @@ Phoenix 80.6M (36.5%), San Francisco Bay Area 67.1M (30.4%), Los Angeles 51.8M (
 
 ### Uncertainty bands
 
-- **Jul 2021–Oct 2022** (0.5x–2x): Pre-CPUC pilot era, before the CPUC-scaled anchors begin. No monthly CA driverless VMT exists to scale from, so monthly all-driverless miles are interpolated from the Oct 2020 Phoenix rider-only launch (~0), the tens of thousands of first-year Phoenix rider-only trips (KTAR, Oct 2021), and the ~1M rider-only milestone (first crossed Jan 2023), ramping smoothly into the Nov 2022 CPUC-anchored figure. The window starts at July 2021 because that is the NHTSA SGO reporting floor (the earliest incident in the dataset); earlier Waymo miles exist but have no reportable-incident numerator. Bands are the widest in the series.
+- **Jul 2021–Oct 2022** (0.5x–2x): Pre-CPUC pilot era, before the CPUC-scaled anchors begin. No monthly CA driverless VMT exists to scale from, so monthly all-driverless miles are interpolated from the Oct 2020 Phoenix rider-only launch (~0), the tens of thousands of first-year Phoenix rider-only trips (KTAR, Oct 2021), and the ~1M rider-only milestone (first crossed Jan 2023), ramping smoothly into the Nov 2022 CPUC-anchored figure. The window starts at July 2021 because that is the NHTSA SGO reporting floor (the earliest incident in the dataset); earlier Waymo miles exist but have no reportable-incident numerator. Bands are the widest in the series. (Caveat: this smooth all-driverless ramp overshoots Waymo's *rider-only* milestones in this era — ~4.2M cumulative by Jan 2023 vs Waymo's ~1M rider-only figure, more than the deadhead gross-up alone explains — which seeds the near-constant ~2.7M baseline offset noted by the milestone table. Because that offset is constant from Oct 2023 through Sep 2025, monthly *deltas* (hence window MPIs) over that span are unaffected; only deep-historical pre-2024 windows read Waymo as too safe — and those hold just ~94 incidents under the widest bands — while the default June-2025-onward window is instead ~1.7% *conservative*, since the offset is absorbed back to zero by the exact Dec-2025 pin inside it. Re-baselining the early ramp onto the ~1M milestone is an open calibration question.)
 - **Nov 2022–Nov 2023** (±50%): Sparse milestones, pilot era. Pilot-only CA VMT is very small (17K–255K/month). The CA share is uncertain (~14%) and the proportional distribution within milestone intervals may not capture intra-interval growth patterns.
 - **Dec 2023–Jun 2024** (±35%): First deployment period. CA share was shifting as LA launched (~24% → ~33%). Cumulative milestone endpoints are known but monthly allocation is approximate.
 - **Jul 2024–Sep 2025** (±25%): Tight milestone brackets. CA share is stable (~52–55%).
-- **Oct–Dec 2025** (±30%): Bracketed by Waymo's published cumulative anchors — 127M end-Sep and 170.7M end-Dec 2025; the monthly profile is shaped by CPUC CA VMT (which plateaued at ~8.4M/month while US VMT grew modestly as Austin expanded); average CA share ~51%, down from ~55% in Q3.
+- **Oct–Dec 2025** (±30%): Bracketed by Waymo's published cumulative anchors — 127M end-Sep (a lower-bound floor; best-estimate cumulative ~129.7M) and 170.7M end-Dec 2025 (pinned exactly as the central estimate); the monthly profile is shaped by CPUC CA VMT (which plateaued at ~8.4M/month while US VMT grew modestly as Austin expanded); average CA share ~51%, down from ~55% in Q3.
 - **Jan–Mar 2026** (±25%): Anchored to Waymo's 220.6M rider-only miles through March 2026 (Safety Impact update, Jun 24, 2026), bridging from the 170.7M end-Dec-2025 anchor; the implied ~17.7M March (~4.1M/week) matches the co-CEO's >4M rider-only miles/week at ~500k paid trips/week (late Mar 2026). The lower band at March is floored at the confirmed 220M milestone.
 - **Apr–May 2026** (±30%): Extrapolated from the 220.6M end-Mar-2026 anchor at the late-Mar weekly rate with modest growth (~3,000 vehicles).
 
