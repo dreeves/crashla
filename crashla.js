@@ -187,7 +187,7 @@ let faultData = {}; // reportId -> {faultfrac, reasoning}
 let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, Waymo: true, Zoox: false};
 // Collapsible page sections (each <section class="collapsible" id="sec-<id>">).
 // Collapsed set is shareable via the URL so a link can foreground one section.
-const SECTION_IDS = ["controls", "vmt", "mpi", "dist", "browser", "markets", "summary", "sanity"];
+const SECTION_IDS = ["controls", "vmt", "mpi", "dist", "browser", "markets", "summary", "sanity", "fleet"];
 let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // label (chart legend), cardLabel (summary card), line style, human benchmark,
@@ -537,6 +537,7 @@ const STRESS_VERDICT_META = {
 };
 let selectedMetricKey = METRIC_DEFS.find(m => m.defaultEnabled).key;
 let vmtCumulative = false; // per-helmer VMT charts: false = monthly, true = cumulative
+let selectedGrowthMetric = "fleet"; // growth extrapolator metric: fleet | miles | rides
 const DEFAULT_START_MONTH = "2025-06"; // default slider start (NHTSA analysis window)
 let monthRangeStart = -1; // -1 = use DEFAULT_START_MONTH
 let monthRangeEnd = Infinity;
@@ -1538,6 +1539,554 @@ function renderDistributionChart(series) {
       </g>
     </svg>
   `;
+}
+
+// --- Fleet-size forecast (Jan 1, 2027) ---------------------------------------
+// [AI TEXT] A forward-looking forecast of how many vehicles each helmer will have
+// in genuine driverless / ADS robotaxi service (this page's NHTSA "operator = none"
+// scope, plus Tesla's driver-monitor "In-Vehicle Commercial/Test" mode) on Jan 1,
+// 2027. This is an EXTERNAL judgment forecast — NOT derived from the NHTSA incident
+// or VMT pipelines. It is anchored to mid-2026 fleet counts and announced expansion
+// plans and is the author's own predictive distribution.
+//
+// Each helmer's distribution is a mixture of log-normals on the vehicle count.
+// Tesla is the multimodal one (it has no vehicle-supply constraint — there are
+// already millions of FSD-capable HW4/AI4 cars on the road), so its three modes
+// are three different futures, not one smooth ramp:
+//   A — the slow robotaxi ramp continues (low hundreds);
+//   B — Tesla scales the dedicated robotaxi service aggressively (Cybercab +
+//       Model-Y robotaxis: a few thousand to tens of thousands);
+//   C — Tesla turns on eyes-off (operator-none) FSD across the HW4 fleet, so a
+//       large fraction of privately-owned HW4 Teslas count as ADS (hundreds of
+//       thousands to a few million). NOTE: mode C is a BROADER "fleet" than the
+//       NHTSA robotaxi-service scope Waymo/Zoox are counted under — it counts
+//       ADS-operating personal cars, not just robotaxis. So A+B (scope "robotaxi")
+//       and C (scope "hw4") are drawn as two SEPARATE Tesla curves, not one.
+//
+// Tesla weights are fit to the prediction markets already on the page rather than
+// picked by hand: C = 0.05 matches the Manifold "Millions of Teslas at level 3 in
+// 2026" market (~4-5%); B = 0.24 is then set so the model's implied P(Tesla fleet >
+// Waymo fleet) lands near the Manifold "Tesla > Waymo AVs by Jan 2 2027" market
+// (~23%); A = 0.71 is the remainder.
+//
+// Waymo also gets two modes (one curve, same robotaxi scope — no step CHANGE of
+// scope, just of growth rate): a base "production pace" mode plus a "hockeystick".
+// Anchored to FutureSearch's Waymo forecast: end-2026 fleet ~5,900-6,000 central at
+// the current ~265-300 cars/month pace, with weekly-rides p90 of 1.15M (P(rides >=
+// 1M) ~20%). Hitting the 1M-weekly-rides fleet needs ~7,200 vehicles via a faster
+// Mesa/Magna + Ojai(Zeekr) + Ioniq-5 ramp — the hockeystick, weight ~0.18.
+//
+// Anchors (mid-2026): Waymo ~3,600 (Q1 2026) -> ~3,871 (Jun), ~280 cars/mo, Mesa/
+// Magna plant (tens of thousands/yr capacity) now building the Ojai (Zeekr 6th-gen,
+// public rides from May 28 2026), Ioniq 5 next (50k by 2028, GA Metaplant); Tesla
+// ~42 registered in TX (~20-25 active unsupervised), Cybercab ramping (~85 built
+// Jun 2026), unsupervised FSD "probably Q4 2026" (Musk), ~2-4M HW4 cars in the US;
+// Zoox ~50->100 vehicles, redesigned production robotaxi unveiled Jun 24 2026.
+//
+// median = exp(mu) of each component; sigma is the log-scale spread. The weights
+// for each helmer must sum to 1 (asserted in fleetForecastCurves). The `scope` tag
+// splits a helmer into separate drawn curves (see fleetForecastLanes); untagged
+// components (Waymo's two modes) stay a single curve.
+const FLEET_FORECAST = [
+  { helmer: "Tesla", components: [
+    { weight: 0.71, median: 180,    sigma: 0.55, scope: "robotaxi" }, // A: slow robotaxi ramp continues
+    { weight: 0.24, median: 9000,   sigma: 0.70, scope: "robotaxi" }, // B: aggressive robotaxi/Cybercab scale-up
+    { weight: 0.05, median: 600000, sigma: 0.95, scope: "hw4" },      // C: eyes-off FSD across the HW4 fleet
+  ] },
+  { helmer: "Waymo", components: [
+    { weight: 0.82, median: 5800, sigma: 0.16 }, // base: ~280 cars/mo pace (FutureSearch end-2026 ~5,900-6,000)
+    { weight: 0.18, median: 7500, sigma: 0.25 }, // hockeystick: Mesa/Ojai/Ioniq ramp toward the 1M-weekly-rides fleet
+  ] },
+  { helmer: "Zoox", components: [
+    { weight: 1, median: 150, sigma: 0.45 },
+  ] },
+];
+
+// Mixture density w.r.t. log(x), same convention as logNormalLogDensity, so these
+// curves compose on a log x-axis exactly like the MPI bells above.
+function fleetMixtureLogDensity(components, x) {
+  let d = 0;
+  for (const c of components) d += c.weight * logNormalLogDensity(x, Math.log(c.median), c.sigma);
+  return d;
+}
+
+// Quantiles of a log-normal mixture: integrate its density (w.r.t. log x) on a fine
+// log grid into a CDF, then invert at each probability. Reuses the numeric-density
+// idiom of the marginal MPI bells rather than adding a normal-CDF primitive.
+function fleetMixtureQuantiles(components, ps) {
+  let loMu = Infinity, hiMu = -Infinity, maxSigma = 0;
+  for (const c of components) {
+    loMu = Math.min(loMu, Math.log(c.median));
+    hiMu = Math.max(hiMu, Math.log(c.median));
+    maxSigma = Math.max(maxSigma, c.sigma);
+  }
+  const lo = loMu - 8 * maxSigma, hi = hiMu + 8 * maxSigma;
+  const n = 6000, step = (hi - lo) / (n - 1);
+  const cum = new Float64Array(n);
+  let mass = 0, prev = fleetMixtureLogDensity(components, Math.exp(lo));
+  for (let i = 1; i < n; i++) {
+    const dens = fleetMixtureLogDensity(components, Math.exp(lo + step * i));
+    mass += (dens + prev) / 2 * step;
+    cum[i] = mass;
+    prev = dens;
+  }
+  assert(Math.abs(mass - 1) < 0.01, "fleet mixture density must normalize to 1", {mass});
+  return ps.map(p => {
+    const target = p * mass;
+    let i = 1;
+    while (i < n && cum[i] < target) i++;
+    const frac = (target - cum[i - 1]) / (cum[i] - cum[i - 1]); // linear interp in log space
+    return Math.exp(lo + step * (i - 1 + frac));
+  });
+}
+
+// A helmer can be drawn as more than one curve ("lane"), split by its components'
+// `scope` tag. Tesla splits into its two scopes (robotaxi vs the broader HW4-fleet
+// scenario); Waymo/Zoox are a single untagged lane.
+const HW4_COLOR = "#e08a2e"; // Tesla "all HW4 ADS" scope — distinct from robotaxi red
+const FLEET_LANE_META = {
+  robotaxi: {label: "Tesla robotaxi", color: HELMER_COLORS.Tesla},
+  hw4:      {label: "Tesla all-HW4 ADS", color: HW4_COLOR, dashed: true, conditional: true},
+};
+
+function renormComponents(components) {
+  const total = components.reduce((s, c) => s + c.weight, 0);
+  assert(total > 0, "renormComponents: total weight must be positive", {total});
+  return components.map(c => ({...c, weight: c.weight / total}));
+}
+
+// One lane per (helmer × scope). scenarioProb is the lane's share of its helmer's
+// total mass, so Tesla's two lanes read ~95% / ~5%; each lane's components are
+// renormalized to a proper density. `mainline` marks the apples-to-apples lane the
+// trajectory chart uses (Tesla's robotaxi lane, not the conditional HW4 one).
+function fleetForecastLanes() {
+  const lanes = [];
+  for (const entry of FLEET_FORECAST) {
+    const total = entry.components.reduce((s, c) => s + c.weight, 0);
+    assert(Math.abs(total - 1) < 1e-9, "fleet forecast weights must sum to 1",
+      {helmer: entry.helmer, total});
+    const byScope = new Map();
+    for (const c of entry.components) {
+      const scope = c.scope ?? entry.helmer;
+      if (!byScope.has(scope)) byScope.set(scope, []);
+      byScope.get(scope).push(c);
+    }
+    for (const [scope, comps] of byScope) {
+      const meta = FLEET_LANE_META[scope] ?? {label: entry.helmer, color: HELMER_COLORS[entry.helmer]};
+      lanes.push({
+        key: scope, historyHelmer: entry.helmer, mainline: meta.conditional !== true,
+        scenarioProb: comps.reduce((s, c) => s + c.weight, 0) / total,
+        label: meta.label, color: meta.color, dashed: meta.dashed === true,
+        components: renormComponents(comps),
+      });
+    }
+  }
+  return lanes;
+}
+
+// Build the plottable curves once: density fn + probe extent + summary quantiles.
+function fleetForecastCurves() {
+  return fleetForecastLanes().map(lane => {
+    let xMin = Infinity, xMax = 0;
+    for (const c of lane.components) {
+      xMin = Math.min(xMin, c.median * Math.exp(-4 * c.sigma));
+      xMax = Math.max(xMax, c.median * Math.exp(4 * c.sigma));
+    }
+    const [lo90, median, hi90] = fleetMixtureQuantiles(lane.components, [0.05, 0.5, 0.95]);
+    const legendLabel = lane.scenarioProb < 0.999
+      ? `${lane.label} (~${Math.round(lane.scenarioProb * 100)}%)`
+      : lane.label;
+    return {
+      ...lane, legendLabel,
+      densityFn: x => fleetMixtureLogDensity(lane.components, x),
+      xMin, xMax, lo90, median, hi90,
+    };
+  });
+}
+
+// Two-piece log-normal (density w.r.t. log x): mode at `best`, with the lower/upper
+// spread set so lo/hi sit at matching distances each side. Lets miles/rides — given
+// only as {best, lo, hi} with an asymmetric (Tesla) band — render as an honest,
+// normalized, single-peaked density without inventing mixture components.
+function splitLogNormalLogDensity(best, lo, hi, x) {
+  assert(lo <= best && best <= hi && lo > 0, "splitLogNormal: need 0 < lo <= best <= hi", {best, lo, hi});
+  const mu = Math.log(best);
+  const sLo = Math.max((mu - Math.log(lo)) / 1.6449, 1e-6);
+  const sHi = Math.max((Math.log(hi) - mu) / 1.6449, 1e-6);
+  const u = Math.log(x);
+  const z = (u - mu) / (u < mu ? sLo : sHi);
+  return 2 / (Math.sqrt(2 * Math.PI) * (sLo + sHi)) * Math.exp(-0.5 * z * z);
+}
+
+// The distribution ("final") chart follows the same toggle as the trajectory. Fleet
+// uses the full mixture (with Tesla's scope split); miles/rides get one split-log-
+// normal per helmer from their {best, lo, hi} forecast band.
+function fleetDistributionCurves(metricKey) {
+  if (metricKey === "fleet") return fleetForecastCurves();
+  const table = metricKey === "miles" ? MILES_FORECAST : RIDES_FORECAST;
+  return ADS_HELMERS.map(h => {
+    const {best, lo, hi} = table[h];
+    return {
+      key: h, legendLabel: h, color: HELMER_COLORS[h], dashed: false,
+      median: best, lo90: lo, hi90: hi, xMin: lo / 3, xMax: hi * 3,
+      densityFn: x => splitLogNormalLogDensity(best, lo, hi, x),
+    };
+  });
+}
+
+// Legend for the fleet charts: one chip per drawn curve (helmers + Tesla's two
+// scopes), keyed on each curve's own colour + label. Can't reuse helmerChipLegend,
+// which is keyed on the global helmer list.
+function fleetCurveLegend(curves) {
+  return `
+    <div class="month-legend">
+      ${curves.map(c => `
+      <span class="month-legend-item">
+        <span class="month-chip" style="background:${c.color}"></span>${c.legendLabel}
+      </span>`).join("")}
+    </div>`;
+}
+
+function renderFleetForecastChart() {
+  const spec = growthMetricSpec(selectedGrowthMetric);
+  const curves = fleetDistributionCurves(selectedGrowthMetric);
+  // Frame the axis on the curves' own 90% intervals (a little margin past each
+  // edge) rather than distributionExtent's visible-peak band: Tesla's broad
+  // high-vehicle "HW4 fleet" mode carries real mass but little peak height, so a
+  // peak-height floor would clip it off — we want it on screen.
+  const xMin = Math.min(...curves.map(c => c.lo90)) / 1.6;
+  const xMax = Math.max(...curves.map(c => c.hi90)) * 1.6;
+  assert(xMin < xMax, "fleet forecast chart: degenerate x range", {xMin, xMax});
+
+  const nPts = 250;
+  const logMin = Math.log(xMin), logMax = Math.log(xMax);
+  const logStep = (logMax - logMin) / (nPts - 1);
+  const xs = [];
+  for (let i = 0; i < nPts; i++) xs.push(Math.exp(logMin + logStep * i));
+
+  let yMax = 0;
+  for (const c of curves) {
+    c.ys = xs.map(x => c.densityFn(x));
+    for (const y of c.ys) if (y > yMax) yMax = y;
+  }
+  assert(yMax > 0, "fleet forecast chart: all densities zero", {yMax});
+
+  const svgW = 900, svgH = 280;
+  const mLeft = 68, mRight = 16, mTop = 14, mBot = 48;
+  const pW = svgW - mLeft - mRight;
+  const pH = svgH - mTop - mBot;
+  const baseline = mTop + pH;
+  const mapX = x => mLeft + (Math.log(x) - logMin) / (logMax - logMin) * pW;
+  const mapY = y => mTop + pH * (1 - y / yMax);
+
+  const ticks = [];
+  const e0 = Math.floor(Math.log10(xMin)), e1 = Math.ceil(Math.log10(xMax));
+  for (let e = e0; e <= e1; e++) for (const m of [1, 2, 5]) {
+    const v = m * Math.pow(10, e);
+    if (v >= xMin && v <= xMax) ticks.push(v);
+  }
+
+  const axes = `
+    ${ticks.map(v => `
+      <line x1="${mapX(v).toFixed(2)}" y1="${mTop}" x2="${mapX(v).toFixed(2)}" y2="${baseline}"
+        style="stroke:#e0e4ef;stroke-width:0.5"></line>
+      <text class="month-tick" x="${mapX(v).toFixed(2)}" y="${baseline + 16}" text-anchor="middle">${spec.fmt(v)}</text>
+    `).join("")}
+    <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
+    <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
+    <text class="month-label" x="12" y="${mTop + pH / 2}" transform="rotate(-90 12 ${mTop + pH / 2})" text-anchor="middle">Probability density for 2027 Jan 1</text>
+    <text class="month-tick" x="${mLeft + pW / 2}" y="${svgH - 4}" text-anchor="middle">${spec.yLabel}</text>
+  `;
+
+  const fills = curves.map(c => {
+    let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
+    for (let i = 0; i < nPts; i++) d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
+    d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
+    return `<path d="${d}" style="fill:${c.color};opacity:${c.dashed ? 0.06 : 0.120}"></path>`;
+  }).join("");
+
+  const strokes = curves.map(c => {
+    let d = "";
+    for (let i = 0; i < nPts; i++) d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
+    return `<path d="${d}" style="stroke:${c.color};stroke-width:2;fill:none${c.dashed ? ";stroke-dasharray:6 4" : ""}"></path>`;
+  }).join("");
+
+  const markers = curves.map(c => {
+    const tip = `${c.legendLabel}\nMedian: ${fmtWhole(c.median)}\n90% CI: ${fmtWhole(c.lo90)} – ${fmtWhole(c.hi90)}`;
+    return `<circle cx="${mapX(c.median).toFixed(2)}" cy="${mapY(c.densityFn(c.median)).toFixed(2)}" r="3.5" style="fill:${c.color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
+  }).join("");
+
+  const note = ""; // self-explanatory
+
+  return `
+    ${fleetCurveLegend(curves)}
+    <p class="month-note">${note}</p>
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+      <defs><clipPath id="fleet-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
+      ${axes}
+      <g clip-path="url(#fleet-clip)">
+      ${fills}
+      ${strokes}
+      ${markers}
+      </g>
+    </svg>
+  `;
+}
+
+// --- Fleet-size trajectory (history + extrapolation) -------------------------
+// [AI TEXT] Monthly fleet-size anchors per helmer (vehicles in driverless / ADS
+// robotaxi service), each with a lo/hi uncertainty range. The trajectory is then
+// extrapolated to the Jan 1, 2027 forecast (its median + 90% interval, taken from
+// the same FLEET_FORECAST mixture the distribution chart draws), so the two charts
+// share the endpoint by construction. These counts are NOT from the NHTSA/VMT
+// pipeline — fleet headcounts are noisier than the cumulative-mileage milestones
+// the VMT series anchors to, hence the wide lo/hi ranges.
+//
+// Anchors (rounded, sourced from mid-2026 reporting): Waymo 1,500 (May 2025) ->
+// 2,500 (Nov) -> 3,067 5th-gen (Dec) -> ~3,000 "over 3,000" (Feb 2026) -> ~3,300
+// (May); Tesla TX driverless ~12 at launch (Jun 2025) -> ~20 (Dec) -> ~25 (Apr
+// 2026) -> 42 registered, ~58 incl driver-monitor mode (Jun); Zoox ~50 (Jan 2026)
+// -> ~90 (Mar) -> ~100 (Jun).
+const FLEET_HISTORY = {
+  Tesla: [
+    {month: "2025-06", best: 12, lo: 8,  hi: 20},
+    {month: "2025-12", best: 20, lo: 12, hi: 32},
+    {month: "2026-04", best: 25, lo: 18, hi: 35},
+    {month: "2026-06", best: 42, lo: 30, hi: 58},
+  ],
+  Waymo: [
+    {month: "2025-05", best: 1500, lo: 1300, hi: 1700},
+    {month: "2025-11", best: 2500, lo: 2200, hi: 2800},
+    {month: "2025-12", best: 3067, lo: 2850, hi: 3300},
+    {month: "2026-02", best: 3300, lo: 3000, hi: 3700},
+    {month: "2026-05", best: 3750, lo: 3400, hi: 4200},
+  ],
+  Zoox: [
+    {month: "2026-01", best: 50,  lo: 35, hi: 70},
+    {month: "2026-03", best: 90,  lo: 70, hi: 115},
+    {month: "2026-06", best: 100, lo: 80, hi: 130},
+  ],
+};
+const FLEET_TS_END_MONTH = "2027-01"; // the Jan-1-2027 forecast cross-section
+
+// Month <-> integer index, with index 0 == 2025-05 (the earliest anchor).
+function fleetMonthIndex(monthIso) {
+  const [y, m] = monthIso.split("-").map(Number);
+  assert(Number.isInteger(y) && Number.isInteger(m) && m >= 1 && m <= 12,
+    "fleet month must be YYYY-MM", {monthIso});
+  return (y - 2025) * 12 + (m - 5);
+}
+function fleetMonthIso(index) {
+  const abs = 2025 * 12 + 4 + index;
+  return `${Math.floor(abs / 12)}-${String(abs % 12 + 1).padStart(2, "0")}`;
+}
+
+// [AI TEXT] The growth extrapolator toggles between three metrics: the fleet count
+// (a stock), cumulative miles (from the repo VMT master — matches the top section
+// up to today, then extrapolates), and cumulative rides (rough — see below). Each
+// metric's Jan-1-2027 forecast endpoint mirrors the fleet bimodality: Tesla's upper
+// bound balloons because the "HW4 fleet goes ADS" scenario would explode its miles
+// and rides too.
+// CUMULATIVE rides (rough, monotonic). Only Waymo's is loosely sourced (~250k/wk
+// mid-2025 -> ~500k/wk early 2026); Tesla/Zoox are low-confidence guesses. Miles
+// are intentionally NOT a toggle option — the page's top VMT section already covers
+// them.
+const RIDES_HISTORY = {
+  Tesla: [
+    {month: "2025-09", best: 10000,  lo: 4000,  hi: 25000},
+    {month: "2025-12", best: 40000,  lo: 18000, hi: 90000},
+    {month: "2026-03", best: 90000,  lo: 40000, hi: 200000},
+    {month: "2026-06", best: 180000, lo: 80000, hi: 420000},
+  ],
+  Waymo: [
+    {month: "2025-06", best: 7000000,  lo: 6000000,  hi: 8500000},
+    {month: "2025-09", best: 11000000, lo: 9000000,  hi: 13500000},
+    {month: "2025-12", best: 17000000, lo: 14000000, hi: 21000000},
+    {month: "2026-03", best: 24000000, lo: 20000000, hi: 29000000},
+    {month: "2026-05", best: 29000000, lo: 24000000, hi: 35000000},
+  ],
+  Zoox: [
+    {month: "2026-01", best: 100000, lo: 50000,  hi: 180000},
+    {month: "2026-03", best: 200000, lo: 110000, hi: 350000},
+    {month: "2026-06", best: 400000, lo: 220000, hi: 700000},
+  ],
+};
+// Cumulative-rides forecast through Jan 1, 2027 {best, lo, hi}. Tesla's upper bound
+// balloons because the "HW4 fleet goes ADS" scenario would explode its ride count.
+const RIDES_FORECAST = {
+  Tesla: {best: 800000,   lo: 250000,   hi: 60000000},
+  Waymo: {best: 48000000, lo: 40000000, hi: 58000000},
+  Zoox:  {best: 1100000,  lo: 600000,   hi: 2500000},
+};
+// Cumulative-miles forecast through Jan 1, 2027 {best, lo, hi}, extending each
+// helmer's end-May-2026 cumulative VMT. Tesla's upper bound balloons with the
+// "HW4 fleet goes ADS" scenario.
+const MILES_FORECAST = {
+  Tesla: {best: 8000000,   lo: 4000000,   hi: 500000000},
+  Waymo: {best: 440000000, lo: 400000000, hi: 500000000},
+  Zoox:  {best: 5000000,   lo: 4000000,   hi: 8000000},
+};
+
+// Cumulative miles = the repo's own cumulative VMT (vmtCume) with its kyoom band,
+// straight from data/vmt.csv — so this line matches the top VMT section up to today
+// by construction, and only the dashed tail is new.
+function milesHistory(helmer) {
+  return vmtRows
+    .filter(r => r.helmer === helmer && fleetMonthIndex(r.month) >= 0)
+    .map(r => ({month: r.month, best: r.vmtCume, lo: r.kyoomMin, hi: r.kyoomMax}));
+}
+
+// The toggle-able metrics. Each provides a `lanes()` list of drawable series plus
+// its own y-axis framing and number format. Fleet forks Tesla into its two scopes;
+// miles/rides are one lane per helmer.
+function growthMetricSpec(key) {
+  const specs = {
+    fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole,
+      yMin: 6, yMax: 4000000, yTicks: [10, 100, 1000, 10000, 100000, 1000000],
+      note: "",
+      lanes: fleetTrajectoryLanes},
+    rides: {label: "Rides (cumulative)", yLabel: "Cumulative rides", valueLabel: "Rides", fmt: fmtWhole,
+      yMin: 3000, yMax: 100000000, yTicks: [10000, 100000, 1000000, 10000000, 100000000],
+      note: "Cumulative rides are rough estimates — only Waymo's are loosely sourced; Tesla and Zoox are low-confidence guesses.",
+      lanes: () => helmerLanes(h => RIDES_HISTORY[h], RIDES_FORECAST)},
+    miles: {label: "Miles (cumulative)", yLabel: "Cumulative miles", valueLabel: "Miles", fmt: fmtMiles,
+      yMin: 100000, yMax: 700000000, yTicks: [100000, 1000000, 10000000, 100000000],
+      note: "Cumulative miles = the top section's VMT, carried to today and then extrapolated (dashed); the solid part should match the VMT charts above.",
+      lanes: () => helmerLanes(milesHistory, MILES_FORECAST)},
+  };
+  assert(specs[key] !== undefined, "unknown growth metric", {key});
+  return specs[key];
+}
+
+// A lane's point list: history + the Jan-1-2027 forecast endpoint, asserting
+// lo <= best <= hi on every point.
+function growthLanePoints(history, forecast) {
+  const points = [...history, {month: FLEET_TS_END_MONTH, ...forecast, forecast: true}];
+  for (const p of points) {
+    assert(p.lo <= p.best && p.best <= p.hi,
+      "growth point must satisfy lo <= best <= hi", {point: p});
+  }
+  return points;
+}
+
+// One lane per helmer (miles/rides): full history + forecast in the helmer colour.
+function helmerLanes(historyFn, forecastTable) {
+  return ADS_HELMERS.map(h => ({
+    label: h, color: HELMER_COLORS[h],
+    points: growthLanePoints(historyFn(h), forecastTable[h]),
+  }));
+}
+
+// Fleet lanes: Waymo, Zoox, Tesla's robotaxi mainline, and the conditional HW4
+// scenario drawn as a faded dashed FORK off the last shared Tesla history point.
+function fleetTrajectoryLanes() {
+  const byKey = Object.fromEntries(fleetForecastCurves().map(c => [c.key, c]));
+  const fc = c => ({best: c.median, lo: c.lo90, hi: c.hi90});
+  const teslaHist = FLEET_HISTORY.Tesla;
+  return [
+    {label: "Waymo", color: HELMER_COLORS.Waymo, points: growthLanePoints(FLEET_HISTORY.Waymo, fc(byKey.Waymo))},
+    {label: "Zoox", color: HELMER_COLORS.Zoox, points: growthLanePoints(FLEET_HISTORY.Zoox, fc(byKey.Zoox))},
+    {label: byKey.robotaxi.legendLabel, color: byKey.robotaxi.color,
+      points: growthLanePoints(teslaHist, fc(byKey.robotaxi))},
+    {label: byKey.hw4.legendLabel, color: byKey.hw4.color, dashed: true, branchOnly: true,
+      points: growthLanePoints([teslaHist[teslaHist.length - 1]], fc(byKey.hw4))},
+  ];
+}
+
+function renderFleetTimeSeriesChart() {
+  const spec = growthMetricSpec(selectedGrowthMetric);
+  const lanes = spec.lanes();
+
+  const months = [];
+  for (let i = 0; i <= fleetMonthIndex(FLEET_TS_END_MONTH); i++) months.push(fleetMonthIso(i));
+
+  const svgW = 900, svgH = 280, mLeft = 68, mRight = 24, mTop = 14, mBot = 48;
+  const pW = svgW - mLeft - mRight, pH = svgH - mTop - mBot;
+  const xPad = 28;
+  const {yMin, yMax} = spec; // log scale framed per metric (vehicles / miles / rides)
+  const mapX = idx => scaleLinear(idx, 0, months.length - 1, mLeft + xPad, mLeft + pW - xPad);
+  const mapY = v => mTop + pH * (1 - (Math.log(v) - Math.log(yMin)) / (Math.log(yMax) - Math.log(yMin)));
+
+  const bands = [], lines = [], marks = [];
+  for (const lane of lanes) {
+    const color = lane.color;
+    const pts = lane.points;
+    const X = p => mapX(fleetMonthIndex(p.month));
+    const solid = `stroke:${color};stroke-width:2;fill:none`;
+    const dashedStroke = `${solid};stroke-dasharray:6 4`;
+
+    // Uncertainty band (lo..hi) spanning the lane's points; fainter for the fork.
+    const up = pts.map((p, i) => `${i ? "L" : "M"} ${X(p).toFixed(2)} ${mapY(p.hi).toFixed(2)}`).join(" ");
+    const down = [...pts].reverse().map(p => `L ${X(p).toFixed(2)} ${mapY(p.lo).toFixed(2)}`).join(" ");
+    bands.push(`<path d="${up} ${down} Z" style="fill:${color};opacity:${lane.branchOnly ? 0.06 : 0.10}"></path>`);
+
+    const hist = pts.filter(p => !p.forecast);
+    const last = hist[hist.length - 1], fc = pts[pts.length - 1];
+    // Full lanes draw a solid history line + markers; a fork lane (branchOnly) draws
+    // only the dashed leg from its single anchor point to the scenario endpoint.
+    if (!lane.branchOnly) {
+      const histLine = hist.map((p, i) => `${i ? "L" : "M"} ${X(p).toFixed(2)} ${mapY(p.best).toFixed(2)}`).join(" ");
+      lines.push(`<path d="${histLine}" style="${solid}"></path>`);
+      for (const p of hist) {
+        const tip = `${lane.label} · ${p.month}\n${spec.valueLabel}: ${spec.fmt(p.best)}\n90% CI: ${spec.fmt(p.lo)} – ${spec.fmt(p.hi)}`;
+        marks.push(`<circle cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}" data-tip="${escAttr(tip)}"></circle>`);
+      }
+    }
+    lines.push(`<path d="M ${X(last).toFixed(2)} ${mapY(last.best).toFixed(2)} L ${X(fc).toFixed(2)} ${mapY(fc.best).toFixed(2)}" style="${dashedStroke}"></path>`);
+    const fx = X(fc);
+    const fcTip = `${lane.label} · ${fc.month} (forecast)\nMedian: ${spec.fmt(fc.best)}\n90% CI: ${spec.fmt(fc.lo)} – ${spec.fmt(fc.hi)}`;
+    marks.push(`
+      <line class="month-err" x1="${fx.toFixed(2)}" y1="${mapY(fc.lo).toFixed(2)}" x2="${fx.toFixed(2)}" y2="${mapY(fc.hi).toFixed(2)}" style="stroke:${color}"></line>
+      <circle cx="${fx.toFixed(2)}" cy="${mapY(fc.best).toFixed(2)}" r="4" style="fill:#fff;stroke:${color};stroke-width:1.5" data-tip="${escAttr(fcTip)}"></circle>`);
+  }
+
+  return `
+    ${renderGrowthMetricToggle()}
+    ${fleetCurveLegend(lanes.map(l => ({color: l.color, legendLabel: l.label})))}
+    <p class="month-note">${spec.note}</p>
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+      <defs><clipPath id="fleet-ts-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
+      <g clip-path="url(#fleet-ts-clip)">
+      ${bands.join("")}
+      ${lines.join("")}
+      ${marks.join("")}
+      </g>
+      ${drawSingleMonthAxes(months, svgH, mLeft, mTop, pW, pH, mapX, growthYTicks(spec), mapY, spec.fmt, spec.yLabel)}
+    </svg>
+  `;
+}
+
+// The metric's y-ticks, clipped to its [yMin, yMax] so none draw off-axis.
+function growthYTicks(spec) {
+  return spec.yTicks.filter(t => t >= spec.yMin && t <= spec.yMax);
+}
+
+const GROWTH_METRIC_KEYS = ["fleet", "rides", "miles"];
+// Radio toggle for the growth extrapolator's metric. Re-renders only the chart on
+// change (the toggle markup itself is re-emitted by renderFleetTimeSeriesChart, so
+// the handlers are rebound each render — same lightweight pattern as the chart's
+// own dots).
+function renderGrowthMetricToggle() {
+  return `<div class="month-legend" id="growth-metric-toggle">${
+    GROWTH_METRIC_KEYS.map(key => `
+      <label class="month-legend-item">
+        <input type="radio" name="growth-metric" value="${key}" ${key === selectedGrowthMetric ? "checked" : ""}>
+        ${growthMetricSpec(key).label}
+      </label>`).join("")
+  }</div>`;
+}
+
+// Bind the (re-emitted) growth-metric radios via event delegation on the chart
+// container, so a re-render doesn't strand the listener. The toggle drives BOTH the
+// trajectory and the distribution below it. One listener, set once.
+function initGrowthMetricToggle() {
+  byId("chart-fleet-timeseries").addEventListener("change", e => {
+    const value = e.target.value;
+    assert(GROWTH_METRIC_KEYS.includes(value), "unknown growth metric toggle", {value});
+    selectedGrowthMetric = value;
+    byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
+    byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+  });
 }
 
 function renderHelmerMonthlyChart(globalSeries, helmer) {
@@ -3230,6 +3779,9 @@ function loadPredmarketData() {
   byId("colophon").innerHTML =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} · ` +
     `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a>`;
+  byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
+  initGrowthMetricToggle();
+  byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
   initTooltips();
   initCollapsibles();
   loadPredmarketData();
