@@ -129,8 +129,8 @@ const toggle = JSON.parse(JSON.stringify(vm.runInContext(`
 
 for (const key of METRICS) {
   const t = toggle[key];
-  const expectedCurves = key === "fleet" ? 4 : 3; // fleet: +HW4; miles/rides: 3 helmers
-  const expectedDashes = key === "fleet" ? 4 : 3; // fleet: +HW4 fork leg
+  const expectedCurves = 4; // every metric: Waymo, Zoox, Tesla robotaxi, + the HW4 fork
+  const expectedDashes = 4; // one dashed forecast leg per lane (incl. the HW4 fork leg)
   assert.ok(t.hasSvg && t.dashes === expectedDashes,
     `Replicata: select the "${key}" growth metric and render the extrapolator.
 Expectata: a valid SVG with ${expectedDashes} dashed segments.

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
-import { appScript } from "./load-app.mjs";
+import { appScript, dataScript } from "./load-app.mjs";
 
 // renderFleetForecastChart and the mixture helpers touch no DOM, so a thin stub
 // context suffices (matching the distribution-chart qual's setup).
@@ -12,7 +12,10 @@ const ctx = vm.createContext({
     createElement() { return { textContent: "", innerHTML: "" }; },
   },
 });
+vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
+// The "miles" metric reads vmtRows (repo VMT master), so populate it like init does.
+vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 
 // --- 1. The chart renders an SVG with all four curves + median markers ---
 // Four curves: Waymo, Zoox, and Tesla split into its two scopes (robotaxi + the
@@ -167,18 +170,20 @@ Expectata: conditional (not mainline), ~5% weight, six-figure median, tail past 
 Resultata: mainline=${byKey.hw4.mainline}, prob=${byKey.hw4.scenarioProb}, median=${byKey.hw4.median}, hi90=${byKey.hw4.hi90}, signChanges=${byKey.hw4.signChanges}.`,
 );
 
-// --- 4b. Miles/rides curves: the stated median/CI are quantiles of the DRAWN
-// density. The {best, lo, hi} forecast bands are the two-piece log-normal's
-// parameters (best = mode), and for a skewed band (Tesla) the mode sits far
-// below the median — the dot's tooltip once said "Median: 8M" for a curve
-// whose actual median was ~32M. Every displayed number must be a real
-// quantile of the density under it. ---
+// --- 4b. Miles/rides curves: scenario mixtures with honest quantiles. Tesla's
+// miles/rides mirror the FLEET_FORECAST scenario structure (same A/B/C weights,
+// same robotaxi-vs-HW4 scope split into two lanes), so every metric draws four
+// curves. Each displayed median/CI must be a real quantile of the drawn
+// density — the single two-piece curve this replaced put its 8M "Median" dot
+// at the 14th percentile of its own curve, and a one-humped band can't
+// represent "71% boring / 24% aggressive / 5% HW4" at all. ---
 
 const quantileStats = vm.runInContext(`
 (() => {
   const out = [];
   for (const metric of ["miles", "rides"]) {
-    for (const c of fleetDistributionCurves(metric)) {
+    const curves = fleetDistributionCurves(metric);
+    for (const c of curves) {
       const cdfAt = xq => {
         const a = Math.log(c.lo90) - 8, b = Math.log(c.hi90) + 8, n = 20000;
         const st = (b - a) / (n - 1);
@@ -190,7 +195,8 @@ const quantileStats = vm.runInContext(`
         }
         return cum;
       };
-      out.push({metric, key: c.key, median: c.median, lo90: c.lo90, hi90: c.hi90,
+      out.push({metric, key: c.key, count: curves.length, legendLabel: c.legendLabel,
+        dashed: c.dashed, median: c.median, lo90: c.lo90, hi90: c.hi90,
         cdfMedian: cdfAt(c.median), cdfLo: cdfAt(c.lo90), cdfHi: cdfAt(c.hi90)});
     }
   }
@@ -199,6 +205,10 @@ const quantileStats = vm.runInContext(`
 `, ctx);
 
 for (const q of quantileStats) {
+  assert.equal(q.count, 4,
+    `Replicata: build the ${q.metric} distribution curves.
+Expectata: four curves (Waymo, Zoox, Tesla robotaxi, Tesla HW4) — same scope split as the fleet metric.
+Resultata: ${q.count}.`);
   assert.ok(
     Math.abs(q.cdfMedian - 0.5) < 0.03 && Math.abs(q.cdfLo - 0.05) < 0.02 && Math.abs(q.cdfHi - 0.95) < 0.02,
     `Replicata: integrate the drawn ${q.metric}/${q.key} density up to its stated median and CI endpoints.
@@ -207,13 +217,27 @@ Resultata: CDF(median=${q.median}) = ${q.cdfMedian.toFixed(3)}, CDF(lo90) = ${q.
   );
 }
 
+// The scenario mixture restores the property that motivated it: Tesla's
+// robotaxi-scope miles median sits with scenario A's ~71% mass (~8-9M), not in
+// the no-man's-land (~32M) the single fat-tailed curve produced; the HW4 lane
+// is dashed/conditional in the hundreds of millions.
+const milesByKey = Object.fromEntries(quantileStats.filter(q => q.metric === "miles").map(q => [q.key, q]));
+assert.ok(milesByKey.robotaxi.median > 7000000 && milesByKey.robotaxi.median < 15000000 && !milesByKey.robotaxi.dashed,
+  `Replicata: read Tesla's robotaxi-scope cumulative-miles median.
+Expectata: in [7M, 15M] (scenario A carries ~71% of the mass) and drawn solid.
+Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
+assert.ok(milesByKey.hw4.median > 150000000 && milesByKey.hw4.dashed,
+  `Replicata: read Tesla's HW4-scope cumulative-miles curve.
+Expectata: median past 150M and drawn dashed (conditional scenario).
+Resultata: ${JSON.stringify(milesByKey.hw4)}.`);
+
 // The trajectory chart's miles/rides forecast endpoints must carry the same
 // computed quantiles (its tooltip also says "Median:").
 const laneEnds = vm.runInContext(`
 (() => {
   const out = [];
   for (const metric of ["miles", "rides"]) {
-    const curves = Object.fromEntries(fleetDistributionCurves(metric).map(c => [c.key, c]));
+    const curves = Object.fromEntries(fleetDistributionCurves(metric).map(c => [c.legendLabel, c]));
     for (const lane of growthMetricSpec(metric).lanes()) {
       const fc = lane.points[lane.points.length - 1];
       const c = curves[lane.label];
