@@ -1,14 +1,12 @@
-const PREDMARKET_SNAPSHOT_DATE = "2026-06-19T17:57:40Z";
+const PREDMARKET_SNAPSHOT_DATE = "2026-07-02T22:06:25Z";
 // [SNAPSHOT VINTAGE] This checked-in snapshot is frozen at the date above and
 // applies to both POLYMARKET_SNAPSHOT and MANIFOLD_SNAPSHOT; the page renders
 // it instantly, then auto-refetches live prices on load (and via the refresh
-// button; never persisted). To update the snapshot: for each Polymarket slug
-// fetch
-//   https://gamma-api.polymarket.com/events?slug=<slug>
-// and refresh outcomePrices/volume; for each Manifold slug fetch
-//   https://api.manifold.markets/v0/slug/<slug>
-// and refresh probability/volume (mana). Bump PREDMARKET_SNAPSHOT_DATE. Drop
-// or disable (enabled: false) any market that has resolved.
+// button; never persisted). To update the snapshot run
+//   node data/refresh-predmarkets.mjs
+// which refetches every slug's prices/volumes in place, bumps
+// PREDMARKET_SNAPSHOT_DATE, and warns about any market that has resolved —
+// resolved markets are a human call: drop or disable (enabled: false) them.
 // To show/hide a market, set enabled to true/false.
 // A multi-outcome market renders as a header card plus one subcard per outcome:
 // a Polymarket event with several curated sub-markets, or a Manifold market with
@@ -20,13 +18,13 @@ const POLYMARKET_SNAPSHOT = [
     "title": "Musk out as Tesla CEO before 2027?",
     "slug": "musk-out-as-tesla-ceo-before-2027",
     "enabled": true,
-    "volume": 16527.522495000005,
+    "volume": 16724.437492,
     "markets": [
       {
         "question": "Musk out as Tesla CEO before 2027?",
         "outcomes": "[\"Yes\", \"No\"]",
-        "outcomePrices": "[\"0.052\", \"0.948\"]",
-        "volume": "16527.522495000005"
+        "outcomePrices": "[\"0.0335\", \"0.9665\"]",
+        "volume": "16724.437492"
       }
     ]
   }
@@ -38,16 +36,16 @@ const MANIFOLD_SNAPSHOT = [
     "slug": "tesla-serves-more-fully-autonomous",
     "url": "https://manifold.markets/JamesGrugett/tesla-serves-more-fully-autonomous",
     "enabled": true,
-    "probability": 0.10172384739683804,
-    "volume": 866095.7675712603
+    "probability": 0.09511749055915575,
+    "volume": 867021.9106321695
   },
   {
     "question": "Will we conclude Tesla launched level 4 robotaxis in summer 2025?",
     "slug": "will-tesla-count-as-a-waymo-competi",
     "url": "https://manifold.markets/dreev/will-tesla-count-as-a-waymo-competi",
     "enabled": true,
-    "probability": 0.15677045326069744,
-    "volume": 70128.2640814766
+    "probability": 0.14673244529980622,
+    "volume": 70371.50366795597
   },
   {
     "question": "Tesla Robotaxi Service at-fault accident or non-fully-autonomous by 2026?",
@@ -70,8 +68,8 @@ const MANIFOLD_SNAPSHOT = [
     "slug": "will-tesla-have-more-autonomous-veh",
     "url": "https://manifold.markets/NathanpmYoung/will-tesla-have-more-autonomous-veh",
     "enabled": true,
-    "probability": 0.23,
-    "volume": 25280.820797455206
+    "probability": 0.21999999999999995,
+    "volume": 27823.27972870361
   },
   {
     "question": "Waymo reaches 2 billion miles with three or fewer at-fault fatalities?",
