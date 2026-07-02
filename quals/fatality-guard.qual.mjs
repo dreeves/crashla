@@ -19,7 +19,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 const fatalities = vm.runInContext(
   `INCIDENT_DATA.filter(r => r.severity === "Fatality")
-     .map(r => ({helmer: r.helmer, city: r.city, date: r.date, speed: r.speed, fault: Number(r.fault.faultfrac)}))`,
+     .map(r => ({reportId: r.reportId, helmer: r.helmer, city: r.city, date: r.date, speed: r.speed, fault: Number(r.fault.faultfrac), vehiclesInvolved: r.vehiclesInvolved}))`,
   ctx);
 
 const SEEN = JSON.stringify(fatalities);
@@ -40,5 +40,21 @@ assert.equal(speedKey, "0,8",
 
 assert.ok(fatalities.every(f => f.fault <= 0.05),
   `Replicata: AI fault estimates for the fatalities (parenthetical: "near zero").\nExpectata: each faultfrac <= 0.05.\nResultata: ${JSON.stringify(fatalities.map(f => f.fault))} — ${SEEN}.\n${FIX}`);
+
+// The fatality metric divides each death by vehiclesInvolved (Koopman/Piper
+// fractional-death attribution), and slurp.py DEFAULTS vehiclesInvolved to 2
+// — so a fatality whose narrative reveals a pileup must get an explicit
+// VEHICLES_INVOLVED override or its Waymo share is silently wrong. Pin each
+// known fatality's divisor to the count its own narrative supports:
+//   30270-9724 (JAN-2025 SF): AV + car behind + SUV + a fourth car + "at
+//     least two other vehicles" per SFPD ("the other three vehicles") = 6.
+//   30270-11713 (SEP-2025 Tempe): AV + motorcycle + hit-and-run car = 3.
+// A new fatality already trips the count assertion above, forcing a human to
+// assess its vehicle count before it silently divides by the default 2.
+const EXPECTED_VEHICLES = { "30270-9724": 6, "30270-11713": 3 };
+for (const f of fatalities) {
+  assert.equal(f.vehiclesInvolved, EXPECTED_VEHICLES[f.reportId],
+    `Replicata: read vehiclesInvolved for fatality ${f.reportId} and compare to its narrative's vehicle count.\nExpectata: ${EXPECTED_VEHICLES[f.reportId]} (from the narrative; see VEHICLES_INVOLVED in data/slurp.py).\nResultata: ${f.vehiclesInvolved}.\n${FIX}`);
+}
 
 console.log(`qual pass: exactly 2 fatalities, both Waymo, speeds {0, 8} mph, fault near zero — the on-page severity-breakdown parenthetical still holds (${SEEN})`);

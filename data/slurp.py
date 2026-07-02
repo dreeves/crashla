@@ -132,6 +132,11 @@ HELMER_SHORT = {
 # vehicle pileups. Default is 2 (the AV + one crash partner). Override here
 # when the narrative reveals more vehicles were involved.
 VEHICLES_INVOLVED = {
+    # Waymo JAN-2025 SF fatality (report 30270-9724): chain collision — AV +
+    # car stopped behind it + speeding SUV + a fourth car the AV rotated into,
+    # plus "at least two other vehicles" per SFPD ("the other three vehicles",
+    # "five passengers in four of the vehicles" injured) = 6 vehicles.
+    "4409b059e33b146": 6,
     # Waymo SEP-2025 Tempe fatality: AV + motorcycle + hit-and-run passenger car
     "dc166aecd5b4265": 3,
 }

@@ -121,8 +121,17 @@ Resultata: sum is ${withPax + noPax + unk}.`);
 // --- Severity counts add up per helmer ---
 const sevSection = html.split("<h3>Severity breakdown</h3>")[1]
   .split("<h3>")[0];
-// Each row: helmer, propDmg (%), injOnly (%), hosp (%), fatal (%), total
-const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
+// "Unknown" severities (NHTSA reports injuries as Unknown on some incidents)
+// get their own column: they are NOT property-damage-only — lumping them
+// there once overstated that column — and with the column present the five
+// buckets must partition the total exactly.
+assert.ok(
+  sevSection.includes(">Unknown<"),
+  `Replicata: look for an Unknown column header in the severity table.
+Expectata: present (Unknown-severity incidents are not property-damage-only).
+Resultata: headers were ${JSON.stringify([...sevSection.matchAll(/<th>([^<]*)<\/th>/g)].map(m => m[1]))}.`);
+// Each row: helmer, propDmg (%), injOnly (%), hosp (%), fatal (%), unknown (%), total
+const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
 const sevMatches = [...sevSection.matchAll(sevPattern)];
 assert.ok(
   sevMatches.length >= 3,
@@ -131,13 +140,13 @@ Expectata: at least 3 rows.
 Resultata: found ${sevMatches.length}.`);
 
 for (const m of sevMatches) {
-  const [propDmg, injOnly, hosp, fatal, total] =
-    [m[1], m[2], m[3], m[4], m[5]].map(Number);
+  const [propDmg, injOnly, hosp, fatal, unknown, total] =
+    [m[1], m[2], m[3], m[4], m[5], m[6]].map(Number);
   assert.strictEqual(
-    propDmg + injOnly + hosp + fatal, total,
+    propDmg + injOnly + hosp + fatal + unknown, total,
     `Replicata: severity count arithmetic.
-Expectata: ${propDmg}+${injOnly}+${hosp}+${fatal} = ${total}.
-Resultata: sum is ${propDmg + injOnly + hosp + fatal}.`);
+Expectata: ${propDmg}+${injOnly}+${hosp}+${fatal}+${unknown} = ${total}.
+Resultata: sum is ${propDmg + injOnly + hosp + fatal + unknown}.`);
 }
 
 // --- Narrative redaction counts add up ---
@@ -240,7 +249,7 @@ const extractTotals = (section, colIndex) => {
 };
 
 const paxTotals = extractTotals(paxSection, 4);   // Total is 5th column (idx 4)
-const sevTotals = extractTotals(sevSection, 5);    // Total is 6th column (idx 5)
+const sevTotals = extractTotals(sevSection, 6);    // Total is 7th column (idx 6, after Unknown)
 const cbiTotals = {}; // CBI table commented out 2026-06-11; see cbi-watch qual
 
 for (const helmer of Object.keys(paxTotals)) {

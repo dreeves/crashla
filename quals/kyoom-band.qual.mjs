@@ -29,9 +29,19 @@ const rows = lines.slice(1).filter(l => l.trim() !== "").map(l => {
 const run = {};
 let tightened = 0;
 for (const r of rows) {
+  const first = run[r.helmer] === undefined;
   const s = run[r.helmer] ??= { min: 0, max: 0, pkmin: 0, pkmax: 0 };
   s.min += r.vmin;
   s.max += r.vmax;
+
+  // A helmer's first month has no prior miles, so its cumulative IS its
+  // monthly value — the two bands describe the same quantity and must agree.
+  if (first) assert.ok(
+    r.kmin === r.vmin && r.kmax === r.vmax,
+    `Replicata: compare ${r.helmer}'s first row (${r.month}) kyoom band to its monthly band.
+Expectata: identical — cumulative == monthly at the first month, so [kyoom_min, kyoom_max] == [vmt_min, vmt_max].
+Resultata: kyoom [${r.kmin}, ${r.kmax}] vs vmt [${r.vmin}, ${r.vmax}].`,
+  );
 
   assert.ok(
     r.kmin <= r.cume && r.cume <= r.kmax,

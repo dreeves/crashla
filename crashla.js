@@ -767,7 +767,9 @@ const SEVERITY_INFO = {
   "No Injuries Reported":                 {rank: 0},
   "No Injured Reported":                  {rank: 0},
   "Property Damage. No Injured Reported": {rank: 0},
-  "Unknown":                              {rank: 0},
+  // unk: injuriness unreported — rank 0 for sorting, but NOT property-damage-
+  // only; severity-bucketing displays must count it separately.
+  "Unknown":                              {rank: 0, unk: true},
   "Minor":                                {rank: 1, injury: true},
   "Minor W/O Hospitalization":            {rank: 1, injury: true},
   "Minor W/ Hospitalization":             {rank: 2, injury: true, hosp: true},
@@ -783,6 +785,7 @@ const severitiesWhere = flag =>
 const INJURY_SEVERITIES = severitiesWhere("injury");
 const HOSPITALIZATION_SEVERITIES = severitiesWhere("hosp");
 const SERIOUS_INJURY_SEVERITIES = severitiesWhere("ssi");  // SSI+ = KABCO A+K
+const UNKNOWN_SEVERITIES = severitiesWhere("unk");
 const SEVERITY_RANK =
   Object.fromEntries(Object.entries(SEVERITY_INFO).map(([s, i]) => [s, i.rank]));
 
@@ -1567,7 +1570,13 @@ function renderDistributionChart(series) {
 // picked by hand: C = 0.05 matches the Manifold "Millions of Teslas at level 3 in
 // 2026" market (~4-5%); B = 0.24 is then set so the model's implied P(Tesla fleet >
 // Waymo fleet) lands near the Manifold "Tesla > Waymo AVs by Jan 2 2027" market
-// (~23%); A = 0.71 is the remainder.
+// (~23%); A = 0.71 is the remainder. That fit counts ALL of C's mass toward the
+// market even though the market asks about vehicles "providing ridehailing" and
+// C's personal HW4 cars are not robotaxis (see the scope note above) — the
+// assumption is that any world where Tesla flips eyes-off across millions of HW4s
+// is also a world where its ridehailing fleet alone exceeds Waymo's ~6k vehicles,
+// so C implies the market resolves YES. If you instead treat C as silent on the
+// market, B would need to be ~0.32 (and A ~0.63) to hit the same ~23%.
 //
 // Waymo also gets two modes (one curve, same robotaxi scope — no step CHANGE of
 // scope, just of growth rate): a base "production pace" mode plus a "hockeystick".
@@ -1610,27 +1619,21 @@ function fleetMixtureLogDensity(components, x) {
   return d;
 }
 
-// Quantiles of a log-normal mixture: integrate its density (w.r.t. log x) on a fine
-// log grid into a CDF, then invert at each probability. Reuses the numeric-density
-// idiom of the marginal MPI bells rather than adding a normal-CDF primitive.
-function fleetMixtureQuantiles(components, ps) {
-  let loMu = Infinity, hiMu = -Infinity, maxSigma = 0;
-  for (const c of components) {
-    loMu = Math.min(loMu, Math.log(c.median));
-    hiMu = Math.max(hiMu, Math.log(c.median));
-    maxSigma = Math.max(maxSigma, c.sigma);
-  }
-  const lo = loMu - 8 * maxSigma, hi = hiMu + 8 * maxSigma;
+// Quantiles from any density w.r.t. log(x): integrate it on a fine log grid
+// [lo, hi] into a CDF, then invert at each probability. Reuses the numeric-
+// density idiom of the marginal MPI bells rather than adding a normal-CDF
+// primitive. The grid must cover essentially all the mass (asserted).
+function quantilesFromLogDensity(densityFn, lo, hi, ps) {
   const n = 6000, step = (hi - lo) / (n - 1);
   const cum = new Float64Array(n);
-  let mass = 0, prev = fleetMixtureLogDensity(components, Math.exp(lo));
+  let mass = 0, prev = densityFn(Math.exp(lo));
   for (let i = 1; i < n; i++) {
-    const dens = fleetMixtureLogDensity(components, Math.exp(lo + step * i));
+    const dens = densityFn(Math.exp(lo + step * i));
     mass += (dens + prev) / 2 * step;
     cum[i] = mass;
     prev = dens;
   }
-  assert(Math.abs(mass - 1) < 0.01, "fleet mixture density must normalize to 1", {mass});
+  assert(Math.abs(mass - 1) < 0.01, "quantilesFromLogDensity: density must normalize to 1", {mass});
   return ps.map(p => {
     const target = p * mass;
     let i = 1;
@@ -1638,6 +1641,18 @@ function fleetMixtureQuantiles(components, ps) {
     const frac = (target - cum[i - 1]) / (cum[i] - cum[i - 1]); // linear interp in log space
     return Math.exp(lo + step * (i - 1 + frac));
   });
+}
+
+// Quantiles of a log-normal mixture, probed over every component's ±8 sigma.
+function fleetMixtureQuantiles(components, ps) {
+  let loMu = Infinity, hiMu = -Infinity, maxSigma = 0;
+  for (const c of components) {
+    loMu = Math.min(loMu, Math.log(c.median));
+    hiMu = Math.max(hiMu, Math.log(c.median));
+    maxSigma = Math.max(maxSigma, c.sigma);
+  }
+  return quantilesFromLogDensity(x => fleetMixtureLogDensity(components, x),
+    loMu - 8 * maxSigma, hiMu + 8 * maxSigma, ps);
 }
 
 // A helmer can be drawn as more than one curve ("lane"), split by its components'
@@ -1708,14 +1723,29 @@ function fleetForecastCurves() {
 // spread set so lo/hi sit at matching distances each side. Lets miles/rides — given
 // only as {best, lo, hi} with an asymmetric (Tesla) band — render as an honest,
 // normalized, single-peaked density without inventing mixture components.
-function splitLogNormalLogDensity(best, lo, hi, x) {
+function splitLogNormalSigmas(best, lo, hi) {
   assert(lo <= best && best <= hi && lo > 0, "splitLogNormal: need 0 < lo <= best <= hi", {best, lo, hi});
   const mu = Math.log(best);
-  const sLo = Math.max((mu - Math.log(lo)) / 1.6449, 1e-6);
-  const sHi = Math.max((Math.log(hi) - mu) / 1.6449, 1e-6);
+  return [Math.max((mu - Math.log(lo)) / 1.6449, 1e-6),
+          Math.max((Math.log(hi) - mu) / 1.6449, 1e-6)];
+}
+function splitLogNormalLogDensity(best, lo, hi, x) {
+  const [sLo, sHi] = splitLogNormalSigmas(best, lo, hi);
+  const mu = Math.log(best);
   const u = Math.log(x);
   const z = (u - mu) / (u < mu ? sLo : sHi);
   return 2 / (Math.sqrt(2 * Math.PI) * (sLo + sHi)) * Math.exp(-0.5 * z * z);
+}
+
+// Quantiles of the two-piece log-normal. `best` is its MODE, not its median —
+// for an asymmetric band (Tesla) the median sits well above the mode — so any
+// displayed median/CI must be computed from the density, never read off the
+// {best, lo, hi} parameters.
+function splitLogNormalQuantiles(best, lo, hi, ps) {
+  const [sLo, sHi] = splitLogNormalSigmas(best, lo, hi);
+  const mu = Math.log(best);
+  return quantilesFromLogDensity(x => splitLogNormalLogDensity(best, lo, hi, x),
+    mu - 9 * sLo, mu + 9 * sHi, ps);
 }
 
 // The distribution ("final") chart follows the same toggle as the trajectory. Fleet
@@ -1726,9 +1756,10 @@ function fleetDistributionCurves(metricKey) {
   const table = metricKey === "miles" ? MILES_FORECAST : RIDES_FORECAST;
   return ADS_HELMERS.map(h => {
     const {best, lo, hi} = table[h];
+    const [lo90, median, hi90] = splitLogNormalQuantiles(best, lo, hi, [0.05, 0.5, 0.95]);
     return {
       key: h, legendLabel: h, color: HELMER_COLORS[h], dashed: false,
-      median: best, lo90: lo, hi90: hi, xMin: lo / 3, xMax: hi * 3,
+      median, lo90, hi90, xMin: lo / 3, xMax: hi * 3,
       densityFn: x => splitLogNormalLogDensity(best, lo, hi, x),
     };
   });
@@ -1843,10 +1874,11 @@ function renderFleetForecastChart() {
 // the VMT series anchors to, hence the wide lo/hi ranges.
 //
 // Anchors (rounded, sourced from mid-2026 reporting): Waymo 1,500 (May 2025) ->
-// 2,500 (Nov) -> 3,067 5th-gen (Dec) -> ~3,000 "over 3,000" (Feb 2026) -> ~3,300
-// (May); Tesla TX driverless ~12 at launch (Jun 2025) -> ~20 (Dec) -> ~25 (Apr
-// 2026) -> 42 registered, ~58 incl driver-monitor mode (Jun); Zoox ~50 (Jan 2026)
-// -> ~90 (Mar) -> ~100 (Jun).
+// 2,500 (Nov) -> 3,067 5th-gen (Dec) -> 3,300 (Feb 2026, from the "over 3,000"
+// report plus the ~280 cars/mo pace) -> 3,750 (May, consistent with the ~3,871
+// Jun report the forecast anchors below cite); Tesla TX driverless ~12 at
+// launch (Jun 2025) -> ~20 (Dec) -> ~25 (Apr 2026) -> 42 registered, ~58 incl
+// driver-monitor mode (Jun); Zoox ~50 (Jan 2026) -> ~90 (Mar) -> ~100 (Jun).
 const FLEET_HISTORY = {
   Tesla: [
     {month: "2025-06", best: 12, lo: 8,  hi: 20},
@@ -1898,12 +1930,16 @@ const RIDES_HISTORY = {
     {month: "2026-03", best: 90000,  lo: 40000, hi: 200000},
     {month: "2026-06", best: 180000, lo: 80000, hi: 420000},
   ],
+  // Waymo pinned to published cumulative milestones (rides-provenance.qual):
+  // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
+  // (Waymo 2025 year-in-review); interpolated with the published weekly rates
+  // (250k/wk May 2025 -> 450k/wk Dec 2025 -> 500k/wk Mar 2026, CNBC/TechCrunch).
   Waymo: [
-    {month: "2025-06", best: 7000000,  lo: 6000000,  hi: 8500000},
-    {month: "2025-09", best: 11000000, lo: 9000000,  hi: 13500000},
-    {month: "2025-12", best: 17000000, lo: 14000000, hi: 21000000},
-    {month: "2026-03", best: 24000000, lo: 20000000, hi: 29000000},
-    {month: "2026-05", best: 29000000, lo: 24000000, hi: 35000000},
+    {month: "2025-06", best: 11500000, lo: 10500000, hi: 12800000},
+    {month: "2025-09", best: 16000000, lo: 14500000, hi: 17800000},
+    {month: "2025-12", best: 20000000, lo: 19000000, hi: 21500000},
+    {month: "2026-03", best: 26000000, lo: 24000000, hi: 28500000},
+    {month: "2026-05", best: 31000000, lo: 28000000, hi: 34500000},
   ],
   Zoox: [
     {month: "2026-01", best: 100000, lo: 50000,  hi: 180000},
@@ -1915,7 +1951,7 @@ const RIDES_HISTORY = {
 // balloons because the "HW4 fleet goes ADS" scenario would explode its ride count.
 const RIDES_FORECAST = {
   Tesla: {best: 800000,   lo: 250000,   hi: 60000000},
-  Waymo: {best: 48000000, lo: 40000000, hi: 58000000},
+  Waymo: {best: 50000000, lo: 43000000, hi: 60000000}, // ~31M May 2026 + ~31 weeks at 600-750k/wk
   Zoox:  {best: 1100000,  lo: 600000,   hi: 2500000},
 };
 // Cumulative-miles forecast through Jan 1, 2027 {best, lo, hi}, extending each
@@ -1970,11 +2006,17 @@ function growthLanePoints(history, forecast) {
 }
 
 // One lane per helmer (miles/rides): full history + forecast in the helmer colour.
+// The forecast endpoint carries the drawn density's computed quantiles (median +
+// 90% CI), so it matches the distribution chart below by construction.
 function helmerLanes(historyFn, forecastTable) {
-  return ADS_HELMERS.map(h => ({
-    label: h, color: HELMER_COLORS[h],
-    points: growthLanePoints(historyFn(h), forecastTable[h]),
-  }));
+  return ADS_HELMERS.map(h => {
+    const {best, lo, hi} = forecastTable[h];
+    const [lo90, median, hi90] = splitLogNormalQuantiles(best, lo, hi, [0.05, 0.5, 0.95]);
+    return {
+      label: h, color: HELMER_COLORS[h],
+      points: growthLanePoints(historyFn(h), {best: median, lo: lo90, hi: hi90}),
+    };
+  });
 }
 
 // Fleet lanes: Waymo, Zoox, Tesla's robotaxi mainline, and the conditional HW4
@@ -3056,7 +3098,8 @@ Confidential Business Information (CBI).
     const n = helmerRows.length;
     if (n === 0) continue;
     const propDmg = helmerRows.filter(r =>
-      !INJURY_SEVERITIES.has(r.severity)).length;
+      !INJURY_SEVERITIES.has(r.severity) &&
+      !UNKNOWN_SEVERITIES.has(r.severity)).length;
     const injOnly = helmerRows.filter(r =>
       INJURY_SEVERITIES.has(r.severity) &&
       !HOSPITALIZATION_SEVERITIES.has(r.severity)).length;
@@ -3064,12 +3107,15 @@ Confidential Business Information (CBI).
       HOSPITALIZATION_SEVERITIES.has(r.severity) &&
       r.severity !== "Fatality").length;
     const fatal = helmerRows.filter(r => r.severity === "Fatality").length;
+    const sevUnk = helmerRows.filter(r =>
+      UNKNOWN_SEVERITIES.has(r.severity)).length;
     sevTableRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
       <td>${propDmg} (${Math.round(100 * propDmg / n)}%)</td>
       <td>${injOnly} (${Math.round(100 * injOnly / n)}%)</td>
       <td>${hospOnly} (${Math.round(100 * hospOnly / n)}%)</td>
       <td>${fatal} (${Math.round(100 * fatal / n)}%)</td>
+      <td>${sevUnk} (${Math.round(100 * sevUnk / n)}%)</td>
       <td>${n}</td>
     </tr>`);
   }
@@ -3085,6 +3131,7 @@ Confidential Business Information (CBI).
         <th>Injury (no hosp.)</th>
         <th>Hospitalization</th>
         <th>Fatality</th>
+        <th>Unknown</th>
         <th>Total</th>
       </tr></thead>
       <tbody>${sevTableRows.join("")}</tbody>
@@ -3198,7 +3245,8 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
     const zeroMph = helmerRows.filter(r => r.speed === 0).length;
     const stopped = helmerRows.filter(r => r.svMovement === "Stopped").length;
     const propDmgOnly = helmerRows.filter(r =>
-      !INJURY_SEVERITIES.has(r.severity)).length;
+      !INJURY_SEVERITIES.has(r.severity) &&
+      !UNKNOWN_SEVERITIES.has(r.severity)).length;
     rptRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
       <td>${zeroMph} (${Math.round(100 * zeroMph / n)}%)</td>
@@ -3212,7 +3260,7 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
 <p>
 It's possible that, as a totally arbitrary example, Waymo is more fastidious in what it reports to NHTSA.
 Certainly all these companies are reporting more incidents than human drivers do.
-A high fraction of 0-mph incidents suggests a company reports more minor events
+A high fraction of 0-mph incidents suggests a company reports more minor events.
 This inflates the company's raw incident count relative to others and relative to the human baseline.
 The "nonstationary" MPI metric filters these out.
 </p>

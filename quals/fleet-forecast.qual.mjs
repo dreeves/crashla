@@ -167,6 +167,73 @@ Expectata: conditional (not mainline), ~5% weight, six-figure median, tail past 
 Resultata: mainline=${byKey.hw4.mainline}, prob=${byKey.hw4.scenarioProb}, median=${byKey.hw4.median}, hi90=${byKey.hw4.hi90}, signChanges=${byKey.hw4.signChanges}.`,
 );
 
+// --- 4b. Miles/rides curves: the stated median/CI are quantiles of the DRAWN
+// density. The {best, lo, hi} forecast bands are the two-piece log-normal's
+// parameters (best = mode), and for a skewed band (Tesla) the mode sits far
+// below the median — the dot's tooltip once said "Median: 8M" for a curve
+// whose actual median was ~32M. Every displayed number must be a real
+// quantile of the density under it. ---
+
+const quantileStats = vm.runInContext(`
+(() => {
+  const out = [];
+  for (const metric of ["miles", "rides"]) {
+    for (const c of fleetDistributionCurves(metric)) {
+      const cdfAt = xq => {
+        const a = Math.log(c.lo90) - 8, b = Math.log(c.hi90) + 8, n = 20000;
+        const st = (b - a) / (n - 1);
+        let cum = 0;
+        for (let i = 0; i < n; i++) {
+          const x = Math.exp(a + st * i);
+          if (x > xq) break;
+          cum += c.densityFn(x) * st;
+        }
+        return cum;
+      };
+      out.push({metric, key: c.key, median: c.median, lo90: c.lo90, hi90: c.hi90,
+        cdfMedian: cdfAt(c.median), cdfLo: cdfAt(c.lo90), cdfHi: cdfAt(c.hi90)});
+    }
+  }
+  return out;
+})()
+`, ctx);
+
+for (const q of quantileStats) {
+  assert.ok(
+    Math.abs(q.cdfMedian - 0.5) < 0.03 && Math.abs(q.cdfLo - 0.05) < 0.02 && Math.abs(q.cdfHi - 0.95) < 0.02,
+    `Replicata: integrate the drawn ${q.metric}/${q.key} density up to its stated median and CI endpoints.
+Expectata: CDF(median) ~ 0.5, CDF(lo90) ~ 0.05, CDF(hi90) ~ 0.95 — displayed numbers are quantiles of the drawn curve.
+Resultata: CDF(median=${q.median}) = ${q.cdfMedian.toFixed(3)}, CDF(lo90) = ${q.cdfLo.toFixed(3)}, CDF(hi90) = ${q.cdfHi.toFixed(3)}.`,
+  );
+}
+
+// The trajectory chart's miles/rides forecast endpoints must carry the same
+// computed quantiles (its tooltip also says "Median:").
+const laneEnds = vm.runInContext(`
+(() => {
+  const out = [];
+  for (const metric of ["miles", "rides"]) {
+    const curves = Object.fromEntries(fleetDistributionCurves(metric).map(c => [c.key, c]));
+    for (const lane of growthMetricSpec(metric).lanes()) {
+      const fc = lane.points[lane.points.length - 1];
+      const c = curves[lane.label];
+      out.push({metric, label: lane.label, fcBest: fc.best, fcLo: fc.lo, fcHi: fc.hi,
+        median: c.median, lo90: c.lo90, hi90: c.hi90});
+    }
+  }
+  return out;
+})()
+`, ctx);
+
+for (const l of laneEnds) {
+  assert.ok(
+    l.fcBest === l.median && l.fcLo === l.lo90 && l.fcHi === l.hi90,
+    `Replicata: compare the ${l.metric}/${l.label} trajectory forecast endpoint to the distribution curve's quantiles.
+Expectata: identical (both charts show the same median + 90% CI).
+Resultata: endpoint {${l.fcBest}, ${l.fcLo}, ${l.fcHi}} vs quantiles {${l.median}, ${l.lo90}, ${l.hi90}}.`,
+  );
+}
+
 // --- 5. Anti-Postel: malformed forecast weights crash loudly, not silently ---
 
 let threw = false;
