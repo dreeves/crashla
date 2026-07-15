@@ -161,6 +161,25 @@ NARRATIVE_MOJIBAKE = {
     "Â ": " ",                                  # was NBSP (U+00A0)
     "¢ÂÂ": "“",                       # was left curly quote U+201C
     "Ã¢ÂÂ": "”",                      # was right curly quote U+201D
+    # Single-mis-decoded variants (UTF-8 bytes read as Latin-1), as \u escapes
+    # so the invisible C1 controls survive editors. Full 3-char sequences
+    # first so the bare C1 fallback below can't strand a leading "â".
+    "\u00e2\u0080\u009c": "\u201c",  # was left curly quote U+201C
+    "\u00e2\u0080\u009d": "\u201d",  # was right curly quote U+201D
+    "\u00e2\u0080\u0099": "\u2019",  # was apostrophe U+2019
+    "\u0080\u009c": "\u201c",  # was left curly quote, leading byte lost upstream
+}
+
+# Redaction markers in the source narratives are mostly "[XXX]" but a few
+# arrive typo'd ("{XXX}", "]XXX]", "[XXX[") or short ("[XX]"). Normalize to
+# the dominant form so redactions read uniformly. Exact-keyed, anti-Postel:
+# only these observed variants are rewritten. ("[XX]" cannot match inside a
+# well-formed "[XXX]", so the blanket replace is safe.)
+NARRATIVE_TYPOS = {
+    "{XXX}": "[XXX]",
+    "]XXX]": "[XXX]",
+    "[XXX[": "[XXX]",
+    "[XX]":  "[XXX]",
 }
 
 # Tesla also appends a meta-correction note when an earlier filing had wrong
@@ -194,6 +213,50 @@ SEVERITY_OVERRIDE = {
     "2908275d904dec6": "Minor W/ Hospitalization",
     # Waymo slow at stop sign; rear-ended; Waymo passenger transported to hospital
     "bb1ec8d2c85745a": "Minor W/ Hospitalization",
+    # Batch below added 2026-07-15: resolved every remaining "Unknown" from
+    # its narrative. Transport to hospital -> Minor W/ Hospitalization;
+    # alleged/unspecified injury without transport -> Minor W/O; no human
+    # injury mentioned -> Property Damage.
+    # Waymo rear-ended at red light; an individual transported to hospital
+    "04bce80be566c1b": "Minor W/ Hospitalization",
+    # Two cars collided behind braking Waymo, no AV contact; no injuries mentioned
+    "2e94dccbdb96501": "Property Damage. No Injured Reported",
+    # Red-running SUV hit Waymo and fled; towed; no injuries mentioned
+    "566bb10e6506178": "Property Damage. No Injured Reported",
+    # Passing SUV clipped Waymo; SUV passengers claimed unspecified injuries
+    "1856b0e9c61d103": "Minor W/O Hospitalization",
+    # Alleged involvement only, no AV contact; cars behind collided; no injuries
+    "8288654b083d6f8": "Property Damage. No Injured Reported",
+    # Waymo rear-ended at red; Waymo passenger reported unspecified injury
+    "bcd03512755eab2": "Minor W/O Hospitalization",
+    # Waymo rear-ended slowing at red arrow; other car alleged unspecified injuries
+    "acc8936090bcd7f": "Minor W/O Hospitalization",
+    # SUV passed queue via bike lane into turning Waymo; alleged unspecified injuries
+    "84ff2f9ead1afe1": "Minor W/O Hospitalization",
+    # Waymo rear-ended at speed; transport to hospital, airbags, both towed
+    "45c8cddbfd6f959": "Minor W/ Hospitalization",
+    # Oncoming pickup crossed yellow into Waymo; its driver transported to hospital
+    "9c9d2411ca10891": "Minor W/ Hospitalization",
+    # Passenger doored cyclist; cyclist sought urgent care independently, no transport
+    "df322c129346f66": "Minor W/O Hospitalization",
+    # Waymo deflected crate into scooterist who fell; no injuries mentioned
+    "0fa98029f8f1cef": "Property Damage. No Injured Reported",
+    # Red-runner chain crash into stopped Waymo; occupant transported to hospital
+    "3f40494138fe83f": "Minor W/ Hospitalization",
+    # Freeway chain shoved car into Waymo; driver transported, AV passenger minor
+    "20d6da83946bc6a": "Minor W/ Hospitalization",
+    # Driver doored passing Zoox; hurt hand/neck per media, declined hospital
+    "a15c4298c796428": "Minor W/O Hospitalization",
+    # ROW-violating SUV hit Zoox; passengers later alleged injuries, no transport
+    "b5c5bcbc744b458": "Minor W/O Hospitalization",
+    # Waymo rear-ended slowing to turn; other car's passenger transported to hospital
+    "dd01fd65edccaf7": "Minor W/ Hospitalization",
+    # Speeding SUV rear-ended Waymo; Waymo passenger transported to hospital
+    "c02f6672ec1a420": "Minor W/ Hospitalization",
+    # SUV lane-change hit motorcycle, shoved into Waymo; rider transported to hospital
+    "04975f9cbbbb0e2": "Minor W/ Hospitalization",
+    # Car rear-ended hard-braking Zoox; driver bruised, no transport
+    "4928b95109f3309": "Minor W/O Hospitalization",
 }
 
 
@@ -855,9 +918,19 @@ def main():
             rec["speed"] = None
         # Convert airbag field to boolean (any vehicle deployment)
         rec["airbagAny"] = "Yes" in rec["airbagAny"]
+        nar = rec["narrative"]
+        # One Tesla filing (13781-15342) arrived wrapped in "[Summary: ...]"
+        # brackets; unwrap before the prefix strips below can match.
+        if nar.startswith("[Summary:") and nar.endswith("]"):
+            nar = nar[1:-1]
         nar = NARRATIVE_AIRBAG_CORRECTION.sub(
-            "", rec["narrative"].removeprefix(NARRATIVE_BOILERPLATE))
+            "", nar.removeprefix(NARRATIVE_BOILERPLATE))
+        # Tesla's filing template opens with a contentless "Summary:" label
+        # (other helmers have none); drop it so blurbs read uniformly.
+        nar = nar.removeprefix("Summary:").lstrip()
         for bad, good in NARRATIVE_MOJIBAKE.items():
+            nar = nar.replace(bad, good)
+        for bad, good in NARRATIVE_TYPOS.items():
             nar = nar.replace(bad, good)
         rec["narrative"] = nar
         # Compact contact area summaries from NHTSA boolean columns

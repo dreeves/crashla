@@ -16,6 +16,7 @@ print(json.dumps({
   "constant": slurp.NARRATIVE_BOILERPLATE,
   "airbag_pattern": slurp.NARRATIVE_AIRBAG_CORRECTION.pattern,
   "mojibake_keys": list(slurp.NARRATIVE_MOJIBAKE.keys()),
+  "typo_keys": list(slurp.NARRATIVE_TYPOS.keys()),
   "source": inspect.getsource(slurp),
 }))
 `;
@@ -96,5 +97,32 @@ assert.ok(
 Expectata: NARRATIVE_MOJIBAKE is defined and used to normalize narratives at ingestion.
 Resultata: NARRATIVE_MOJIBAKE not referenced in slurp.py.`,
 );
+
+// Redaction-marker typo variants ({XXX}, ]XXX], [XXX[, [XX]) are normalized
+// to the dominant [XXX] form at ingestion; none may survive in the artifact.
+for (const badSeq of out.typo_keys) {
+  const residual = incidentsJs.split(badSeq).length - 1;
+  assert.equal(
+    residual,
+    0,
+    `Replicata: grep data/incidents.js for the redaction-marker variant ${JSON.stringify(badSeq)}.
+Expectata: zero occurrences (slurp normalizes it at ingestion via NARRATIVE_TYPOS).
+Resultata: found ${residual} occurrence(s).`,
+  );
+}
+
+// Tesla's filing template artifacts: a contentless "Summary:" label (and one
+// filing wrapped in "[Summary: ...]" brackets) are stripped at ingestion, so
+// no narrative in the artifact may open with either.
+for (const badOpen of ['"narrative": "Summary:', '"narrative": "[Summary:']) {
+  const residual = incidentsJs.split(badOpen).length - 1;
+  assert.equal(
+    residual,
+    0,
+    `Replicata: grep data/incidents.js for narratives opening with ${JSON.stringify(badOpen)}.
+Expectata: zero occurrences (slurp strips the Summary label / bracket wrapper).
+Resultata: found ${residual} occurrence(s).`,
+  );
+}
 
 console.log("qual pass: Tesla redacted-update boilerplate is stripped from narratives");
