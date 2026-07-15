@@ -1835,3 +1835,110 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-1583,21,Passenger Car,front left + front,rear left + rear + rear right,No Injuries Reported,0.1,car cut into AV lane at yellow then braked; AV rear-ended despite max braking
 30270-3838,0,Pickup Truck,rear right,rear left,No Injuries Reported,0,stopped AV dropping off; parked pickup reversed into rear quarter panel
 30270-3842,0,SUV,rear left + rear,front,No Injuries Reported,0,AV stopped to yield at merge; SUV rear-ended it
+30270-15300,0,Heavy Truck,front,right,Property Damage. No Injured Reported,0.2,AV stopped straddling lanes mid-change; truck in target lane clipped it
+30610-15062,0,Passenger Car,rear left + rear + rear right,front left + front + front right,Minor W/O Hospitalization,0,Stopped for traffic after green; rear-ended by car behind
+30610-15064,0,Passenger Car,rear,front left,Minor W/O Hospitalization,0,Slowed to stop behind traffic; rear-ended despite honking
+30610-15065,0,Pickup Truck,rear + rear right,front left,Property Damage. No Injured Reported,0,Stopped yielding at driveway exit; rear-ended by pickup
+13781-15399,5,Other Fixed Object,front right,,Property Damage. No Injured Reported,1,Drove into chain across lot entrance (precedent 13781-11687)
+13781-15400,0,Heavy Truck,front left,rear,Property Damage. No Injured Reported,0,Construction truck stopped abruptly then reversed into stopped AV
+30270-14908,0,SUV,left,front left,Property Damage. No Injured Reported,0.1,Own passenger's open door struck by passing SUV during pickup
+30270-14945,0,Heavy Truck,rear,right,Property Damage. No Injured Reported,0,Stopped in turn lane; truck squeezed past and clipped rear
+30270-14981,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,Stopped for red-light queue; rear-ended
+30270-14982,0,Passenger Car,front,right,Property Damage. No Injured Reported,0,"Stopped in queue; car squeezed back into lane, clipped front left"
+30270-14984,13,SUV,right,front,Property Damage. No Injured Reported,0.05,SUV went straight from right-turn-only lane into turning AV; flagrant
+30270-14987,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,Parked; SUV reversed while unparking into AV
+30270-14988,0,Heavy Truck,right,rear,Property Damage. No Injured Reported,0,Stopped at red; turning truck's trailer clipped AV
+30270-14989,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,Stopped yielding to stopped SUV; rear-ended
+30270-14992,3,SUV,rear right,front right,Property Damage. No Injured Reported,0,Proceeding slowly after ped cleared crosswalk; rear-ended
+30270-15002,28,Animal,front left,,Property Damage. No Injured Reported,0,Animal ran into lane; AV slowed; unavoidable
+30270-15014,2,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Slowing to yield to right-turner; rear-ended
+30270-15015,0,Van,rear,right,Property Damage. No Injured Reported,0,Stopped in queue; van passed and clipped rear
+30270-15021,0,Bus,rear,left,Property Damage. No Injured Reported,0,Stopped for dropoff; shuttle bus misjudged squeeze past fire truck
+30270-15022,2,Passenger Car,rear right,front right,Unknown,0,Slowing to turn right into lot; rear-ended
+30270-15023,0,SUV,rear,right,Property Damage. No Injured Reported,0,Stopped in stop-and-go; SUV changing lanes clipped rear
+30270-15024,3,Passenger Car,rear left,front,Property Damage. No Injured Reported,0,Braked for intruding truck; car changing lanes hit AV rear
+30270-15025,0,Bus,rear,rear,Property Damage. No Injured Reported,0,Stopped for crossing cyclists; passing bus clipped rear
+30270-15029,2,"Other, see Narrative",right,unknown,Property Damage. No Injured Reported,0.9,Squeezed past construction a-frame sign and hit it; self-inflicted
+30270-15030,0,SUV,rear,front left,Property Damage. No Injured Reported,0,Stopped for active fire truck; SUV passed and clipped rear
+30270-15067,0,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0,Stopped at red in turn lane; rear-ended by pickup
+30270-15068,0,Pickup Truck,rear,rear,Property Damage. No Injured Reported,0,Stopped for dropoff in lot; passing pickup's rear clipped AV
+30270-15069,4,Motorcycle,rear,front right,Property Damage. No Injured Reported,0,Slowing for dropoff; e-bike rear-ended AV
+30270-15071,8,SUV,rear,front left,Property Damage. No Injured Reported,0.05,"SUV left loading zone into AV's lane; contact on AV rear, nearly clear"
+30270-15073,0,Pickup Truck,front,rear left,Property Damage. No Injured Reported,0,Stopped yielding; pickup reversed into AV
+30270-15075,0,SUV,rear,front left,Property Damage. No Injured Reported,0,Stopped in queue; SUV changing lanes clipped rear
+30270-15076,20,"Other, see Narrative",front left,unknown,Property Damage. No Injured Reported,0.3,Maneuvered around visible road debris but still clipped it at 20 mph
+30270-15095,1,Pickup Truck,left,rear left,Property Damage. No Injured Reported,0.25,"Passed stopped pickup+trailer in slip lane; it merged, trailer clipped AV"
+30270-15096,3,SUV,rear right,front right,Unknown,0,Slowing for double-parked car; rear-ended by speeding SUV
+30270-15097,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,SUV ahead reversed into stopped AV
+30270-15098,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Stopped in queue; rear-ended
+30270-15101,9,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.8,Undercarriage grounded on raised parking lot entrance
+30270-15102,1,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Slowing behind blocked intersection; rear-ended
+30270-15104,28,Passenger Car,left,front,Property Damage. No Injured Reported,0.1,Oncoming car turned left across AV's path at green; AV braked/swerved
+30270-15105,0,Pickup Truck,front right + rear right,front right,Minor W/O Hospitalization,0,"Stopped in queue; rear-ended by pickup, shoved into SUV ahead"
+30270-15106,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Stopped for unprotected left; rear car shoved into AV by rear-ender
+30270-15157,45,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0.1,"Tire struck road debris at 45 mph; hard to see, no evasive window"
+30270-15158,0,Pickup Truck,rear,right,Property Damage. No Injured Reported,0,Stopped mid-lane-change; pickup passing on left clipped rear
+30270-15159,0,Passenger Car,rear,right,Property Damage. No Injured Reported,0,Stopped in queue; car changing lanes clipped rear
+30270-15160,0,SUV,rear left,rear,Property Damage. No Injured Reported,0,Parked for pickup; SUV reversing from driveway hit AV
+30270-15172,0,Bus,left,right,Property Damage. No Injured Reported,0,Parked in parking lane; passing bus hit AV
+30270-15173,0,Passenger Car,rear right,front right,Minor W/O Hospitalization,0,Stopped for queue after green; rear-ended
+30270-15174,22,Pickup Truck,left,front right,Moderate W/ Hospitalization,0.05,"Pickup ran red from turn lane into AV; flagrant, AV braked/swerved"
+30270-15175,0,SUV,left,right,Property Damage. No Injured Reported,0,Parked for pickup with hazards; passing SUV clipped AV
+30270-15176,32,Van,front,front left,Property Damage. No Injured Reported,0.1,Van from stop sign cut across two lanes into AV's lane
+30270-15177,2,SUV,rear right,front right,Minor W/O Hospitalization,0,Slowing for traffic; rear-ended
+30270-15178,0,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0,Stopped at stop sign yielding; rear-ended by pickup
+30270-15179,0,Motorcycle,rear,right,Property Damage. No Injured Reported,0,Stopped for ped in crosswalk; motorcycle passed and clipped rear
+30270-15190,0,Pickup Truck,rear,left,Property Damage. No Injured Reported,0,Stopped right on narrow street; oncoming pickup clipped rear
+30270-15191,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,Parked; SUV ahead reversed into AV
+30270-15192,1,Passenger Car,rear right,front left + front + left,Moderate W/O Hospitalization,0,Cross-traffic crash rotated car into AV's rear; chain reaction
+30270-15193,25,SUV,rear right,front right,Minor W/O Hospitalization,0,Proceeding straight; SUV straddling lanes rear-ended AV
+30270-15194,0,"Other, see Narrative",front,rear left,Property Damage. No Injured Reported,0,Detached camping trailer rolled downhill into stopped AV
+30270-15195,23,Passenger Car,right,front,Property Damage. No Injured Reported,0.1,"Car left queued lane into AV's lane, hit AV's side"
+30270-15238,0,Passenger Car,right,rear right,Property Damage. No Injured Reported,0,Parked for pickup; car reversed out of stall into AV
+30270-15240,4,Pickup Truck,left,front left,Property Damage. No Injured Reported,0.2,"Lane-changed into turn-lane gap, stopped straddling; pickup hit on green arrow"
+30270-15243,11,Pickup Truck,front,front left,Property Damage. No Injured Reported,0.1,Pickup exited parking garage into alley path; AV braked/swerved
+30270-15244,12,Non-Motorist: Cyclist,front left,,Property Damage. No Injured Reported,0.3,Ped with bike emerged from front of stopped SUV into braking AV's lane
+30270-15245,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Stopped at red; rear-ended
+30270-15246,0,Passenger Car,front,front right + right,Minor W/ Hospitalization,0,"Stopped at stop sign; stop-runner hit turning car, shoving it into AV"
+30270-15248,10,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.8,Undercarriage grounded on raised parking lot entrance
+30270-15249,48,Animal,front left + right,,Property Damage. No Injured Reported,0,Deer ran into lane at 48 mph; unavoidable
+30270-15250,0,First Responder Vehicle,rear,left,Property Damage. No Injured Reported,0,Stopped right on narrow street; passing ambulance clipped rear
+30270-15251,0,Passenger Car,right,front right,Property Damage. No Injured Reported,0,Stopped in queue; garage pull-out was hit and shoved into AV
+30270-15252,14,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Slowing for queue; rear-ended
+30270-15253,0,Passenger Car,rear,front left,Property Damage. No Injured Reported,0,"Creeping from stop sign, yielding; rear-ended"
+30270-15254,9,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.8,Undercarriage grounded on raised parking lot entrance
+30270-15255,3,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Slowed for left-turner crossing ahead; rear-ended
+30270-15256,0,Van,front right,rear right,Property Damage. No Injured Reported,0,Van ahead reversed into stopped AV after green
+30270-15257,19,"Other, see Narrative",front + left,unknown,Property Damage. No Injured Reported,0,Wind blew collapsed shade structure into lane just ahead; AV slowing
+30270-15259,0,SUV,rear left,front,Property Damage. No Injured Reported,0,Stopped short of blocked intersection; SUV behind clipped rear
+30270-15260,0,Passenger Car,rear,front left,Property Damage. No Injured Reported,0,Parked with hazards; illegal left-turner passed and clipped rear
+30270-15261,0,Passenger Car,front left,rear right,Property Damage. No Injured Reported,0,Stopped at red; driverless rolling car backed into AV
+30270-15262,0,Passenger Car,front right,rear right,Property Damage. No Injured Reported,0,Car ahead reversed into stopped AV at red
+30270-15263,0,SUV,rear,front left,Property Damage. No Injured Reported,0,Stopped for crossing animal; lane-changing SUV clipped rear
+30270-15285,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,Stopped at curb; SUV reversed along curb into AV
+30270-15287,0,Heavy Truck,left,right,Property Damage. No Injured Reported,0.2,Stopped straddling lanes mid-change ahead of truck; truck proceeded into AV
+30270-15289,0,Passenger Car,front,rear left,Property Damage. No Injured Reported,0,Crashed car rolled backwards into stopped AV; AV had maneuvered away
+30270-15290,26,"Other, see Narrative",front,unknown,Property Damage. No Injured Reported,0,Spare tire fell off motorhome ahead and bounced into AV
+30270-15291,0,Passenger Car,left,right,Property Damage. No Injured Reported,0,Stopped on narrow street; passing car clipped AV
+30270-15292,1,Van,rear,rear left,Property Damage. No Injured Reported,0,Van reversed out of stall into slowing AV's rear
+30270-15298,0,Bus,rear,left,Property Damage. No Injured Reported,0,Stopped mid-turn yielding; bus passed and clipped rear
+30270-15299,0,Heavy Truck,front left,left,Property Damage. No Injured Reported,0,Stopped; truck reversing into lot swung into AV
+30270-15307,0,SUV,rear,front left,Property Damage. No Injured Reported,0,Stopped mid-right-turn from lot; follower drove into AV rear
+30610-15295,3,Passenger Car,rear + rear right,front left + front + front right,Unknown,0,Braked hard for debris; rear-ended by tailing car
+13781-15342,0,SUV,front,rear left,Property Damage. No Injured Reported,0,SUV ahead in lot stopped then reversed into stopped AV
+30270-15296,5,Bus,front left,rear left,Property Damage. No Injured Reported,0.9,Turned out of lot into bus passing in front; expert waits for clear
+30270-15301,0,Motorcycle,rear left,front right + rear right,Unknown,0,Stopped at red; SUV-motorcycle tangle shoved both into AV rear
+30270-15344,3,Heavy Truck,front left,left,Property Damage. No Injured Reported,0.1,Truck swung wide right across AV's lane; AV slowing
+30270-15346,5,SUV,front + left,right + rear left,Property Damage. No Injured Reported,0,Driverless rolling SUV backed into yielding AV twice
+30270-15347,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,Stopped at stop sign; rear-ended
+30270-15348,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,Stopped at curb; truck completing left turn clipped rear
+30270-15349,0,SUV,rear,right,Property Damage. No Injured Reported,0,Parked in lot after dropoff; passing SUV clipped rear
+30270-15350,6,SUV,front left,left,Property Damage. No Injured Reported,0,Parked SUV's driver opened door into passing AV
+30270-15352,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Stopped at red; car behind proceeded into AV
+30270-15353,2,Pickup Truck,right,left,Property Damage. No Injured Reported,0.1,Pickup crossed solid white into AV's turn lane to pass; hit AV side
+30270-15356,32,SUV,rear,front,Property Damage. No Injured Reported,0.05,"Oncoming SUV crossed yellow into AV's lane; contact on AV rear, nearly clear"
+30270-15358,11,Pickup Truck,right,front,Property Damage. No Injured Reported,0.1,"Pickup merged left into AV's lane, hit AV's side"
+30270-15360,0,Passenger Car,left,right,Property Damage. No Injured Reported,0.1,Own passenger's open door struck by passing car during dropoff
+30270-15362,8,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.8,Undercarriage grounded on raised parking lot entrance
+30270-15374,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,Stopped in construction zone; passing truck clipped rear
+30270-15392,0,Van,left,right,Property Damage. No Injured Reported,0,Parked in parking lane; van crossed white line into AV

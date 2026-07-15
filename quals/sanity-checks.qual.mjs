@@ -160,13 +160,18 @@ assert.ok(
 Expectata: table has low/high VMT and range ratio columns.
 Resultata: expected columns not found.`);
 
-// --- Poisson dispersion: small-sample helmers get "too few" ---
+// --- Poisson dispersion: Tesla verdict tracks its sample size ---
+// Tesla crossed the 20-incident threshold in the Jul-2026 NHTSA drop (21
+// incidents), so the small-sample "too few incidents to tell" branch no
+// longer fires for any live helmer. Tesla's monthly rates swing wildly
+// (tiny-fleet ramp months like Jul 2025), so the test reads overdispersed
+// by a wide margin (X²/dof ≈ 15). Re-pin if the data moves a verdict tier.
 const dispBlock = (html.match(/<h3>Poisson dispersion<\/h3>[\s\S]*?<\/table>/) || [""])[0];
 const teslaDispRow = dispBlock.split("</tr>").find(s => s.includes("<td>Tesla</td>")) || "";
 assert.ok(
-  teslaDispRow.includes("too few incidents to tell"),
+  teslaDispRow.includes("<td>overdispersed</td>"),
   `Replicata: check Poisson dispersion verdict for Tesla.
-Expectata: Tesla (small-sample helmer) shows "too few incidents to tell".
+Expectata: Tesla (21 incidents, dispersion index ~15) shows "overdispersed".
 Resultata: Tesla dispersion row was ${JSON.stringify(teslaDispRow)}.`);
 
 // --- Reporting threshold: speed=0 data present ---
