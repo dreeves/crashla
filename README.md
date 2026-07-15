@@ -231,12 +231,12 @@ For the latest month, NHTSA's Monthly-track reports may not all be filed yet, so
    Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `data/slurp.py`.
    Archival raw fetch snapshots live under `data/snapshots/`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
-   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 1,836 incidents as of the latest fetch: 1,783 Waymo, 18 Tesla, 35 Zoox. These counts grow with each slurp run.
+   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 1,943 incidents as of the latest fetch (2026-07-15): 1,883 Waymo, 21 Tesla, 39 Zoox. These counts grow with each slurp run.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
    Maintained in `data/vmt.csv` (the in-repo master) and embedded in `data/vmt.js` by `data/slurp.py`.
    Each company's mileage comes from different public sources:
-   - **Tesla**: robotaxitracker.com cumulative deltas (Austin only; Bay Area excluded per Tesla's Q3 earnings call).
+   - **Tesla**: robotaxitracker.com cumulative deltas (Texas service: Austin, plus Dallas/Houston from their Apr 2026 unsupervised launch; Bay Area excluded — its rides carry a driver-seat safety driver, outside the public-service scope).
    - **Waymo**: See "Waymo VMT Methodology" section below.
    - **Zoox**: US estimates anchored to two company milestones (~1M autonomous miles by late 2025, ~2M by late March 2026; 0.7×–1.3× error band), with monthly detail interpolated from California CPUC and Las Vegas operations. California DMV testing miles are out of scope.
 
