@@ -3,8 +3,8 @@ import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 
 // Waymo's cumulative-rides history must respect Waymo's published ride-count
-// milestones (the only well-sourced lane; Tesla/Zoox are labeled low-confidence
-// guesses on the page and are only sanity-bounded here):
+// milestones (Tesla's lane anchors to its deck-disclosed cumulative miles and
+// Zoox's to published rider milestones; all three are pinned here):
 //   10M cumulative paid trips announced May 20 2025 (CNBC / Google I/O), so
 //     every later month's cumulative -- even its LOW bound -- must clear 10M.
 //   ~20M lifetime trips by end of 2025 (Waymo 2025 year-in-review blog:
@@ -35,11 +35,14 @@ Resultata: ${JSON.stringify(decRow)}.`);
 
 vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 
-// Tesla's rides derive from its (tracker-anchored) cumulative miles at the
-// observed miles-per-ride: ~700k paid miles by late Apr 2026 at a 4-5 mi
-// average ride (robotaxitracker via Electrek 2026-04-30) plus the Bay-Area
-// monitored service implies ~7.5-13.5 total-scope miles per ride. A history
-// row that strays outside that corridor has come unglued from the miles data.
+// Tesla's rides derive from its (deck-anchored) cumulative miles at the
+// total-scope miles-per-ride corridor [4.7, 6.2, 8.3]: the trackers' observed
+// 4-5 mi average paid ride divided by a 0.6-0.85 passenger-on-board share of
+// fleet service miles (deadhead 15-40%). A history row that strays outside
+// that corridor has come unglued from the miles data. (Repinned 2026-07-22,
+// human-approved, from [7, 14]: that corridor reconciled the miles with a
+// "~700k paid miles by late Apr 2026" figure that was actually mid-February
+// vintage — Tesla's Q1-2026 deck puts end-Mar cumulative paid at ~1.717M.)
 const teslaHist = JSON.parse(hist).Tesla;
 const teslaCume = JSON.parse(vm.runInContext(
   `JSON.stringify(Object.fromEntries(vmtRows.filter(r => r.helmer === "Tesla").map(r => [r.month, r.vmtCume])))`, ctx));
@@ -47,9 +50,9 @@ for (const row of teslaHist) {
   const cume = teslaCume[row.month];
   if (cume === undefined) continue; // rows past the VMT master's last month
   const implied = cume / row.best;
-  assert.ok(implied >= 7 && implied <= 14,
+  assert.ok(implied >= 4.5 && implied <= 8.5,
     `Replicata: divide Tesla's cumulative VMT at ${row.month} (${cume}) by the rides row's best (${row.best}).
-Expectata: implied miles-per-ride in [7, 14] (tracker-observed ride lengths + deadhead/monitored-mode share).
+Expectata: implied miles-per-ride in [4.5, 8.5] (tracker-observed paid-ride lengths / on-trip share of service miles).
 Resultata: ${implied.toFixed(1)}.`);
 }
 

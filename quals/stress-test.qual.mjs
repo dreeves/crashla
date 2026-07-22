@@ -148,8 +148,12 @@ Expectata: Zoox remains ambiguous on the all-incident metric.
 Resultata: verdict was ${plain.byHelmer.Zoox.all.verdictKey}.`,
 );
 
+// Magnitude drift guard on Tesla's optimistic edge (the straddles-1x claim
+// itself is the verdictKey assert above). Bound moved 3 -> 3.5 on 2026-07-22
+// when the Tesla denominator was re-anchored to the deck-chart series
+// (default-window VMT +16% moved ratioHi 2.78 -> 3.23 proportionally).
 assert.ok(
-  plain.byHelmer.Tesla.all.ratioHi < 3,
+  plain.byHelmer.Tesla.all.ratioHi < 3.5,
   `Replicata: inspect Tesla all-incident AV/human ratio range.
 Expectata: Tesla's CI still straddles 1x human safety rather than being robustly safe.
 Resultata: ratio range was ${plain.byHelmer.Tesla.all.ratioLo}x to ${plain.byHelmer.Tesla.all.ratioHi}x.`,
