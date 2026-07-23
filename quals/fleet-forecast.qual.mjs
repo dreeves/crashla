@@ -218,13 +218,16 @@ Resultata: CDF(median=${q.median}) = ${q.cdfMedian.toFixed(3)}, CDF(lo90) = ${q.
 }
 
 // The scenario mixture restores the property that motivated it: Tesla's
-// robotaxi-scope miles median sits with scenario A's ~71% mass (~8-9M), not in
-// the no-man's-land (~32M) the single fat-tailed curve produced; the HW4 lane
-// is dashed/conditional in the hundreds of millions.
+// robotaxi-scope miles median sits with scenario A's ~71% mass, not in the
+// no-man's-land (~32M) the single fat-tailed curve produced; the HW4 lane
+// is dashed/conditional in the hundreds of millions. Range re-pinned
+// [7M, 15M] -> [3.4M, 6.5M] (= scenario A's band) on 2026-07-22 when A was
+// recalibrated down to the Q2-deck actuals (end-Jun 2.44M after the
+// utilization-led Q2 slowdown); the median lands ~5M.
 const milesByKey = Object.fromEntries(quantileStats.filter(q => q.metric === "miles").map(q => [q.key, q]));
-assert.ok(milesByKey.robotaxi.median > 7000000 && milesByKey.robotaxi.median < 15000000 && !milesByKey.robotaxi.dashed,
+assert.ok(milesByKey.robotaxi.median > 3400000 && milesByKey.robotaxi.median < 6500000 && !milesByKey.robotaxi.dashed,
   `Replicata: read Tesla's robotaxi-scope cumulative-miles median.
-Expectata: in [7M, 15M] (scenario A carries ~71% of the mass) and drawn solid.
+Expectata: in [3.4M, 6.5M] (scenario A's band; A carries ~71% of the mass) and drawn solid.
 Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
 assert.ok(milesByKey.hw4.median > 150000000 && milesByKey.hw4.dashed,
   `Replicata: read Tesla's HW4-scope cumulative-miles curve.

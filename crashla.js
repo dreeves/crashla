@@ -1935,7 +1935,7 @@ const RIDES_HISTORY = {
     {month: "2025-09", best: 19500,  lo: 14500,  hi: 26000},
     {month: "2025-12", best: 106000, lo: 79000,  hi: 140000},
     {month: "2026-03", best: 277000, lo: 207000, hi: 365000},
-    {month: "2026-06", best: 505000, lo: 377000, hi: 666000},
+    {month: "2026-06", best: 394000, lo: 294000, hi: 519000},
   ],
   // Waymo pinned to published cumulative milestones (rides-provenance.qual):
   // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
@@ -1973,8 +1973,8 @@ const RIDES_HISTORY = {
 // from 2026 per Fortune 2025-12-08).
 const RIDES_FORECAST = [
   { helmer: "Tesla", components: [
-    { weight: 0.71, best: 1600000,  lo: 840000,  hi: 3200000, scope: "robotaxi" },   // A: (10M mi)/[4.7, 6.2, 8.3]
-    { weight: 0.24, best: 8000000,  lo: 2300000, hi: 32000000, scope: "robotaxi" },  // B: (50M mi)/~6
+    { weight: 0.71, best: 730000,   lo: 410000,  hi: 1380000, scope: "robotaxi" },   // A: (4.5M mi)/[4.7, 6.2, 8.3]
+    { weight: 0.24, best: 6500000,  lo: 1800000, hi: 25500000, scope: "robotaxi" },  // B: (40M mi)/~6
     { weight: 0.05, best: 15000000, lo: 2000000, hi: 120000000, scope: "hw4" },      // C: Tesla Network on eyes-off HW4
   ] },
   { helmer: "Waymo", components: [
@@ -1986,19 +1986,22 @@ const RIDES_FORECAST = [
 ];
 // Cumulative-miles forecast through Jan 1, 2027, extending each helmer's
 // end-May-2026 cumulative VMT. Tesla mirrors FLEET_FORECAST's scenario mixture
-// (same A/B/C weights and robotaxi/HW4 scope split). Scenario bands derive
-// from the fleet paths at the observed ~11k mi/vehicle-month (2.78M
-// cumulative through May 2026 at ~550k/mo on ~50 active vehicles),
-// time-averaged over the Jun-Dec 2026 ramp to each scenario's Jan-1 fleet:
-// A (~50 -> ~180 vehicles) adds ~7M; B's Cybercab ramp to ~9k arrives mostly
-// in Q4 at ramping utilization; C's miles are ADS miles on eyes-off personal
+// (same A/B/C weights and robotaxi/HW4 scope split). Recalibrated 2026-07-22
+// post-Q2-deck: end-Jun actual is 2.44M cumulative after a utilization-led Q2
+// slowdown (monthly 437k Mar -> 374k/192k/157k on ~45 -> ~30 active vehicles,
+// ~5-6k mi/vehicle-month blended — fleet-count activity ratios ran ~2x hot).
+// A ("slow ramp continues"): the Jul-2026 three-metro expansion (Miami/
+// Orlando/Tampa unsupervised) + ~175 registered TX vehicles pull monthly
+// miles back toward ~400-700k by Dec: 2.44M plus ~1M (trough persists) to
+// ~4M (near-Q1 trajectory), central ~+2M. B's Cybercab ramp to ~9k arrives
+// mostly in Q4 at ramping utilization (production started Jun 2026; the
+// earlier same-day x1.25 per-vehicle rescale is reverted — it didn't survive
+// the Q2 utilization data). C's miles are ADS miles on eyes-off personal
 // HW4 cars (~600k x ~1k mi/mo x the post-flip months, timing very uncertain).
-// A/B rescaled 2026-07-22 with the deck-chart VMT re-anchor (per-vehicle rate
-// up ~1.25x); C's basis is the personal HW4 fleet, not Austin, so unchanged.
 const MILES_FORECAST = [
   { helmer: "Tesla", components: [
-    { weight: 0.71, best: 10000000,  lo: 7000000,   hi: 15000000, scope: "robotaxi" },  // A: slow ramp continues
-    { weight: 0.24, best: 50000000,  lo: 19000000,  hi: 150000000, scope: "robotaxi" }, // B: aggressive scale-up
+    { weight: 0.71, best: 4500000,   lo: 3400000,   hi: 6500000, scope: "robotaxi" },   // A: slow ramp continues
+    { weight: 0.24, best: 40000000,  lo: 15000000,  hi: 120000000, scope: "robotaxi" }, // B: aggressive scale-up
     { weight: 0.05, best: 400000000, lo: 100000000, hi: 1500000000, scope: "hw4" },     // C: HW4 fleet goes ADS
   ] },
   { helmer: "Waymo", components: [

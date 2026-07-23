@@ -3,9 +3,9 @@ import fs from "node:fs";
 
 // Tesla's cumulative VMT series must track Tesla's own published cumulative
 // series: the "Cumulative Paid Robotaxi Miles" chart in the quarterly update
-// decks (Q4-2025 deck p11, Q1-2026 deck p9). The monthly values below were
-// vector-extracted from the two PDFs' chart paths; the decks' overlapping
-// months (Jun-Dec 2025) agree within ~3k miles, so chart-read precision is
+// decks (Q4-2025 deck p11, Q1-2026 deck p9, Q2-2026 deck p9). The monthly
+// values below were vector-extracted from the PDFs' chart paths; the decks'
+// overlapping months agree within ~3-8k miles, so chart-read precision is
 // roughly +/-5k per point. Provenance notes:
 //   - Scope is the Texas driverless service only: the Q3-2025 earnings call
 //     tracks the Bay Area as a SEPARATE supervised series (Elluswamy: "In the
@@ -26,7 +26,11 @@ import fs from "node:fs";
 // This qual exists because the rows were once interpolated from tracker
 // guesses between sparse verbal anchors: Aug-2025 sat at 76,498 vs the
 // chart's ~20k (3.8x high) and end-Q1-2026 at 1,563,047 vs the chart's
-// ~1,717k (9% low, below the disclosed floor).
+// ~1,717k (9% low, below the disclosed floor). Second lesson (Q2-2026):
+// fleet-count activity ratios overestimated the utilization-led Q2 slowdown
+// months ~2x (predicted +1.41M for the quarter vs the deck's +0.72M) —
+// within-quarter extension months are wide-band placeholders until the next
+// deck re-pins them.
 
 const rows = fs.readFileSync("data/vmt.csv", "utf8").trim().split("\n").slice(1)
   .map(l => l.split(",", 8))
@@ -47,6 +51,9 @@ const PINS = [
   ["2026-01", 955000,  860000,  1050000, false],
   ["2026-02", 1279000, 1150000, 1410000, false],
   ["2026-03", 1717000, 1630000, 1890000, true],
+  ["2026-04", 2091000, 1985000, 2200000, false], // Q2-2026 deck
+  ["2026-05", 2283000, 2170000, 2400000, false], // Q2-2026 deck
+  ["2026-06", 2440000, 2320000, 2560000, true],  // Q2-2026 deck
 ];
 
 for (const [month, chart, lo, hi, hard] of PINS) {
@@ -74,6 +81,11 @@ assert.ok(mar.kmin >= 1600000,
   `Replicata: read tesla 2026-03 kyoom_min against the 1,717k disclosed floor.
 Expectata: kyoom_min >= 1,600,000 (chart value minus read noise; paid miles are a subset of total scope).
 Resultata: ${mar.kmin}.`);
+const jun = byMonth["2026-06"];
+assert.ok(jun.kmin >= 2300000,
+  `Replicata: read tesla 2026-06 kyoom_min against the 2,440k disclosed floor (Q2-2026 deck).
+Expectata: kyoom_min >= 2,300,000 (chart value minus read noise; paid miles are a subset of total scope).
+Resultata: ${jun.kmin}.`);
 
 // "Paid Robotaxi miles nearly doubled sequentially" (Q1-2026 deck): the
 // quarterly deltas must keep that ratio in the neighborhood of 2.
