@@ -504,12 +504,14 @@ def parse_vmt_values(raw_text):
 def incident_coverage(nhtsa_rows, last_month, vmt):
     """Compute incident reporting completeness for the last month.
 
-    The best estimate assumes f = 1.0 — these could be all the incidents.
-    This avoids circularity: the dot shows MPI from the data we have,
-    no estimation of coverage.  The lo bound uses a rate-ratio comparison
-    against the most recent complete month to capture the possibility that
-    many more incidents are yet to be reported.  The CI thus incorporates
-    our ignorance about f without the central estimate depending on it.
+    The best estimate is a pooled rate-ratio: observed incidents in the
+    incomplete month vs the count expected from each helmer's most recent
+    complete reference month (VMT-scaled), clamped to (0, 1].  Assuming
+    f = 1.0 instead would assert "these are all the incidents" and
+    overstate the month's safety.  The lo bound subtracts 1.96 SE (normal
+    approximation to the rate ratio); the hi bound is 1.0 (all incidents
+    may already be in).  The CI thus spans our ignorance about the true
+    reporting fraction f.
 
     last_month: ISO month string (e.g. "2026-02") — the latest month with
     any incident data.  Derived from the data, not hardcoded.

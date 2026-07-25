@@ -150,7 +150,7 @@ can you make a file called faultfrac.csv that, for every Report ID in data/snaps
 
 ## [AI TEXT] Explanatory Note
 
-This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox using [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) incident reports. The analysis window rolls forward as NHTSA publishes new data: the default view starts June 15, 2025 and extends through the most recent month NHTSA has published (the date slider reaches back to July 2021 for Waymo). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June 2025 (starting June 15) has full incident coverage.
+This page aims to compare "miles per incident" across Tesla, Waymo, and Zoox using [NHTSA SGO](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) incident reports. The analysis window rolls forward as NHTSA publishes new data: the default view starts with June 2025 (a full calendar month — SGO incident dates are month-granular, so the original June-15 framing can't be applied to incidents, and the June VMT rows are full-month to match) and extends through the most recent month NHTSA has published (the date slider reaches back to July 2021 for Waymo). Incident data comes from both the current and [archive](https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv) NHTSA CSVs so that June 2025 has full incident coverage.
 
 Context:
 [agifriday.substack.com/crashla](https://agifriday.substack.com/crashla/) and
@@ -169,7 +169,7 @@ VMT master data: `data/vmt.csv` in this repo. (Formerly maintained in a [Google 
 
 - The colored band around each MPI line is a 95% Bayesian credible interval. Model: incidents ~ Poisson(lambda * m), where lambda is the rate (incidents per mile) and m is VMT. Jeffreys prior: lambda ~ Gamma(0.5, 0) (improper). Posterior after observing k incidents in m miles: lambda | k, m ~ Gamma(k + 0.5, m). MPI = 1/lambda; quantiles are inverted via a monotone decreasing transformation.
 - The credible interval combines uncertainty from incident counts (Gamma-Poisson) and from VMT (vmt_min/vmt_max) conservatively: the lower MPI bound uses vmt_min with the upper lambda quantile, and the upper MPI bound uses vmt_max with the lower lambda quantile. This yields the widest possible band.
-- For partial months (June 15–30 and January 1–15), VMT is pro-rated by the calendar coverage fraction. For January, incident coverage is also adjusted because Monthly-track NHTSA reports may not yet be available (see the "incident coverage" sanity check on the page).
+- The VMT data carries a calendar-coverage fraction for pro-rating partial months; currently every month is full (coverage = 1.0), June 2025 included. For the latest month, incident coverage is adjusted instead, because Monthly-track NHTSA reports may not yet be available (see the "incident coverage" sanity check on the page).
 - The point estimate shown in the line is the Bayesian posterior median of 1/lambda, not the simple ratio m/k. For small k (especially Tesla), the prior pulls the estimate slightly downward; for large k (Waymo), the difference is negligible.
 - Fault-weighted incidents (thin line): each incident contributes its fault fraction (Claude's at-fault estimate) instead of one full count. The sum of fractions is treated as a pseudo-Poisson count; this is a heuristic but reasonable approximation.
 - **Tesla safety-monitor caveat:** Most Tesla robotaxi rides include a passenger-seat safety monitor. Tesla classifies these as unsupervised (no operator) for NHTSA reporting, but the monitors may intervene to prevent incidents. If so, Tesla's true unsupervised MPI would be lower (worse) than shown.
@@ -220,9 +220,10 @@ Sources:
 
 ## [AI TEXT] June and the Different Datasets
 
-The NHTSA Standing General Order (SGO) analysis window starts **June 15, 2025** (the default view) and rolls forward as NHTSA publishes new data, always extending through the most recent published month.
-June 2025 is therefore a partial month (June 15–30 only).
-Its VMT figure is pre-adjusted to match that partial window, so coverage=1.0 in the VMT data means "VMT and incidents are already aligned" — no further pro-rating needed.
+The NHTSA Standing General Order (SGO) analysis window starts **June 2025** (the default view) and rolls forward as NHTSA publishes new data, always extending through the most recent published month.
+June 2025 is included as a full calendar month: SGO incident dates are month-granular, so a mid-month cutoff can't be applied to incidents, and the June 2025 VMT rows are full-month to match (the june-coverage qual checks the incident count is consistent with a full month).
+coverage=1.0 in the VMT data means "VMT and incidents are already aligned" — no pro-rating needed.
+(Historical: the window was originally framed as June 15 – December 15, 2025, matching the first data pull; that framing survives in older notes above but the data has been full-June ever since the archive merge gave June full incident coverage.)
 For the latest month, NHTSA's Monthly-track reports may not all be filed yet, so an incident-coverage factor thins the effective VMT instead (see the "Incident coverage for partial months" sanity check on the page).
 
 ### The three datasets combined here
@@ -313,7 +314,8 @@ In practice, the CA share evolved over time as Waymo expanded:
 | Jul 2024 | ~48% | LA ramping up |
 | Aug–Dec 2024 | ~52% | LA fully ramped |
 | Jan–Sep 2025 | ~55% | Stable |
-| Oct 2025–Mar 2026 | ~51% | Calibrated from the 200M and 220.6M milestones; Austin/Atlanta expansion |
+| Oct–Dec 2025 | ~56% | CPUC Q4-2025 actuals (24.74M CA) vs the milestone-bridged 43.85M US |
+| Jan–Mar 2026 | ~53% | CPUC Q1-2026 actuals (26.41M CA incl. pilot) vs the milestone-bridged 49.9M US; Austin/Atlanta expansion |
 
 Geographic breakdown through Sep 2025 (from Waymo Safety Hub):
 Phoenix 44.5%, San Francisco 30.6%, Los Angeles 20.1%, Austin 5.0%.
@@ -327,8 +329,8 @@ Phoenix 80.6M (36.5%), San Francisco Bay Area 67.1M (30.4%), Los Angeles 51.8M (
 - **Feb–Nov 2023** (±50%): Sparse milestones, pilot era. Pilot-only CA VMT is very small (17K–255K/month). The CA share is uncertain (~14%) and the proportional distribution within milestone intervals may not capture intra-interval growth patterns. The Feb–Oct 2023 monthly profile is the CPUC-scaled original ×1.093, bridging the re-baselined early ramp to the 7.14M-through-Oct-2023 milestone.
 - **Dec 2023–Jun 2024** (±35%): First deployment period. CA share was shifting as LA launched (~24% → ~33%). Cumulative milestone endpoints are known but monthly allocation is approximate.
 - **Jul 2024–Sep 2025** (±25%): Tight milestone brackets. CA share is stable (~52–55%).
-- **Oct–Dec 2025** (±30%): Bridges Waymo's published cumulative anchors — 127M end-Sep to the exact 170.7M end-Dec 2025 pin (the CPUC-shaped monthly profile ×1.069, since the pre-re-baseline series had absorbed its level offset across this interval); CPUC CA VMT plateaued at ~8.4M/month while US VMT grew modestly as Austin expanded; average CA share ~51%, down from ~55% in Q3.
-- **Jan–Mar 2026** (±25%): Anchored to Waymo's 220.6M rider-only miles through March 2026 (Safety Impact update, Jun 24, 2026), bridging from the 170.7M end-Dec-2025 anchor; the implied ~17.7M March (~4.1M/week) matches the co-CEO's >4M rider-only miles/week at ~500k paid trips/week (late Mar 2026). The lower band at March is floored at the confirmed 220M milestone.
+- **Oct–Dec 2025** (±30%): Bridges Waymo's published cumulative anchors — 127M end-Sep to the exact 170.7M end-Dec 2025 pin (the CPUC-shaped monthly profile ×1.069, since the pre-re-baseline series had absorbed its level offset across this interval); CPUC CA VMT plateaued at ~8.4M/month (Q4-2025 actuals: Oct 7.90M, Nov 8.41M, Dec 8.42M) while US VMT grew modestly as Austin expanded; implied average CA share 56.4% (24.74M CA / 43.85M US).
+- **Jan–Mar 2026** (±25%): Anchored to Waymo's 220.6M rider-only miles through March 2026 (Safety Impact update, Jun 24, 2026), bridging from the 170.7M end-Dec-2025 anchor; the implied ~17.7M March (~4.1M/week) matches the co-CEO's >4M rider-only miles/week at ~500k paid trips/week (late Mar 2026). The lower band at March is floored at the confirmed 220M milestone. Out-of-sample check (2026-07-24): CPUC Q1-2026 actuals (CA driverless 9.09M/8.19M/9.11M Jan/Feb/Mar, deployment + ~20k/mo pilot) imply a 52.9% CA share and match this series' monthly shape within ~4%.
 - **Apr–May 2026** (±30%): Extrapolated from the 220.6M end-Mar-2026 anchor at the late-Mar weekly rate with modest growth (~3,000 vehicles).
 
 ### Notable events

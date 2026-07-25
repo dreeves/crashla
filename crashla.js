@@ -357,15 +357,17 @@ const METRIC_DEFS = [
     // At-fault injury: intersection of at-fault and injury crashes.
     // Shares use the expert-avoidability standard to match the faultfrac
     // criterion (P(expert human avoids)), not legal allocation:
-    // lo: injury lo (256k) / ~94% share (NHTSA critical reason: driver error
-    //   in ~94% of crashes; an expert avoids at least those) ≈ 272k
-    // hi: injury hi (524k) / 50% share ≈ 1,050k
+    // lo: injury lo (125k) / ~94% share (NHTSA critical reason: driver error
+    //   in ~94% of crashes; an expert avoids at least those) ≈ 133k
+    // hi: injury hi (478k) / 50% share ≈ 956k
     //   50% = legal-allocation floor (single-vehicle 100%, multi ~50%);
-    //   expert-avoidability can't be lower. Cross-check: 524k/214k × atfault
-    //   hi (430k) ≈ 1,053k.
+    //   expert-avoidability can't be lower. Cross-check: 478k/214k × atfault
+    //   hi (430k) ≈ 960k. (Re-derived 2026-07-24 when the injury band's
+    //   repin to the Kusano 56.7M per-city range left this stale at the old
+    //   blended anchors, 272k–1,050k.)
     humanMPI: {
-      HumansAV: {lo: 272000, hi: 1050000,
-        src: 'lo: injury lo (256k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (524k) / 50% legal-allocation floor',
+      HumansAV: {lo: 133000, hi: 956000,
+        src: 'lo: injury lo (125k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (478k) / 50% legal-allocation floor',
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
           {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
@@ -1225,16 +1227,18 @@ function renderAllHelmersMpiChart(series) {
       if (row === null) return null;
       const mpi = row.mpiByMetric[metric.key];
       if (!mpi) return null;
-      // covRatio: how much of this month's incident coverage is known (1 =
+      // covRatio: worst-case incident coverage (incident_coverage_min; 1 =
       // fully reported, <1 = NHTSA monthly reports still pending). Drives dot
       // opacity so incomplete months are visually demoted without a separate
-      // code path.
+      // code path. covBest is the pooled best estimate (incident_coverage),
+      // shown in the tooltip to match the sanity table's "best" column.
       const covRatio = row.vmtRawMin > 0 ? row.vmtMin / row.vmtRawMin : 1;
+      const covBest = row.vmtRawBest > 0 ? row.vmtBest / row.vmtRawBest : 1;
       // Y-range: every point's median dot is on-scale; fully-reported k≥1 months
       // also contribute their finite VMT spread (mpiMax = ∞ at k=0, so excluded).
       yMax = Math.max(yMax, covRatio > 0.99 && Number.isFinite(mpi.mpiMax)
                            ? mpi.mpiMax : mpi.mpiMedian);
-      return {...mpi, covRatio};
+      return {...mpi, covRatio, covBest};
     });
     seriesRows.push({helmer, metric, vals});
   }
@@ -1312,7 +1316,7 @@ function renderAllHelmersMpiChart(series) {
       const kLine = k !== null ? ` (${splur(k, "incident")})` : "";
       const ciLabel = k !== null ? "95% CI" : "Range";
       const incompleteNote = mpi.covRatio < 0.999
-        ? `\n~${(mpi.covRatio * 100).toFixed(0)}% incident coverage`
+        ? `\n~${(mpi.covBest * 100).toFixed(0)}% incident coverage (worst case ~${(mpi.covRatio * 100).toFixed(0)}%)`
         : "";
       const tip = `${series.months[i]}\nMPI: ${fmtMiles(mpi.mpiMedian)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${incompleteNote}`;
       // Dot at the posterior median (finite even at k=0); hollow for k=0 months
@@ -1949,15 +1953,18 @@ const RIDES_HISTORY = {
     {month: "2026-05", best: 31000000, lo: 28000000, hi: 34500000},
   ],
   // Zoox rides anchor to its published cumulative RIDER counts — >300k riders
-  // by late 2025 and >350k by late Mar 2026 (CleanTechnica 2026-03-24, The
-  // Robot Report; the same milestones the VMT series cites) — divided by an
-  // occupancy band of 1.2-2.0 riders per ride (central 1.5; the vehicle seats
-  // four and Vegas groups are common). 2026-06 extends the observed ~12k
-  // riders/month. Pinned by rides-provenance.qual.
+  // by late 2025, >350k by late Mar 2026 (CleanTechnica 2026-03-24, The
+  // Robot Report; the same milestones the VMT series cites), and >500k by
+  // late Jun 2026 (robotaxi-redesign announcement, 2026-06-25: "feedback from
+  // more than half a million riders") — divided by an occupancy band of
+  // 1.2-2.0 riders per ride (central 1.5; the vehicle seats four and Vegas
+  // groups are common). Pinned by rides-provenance.qual. (The 500k milestone
+  // implies Q2 ridership ~3x Q1's pace; the pre-milestone 2026-06 row here,
+  // 265k, had extrapolated ~12k riders/month and ran ~25% low.)
   Zoox: [
     {month: "2025-12", best: 200000, lo: 150000, hi: 265000},
     {month: "2026-03", best: 235000, lo: 175000, hi: 300000},
-    {month: "2026-06", best: 265000, lo: 195000, hi: 345000},
+    {month: "2026-06", best: 333000, lo: 250000, hi: 417000},
   ],
 };
 // Cumulative-rides forecast through Jan 1, 2027. Tesla mirrors FLEET_FORECAST's
@@ -1981,7 +1988,7 @@ const RIDES_FORECAST = [
     { weight: 1, best: 50000000, lo: 43000000, hi: 60000000 }, // ~31M May 2026 + ~31 weeks at 600-750k/wk
   ] },
   { helmer: "Zoox", components: [
-    { weight: 1, best: 450000, lo: 300000, hi: 900000 }, // ~390k riders mid-2026 + expansion, / 1.2-2.0 occupancy
+    { weight: 1, best: 550000, lo: 350000, hi: 1100000 }, // >500k riders late Jun 2026 + ~50k riders/mo run-rate + LV Uber-app launch upside, / 1.2-2.0 occupancy
   ] },
 ];
 // Cumulative-miles forecast through Jan 1, 2027, extending each helmer's
