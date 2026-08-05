@@ -1,4 +1,4 @@
-const PREDMARKET_SNAPSHOT_DATE = "2026-07-02T22:06:25Z";
+const PREDMARKET_SNAPSHOT_DATE = "2026-08-04T22:37:41Z";
 // [SNAPSHOT VINTAGE] This checked-in snapshot is frozen at the date above and
 // applies to both POLYMARKET_SNAPSHOT and MANIFOLD_SNAPSHOT; the page renders
 // it instantly, then auto-refetches live prices on load (and via the refresh
@@ -18,13 +18,13 @@ const POLYMARKET_SNAPSHOT = [
     "title": "Musk out as Tesla CEO before 2027?",
     "slug": "musk-out-as-tesla-ceo-before-2027",
     "enabled": true,
-    "volume": 16724.437492,
+    "volume": 16898.312889999997,
     "markets": [
       {
         "question": "Musk out as Tesla CEO before 2027?",
         "outcomes": "[\"Yes\", \"No\"]",
-        "outcomePrices": "[\"0.0335\", \"0.9665\"]",
-        "volume": "16724.437492"
+        "outcomePrices": "[\"0.056\", \"0.944\"]",
+        "volume": "16898.312889999997"
       }
     ]
   }
@@ -36,16 +36,16 @@ const MANIFOLD_SNAPSHOT = [
     "slug": "tesla-serves-more-fully-autonomous",
     "url": "https://manifold.markets/JamesGrugett/tesla-serves-more-fully-autonomous",
     "enabled": true,
-    "probability": 0.09511749055915575,
-    "volume": 867021.9106321695
+    "probability": 0.08051544025677171,
+    "volume": 1019538.9862069711
   },
   {
     "question": "Will we conclude Tesla launched level 4 robotaxis in summer 2025?",
     "slug": "will-tesla-count-as-a-waymo-competi",
     "url": "https://manifold.markets/dreev/will-tesla-count-as-a-waymo-competi",
     "enabled": true,
-    "probability": 0.14673244529980622,
-    "volume": 70371.50366795597
+    "probability": 0.04660781098518783,
+    "volume": 104185.12014691228
   },
   {
     "question": "Tesla Robotaxi Service at-fault accident or non-fully-autonomous by 2026?",
@@ -60,24 +60,24 @@ const MANIFOLD_SNAPSHOT = [
     "slug": "waymo-in-portland-in-2026",
     "url": "https://manifold.markets/dreev/waymo-in-portland-in-2026",
     "enabled": true,
-    "probability": 0.4894381393385762,
-    "volume": 313
+    "probability": 0.16933696687213398,
+    "volume": 1216.7633700768868
   },
   {
     "question": "Will Tesla have more autonomous vehicles providing ridehailing than  Waymo on Jan 2nd 2027",
     "slug": "will-tesla-have-more-autonomous-veh",
     "url": "https://manifold.markets/NathanpmYoung/will-tesla-have-more-autonomous-veh",
     "enabled": true,
-    "probability": 0.21999999999999995,
-    "volume": 27823.27972870361
+    "probability": 0.12482041537305748,
+    "volume": 80874.0702195477
   },
   {
     "question": "Waymo reaches 2 billion miles with three or fewer at-fault fatalities?",
     "slug": "waymo-reaches-2-billion-miles-with-y2yyN2C5Pz",
     "url": "https://manifold.markets/DavidFWatson/waymo-reaches-2-billion-miles-with-y2yyN2C5Pz",
     "enabled": true,
-    "probability": 0.7487979840392234,
-    "volume": 5394.034232083005
+    "probability": 0.7593748521673012,
+    "volume": 5444.034232083005
   },
   {
     "question": "When will I first be able to read a book while driving a private car?",
@@ -85,15 +85,15 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/dreev/when-will-i-be-able-to-read-a-book",
     "enabled": true,
     "answers": [
-      {"label": "2025", "prob": 0.01},
-      {"label": "2026", "prob": 0.08229182510629546},
-      {"label": "2027", "prob": 0.3811519443609275},
-      {"label": "2028", "prob": 0.22235869928305887},
-      {"label": "2029", "prob": 0.10629840373983164},
-      {"label": "2030", "prob": 0.06836151520747683},
-      {"label": "2031+", "prob": 0.12953761230241007}
+      {"label": "2025", "prob": 0.010127482300819697},
+      {"label": "2026", "prob": 0.04697455401026739},
+      {"label": "2027", "prob": 0.3959967241963994},
+      {"label": "2028", "prob": 0.23178360546883084},
+      {"label": "2029", "prob": 0.11014152354752023},
+      {"label": "2030", "prob": 0.07046605420729987},
+      {"label": "2031+", "prob": 0.13451005626886264}
     ],
-    "volume": 5009.3400361697
+    "volume": 5259.3400361697
   },
   {
     "question": "When will vision-only level 4 self-driving be widely deployed?",
@@ -124,16 +124,16 @@ const MANIFOLD_SNAPSHOT = [
     "slug": "will-fully-autonomous-level-5-selfd",
     "url": "https://manifold.markets/dreev/will-fully-autonomous-level-5-selfd",
     "enabled": true,
-    "probability": 0.7843131967585396,
-    "volume": 22815.161394955863
+    "probability": 0.7267052846424761,
+    "volume": 23388.161394955863
   },
   {
     "question": "Millions of Teslas at level 3 autonomy in 2026?",
     "slug": "millions-of-teslas-at-level-3-auton",
     "url": "https://manifold.markets/dreev/millions-of-teslas-at-level-3-auton",
     "enabled": true,
-    "probability": 0.04306361388812842,
-    "volume": 859.5981875390044
+    "probability": 0.03914565525152744,
+    "volume": 903.5592713775942
   },
   {
     "question": "Musk v Mosk: Is Tesla an Enron-style fraud?",
