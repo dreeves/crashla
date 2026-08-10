@@ -331,7 +331,7 @@ Phoenix 80.6M (36.5%), San Francisco Bay Area 67.1M (30.4%), Los Angeles 51.8M (
 - **Jul 2024–Sep 2025** (±25%): Tight milestone brackets. CA share is stable (~52–55%).
 - **Oct–Dec 2025** (±30%): Bridges Waymo's published cumulative anchors — 127M end-Sep to the exact 170.7M end-Dec 2025 pin (the CPUC-shaped monthly profile ×1.069, since the pre-re-baseline series had absorbed its level offset across this interval); CPUC CA VMT plateaued at ~8.4M/month (Q4-2025 actuals: Oct 7.90M, Nov 8.41M, Dec 8.42M) while US VMT grew modestly as Austin expanded; implied average CA share 56.4% (24.74M CA / 43.85M US).
 - **Jan–Mar 2026** (±25%): Anchored to Waymo's 220.6M rider-only miles through March 2026 (Safety Impact update, Jun 24, 2026), bridging from the 170.7M end-Dec-2025 anchor; the implied ~17.7M March (~4.1M/week) matches the co-CEO's >4M rider-only miles/week at ~500k paid trips/week (late Mar 2026). The lower band at March is floored at the confirmed 220M milestone. Out-of-sample check (2026-07-24): CPUC Q1-2026 actuals (CA driverless 9.09M/8.19M/9.11M Jan/Feb/Mar, deployment + ~20k/mo pilot) imply a 52.9% CA share and match this series' monthly shape within ~4%.
-- **Apr–May 2026** (±30%): Extrapolated from the 220.6M end-Mar-2026 anchor at the late-Mar weekly rate with modest growth (~3,000 vehicles).
+- **Apr–May 2026** (±30%): Extrapolated from the 220.6M end-Mar-2026 anchor at the late-Mar weekly rate with modest growth (~3,600-3,750 vehicles).
 
 ### Notable events
 

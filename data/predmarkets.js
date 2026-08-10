@@ -47,14 +47,17 @@ const MANIFOLD_SNAPSHOT = [
     "probability": 0.04660781098518783,
     "volume": 104185.12014691228
   },
-  {
-    "question": "Tesla Robotaxi Service at-fault accident or non-fully-autonomous by 2026?",
-    "slug": "tesla-robotaxi-service-atfault-acci",
-    "url": "https://manifold.markets/AffineTyped/tesla-robotaxi-service-atfault-acci",
-    "enabled": true,
-    "probability": 0.9373223446552837,
-    "volume": 484.17647454312794
-  },
+  // RESOLVED (YES, last price ~0.94) — commented out per human 2026-08-06.
+  // NOTE: refresh-predmarkets.mjs regenerates this file from the parsed
+  // arrays, so this commented block disappears entirely on the next run.
+  // {
+  //   "question": "Tesla Robotaxi Service at-fault accident or non-fully-autonomous by 2026?",
+  //   "slug": "tesla-robotaxi-service-atfault-acci",
+  //   "url": "https://manifold.markets/AffineTyped/tesla-robotaxi-service-atfault-acci",
+  //   "enabled": true,
+  //   "probability": 0.9373223446552837,
+  //   "volume": 484.17647454312794
+  // },
   {
     "question": "Waymo in Portland in 2026?",
     "slug": "waymo-in-portland-in-2026",
