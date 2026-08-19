@@ -56,6 +56,26 @@ Expectata: "No injury".
 Resultata: ${JSON.stringify(short)}.`);
 }
 
+// "Serious W/ Hospitalization" (first seen in NHTSA's Aug-2026 data) gets its
+// own hosp-qualified label like the Minor/Moderate "(hosp.)" rows, keyed on
+// the FULL string: the SGO data dictionary also defines a "Serious Without
+// Hospitalization" sibling, and a "Serious W/" prefix needle would label that
+// "(hosp.)" too. The sibling must keep falling through to the bare label.
+const seriousHosp = vm.runInContext(
+  `shortenSeverity("Serious W/ Hospitalization")`, ctx);
+assert.strictEqual(
+  seriousHosp, "Serious injury (hosp.)",
+  `Replicata: call shortenSeverity("Serious W/ Hospitalization").
+Expectata: "Serious injury (hosp.)".
+Resultata: ${JSON.stringify(seriousHosp)}.`);
+const seriousNoHosp = vm.runInContext(
+  `shortenSeverity("Serious W/O Hospitalization")`, ctx);
+assert.strictEqual(
+  seriousNoHosp, "Serious",
+  `Replicata: call shortenSeverity("Serious W/O Hospitalization") (dictionary-defined, not yet in the data).
+Expectata: "Serious" — must NOT pick up the "(hosp.)" qualifier via a prefix match.
+Resultata: ${JSON.stringify(seriousNoHosp)}.`);
+
 // Every known (non-Unknown) severity in the data must have a SEVERITY_RANK entry
 const rankKeys = vm.runInContext(`Object.keys(SEVERITY_RANK)`, ctx);
 for (const sev of severities) {

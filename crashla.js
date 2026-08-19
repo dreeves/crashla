@@ -779,6 +779,14 @@ const SEVERITY_INFO = {
   "Moderate W/O Hospitalization":         {rank: 3, injury: true},
   "Moderate W/ Hospitalization":          {rank: 4, injury: true, hosp: true},
   "Serious":                              {rank: 5, injury: true, hosp: true, ssi: true},
+  // First seen in NHTSA's Aug-2026 data (Waymo 30270-15547). The SGO data
+  // dictionary (2026-08-17, field 73) defines it as "serious injuries that
+  // required hospitalization or emergency treatment" — the same KABCO A meaning
+  // as bare "Serious" (which already implies transport), so identical flags and
+  // rank. NB the dictionary also defines a "Serious Without Hospitalization"
+  // sibling, unseen so far; if it arrives it is ssi but NOT hosp, which breaks
+  // the ssi ⊆ hosp nesting the quals assume — a human decision, not a row.
+  "Serious W/ Hospitalization":           {rank: 5, injury: true, hosp: true, ssi: true},
   "Fatality":                             {rank: 6, injury: true, hosp: true, ssi: true, fatal: true},
 };
 const severitiesWhere = flag =>
@@ -2989,6 +2997,11 @@ function shortenSeverity(s) {
     ["Minor W/", "Minor injury (hosp.)"],
     ["Moderate W/O", "Moderate injury"],
     ["Moderate W/", "Moderate injury (hosp.)"],
+    // TODO: copy specified by the human 2026-08-17. Conveys: a serious (KABCO
+    // A) injury with hospital transport, distinguished from bare "Serious".
+    // Keyed on the full string, not a "Serious W/" prefix, so the dictionary-
+    // defined "Serious W/O Hospitalization" sibling can't inherit "(hosp.)".
+    ["Serious W/ Hospitalization", "Serious injury (hosp.)"],
     ["Serious", "Serious"],
     ["Fatal", "Fatal"],
   ];

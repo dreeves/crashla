@@ -257,6 +257,15 @@ SEVERITY_OVERRIDE = {
     "04975f9cbbbb0e2": "Minor W/ Hospitalization",
     # Car rear-ended hard-braking Zoox; driver bruised, no transport
     "4928b95109f3309": "Minor W/O Hospitalization",
+    # Batch below added 2026-08-17 (Aug NHTSA drop), same convention.
+    # Oncoming van crossed double yellow into stopped Waymo; van driver transported
+    "6f1e8cc59e2ea27": "Minor W/ Hospitalization",
+    # Passenger exited slowing Waymo mid-motion, struck by rear tire; transported
+    "9fc806cd1d491d5": "Minor W/ Hospitalization",
+    # Cyclist ran stop sign, lost control into stopped Zoox; cyclist transported
+    "4366476607eca89": "Minor W/ Hospitalization",
+    # Speeding SUV clipped Waymo passing on left; driver "unknown injuries", no transport
+    "eeafa92b2068aa7": "Minor W/O Hospitalization",
 }
 
 
@@ -695,6 +704,7 @@ EXPECTED_SEVERITIES = {
     "Moderate W/O Hospitalization",
     "Moderate W/ Hospitalization",
     "Serious",
+    "Serious W/ Hospitalization",
     "Fatality",
 }
 # All reporting entities in the NHTSA ADS CSV (current + archive).
@@ -714,6 +724,7 @@ EXPECTED_HELMERS = {
     "Easymile Inc.",
     "First Transit",
     "Ford Motor Company",
+    "Gatik AI Inc.",
     "General Motors, LLC",
     "Ghost Autonomy Inc.",
     "Hyundai Motor America",

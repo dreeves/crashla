@@ -8,6 +8,7 @@
 // and are rank-consistent, and (c) the specific regressions stay fixed.
 import assert from "node:assert/strict";
 import vm from "node:vm";
+import { execFileSync } from "node:child_process";
 import { appScript, dataScript } from "./load-app.mjs";
 
 // Minimal host stub — the pre-init app script is constant + function
@@ -95,6 +96,25 @@ Expectata: ssi (KABCO A+K) flag ⟺ rank ≥ 5 ("Serious"/"Fatality").
 Resultata: ssi=${!!rec.ssi}, rank=${rec.rank}.`);
 }
 
+// --- (e) SLURP <-> APP SYNC: every severity slurp admits is classified ------
+// data/slurp.py's EXPECTED_SEVERITIES is the ingestion whitelist (anti-Postel:
+// a new NHTSA string crashes slurp until a human adds it). Adding it there
+// without a SEVERITY_INFO row would let it into incidents.js unclassified —
+// the silent-drop class above, one data refresh later. Check the sync
+// directly, so it fails at whitelist time, not at the next slurp run.
+const slurpSeverities = JSON.parse(execFileSync("python3", ["-c",
+  'import json, sys; sys.path.insert(0, "data"); import slurp; ' +
+  'print(json.dumps(sorted(slurp.EXPECTED_SEVERITIES)))'],
+  { encoding: "utf8" }).trim().split("\n").at(-1));
+for (const sev of slurpSeverities) {
+  if (sev === "") continue;  // slurp admits "" but it never survives into kept incidents
+  assert.ok(
+    Object.prototype.hasOwnProperty.call(info, sev),
+    `Replicata: import data/slurp.py, read EXPECTED_SEVERITIES, look each up in crashla.js SEVERITY_INFO.
+Expectata: every severity slurp will admit has a SEVERITY_INFO row.
+Resultata: ${JSON.stringify(sev)} is whitelisted in slurp.py but unclassified in SEVERITY_INFO.`);
+}
+
 // --- (d) REGRESSIONS: the specific values that were mishandled -------------
 const expect = (cond, msg) => assert.ok(cond, `Replicata: regression check.\nExpectata: ${msg}.\nResultata: failed.`);
 expect(injury.has("Minor"), 'bare "Minor" (older NHTSA encoding) counts as an injury');
@@ -103,5 +123,13 @@ expect(ssi.has("Serious"), '"Serious" counts as a serious injury (SSI+)');
 expect(!ssi.has("Moderate W/ Hospitalization"), '"Moderate W/ Hospitalization" is NOT SSI+ (it is KABCO B/C, not A)');
 expect(injury.has("Moderate") && !hosp.has("Moderate") && !ssi.has("Moderate"), 'bare "Moderate" is injury-only');
 expect(Object.prototype.hasOwnProperty.call(ranks, "Unknown") && !injury.has("Unknown"), '"Unknown" is ranked but not counted as an injury');
+// NHTSA introduced "Serious W/ Hospitalization" in the Aug-2026 drop (Waymo
+// 30270-15547, Scottsdale: SUV driver transported "with serious injuries").
+// It is KABCO A with transport, i.e. exactly what bare "Serious" already means
+// here (hosp + ssi), so it must classify identically.
+expect(injury.has("Serious W/ Hospitalization") && hosp.has("Serious W/ Hospitalization") && ssi.has("Serious W/ Hospitalization"),
+  '"Serious W/ Hospitalization" counts as injury + hospitalization + serious injury (SSI+), like "Serious"');
+expect(ranks["Serious W/ Hospitalization"] === ranks["Serious"],
+  '"Serious W/ Hospitalization" ranks equal to "Serious" (same KABCO A meaning; both imply transport)');
 
 console.log("qual pass: every data severity is classified; injury/hospitalization/serious-injury sets nest, are rank-consistent, and the Minor/Serious silent-drop regressions stay fixed");
