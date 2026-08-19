@@ -269,4 +269,24 @@ Resultata: they differ.`);
   }
 }
 
+// --- VMT-sources methodology column is marked as AI text ---
+// The table legend promises the methodology text is colored as AI-generated;
+// the rationale cells are Claude-written (data/vmt.csv rationale column), so
+// every one must carry the ai-text class that styles them. A cell without it
+// would silently read as human-vetted copy.
+const vmtSrcSection = html.split("<h3>VMT sources</h3>")[1].split("<h3>")[0];
+const vmtSrcCells = [...vmtSrcSection.matchAll(/<tr>\s*<td>[^<]*<\/td>\s*<td([^>]*)>/g)];
+assert.ok(
+  vmtSrcCells.length >= 3,
+  `Replicata: VMT sources table has per-company rows.
+Expectata: at least 3 (Tesla, Waymo, Zoox).
+Resultata: found ${vmtSrcCells.length}.`);
+for (const m of vmtSrcCells) {
+  assert.ok(
+    m[1].includes('class="ai-text"'),
+    `Replicata: inspect a VMT-sources methodology <td>'s attributes.
+Expectata: class="ai-text" (the legend says this column's text is AI-generated and styled accordingly).
+Resultata: attributes were ${JSON.stringify(m[1])}.`);
+}
+
 console.log("qual pass: sanity check computed values are arithmetically consistent");

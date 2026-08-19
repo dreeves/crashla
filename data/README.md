@@ -1,4 +1,4 @@
-[Codex wrote this file]
+[AI wrote this file]
 
 # Data Sources
 
@@ -31,7 +31,7 @@ The slurp pipeline is:
 
 1. Fetch current + archive NHTSA CSVs directly from NHTSA
 2. Normalize archive-only column-name differences
-3. Filter to each company's public robotaxi service (`Driver / Operator Type == "None"`, plus `"In-Vehicle (Commercial / Test)"` for Tesla's monitored Austin service)
+3. Filter to each company's public robotaxi service (`Driver / Operator Type == "None"`, plus `"In-Vehicle (Commercial / Test)"` and `"Remote (Commercial / Test)"` for Tesla — the safety-monitor and remote-assistance modes of the same paid fleet)
 4. Deduplicate by `Same Incident ID`, keeping the highest `Report Version`
 5. Restrict to the app's VMT analysis window
 6. Join in local fault-fraction inputs from `data/faultfrac.csv`

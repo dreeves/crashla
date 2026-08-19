@@ -132,7 +132,7 @@ For the latest month, NHTSA's Monthly-track reports may not all be filed yet, so
    Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `data/slurp.py`.
    Archival raw fetch snapshots live under `data/snapshots/`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
-   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" for Tesla's monitored Austin service), we get 2,047 incidents as of the latest fetch (2026-08-17): 1,980 Waymo, 23 Tesla, 44 Zoox. These counts grow with each slurp run.
+   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to each company's public robotaxi service (Driver/Operator Type = "None", plus "In-Vehicle (Commercial / Test)" and "Remote (Commercial / Test)" for Tesla), we get 2,048 incidents as of the latest fetch (2026-08-17): 1,980 Waymo, 24 Tesla, 44 Zoox. These counts grow with each slurp run.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
    Maintained in `data/vmt.csv` (the in-repo master) and embedded in `data/vmt.js` by `data/slurp.py`.

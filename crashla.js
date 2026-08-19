@@ -396,7 +396,7 @@ const METRIC_DEFS = [
       // No direct national "transported to hospital" per-mile rate; HumansUS is
       // estimated by log-interpolation between the national injury and fatality
       // anchors (positioned by the AV-cities severity ladder) with a wide band.
-      // HumansRideshare is leaned off HumansAV by the loop below.
+      // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 595000, hi: 4348000,
         src: 'lo: 1M/1.68 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM',
         srcLinks: [
@@ -424,7 +424,7 @@ const METRIC_DEFS = [
       // No published national airbag-deployment per-mile rate; HumansUS is
       // estimated by log-interpolation between the national injury and fatality
       // anchors (positioned by the AV-cities severity ladder) with a wide band.
-      // HumansRideshare is leaned off HumansAV by the loop below.
+      // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 433000, hi: 704000,
         src: 'Kusano & Scanlon 56.7M: human airbag 1.42 (Phoenix) to 2.31 (SF) IPMM, blended 1.69 (observed, location-weighted)',
         srcLinks: [
@@ -452,7 +452,7 @@ const METRIC_DEFS = [
       // No clean national SSI+ (KABCO A+K) per-mile rate; HumansUS is estimated
       // by log-interpolation between the national injury and fatality anchors
       // (positioned by the AV-cities severity ladder) with a wide band.
-      // HumansRideshare is leaned off HumansAV by the loop below.
+      // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 2170000, hi: 8330000,
         src: 'Kusano & Scanlon 56.7M: human SSI+ 0.12 (Phoenix) to 0.46 (SF) IPMM, blended 0.24 (observed, location-weighted)',
         srcLinks: [
@@ -522,7 +522,9 @@ for (const m of METRIC_DEFS) {
     h.HumansRideshare = {
       lo: sig2(h.HumansAV.lo / RIDESHARE_WORST),
       hi: sig2(h.HumansAV.hi * RIDESHARE_BEST),
-      src: 'Leaned off the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction; no rideshare-specific non-fatal rate published',
+      // TODO: copy specified by the human 2026-08-19. Conveys: this band is
+      // derived from the AV-cities band, not independently sourced.
+      src: 'Computed from the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction; no rideshare-specific non-fatal rate published',
       srcLinks: h.HumansAV.srcLinks,
     };
   }
@@ -1559,7 +1561,8 @@ function renderDistributionChart(series) {
 // --- Fleet-size forecast (Jan 1, 2027) ---------------------------------------
 // [AI TEXT] A forward-looking forecast of how many vehicles each helmer will have
 // in genuine driverless / ADS robotaxi service (this page's NHTSA "operator = none"
-// scope, plus Tesla's driver-monitor "In-Vehicle Commercial/Test" mode) on Jan 1,
+// scope, plus Tesla's "In-Vehicle" driver-monitor and "Remote" remote-assistance
+// Commercial/Test modes) on Jan 1,
 // 2027. This is an EXTERNAL judgment forecast — NOT derived from the NHTSA incident
 // or VMT pipelines. It is anchored to mid-2026 fleet counts and announced expansion
 // plans and is the author's own predictive distribution.
@@ -2296,7 +2299,7 @@ function renderMpiSummaryCards(series) {
           const multStr = mult !== null
             ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
             : "";
-          const kLine = est.k !== null ? `${fmtCount(est.k)} incidents \u2192 ` : "";
+          const kLine = est.k !== null ? `${splur(est.k, "incident")} \u2192 ` : "";
           const ciLabel = est.k !== null ? "95% CI" : "Range";
           const srcLine = (est.k === null && humanBench && humanBench.srcLinks)
             ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`).join(", ")}</div>`
@@ -2388,7 +2391,7 @@ function renderHumanBenchmarkTable() {
     <p>
 Sources: Kusano & Scanlon, Waymo's safety impact page, FARS.
 This differs from Waymo's location-adjusted safety-impact methodology.
-The all-incidents comparison is broader than Waymo's surface-street, injury-focused framing.
+The all-incidents comparison is broader than Waymo's surface-street, injury-focused numbers.
     </p>
     <table class="source-table">
       <thead><tr><th>Cohort</th><th>Metric</th><th>Low MPI</th><th>High MPI</th><th>Derivation</th></tr></thead>
@@ -3093,6 +3096,7 @@ All miles without a human driver count towards Vehicle Miles Traveled (VMT) and 
 <p>
 Caveat:
 If the passenger-seat safety monitor (present in almost all Tesla robotaxi rides so far) is able to intervene to prevent incidents, then the true unsupervised miles per incident (MPI) for Tesla would be lower (worse) than what these graphs and data show.
+But I am now almost sure that the passenger-seat safety monitors have at least not had the ability to intervene in real time at normal driving speeds.
 </p>
     <table>
       <thead><tr>
@@ -3363,6 +3367,7 @@ The "nonstationary" MPI metric filters these out.
 <p>
 Human crash rates vary by city, presumably.
 Maybe that affects AVs too?
+(So far we're only counting cities in which at least one incident has been reported.)
 </p>
     <table>
       <thead><tr>
@@ -3384,7 +3389,7 @@ Maybe that affects AVs too?
     const ratStr = rationales.map(r => escHtml(r)).join("<br>");
     vmtSrcRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
-      <td>${ratStr}</td>
+      <td class="ai-text">${ratStr}</td>
     </tr>`);
   }
   sections.push(`
@@ -3392,11 +3397,12 @@ Maybe that affects AVs too?
 <p>
 Where the Vehicle Miles Traveled (VMT) estimates come from for each company.
 These are the denominators in every miles per incident (MPI) calculation, so any errors here matter a lot.
+In general we don't trust anything Tesla says <i>except</i> numbers in their official reports to investors which seem to be reliable and would be a big deal (e.g., securities fraud) if they weren't.
 </p>
     <table>
       <thead><tr>
         <th>Company</th>
-        <th>Source and methodology</th>
+        <th>Source and methodology (<span class="ai-text">green text = AI-generated</span>)</th>
       </tr></thead>
       <tbody>${vmtSrcRows.join("")}</tbody>
     </table>`);
@@ -3429,8 +3435,8 @@ These are the denominators in every miles per incident (MPI) calculation, so any
 "Calendar coverage" is the fraction of the month in the window (e.g., 15/31 &approx; 48%).
 "Incident coverage" estimates what fraction of incidents from that period have actually been reported.
 Claude notes: 
-NHTSA has two reporting tracks: "5-Day" (filed within 5 days of becoming aware) and "Monthly" (filed monthly in arrears).
-When Monthly reports aren't yet available, the effective VMT is scaled down by the incident coverage factor so the Poisson model accounts for missing reports.
+<span class="ai-text">NHTSA has two reporting tracks: "5-Day" (filed within 5 days of becoming aware) and "Monthly" (filed monthly in arrears).
+When Monthly reports aren't yet available, the effective VMT is scaled down by the incident coverage factor so the Poisson model accounts for missing reports.</span>
 </p>
     <table>
       <thead><tr>

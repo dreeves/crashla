@@ -62,10 +62,10 @@ We want something similar to that but for answering the question about how safe 
 Ultimately we're tallying incidents (carefully de-duplicating and consolidating them) and estimating Vehicle Miles Traveled (VMT) to compute Miles Per Incident (MPI) for various incident types -- from any collision all the way up to fatalities.
 
 Notes about the NHTSA data:
-* Some rows in the NHTSA data are just updates to previous entries and refer to the same incident
-* We only care about incidents where the "Driver / Operator Type" field is "None" (Still true? Ultimately we care about *unsupervised* miles per incident)
+* Some rows in the NHTSA data are just updates to previous entries and refer to the same incident.
+* We only care about incidents where the "Driver / Operator Type" field means *unsupervised* self-driving. We want to know unsupervised miles per incident.
 
-All the Tesla incidents have this designation (still true?), so Tesla is averring to NHTSA that their passenger-seat safety monitors do not count as supervised autonomy, and same for any tele-operation they're employing.
+Tesla is averring to NHTSA that their passenger-seat safety monitors do not count as supervised autonomy, and same for any tele-operation they're employing.
 For the denominator mileage we need justifiable lower and upper bounds on the mileage for which there was no driver/operator.
 
 ---

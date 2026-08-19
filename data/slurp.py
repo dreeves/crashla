@@ -766,8 +766,18 @@ EXPECTED_HELMERS = {
 # public service runs driverless ("None"). Tesla's Austin robotaxi also
 # carries an in-vehicle safety monitor, which NHTSA files as "In-Vehicle
 # (Commercial / Test)", so that mode counts as public service for Tesla too.
+# Tesla additionally files remote-assistance maneuvers as "Remote (Commercial
+# / Test)" (one report so far: 13781-15395, the Houston tree-stump recovery).
+# Included per human decision 2026-08-19: those vehicles' miles are already in
+# the VMT denominator, so their crashes belong in the numerator; fault is
+# judged 0 when a remote human, not the ADS, was driving (same convention as
+# passenger-caused incidents). For entities configured here the set must stay
+# EXHAUSTIVE over the operator types they file -- main() must()s that, so a
+# novel mode crashes the run for a human to classify instead of silently
+# dropping out of scope (which is how 13781-15395 went unnoticed for a month).
 PUBLIC_SERVICE_OPERATOR_TYPES = {
-    "Tesla, Inc.": {"None", "In-Vehicle (Commercial / Test)"},
+    "Tesla, Inc.": {"None", "In-Vehicle (Commercial / Test)",
+                    "Remote (Commercial / Test)"},
 }
 must(set(PUBLIC_SERVICE_OPERATOR_TYPES) <= EXPECTED_HELMERS,
      "PUBLIC_SERVICE_OPERATOR_TYPES names an unknown reporting entity",
@@ -814,6 +824,13 @@ def main():
         must(driver in EXPECTED_HELMERS,
              "unexpected Reporting Entity", row=i, value=driver,
              expected=sorted(EXPECTED_HELMERS))
+        counted = PUBLIC_SERVICE_OPERATOR_TYPES.get(driver)
+        if counted is not None:
+            must(dt in counted,
+                 "operator type outside the configured public-service set "
+                 "(classify this mode: add it to PUBLIC_SERVICE_OPERATOR_TYPES "
+                 "or record an explicit exclusion)",
+                 row=i, entity=driver, value=dt, counted=sorted(counted))
         sev = r["Highest Injury Severity Alleged"].strip()
         must(sev in EXPECTED_SEVERITIES,
              "unexpected Highest Injury Severity Alleged", row=i, value=sev,

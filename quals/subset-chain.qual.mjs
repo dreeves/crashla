@@ -30,7 +30,7 @@ Resultata: cohorts ${JSON.stringify(Object.keys(mpiByCohort))}, HumansAV metrics
 // (sourced, or estimated with wide bands where no national rate is published)
 // and by HumansRideshare. HumansRideshare must be DISTINCT from HumansAV:
 //  - fatality: the sourced Uber/Lyft rate (safer than AV cities);
-//  - every other metric: leaned off the AV-cities band but wider on both sides
+//  - every other metric: computed from the AV-cities band but wider on both sides
 //    (lo lower, hi higher) — never byte-identical.
 const rideshare = mpiByCohort.HumansRideshare;
 const av = mpiByCohort.HumansAV;
