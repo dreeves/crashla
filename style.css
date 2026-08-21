@@ -1,49 +1,154 @@
-/* Design tokens: the single palette. Every gray/blue/verdict-color in this
+/* Handwriting face, self-hosted (no third-party requests from this page).
+   Patrick Hand is the face Nicky Case uses in ncase.me/crowds and
+   ncase.me/remember; SIL OFL, see fonts/PatrickHand-OFL.txt. Two subsets so
+   accented sources and city names do not fall back mid-word. */
+@font-face {
+  font-family: "Patrick Hand";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/PatrickHand-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+                 U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+                 U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Patrick Hand";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/PatrickHand-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+                 U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Design tokens: the single palette. Every gray/red/verdict-color in this
    file must come from here so the whole app agrees with itself. */
 :root {
-  --ink: #1a1a1a;
-  --ink-soft: #5b6475;
-  --ink-faint: #8090a8;
+  /* Two type roles. --hand is the drawn face: headings, buttons, axis labels,
+     legends -- the chrome you look AT. --sans is the face you read THROUGH:
+     prose, tables, every figure. Patrick Hand has one weight, no tabular
+     figures, and no Greek, so the statistics stay on --sans on purpose. */
+  --hand: "Patrick Hand", "Bradley Hand", "Segoe Print", cursive;
+  --sans: system-ui, -apple-system, sans-serif;
+  --mono: "SF Mono", "Menlo", "Consolas", monospace;
+
+  /* #333 is ncase.me's body ink; the lighter two step down from it. */
+  --ink: #333333;
+  --ink-soft: #6d6a66;
+  --ink-faint: #8f887f;
+
+  /* ncase.me links are #ff4040, but red is spoken for here: it is what --worse
+     and Tesla's series color already mean, and the source-citation blocks turn
+     into a wall of it. Links stay blue. That collides with Waymo's #2060c0
+     series color, which is a collision about identity rather than about
+     verdict, and the cheaper of the two to live with. */
   --accent: #2060c0;
   --accent-ink: #1a4a8a;
   --accent-wash: #e7effc;
-  --line: #dfe4ef;
-  --line-strong: #c6cede;
-  --wash: #f5f7fa;
-  --wash-deep: #e9edf3;
+
+  /* A drawn line has weight, so --line IS ink; --line-soft is the quiet rule
+     that separates table rows without fencing them in. */
+  --line: #333333;
+  --line-soft: #cdc7bc;
+
+  --paper: #fffdf8;
+  --card: #ffffff;
+  --wash: #f6f2ea;
+  --wash-deep: #eae4d8;
+
   --safer: #2a7a3a;
   --worse: #a04030;
-  --iffy: #8a6f19;
+  /* Nudged down from #8a6f19: warming --wash from #f5f7fa to #f6f2ea dropped
+     the amber to 4.31:1 on it, and .pm-subcard paints .pm-card-odds.mid there.
+     #806716 clears AA on every ground the app uses. */
+  --iffy: #806716;
   /* AI-generated prose (the "green text" legend): a desaturated sage, sitting
      at --ink-soft's weight so it DEemphasizes relative to body ink while still
      reading as green. Deliberately grayer than --safer so it can't be mistaken
      for a verdict color. #59765b clears WCAG AA (4.5:1) even on --wash. */
   --ai-ink: #59765b;
-  --mono: "SF Mono", "Menlo", "Consolas", monospace;
+
+  /* Wobbles. border-radius takes a different horizontal and vertical radius
+     per corner; pairing a huge one with a tiny one bends each side into an arc
+     that misses square by a believable amount.
+     The radii are absolute, so they have to be sized to the box: --wobble-a's
+     255px sweep reads as one confident stroke around the abstract and as a
+     scythe through the corner of a 2000px-tall list. --wobble-c/-d are the
+     mirrored pair for everything repeated, so a grid of cards is not four
+     copies of one warp. */
+  --wobble-a: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --wobble-c: 22px 6px 18px 8px / 7px 20px 6px 24px;
+  --wobble-d: 7px 20px 8px 24px / 20px 7px 22px 6px;
+  --wobble-pill: 100px 14px 90px 16px / 16px 80px 14px 100px;
+  --wobble-nib: 9px 3px 7px 4px / 3px 8px 4px 9px;
+  --wobble-rule: 120px 8px 100px 10px / 8px 90px 6px 110px;
+
+  /* The rule under a heading, drawn rather than ruled. It is a MASK, not a
+     picture: the shape lives here, the color stays on --line, and the browser
+     rasterises the path with real antialiasing.
+     This replaces an feTurbulence/feDisplacementMap roughen filter, which
+     resamples nearest-neighbour and offsets by whole device pixels -- every
+     wobble became a hard un-antialiased jog, and a 2.5px stroke came out
+     visibly blocky. Same result in Chromium, Firefox and WebKit.
+     198px of wave, tiled: the path starts and ends at y=4.3 with matching
+     slope, so repeat-x has no seam. */
+  --drawn-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='198' height='8' viewBox='0 0 198 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4.3 C 30 3.0 46 3.6 72 4.5 C 98 5.4 120 5.1 146 4.0 C 168 3.1 182 3.4 198 4.3' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+
+  --shadow: 0 3px 0 rgba(51, 51, 51, 0.13);
+  --shadow-tip: 0 3px 10px rgba(51, 51, 51, 0.35);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
   color: var(--ink);
+  background: var(--paper);
   max-width: 960px;
   margin: 0 auto;
   padding: 1rem;
 }
-a { color: var(--accent); }
+a {
+  color: var(--accent);
+  /* ncase.me lifts a link 2px on hover instead of changing its underline. */
+  position: relative;
+  top: 0;
+  transition: color 0.1s ease-in-out, top 0.1s ease-in-out;
+}
+a:hover { color: var(--accent-ink); top: -2px; }
+input { accent-color: var(--ink); }
 .ai-text { color: var(--ai-ink); }
+
+/* Everything set in --hand. Patrick Hand ships one weight, so a browser asked
+   for bold smears the outline instead; ncase.me's own trick is to keep the
+   weight and lay a 1px copy of the glyph beside itself. */
+h1, h2, h3, .sec-head, .filters button, th, .month-tick, .month-label,
+.month-legend-label, .month-helmer-toggle, #month-metric-select,
+.date-range-label, .date-range-tick-label, .date-range-end-label,
+.mpi-card-helmer, .incident-count, .month-note,
+.predmarket-loading, .colophon {
+  font-family: var(--hand);
+}
+h1, h2, h3, .mpi-card-helmer, .date-range-label {
+  font-weight: 400;
+  text-shadow: 1px 0 0 currentColor;
+}
 h1 {
-  font-size: 1.6rem;
-  line-height: 1.3;
-  letter-spacing: -0.015em;
+  font-size: 2.4rem;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
   margin: 0.75rem 0;
+  /* A title set down slightly off-square, the way a hand would letter it. */
+  transform: rotate(-0.7deg);
+  transform-origin: left center;
 }
 .abstract {
-  margin: 0.5rem 0 1rem;
-  padding: 0.75rem 1rem 0.75rem 1.25rem;
-  background: var(--wash);
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  margin: 0.5rem 0 1.6rem;
+  padding: 0.9rem 1.15rem 0.9rem 1.4rem;
+  background: var(--card);
+  border: 2.5px solid var(--line);
+  border-radius: var(--wobble-a);
 }
 .abstract ol {
   margin: 0 0 0.4rem 1.2rem;
@@ -57,13 +162,25 @@ h1 {
   color: var(--ink-soft);
 }
 h2 {
-  font-size: 1.2rem;
-  letter-spacing: -0.01em;
-  margin: 1.75rem 0 0.75rem;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 0.3rem;
+  font-size: 1.6rem;
+  letter-spacing: 0.01em;
+  margin: 2rem 0 0.75rem;
 }
-h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
+/* The heading rule is drawn, not ruled. */
+h2::after {
+  content: "";
+  display: block;
+  height: 8px;
+  margin-top: 0.1rem;
+  background: var(--line);
+  mask-image: var(--drawn-rule);
+  -webkit-mask-image: var(--drawn-rule);
+  mask-size: 198px 8px;
+  -webkit-mask-size: 198px 8px;
+  mask-repeat: repeat-x;
+  -webkit-mask-repeat: repeat-x;
+}
+h3 { font-size: 1.2rem; margin: 1rem 0 0.5rem; }
 .sec-head { cursor: pointer; user-select: none; }
 /* CSS-drawn down-triangle (▾) rather than a Unicode glyph, so it renders even
    in browsers/fonts lacking the glyph (e.g. some in-car browsers showed tofu). */
@@ -83,28 +200,38 @@ h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
 .collapsible.collapsed > .sec-body { display: none; }
 
 /* Incident browser */
-.filters { margin: 0.5rem 0; display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.filters { margin: 0.6rem 0; display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .filters button {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  background: #fff;
+  padding: 0.15rem 0.9rem;
+  border: 2px solid var(--line);
+  border-radius: var(--wobble-pill);
+  background: var(--card);
+  color: var(--ink);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 1rem;
+  transition: transform 0.1s ease-out, background 0.1s ease-out;
 }
-.filters button:not(.active):hover { background: var(--wash); border-color: var(--ink-faint); }
+.filters button:not(.active):hover { background: var(--wash); transform: translateY(-2px); }
 .filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.filters button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.filters button:active { transform: translateY(1px) scale(0.98); }
+.filters button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
   margin-top: 0.5rem;
 }
-th, td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px solid var(--line); }
-th { background: var(--wash); position: sticky; top: 0; font-weight: 600; }
+th, td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px dashed var(--line-soft); }
+th {
+  background: var(--wash);
+  position: sticky;
+  top: 0;
+  font-weight: 400;
+  font-size: 1rem;
+  text-shadow: 1px 0 0 currentColor;
+}
 th .sort-arrow { font-size: 0.7em; margin-left: 0.2em; }
-tr:hover { background: #f3f6ff; }
+tr:hover { background: var(--accent-wash); }
 /* Scroll container so the sticky header actually sticks (and hundreds of
    incident rows don't make the page itself miles long) */
 .table-scroll { overflow: auto; max-height: 80vh; }
@@ -113,12 +240,12 @@ tr:hover { background: #f3f6ff; }
   user-select: none;
   /* border-collapse drops sticky-header borders while stuck; box-shadow stands in */
   border-bottom: none;
-  box-shadow: 0 1px 0 var(--line);
+  box-shadow: 0 2px 0 var(--line);
 }
 .table-scroll th:hover { background: var(--wash-deep); }
 .table-scroll th:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.table-scroll tbody tr:nth-child(even) { background: #fafbfd; }
-.table-scroll tbody tr:hover { background: #f3f6ff; }
+.table-scroll tbody tr:nth-child(even) { background: var(--wash); }
+.table-scroll tbody tr:hover { background: var(--accent-wash); }
 .narrative-cell {
   max-width: 300px;
   white-space: nowrap;
@@ -128,7 +255,7 @@ tr:hover { background: #f3f6ff; }
 }
 .narrative-cell.expanded { white-space: normal; }
 .cbi { color: var(--ink-faint); font-style: italic; }
-.incident-count { font-size: 0.9rem; color: var(--ink-soft); margin: 0.25rem 0; }
+.incident-count { font-size: 1.05rem; color: var(--ink-soft); margin: 0.35rem 0; }
 .fault-cell {
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -138,7 +265,7 @@ tr:hover { background: #f3f6ff; }
 .fault-bar {
   display: inline-block;
   height: 14px;
-  border-radius: 2px;
+  border-radius: var(--wobble-nib);
   vertical-align: middle;
   margin-right: 4px;
 }
@@ -148,7 +275,7 @@ tr:hover { background: #f3f6ff; }
   margin-bottom: 1rem;
 }
 .month-note {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: var(--ink-soft);
   margin-bottom: 0.6rem;
 }
@@ -163,14 +290,14 @@ tr:hover { background: #f3f6ff; }
   margin-bottom: 0.2rem;
 }
 .date-range-label {
-  font-size: 0.82rem;
+  font-size: 1.05rem;
   color: var(--ink-soft);
-  font-weight: 600;
 }
 .date-filtered .date-range-label {
   background: var(--accent-wash);
-  padding: 0.1rem 0.5rem;
-  border-radius: 3px;
+  padding: 0.05rem 0.6rem;
+  border: 2px solid var(--accent);
+  border-radius: var(--wobble-pill);
   color: var(--accent-ink);
 }
 .date-range-slider {
@@ -183,19 +310,19 @@ tr:hover { background: #f3f6ff; }
   left: 0;
   right: 0;
   top: 50%;
-  height: 4px;
+  height: 5px;
   transform: translateY(-50%);
-  background: var(--line);
-  border-radius: 2px;
+  background: var(--line-soft);
+  border-radius: var(--wobble-rule);
 }
 .date-range-fill {
   position: absolute;
   top: 50%;
   height: 16px;
   transform: translateY(-50%);
-  background: rgba(32, 96, 192, 0.30);
-  border: 1px solid rgba(32, 96, 192, 0.55);
-  border-radius: 3px;
+  background: var(--accent-wash);
+  border: 2px solid var(--accent);
+  border-radius: var(--wobble-pill);
   box-sizing: border-box;
   z-index: 1;
   pointer-events: auto;
@@ -219,47 +346,45 @@ tr:hover { background: #f3f6ff; }
 .date-range-input-min { z-index: 2; }
 .date-range-input-max { z-index: 3; }
 .date-range-input::-webkit-slider-runnable-track {
-  height: 4px;
+  height: 5px;
   background: transparent;
   border: none;
 }
 .date-range-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   pointer-events: auto;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  background: var(--card);
+  border: 2.5px solid var(--ink);
   cursor: grab;
-  margin-top: -6px;
+  margin-top: -7px;
 }
 .date-range-input::-moz-range-track {
-  height: 4px;
+  height: 5px;
   background: transparent;
   border: none;
 }
 .date-range-input::-moz-range-thumb {
   pointer-events: auto;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  background: var(--card);
+  border: 2.5px solid var(--ink);
   cursor: grab;
 }
 .date-range-input:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px rgba(32, 96, 192, 0.35);
+  border-color: var(--accent);
 }
 .date-range-input:focus-visible::-moz-range-thumb {
-  box-shadow: 0 0 0 3px rgba(32, 96, 192, 0.35);
+  border-color: var(--accent);
 }
 .date-range-end-label {
   position: absolute;
   top: 20px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--ink-soft);
   white-space: nowrap;
   pointer-events: none;
@@ -280,7 +405,7 @@ tr:hover { background: #f3f6ff; }
   margin: -7px auto 0;
 }
 .date-range-tick-label {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--ink-soft);
   text-align: center;
   margin-top: 1px;
@@ -298,13 +423,13 @@ tr:hover { background: #f3f6ff; }
   grid-template-columns: 1fr;
   gap: 0.9rem;
 }
+/* Charts sit straight on the paper. A frame around each one would be four more
+   machined lines competing with the drawn ones everywhere else. */
 .month-svg {
   width: 100%;
   height: auto;
   display: block;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  background: transparent;
 }
 .month-legend {
   display: flex;
@@ -325,7 +450,13 @@ tr:hover { background: #f3f6ff; }
 }
 .metric-select { cursor: pointer; }
 #month-metric-select {
-  font: inherit;
+  font-family: var(--hand);
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--wobble-pill);
+  padding: 0.05rem 0.5rem;
   cursor: pointer;
 }
 .month-legend-item {
@@ -339,8 +470,7 @@ tr:hover { background: #f3f6ff; }
   opacity: 0.4;
 }
 .month-legend-label {
-  font-weight: 600;
-  font-size: 0.78rem;
+  font-size: 1.05rem;
   color: var(--ink-soft);
 }
 .month-legend-break {
@@ -350,44 +480,54 @@ tr:hover { background: #f3f6ff; }
 .month-helmer-toggle {
   cursor: pointer;
   user-select: none;
+  font-size: 1.05rem;
 }
 .month-helmer-toggle input[type="checkbox"],
 .month-helmer-toggle input[type="radio"] {
   margin: 0 0.2rem 0 0;
 }
 .month-chip {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  width: 13px;
+  height: 13px;
+  border-radius: var(--wobble-nib);
+  border: 1.5px solid var(--ink);
   display: inline-block;
 }
 .ci-fan-swatch {
   width: 14px;
   height: 12px;
-  border-radius: 2px;
+  border-radius: var(--wobble-nib);
   display: inline-block;
 }
 .month-grid {
   display: none;
 }
+/* Axes get a drawn line's weight and rounded ends. They are deliberately NOT
+   run through the roughen filter: a filter region has to cover the whole plot
+   for a zero-height <line>, which means a full-canvas turbulence pass per axis. */
 .month-axis {
-  stroke: #95a0b8;
-  stroke-width: 1;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
 }
 .month-vmt-line {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .month-mpi-all-line {
   fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .month-dot {
-  stroke: #fff;
+  stroke: var(--card);
   stroke-width: 1.5;
 }
 .month-err {
-  stroke-width: 1;
+  stroke-width: 1.4;
+  stroke-linecap: round;
   opacity: 0.8;
 }
 .errbar-key {
@@ -402,30 +542,33 @@ tr:hover { background: #f3f6ff; }
 }
 .month-tick {
   fill: var(--ink-soft);
-  font-size: 10px;
+  font-size: 13px;
 }
 .month-label {
-  fill: #334;
-  font-size: 11px;
+  fill: var(--ink-soft);
+  font-size: 14px;
 }
 /* Three cards per row pairs the layout with the data: one row of human
    cohorts, one row of AV companies. */
 .mpi-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 0.6rem;
-  margin: 0.6rem 0;
+  gap: 0.9rem;
+  margin: 0.8rem 0;
 }
+/* border-left stays a real border, not a drawn overlay: the helmer's color is
+   set inline per card (border-left-color) and has to land somewhere. */
 .mpi-card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  border-left: 3px solid var(--ink-faint);
-  padding: 0.5rem 0.65rem;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--wobble-c);
+  border-left: 5px solid var(--ink-faint);
+  padding: 0.55rem 0.75rem;
+  box-shadow: var(--shadow);
 }
+.mpi-cards > .mpi-card:nth-child(even) { border-radius: var(--wobble-d); }
 .mpi-card-helmer {
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 1.2rem;
   margin-bottom: 0.15rem;
 }
 .mpi-card-vmt {
@@ -489,12 +632,13 @@ tr:hover { background: #f3f6ff; }
   width: 100%;
 }
 .source-table th, .source-table td {
-  border: 1px solid var(--line-strong);
+  border: 1px dashed var(--line-soft);
   padding: 0.25rem 0.5rem;
   text-align: left;
 }
 .source-table th {
   background: var(--wash);
+  border-bottom: 2px solid var(--line);
 }
 .source-table td:nth-child(2), .source-table td:nth-child(3) {
   text-align: right;
@@ -528,10 +672,10 @@ tr:hover { background: #f3f6ff; }
 }
 .mpi-card-metric.highlighted {
   background: var(--accent-wash);
-  border-radius: 3px;
-  padding: 0.15rem 0.3rem;
-  margin-left: -0.3rem;
-  margin-right: -0.3rem;
+  border-radius: var(--wobble-pill);
+  padding: 0.15rem 0.45rem;
+  margin-left: -0.45rem;
+  margin-right: -0.45rem;
 }
 .mpi-card-metric.highlighted:not(.primary) {
   color: var(--ink);
@@ -540,48 +684,56 @@ tr:hover { background: #f3f6ff; }
   body {
     padding: 0.75rem;
   }
+  h1 {
+    font-size: 1.9rem;
+  }
+  h2 {
+    font-size: 1.45rem;
+  }
   .month-tick {
-    font-size: 11px;
+    font-size: 14px;
   }
   .month-label {
-    font-size: 12px;
+    font-size: 15px;
   }
 }
 
 /* Prediction markets panel */
 .predmarket-panel {
-  margin: 0.5rem 0 1.5rem;
+  margin: 1.2rem 0 1.5rem;
 }
 .predmarket-loading {
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   color: var(--ink-faint);
-  font-style: italic;
 }
 .predmarket-error {
   font-size: 0.85rem;
   color: var(--worse);
 }
+/* One drawn box around the whole list. Stroking each row separately gave
+   25 stacked rectangles, and the wobbled corners only landed on the first and
+   last of them, which read as a rendering accident. */
 .predmarket-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
+  padding: 0.15rem 0;
+  border: 2.5px solid var(--line);
+  border-radius: var(--wobble-c);
 }
 .pm-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-top: none;
-  padding: 0.45rem 0.65rem;
+  background: var(--card);
+  border-top: 1px dashed var(--line-soft);
+  padding: 0.45rem 0.85rem;
 }
-.pm-card:first-child { border-top: 1px solid var(--line); border-radius: 4px 4px 0 0; }
-.pm-card:last-child { border-radius: 0 0 4px 4px; }
-.pm-card:only-child { border-top: 1px solid var(--line); border-radius: 4px; }
+.pm-card:first-child { border-top: none; }
 .pm-card-question {
-  font-size: 0.82rem;
-  line-height: 1.3;
+  font-size: 0.9rem;
+  line-height: 1.35;
   flex: 1;
   color: var(--ink-soft);
 }
@@ -613,10 +765,10 @@ tr:hover { background: #f3f6ff; }
   text-align: right;
 }
 .pm-subcard {
-  padding-left: 1.4rem;
+  padding-left: 1.6rem;
   background: var(--wash);
 }
-.pm-subcard .pm-card-question { font-size: 0.8rem; }
+.pm-subcard .pm-card-question { font-size: 0.85rem; }
 .pm-subcard .pm-card-odds { font-size: 0.8rem; }
 .pm-footer {
   display: flex;
@@ -631,8 +783,8 @@ tr:hover { background: #f3f6ff; }
 .pm-footer a:hover { text-decoration: underline; }
 .pm-dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   vertical-align: middle;
 }
@@ -649,26 +801,43 @@ tr:hover { background: #f3f6ff; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  border: 2px solid var(--line-soft);
+  border-radius: var(--wobble-c);
   cursor: pointer;
   font-size: 0.8rem;
   color: var(--ink-faint);
   padding: 0;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s ease-out;
 }
-.pm-refresh:hover { background: var(--wash); border-color: var(--line-strong); color: var(--ink-soft); }
+.pm-refresh:hover { background: var(--wash); border-color: var(--line); color: var(--ink-soft); transform: translateY(-2px); }
 .pm-refresh:disabled { cursor: default; opacity: 0.35; }
 
 .colophon {
-  margin-top: 2rem;
-  padding: 0.5rem 0;
-  font-size: 0.8rem;
-  color: var(--ink-faint);
+  position: relative;
+  margin-top: 3rem;
+  padding: 1.1rem 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
   text-align: center;
+}
+/* Torn-off-the-page rule above the footer, drawn like the heading rules. */
+.colophon::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 0;
+  height: 8px;
+  background: var(--line-soft);
+  mask-image: var(--drawn-rule);
+  -webkit-mask-image: var(--drawn-rule);
+  mask-size: 198px 8px;
+  -webkit-mask-size: 198px 8px;
+  mask-repeat: repeat-x;
+  -webkit-mask-repeat: repeat-x;
 }
 
 /* Every tooltip target — chart dots, error-bar caps, summary cards, table
@@ -685,14 +854,15 @@ tr:hover { background: #f3f6ff; }
   position: fixed;
   z-index: 1000;
   max-width: 320px;
-  padding: 0.5rem 0.65rem;
+  padding: 0.5rem 0.7rem;
   background: var(--ink);
-  color: #f0f0f0;
+  color: var(--paper);
+  font-family: var(--sans);
   font-size: 0.78rem;
   line-height: 1.45;
-  border-radius: 4px;
+  border-radius: var(--wobble-c);
   white-space: pre-line;
   pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  box-shadow: var(--shadow-tip);
   font-variant-numeric: tabular-nums;
 }

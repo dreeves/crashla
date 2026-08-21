@@ -3886,7 +3886,8 @@ function loadPredmarketData() {
     : "";
   byId("colophon").innerHTML =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} · ` +
-    `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a>`;
+    `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a> · ` +
+    `design inspired by <a href="https://ncase.me">nicky case</a>`;
   byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
   initGrowthMetricToggle();
   byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
