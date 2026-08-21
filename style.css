@@ -93,7 +93,7 @@
      visibly blocky. Same result in Chromium, Firefox and WebKit.
      198px of wave, tiled: the path starts and ends at y=4.3 with matching
      slope, so repeat-x has no seam. */
-  --drawn-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='198' height='8' viewBox='0 0 198 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4.3 C 30 3.0 46 3.6 72 4.5 C 98 5.4 120 5.1 146 4.0 C 168 3.1 182 3.4 198 4.3' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+  --drawn-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='198' height='8' viewBox='0 0 198 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4.3 C 30 3.0 46 3.6 72 4.5 C 98 5.4 120 5.1 146 4.0 C 168 3.1 182 5.0 198 4.3' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
 
   --shadow: 0 3px 0 rgba(51, 51, 51, 0.13);
   --shadow-tip: 0 3px 10px rgba(51, 51, 51, 0.35);
@@ -377,9 +377,11 @@ tr:hover { background: var(--accent-wash); }
 }
 .date-range-input:focus-visible::-webkit-slider-thumb {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent);
 }
 .date-range-input:focus-visible::-moz-range-thumb {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent);
 }
 .date-range-end-label {
   position: absolute;
@@ -526,7 +528,7 @@ tr:hover { background: var(--accent-wash); }
   stroke-width: 1.5;
 }
 .month-err {
-  stroke-width: 1.4;
+  stroke-width: 1;
   stroke-linecap: round;
   opacity: 0.8;
 }
@@ -546,7 +548,7 @@ tr:hover { background: var(--accent-wash); }
 }
 .month-label {
   fill: var(--ink-soft);
-  font-size: 14px;
+  font-size: 11px;
 }
 /* Three cards per row pairs the layout with the data: one row of human
    cohorts, one row of AV companies. */
@@ -694,7 +696,7 @@ tr:hover { background: var(--accent-wash); }
     font-size: 14px;
   }
   .month-label {
-    font-size: 15px;
+    font-size: 12px;
   }
 }
 

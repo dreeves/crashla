@@ -30,6 +30,21 @@ Expectata: output is an SVG using the fleet-clip clip-path.
 Resultata: no <svg / fleet-clip found.`,
 );
 
+const svgHeight = Number((html.match(/viewBox="0 0 [\d.]+ ([\d.]+)"/) || [])[1]);
+const tickLabels = [...html.matchAll(
+  /<text class="month-tick"[^>]*\by="([\d.]+)"[^>]*>([^<]+)<\/text>/g,
+)];
+const bottomLabel = tickLabels.find(match => match[2] === "Fleet size");
+const bottomLabelInset = svgHeight - Number(bottomLabel?.[1]);
+assert.equal(
+  bottomLabelInset,
+  9,
+  `Replicata: render the fleet forecast at 320px through 1000px wide.
+Expectata: the bottom label's baseline is inset nine SVG units, keeping Patrick
+Hand's descender inside the viewport in Chromium, Firefox, and WebKit.
+Resultata: ${JSON.stringify(bottomLabel?.[2])} was inset ${bottomLabelInset}.`,
+);
+
 for (const [label, color] of [["Tesla robotaxi", "#d13b2d"], ["Tesla HW4", "#e08a2e"],
   ["Waymo", "#2060c0"], ["Zoox", "#2a8f57"]]) {
   assert.ok(

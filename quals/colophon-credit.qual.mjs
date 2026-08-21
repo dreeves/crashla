@@ -5,34 +5,39 @@ import fs from "node:fs";
 // this qual pins the characters, not a paraphrase of them.
 
 const CREDIT = "design inspired by nicky case";
+const LINKED_CREDIT = CREDIT.replace(
+  "nicky case",
+  '<a href="https://ncase.me">nicky case</a>',
+);
 
 const js = fs.readFileSync("crashla.js", "utf8");
 
-const assignment = js.match(/byId\("colophon"\)\.innerHTML\s*=([\s\S]*?);\n/);
-assert.ok(
-  assignment,
+const assignments = [...js.matchAll(/byId\("colophon"\)\.innerHTML\s*=([\s\S]*?);\n/g)];
+assert.equal(
+  assignments.length,
+  1,
   `Replicata: grep crashla.js for byId("colophon").innerHTML.
 Expectata: one assignment builds the footer's markup.
-Resultata: no such assignment found.`,
+Resultata: found ${assignments.length}.`,
 );
-
-// What the reader sees, not what the source spells: the credit is allowed to
-// carry a link, so compare against the markup with its tags taken out.
-const rendered = assignment[1].replace(/<[^>]*>/g, "");
+const assignment = assignments[0];
 
 assert.ok(
-  rendered.includes(CREDIT),
-  `Replicata: read the byId("colophon").innerHTML assignment in crashla.js and
-strip its HTML tags.
-Expectata: the footer reads ${JSON.stringify(CREDIT)}.
-Resultata: it reads ${JSON.stringify(rendered.trim())}.`,
-);
-
-assert.ok(
-  /https:\/\/ncase\.me/.test(assignment[1]),
+  assignment[1].includes(LINKED_CREDIT),
   `Replicata: read the byId("colophon").innerHTML assignment in crashla.js.
-Expectata: the credit links to https://ncase.me so the attribution is followable.
-Resultata: no ncase.me link in the footer markup.`,
+Expectata: the exact human-supplied credit surrounds one linked "nicky case".
+Resultata: assignment was ${JSON.stringify(assignment[1].trim())}.`,
+);
+
+const links = [...assignment[1].matchAll(/<a\s+href="([^"]+)">([^<]+)<\/a>/g)]
+  .map(([, href, text]) => ({href, text}))
+  .filter(link => link.text === "nicky case");
+assert.deepEqual(
+  links,
+  [{href: "https://ncase.me", text: "nicky case"}],
+  `Replicata: read the byId("colophon").innerHTML assignment in crashla.js.
+Expectata: exactly one "nicky case" anchor links to the exact ncase.me origin.
+Resultata: matching anchors were ${JSON.stringify(links)}.`,
 );
 
 console.log("qual pass: footer carries the nicky case design credit");

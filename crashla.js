@@ -1194,7 +1194,7 @@ function drawSingleMonthAxes(
     `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${axisY}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${axisY}" x2="${mLeft + pW}" y2="${axisY}"></line>
-    <text class="month-label" x="12" y="${mTop + pH / 2}" transform="rotate(-90 12 ${mTop + pH / 2})" text-anchor="middle">${yLabel}</text>
+    <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">${yLabel}</text>
   `;
 }
 
@@ -1487,7 +1487,7 @@ function renderDistributionChart(series) {
     `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
-    <text class="month-label" x="12" y="${mTop + pH / 2}" transform="rotate(-90 12 ${mTop + pH / 2})" text-anchor="middle">Probability Density for True MPI</text>
+    <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">Probability Density for True MPI</text>
   `;
 
   // Curve fills (low opacity) and strokes — unified for all helmers
@@ -1843,8 +1843,8 @@ function renderFleetForecastChart() {
     `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
-    <text class="month-label" x="12" y="${mTop + pH / 2}" transform="rotate(-90 12 ${mTop + pH / 2})" text-anchor="middle">Probability density for 2027 Jan 1</text>
-    <text class="month-tick" x="${mLeft + pW / 2}" y="${svgH - 4}" text-anchor="middle">${spec.yLabel}</text>
+    <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">Probability density for 2027 Jan 1</text>
+    <text class="month-tick" x="${mLeft + pW / 2}" y="${svgH - 9}" text-anchor="middle">${spec.yLabel}</text>
   `;
 
   const fills = curves.map(c => {
@@ -3887,7 +3887,7 @@ function loadPredmarketData() {
   byId("colophon").innerHTML =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} · ` +
     `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a> · ` +
-    `design inspired by <a href="https://ncase.me">nicky case</a>`;
+    `web design inspired by <a href="https://ncase.me">nicky case</a>`;
   byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
   initGrowthMetricToggle();
   byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
