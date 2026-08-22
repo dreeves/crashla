@@ -36,9 +36,10 @@ Resultata: ${JSON.stringify(decRow)}.`);
 vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 
 // Tesla's rides derive from its (deck-anchored) cumulative miles at the
-// total-scope miles-per-ride corridor [4.7, 6.2, 8.3]: the trackers' observed
-// 4-5 mi average paid ride divided by a 0.6-0.85 passenger-on-board share of
-// fleet service miles (deadhead 15-40%). A history row that strays outside
+// total-scope miles-per-ride corridor [4.7, 6.2, 8.3]: an author-set ~4-5 mi
+// average paid ride (corroborated by robotaxitracker's receipt-synced trips,
+// mean 3.81 mi ex hops, contributor-skewed low) divided by a 0.6-0.85
+// passenger-on-board share of fleet service miles (deadhead 15-40%). A history row that strays outside
 // that corridor has come unglued from the miles data. (Repinned 2026-07-22,
 // human-approved, from [7, 14]: that corridor reconciled the miles with a
 // "~700k paid miles by late Apr 2026" figure that was actually mid-February
@@ -52,7 +53,7 @@ for (const row of teslaHist) {
   const implied = cume / row.best;
   assert.ok(implied >= 4.5 && implied <= 8.5,
     `Replicata: divide Tesla's cumulative VMT at ${row.month} (${cume}) by the rides row's best (${row.best}).
-Expectata: implied miles-per-ride in [4.5, 8.5] (tracker-observed paid-ride lengths / on-trip share of service miles).
+Expectata: implied miles-per-ride in [4.5, 8.5] (author-set ~4-5 mi paid-ride length / on-trip share of service miles; receipt-corroborated).
 Resultata: ${implied.toFixed(1)}.`);
 }
 

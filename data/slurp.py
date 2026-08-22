@@ -137,8 +137,11 @@ SPLIT_SAME_INCIDENT_REPORTS = {"30270-10320"}
 
 # Manual overrides for number of vehicles involved, keyed by Same Incident ID.
 # The NHTSA CSV's "Crash With" field is singular and doesn't capture multi-
-# vehicle pileups. Default is 2 (the AV + one crash partner). Override here
-# when the narrative reveals more vehicles were involved.
+# vehicle pileups. Default is 2 (the AV + one crash partner). Only the
+# fatality metric reads this field (fractional-death divisor) and
+# fatality-guard.qual forces a human count for each new fatality; the
+# narrative-verified nonfatal counts below are data hygiene so the field is
+# true where narratives are explicit (2026-08-22 audit inventory).
 VEHICLES_INVOLVED = {
     # Waymo JAN-2025 SF fatality (report 30270-9724): chain collision — AV +
     # car stopped behind it + speeding SUV + a fourth car the AV rotated into,
@@ -147,6 +150,68 @@ VEHICLES_INVOLVED = {
     "4409b059e33b146": 6,
     # Waymo SEP-2025 Tempe fatality: AV + motorcycle + hit-and-run passenger car
     "dc166aecd5b4265": 3,
+    # Batch below added 2026-08-22 (human-approved hygiene): narrative-verified
+    # 3+-vehicle counts for NONFATAL incidents from the audit inventory (e.g.
+    # "All three vehicles sustained damage"). Zero displayed-number change by
+    # construction — only the fatality metric reads this field — recorded so
+    # the field is true where the narrative is explicit. Six bystander/
+    # no-AV-contact rows with murky involvement semantics keep the default.
+    "2c723ba2d4b98e0": 3,  # 30270-6579
+    "2abc9b4faef00d9": 3,  # 30270-8968
+    "3f40494138fe83f": 4,  # 30270-13817
+    "20d6da83946bc6a": 5,  # 30270-13955
+    "d9ab087a84f0cd4": 5,  # 30270-14986
+    "04975f9cbbbb0e2": 4,  # 30270-15301
+    "bdce5fc66f1168e": 3,  # 30270-13605
+    "57077729fff8e86": 3,  # 30270-13192
+    "fc8edb9a7204402": 3,  # 30270-15246
+    "c0746bba88135cc": 4,  # 30270-15192
+    "ceedaf1e659d839": 3,  # 30270-11791
+    "1024682219a18ca": 3,  # 30270-14708
+    "7bf2bd79eaff634": 4,  # 30270-10695
+    "b18bcaba77a754d": 3,  # 30270-9060
+    "19a716eeeeaa926": 3,  # 30270-13399
+    "4efc9981e611aef": 3,  # 30270-13877
+    "62a06417fd0e440": 3,  # 30270-5997
+    "e5600c859fc110c": 3,  # 30270-6906
+    "f3e5d2d35b79a77": 4,  # 30270-9761
+    "5e05dd39035930e": 3,  # 30270-13195
+    "8304b13e00692a8": 3,  # 30270-13585
+    "ff7cbbd8a71abe7": 3,  # 30270-14265
+    "8c47e2c871cfdd5": 3,  # 30270-15105
+    "41439f705214d5b": 4,  # 30270-7158
+    "705af0c07826a64": 3,  # 30270-8620
+    "f615c017d4c3424": 3,  # 30270-8927
+    "1f2bee64088ae54": 3,  # 30270-8982
+    "bbb0e2252e1f4dc": 3,  # 30270-9214
+    "daa10713b34a31e": 3,  # 30270-9791
+    "b80af11c02f6289": 3,  # 30270-9806
+    "11e9a791b2b6ea6": 3,  # 30270-10360
+    "f2792c77e77c962": 3,  # 30270-10833
+    "4bc8fd3b1c7fa4c": 3,  # 30270-10899
+    "7ed218ffbe82b26": 3,  # 30270-11874
+    "338c89efb1b5863": 3,  # 30270-11929
+    "39e914432c9731f": 4,  # 30270-13064
+    "06d315f5d5b5e61": 3,  # 30270-13092
+    "64f79f6cea38760": 3,  # 30270-13303
+    "0d2954a0b45051c": 3,  # 30270-13369
+    "f5fd54d443a806a": 3,  # 30270-13575
+    "320556479411209": 3,  # 30270-13860
+    "1fa562685e928aa": 3,  # 30270-13949
+    "94a54c1adb3bcb1": 3,  # 30270-13985
+    "3db73b95cac1387": 3,  # 30270-13998
+    "6ed4ec06551d417": 3,  # 30270-14271
+    "3dadbcf335da06a": 3,  # 30270-14383
+    "f714f368c260da3": 3,  # 30270-14586
+    "bae2cf6c304a1ed": 3,  # 30270-14804
+    "31b153f9cce89b8": 3,  # 30270-14905
+    "d5de757e0e3708a": 3,  # 30270-14944
+    "7d6d4942edb67c8": 3,  # 30270-15106
+    "3aa771b54ce5693": 3,  # 30270-15251
+    "06da8374e99eb68": 3,  # 30270-15346
+    "025397c44a5648d": 3,  # 30270-15393
+    "f16394ad5598be9": 3,  # 30270-15659
+    "339bff8c25c90c8": 3,  # 30270-15723
 }
 
 # Tesla appends this disclaimer to the front of every redacted-update narrative.
@@ -233,6 +298,27 @@ SEVERITY_OVERRIDE = {
     "566bb10e6506178": "Property Damage. No Injured Reported",
     # Passing SUV clipped Waymo; SUV passengers claimed unspecified injuries
     "1856b0e9c61d103": "Minor W/O Hospitalization",
+    # Batch below added 2026-08-22 (human-approved): extends the override
+    # convention beyond "Unknown" resolution to rows whose AFFIRMATIVE field
+    # value flatly contradicts the filing's own narrative — injury claims the
+    # field never carried, stated hospital transports on W/O or archive-era
+    # bare tiers (no W/-Hospitalization split existed pre-Jun-2025).
+    # Trailer clipped stopped Waymo; passenger later alleged unspecified injury, no transport
+    "bdb04d1fc17d560": "Minor W/O Hospitalization",
+    # "transported from the scene to a hospital" stated as the SGO trigger; archive bare Minor
+    "ddd7ca810af9fd2": "Minor W/ Hospitalization",
+    # Same transport-trigger sentence; archive bare Minor
+    "a2ed9f0f8198649": "Minor W/ Hospitalization",
+    # Doored cyclist transported by ambulance; archive bare Moderate
+    "45b81f06862d85c": "Moderate W/ Hospitalization",
+    # Waymo passenger and other driver transported to hospital; archive bare Moderate
+    "a44c6cf951c17dc": "Moderate W/ Hospitalization",
+    # Three Waymo passengers transported to a hospital; archive bare Moderate
+    "0dc79525eecc923": "Moderate W/ Hospitalization",
+    # SUV driver transported (stated as SGO trigger); field said W/O Hospitalization
+    "95004cd5904030e": "Moderate W/ Hospitalization",
+    # Zoox v2 filed to add V2 driver's soft-tissue injury claim; severity field never updated
+    "f0252c0264b68ef": "Minor W/O Hospitalization",
     # Alleged involvement only, no AV contact; cars behind collided; no injuries
     "8288654b083d6f8": "Property Damage. No Injured Reported",
     # Waymo rear-ended at red; Waymo passenger reported unspecified injury
@@ -274,6 +360,35 @@ SEVERITY_OVERRIDE = {
     "4366476607eca89": "Minor W/ Hospitalization",
     # Speeding SUV clipped Waymo passing on left; driver "unknown injuries", no transport
     "eeafa92b2068aa7": "Minor W/O Hospitalization",
+}
+
+# Known-erroneous upstream location fields, keyed by Same Incident ID: the
+# SGO row for 30270-7054 (JAN-2024) says City "Phoenix", State "CA" while its
+# own narrative reads "operating in Phoenix, Arizona" — an NHTSA data-entry
+# error that renders a phantom "Phoenix, CA" city in the Geography table.
+STATE_OVERRIDE = {
+    "f4e66fc9d21a5b9": "AZ",  # 30270-7054: narrative says Phoenix, Arizona
+}
+
+# Airbag deployments the SGO structured columns cannot record, keyed by Same
+# Incident ID (added 2026-08-22, human-approved): narratives assert deployment
+# — including Waymo's own "because of airbag deployment" reporting-trigger
+# sentences — but the SV/CP columns say No (third-vehicle deployments in chain
+# crashes, and one column-vs-narrative contradiction). airbagAny is defined as
+# any-vehicle deployment (matching the Kusano human benchmark), so these are
+# forced true. (Distinct from the archive CP-column merge in
+# _normalize_archive_row, which already ORs the recorded columns.)
+AIRBAG_OVERRIDE = {
+    # 30270-9767: filed "because of airbag deployment"; SV/CP columns both No
+    "f53d5bab3d70bf4": True,
+    # 30270-10174: same trigger sentence; chain crash, third vehicle
+    "92953b8c28a4f6c": True,
+    # 30270-10573: "the SUV's airbag deployed" (third vehicle)
+    "7d57ae266c261bc": True,
+    # 30270-13877: "the airbag of the second passenger car deploying"
+    "4efc9981e611aef": True,
+    # 30270-6542: "video appears to show that airbags deployed in the striking vehicle"
+    "2e94dccbdb96501": True,
 }
 
 
@@ -1008,6 +1123,10 @@ def main():
         rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(iid_short, 2)
         if iid_short in SEVERITY_OVERRIDE:
             rec["severity"] = SEVERITY_OVERRIDE[iid_short]
+        if iid_short in AIRBAG_OVERRIDE:
+            rec["airbagAny"] = AIRBAG_OVERRIDE[iid_short]
+        if iid_short in STATE_OVERRIDE:
+            rec["state"] = STATE_OVERRIDE[iid_short]
         incidents.append(rec)
 
     # Sort by helmer then date (ISO month sorts lexicographically)

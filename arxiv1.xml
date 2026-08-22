@@ -1,0 +1,372 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/omSRaqBKdjl8xvtgIFKkr25XlYU</id>
+  <title>arXiv Query: search_query=abs:"crash rate" AND abs:"autonomous"&amp;id_list=&amp;start=0&amp;max_results=12</title>
+  <updated>2026-08-22T22:04:59Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=abs:%22crash+rate%22+AND+abs:%22autonomous%22&amp;start=0&amp;max_results=12&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>12</opensearch:itemsPerPage>
+  <opensearch:totalResults>14</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2605.21168v3</id>
+    <title>ScenePilot: Controllable Boundary-Driven Critical Scenario Generation for Autonomous Driving</title>
+    <updated>2026-05-29T03:43:28Z</updated>
+    <link href="https://arxiv.org/abs/2605.21168v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2605.21168v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Safety-critical scenarios are central to evaluating autonomous driving systems, yet their rarity in naturalistic logs makes simulation-based stress testing indispensable. Most scenario generation methods treat surrounding agents as adversaries, but they either (i) induce failures without explicitly modeling vehicle-road physical limits, yielding visually extreme yet physically unsolvable crashes, or (ii) enforce physical feasibility or policy feasibility in isolation, which can over-focus on aggressive maneuvers or remain tied to a controller-dependent capability boundary. We propose ScenePilot, a feasibility-guided, boundary-driven framework that targets the boundary band: scenarios that are physically solvable in principle yet still cause the deployed autonomy stack to fail. We formulate generation as constrained multi-objective reinforcement learning, combining an RSS-derived physical-feasibility score $σ$ with an online-learned AV-risk predictor $Φ$, and introduce step-level feasibility-aware shielding to keep exploration near the feasibility boundary while avoiding infeasible artifacts. Experiments on SafeBench with multiple planners show that ScenePilot yields substantially higher collision rates (+6.2 percentage points) while preserving physical validity, and that adversarial fine-tuning on these boundary-band scenarios consistently reduces downstream crash rates. The code is available at https://github.com/QiyuRuan/ScenePilot.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-05-20T13:39:02Z</published>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Qiyu Ruan</name>
+    </author>
+    <author>
+      <name>Yuxuan Wang</name>
+    </author>
+    <author>
+      <name>He Li</name>
+    </author>
+    <author>
+      <name>Zhenning Li</name>
+    </author>
+    <author>
+      <name>Cheng-zhong Xu</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2604.00343v1</id>
+    <title>Real Time Local Wind Inference for Robust Autonomous Navigation</title>
+    <updated>2026-04-01T00:35:54Z</updated>
+    <link href="https://arxiv.org/abs/2604.00343v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2604.00343v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>This thesis presents a solution that enables aerial robots to reason about surrounding wind flow fields in real time using on board sensors and embedded flight hardware. The core novelty of this research is the fusion of range measurements with sparse in situ wind measurements to predict surrounding flow fields. We aim to address two fundamental questions: first, the sufficiency of topographical data for accurate wind prediction in dense urban environments; and second, the utility of learned wind models for motion planning with an emphasis on energy efficiency and obstacle avoidance. Drawing on tools from deep learning, fluid mechanics, and optimal control, we establish a framework for local wind prediction using navigational LiDAR, and then incorporate local wind model priors into a receding-horizon optimal controller to study how local wind knowledge affects energy use and robustness during autonomous navigation. Through simulated demonstrations in diverse urban wind scenarios we evaluate the predictive capabilities of the wind predictor, and quantify improvements to autonomous urban navigation in terms of crash rates and energy consumption when local wind information is integrated into the motion planning. Sub-scale free flight experiments in an open-air wind tunnel demonstrate that these algorithms can run in real time on an embedded flight computer with sufficient bandwidth for stable control of a small aerial robot. Philosophically, this thesis contributes a new paradigm for localized wind inference and motion planning in unknown windy environments. By enabling robots to rapidly assess local wind conditions without prior environmental knowledge, this research accelerates the introduction of aerial robots into increasingly challenging environments.</summary>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-04-01T00:35:54Z</published>
+    <arxiv:comment>PhD Thesis, University of Pennsylvania, 2026. 152 pages</arxiv:comment>
+    <arxiv:primary_category term="cs.RO"/>
+    <author>
+      <name>Spencer Folk</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2510.08046v1</id>
+    <title>LinguaSim: Interactive Multi-Vehicle Testing Scenario Generation via Natural Language Instruction Based on Large Language Models</title>
+    <updated>2025-10-09T10:30:02Z</updated>
+    <link href="https://arxiv.org/abs/2510.08046v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2510.08046v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>The generation of testing and training scenarios for autonomous vehicles has drawn significant attention. While Large Language Models (LLMs) have enabled new scenario generation methods, current methods struggle to balance command adherence accuracy with the realism of real-world driving environments. To reduce scenario description complexity, these methods often compromise realism by limiting scenarios to 2D, or open-loop simulations where background vehicles follow predefined, non-interactive behaviors. We propose LinguaSim, an LLM-based framework that converts natural language into realistic, interactive 3D scenarios, ensuring both dynamic vehicle interactions and faithful alignment between the input descriptions and the generated scenarios. A feedback calibration module further refines the generation precision, improving fidelity to user intent. By bridging the gap between natural language and closed-loop, interactive simulations, LinguaSim constrains adversarial vehicle behaviors using both the scenario description and the autonomous driving model guiding them. This framework facilitates the creation of high-fidelity scenarios that enhance safety testing and training. Experiments show LinguaSim can generate scenarios with varying criticality aligned with different natural language descriptions (ACT: 0.072 s for dangerous vs. 3.532 s for safe descriptions; comfortability: 0.654 vs. 0.764), and its refinement module effectively reduces excessive aggressiveness in LinguaSim's initial outputs, lowering the crash rate from 46.9% to 6.3% to better match user intentions.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-10-09T10:30:02Z</published>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Qingyuan Shi</name>
+    </author>
+    <author>
+      <name>Qingwen Meng</name>
+    </author>
+    <author>
+      <name>Hao Cheng</name>
+    </author>
+    <author>
+      <name>Qing Xu</name>
+    </author>
+    <author>
+      <name>Jianqiang Wang</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2507.23064v3</id>
+    <title>Vision-Language Cross-Attention for Real-Time Autonomous Driving</title>
+    <updated>2025-10-13T04:30:09Z</updated>
+    <link href="https://arxiv.org/abs/2507.23064v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2507.23064v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Autonomous cars need geometric accuracy and semantic understanding to navigate complex environments, yet most stacks handle them separately. We present XYZ-Drive, a single vision-language model that reads a front-camera frame, a 25m $\times$ 25m overhead map, and the next waypoint, then outputs steering and speed. A lightweight goal-centered cross-attention layer lets waypoint tokens highlight relevant image and map patches, supporting both action and textual explanations, before the fused tokens enter a partially fine-tuned LLaMA-3.2 11B model. On the MD-NEX Outdoor-Driving benchmark XYZ-Drive attains 95% success and 0.80 Success weighted by Path Length (SPL), surpassing PhysNav-DG by 15%. and halving collisions, all while significantly improving efficiency by using only a single branch. Sixteen ablations explain the gains. Removing any modality (vision, waypoint, map) drops success by up to 11%, confirming their complementary roles and rich connections. Replacing goal-centered attention with simple concatenation cuts 3% in performance, showing query-based fusion injects map knowledge more effectively. Keeping the transformer frozen loses 5%, showing the importance of fine-tuning when applying VLMs for specific tasks such as autonomous driving. Coarsening map resolution from 10 cm to 40 cm blurs lane edges and raises crash rate. Overall, these results demonstrate that early, token-level fusion of intent and map layout enables accurate, transparent, real-time driving.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-07-30T19:51:23Z</published>
+    <arxiv:comment>5 pages</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Santosh Patapati</name>
+    </author>
+    <author>
+      <name>Trisanth Srinivasan</name>
+    </author>
+    <author>
+      <name>Murari Ambati</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2505.16214v2</id>
+    <title>Behavioral Safety Assessment towards Large-scale Deployment of Autonomous Vehicles</title>
+    <updated>2025-05-30T04:11:11Z</updated>
+    <link href="https://arxiv.org/abs/2505.16214v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2505.16214v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Autonomous vehicles (AVs) have significantly advanced in real-world deployment in recent years, yet safety continues to be a critical barrier to widespread adoption. Traditional functional safety approaches, which primarily verify the reliability, robustness, and adequacy of AV hardware and software systems from a vehicle-centric perspective, do not sufficiently address the AV's broader interactions and behavioral impact on the surrounding traffic environment. To overcome this limitation, we propose a paradigm shift toward behavioral safety, a comprehensive approach focused on evaluating AV responses and interactions within traffic environment. To systematically assess behavioral safety, we introduce a third-party AV safety assessment framework comprising two complementary evaluation components: Driver Licensing Test and Driving Intelligence Test. The Driver Licensing Test evaluates AV's reactive behaviors under controlled scenarios, ensuring basic behavioral competency. In contrast, the Driving Intelligence Test assesses AV's interactive behaviors within naturalistic traffic conditions, quantifying the frequency of safety-critical events to deliver statistically meaningful safety metrics before large-scale deployment. We validated our proposed framework using \texttt{Autoware.Universe}, an open-source Level 4 AV, tested both in simulated environments and on the physical test track at the University of Michigan's Mcity Testing Facility. The results indicate that \texttt{Autoware.Universe} passed 6 out of 14 scenarios and exhibited a crash rate of 3.01e-3 crashes per mile, approximately 1,000 times higher than average human driver crash rate. During the tests, we also uncovered several unknown unsafe scenarios for \texttt{Autoware.Universe}. These findings underscore the necessity of behavioral safety evaluations for improving AV safety performance prior to widespread public deployment.</summary>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.SE" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-05-22T04:28:59Z</published>
+    <arxiv:comment>Code and Supplementary Materials available at: https://github.com/michigan-traffic-lab/Behavioral-Safety-Assessment</arxiv:comment>
+    <arxiv:primary_category term="cs.RO"/>
+    <author>
+      <name>Henry X. Liu</name>
+    </author>
+    <author>
+      <name>Xintao Yan</name>
+    </author>
+    <author>
+      <name>Haowei Sun</name>
+    </author>
+    <author>
+      <name>Tinghan Wang</name>
+    </author>
+    <author>
+      <name>Zhijie Qiao</name>
+    </author>
+    <author>
+      <name>Haojie Zhu</name>
+    </author>
+    <author>
+      <name>Shengyin Shen</name>
+    </author>
+    <author>
+      <name>Shuo Feng</name>
+    </author>
+    <author>
+      <name>Greg Stevens</name>
+    </author>
+    <author>
+      <name>Greg McGuire</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2503.03629v4</id>
+    <title>TeraSim: Uncovering Unknown Unsafe Events for Autonomous Vehicles through Generative Simulation</title>
+    <updated>2025-04-02T02:30:20Z</updated>
+    <link href="https://arxiv.org/abs/2503.03629v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2503.03629v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Traffic simulation is essential for autonomous vehicle (AV) development, enabling comprehensive safety evaluation across diverse driving conditions. However, traditional rule-based simulators struggle to capture complex human interactions, while data-driven approaches often fail to maintain long-term behavioral realism or generate diverse safety-critical events. To address these challenges, we propose TeraSim, an open-source, high-fidelity traffic simulation platform designed to uncover unknown unsafe events and efficiently estimate AV statistical performance metrics, such as crash rates. TeraSim is designed for seamless integration with third-party physics simulators and standalone AV stacks, to construct a complete AV simulation system. Experimental results demonstrate its effectiveness in generating diverse safety-critical events involving both static and dynamic agents, identifying hidden deficiencies in AV systems, and enabling statistical performance evaluation. These findings highlight TeraSim's potential as a practical tool for AV safety assessment, benefiting researchers, developers, and policymakers. The code is available at https://github.com/mcity/TeraSim.</summary>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="eess.SY" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-03-05T16:09:30Z</published>
+    <arxiv:primary_category term="cs.RO"/>
+    <author>
+      <name>Haowei Sun</name>
+    </author>
+    <author>
+      <name>Xintao Yan</name>
+    </author>
+    <author>
+      <name>Zhijie Qiao</name>
+    </author>
+    <author>
+      <name>Haojie Zhu</name>
+    </author>
+    <author>
+      <name>Yihao Sun</name>
+    </author>
+    <author>
+      <name>Jiawei Wang</name>
+    </author>
+    <author>
+      <name>Shengyin Shen</name>
+    </author>
+    <author>
+      <name>Darian Hogue</name>
+    </author>
+    <author>
+      <name>Rajanikant Ananta</name>
+    </author>
+    <author>
+      <name>Derek Johnson</name>
+    </author>
+    <author>
+      <name>Greg Stevens</name>
+    </author>
+    <author>
+      <name>Greg McGuire</name>
+    </author>
+    <author>
+      <name>Yifan Wei</name>
+    </author>
+    <author>
+      <name>Wei Zheng</name>
+    </author>
+    <author>
+      <name>Yong Sun</name>
+    </author>
+    <author>
+      <name>Yasuo Fukai</name>
+    </author>
+    <author>
+      <name>Henry X. Liu</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2409.17922v1</id>
+    <title>Navigation in a simplified Urban Flow through Deep Reinforcement Learning</title>
+    <updated>2024-09-26T15:05:15Z</updated>
+    <link href="https://arxiv.org/abs/2409.17922v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2409.17922v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>The increasing number of unmanned aerial vehicles (UAVs) in urban environments requires a strategy to minimize their environmental impact, both in terms of energy efficiency and noise reduction. In order to reduce these concerns, novel strategies for developing prediction models and optimization of flight planning, for instance through deep reinforcement learning (DRL), are needed. Our goal is to develop DRL algorithms capable of enabling the autonomous navigation of UAVs in urban environments, taking into account the presence of buildings and other UAVs, optimizing the trajectories in order to reduce both energetic consumption and noise. This is achieved using fluid-flow simulations which represent the environment in which UAVs navigate and training the UAV as an agent interacting with an urban environment. In this work, we consider a domain domain represented by a two-dimensional flow field with obstacles, ideally representing buildings, extracted from a three-dimensional high-fidelity numerical simulation. The presented methodology, using PPO+LSTM cells, was validated by reproducing a simple but fundamental problem in navigation, namely the Zermelo's problem, which deals with a vessel navigating in a turbulent flow, travelling from a starting point to a target location, optimizing the trajectory. The current method shows a significant improvement with respect to both a simple PPO and a TD3 algorithm, with a success rate (SR) of the PPO+LSTM trained policy of 98.7%, and a crash rate (CR) of 0.1%, outperforming both PPO (SR = 75.6%, CR=18.6%) and TD3 (SR=77.4% and CR=14.5%). This is the first step towards DRL strategies which will guide UAVs in a three-dimensional flow field using real-time signals, making the navigation efficient in terms of flight time and avoiding damages to the vehicle.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-09-26T15:05:15Z</published>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Federica Tonti</name>
+    </author>
+    <author>
+      <name>Jean Rabault</name>
+    </author>
+    <author>
+      <name>Ricardo Vinuesa</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2409.12997v1</id>
+    <title>VCAT: Vulnerability-aware and Curiosity-driven Adversarial Training for Enhancing Autonomous Vehicle Robustness</title>
+    <updated>2024-09-19T14:53:02Z</updated>
+    <link href="https://arxiv.org/abs/2409.12997v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2409.12997v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Autonomous vehicles (AVs) face significant threats to their safe operation in complex traffic environments. Adversarial training has emerged as an effective method of enabling AVs to preemptively fortify their robustness against malicious attacks. Train an attacker using an adversarial policy, allowing the AV to learn robust driving through interaction with this attacker. However, adversarial policies in existing methodologies often get stuck in a loop of overexploiting established vulnerabilities, resulting in poor improvement for AVs. To overcome the limitations, we introduce a pioneering framework termed Vulnerability-aware and Curiosity-driven Adversarial Training (VCAT). Specifically, during the traffic vehicle attacker training phase, a surrogate network is employed to fit the value function of the AV victim, providing dense information about the victim's inherent vulnerabilities. Subsequently, random network distillation is used to characterize the novelty of the environment, constructing an intrinsic reward to guide the attacker in exploring unexplored territories. In the victim defense training phase, the AV is trained in critical scenarios in which the pretrained attacker is positioned around the victim to generate attack behaviors. Experimental results revealed that the training methodology provided by VCAT significantly improved the robust control capabilities of learning-based AVs, outperforming both conventional training modalities and alternative reinforcement learning counterparts, with a marked reduction in crash rates. The code is available at https://github.com/caixxuan/VCAT.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-09-19T14:53:02Z</published>
+    <arxiv:comment>7 pages, 5 figures, conference</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Xuan Cai</name>
+    </author>
+    <author>
+      <name>Zhiyong Cui</name>
+    </author>
+    <author>
+      <name>Xuesong Bai</name>
+    </author>
+    <author>
+      <name>Ruimin Ke</name>
+    </author>
+    <author>
+      <name>Zhenshu Ma</name>
+    </author>
+    <author>
+      <name>Haiyang Yu</name>
+    </author>
+    <author>
+      <name>Yilong Ren</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2403.14648v1</id>
+    <title>Initial Indications of Safety of Driverless Automated Driving Systems</title>
+    <updated>2024-02-23T07:15:55Z</updated>
+    <link href="https://arxiv.org/abs/2403.14648v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2403.14648v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>As driverless automated driving systems (ADS) start to operate on public roads, there is an urgent need to understand how safely these systems are managing real-world traffic conditions. With data from the California Public Utilities Commission (CPUC) becoming available for Transportation Network Companies (TNCs) operating in California with and without human drivers, there is an initial basis for comparing ADS and human driving safety.
+  This paper analyzes the crash rates and characteristics for three types of driving: Uber ridesharing trips from the CPUC TNC Annual Report in 2020, supervised autonomous vehicles (AV) driving from the California Department of Motor Vehicles (DMV) between December 2020 and November 2022, driverless ADS pilot (testing) and deployment (revenue service) program from Waymo and Cruise between March 2022 and August 2023. All of the driving was done within the city of San Francisco, excluding freeways. The same geographical confinement allows for controlling the exposure to vulnerable road users, population density, speed limit, and other external factors such as weather and road conditions. The study finds that supervised AV has almost equivalent crashes per million miles (CPMM) as Uber human driving, the driverless Waymo AV has a lower CPMM, and the driverless Cruise AV has a higher CPMM than Uber human driving. The data samples are not yet large enough to support conclusions about whether the current automated systems are more or less safe than human-operated vehicles in the complex San Francisco urban environment.</summary>
+    <category term="cs.CY" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="eess.SY" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-02-23T07:15:55Z</published>
+    <arxiv:primary_category term="cs.CY"/>
+    <author>
+      <name>Jiayu Joyce Chen</name>
+    </author>
+    <author>
+      <name>Steven E. Shladover</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2312.09520v2</id>
+    <title>SlowTrack: Increasing the Latency of Camera-based Perception in Autonomous Driving Using Adversarial Examples</title>
+    <updated>2023-12-26T13:02:07Z</updated>
+    <link href="https://arxiv.org/abs/2312.09520v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2312.09520v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>In Autonomous Driving (AD), real-time perception is a critical component responsible for detecting surrounding objects to ensure safe driving. While researchers have extensively explored the integrity of AD perception due to its safety and security implications, the aspect of availability (real-time performance) or latency has received limited attention. Existing works on latency-based attack have focused mainly on object detection, i.e., a component in camera-based AD perception, overlooking the entire camera-based AD perception, which hinders them to achieve effective system-level effects, such as vehicle crashes. In this paper, we propose SlowTrack, a novel framework for generating adversarial attacks to increase the execution time of camera-based AD perception. We propose a novel two-stage attack strategy along with the three new loss function designs. Our evaluation is conducted on four popular camera-based AD perception pipelines, and the results demonstrate that SlowTrack significantly outperforms existing latency-based attacks while maintaining comparable imperceptibility levels. Furthermore, we perform the evaluation on Baidu Apollo, an industry-grade full-stack AD system, and LGSVL, a production-grade AD simulator, with two scenarios to compare the system-level effects of SlowTrack and existing attacks. Our evaluation results show that the system-level effects can be significantly improved, i.e., the vehicle crash rate of SlowTrack is around 95% on average while existing works only have around 30%.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CR" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-12-15T04:01:32Z</published>
+    <arxiv:comment>Accepted by AAAI 2024</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Chen Ma</name>
+    </author>
+    <author>
+      <name>Ningfei Wang</name>
+    </author>
+    <author>
+      <name>Qi Alfred Chen</name>
+    </author>
+    <author>
+      <name>Chao Shen</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2312.06858v1</id>
+    <title>Scalable Decentralized Cooperative Platoon using Multi-Agent Deep Reinforcement Learning</title>
+    <updated>2023-12-11T22:04:38Z</updated>
+    <link href="https://arxiv.org/abs/2312.06858v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2312.06858v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Cooperative autonomous driving plays a pivotal role in improving road capacity and safety within intelligent transportation systems, particularly through the deployment of autonomous vehicles on urban streets. By enabling vehicle-to-vehicle communication, these systems expand the vehicles environmental awareness, allowing them to detect hidden obstacles and thereby enhancing safety and reducing crash rates compared to human drivers who rely solely on visual perception. A key application of this technology is vehicle platooning, where connected vehicles drive in a coordinated formation. This paper introduces a vehicle platooning approach designed to enhance traffic flow and safety. Developed using deep reinforcement learning in the Unity 3D game engine, known for its advanced physics, this approach aims for a high-fidelity physical simulation that closely mirrors real-world conditions. The proposed platooning model focuses on scalability, decentralization, and fostering positive cooperation through the introduced predecessor-follower "sharing and caring" communication framework. The study demonstrates how these elements collectively enhance autonomous driving performance and robustness, both for individual vehicles and for the platoon as a whole, in an urban setting. This results in improved road safety and reduced traffic congestion.</summary>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.MA" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="eess.SY" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-12-11T22:04:38Z</published>
+    <arxiv:primary_category term="cs.RO"/>
+    <author>
+      <name>Ahmed Abdelrahman</name>
+    </author>
+    <author>
+      <name>Omar M. Shehata</name>
+    </author>
+    <author>
+      <name>Yarah Basyoni</name>
+    </author>
+    <author>
+      <name>Elsayed I. Morgan</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2201.13229v2</id>
+    <title>Network-level Safety Metrics for Overall Traffic Safety Assessment: A Case Study</title>
+    <updated>2022-06-13T16:59:37Z</updated>
+    <link href="https://arxiv.org/abs/2201.13229v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2201.13229v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Driving safety analysis has recently experienced unprecedented improvements thanks to technological advances in precise positioning sensors, artificial intelligence (AI)-based safety features, autonomous driving systems, connected vehicles, high-throughput computing, and edge computing servers. Particularly, deep learning (DL) methods empowered volume video processing to extract safety-related features from massive videos captured by roadside units (RSU). Safety metrics are commonly used measures to investigate crashes and near-conflict events. However, these metrics provide limited insight into the overall network-level traffic management. On the other hand, some safety assessment efforts are devoted to processing crash reports and identifying spatial and temporal patterns of crashes that correlate with road geometry, traffic volume, and weather conditions. This approach relies merely on crash reports and ignores the rich information of traffic videos that can help identify the role of safety violations in crashes. To bridge these two perspectives, we define a new set of network-level safety metrics (NSM) to assess the overall safety profile of traffic flow by processing imagery taken by RSU cameras. Our analysis suggests that NSMs show significant statistical associations with crash rates. This approach is different than simply generalizing the results of individual crash analyses, since all vehicles contribute to calculating NSMs, not only the ones involved in crash incidents. This perspective considers the traffic flow as a complex dynamic system where actions of some nodes can propagate through the network and influence the crash risk for other nodes. We also provide a comprehensive review of surrogate safety metrics (SSM) in the Appendix A.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.SI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2022-01-27T19:07:08Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Xiwen Chen</name>
+    </author>
+    <author>
+      <name>Hao Wang</name>
+    </author>
+    <author>
+      <name>Abolfazl Razi</name>
+    </author>
+    <author>
+      <name>Brendan Russo</name>
+    </author>
+    <author>
+      <name>Jason Pacheco</name>
+    </author>
+    <author>
+      <name>John Roberts</name>
+    </author>
+    <author>
+      <name>Jeffrey Wishart</name>
+    </author>
+    <author>
+      <name>Larry Head</name>
+    </author>
+    <author>
+      <name>Alonso Granados Baca</name>
+    </author>
+  </entry>
+</feed>

@@ -472,10 +472,11 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //   Kusano/Scanlon 7.1M-mi paper (arxiv 2312.12675, Table 3):
 //     All crashes: Blincoe-adj 9.67 IPMM, police-reported 4.68 IPMM
 //     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.91 IPMM
-//   Kusano & Scanlon 56.7M (arxiv 2505.01515), location-weighted human IPMM,
-//   per-city (Phoenix..SF) -> mileage-blended: Any-injury 2.09..8.02 -> 4.04;
-//   Airbag 1.42..2.31 -> 1.69; SSI+ 0.12..0.46 -> 0.24. (Waymo page concurs.)
-//   FARS 2023: national 1.26 fatalities/100M VMT; urban ~0.7-1.15/100M VMT
+//   Waymo Safety Impact hub per-city human IPMM (thru Mar 2026, six cities;
+//   supersedes the Kusano & Scanlon 56.7M paper 2026-08-22): Any-injury
+//   2.03..7.25 -> blended 3.91; Airbag (any vehicle) 1.19..2.99 -> 1.68;
+//   SSI+ 0.12..0.44 -> 0.23.
+//   FARS 2024: national 1.19 fatalities/100M VMT (2023: 1.26); urban ~0.7-1.15/100M VMT
 //
 // Derived metrics use the subset-bounding approach: if metric B is a subset
 // of metric A, then MPI-B >= MPI-A. The true value is bounded by neighbors.
@@ -500,14 +501,15 @@ const METRIC_DEFS = [
           {label: 'Third Amended SGO (2025)', url: 'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf'},
           {label: 'Waymo Data Hub release notes', url: 'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260624.pdf'},
         ]},
-      // CRSS 2022/2023: ~6M police-reported crashes/yr, ~1.77 vehicles per
-      // crash, ~3.2T VMT -> ~3.3 crashed vehicles per M mi. Blincoe
-      // underreporting (~60% of property-damage-only and ~25-32% of injury
-      // crashes unreported) roughly doubles that -> ~7.1 per M mi.
+      // CRSS 2024 (813791): ~6.18M police-reported crashes/yr, ~1.77 vehicles
+      // per crash, ~3,294B VMT -> ~3.3 crashed vehicles per M mi (unchanged
+      // from the 2022/2023 inputs at this precision). Blincoe underreporting
+      // (~60% of property-damage-only and ~25-32% of injury crashes
+      // unreported) roughly doubles that -> ~7.1 per M mi.
       HumansUS: {lo: 140000, hi: 300000,
         src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
           {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
           {label: 'Third Amended SGO (2025)', url: 'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf'},
           {label: 'Waymo Data Hub release notes', url: 'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260624.pdf'},
@@ -531,7 +533,7 @@ const METRIC_DEFS = [
       HumansUS: {lo: 144000, hi: 310000,
         src: 'US-average all-crash range adjusted for ~3\u20135% hit-while-parked share (CRSS)',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
     },
   },
@@ -552,7 +554,7 @@ const METRIC_DEFS = [
       HumansUS: {lo: 147000, hi: 315000,
         src: 'CRSS trafficway-only rates \u2248 non-parking-lot; similar ratio applied to US-average range',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
     },
   },
@@ -584,7 +586,7 @@ const METRIC_DEFS = [
       HumansUS: {lo: 140000, hi: 600000,
         src: 'lo: US-average all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity); hi: US-average all-crash hi / 50% police-reported-universe share',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
           {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
         ]},
     },
@@ -597,12 +599,13 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.injury,
     // AV-cities band = Kusano & Scanlon 56.7M per-city human benchmark range
-    // (SF 8.02 to Phoenix 2.09 IPMM; Blincoe-adjusted, location-weighted),
+    // (hub per-city span: Phoenix 2.03 to SF 7.25 IPMM across six cities),
     // mileage-blended central 4.04. Band edges = 1M / per-city IPMM.
     humanMPI: {
-      HumansAV: {lo: 125000, hi: 478000,
-        src: 'Kusano & Scanlon 56.7M: human any-injury 2.09 (Phoenix) to 8.02 (SF) IPMM, blended 4.04 (Blincoe-adjusted, location-weighted)',
+      HumansAV: {lo: 138000, hi: 493000,
+        src: 'Waymo Safety Impact hub (thru Mar 2026, six cities): human any-injury 2.03 (Phoenix) to 7.25 (SF) IPMM, blended 3.91 (supersedes the Kusano 56.7M paper values 2.09-8.02)',
         srcLinks: [
+          {label: 'Waymo Safety Impact hub', url: 'https://waymo.com/safety/impact/'},
           {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
           {label: 'Waymo safety impact', url: 'https://waymo.com/safety/impact/'},
         ]},
@@ -612,7 +615,7 @@ const METRIC_DEFS = [
       HumansUS: {lo: 780000, hi: 1090000,
         src: 'lo: ~1.28 IPMM Blincoe-adjusted injury crashed-vehicle rate; hi: ~0.92 IPMM police-reported (CRSS national)',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
           {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
         ]},
     },
@@ -629,27 +632,27 @@ const METRIC_DEFS = [
     // At-fault injury: intersection of at-fault and injury crashes.
     // Shares use the expert-avoidability standard to match the faultfrac
     // criterion (P(expert human avoids)), not legal allocation:
-    // lo: injury lo (125k) / ~94% share (NHTSA critical reason: driver error
-    //   in ~94% of crashes; an expert avoids at least those) ≈ 133k
-    // hi: injury hi (478k) / 50% share ≈ 956k
+    // lo: injury lo (138k) / ~94% share (NHTSA critical reason: driver error
+    //   in ~94% of crashes; an expert avoids at least those) ≈ 147k
+    // hi: injury hi (493k) / 50% share ≈ 986k
     //   50% = legal-allocation floor (single-vehicle 100%, multi ~50%);
     //   expert-avoidability can't be lower. Cross-check: 478k/214k × atfault
     //   hi (430k) ≈ 960k. (Re-derived 2026-07-24 when the injury band's
     //   repin to the Kusano 56.7M per-city range left this stale at the old
     //   blended anchors, 272k–1,050k.)
     humanMPI: {
-      HumansAV: {lo: 133000, hi: 956000,
-        src: 'lo: injury lo (125k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (478k) / 50% legal-allocation floor',
+      HumansAV: {lo: 147000, hi: 986000,
+        src: 'lo: injury lo (138k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (493k) / 50% legal-allocation floor',
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
           {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
           {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
         ]},
       HumansUS: {lo: 830000, hi: 2180000,
         src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
     },
   },
@@ -677,7 +680,7 @@ const METRIC_DEFS = [
       HumansUS: {lo: 1400000, hi: 6000000,
         src: 'No national hospital-transport per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
     },
   },
@@ -697,16 +700,16 @@ const METRIC_DEFS = [
       // estimated by log-interpolation between the national injury and fatality
       // anchors (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is computed from HumansAV by the loop below.
-      HumansAV: {lo: 433000, hi: 704000,
-        src: 'Kusano & Scanlon 56.7M: human airbag 1.42 (Phoenix) to 2.31 (SF) IPMM, blended 1.69 (observed, location-weighted)',
+      HumansAV: {lo: 334000, hi: 840000,
+        src: 'Waymo Safety Impact hub (thru Mar 2026, six cities): human any-vehicle airbag 1.19 (LA) to 2.99 (Atlanta) IPMM, blended 1.68 (supersedes the Kusano 56.7M paper values 1.42-2.31; Austin, Tesla\'s main market, sits at 2.53)',
         srcLinks: [
+          {label: 'Waymo Safety Impact hub', url: 'https://waymo.com/safety/impact/'},
           {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
-          {label: 'Waymo safety impact', url: 'https://waymo.com/safety/impact/'},
         ]},
       HumansUS: {lo: 820000, hi: 2400000,
         src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
     },
   },
@@ -718,23 +721,24 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.seriousInjury,
     // SSI+ (KABCO A+K): "Serious" + "Fatality" (suspected serious injury or
-    // worse). AV-cities band = Kusano 56.7M per-city human SSI+ range (SF 0.46
-    // to Phoenix 0.12 IPMM; observed, location-weighted), blended 0.24.
+    // worse). AV-cities band = the hub's per-city human SSI+ range (SF 0.44
+    // to Phoenix 0.12 IPMM across six cities), blended 0.23.
     humanMPI: {
       // No clean national SSI+ (KABCO A+K) per-mile rate; HumansUS is estimated
       // by log-interpolation between the national injury and fatality anchors
       // (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is computed from HumansAV by the loop below.
-      HumansAV: {lo: 2170000, hi: 8330000,
-        src: 'Kusano & Scanlon 56.7M: human SSI+ 0.12 (Phoenix) to 0.46 (SF) IPMM, blended 0.24 (observed, location-weighted)',
+      HumansAV: {lo: 2270000, hi: 8330000,
+        src: 'Waymo Safety Impact hub (thru Mar 2026, six cities): human SSI+ 0.12 (Phoenix) to 0.44 (SF) IPMM, blended 0.23 (supersedes the Kusano 56.7M paper values 0.12-0.46)',
         srcLinks: [
+          {label: 'Waymo Safety Impact hub', url: 'https://waymo.com/safety/impact/'},
           {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
           {label: 'Waymo safety impact', url: 'https://waymo.com/safety/impact/'},
         ]},
       HumansUS: {lo: 3000000, hi: 14000000,
         src: 'No clean national SSI+ (KABCO A+K) per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
         srcLinks: [
-          {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
     },
   },
@@ -753,10 +757,15 @@ const METRIC_DEFS = [
         srcLinks: [
           {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
         ]},
-      HumansUS: {lo: 61000000, hi: 83000000,
-        src: 'FARS national: ~1.65/100M VMT per crashed vehicle to ~1.2/100M VMT per fatal crash',
+      HumansUS: {lo: 59000000, hi: 91000000,
+        // Re-derived on FARS 2024 primary data 2026-08-22: 56,011 in-transport
+        // vehicles in 36,297 fatal crashes over 3,294B VMT -> 1.70 per-crashed-
+        // vehicle and 1.10 per-fatal-crash rates per 100M VMT. (The prior
+        // 61M/83M band's "~1.65 per crashed vehicle" input does not reproduce
+        // from the FARS 2023 final file, which has 58,508 vehicles ~ 1.80.)
+        src: 'FARS 2024 national: ~1.70/100M VMT per crashed vehicle to ~1.10/100M VMT per fatal crash',
         srcLinks: [
-          {label: 'NHTSA FARS 2023', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
+          {label: 'NHTSA FARS 2024', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
       // The one rideshare-specific per-mile rate that is published (the
       // safety reports otherwise cover only fatalities and assaults).
@@ -1850,8 +1859,8 @@ function renderDistributionChart(series) {
     const mean = c.est.k !== null && c.est.k > 0.5 ? c.est.vmtBest / (c.est.k - 0.5) : (c.est.k !== null ? Infinity : NaN);
     const tail = c.est.k !== null ? ` · mean ${infOr(mean)} · MLE ${infOr(mle)}` : "";
     const dots = [
-      ["Mode", c.peakX, `median ${fmtMiles(c.est.postMedian)}`],
-      ["Median", c.est.postMedian, `mode ${fmtMiles(c.peakX)}`],
+      ["Peak", c.peakX, `median ${fmtMiles(c.est.postMedian)}`],
+      ["Median", c.est.postMedian, `peak ${fmtMiles(c.peakX)}`],
     ];
     const dotStyle = c.est.k === 0 ? `fill:none;stroke:${color}` : `fill:${color};stroke:#fff`; // k=0: hollow (prior only)
     return dots.map(([label, mx, other]) => {
@@ -2262,9 +2271,13 @@ function fleetMonthIso(index) {
 // from published rider milestones (see each block).
 const RIDES_HISTORY = {
   // Tesla rides derive from the repo's (deck-anchored) cumulative VMT at a
-  // total-scope miles-per-ride corridor of [4.7, 6.2, 8.3]: the trackers'
-  // observed 4-5 mi average paid ride divided by a 0.6-0.85 passenger-on-board
-  // share of fleet service miles (deadhead 15-40%). Pinned by
+  // total-scope miles-per-ride corridor of [4.7, 6.2, 8.3]: an author-set
+  // ~4-5 mi average paid ride (corroborated by robotaxitracker's
+  // receipt-synced trips, Nov 2025 - Jul 2026, n~2,400 ex sub-0.5-mi hops:
+  // mean 3.81 mi, contributor-skewed low; the once-cited Electrek 2026-04-30
+  // article is fleet-counts-only and never carried ride lengths) divided by a
+  // 0.6-0.85 passenger-on-board share of fleet service miles (deadhead
+  // 15-40%). Pinned by
   // rides-provenance.qual against the VMT master. (The old [7.6, 10, 13]
   // corridor reconciled the miles with a "~700k paid miles by late Apr 2026"
   // figure that was actually mid-February vintage; Tesla's Q1-2026 deck puts
@@ -3706,9 +3719,12 @@ the AV's fault).
     if (locs.length === 0) continue;
     const cityList = locs.map(([loc, cnt]) =>
       `${escHtml(loc)}\u00a0(${cnt})`).join(", ");
+    // "Unknown" stays in the list but not in the city COUNT (the copy says
+    // we count cities, and a location-less filing isn't one).
+    const cityCount = locs.filter(([loc]) => loc !== "Unknown").length;
     geoRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
-      <td>${locs.length}</td>
+      <td>${cityCount}</td>
       <td>${cityList}</td>
     </tr>`);
   }

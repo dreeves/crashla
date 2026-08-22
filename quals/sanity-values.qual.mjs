@@ -241,18 +241,19 @@ Expectata: a stress-badge carrying the prior-only class (faded/italic, with
 an explanatory tooltip) on every verdict whose incident count is zero.
 Resultata: no prior-only badge found.`);
 
-// --- Third-Amended-SGO carve-out caveat present (AI-generated copy, pinned) ---
-// The caveat is Latin placeholder copy per rule 7 (pinned on its Latin
-// markers); when the human writes the final English, re-pin on that text.
+// --- Third-Amended-SGO carve-out caveat present (human-finalized 2026-08-22) ---
+// The human replaced the rule-7 Latin placeholder with their own English:
+// human-voice facts, then an attributed "Claude:" ai-text paragraph for the
+// analysis. Pin both halves' anchors.
 assert.ok(rptSection.includes('class="ai-text"') &&
-    rptSection.includes("tertium emendatus") &&
-    rptSection.includes("16 Iunii 2025"),
+    rptSection.includes("Third Amended SGO") &&
+    rptSection.includes("June 16, 2025"),
   `Replicata: search the Reporting threshold disparities section for the
-Third-Amended-SGO reporting-carve-out caveat (Latin placeholder, rule 7).
-Expectata: an ai-text paragraph naming the third amended order ("tertium
-emendatus") and its effective date ("16 Iunii 2025") — the asymmetric
-sub-$1,000 struck-by-another-vehicle exemption biases post-amendment
-all-incident comparisons against any human benchmark.
+Third-Amended-SGO reporting-carve-out caveat.
+Expectata: the caveat naming the Third Amended SGO and its June 16, 2025
+effective date, with the attributed ai-text analysis paragraph — the
+asymmetric sub-$1,000 struck-by-another-vehicle exemption biases
+post-amendment all-incident comparisons against any human benchmark.
 Resultata: not found.`);
 
 // --- Incident totals consistent across passenger, severity, CBI tables ---

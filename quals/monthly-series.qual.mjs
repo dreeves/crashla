@@ -263,9 +263,11 @@ Resultata: card HTML snippet: ${JSON.stringify(plain.summaryCardHtml.slice(0, 20
 const humanAirbag = vm.runInContext("METRIC_DEFS.find(m => m.key === 'airbag').humanMPI.HumansAV", ctx);
 assert.ok(
   humanAirbag && humanAirbag.lo > 0 && humanAirbag.hi > humanAirbag.lo &&
-    humanAirbag.lo >= 400000 && humanAirbag.hi <= 800000,
+    humanAirbag.lo >= 300000 && humanAirbag.hi <= 900000,
   `Replicata: inspect humanMPI for airbag metric.
-Expectata: airbag human benchmark has lo (400k\u2013600k) < hi (600k\u2013800k) based on ~1.66 IPMM.
+Expectata: airbag human benchmark lo/hi within [300k, 900k] (hub per-city span
+1.19\u20132.99 IPMM, repinned 2026-08-22; human-benchmark-provenance.qual pins
+the exact edges).
 Resultata: ${JSON.stringify(humanAirbag)}.`,
 );
 

@@ -129,8 +129,8 @@ Resultata: integral was ${invGammaTests.integral}.`,
 );
 
 // --- 1b. marginalMpiLogDensity: VMT-band marginalization for the bell ---
-// The drawn bell integrates InvGamma(alpha, VMT) over a log-normal VMT prior with
-// [vmtMin, vmtMax] as its 95% interval, so it must (i) stay a normalized density,
+// The drawn bell integrates InvGamma(alpha, VMT) over a two-piece log-normal VMT
+// prior (mode vmtBest) with [vmtMin, vmtMax] holding exactly 95% of its mass, so it must (i) stay a normalized density,
 // (ii) be WIDER (more log-variance) than the point-estimate curve at vmtBest,
 // (iii) reduce exactly to invGammaLogDensity when the band is degenerate
 // (vmtMin == vmtMax), and (iv) stay PEAKED (no flat-topped mesa) even when a
@@ -540,16 +540,19 @@ const markerCheck = vm.runInContext(`
 
 for (const mk of ["atfault", "fatality"]) {
   const { nCurves, medians, circles, frame, helmers } = markerCheck[mk];
-  // Two markers per curve, each labeled "Most likely"/"Median", none naming a helmer,
+  // Two markers per curve, each labeled "Culmen" (peak) /"Median", none naming a helmer,
   // none using the "≥" bound form, all inside the plot frame.
   assert.equal(circles.length, 2 * nCurves,
     `Replicata: render the ${mk} distribution and count markers.
 Expectata: two markers (mode + median) per curve = ${2 * nCurves}.
 Resultata: ${circles.length}.`);
   for (const c of circles) {
-    assert.ok(/^(Mode|Median): /.test(c.head),
+    // "Culmen" is the rule-7 Latin placeholder for the human-approved
+    // Mode -> Peak rename (S11: the dot marks the plotted log-density's peak,
+    // not the linear-space mode); re-pin when the human finalizes the English.
+    assert.ok(/^(Culmen|Median): /.test(c.head),
       `Replicata: read a ${mk} marker tooltip's first line.
-Expectata: it leads with "Most likely:" or "Median:".
+Expectata: it leads with "Culmen:" (rule-7 placeholder for "Peak") or "Median:".
 Resultata: ${JSON.stringify(c.head)}.`);
     assert.ok(!helmers.some(h => c.tip.includes(h)),
       `Replicata: scan a ${mk} marker tooltip for a helmer name.
