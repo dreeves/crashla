@@ -177,21 +177,20 @@ function mixtureComponents(k, fracs) {
 const MPI_CDF_MIN_NODES = 21;
 const MPI_CDF_MAX_NODES = 161;
 function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax, nNodes = 0) {
-  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
+  const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
   if (!nNodes) {
     const aMax = comps[comps.length - 1].a;
-    const wanted = Math.ceil(1 + 16 * sigma * Math.sqrt(aMax));
+    const wanted = Math.ceil(1 + 8 * (sigmaLo + sigmaHi) * Math.sqrt(aMax));
     nNodes = Math.min(MPI_CDF_MAX_NODES, Math.max(MPI_CDF_MIN_NODES, wanted)) | 1;
   }
   const nodes = [];
-  if (sigma > 0) {
-    const mu = Math.log(vmtBest);
-    const h = 2 * VMT_MARGIN_SIGMAS * sigma / (nNodes - 1);
+  if (sigmaLo + sigmaHi > 0) {
+    const h = VMT_MARGIN_SIGMAS * (sigmaLo + sigmaHi) / (nNodes - 1);
     let wsum = 0;
     for (let i = 0; i < nNodes; i++) {
-      const u = mu - VMT_MARGIN_SIGMAS * sigma + i * h;
+      const u = mu - VMT_MARGIN_SIGMAS * sigmaLo + i * h;
       const sw = i === 0 || i === nNodes - 1 ? 1 : i % 2 ? 4 : 2;
-      const z = (u - mu) / sigma;
+      const z = u === mu ? 0 : u < mu ? (u - mu) / sigmaLo : (u - mu) / sigmaHi;
       const pw = sw * Math.exp(-0.5 * z * z);
       nodes.push({v: Math.exp(u), lnv: u, pw});
       wsum += pw;
@@ -253,9 +252,9 @@ function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax, nNodes = 0) {
 // MpiQuant so the per-estimate node setup happens once.
 function makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax) {
   const cdf = makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax);
-  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
-  const vLo = sigma > 0 ? vmtBest * Math.exp(-VMT_MARGIN_SIGMAS * sigma) : vmtBest;
-  const vHi = sigma > 0 ? vmtBest * Math.exp(VMT_MARGIN_SIGMAS * sigma) : vmtBest;
+  const {sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
+  const vLo = vmtBest * Math.exp(-VMT_MARGIN_SIGMAS * sigmaLo);
+  const vHi = vmtBest * Math.exp(VMT_MARGIN_SIGMAS * sigmaHi);
   const aLo = comps[0].a, aHi = comps[comps.length - 1].a;
   const aMean = comps.reduce((s, c) => s + c.w * c.a, 0);
   return p => {
@@ -299,10 +298,10 @@ function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
   if (comps.length === 1) {
     return makeMarginalMpiDensity(comps[0].a, vmtMin, vmtBest, vmtMax);
   }
-  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
+  const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
   const a0 = comps[0].a;
   const lg0 = lgamma(a0);
-  if (!(sigma > 0)) {
+  if (!(sigmaLo + sigmaHi > 0)) {
     return x => {
       const lnw = Math.log(vmtBest) - Math.log(x); // ln(v/x)
       let d = Math.exp(a0 * lnw - vmtBest / x - lg0);
@@ -315,16 +314,15 @@ function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
       return sum;
     };
   }
-  const mu = Math.log(vmtBest);
-  const h = 2 * VMT_MARGIN_SIGMAS * sigma / (VMT_MARGIN_NODES - 1);
-  const lnNorm = -Math.log(sigma * Math.sqrt(2 * Math.PI));
+  const h = VMT_MARGIN_SIGMAS * (sigmaLo + sigmaHi) / (VMT_MARGIN_NODES - 1);
+  const lnNorm = Math.log(2 / ((sigmaLo + sigmaHi) * Math.sqrt(2 * Math.PI)));
   const lnvs = new Float64Array(VMT_MARGIN_NODES);
   const betas = new Float64Array(VMT_MARGIN_NODES);
   const logPW = new Float64Array(VMT_MARGIN_NODES); // ln(simpson_w · prior), no alpha terms
   for (let i = 0; i < VMT_MARGIN_NODES; i++) {
-    const u = mu - VMT_MARGIN_SIGMAS * sigma + i * h;
+    const u = mu - VMT_MARGIN_SIGMAS * sigmaLo + i * h;
     const sw = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
-    const z = (u - mu) / sigma;
+    const z = u === mu ? 0 : u < mu ? (u - mu) / sigmaLo : (u - mu) / sigmaHi;
     lnvs[i] = u;
     betas[i] = Math.exp(u);
     logPW[i] = Math.log(sw) + lnNorm - 0.5 * z * z;
@@ -364,8 +362,9 @@ function logNormalLogDensity(x, mu, sigma) {
 }
 
 // Marginal density of true MPI over the VMT band: integrates the inverse-gamma
-// posterior InvGamma(alpha, VMT) against a log-normal prior on VMT (median
-// vmtBest, with [vmtMin, vmtMax] as its ~95% interval). The point-estimate curve
+// posterior InvGamma(alpha, VMT) against a two-piece log-normal prior on VMT
+// (mode vmtBest, with [vmtMin, vmtMax] as its exact 95% interval; see
+// splitPriorSigmas). The point-estimate curve
 // (InvGamma at vmtBest alone) shows only Poisson/sampling uncertainty;
 // marginalizing folds in exposure uncertainty too, so the drawn bell is the
 // posterior over true MPI rather than one conditional on knowing VMT exactly.
@@ -378,26 +377,44 @@ const VMT_MARGIN_NODES = 81;  // Simpson nodes over log(VMT); odd. Driven by SMO
                               // nodes leave point-accuracy fine but let the narrow
                               // sampling spike drift between nodes, putting sub-pixel
                               // bumps in the bell (61 -> non-unimodal; 81 is clean).
-const VMT_MARGIN_SIGMAS = 4;  // integrate the prior over ± this many sigma
+const VMT_MARGIN_SIGMAS = 4;  // integrate the prior over ± this many sigma (per side)
+
+// Two-piece ("split") log-normal prior on VMT: MODE at vmtBest, and each
+// authored band endpoint sits at exactly ±1.96 of its own side's sigma, so
+// the mass outside [vmtMin, vmtMax] is exactly 5% even for asymmetric bands
+// (split sigmaLo:sigmaHi between the tails, not 2.5/2.5 — the price of an
+// everywhere-continuous density with the mode at vmtBest). This is the same
+// family as the forecast machinery's splitLogNormalSigmas (best-at-mode), per
+// the S1 decision 2026-08-21; a single symmetric sigma left only ~92.45%
+// between Tesla-July-style asymmetric endpoints. Degenerates to the symmetric
+// log-normal (bit-exactly) when the band is log-symmetric.
+function splitPriorSigmas(vmtMin, vmtBest, vmtMax) {
+  const mu = Math.log(vmtBest);
+  const sigmaLo = (mu - Math.log(vmtMin)) / 1.96;
+  const sigmaHi = (Math.log(vmtMax) - mu) / 1.96;
+  assert(sigmaLo >= 0 && sigmaHi >= 0, "splitPriorSigmas: band not ordered",
+    {vmtMin, vmtBest, vmtMax});
+  return {mu, sigmaLo, sigmaHi};
+}
+
 // Build a density function for true MPI marginalized over the VMT band. All the
-// alpha/band-dependent work (lgamma, node positions, log-normal prior weights) is
+// alpha/band-dependent work (lgamma, node positions, two-piece prior weights) is
 // hoisted here so the returned closure's per-x hot loop is just one exp per node —
 // the distribution chart evaluates it ~250x per curve, live, on the slider drag.
 // Each node's exponent stays combined in a single exp (the large alpha*u, lgamma,
 // and alpha*ln(x) terms cancel) to avoid overflow at large alpha.
 function makeMarginalMpiDensity(alpha, vmtMin, vmtBest, vmtMax) {
-  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
-  if (!(sigma > 0)) return x => invGammaLogDensity(x, alpha, vmtBest);
-  const mu = Math.log(vmtBest);
-  const h = 2 * VMT_MARGIN_SIGMAS * sigma / (VMT_MARGIN_NODES - 1);
-  const lnNorm = -Math.log(sigma * Math.sqrt(2 * Math.PI));
+  const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
+  if (!(sigmaLo + sigmaHi > 0)) return x => invGammaLogDensity(x, alpha, vmtBest);
+  const h = VMT_MARGIN_SIGMAS * (sigmaLo + sigmaHi) / (VMT_MARGIN_NODES - 1);
+  const lnNorm = Math.log(2 / ((sigmaLo + sigmaHi) * Math.sqrt(2 * Math.PI)));
   const lg = lgamma(alpha);
   const betas = new Float64Array(VMT_MARGIN_NODES); // VMT at each node
   const logW = new Float64Array(VMT_MARGIN_NODES);  // ln(simpson_w · prior) + alpha·u − lgamma
   for (let i = 0; i < VMT_MARGIN_NODES; i++) {
-    const u = mu - VMT_MARGIN_SIGMAS * sigma + i * h;
+    const u = mu - VMT_MARGIN_SIGMAS * sigmaLo + i * h;
     const sw = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
-    const z = (u - mu) / sigma;
+    const z = u === mu ? 0 : u < mu ? (u - mu) / sigmaLo : (u - mu) / sigmaHi;
     betas[i] = Math.exp(u);
     logW[i] = Math.log(sw) + lnNorm - 0.5 * z * z + alpha * u - lg;
   }
@@ -406,7 +423,7 @@ function makeMarginalMpiDensity(alpha, vmtMin, vmtBest, vmtMax) {
     const alnx = alpha * Math.log(x), invX = 1 / x;
     let sum = 0;
     for (let i = 0; i < VMT_MARGIN_NODES; i++) sum += Math.exp(logW[i] - alnx - betas[i] * invX);
-    return sum * hOver3; // Simpson; the log-normal prior integrates to ~1 over ±4 sigma
+    return sum * hOver3; // Simpson; the two-piece prior integrates to ~1 over ±4 sigma
   };
 }
 // Convenience point-evaluator (rebuilds the closure for one x); used by quals.
@@ -477,7 +494,7 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 103000, hi: 214000,
         // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
-        src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM; caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000, no severity trigger) are exempt from AV reporting — an asymmetric carve-out deflating AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible',
+        src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM; caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000 damage, no severity trigger) are exempt from AV reporting; this deflates AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible.',
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
           {label: 'Third Amended SGO (2025)', url: 'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf'},
@@ -488,7 +505,7 @@ const METRIC_DEFS = [
       // underreporting (~60% of property-damage-only and ~25-32% of injury
       // crashes unreported) roughly doubles that -> ~7.1 per M mi.
       HumansUS: {lo: 140000, hi: 300000,
-        src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000, no severity trigger) are exempt from AV reporting — an asymmetric carve-out deflating AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible',
+        src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
         srcLinks: [
           {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
           {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
@@ -777,7 +794,6 @@ for (const m of METRIC_DEFS) {
     h.HumansRideshare = {
       lo: sig2(h.HumansAV.lo / RIDESHARE_WORST),
       hi: sig2(h.HumansAV.hi * RIDESHARE_BEST),
-      // TODO: copy specified by the human 2026-08-19. Conveys: this band is
       // derived from the AV-cities band, not independently sourced.
       src: 'Computed from the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction; no rideshare-specific non-fatal rate published',
       srcLinks: h.HumansAV.srcLinks,
@@ -794,6 +810,13 @@ const STRESS_VERDICT_META = {
   worse: {label: "robustly worse", className: "worse"},
   ambiguous: {label: "ambiguous", className: "ambiguous"},
 };
+const PRIOR_ONLY_TIP = "Zero incidents of this type observed in the window so this verdict is based solely on priors, i.e., be skeptical! This mirrors the chart's hollow dot convention for k=0.";
+// Verdict badge; k = 0 gets the faded prior-only treatment + tooltip.
+function stressBadge(meta, k) {
+  const cls = `stress-badge ${meta.className}${k === 0 ? " prior-only" : ""}`;
+  const tip = k === 0 ? ` data-tip="${escAttr(PRIOR_ONLY_TIP)}"` : "";
+  return `<span class="${cls}"${tip}>${meta.label}</span>`;
+}
 let selectedMetricKey = METRIC_DEFS.find(m => m.defaultEnabled).key;
 let vmtCumulative = false; // per-helmer VMT charts: false = monthly, true = cumulative
 let selectedGrowthMetric = "fleet"; // growth extrapolator metric: fleet | miles | rides
@@ -1203,11 +1226,10 @@ function estimateMpiWindow(k, fracs, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS
     k, comps, quant, vmtMin, vmtBest, vmtMax,
     median: vmtBest / k, // MLE point estimate (∞ at k=0; rendered as "≥ lo")
     // Exact tail-mass quantiles of the marginal posterior (the drawn bell), so
-    // "95% CI" means exactly 95% — exactly w.r.t. the symmetric log-normal VMT
-    // prior, that is; the still-open S1 decision (asymmetric authored bands vs
-    // symmetric prior; see AGENTS.md 2026-08-21) is the residual caveat.
-    // (Until 2026-08-21 these were the conservative double-extreme envelope
-    // over the VMT band — coverage 97.9-99.4%.)
+    // "95% CI" means exactly 95% — under the two-piece VMT prior that puts
+    // exactly 95% of prior mass between the authored band endpoints (S1
+    // resolved 2026-08-21; see splitPriorSigmas). (Until 2026-08-21 these
+    // were the conservative double-extreme envelope — coverage 97.9-99.4%.)
     lo: quant(tail),
     hi: quant(1 - tail),
   };
@@ -1237,6 +1259,15 @@ function faultFlipMultiplier(est, human) {
       : cdf(human.lo) > 1 - tail ? "worse" : "ambiguous";
   };
   const base = verdictAt(1);
+  // Belt and braces: the lightweight verdict path (trimmed components, 13
+  // nodes) must agree with the displayed CI's verdict at s = 1, else the
+  // flip search would measure from the wrong baseline. Fails loudly if a
+  // future razor-thin case ever splits the two machineries.
+  const displayed = est.lo / human.hi > 1 ? "safer"
+    : est.hi / human.lo < 1 ? "worse" : "ambiguous";
+  assert(base === displayed,
+    "faultFlipMultiplier: light-CDF base verdict disagrees with displayed CI verdict",
+    {base, displayed});
   let lo = 1;
   let hi = null;
   for (let e = 1; e <= 80; e++) {
@@ -2568,10 +2599,10 @@ function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   return rows.map(row => {
     const vmtLine = row.vmtBest > 0
-      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles \u00d7 estimated reporting completeness for months whose incident reports are still arriving. Raw window VMT: ${fmtWhole(row.vmtRawBest)}.\n${row.vmtRationales.join('\n')}`)}"><span class="ai-text">Effective VMT:</span> ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
+      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}.\n${row.vmtRationales.join('\n')}`)}"><span class="ai-text">Effective VMT:</span> ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
       : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
     const stressLine = row.vmtBest > 0
-      ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: <span class="stress-badge ${stress.className}">${stress.label}</span> ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
+      ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: ${stressBadge(stress, stress.av.k)} ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
       : "";
     return `
       <div class="mpi-card" style="border-left-color:${HELMER_COLORS[row.helmer]}">
@@ -2623,7 +2654,7 @@ function renderStressTestTable(series) {
         <td>${fmtWhole(stress.av.postMedian)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
         <td>${fmtWhole(stress.human.lo)} \u2013 ${fmtWhole(stress.human.hi)}</td>
         <td>${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</td>
-        <td><span class="stress-badge ${stress.className}">${stress.label}</span></td>
+        <td>${stressBadge(stress, stress.av.k)}</td>
       </tr>`;
     })
   ).join("");
@@ -2641,7 +2672,7 @@ function renderStressTestTable(series) {
       return `<tr>
         <td>${escHtml(row.helmer)}</td>
         <td>${fmtCount(stress.av.k)}</td>
-        <td><span class="stress-badge ${stress.className}">${stress.label}</span></td>
+        <td>${stressBadge(stress, stress.av.k)}</td>
         <td>${multCell}</td>
         <td>${flippedCell}</td>
       </tr>`;
@@ -3292,8 +3323,8 @@ function shortenSeverity(s) {
     ["Minor W/", "Minor injury (hosp.)"],
     ["Moderate W/O", "Moderate injury"],
     ["Moderate W/", "Moderate injury (hosp.)"],
-    // TODO: copy specified by the human 2026-08-17. Conveys: a serious (KABCO
-    // A) injury with hospital transport, distinguished from bare "Serious".
+    // Conveys: a serious (KABCO A) injury with hospital transport, 
+    // distinguished from bare "Serious".
     // Keyed on the full string, not a "Serious W/" prefix, so the dictionary-
     // defined "Serious W/O Hospitalization" sibling can't inherit "(hosp.)".
     ["Serious W/ Hospitalization", "Serious injury (hosp.)"],
@@ -3576,10 +3607,15 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
 <h3>Poisson dispersion</h3>
 <p>
 For confidence bands we use a statistical model that assumes a Poisson process where incidents occur at a constant rate per mile.
-<!--
-<span class="ai-text">Every displayed credible interval is the exact quantile pair of the posterior for the true MPI, marginalized over the VMT uncertainty band — the same distribution the probability-distribution chart draws.
-For the at-fault metrics, whose incident counts are sums of fault <em>probabilities</em>, the posterior additionally mixes over the Poisson-binomial distribution of the true at-fault count rather than pretending the summed fractional mass was an exact count.</span>
--->
+<span class="ai-text">Claude: every displayed credible interval
+     is the exact quantile pair of the posterior for the true MPI,
+     marginalized over the VMT uncertainty band — the same distribution the
+     probability-distribution chart draws. For the at-fault metrics, whose
+     incident counts are sums of fault <em>probabilities</em>, the posterior
+     additionally mixes over the Poisson-binomial distribution of the true
+     at-fault count rather than pretending the summed fractional mass was an
+     exact count.</span>
+
 (Also, apologies that this is all miles. That's the data we have and it would be messier to convert it all.)
 Here we check that assumption using a Pearson chi-squared dispersion test normalized by monthly VMT.
 A dispersion index near 1 supports the Poisson model; values much greater than 1 suggest that either something's awry or the robotaxis are getting better or worse.
@@ -3623,14 +3659,24 @@ A high fraction of 0-mph incidents suggests a company reports more minor events.
 This inflates the company's raw incident count relative to others and relative to the human baseline.
 The "nonstationary" MPI metric filters these out.
 </p>
-<!--
+NHTSA's Third Amended SGO 
+(effective June 16, 2025, which is the very start of our default date window) 
+stopped requiring reports of minor crashes in which <em>another</em> vehicle 
+struck the AV: under $1,000 damage, nobody transported to a hospital, no airbag
+or other severity trigger.
+Single-vehicle contacts and AV-AV incidents stay reportable at any damage 
+amount.
 <p class="ai-text">
-Also: NHTSA's Third Amended Standing General Order (effective June 16, 2025 &mdash; the very start of our default date window) stopped requiring reports of minor crashes in which another vehicle struck the AV: under $1,000 in damage, nobody transported to a hospital, no airbag or other severity trigger.
-Single-vehicle contacts and AV-strikes stay reportable at any damage amount, so the carve-out is asymmetric and deflates post-June-2025 all-incident counts in the AV-favorable direction.
-Waymo's own pre/post discontinuity suggests roughly a quarter to a third of its stopped-AV-struck property-damage reports stopped appearing, and Waymo now calls the property-damage-vs-human benchmark comparison impossible.
-Within-AV comparisons stay consistent (all three companies report under the same rules), and the at-fault metrics are essentially immune (the exempted crashes are ~99% not the AV's fault).
+Claude: 
+So the carve-out is asymmetric and deflates post-June-2025 all-incident 
+counts in the AV-favorable direction. 
+Waymo's own pre/post discontinuity suggests roughly a quarter to a third of its
+stopped-AV-struck property-damage reports stopped appearing, and Waymo now calls
+the property-damage-vs-human benchmark comparison impossible.
+Within-AV comparisons stay consistent (same rules for all three companies), and
+the at-fault metrics are essentially immune (the exempted crashes are ~99% not 
+the AV's fault).
 </p>
--->
     <table>
       <thead><tr>
         <th>Company</th>

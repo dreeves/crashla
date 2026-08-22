@@ -537,12 +537,16 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
     Returns {(helmer, iso_month): (best, lo, hi)} where best/lo/hi are the
     incident coverage fractions (1.0 for complete months).
     """
-    # Determine which submission months are present in the dataset
-    submission_months = set()
+    # Determine which submission months contain a MONTHLY-track report. A
+    # stray 5-Day/1-Day filing early in the deadline month must not certify
+    # the previous month's Monthly batch as present (defense-in-depth added
+    # 2026-08-21; every historical NHTSA release satisfies both definitions
+    # identically).
+    monthly_submission_months = set()
     for r in nhtsa_rows:
         sub = r["Report Submission Date"].strip()
-        if sub:
-            submission_months.add(nhtsa_month_to_iso(sub))
+        if sub and r["Report Type"].strip() == "Monthly":
+            monthly_submission_months.add(nhtsa_month_to_iso(sub))
 
     # Monthly reports for the last month are due the following month
     end_year, end_mon = int(last_month[:4]), int(last_month[5:7])
@@ -554,7 +558,7 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
     monthly_deadline_month = f"{next_year}-{next_mon:02d}"
     # If submissions from the deadline month are absent, Monthly reports for
     # the last month are structurally missing.
-    last_month_incomplete = monthly_deadline_month not in submission_months
+    last_month_incomplete = monthly_deadline_month not in monthly_submission_months
 
     if not last_month_incomplete:
         return {}  # all months complete, no adjustments needed

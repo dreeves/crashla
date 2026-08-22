@@ -230,16 +230,29 @@ Expectata: each metric <= ${total}.
 Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
 }
 
+// --- k=0 stress verdicts carry the prior-only marker ---
+// A "robustly safer/worse" badge resting on ZERO observed incidents (the
+// posterior is prior-dominated) must be visually demoted and tooltipped,
+// mirroring the charts' hollow-dot convention for k = 0. The current data
+// always has such rows (e.g. Tesla at-fault-injury, k = 0).
+assert.ok(html.includes("stress-badge") && html.includes("prior-only"),
+  `Replicata: search the stress-test table for a k=0 verdict badge.
+Expectata: a stress-badge carrying the prior-only class (faded/italic, with
+an explanatory tooltip) on every verdict whose incident count is zero.
+Resultata: no prior-only badge found.`);
+
 // --- Third-Amended-SGO carve-out caveat present (AI-generated copy, pinned) ---
+// The caveat is Latin placeholder copy per rule 7 (pinned on its Latin
+// markers); when the human writes the final English, re-pin on that text.
 assert.ok(rptSection.includes('class="ai-text"') &&
-    rptSection.includes("Third Amended") &&
-    rptSection.includes("June 16, 2025"),
+    rptSection.includes("tertium emendatus") &&
+    rptSection.includes("16 Iunii 2025"),
   `Replicata: search the Reporting threshold disparities section for the
-Third-Amended-SGO reporting-carve-out caveat.
-Expectata: an ai-text paragraph naming the Third Amended order and its
-June 16, 2025 effective date (the asymmetric sub-$1,000
-struck-by-another-vehicle exemption biases post-amendment all-incident
-comparisons against any human benchmark).
+Third-Amended-SGO reporting-carve-out caveat (Latin placeholder, rule 7).
+Expectata: an ai-text paragraph naming the third amended order ("tertium
+emendatus") and its effective date ("16 Iunii 2025") — the asymmetric
+sub-$1,000 struck-by-another-vehicle exemption biases post-amendment
+all-incident comparisons against any human benchmark.
 Resultata: not found.`);
 
 // --- Incident totals consistent across passenger, severity, CBI tables ---

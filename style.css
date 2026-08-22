@@ -669,6 +669,12 @@ tr:hover { background: var(--accent-wash); }
 .stress-badge.ambiguous {
   color: var(--iffy);
 }
+/* k = 0 verdicts rest on the prior alone: faded + italic, mirroring the
+   charts' hollow-dot convention for zero observed incidents. */
+.stress-badge.prior-only {
+  opacity: 0.55;
+  font-style: italic;
+}
 #sanity-checks p {
   margin: 0.45rem 0 0.7rem;
 }

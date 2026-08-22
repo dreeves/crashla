@@ -126,19 +126,24 @@ Resultata: vmtMin=${eff.vmtMin}, vmtBest=${eff.vmtBest}.`);
         const series = monthSeriesData();
         const byMonth = Object.fromEntries(series.points.map(p => [p.month, p]));
         const w = byMonth[${JSON.stringify(raw.month)}].helmers[${JSON.stringify(helmer)}];
-        const withCov = estimateMpi(w.incidents.total, w.vmtMin, 0.95);
+        // Live CI machinery (estimateMpiWindow's marginal quantiles), not the
+        // retired single-VMT estimateMpi: the property under test is that
+        // incCovMin < incCov widens the DISPLAYED interval's low side. The
+        // counterfactual holds incident coverage at its CENTRAL value on the
+        // band's low edge (keeping vmtMin <= vmtBest ordered).
+        const withCov = estimateMpiWindow(w.incidents.total, null, w.vmtMin, w.vmtBest, w.vmtMax);
         const rawRow = parseVmtCsv(VMT_CSV_TEXT).find(
           r => r.helmer === ${JSON.stringify(helmer)} && r.month === ${JSON.stringify(raw.month)});
-        const noCovMin = rawRow.vmtMin * rawRow.coverage;
-        const withoutCov = estimateMpi(w.incidents.total, noCovMin, 0.95);
-        return { withMin: withCov.median, withoutMin: withoutCov.median };
+        const noCovMin = rawRow.vmtMin * rawRow.coverage * rawRow.incCov;
+        const withoutCov = estimateMpiWindow(w.incidents.total, null, noCovMin, w.vmtBest, w.vmtMax);
+        return { withMin: withCov.lo, withoutMin: withoutCov.lo };
       })()
     `, ctx);
     assert.ok(
       mpiCheck.withMin < mpiCheck.withoutMin,
       `Replicata: verify coverage uncertainty lowers MPI lo bound for ${helmer} ${raw.month}.
 Expectata: incCovMin shrinks effective vmtMin, lowering the MPI lo bound.
-Resultata: withCovMin median=${mpiCheck.withMin.toFixed(0)}, withoutCovMin median=${mpiCheck.withoutMin.toFixed(0)}.`);
+Resultata: withCovMin lo=${mpiCheck.withMin.toFixed(0)}, withoutCovMin lo=${mpiCheck.withoutMin.toFixed(0)}.`);
   }
 }
 

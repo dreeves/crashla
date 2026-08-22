@@ -123,4 +123,27 @@ posterior (within 0.005).
 Resultata: ${mass}.`);
 }
 
+// --- 6. Asymmetric authored bands: the VMT prior honors the endpoints ---
+// The prior is a two-piece ("split") log-normal with MODE at vmtBest and each
+// authored endpoint at exactly +/-1.96 of its own side's sigma, so total mass
+// outside [vmtMin, vmtMax] is exactly 5% (split sigmaLo:sigmaHi between the
+// tails) even when the band is asymmetric — the S1 audit finding: a single
+// symmetric sigma left only 92.45% between Tesla-July-style endpoints.
+// Pinned against an INDEPENDENT scipy integration (trapezoid over the
+// +/-4-sigma-truncated renormalized two-piece prior, gammaincc + brentq),
+// computed 2026-08-21, NOT against the app's own machinery.
+const asym = run(`
+(() => {
+  const est = estimateMpiWindow(2, null, 55000, 170000, 340000);
+  return { lo: est.lo, median: est.quant(0.5), hi: est.hi };
+})()`);
+const ASYM_PINS = { lo: 14996, median: 67703, hi: 419456 };
+for (const [key, pin] of Object.entries(ASYM_PINS)) {
+  assert.ok(Math.abs(asym[key] / pin - 1) < 0.003,
+    `Replicata: estimateMpiWindow(k=2, asymmetric band [55k, 170k, 340k]), ${key} quantile.
+Expectata: ${pin} within 0.3% (independent scipy integration of the two-piece
+prior — mode at vmtBest, endpoints at 1.96 of their own side's sigma).
+Resultata: ${asym[key]}.`);
+}
+
 console.log("qual pass: fault fractions enter as a Poisson-binomial mixture and every displayed CI is an exact quantile pair of its drawn posterior");
