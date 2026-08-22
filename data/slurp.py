@@ -127,6 +127,14 @@ HELMER_SHORT = {
     "Zoox, Inc.":   "Zoox",
 }
 
+# Reports that share a "Same Incident ID" but describe DISTINCT crashes: the
+# by-incident dedup would silently drop all but one, so key these by Report ID
+# instead. 30270-10320 (MAR-2025 LA, 12:44): a car passing the queue in the
+# opposing lane sideswiped the stationary Waymo; 13 minutes later an SUV
+# clipped the same (now parked-with-hazards) Waymo "due to a prior collision",
+# filed as 30270-10321 under the same Same Incident ID 77ba86fa433a2c4.
+SPLIT_SAME_INCIDENT_REPORTS = {"30270-10320"}
+
 # Manual overrides for number of vehicles involved, keyed by Same Incident ID.
 # The NHTSA CSV's "Crash With" field is singular and doesn't capture multi-
 # vehicle pileups. Default is 2 (the AV + one crash partner). Override here
@@ -551,11 +559,22 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
     if not last_month_incomplete:
         return {}  # all months complete, no adjustments needed
 
-    # Count incidents per helmer-month (post-dedup, no report-type needed)
+    # Count incidents per helmer-month, deduplicated exactly like the main
+    # ingestion path: by Report ID first (to safely handle when "Same
+    # Incident ID" changes between versions), then by Same Incident ID (with
+    # the same split-report override).
     counted_rows = [r for r in nhtsa_rows if is_public_service_incident(r)]
-    by_incident = {}  # iid -> {ver, helmer, month}
+    by_rid = {}  # rid -> {ver, row}
     for r in counted_rows:
-        iid = r["Same Incident ID"]
+        rid = r["Report ID"]
+        ver = int(r["Report Version"])
+        if rid not in by_rid or ver > by_rid[rid]["ver"]:
+            by_rid[rid] = {"ver": ver, "row": r}
+    by_incident = {}  # iid -> {ver, helmer, month}
+    for entry in by_rid.values():
+        r = entry["row"]
+        rid = r["Report ID"]
+        iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
         ver = int(r["Report Version"])
         helmer = HELMER_SHORT.get(r["Reporting Entity"].strip(),
                                    r["Reporting Entity"].strip())
@@ -582,8 +601,13 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         last_key = (helmer, last_month)
         last_count = counts.get(last_key, 0)
         last_vmt = vmt.get(last_key, 0)
-        if last_vmt == 0 or last_count == 0:
+        if last_vmt == 0:
             continue
+        # NOTE: helmers with VMT but ZERO observed incidents in the incomplete
+        # month stay in the pool: observing 0 where the reference predicts >0
+        # is exactly the "not yet reported" evidence the pooled rate-ratio is
+        # designed to capture (excluding them would one-directionally overstate
+        # the month's reporting completeness).
         # Reference: most recent earlier month with >= 3 incidents and VMT.
         ref = None
         for (drv, mo), c in sorted(counts.items(), key=lambda x: x[0][1],
@@ -605,7 +629,7 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         # Pooled rate-ratio point estimate (clamped to (0, 1]); using 1.0 would
         # assert "these are all the incidents", overstating the month's safety.
         p_best = max(0.01, min(1.0, pooled_obs / pooled_exp))
-        se = p_best * math.sqrt(1 / pooled_obs + 1 / pooled_ref)
+        se = p_best * math.sqrt(1 / max(pooled_obs, 1) + 1 / pooled_ref)
         p_lo = max(0.01, p_best - 1.96 * se)
         for helmer in helmers:
             last_key = (helmer, last_month)
@@ -865,11 +889,13 @@ def main():
         if rid not in by_rid or ver > by_rid[rid]["_ver"]:
             by_rid[rid] = {"_ver": ver, "_row": r}
 
-    # Then deduplicate those by Same Incident ID
+    # Then deduplicate those by Same Incident ID (except the known
+    # distinct-crash reports, which keep their own Report ID as the key)
     by_incident = {}
     for entry in by_rid.values():
         r = entry["_row"]
-        iid = r["Same Incident ID"]
+        rid = r["Report ID"]
+        iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
         ver = int(r["Report Version"])
         if iid not in by_incident or ver > by_incident[iid]["_ver"]:
             by_incident[iid] = {"_ver": ver, "_row": r}

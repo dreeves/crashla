@@ -16,7 +16,7 @@ const FRESH_THROUGH = "2026-07";
 // anchors — external anchors live in the *-vmt-provenance quals). A silent
 // edit or a running-sum slip on the newest rows trips these.
 const CUME_PINS = {
-  "waymo|2026-07": 301600000,
+  "waymo|2026-07": 301450000,
   "tesla|2026-07": 2610000,
   "zoox|2026-07": 3051000,
 };

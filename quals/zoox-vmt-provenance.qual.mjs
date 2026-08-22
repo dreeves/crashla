@@ -1,19 +1,24 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-// Zoox cumulative VMT tracks the two published mileage milestones its
+// Zoox cumulative VMT tracks the published mileage milestones its
 // rationales cite as anchors (the third helmer gets the same provenance
 // treatment as waymo-vmt-provenance and tesla-vmt-provenance):
-//   ~1M cumulative autonomous miles by late 2025 (Zoox, cited via press)
+//   1.3M driverless public-road miles as of Dec 31, 2025 (Zoox letter to
+//     NHTSA Jan 28, 2026, docket NHTSA-2025-0523-0004 p.22 Q21a — an official
+//     company disclosure, superseding the earlier ~1M-late-2025 press floor)
 //   ~2M cumulative autonomous miles late Mar 2026 (CleanTechnica 2026-03-24 /
-//     Robot Report; our service-scope series runs ~7% under the claim, which
-//     the 2026-05 rationale documents as corroborating scale)
-// The "~" on both milestones is real slack, so centrals are pinned within 15%
-// and the kyoom band must contain the round published number.
+//     Robot Report)
+//   >3M miles on public roads, announced Aug 6, 2026 (Bloomberg/Claims
+//     Journal; scope caveat: "miles on public roads" vs the earlier
+//     "autonomous miles" wording)
+// The milestones carry real slack ("~"/">"/"approximately"), so centrals are
+// pinned within 15% and the kyoom band must contain the round published number.
 
 const MILESTONES = [
-  { month: "2025-12", published: 1000000 },
+  { month: "2025-12", published: 1300000 },
   { month: "2026-03", published: 2000000 },
+  { month: "2026-07", published: 3000000 },
 ];
 
 const lines = fs.readFileSync("data/vmt.csv", "utf8").trim().split("\n");
@@ -42,4 +47,4 @@ Expectata: within 15% (the milestones are "~" figures and the series is anchored
 Resultata: ratio ${ratio.toFixed(3)}.`);
 }
 
-console.log(`qual pass: zoox cumulative VMT tracks both published mileage milestones (~1M late 2025, ~2M late Mar 2026)`);
+console.log(`qual pass: zoox cumulative VMT tracks all three published mileage milestones (1.3M Dec 2025, ~2M late Mar 2026, >3M Aug 2026)`);

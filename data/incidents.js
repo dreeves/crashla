@@ -21797,6 +21797,37 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "vehiclesInvolved": 2
   },
   {
+    "reportId": "30270-10320",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "MAR-2025",
+    "time": "12:44",
+    "incidentId": "77ba86fa433a2c4",
+    "city": "Los Angeles",
+    "state": "CA",
+    "road": "Street",
+    "crashWith": "Passenger Car",
+    "severity": "No Injuries Reported",
+    "speed": 0,
+    "svMovement": "Proceeding Straight",
+    "cpMovement": "Traveling Wrong Way",
+    "narrative": "On March [XXX], 2025 at 12:44 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a passenger car on [XXX] near [XXX]. \nThe Waymo AV was traveling northeastbound on [XXX] and stopped in a queue of traffic when a passenger car traveling northeastbound in the opposing lane of travel to the left of the Waymo AV began to pass the Waymo AV. As the passenger car passed the stationary Waymo AV, the passenger side of the passenger car made contact with the driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "No Passengers in Vehicle",
+    "svHit": "left + rear left",
+    "cpHit": "right",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "AV stopped in queue; car passing in opposing lane sideswiped its left"
+    },
+    "vehiclesInvolved": 2
+  },
+  {
     "reportId": "30270-10321",
     "version": "1",
     "helmer": "Waymo",

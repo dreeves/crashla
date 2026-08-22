@@ -230,6 +230,18 @@ Expectata: each metric <= ${total}.
 Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
 }
 
+// --- Third-Amended-SGO carve-out caveat present (AI-generated copy, pinned) ---
+assert.ok(rptSection.includes('class="ai-text"') &&
+    rptSection.includes("Third Amended") &&
+    rptSection.includes("June 16, 2025"),
+  `Replicata: search the Reporting threshold disparities section for the
+Third-Amended-SGO reporting-carve-out caveat.
+Expectata: an ai-text paragraph naming the Third Amended order and its
+June 16, 2025 effective date (the asymmetric sub-$1,000
+struck-by-another-vehicle exemption biases post-amendment all-incident
+comparisons against any human benchmark).
+Resultata: not found.`);
+
 // --- Incident totals consistent across passenger, severity, CBI tables ---
 // Each table should have the same total per helmer
 const extractTotals = (section, colIndex) => {

@@ -72,20 +72,30 @@ function gammainc(a, x) {
 
 // Gamma quantile: find x such that P(a, x*b) = p, where Gamma(a, b) has rate b
 // Returns x (the quantile of Gamma(shape=a, rate=b))
+// Normal quantile approximation (Abramowitz & Stegun 26.2.23)
+function normalQuantApprox(p) {
+  const t = p < 0.5 ? p : 1 - p;
+  const s = Math.sqrt(-2 * Math.log(t));
+  const zabs = s - (2.515517 + 0.802853*s + 0.010328*s*s) /
+                     (1 + 1.432788*s + 0.189269*s*s + 0.001308*s*s*s);
+  return p < 0.5 ? -zabs : zabs;
+}
+
+// Closed-form approximate quantile of Gamma(shape a, rate b) via the
+// Wilson-Hilferty chi-squared approximation — no iteration, accurate to a few
+// percent over the p range in play. Used for Newton starting points and
+// (padded) search brackets; gammaquant refines it when exactness matters.
+function approxGammaQuant(a, b, p) {
+  const nu = 2 * a;
+  const wh = 1 - 2/(9*nu) + normalQuantApprox(p) * Math.sqrt(2/(9*nu));
+  return (nu / 2) * Math.max(wh * wh * wh, 0.001) / b;
+}
+
 function gammaquant(a, b, p) {
   assert(a > 0 && b > 0 && p > 0 && p < 1,
     "gammaquant: invalid params", {a, b, p});
   // Initial guess via Wilson-Hilferty approximation on chi-squared
-  const nu = 2 * a;
-  // Normal quantile approximation (Abramowitz & Stegun 26.2.23)
-  const t = p < 0.5 ? p : 1 - p;
-  const s = Math.sqrt(-2 * Math.log(t));
-  let zabs = s - (2.515517 + 0.802853*s + 0.010328*s*s) /
-                   (1 + 1.432788*s + 0.189269*s*s + 0.001308*s*s*s);
-  const z = p < 0.5 ? -zabs : zabs;
-  // Wilson-Hilferty
-  const wh = 1 - 2/(9*nu) + z * Math.sqrt(2/(9*nu));
-  let x = (nu / 2) * Math.max(wh * wh * wh, 0.001) / b;
+  let x = approxGammaQuant(a, b, p);
   // Newton's method to refine
   for (let i = 0; i < 50; i++) {
     const cdf = gammainc(a, x * b);
@@ -99,6 +109,243 @@ function gammaquant(a, b, p) {
     x = Math.max(x - step, x / 10); // don't go negative or overshoot
   }
   return x;
+}
+
+// --- Fault-fraction (Poisson-binomial) mixture machinery ---
+// The at-fault metrics count each incident fractionally by faultfrac =
+// P(an expert human driver would have avoided the collision). Treating the
+// summed fractional mass as an EXACT Poisson count ignores that the true
+// at-fault count K is itself uncertain: K ~ PoissonBinomial({p_i}). The rate
+// posterior is therefore the mixture sum_K P(K|{p_i}) · Gamma(K + 1/2, VMT),
+// which reduces exactly to the plain Jeffreys-Gamma posterior when every p_i
+// is 0 or 1. (The fatality metric's 1/vehiclesInvolved fractions are
+// deliberate DETERMINISTIC allocations — Koopman's fractional-death
+// accounting, see the fatality comment below — not probabilities, so that
+// metric stays on the single-component path.)
+function poissonBinomialWeights(fracs) {
+  let w = [1];
+  for (const p of fracs) {
+    assert(p > 0 && p <= 1, "poissonBinomialWeights: p outside (0, 1]", {p});
+    const next = new Array(w.length + 1).fill(0);
+    for (let i = 0; i < w.length; i++) {
+      next[i] += w[i] * (1 - p);
+      next[i + 1] += w[i] * p;
+    }
+    w = next;
+  }
+  return w;
+}
+
+// Posterior mixture components [{a, w}] over the at-fault count K, trimmed to
+// the K range carrying non-negligible probability. Trimming only the ENDS is
+// safe: the Poisson-binomial pmf is log-concave, hence unimodal, so no
+// above-floor weight can hide beyond a below-floor tail. Consecutive
+// components differ by exactly 1 in shape — the density/CDF recurrences below
+// rely on that. fracs = null (or empty) is the single-component path, used by
+// every integer-count metric and by fatality's deterministic fractions.
+const MIX_WEIGHT_FLOOR = 1e-12;
+function mixtureComponents(k, fracs) {
+  if (!fracs || fracs.length === 0) return [{a: k + 0.5, w: 1}];
+  const sum = fracs.reduce((s, p) => s + p, 0);
+  assert(Math.abs(sum - k) < 1e-6, "mixtureComponents: fracs don't sum to k", {k, sum});
+  const w = poissonBinomialWeights(fracs);
+  let first = 0;
+  while (first < w.length - 1 && w[first] <= MIX_WEIGHT_FLOOR) first++;
+  let last = w.length - 1;
+  while (last > first && w[last] <= MIX_WEIGHT_FLOOR) last--;
+  const comps = [];
+  for (let K = first; K <= last; K++) comps.push({a: K + 0.5, w: w[K]});
+  return comps;
+}
+
+// Marginal CDF of true MPI: P(MPI <= x) with the rate-posterior mixture
+// integrated over the same log-normal VMT prior as the drawn bell
+// (makeMarginalMpiDensity). P(MPI <= x | K, v) = Q(a_K, v/x) (upper
+// regularized gamma). Consecutive shapes use the recurrence
+// Q(a+1, w) = Q(a, w) + w^a e^{-w} / Γ(a+1), so each prior node costs ONE
+// gammainc plus cheap multiplies regardless of how many K components exist.
+// Returns cdf(x); cdf.evalBoth(x) gives {cdf, dens} where dens is
+// dF/d(ln x) (the marginal density w.r.t. log x), for Newton quantile-finding.
+// Simpson nodes over log(VMT); odd, adaptive. The conditional CDF Q(a, v/x)
+// transitions over a width of ~1/sqrt(a) in ln(v), so the node spacing
+// 8·sigma/(n-1) must stay under ~0.5/sqrt(aMax) or the quantiles of data-rich
+// estimates (Waymo all-incidents, a ~ 2000) pick up an O(0.3%) staircase bias
+// — measured as CI mass 0.952 instead of 0.950 at a fixed 21 nodes. The
+// adaptive count keeps every displayed quantile within ~1e-4 relative of the
+// exact marginal. Callers can force a small fixed count where only coarse
+// threshold comparisons are needed (the fault-flip search uses 13).
+const MPI_CDF_MIN_NODES = 21;
+const MPI_CDF_MAX_NODES = 161;
+function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax, nNodes = 0) {
+  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
+  if (!nNodes) {
+    const aMax = comps[comps.length - 1].a;
+    const wanted = Math.ceil(1 + 16 * sigma * Math.sqrt(aMax));
+    nNodes = Math.min(MPI_CDF_MAX_NODES, Math.max(MPI_CDF_MIN_NODES, wanted)) | 1;
+  }
+  const nodes = [];
+  if (sigma > 0) {
+    const mu = Math.log(vmtBest);
+    const h = 2 * VMT_MARGIN_SIGMAS * sigma / (nNodes - 1);
+    let wsum = 0;
+    for (let i = 0; i < nNodes; i++) {
+      const u = mu - VMT_MARGIN_SIGMAS * sigma + i * h;
+      const sw = i === 0 || i === nNodes - 1 ? 1 : i % 2 ? 4 : 2;
+      const z = (u - mu) / sigma;
+      const pw = sw * Math.exp(-0.5 * z * z);
+      nodes.push({v: Math.exp(u), lnv: u, pw});
+      wsum += pw;
+    }
+    // Normalize the prior weights exactly so cdf -> 1 as x -> Infinity (the
+    // +/-4-sigma truncation would otherwise strand ~6e-5 of mass).
+    for (const n of nodes) n.pw /= wsum;
+  } else {
+    nodes.push({v: vmtBest, lnv: Math.log(vmtBest), pw: 1});
+  }
+  const a0 = comps[0].a;
+  const lg0 = lgamma(a0);      // for the density recurrence base
+  const lg1 = lgamma(a0 + 1);  // for the CDF recurrence base
+  // The recurrences need consecutive shapes (a, a+1, a+2, ...), which is what
+  // mixtureComponents produces. The flip-multiplier's mass-scaled mixtures
+  // space shapes by s instead, so keep a generic per-component path for them.
+  const consecutive = comps.every((c, j) =>
+    j === 0 || Math.abs(c.a - comps[j - 1].a - 1) < 1e-12);
+  const lgs = consecutive ? null : comps.map(c => lgamma(c.a));
+  const evalBoth = x => {
+    const lnx = Math.log(x);
+    let cdf = 0, dens = 0;
+    for (const node of nodes) {
+      const w = node.v / x;
+      const lnw = node.lnv - lnx;
+      let cdfSum = 0, densSum = 0;
+      if (consecutive) {
+        let q = 1 - gammainc(a0, w);              // Q(a0, w)
+        let t = Math.exp(a0 * lnw - w - lg1);     // w^a0 e^-w / Γ(a0+1)
+        let d = Math.exp(a0 * lnw - w - lg0);     // gamma pdf · w = dQ/d(ln x)
+        cdfSum = comps[0].w * q;
+        densSum = comps[0].w * d;
+        for (let j = 1; j < comps.length; j++) {
+          q += t;                    // Q(a+1, w) = Q(a, w) + w^a e^-w / Γ(a+1)
+          d *= w / comps[j - 1].a;   // pdf recurrence: ratio w / a
+          t *= w / comps[j].a;       // term recurrence: ratio w / (a+1)
+          cdfSum += comps[j].w * q;
+          densSum += comps[j].w * d;
+        }
+      } else {
+        for (let j = 0; j < comps.length; j++) {
+          cdfSum += comps[j].w * (1 - gammainc(comps[j].a, w));
+          densSum += comps[j].w * Math.exp(comps[j].a * lnw - w - lgs[j]);
+        }
+      }
+      cdf += node.pw * cdfSum;
+      dens += node.pw * densSum;
+    }
+    return {cdf, dens};
+  };
+  const cdf = x => evalBoth(x).cdf;
+  cdf.evalBoth = evalBoth;
+  return cdf;
+}
+
+// p-quantile of the marginal MPI posterior: safeguarded Newton on ln(x) with
+// a hard bracket from the most extreme (component, prior-edge) conditional
+// quantiles. Shares one CDF closure across quantile calls via makeMarginal-
+// MpiQuant so the per-estimate node setup happens once.
+function makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax) {
+  const cdf = makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax);
+  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
+  const vLo = sigma > 0 ? vmtBest * Math.exp(-VMT_MARGIN_SIGMAS * sigma) : vmtBest;
+  const vHi = sigma > 0 ? vmtBest * Math.exp(VMT_MARGIN_SIGMAS * sigma) : vmtBest;
+  const aLo = comps[0].a, aHi = comps[comps.length - 1].a;
+  const aMean = comps.reduce((s, c) => s + c.w * c.a, 0);
+  return p => {
+    assert(p > 0 && p < 1, "marginal quantile: p out of range", {p});
+    // MPI quantile conditional on (a, v) is 1 / gammaquant(a, v, 1-p); the
+    // mixture's quantile lies between the two extreme conditionals. Cheap
+    // closed-form Wilson-Hilferty conditionals suffice here — padded 2x each
+    // way (and widened further below if the pad ever falls short), since the
+    // safeguarded Newton supplies the exactness. The conditional at the MEAN
+    // shape and central VMT is the starting point (typically within a few
+    // percent of the answer).
+    let xLo = 1 / (approxGammaQuant(aHi, vLo, 1 - p) * 2);
+    let xHi = 2 / approxGammaQuant(aLo, vHi, 1 - p);
+    for (let g = 0; g < 8 && cdf(xLo) > p; g++) xLo /= 8;
+    for (let g = 0; g < 8 && cdf(xHi) < p; g++) xHi *= 8;
+    let x = Math.min(Math.max(1 / approxGammaQuant(aMean, vmtBest, 1 - p), xLo), xHi);
+    for (let i = 0; i < 40; i++) {
+      const {cdf: F, dens} = cdf.evalBoth(x);
+      const err = F - p;
+      // Displayed values are whole miles: 1e-8 of CI mass moves the quantile
+      // by far less than a mile at every magnitude in play.
+      if (Math.abs(err) < 1e-8) break;
+      if (err > 0) xHi = Math.min(xHi, x); else xLo = Math.max(xLo, x);
+      // Newton step on ln(x); fall back to log-bisection when the step
+      // escapes the bracket or the density underflows.
+      const step = dens > 1e-300 ? err / dens : NaN;
+      const next = Number.isFinite(step) ? x * Math.exp(-step) : NaN;
+      x = next > xLo && next < xHi ? next : Math.sqrt(xLo * xHi);
+      if (xHi / xLo < 1 + 1e-9) break;
+    }
+    return x;
+  };
+}
+
+// Mixture version of makeMarginalMpiDensity (below): the drawn bell for a
+// fault metric is the weighted sum of the per-K marginal bells. Falls back to
+// the single-component builder so integer-count metrics keep bit-identical
+// curves. Same node grid and recurrence trick as the CDF: consecutive shapes
+// differ by 1, so each node costs two exps plus cheap multiplies.
+function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
+  if (comps.length === 1) {
+    return makeMarginalMpiDensity(comps[0].a, vmtMin, vmtBest, vmtMax);
+  }
+  const sigma = (Math.log(vmtMax) - Math.log(vmtMin)) / (2 * 1.96);
+  const a0 = comps[0].a;
+  const lg0 = lgamma(a0);
+  if (!(sigma > 0)) {
+    return x => {
+      const lnw = Math.log(vmtBest) - Math.log(x); // ln(v/x)
+      let d = Math.exp(a0 * lnw - vmtBest / x - lg0);
+      let sum = comps[0].w * d;
+      const w = vmtBest / x;
+      for (let j = 1; j < comps.length; j++) {
+        d *= w / comps[j - 1].a;
+        sum += comps[j].w * d;
+      }
+      return sum;
+    };
+  }
+  const mu = Math.log(vmtBest);
+  const h = 2 * VMT_MARGIN_SIGMAS * sigma / (VMT_MARGIN_NODES - 1);
+  const lnNorm = -Math.log(sigma * Math.sqrt(2 * Math.PI));
+  const lnvs = new Float64Array(VMT_MARGIN_NODES);
+  const betas = new Float64Array(VMT_MARGIN_NODES);
+  const logPW = new Float64Array(VMT_MARGIN_NODES); // ln(simpson_w · prior), no alpha terms
+  for (let i = 0; i < VMT_MARGIN_NODES; i++) {
+    const u = mu - VMT_MARGIN_SIGMAS * sigma + i * h;
+    const sw = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
+    const z = (u - mu) / sigma;
+    lnvs[i] = u;
+    betas[i] = Math.exp(u);
+    logPW[i] = Math.log(sw) + lnNorm - 0.5 * z * z;
+  }
+  const hOver3 = h / 3;
+  return x => {
+    const lnx = Math.log(x), invX = 1 / x;
+    let sum = 0;
+    for (let i = 0; i < VMT_MARGIN_NODES; i++) {
+      const t = lnvs[i] - lnx;      // ln(v/x)
+      const r = betas[i] * invX;    // v/x
+      let d = Math.exp(logPW[i] + a0 * t - r - lg0);
+      let inner = comps[0].w * d;
+      for (let j = 1; j < comps.length; j++) {
+        d *= r / comps[j - 1].a;
+        inner += comps[j].w * d;
+      }
+      sum += inner;
+    }
+    return sum * hOver3;
+  };
 }
 
 // Inverse-gamma density w.r.t. log(x): f(x)·x where f is the InvGamma PDF.
@@ -230,19 +477,23 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 103000, hi: 214000,
         // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
-        src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM',
+        src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM; caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000, no severity trigger) are exempt from AV reporting — an asymmetric carve-out deflating AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible',
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
+          {label: 'Third Amended SGO (2025)', url: 'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf'},
+          {label: 'Waymo Data Hub release notes', url: 'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260624.pdf'},
         ]},
       // CRSS 2022/2023: ~6M police-reported crashes/yr, ~1.77 vehicles per
       // crash, ~3.2T VMT -> ~3.3 crashed vehicles per M mi. Blincoe
       // underreporting (~60% of property-damage-only and ~25-32% of injury
       // crashes unreported) roughly doubles that -> ~7.1 per M mi.
       HumansUS: {lo: 140000, hi: 300000,
-        src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types)',
+        src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000, no severity trigger) are exempt from AV reporting — an asymmetric carve-out deflating AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible',
         srcLinks: [
           {label: 'NHTSA 2023 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/Publication/813705'},
           {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
+          {label: 'Third Amended SGO (2025)', url: 'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf'},
+          {label: 'Waymo Data Hub release notes', url: 'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260624.pdf'},
         ]},
     },
   },
@@ -296,6 +547,9 @@ const METRIC_DEFS = [
     needsFault: true,
     defaultEnabled: true, primary: false,
     countFn: rec => rec.incidents.atFault,
+    // Fractional faultfracs are PROBABILITIES, so the posterior mixes over the
+    // Poisson-binomial of the true at-fault count (see mixtureComponents).
+    fracsFn: rec => rec.incidents.atFaultFracs,
     // At-fault MPI = all-crash MPI / at-fault share, where the share must
     // match the universe of the anchor it divides. Police-reported universe:
     // ~50-65% of involvements are at-fault (single-vehicle 100%,
@@ -354,6 +608,7 @@ const METRIC_DEFS = [
     needsFault: true,
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.atFaultInjury,
+    fracsFn: rec => rec.incidents.atFaultInjuryFracs,
     // At-fault injury: intersection of at-fault and injury crashes.
     // Shares use the expert-avoidability standard to match the faultfrac
     // criterion (P(expert human avoids)), not legal allocation:
@@ -874,6 +1129,9 @@ function monthlySummaryRows(series) {
     const vmtMin = rows.reduce((sum, row) => sum + row.vmtMin, 0);
     const vmtBest = rows.reduce((sum, row) => sum + row.vmtBest, 0);
     const vmtMax = rows.reduce((sum, row) => sum + row.vmtMax, 0);
+    // Raw (not reporting-completeness-thinned) window total, for the summary
+    // cards' Effective-VMT tooltip.
+    const vmtRawBest = rows.reduce((sum, row) => sum + row.vmtRawBest, 0);
     const metricRowsByKey = Object.fromEntries(
       METRIC_DEFS.map(m => [m.key, rows.filter(row => row.mpiByMetric[m.key] !== null)]));
     // Auto-generate inc fields from METRIC_DEFS
@@ -891,23 +1149,26 @@ function monthlySummaryRows(series) {
       const metricVmtMax = metricRows.reduce((sum, row) => sum + row.vmtMax, 0);
       if (metricVmtBest > 0) {
         const k = incFields[m.incField];
-        const alpha = k + 0.5;
-        const est = estimateMpiWindow(k, metricVmtMin, metricVmtBest, metricVmtMax);
+        const fracs = m.fracsFn ? metricRows.flatMap(row => m.fracsFn(row)) : null;
+        const est = estimateMpiWindow(k, fracs, metricVmtMin, metricVmtBest, metricVmtMax);
         return [m.key, {
           ...est,
           // Bell marginalizes over the VMT band (see marginalMpiLogDensity) so it
-          // shows exposure uncertainty too, not just Poisson uncertainty at vmtBest.
+          // shows exposure uncertainty too, not just Poisson uncertainty at vmtBest —
+          // and, for the at-fault metrics, over the Poisson-binomial fault count.
           // For data-rich helmers the marginal is much wider than the sampling bell,
-          // so the plot extent must bracket it: combine the sampling tails with the
-          // VMT band extremes (vmtMin = low-MPI edge, vmtMax = high-MPI edge) so the
-          // full widened bell draws without clipping.
-          densityFn: makeMarginalMpiDensity(alpha, metricVmtMin, metricVmtBest, metricVmtMax),
-          xMin: 1 / gammaquant(alpha, metricVmtMin, 0.999),
-          xMax: 1 / gammaquant(alpha, metricVmtMax, 0.001),
+          // so the plot extent must bracket it: combine the extreme mixture
+          // components' sampling tails with the VMT band extremes (vmtMin = low-MPI
+          // edge, vmtMax = high-MPI edge) so the full widened bell draws without
+          // clipping.
+          densityFn: makeMixtureMarginalMpiDensity(est.comps, metricVmtMin, metricVmtBest, metricVmtMax),
+          xMin: 1 / gammaquant(est.comps[est.comps.length - 1].a, metricVmtMin, 0.999),
+          xMax: 1 / gammaquant(est.comps[0].a, metricVmtMax, 0.001),
           // Posterior median: finite even at k=0 and inside the bell's mass, unlike the
           // MLE (est.median = vmtBest/k, which is ∞ at k=0 and far out in the tail for
-          // small k). The distribution chart marks this so the dot sits on the bell.
-          postMedian: 1 / gammaquant(alpha, metricVmtBest, 0.5),
+          // small k). The distribution chart marks this so the dot sits on the bell —
+          // it is the marginal posterior's own median, consistent with the CI.
+          postMedian: est.quant(0.5),
         }];
       }
       if (vmtBest > 0) return [m.key, null];
@@ -926,7 +1187,7 @@ function monthlySummaryRows(series) {
     }));
     return {
       helmer,
-      vmtMin, vmtBest, vmtMax,
+      vmtMin, vmtBest, vmtMax, vmtRawBest,
       vmtRationales,
       ...incFields,
       mpiEstimates,
@@ -934,14 +1195,21 @@ function monthlySummaryRows(series) {
   });
 }
 
-function estimateMpiWindow(k, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAULT_PCT / 100) {
-  const a = k + 0.5;
+function estimateMpiWindow(k, fracs, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAULT_PCT / 100) {
+  const comps = mixtureComponents(k, fracs);
+  const quant = makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax);
   const tail = (1 - massFrac) / 2;
   return {
-    k, vmtMin, vmtBest, vmtMax,
+    k, comps, quant, vmtMin, vmtBest, vmtMax,
     median: vmtBest / k, // MLE point estimate (∞ at k=0; rendered as "≥ lo")
-    lo: 1 / gammaquant(a, vmtMin, 1 - tail),
-    hi: 1 / gammaquant(a, vmtMax, tail),
+    // Exact tail-mass quantiles of the marginal posterior (the drawn bell), so
+    // "95% CI" means exactly 95% — exactly w.r.t. the symmetric log-normal VMT
+    // prior, that is; the still-open S1 decision (asymmetric authored bands vs
+    // symmetric prior; see AGENTS.md 2026-08-21) is the residual caveat.
+    // (Until 2026-08-21 these were the conservative double-extreme envelope
+    // over the VMT band — coverage 97.9-99.4%.)
+    lo: quant(tail),
+    hi: quant(1 - tail),
   };
 }
 
@@ -953,9 +1221,20 @@ function estimateMpiWindow(k, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAUL
 // zero mass changes nothing); mult Infinity when no s <= 10^4 flips it.
 function faultFlipMultiplier(est, human) {
   if (est.k === 0) return null;
+  const tail = (1 - CI_MASS_DEFAULT_PCT / 100) / 2;
   const verdictAt = s => {
-    const scaled = estimateMpiWindow(est.k * s, est.vmtMin, est.vmtBest, est.vmtMax);
-    return scaled.lo / human.hi > 1 ? "safer" : scaled.hi / human.lo < 1 ? "worse" : "ambiguous";
+    // Scale the judged at-fault mass inside each mixture component (a_K =
+    // K·s + 1/2, weights unchanged). The verdict needs only two CDF
+    // evaluations, no quantile search: lo > human.hi <=> F(human.hi) < tail,
+    // and hi < human.lo <=> F(human.lo) > 1 - tail.
+    // Lighter machinery than the display path (trimmed components, fewer
+    // prior nodes): the flip search needs only which side of two thresholds
+    // the CDF lands on, evaluated ~120 times per table row.
+    const scaled = est.comps.filter(c => c.w > 1e-4)
+      .map(c => ({a: (c.a - 0.5) * s + 0.5, w: c.w}));
+    const cdf = makeMarginalMpiCdf(scaled, est.vmtMin, est.vmtBest, est.vmtMax, 13);
+    return cdf(human.hi) < tail ? "safer"
+      : cdf(human.lo) > 1 - tail ? "worse" : "ambiguous";
   };
   const base = verdictAt(1);
   let lo = 1;
@@ -1022,7 +1301,8 @@ function monthSeriesData() {
     let rec = incidentsByKey[key];
     if (rec === undefined) {
       rec = {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
-             atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0,
+             atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [],
+             injury: 0, hospitalization: 0, airbag: 0,
              seriousInjury: 0, fatality: 0};
       incidentsByKey[key] = rec;
     }
@@ -1044,6 +1324,12 @@ function monthSeriesData() {
     rec.faultKnown += Number(atFaultFrac !== null);
     rec.atFault += atFaultFrac || 0;
     rec.atFaultInjury += (atFaultFrac || 0) * Number(INJURY_SEVERITIES.has(inc.severity));
+    // Keep the individual nonzero fractions too: the at-fault posteriors mix
+    // over the Poisson-binomial of the true count (mixtureComponents).
+    if (atFaultFrac) {
+      rec.atFaultFracs.push(atFaultFrac);
+      if (INJURY_SEVERITIES.has(inc.severity)) rec.atFaultInjuryFracs.push(atFaultFrac);
+    }
     rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
     rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
     rec.airbag += Number(inc.airbagAny === true);
@@ -1066,7 +1352,8 @@ function monthSeriesData() {
     vmtRawMin: 0, vmtRawBest: 0, vmtRawMax: 0,
     vmtCume: 0, rationale: null,
     incidents: {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
-                atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0,
+                atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [],
+                injury: 0, hospitalization: 0, airbag: 0,
                 seriousInjury: 0, fatality: 0},
     mpiByMetric: Object.fromEntries(
       METRIC_DEFS.filter(m => m.humanMPI && m.humanMPI[cohort]).map(m => {
@@ -1104,14 +1391,16 @@ function monthSeriesData() {
       assert(vmt.vmtMin > 0, "vmt_min must be positive", {helmer, month, vmtMin: vmt.vmtMin});
       assert(vmt.vmtBest > 0, "vmt must be positive", {helmer, month, vmtBest: vmt.vmtBest});
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {helmer, month, vmtMax: vmt.vmtMax});
-      const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultInjury: 0, injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
+      const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [], injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
       // Incident coverage: for the last month, not all incidents may have been
       // reported yet.  Scaling VMT by the coverage fraction f gives the
       // posterior Gamma(k+0.5, VMT*f).  Since f is itself uncertain,
-      // incCovMin (smallest f) pairs with vmtMin for the most pessimistic MPI;
-      // incCovMax (= 1.0, all incidents could be in) pairs with vmtMax for
-      // the most optimistic.  The CI thus reflects ignorance about f.
+      // incCovMin (smallest f) widens the effective-VMT band's low edge and
+      // incCovMax (= 1.0, all incidents could be in) its high edge. The
+      // marginal posterior treats [vmtMin, vmtMax] as the VMT prior's 95%
+      // interval, so ignorance about f flows into the displayed CI through the
+      // prior (not through worst-case endpoint pairing, as before 2026-08-21).
       const entry = {
         // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * c * vmt.incCovMin,
@@ -1133,20 +1422,23 @@ function monthSeriesData() {
           return [m.key, null];
         }
         const k = m.countFn(entry);
-        const a = k + 0.5; // Jeffreys shape, for the credible-interval bands
+        const comps = mixtureComponents(k, m.fracsFn ? m.fracsFn(entry) : null);
+        const quant = makeMarginalMpiQuant(comps, entry.vmtMin, entry.vmtBest, entry.vmtMax);
         // Point estimate = posterior median (finite even at k=0). mpiBest = MLE
         // (miles/incidents, ∞ at k=0) is kept only for the subset-chain invariant.
-        // The bands are the Jeffreys credible interval, well-defined at k=0.
+        // The bands and median are exact quantiles of the month's marginal
+        // posterior (Jeffreys-Gamma mixed over the Poisson-binomial fault count
+        // and the VMT prior), well-defined at k=0.
         return [m.key, {
           mpiBest: entry.vmtBest / k,
-          mpiMedian: 1 / gammaquant(a, entry.vmtBest, 0.5),
+          mpiMedian: quant(0.5),
           mpiMax:  entry.vmtMax  / k,
           incidentCount: k,
           bands: CI_FAN_LEVELS.map(level => {
             const t = (1 - level) / 2;
             return {
-              lo: 1 / gammaquant(a, entry.vmtMin, 1 - t),
-              hi: 1 / gammaquant(a, entry.vmtMax, t),
+              lo: quant(t),
+              hi: quant(1 - t),
             };
           }),
         }];
@@ -1186,7 +1478,7 @@ function drawSingleMonthAxes(
   return `
     ${months.map((month, i) => `
       <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"${i % labelStep !== 0 ? ' style="opacity:0.3"' : ""}></line>
-      ${i % labelStep === 0 || i === months.length - 1 ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
+      ${i === months.length - 1 || (i % labelStep === 0 && months.length - 1 - i >= labelStep) ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
     `).join("")}
     ${yTicks.map(y => `
       <line class="month-grid" x1="${mLeft}" y1="${mapY(y)}" x2="${mLeft + pW}" y2="${mapY(y)}"></line>
@@ -2276,7 +2568,7 @@ function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   return rows.map(row => {
     const vmtLine = row.vmtBest > 0
-      ? `<div class="mpi-card-vmt" data-tip="${escAttr(row.vmtRationales.join('\n'))}">VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
+      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles \u00d7 estimated reporting completeness for months whose incident reports are still arriving. Raw window VMT: ${fmtWhole(row.vmtRawBest)}.\n${row.vmtRationales.join('\n')}`)}"><span class="ai-text">Effective VMT:</span> ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
       : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
     const stressLine = row.vmtBest > 0
       ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: <span class="stress-badge ${stress.className}">${stress.label}</span> ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
@@ -3284,6 +3576,10 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
 <h3>Poisson dispersion</h3>
 <p>
 For confidence bands we use a statistical model that assumes a Poisson process where incidents occur at a constant rate per mile.
+<!--
+<span class="ai-text">Every displayed credible interval is the exact quantile pair of the posterior for the true MPI, marginalized over the VMT uncertainty band — the same distribution the probability-distribution chart draws.
+For the at-fault metrics, whose incident counts are sums of fault <em>probabilities</em>, the posterior additionally mixes over the Poisson-binomial distribution of the true at-fault count rather than pretending the summed fractional mass was an exact count.</span>
+-->
 (Also, apologies that this is all miles. That's the data we have and it would be messier to convert it all.)
 Here we check that assumption using a Pearson chi-squared dispersion test normalized by monthly VMT.
 A dispersion index near 1 supports the Poisson model; values much greater than 1 suggest that either something's awry or the robotaxis are getting better or worse.
@@ -3327,6 +3623,14 @@ A high fraction of 0-mph incidents suggests a company reports more minor events.
 This inflates the company's raw incident count relative to others and relative to the human baseline.
 The "nonstationary" MPI metric filters these out.
 </p>
+<!--
+<p class="ai-text">
+Also: NHTSA's Third Amended Standing General Order (effective June 16, 2025 &mdash; the very start of our default date window) stopped requiring reports of minor crashes in which another vehicle struck the AV: under $1,000 in damage, nobody transported to a hospital, no airbag or other severity trigger.
+Single-vehicle contacts and AV-strikes stay reportable at any damage amount, so the carve-out is asymmetric and deflates post-June-2025 all-incident counts in the AV-favorable direction.
+Waymo's own pre/post discontinuity suggests roughly a quarter to a third of its stopped-AV-struck property-damage reports stopped appearing, and Waymo now calls the property-damage-vs-human benchmark comparison impossible.
+Within-AV comparisons stay consistent (all three companies report under the same rules), and the at-fault metrics are essentially immune (the exempted crashes are ~99% not the AV's fault).
+</p>
+-->
     <table>
       <thead><tr>
         <th>Company</th>
@@ -3614,7 +3918,7 @@ function fmtAge(isoStr) {
   if (h) parts.push(h + "h");
   if (!d || m) parts.push(m + "m"); // skip minutes when showing days+hours
   const text = parts.join("");
-  const cls = mins < 60 ? "fresh" : d <= 7 ? "stale" : "rotten";
+  const cls = mins < 60 ? "fresh" : mins <= 7 * 1440 ? "stale" : "rotten";
   return {text, cls};
 }
 

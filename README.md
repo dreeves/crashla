@@ -19,12 +19,12 @@ What about Tesla robotaxis and Zooxes?
 
 NHTSA data source:
 https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
-(started 2025 June 15) 
+(the SGO program started June 2021; our analysis window starts 2025 June 15) 
 
 Key dates for Tesla robotaxi:
-* 2025-06-27: Launch in Austin with empty driver's seat
+* 2025-06-22: Launch in Austin with empty driver's seat
 * 2025-09-01: Highway rides added (with safety monitor moved to driver's seat)
-* 2026-01-01: First Tesla robotaxi rides without passenger-seat safety monitor
+* 2026-01-22: First public Tesla robotaxi rides without passenger-seat safety monitor
 
 ## Related Links
 

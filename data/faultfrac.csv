@@ -721,6 +721,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-10196,0,Passenger Car,rear + rear right,front left + front,No Injuries Reported,0,AV stopped before crosswalk mid-right-turn; car behind rear-ended it
 30270-10127,0,Passenger Car,rear left,front right,No Injuries Reported,0,AV stopped in-lane for dropoff; car passing on left clipped its rear
 30270-10451,0,SUV,front,rear,No Injuries Reported,0,AV parked; SUV parallel-parking ahead reversed into its front
+30270-10320,0,Passenger Car,left + rear left,right,No Injuries Reported,0,AV stopped in queue; car passing in opposing lane sideswiped its left
 30270-10321,0,SUV,rear left,right,No Injuries Reported,0,AV disabled in-lane w/ hazards; SUV passing on left clipped its rear
 30270-10447,0,SUV,right,rear left,Minor,0.1,SUV reversed from driveway into AV's open door during rider exit
 30270-10335,0,SUV,rear left,right,No Injuries Reported,0,AV stopped at green per ped director; SUV passing via turn lane clipped it
