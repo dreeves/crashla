@@ -540,19 +540,19 @@ const markerCheck = vm.runInContext(`
 
 for (const mk of ["atfault", "fatality"]) {
   const { nCurves, medians, circles, frame, helmers } = markerCheck[mk];
-  // Two markers per curve, each labeled "Culmen" (peak) /"Median", none naming a helmer,
+  // Two markers per curve, each labeled "Peak"/"Median", none naming a helmer,
   // none using the "≥" bound form, all inside the plot frame.
   assert.equal(circles.length, 2 * nCurves,
     `Replicata: render the ${mk} distribution and count markers.
 Expectata: two markers (mode + median) per curve = ${2 * nCurves}.
 Resultata: ${circles.length}.`);
   for (const c of circles) {
-    // "Culmen" is the rule-7 Latin placeholder for the human-approved
-    // Mode -> Peak rename (S11: the dot marks the plotted log-density's peak,
-    // not the linear-space mode); re-pin when the human finalizes the English.
-    assert.ok(/^(Culmen|Median): /.test(c.head),
+    // "Peak" is the human's English (2026-08-22) for the S11 rename: the dot
+    // marks the plotted log-density's peak, not the linear-space mode (the
+    // old label "Mode" was ambiguous between the two).
+    assert.ok(/^(Peak|Median): /.test(c.head),
       `Replicata: read a ${mk} marker tooltip's first line.
-Expectata: it leads with "Culmen:" (rule-7 placeholder for "Peak") or "Median:".
+Expectata: it leads with "Peak:" or "Median:".
 Resultata: ${JSON.stringify(c.head)}.`);
     assert.ok(!helmers.some(h => c.tip.includes(h)),
       `Replicata: scan a ${mk} marker tooltip for a helmer name.

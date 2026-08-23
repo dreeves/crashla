@@ -32,12 +32,18 @@ The slurp pipeline is:
 1. Fetch current + archive NHTSA CSVs directly from NHTSA
 2. Normalize archive-only column-name differences
 3. Filter to each company's public robotaxi service (`Driver / Operator Type == "None"`, plus `"In-Vehicle (Commercial / Test)"` and `"Remote (Commercial / Test)"` for Tesla — the safety-monitor and remote-assistance modes of the same paid fleet)
-4. Deduplicate by `Same Incident ID`, keeping the highest `Report Version`
-5. Restrict to the app's VMT analysis window
-6. Join in local fault-fraction inputs from `data/faultfrac.csv`
-7. Read the VMT master from `data/vmt.csv`
-8. Inject the resulting incident data into `data/incidents.js`
-9. Inject the resulting VMT CSV text into `data/vmt.js`
+4. Deduplicate two-stage — by `Report ID` first (a report's `Same Incident ID`
+   can change between versions), then by `Same Incident ID` — keeping the
+   highest `Report Version`; `SPLIT_SAME_INCIDENT_REPORTS` in `slurp.py`
+   exempts reports that share an ID but describe distinct crashes
+5. Apply narrative-verified field overrides from `slurp.py` (severity, airbag,
+   state, vehicles-involved — see `quals/field-overrides.qual.mjs` for the
+   pins and the dict comments for each row's justification)
+6. Restrict to the app's VMT analysis window
+7. Join in local fault-fraction inputs from `data/faultfrac.csv`
+8. Read the VMT master from `data/vmt.csv`
+9. Inject the resulting incident data into `data/incidents.js`
+10. Inject the resulting VMT CSV text into `data/vmt.js`
 
 ## VMT master
 

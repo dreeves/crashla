@@ -324,7 +324,7 @@ const humanSsi = vm.runInContext("METRIC_DEFS.find(m => m.key === 'seriousInjury
 assert.ok(
   humanSsi && humanSsi.lo >= 1800000 && humanSsi.hi <= 9000000 && humanSsi.lo < humanSsi.hi,
   `Replicata: inspect humanMPI for seriousInjury metric.
-Expectata: SSI+ human benchmark spans the Kusano 56.7M per-city range ~2.2M (SF 0.46 IPMM) to ~8.3M (Phoenix 0.12 IPMM), blended ~0.24. (waymo-reconciliation / human-benchmark provenance qual pins the exact edges.)
+Expectata: SSI+ human benchmark spans the Waymo hub per-city range ~2.3M (SF 0.44 IPMM) to ~8.3M (Phoenix 0.12 IPMM), blended ~0.23 (repinned 2026-08-22; human-benchmark-provenance.qual pins the exact edges).
 Resultata: ${JSON.stringify(humanSsi)}.`,
 );
 

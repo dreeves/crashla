@@ -159,7 +159,7 @@ function mixtureComponents(k, fracs) {
 }
 
 // Marginal CDF of true MPI: P(MPI <= x) with the rate-posterior mixture
-// integrated over the same log-normal VMT prior as the drawn bell
+// integrated over the same two-piece log-normal VMT prior as the drawn bell
 // (makeMarginalMpiDensity). P(MPI <= x | K, v) = Q(a_K, v/x) (upper
 // regularized gamma). Consecutive shapes use the recurrence
 // Q(a+1, w) = Q(a, w) + w^a e^{-w} / Γ(a+1), so each prior node costs ONE
@@ -598,9 +598,10 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.injury,
-    // AV-cities band = Kusano & Scanlon 56.7M per-city human benchmark range
-    // (hub per-city span: Phoenix 2.03 to SF 7.25 IPMM across six cities),
-    // mileage-blended central 4.04. Band edges = 1M / per-city IPMM.
+    // AV-cities band = the Waymo Safety Impact hub's per-city human benchmark
+    // range (Phoenix 2.03 to SF 7.25 IPMM across six cities, thru Mar 2026;
+    // supersedes Kusano 56.7M), blended central 3.91. Band edges = 1M /
+    // per-city IPMM.
     humanMPI: {
       HumansAV: {lo: 138000, hi: 493000,
         src: 'Waymo Safety Impact hub (thru Mar 2026, six cities): human any-injury 2.03 (Phoenix) to 7.25 (SF) IPMM, blended 3.91 (supersedes the Kusano 56.7M paper values 2.09-8.02)',
@@ -636,8 +637,8 @@ const METRIC_DEFS = [
     //   in ~94% of crashes; an expert avoids at least those) ≈ 147k
     // hi: injury hi (493k) / 50% share ≈ 986k
     //   50% = legal-allocation floor (single-vehicle 100%, multi ~50%);
-    //   expert-avoidability can't be lower. Cross-check: 478k/214k × atfault
-    //   hi (430k) ≈ 960k. (Re-derived 2026-07-24 when the injury band's
+    //   expert-avoidability can't be lower. Cross-check: 493k/214k × atfault
+    //   hi (430k) ≈ 990k. (Re-derived 2026-07-24 when the injury band's
     //   repin to the Kusano 56.7M per-city range left this stale at the old
     //   blended anchors, 272k–1,050k.)
     humanMPI: {
@@ -691,10 +692,11 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.airbag,
-    // Airbag deployment in any vehicle. AV-cities band = Kusano 56.7M per-city
-    // human benchmark (1.42 Phoenix to 2.31 SF IPMM, observed; airbags are
+    // Airbag deployment in any vehicle. AV-cities band = the Waymo Safety
+    // Impact hub's per-city human benchmark (1.19 LA to 2.99 Atlanta IPMM
+    // across six cities, thru Mar 2026; supersedes Kusano 56.7M; airbags are
     // mechanically triggered and rarely underreported, so no Blincoe
-    // adjustment), mileage-blended 1.69.
+    // adjustment), blended 1.68.
     humanMPI: {
       // No published national airbag-deployment per-mile rate; HumansUS is
       // estimated by log-interpolation between the national injury and fatality
@@ -3672,6 +3674,7 @@ A high fraction of 0-mph incidents suggests a company reports more minor events.
 This inflates the company's raw incident count relative to others and relative to the human baseline.
 The "nonstationary" MPI metric filters these out.
 </p>
+<p>
 NHTSA's Third Amended SGO 
 (effective June 16, 2025, which is the very start of our default date window) 
 stopped requiring reports of minor crashes in which <em>another</em> vehicle 
@@ -3679,6 +3682,7 @@ struck the AV: under $1,000 damage, nobody transported to a hospital, no airbag
 or other severity trigger.
 Single-vehicle contacts and AV-AV incidents stay reportable at any damage 
 amount.
+</p>
 <p class="ai-text">
 Claude: 
 So the carve-out is asymmetric and deflates post-June-2025 all-incident 

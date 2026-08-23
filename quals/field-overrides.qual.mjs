@@ -1,4 +1,4 @@
-// Narrative-vs-field override pins (2026-08-22 audit): six rows whose
+// Narrative-vs-field override pins (2026-08-22 audit): eight rows whose
 // structured severity flatly contradicts the filing's own narrative (injury
 // claims, stated hospital transports, and archive-era bare tiers that predate
 // the W/-Hospitalization split), and five rows whose narratives assert airbag

@@ -319,6 +319,8 @@ SEVERITY_OVERRIDE = {
     "95004cd5904030e": "Moderate W/ Hospitalization",
     # Zoox v2 filed to add V2 driver's soft-tissue injury claim; severity field never updated
     "f0252c0264b68ef": "Minor W/O Hospitalization",
+    # (End of the 2026-08-22 batch; the 2026-07-15 Unknown-resolution batch
+    # resumes below.)
     # Alleged involvement only, no AV contact; cars behind collided; no injuries
     "8288654b083d6f8": "Property Damage. No Injured Reported",
     # Waymo rear-ended at red; Waymo passenger reported unspecified injury
