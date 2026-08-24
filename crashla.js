@@ -481,9 +481,29 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // Derived metrics use the subset-bounding approach: if metric B is a subset
 // of metric A, then MPI-B >= MPI-A. The true value is bounded by neighbors.
 //
-// Note: all benchmarks are for surface streets in AV operating areas, which
-// have higher crash rates than the nationwide average. This is more
-// apples-to-apples than the raw national numbers.
+// fiveDay: true marks metrics whose qualifying incidents are structurally on
+// NHTSA's five-day reporting track — Third Amended SGO (Apr 24, 2025)
+// Request No. 1.D requires a report within 5 days of notice for a crash
+// involving a fatality, hospital transport, a vulnerable-road-user strike,
+// an airbag deployment, or (ADS) a tow-away. Everything else rides the
+// Monthly track (Request No. 2) and gets the incident-coverage thinning for
+// the structurally incomplete last month (see monthSeriesData). Only metrics
+// whose counting predicate GUARANTEES a Request No. 1.D trigger get the flag
+// (fatality, hospitalization, airbag); seriousInjury does not, because a
+// "Serious"-severity injury without hospital transport is Monthly-track.
+//
+// Note: the AV-cities (HumansAV) benchmarks are scoped to AV operating
+// areas, which have higher crash rates than the nationwide average — more
+// apples-to-apples than the raw national numbers. Scope varies by metric:
+// the Kusano/hub-derived bands (all/injury/airbag/seriousInjury) are
+// surface-street rates, the fatality band is all-urban-roads
+// (freeway-inclusive, matching the AV side's all-roads scope), and the
+// HumansUS bands are national all-road-type rates. The AV numerators and
+// denominators include some freeway driving (Waymo from mid-2026, Tesla
+// highway rides from Sep 2025) that the surface-street benchmarks exclude —
+// a pro-AV residual for the crash-frequency metrics; per the 2026-06-26
+// investigation it is immaterial today (9 of 2049 incidents freeway-coded,
+// all Waymo, none airbag/serious/fatal).
 const METRIC_DEFS = [
   { key: "all",
     blank: "any",
@@ -635,6 +655,10 @@ const METRIC_DEFS = [
     // criterion (P(expert human avoids)), not legal allocation:
     // lo: injury lo (138k) / ~94% share (NHTSA critical reason: driver error
     //   in ~94% of crashes; an expert avoids at least those) ≈ 147k
+    //   NB: NHTSA 812115 itself disclaims that "critical reason" means crash
+    //   cause or fault assignment; reading driver-error-as-critical-reason as
+    //   a lower bound on expert avoidability is this repo's own assumption
+    //   (ratified 2026-06-12, re-ratified 2026-08-21 as Codex M3).
     // hi: injury hi (493k) / 50% share ≈ 986k
     //   50% = legal-allocation floor (single-vehicle 100%, multi ~50%);
     //   expert-avoidability can't be lower. Cross-check: 493k/214k × atfault
@@ -663,6 +687,7 @@ const METRIC_DEFS = [
     incField: "incHospitalization",
 
     defaultEnabled: false, primary: false,
+    fiveDay: true, // hospital transport = SGO Request No. 1.D.ii
     countFn: rec => rec.incidents.hospitalization,
     // Between airbag-deployment proxy (1.68 IPMM ≈ crashes with enough
     // force to likely send someone to ER) and SSI+ (0.23 IPMM = KABCO
@@ -674,7 +699,7 @@ const METRIC_DEFS = [
       // anchors (positioned by the AV-cities severity ladder) with a wide band.
       // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 595000, hi: 4348000,
-        src: 'lo: 1M/1.68 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM',
+        src: "lo: 1M/1.68 airbag-deploy IPMM; hi: 1M/0.23 SSI+ IPMM; no direct human hospital-transport rate exists — the band is bracketed between its severity neighbors (airbag deployment and SSI+)",
         srcLinks: [
           {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
         ]},
@@ -691,6 +716,7 @@ const METRIC_DEFS = [
     incField: "incAirbag",
 
     defaultEnabled: false, primary: false,
+    fiveDay: true, // airbag deployment = SGO Request No. 1.D.iv
     countFn: rec => rec.incidents.airbag,
     // Airbag deployment in any vehicle. AV-cities band = the Waymo Safety
     // Impact hub's per-city human benchmark (1.19 LA to 2.99 Atlanta IPMM
@@ -750,22 +776,33 @@ const METRIC_DEFS = [
     incField: "incFatality",
 
     defaultEnabled: false, primary: false,
+    fiveDay: true, // fatality = SGO Request No. 1.D.i
     countFn: rec => rec.incidents.fatality,
-    // FLEET deaths-per-VMT basis, matching the fractional-death AV count above
-    // (Koopman/Piper). Urban surface-street fatality ~0.77-1.15 deaths/100M VMT.
+    // FLEET basis matching the fractional-death AV count above (Koopman/
+    // Piper): the 1/N-per-fatal-crash sum equals fatal crashes fleet-wide and
+    // proxies deaths (deaths ≈ 1.08x fatal crashes nationally). HumansAV uses
+    // the IIHS ALL-urban-roads (freeway-inclusive — matching the AV side's
+    // all-roads scope) deaths rate ~0.77-1.15/100M VMT; HumansUS spans the
+    // deaths..fatal-crashes numerators (FARS 2024).
     humanMPI: {
       HumansAV: {lo: 87000000, hi: 130000000,
-        src: 'urban surface-street fatality rate ~0.77 to 1.15 deaths per 100M VMT',
+        src: 'urban fatality rate ~0.77 to 1.15 deaths per 100M VMT',
         srcLinks: [
           {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
         ]},
-      HumansUS: {lo: 59000000, hi: 91000000,
-        // Re-derived on FARS 2024 primary data 2026-08-22: 56,011 in-transport
-        // vehicles in 36,297 fatal crashes over 3,294B VMT -> 1.70 per-crashed-
-        // vehicle and 1.10 per-fatal-crash rates per 100M VMT. (The prior
-        // 61M/83M band's "~1.65 per crashed vehicle" input does not reproduce
-        // from the FARS 2023 final file, which has 58,508 vehicles ~ 1.80.)
-        src: 'FARS 2024 national: ~1.70/100M VMT per crashed vehicle to ~1.10/100M VMT per fatal crash',
+      HumansUS: {lo: 84000000, hi: 91000000,
+        // Re-derived 2026-08-24 on the numerators consistent with the AV
+        // side's fractional-death count (audit fix; was 59M/91M from the
+        // 2026-08-22 FARS rework): the AV adds 1/vehiclesInvolved per fatal
+        // crash, so its fleet-universe sum equals FATAL CRASHES, proxying
+        // DEATHS under deaths≈fatal-crashes. FARS 2024: 39,254 deaths and
+        // 36,297 fatal crashes over 3,294B VMT -> 1.19 deaths/100M (84M
+        // miles/death, lo) and 1.10 fatal crashes/100M (91M, hi). The old lo
+        // (1.70/100M per crashed VEHICLE -> 59M) counted each involvement
+        // whole — the very convention the AV side's 1/N division rejects —
+        // so it was dropped as numerator-inconsistent (it was also the
+        // AV-favorable edge).
+        src: "FARS 2024 national: 1.19 deaths per 100M VMT (39,254 deaths) to 1.10 fatal crashes per 100M VMT (36,297 crashes) — numerators matching the AV side's fractional-death count.",
         srcLinks: [
           {label: 'NHTSA FARS 2024', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
@@ -805,7 +842,10 @@ for (const m of METRIC_DEFS) {
     h.HumansRideshare = {
       lo: sig2(h.HumansAV.lo / RIDESHARE_WORST),
       hi: sig2(h.HumansAV.hi * RIDESHARE_BEST),
-      // derived from the AV-cities band, not independently sourced.
+      // derived from the AV-cities band, not independently sourced; the flag
+      // makes these modeled-proxy bands render dashed (see derivedBandDash),
+      // unlike the sourced fatality band above.
+      derived: true,
       src: 'Computed from the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction; no rideshare-specific non-fatal rate published',
       srcLinks: h.HumansAV.srcLinks,
     };
@@ -839,6 +879,15 @@ let activeSeries = null;
 
 function metricLineStyle(helmer) {
   return `stroke:${HELMER_COLORS[helmer]};stroke-width:2`;
+}
+
+// Modeled-proxy bands (humanMPI entries with derived: true — today the
+// HumansRideshare nonfatal bands, generated from HumansAV rather than
+// measured) draw dashed, reusing the k=0 prior-only dash idiom, so they
+// don't read as sourced data. Sourced bands and ADS curves get no dash.
+function derivedBandDash(metric, helmer) {
+  const h = metric.humanMPI && metric.humanMPI[helmer];
+  return h && h.derived === true ? ";stroke-dasharray:6 4" : "";
 }
 
 function metricMarkerColor(helmer) {
@@ -969,8 +1018,11 @@ function parseVmtCsv(text) {
     const coverage = Number(hit[9]); // fraction of month in NHTSA window
     // Incident reporting completeness (Poisson thinning factor).
     // When Monthly reports are structurally absent for the last month, this
-    // is the historical 5-Day fraction for the helmer.  Multiplied into
-    // effective VMT so the Gamma posterior reflects the thinned observation.
+    // is slurp.py's pooled cross-helmer rate-ratio (observed incidents vs
+    // the VMT-scaled expectation from each helmer's reference month).
+    // Multiplied into effective VMT so the Gamma posterior reflects the
+    // thinned observation — for Monthly-track metrics only; five-day-track
+    // metrics (m.fiveDay in METRIC_DEFS) skip it.
     const incCov     = Number(hit[10]); // best estimate
     const incCovMin  = Number(hit[11]); // most pessimistic (smallest p)
     const incCovMax  = Number(hit[12]); // most optimistic (largest p)
@@ -1178,9 +1230,12 @@ function monthlySummaryRows(series) {
     // vmtBest === 0: log-normal from literature CI (humanMPI on METRIC_DEFS).
     const mpiEstimates = Object.fromEntries(METRIC_DEFS.map(m => {
       const metricRows = metricRowsByKey[m.key];
-      const metricVmtMin = metricRows.reduce((sum, row) => sum + row.vmtMin, 0);
-      const metricVmtBest = metricRows.reduce((sum, row) => sum + row.vmtBest, 0);
-      const metricVmtMax = metricRows.reduce((sum, row) => sum + row.vmtMax, 0);
+      // Five-day-track metrics (m.fiveDay, see METRIC_DEFS) sum the raw
+      // calendar-coverage VMT; Monthly-track metrics keep the incCov-thinned
+      // sums — mirroring the per-month selection in mpiByMetric.
+      const metricVmtMin = metricRows.reduce((sum, row) => sum + (m.fiveDay === true ? row.vmtRawMin : row.vmtMin), 0);
+      const metricVmtBest = metricRows.reduce((sum, row) => sum + (m.fiveDay === true ? row.vmtRawBest : row.vmtBest), 0);
+      const metricVmtMax = metricRows.reduce((sum, row) => sum + (m.fiveDay === true ? row.vmtRawMax : row.vmtMax), 0);
       if (metricVmtBest > 0) {
         const k = incFields[m.incField];
         const fracs = m.fracsFn ? metricRows.flatMap(row => m.fracsFn(row)) : null;
@@ -1302,8 +1357,13 @@ function fmtRatio(n) {
 
 function helmerHumanStress(row, metricKey) {
   const metric = METRIC_BY_KEY[metricKey];
-  // Stress comparisons use the AV-cities cohort: same road mix as the
-  // robotaxis, so it's the apples-to-apples human baseline.
+  // Stress comparisons use the AV-cities cohort — humans in the same cities
+  // the robotaxis operate in, so closer to apples-to-apples than a national
+  // baseline. NOT fully exposure-matched, though: the band spans the per-city
+  // extremes rather than weighting any one AV's city mix (Zoox's Las Vegas
+  // isn't among the hub's six benchmark cities), and the severity benchmarks
+  // are surface-street rates while AV miles now include some freeway driving
+  // (immaterial today — see the METRIC_DEFS scope note).
   const human = metric && metric.humanMPI && metric.humanMPI.HumansAV;
   assert(metric !== undefined && human !== undefined, "Missing stress metric inputs", {metricKey});
   const av = row.mpiEstimates[metricKey];
@@ -1377,12 +1437,15 @@ function monthSeriesData() {
     rec.airbag += Number(inc.airbagAny === true);
     rec.seriousInjury += Number(SERIOUS_INJURY_SEVERITIES.has(inc.severity));
     // Fractional-death attribution (Koopman's method, endorsed by Piper): a
-    // fatal crash counts as 1/(vehicles involved) on the AV's account. The human
-    // fatality benchmark below is a FLEET metric -- total deaths / total VMT,
-    // each death counted once across all vehicles' miles. Most fatal crashes are
+    // fatal crash counts as 1/(vehicles involved) on the AV's account. Summed
+    // over every vehicle on the road this counts each fatal CRASH exactly once
+    // (SGO severity flags at-least-one-death, not a death count), so the
+    // consistent human FLEET comparators are fatal crashes / total VMT and,
+    // under deaths≈fatal-crashes, deaths / total VMT — the two numerators the
+    // fatality humanMPI band below spans. Most fatal crashes are
     // multi-vehicle, so counting each fatal-crash involvement as a whole death
-    // would overstate the AV against that fleet rate; the fraction makes them
-    // comparable (a 2-vehicle fatal crash = 0.5, a 3-vehicle = 0.33). See
+    // would overstate the AV against those fleet rates; the fraction makes
+    // them comparable (a 2-vehicle fatal crash = 0.5, a 3-vehicle = 0.33). See
     // theargumentmag.com/p/we-absolutely-do-know-that-waymos.
     rec.fatality += Number(inc.severity === "Fatality") / inc.vehiclesInvolved;
   }
@@ -1435,14 +1498,28 @@ function monthSeriesData() {
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {helmer, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [], injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       const c = vmt.coverage; // pro-rate VMT to match the incident observation window
-      // Incident coverage: for the last month, not all incidents may have been
-      // reported yet.  Scaling VMT by the coverage fraction f gives the
-      // posterior Gamma(k+0.5, VMT*f).  Since f is itself uncertain,
-      // incCovMin (smallest f) widens the effective-VMT band's low edge and
-      // incCovMax (= 1.0, all incidents could be in) its high edge. The
-      // marginal posterior treats [vmtMin, vmtMax] as the VMT prior's 95%
-      // interval, so ignorance about f flows into the displayed CI through the
-      // prior (not through worst-case endpoint pairing, as before 2026-08-21).
+      // Incident coverage: for the last month, the Monthly-track (SGO Request
+      // No. 2) reports may not all be in yet.  Scaling VMT by the coverage
+      // fraction f gives the posterior Gamma(k+0.5, VMT*f).  Since f is
+      // itself uncertain, incCovMin (smallest f) widens the effective-VMT
+      // band's low edge and incCovMax (= 1.0, all incidents could be in) its
+      // high edge. The marginal posterior treats [vmtMin, vmtMax] as the VMT
+      // prior's 95% interval, so ignorance about f flows into the displayed
+      // CI through the prior (not through worst-case endpoint pairing, as
+      // before 2026-08-21). Five-day-track metrics (m.fiveDay, see
+      // METRIC_DEFS) skip the thinning in mpiByMetric below: their reports
+      // for the incomplete month are already filed.
+      if (vmt.incCov < 1) {
+        // The five-day exemption is sound only once every five-day report
+        // for this month is due: NHTSA's data release must postdate
+        // month-end + 5 days (notice ≈ crash date for a company's own ADS
+        // crash). Anti-Postel: fail loudly if a release ever violates this.
+        const [yy, mm] = month.split("-").map(Number);
+        const fiveDayDue = new Date(Date.UTC(yy, mm, 5)).toISOString().slice(0, 10);
+        assert(NHTSA_MODIFIED_DATE >= fiveDayDue,
+          "five-day reports for the incomplete month aren't all due yet — the fiveDay metrics' incident-coverage exemption is unsound for this NHTSA release",
+          {month, fiveDayDue, NHTSA_MODIFIED_DATE});
+      }
       const entry = {
         // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * c * vmt.incCovMin,
@@ -1463,18 +1540,24 @@ function monthSeriesData() {
         if (m.needsFault === true && entry.incidents.faultKnown !== entry.incidents.total) {
           return [m.key, null];
         }
+        // Five-day-track metrics use the raw calendar-coverage VMT (their
+        // reports are already filed); Monthly-track metrics keep the
+        // incCov-thinned triple. One branch, selected by metric data.
+        const vMin = m.fiveDay === true ? entry.vmtRawMin : entry.vmtMin;
+        const vBest = m.fiveDay === true ? entry.vmtRawBest : entry.vmtBest;
+        const vMax = m.fiveDay === true ? entry.vmtRawMax : entry.vmtMax;
         const k = m.countFn(entry);
         const comps = mixtureComponents(k, m.fracsFn ? m.fracsFn(entry) : null);
-        const quant = makeMarginalMpiQuant(comps, entry.vmtMin, entry.vmtBest, entry.vmtMax);
+        const quant = makeMarginalMpiQuant(comps, vMin, vBest, vMax);
         // Point estimate = posterior median (finite even at k=0). mpiBest = MLE
         // (miles/incidents, ∞ at k=0) is kept only for the subset-chain invariant.
         // The bands and median are exact quantiles of the month's marginal
         // posterior (Jeffreys-Gamma mixed over the Poisson-binomial fault count
         // and the VMT prior), well-defined at k=0.
         return [m.key, {
-          mpiBest: entry.vmtBest / k,
+          mpiBest: vBest / k,
           mpiMedian: quant(0.5),
-          mpiMax:  entry.vmtMax  / k,
+          mpiMax:  vMax  / k,
           incidentCount: k,
           bands: CI_FAN_LEVELS.map(level => {
             const t = (1 - level) / 2;
@@ -1631,7 +1714,7 @@ function renderAllHelmersMpiChart(series) {
       d += `${penDown ? " L " : "M "}${mapX(i).toFixed(2)} ${clampY(mpi.mpiMedian).toFixed(2)}`;
       penDown = true;
     }
-    return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.helmer)}"></path>`;
+    return `<path class="month-mpi-all-line" d="${d}" style="${metricLineStyle(row.helmer)}${derivedBandDash(row.metric, row.helmer)}"></path>`;
   }).join("");
 
   // Error bars: the 95% credible interval (same quantity as the widest fan
@@ -1843,7 +1926,8 @@ function renderDistributionChart(series) {
     for (let i = 0; i < nPts; i++) {
       d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
     }
-    const dash = c.est.k === 0 ? ";stroke-dasharray:6 4" : ""; // prior-only: no event data
+    // prior-only (k=0, no event data) and modeled-proxy human bands both dash
+    const dash = c.est.k === 0 ? ";stroke-dasharray:6 4" : derivedBandDash(c.metric, c.helmer);
     return `<path d="${d}" style="${metricLineStyle(c.helmer)};fill:none${dash}"></path>`;
   }).join("");
 
@@ -2614,7 +2698,7 @@ function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   return rows.map(row => {
     const vmtLine = row.vmtBest > 0
-      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}.\n${row.vmtRationales.join('\n')}`)}"><span class="ai-text">Effective VMT:</span> ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
+      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}.\n${row.vmtRationales.join('\n')}`)}">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
       : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
     const stressLine = row.vmtBest > 0
       ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: ${stressBadge(stress, stress.av.k)} ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
@@ -2696,6 +2780,7 @@ function renderStressTestTable(series) {
     <p>
 How wrong Claude's fault judgments would have to be to change the verdicts.
 The multiplier is the smallest factor that the true at-fault fraction would need to exceed the judged at-fault fraction before changing the at-fault verdict.
+<span class="ai-text">At-fault" here means, on the robotaxi side, the probability that an expert human driver would have avoided the collision (judged by Claude from the narratives); the human band bounds the same quantity using legal-fault shares (50% floor), since expert avoidability cannot be lower.</span>
     </p>
     <table class="source-table stress-table">
       <thead><tr><th>Company</th><th>Judged fault</th><th>Current verdict</th><th>Flip multiplier</th><th>Verdict after flip</th></tr></thead>
@@ -3618,6 +3703,12 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       <td>${verdict}</td>
     </tr>`);
   }
+  // PROPOSED (needs human's word, audit item 11): "confidence" here and in
+  // the sensitivity-analysis intro should read "credible" — the intervals
+  // are Bayesian credible intervals (Jeffreys prior + VMT prior), as the
+  // green model-description sentence below already says. Left untouched:
+  // existing human copy, and one-word AI-English swaps are barred by the
+  // standing rule-7 directive.
   sections.push(`
 <h3>Poisson dispersion</h3>
 <p>
@@ -3634,6 +3725,7 @@ For confidence bands we use a statistical model that assumes a Poisson process w
 (Also, apologies that this is all miles. That's the data we have and it would be messier to convert it all.)
 Here we check that assumption using a Pearson chi-squared dispersion test normalized by monthly VMT.
 A dispersion index near 1 supports the Poisson model; values much greater than 1 suggest that either something's awry or the robotaxis are getting better or worse.
+<span class="ai-text">Claude: Where the dispersion index is much greater than 1 (today: Tesla), the pooled full-window estimates average over a fleet, geography, and software mix that changed rapidly; narrow the date-range slider to look at a recent, more homogeneous window.</span>
 </p>
     <table>
       <thead><tr>
@@ -3805,8 +3897,9 @@ In general we don't trust anything Tesla says <i>except</i> numbers in their off
 "Calendar coverage" is the fraction of the month in the window (e.g., 15/31 &approx; 48%).
 "Incident coverage" estimates what fraction of incidents from that period have actually been reported.
 Claude notes: 
-<span class="ai-text">NHTSA has two reporting tracks: "5-Day" (filed within 5 days of becoming aware) and "Monthly" (filed monthly in arrears).
-When Monthly reports aren't yet available, the effective VMT is scaled down by the incident coverage factor so the Poisson model accounts for missing reports.</span>
+<span class="ai-text">Claude: NHTSA has two reporting tracks: "5-Day" (filed within 5 days of becoming aware) and "Monthly" (filed monthly in arrears).
+When Monthly reports aren't yet available, the effective VMT is scaled down by the incident coverage factor so the Poisson model accounts for missing reports.
+This thinning applies only to the Monthly-track metrics: the five-day-track metrics (fatality, hospitalization, airbag deployment) keep the full VMT, because their reports were already due within five days.</span>
 </p>
     <table>
       <thead><tr>

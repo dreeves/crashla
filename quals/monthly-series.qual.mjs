@@ -552,7 +552,7 @@ Resultata: partial=${Math.round(partialK.partMpi)}, full=${Math.round(partialK.f
 assert.ok(
   appScript.includes("95% CI"),
   `Replicata: inspect the MPI / distribution datapoint tooltip source.
-Expectata: confidence intervals are labeled "95% CI".
+Expectata: credible intervals are labeled "95% CI".
 Resultata: "95% CI" label missing from source.`,
 );
 

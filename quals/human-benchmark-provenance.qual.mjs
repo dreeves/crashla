@@ -49,4 +49,31 @@ Expectata: within 15% of the hub's All-Locations blended ${r.blended} IPMM.
 Resultata: ${geoIpmm.toFixed(2)} IPMM.`);
 }
 
-console.log("qual pass: AV-cities injury/airbag/serious-injury+ bands pinned to the Waymo hub per-city rates (thru Mar 2026); geomean centrals ~match the blended benchmark");
+// --- HumansUS fatality band: numerator-consistent with the AV side ---
+// The AV fatality count is Koopman/Piper fractional attribution: each fatal
+// crash adds 1/vehiclesInvolved, so the fleet-universe sum equals FATAL
+// CRASHES (SGO severity flags at-least-one-death, not a death count), and
+// under the deaths≈fatal-crashes approximation it proxies DEATHS. The human
+// comparator band must therefore span exactly those two numerators — FARS
+// 2024: 39,254 deaths and 36,297 fatal crashes over 3,294.031B VMT — and
+// NOT the per-crashed-vehicle involvement rate (1.70/100M -> 59M), whose
+// whole-count-per-vehicle basis contradicts the 1/N division the AV side
+// performs. Re-pin here FIRST (red) when FARS updates.
+{
+  const FARS2024 = { deaths: 39254, fatalCrashes: 36297, vmt100M: 32940.31 };
+  const band = vm.runInContext(
+    `METRIC_DEFS.find(m => m.key === "fatality").humanMPI.HumansUS`, ctx);
+  const expLo = 1e8 / (FARS2024.deaths / FARS2024.vmt100M);       // deaths basis ≈ 83.9M
+  const expHi = 1e8 / (FARS2024.fatalCrashes / FARS2024.vmt100M); // fatal-crash basis ≈ 90.7M
+  const relTol = 0.01;
+  assert.ok(
+    Math.abs(band.lo - expLo) / expLo <= relTol &&
+    Math.abs(band.hi - expHi) / expHi <= relTol,
+    `Replicata: check the HumansUS fatality band against FARS 2024 on the
+numerators consistent with the AV side's fractional-death count.
+Expectata: lo = deaths basis ≈ ${Math.round(expLo / 1e6)}M miles/death, hi =
+fatal-crash basis ≈ ${Math.round(expHi / 1e6)}M miles/fatal-crash (within 1%).
+Resultata: lo=${band.lo}, hi=${band.hi}.`);
+}
+
+console.log("qual pass: AV-cities injury/airbag/serious-injury+ bands pinned to the Waymo hub per-city rates (thru Mar 2026); geomean centrals ~match the blended benchmark; HumansUS fatality band pinned to the FARS 2024 deaths/fatal-crash numerators");
