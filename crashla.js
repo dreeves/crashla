@@ -4383,7 +4383,7 @@ function loadPredmarketData() {
   loadUiStateFromLocation();
   buildMonthlyViews();
   const modifiedPart = NHTSA_MODIFIED_DATE
-    ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}`
+    ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
     : "";
   const throughPart = `<span class="ai-text">NHTSA report-receipt cutoff: ${NHTSA_DATA_THROUGH_DATE}.</span>`;
   byId("colophon").innerHTML =
