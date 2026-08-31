@@ -22,6 +22,14 @@ Resultata: found ${assignments.length}.`,
 );
 const assignment = assignments[0];
 
+assert.match(
+  js,
+  /NHTSA report-receipt cutoff: \$\{NHTSA_DATA_THROUGH_DATE\}/,
+  `Replicata: inspect the primary provenance footer.
+Expectata: a green clause (human's English, 2026-08-31) displays the NHTSA report-receipt cutoff date.
+Resultata: the footer exposes only fetch and modification dates.`,
+);
+
 assert.ok(
   assignment[1].includes(LINKED_CREDIT),
   `Replicata: read the byId("colophon").innerHTML assignment in crashla.js.

@@ -476,7 +476,9 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //   supersedes the Kusano & Scanlon 56.7M paper 2026-08-22): Any-injury
 //   2.03..7.25 -> blended 3.91; Airbag (any vehicle) 1.19..2.99 -> 1.68;
 //   SSI+ 0.12..0.44 -> 0.23.
-//   FARS 2024: national 1.19 fatalities/100M VMT (2023: 1.26); urban ~0.7-1.15/100M VMT
+//   FARS 2024: national 1.19 fatalities/100M VMT (2023: 1.26).
+//   IIHS urban/rural: urban all-road deaths 1.17 (2022), 1.07 (2023), 1.01 (2024)
+//   per 100M VMT; 2021 urban peak 1.20.
 //
 // Derived metrics use the subset-bounding approach: if metric B is a subset
 // of metric A, then MPI-B >= MPI-A. The true value is bounded by neighbors.
@@ -487,7 +489,8 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // involving a fatality, hospital transport, a vulnerable-road-user strike,
 // an airbag deployment, or (ADS) a tow-away. Everything else rides the
 // Monthly track (Request No. 2) and gets the incident-coverage thinning for
-// the structurally incomplete last month (see monthSeriesData). Only metrics
+// the structurally incomplete data-through month, on top of the receipt-
+// coverage scaling every metric gets there (see monthSeriesData). Only metrics
 // whose counting predicate GUARANTEES a Request No. 1.D trigger get the flag
 // (fatality, hospitalization, airbag); seriousInjury does not, because a
 // "Serious"-severity injury without hospital transport is Monthly-track.
@@ -668,6 +671,7 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 147000, hi: 986000,
         src: 'lo: injury lo (138k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (493k) / 50% legal-allocation floor',
+        srcNote: "94% = NHTSA 812115's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
           {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
@@ -676,6 +680,7 @@ const METRIC_DEFS = [
         ]},
       HumansUS: {lo: 830000, hi: 2180000,
         src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
+        srcNote: "[same as above for humans in AV cities]",
         srcLinks: [
           {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
         ]},
@@ -782,11 +787,13 @@ const METRIC_DEFS = [
     // Piper): the 1/N-per-fatal-crash sum equals fatal crashes fleet-wide and
     // proxies deaths (deaths ≈ 1.08x fatal crashes nationally). HumansAV uses
     // the IIHS ALL-urban-roads (freeway-inclusive — matching the AV side's
-    // all-roads scope) deaths rate ~0.77-1.15/100M VMT; HumansUS spans the
+    // all-roads scope) deaths rate: IIHS 2022-2024 1.17/1.07/1.01 per 100M
+    // VMT, banded 0.95-1.20 (re-vintaged 2026-08-28 from the 2012-era
+    // 0.77-1.15 sensitivity band); HumansUS spans the
     // deaths..fatal-crashes numerators (FARS 2024).
     humanMPI: {
-      HumansAV: {lo: 87000000, hi: 130000000,
-        src: 'urban fatality rate ~0.77 to 1.15 deaths per 100M VMT',
+      HumansAV: {lo: 83000000, hi: 105000000,
+        src: "Claude: IIHS urban all-road fatality rate, 2022–2024: 1.17 / 1.07 / 1.01 deaths per 100M VMT; band 0.95–1.20 (the 2021 urban peak 1.20 as the high-rate edge, 0.95 as a continued-improvement floor below the 2024 value)",
         srcLinks: [
           {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
         ]},
@@ -994,7 +1001,7 @@ function csvUnquote(field) {
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   assert(lines.length > 1, "VMT sheet CSV must include header and rows");
-  assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
+  assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,coverage_min,coverage_max,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
     "VMT sheet CSV header mismatch", {header: lines[0]});
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -1002,7 +1009,7 @@ function parseVmtCsv(text) {
     if (line === "") continue;
     const N = "\\d+(?:\\.\\d+)?"; // number pattern
     const re = new RegExp(
-      `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`
+      `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`
     );
     const hit = re.exec(line);
     assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
@@ -1015,17 +1022,24 @@ function parseVmtCsv(text) {
     const kyoomMax = Number(hit[6]); // max of cumulative VMT
     const vmtMin = Number(hit[7]);
     const vmtMax = Number(hit[8]);
-    const coverage = Number(hit[9]); // fraction of month in NHTSA window
+    // Receipt coverage: the fraction of the month's five-day-track incidents
+    // present in the NHTSA release. 1 for every month except the release's
+    // data-through month (reports received through the 15th), where slurp.py
+    // supplies the measured (best, lo, hi) triple FIVE_DAY_RECEIPT_COVERAGE.
+    // Scales the raw VMT that five-day-track metrics (m.fiveDay) use.
+    const coverage    = Number(hit[9]);
+    const coverageMin = Number(hit[10]);
+    const coverageMax = Number(hit[11]);
     // Incident reporting completeness (Poisson thinning factor).
     // When Monthly reports are structurally absent for the last month, this
     // is slurp.py's pooled cross-helmer rate-ratio (observed incidents vs
-    // the VMT-scaled expectation from each helmer's reference month).
-    // Multiplied into effective VMT so the Gamma posterior reflects the
-    // thinned observation — for Monthly-track metrics only; five-day-track
-    // metrics (m.fiveDay in METRIC_DEFS) skip it.
-    const incCov     = Number(hit[10]); // best estimate
-    const incCovMin  = Number(hit[11]); // most pessimistic (smallest p)
-    const incCovMax  = Number(hit[12]); // most optimistic (largest p)
+    // the receipt-coverage-scaled VMT expectation from each helmer's
+    // reference month). Multiplied into effective VMT on top of receipt
+    // coverage so the Gamma posterior reflects the thinned observation — for
+    // Monthly-track metrics only; five-day-track metrics skip it.
+    const incCov     = Number(hit[12]); // best estimate
+    const incCovMin  = Number(hit[13]); // most pessimistic (smallest p)
+    const incCovMax  = Number(hit[14]); // most optimistic (largest p)
     assert(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
       {lineNo: i + 1, vmtBest});
     assert(Number.isFinite(vmtCume) && vmtCume >= 0,
@@ -1045,6 +1059,9 @@ function parseVmtCsv(text) {
       "expected vmt_min <= vmt <= vmt_max", {lineNo: i + 1, vmtMin, vmtBest, vmtMax});
     assert(coverage > 0 && coverage <= 1, "coverage must be in (0, 1]",
       {lineNo: i + 1, coverage});
+    assert(coverageMin > 0 && coverageMin <= coverage && coverage <= coverageMax && coverageMax <= 1,
+      "expected 0 < coverage_min <= coverage <= coverage_max <= 1",
+      {lineNo: i + 1, coverageMin, coverage, coverageMax});
     assert(incCov > 0 && incCov <= 1, "incident_coverage must be in (0, 1]",
       {lineNo: i + 1, incCov});
     assert(incCovMin > 0 && incCovMin <= incCov,
@@ -1063,10 +1080,12 @@ function parseVmtCsv(text) {
       vmtMax,
       vmtCume,
       coverage,
+      coverageMin,
+      coverageMax,
       incCov,
       incCovMin,
       incCovMax,
-      rationale: csvUnquote(hit[13]),
+      rationale: csvUnquote(hit[15]),
     });
   }
   assert(rows.length > 0, "VMT sheet CSV has no data rows");
@@ -1231,7 +1250,7 @@ function monthlySummaryRows(series) {
     const mpiEstimates = Object.fromEntries(METRIC_DEFS.map(m => {
       const metricRows = metricRowsByKey[m.key];
       // Five-day-track metrics (m.fiveDay, see METRIC_DEFS) sum the raw
-      // calendar-coverage VMT; Monthly-track metrics keep the incCov-thinned
+      // receipt-coverage-scaled VMT; Monthly-track metrics keep the incCov-thinned
       // sums — mirroring the per-month selection in mpiByMetric.
       const metricVmtMin = metricRows.reduce((sum, row) => sum + (m.fiveDay === true ? row.vmtRawMin : row.vmtMin), 0);
       const metricVmtBest = metricRows.reduce((sum, row) => sum + (m.fiveDay === true ? row.vmtRawBest : row.vmtBest), 0);
@@ -1455,6 +1474,7 @@ function monthSeriesData() {
   const humanEntryFor = cohort => ({
     vmtMin: 0, vmtBest: 0, vmtMax: 0,
     vmtRawMin: 0, vmtRawBest: 0, vmtRawMax: 0,
+    vmtMonthMin: 0, vmtMonthBest: 0, vmtMonthMax: 0,
     vmtCume: 0, rationale: null,
     incidents: {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
                 atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [],
@@ -1497,38 +1517,41 @@ function monthSeriesData() {
       assert(vmt.vmtBest > 0, "vmt must be positive", {helmer, month, vmtBest: vmt.vmtBest});
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {helmer, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [], injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
-      const c = vmt.coverage; // pro-rate VMT to match the incident observation window
-      // Incident coverage: for the last month, the Monthly-track (SGO Request
-      // No. 2) reports may not all be in yet.  Scaling VMT by the coverage
-      // fraction f gives the posterior Gamma(k+0.5, VMT*f).  Since f is
-      // itself uncertain, incCovMin (smallest f) widens the effective-VMT
-      // band's low edge and incCovMax (= 1.0, all incidents could be in) its
-      // high edge. The marginal posterior treats [vmtMin, vmtMax] as the VMT
-      // prior's 95% interval, so ignorance about f flows into the displayed
-      // CI through the prior (not through worst-case endpoint pairing, as
-      // before 2026-08-21). Five-day-track metrics (m.fiveDay, see
-      // METRIC_DEFS) skip the thinning in mpiByMetric below: their reports
-      // for the incomplete month are already filed.
-      if (vmt.incCov < 1) {
-        // The five-day exemption is sound only once every five-day report
-        // for this month is due: NHTSA's data release must postdate
-        // month-end + 5 days (notice ≈ crash date for a company's own ADS
-        // crash). Anti-Postel: fail loudly if a release ever violates this.
-        const [yy, mm] = month.split("-").map(Number);
-        const fiveDayDue = new Date(Date.UTC(yy, mm, 5)).toISOString().slice(0, 10);
-        assert(NHTSA_MODIFIED_DATE >= fiveDayDue,
-          "five-day reports for the incomplete month aren't all due yet — the fiveDay metrics' incident-coverage exemption is unsound for this NHTSA release",
-          {month, fiveDayDue, NHTSA_MODIFIED_DATE});
-      }
+      // Receipt coverage (vmt.coverage triple): the fraction of this month's
+      // five-day-track incidents present in the NHTSA release — 1 except for
+      // the release's data-through month, where slurp.py supplies the measured
+      // (best, lo, hi). Partial coverage anywhere else means the reviewed
+      // NHTSA_DATA_THROUGH_DATE and the data disagree (anti-Postel).
+      assert(vmt.coverage === 1 || month === NHTSA_DATA_THROUGH_DATE.slice(0, 7),
+        "partial receipt coverage outside the NHTSA data-through month",
+        {month, coverage: vmt.coverage, NHTSA_DATA_THROUGH_DATE});
+      // Incident coverage: for the data-through month the Monthly-track (SGO
+      // Request No. 2) reports are structurally absent. Scaling VMT by the
+      // coverage fraction f gives the posterior Gamma(k+0.5, VMT*f). Since f
+      // is itself uncertain, incCovMin (smallest f) widens the effective-VMT
+      // band's low edge and incCovMax (= 1.0, every five-day-track incident
+      // could be in) its high edge; the receipt-coverage lo/hi do the same
+      // for the raw triple. The marginal posterior treats [vmtMin, vmtMax] as
+      // the VMT prior's 95% interval, so ignorance about both fractions flows
+      // into the displayed CI through the prior (not through worst-case
+      // endpoint pairing, as before 2026-08-21). Five-day-track metrics
+      // (m.fiveDay, see METRIC_DEFS) use the raw triple in mpiByMetric below:
+      // receipt-scaled, but not thinned by the Monthly-track factor.
       const entry = {
         // Effective VMT: used for MPI computation (Poisson rate estimation)
-        vmtMin: vmt.vmtMin * c * vmt.incCovMin,
-        vmtBest: vmt.vmtBest * c * vmt.incCov,
-        vmtMax: vmt.vmtMax * c * vmt.incCovMax,
-        // Raw VMT: used for fleet trend visualization on lower charts
-        vmtRawMin: vmt.vmtMin * c,
-        vmtRawBest: vmt.vmtBest * c,
-        vmtRawMax: vmt.vmtMax * c,
+        vmtMin: vmt.vmtMin * vmt.coverageMin * vmt.incCovMin,
+        vmtBest: vmt.vmtBest * vmt.coverage * vmt.incCov,
+        vmtMax: vmt.vmtMax * vmt.coverageMax * vmt.incCovMax,
+        // Raw VMT: receipt-coverage-scaled, no Monthly-track thinning — the
+        // five-day-track metrics' denominator
+        vmtRawMin: vmt.vmtMin * vmt.coverageMin,
+        vmtRawBest: vmt.vmtBest * vmt.coverage,
+        vmtRawMax: vmt.vmtMax * vmt.coverageMax,
+        // Full-month VMT: the fleet trend charts, so the partial data-through
+        // month doesn't draw a false cliff
+        vmtMonthMin: vmt.vmtMin,
+        vmtMonthBest: vmt.vmtBest,
+        vmtMonthMax: vmt.vmtMax,
         vmtCume: vmt.vmtCume,
         kyoomMin: vmt.kyoomMin, // cumulative VMT band (the kyoom band)
         kyoomMax: vmt.kyoomMax,
@@ -1540,9 +1563,9 @@ function monthSeriesData() {
         if (m.needsFault === true && entry.incidents.faultKnown !== entry.incidents.total) {
           return [m.key, null];
         }
-        // Five-day-track metrics use the raw calendar-coverage VMT (their
-        // reports are already filed); Monthly-track metrics keep the
-        // incCov-thinned triple. One branch, selected by metric data.
+        // Five-day-track metrics use the receipt-coverage-scaled raw VMT;
+        // Monthly-track metrics keep the incCov-thinned triple. One branch,
+        // selected by metric data.
         const vMin = m.fiveDay === true ? entry.vmtRawMin : entry.vmtMin;
         const vBest = m.fiveDay === true ? entry.vmtRawBest : entry.vmtBest;
         const vMax = m.fiveDay === true ? entry.vmtRawMax : entry.vmtMax;
@@ -1654,13 +1677,18 @@ function renderAllHelmersMpiChart(series) {
       if (row === null) return null;
       const mpi = row.mpiByMetric[metric.key];
       if (!mpi) return null;
-      // covRatio: worst-case incident coverage (incident_coverage_min; 1 =
-      // fully reported, <1 = NHTSA monthly reports still pending). Drives dot
+      // covRatio: worst-case Monthly-track incident coverage for metrics
+      // without a five-day guarantee (incident_coverage_min; 1 = fully
+      // reported, <1 = NHTSA monthly reports still pending) and 1 for the
+      // five-day-track metrics, whose denominator is the receipt-scaled raw
+      // triple — the same metric-data selection mpiByMetric makes. Drives dot
       // opacity so incomplete months are visually demoted without a separate
       // code path. covBest is the pooled best estimate (incident_coverage),
       // shown in the tooltip to match the sanity table's "best" column.
-      const covRatio = row.vmtRawMin > 0 ? row.vmtMin / row.vmtRawMin : 1;
-      const covBest = row.vmtRawBest > 0 ? row.vmtBest / row.vmtRawBest : 1;
+      const trackVmtMin = metric.fiveDay === true ? row.vmtRawMin : row.vmtMin;
+      const trackVmtBest = metric.fiveDay === true ? row.vmtRawBest : row.vmtBest;
+      const covRatio = row.vmtRawMin > 0 ? trackVmtMin / row.vmtRawMin : 1;
+      const covBest = row.vmtRawBest > 0 ? trackVmtBest / row.vmtRawBest : 1;
       // Y-range: every point's median dot is on-scale; fully-reported k≥1 months
       // also contribute their finite VMT spread (mpiMax = ∞ at k=0, so excluded).
       yMax = Math.max(yMax, covRatio > 0.99 && Number.isFinite(mpi.mpiMax)
@@ -1834,7 +1862,14 @@ function distributionExtent(curves) {
   for (const col of cols) for (let i = 0; i < probe; i++) if (col[i] >= floor) {
     const x = at(i); if (x < xMin) xMin = x; if (x > xMax) xMax = x;
   }
-  return xMin < xMax ? {xMin, xMax} : {xMin: pMin, xMax: pMax};
+  const band = xMin < xMax ? {xMin, xMax} : {xMin: pMin, xMax: pMax};
+  // Every curve's median marker must be on-frame: a flat prior-only (k=0)
+  // curve can sit entirely under the visibility floor when a confident band
+  // sets a tall peak (fatality, since the 2026-08-28 IIHS re-vintage), so the
+  // band is widened to cover the posterior medians. Peaks are located inside
+  // the extent by construction (renderDistributionChart samples within it).
+  const medians = curves.map(c => c.postMedian);
+  return {xMin: Math.min(band.xMin, ...medians), xMax: Math.max(band.xMax, ...medians)};
 }
 
 function renderDistributionChart(series) {
@@ -1850,6 +1885,7 @@ function renderDistributionChart(series) {
       helmer: row.helmer, metric, est,
       densityFn: est.densityFn,
       xMin: est.xMin, xMax: est.xMax,
+      postMedian: est.postMedian,
     });
   }
   // X-axis range = the visible band (see distributionExtent): where some curve clears
@@ -2637,9 +2673,9 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const rows = helmerMonthRows(series, helmer);
   // Monthly vs cumulative VMT view (global toggle). Cumulative plots the kyoom
   // band, which is monotone, so its floors don't wiggle like the monthly bars.
-  const best = row => vmtCumulative ? row.vmtCume : row.vmtRawBest;
-  const lo = row => vmtCumulative ? row.kyoomMin : row.vmtRawMin;
-  const hi = row => vmtCumulative ? row.kyoomMax : row.vmtRawMax;
+  const best = row => vmtCumulative ? row.vmtCume : row.vmtMonthBest;
+  const lo = row => vmtCumulative ? row.kyoomMin : row.vmtMonthMin;
+  const hi = row => vmtCumulative ? row.kyoomMax : row.vmtMonthMax;
   const yLabel = vmtCumulative ? "Cumulative VMT" : "Vehicle Miles Traveled (VMT)";
   const vmtMax = Math.max(1, ...rows.map(row => row ? hi(row) : 0));
   const yTicks = linearTicks(0, vmtMax, 4);
@@ -2697,8 +2733,9 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   return rows.map(row => {
+    const fiveDayLine = est => `Claude: Five-day-tracked VMT denominator (fatality, hospitalization, airbag: raw VMT times the data-through month's receipt coverage): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
     const vmtLine = row.vmtBest > 0
-      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}.\n${row.vmtRationales.join('\n')}`)}">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
+      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}\n${row.vmtRationales.join('\n')}`)}">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
       : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
     const stressLine = row.vmtBest > 0
       ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: ${stressBadge(stress, stress.av.k)} ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
@@ -2807,7 +2844,9 @@ function renderHumanBenchmarkTable() {
       const links = (h.srcLinks || [])
         .map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`).join(", ");
       const derivation = escHtml(h.src) + (links ? ` (${links})` : "");
-      return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td>${fmtMiles(h.lo)}</td><td>${fmtMiles(h.hi)}</td><td>${derivation}</td></tr>`;
+      // srcNote: an AI-authored precision note on the derivation (green).
+      const note = h.srcNote === undefined ? "" : ` <span class="ai-text">${escHtml(h.srcNote)}</span>`;
+      return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td>${fmtMiles(h.lo)}</td><td>${fmtMiles(h.hi)}</td><td>${derivation}${note}</td></tr>`;
     })).join("");
   return `
     <h3>Specific human benchmark derivations</h3>
@@ -3630,9 +3669,9 @@ Confidential Business Information (CBI).
   for (const helmer of ADS_HELMERS) {
     const helmerVmt = vmt.filter(r => r.helmer === helmer && obsMonths.has(r.month));
     if (helmerVmt.length === 0) continue;
-    const totalMin = helmerVmt.reduce((s, r) => s + r.vmtMin * r.coverage, 0);
+    const totalMin = helmerVmt.reduce((s, r) => s + r.vmtMin * r.coverageMin, 0);
     const totalBest = helmerVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
-    const totalMax = helmerVmt.reduce((s, r) => s + r.vmtMax * r.coverage, 0);
+    const totalMax = helmerVmt.reduce((s, r) => s + r.vmtMax * r.coverageMax, 0);
     const ratio = (totalMax / totalMin).toFixed(1);
     vmtUncRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
@@ -3873,7 +3912,7 @@ In general we don't trust anything Tesla says <i>except</i> numbers in their off
   const icRows = [];
   for (const helmer of ADS_HELMERS) {
     const helmerVmt = vmt.filter(r => r.helmer === helmer);
-    const partial = helmerVmt.filter(r => r.incCov < 1);
+    const partial = helmerVmt.filter(r => r.incCov < 1 || r.coverage < 1);
     if (partial.length === 0) {
       icRows.push(`<tr>
         <td>${escHtml(helmer)}</td>
@@ -3887,7 +3926,7 @@ In general we don't trust anything Tesla says <i>except</i> numbers in their off
         <td>${escHtml(row.month)}</td>
         <td>${(row.incCov * 100).toFixed(1)}%</td>
         <td>${(row.incCovMin * 100).toFixed(1)}%\u2013${(row.incCovMax * 100).toFixed(1)}%</td>
-        <td>${(row.coverage * 100).toFixed(1)}%</td>
+        <td>${(row.coverage * 100).toFixed(1)}% (${(row.coverageMin * 100).toFixed(1)}%\u2013${(row.coverageMax * 100).toFixed(1)}%)</td>
       </tr>`);
     }
   }
@@ -3896,10 +3935,9 @@ In general we don't trust anything Tesla says <i>except</i> numbers in their off
 <p>
 "Calendar coverage" is the fraction of the month in the window (e.g., 15/31 &approx; 48%).
 "Incident coverage" estimates what fraction of incidents from that period have actually been reported.
+NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Monthly (must be reported by the following month).
 Claude notes: 
-<span class="ai-text">Claude: NHTSA has two reporting tracks: "5-Day" (filed within 5 days of becoming aware) and "Monthly" (filed monthly in arrears).
-When Monthly reports aren't yet available, the effective VMT is scaled down by the incident coverage factor so the Poisson model accounts for missing reports.
-This thinning applies only to the Monthly-track metrics: the five-day-track metrics (fatality, hospitalization, airbag deployment) keep the full VMT, because their reports were already due within five days.</span>
+<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE)}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (fatality, hospitalization, airbag deployment) use the raw VMT -- but reports received through the 15th cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (median of past releases, with its band), not a fraction of days.</span>
 </p>
     <table>
       <thead><tr>
@@ -4347,8 +4385,9 @@ function loadPredmarketData() {
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}`
     : "";
+  const throughPart = `<span class="ai-text">NHTSA report-receipt cutoff: ${NHTSA_DATA_THROUGH_DATE}.</span>`;
   byId("colophon").innerHTML =
-    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} · ` +
+    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} ${throughPart} · ` +
     `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a> · ` +
     `web design inspired by <a href="https://ncase.me">nicky case</a>`;
   byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();

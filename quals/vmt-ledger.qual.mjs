@@ -7,18 +7,18 @@ import fs from "node:fs";
 // The ledger must also stay ahead of NHTSA: slurp.py aborts if NHTSA reports
 // an incident in a month with no VMT row, so each monthly cycle adds the next
 // month's rows BEFORE the ~mid-month data drop. The freshness pin below
-// advances with each cycle (2026-08-04 cycle: rows through 2026-07).
+// advances with each cycle (2026-08-28 cycle: rows through 2026-08).
 
 const HELMERS = ["waymo", "tesla", "zoox"];
-const FRESH_THROUGH = "2026-07";
+const FRESH_THROUGH = "2026-08";
 
 // Regression pins for the latest estimate rows (authored values, not external
 // anchors — external anchors live in the *-vmt-provenance quals). A silent
 // edit or a running-sum slip on the newest rows trips these.
 const CUME_PINS = {
-  "waymo|2026-07": 301450000,
-  "tesla|2026-07": 2610000,
-  "zoox|2026-07": 3051000,
+  "waymo|2026-08": 314513000,
+  "tesla|2026-08": 2850000,
+  "zoox|2026-08": 3306000,
 };
 
 // Quote-aware CSV parse: a naive comma split can't tell a column boundary

@@ -10,6 +10,7 @@ data/vmt.js (between marker comments).
 
 import csv
 import datetime
+import statistics
 import io
 import json
 import math
@@ -36,6 +37,36 @@ NHTSA_ADS_ARCHIVE_URL = (
     "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/"
     "SGO-2021-01_Incident_Reports_ADS.csv"
 )
+# NHTSA's canonical SGO page labels each release "through <date>": reports
+# RECEIVED through that date, which has been the 15th of the month before the
+# release for every release on record (verified from data/snapshots history:
+# each release's newest incident month holds only five-day-track filings and
+# grows ~6x in the next release; the second-newest month never grows again).
+# https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
+# That page 403s scripted fetches, so the reviewed cutoff is recorded here —
+# one edit per release — and guarded by content asserts in main(): the cutoff
+# month must equal both the newest incident month and the newest submission
+# month, and no incident in that month may carry a Monthly filing (Monthly
+# reports for it cannot have been received by the 15th).
+NHTSA_DATA_THROUGH_DATE = "2026-07-15"
+# Receipt coverage of the data-through month. Reports received through the
+# 15th cover only crashes from roughly the first third of that month: the
+# five-day clock runs from the company's notice, plus NHTSA processing. It is
+# measured, not assumed, from data/snapshots history: (five-day-type
+# public-service Waymo/Tesla/Zoox incidents of month M present in the first
+# release containing M) / (M's eventual five-day-type total), deduplicated by
+# Same Incident ID. Re-measure and re-review on each release.
+FIVE_DAY_RECEIPT_OBSERVATIONS = {
+    "2026-02": (18, 38),   # Mar-16-2026 release vs the Aug-17-2026 file
+    "2026-03": (25, 69),   # Apr-15-2026 release
+    "2026-05": (16, 57),   # Jun-15-2026 release
+    "2026-06": (17, 60),   # Jul-15-2026 release
+    # 2026-04 excluded: the May-15-2026 release was cut early (2 April
+    # incidents / 19 April submissions vs ~17 / ~90 in every other release).
+}
+# (best, lo, hi): best = median of the observed fractions; lo/hi pad the
+# observed range [0.28, 0.47]. release_month_coverage() asserts both.
+FIVE_DAY_RECEIPT_COVERAGE = (0.32, 0.25, 0.48)
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
 # In-repo master for the VMT estimates (one row per helmer-month).
@@ -461,12 +492,11 @@ def snapshot_csv_if_changed(prefix, text, stamp):
 def fetch_nhtsa_csv(stamp):
     """Fetch ADS incident reports from both current and archive CSVs.
 
-    Returns (rows, last_modified_date) where last_modified_date is an
-    ISO date string from the HTTP Last-Modified header of the current
-    CSV, or None.
+    Returns (rows, headers_by_url), retaining the reviewed HTTP headers for
+    both ingested CSVs.
     """
     all_rows = []
-    lm_date = None
+    headers_by_url = {}
     snapshot_prefix = {
         NHTSA_ADS_CSV_URL: "nhtsa-current",
         NHTSA_ADS_ARCHIVE_URL: "nhtsa-archive",
@@ -475,7 +505,9 @@ def fetch_nhtsa_csv(stamp):
         print(f"Fetching NHTSA ADS CSV from {url} ...")
         with urllib.request.urlopen(url, timeout=60) as resp:
             lm = resp.headers.get("Last-Modified")
+            etag = resp.headers.get("ETag")
             payload = resp.read()
+        headers_by_url[url] = (lm, etag)
         text = payload.decode("utf-8")
         snapshot_csv_if_changed(snapshot_prefix[url], text, stamp)
         is_archive = url == NHTSA_ADS_ARCHIVE_URL
@@ -483,10 +515,36 @@ def fetch_nhtsa_csv(stamp):
             if is_archive:
                 _normalize_archive_row(row)
             all_rows.append(row)
-        if lm and lm_date is None:
-            from email.utils import parsedate_to_datetime
-            lm_date = parsedate_to_datetime(lm).date().isoformat()
-    return all_rows, lm_date
+    return all_rows, headers_by_url
+
+
+def modified_date_from_last_modified(last_modified):
+    """ISO date of the current CSV's HTTP Last-Modified header."""
+    must(last_modified is not None, "NHTSA CSV response lacks a Last-Modified header")
+    from email.utils import parsedate_to_datetime
+    return parsedate_to_datetime(last_modified).date().isoformat()
+
+
+def release_month_coverage(data_through_date, last_month):
+    """Return the (best, lo, hi) receipt coverage of the data-through month.
+
+    Fails loudly if the reviewed NHTSA_DATA_THROUGH_DATE month is not the
+    newest incident month (a new release without a reviewed cutoff), or if
+    FIVE_DAY_RECEIPT_COVERAGE disagrees with FIVE_DAY_RECEIPT_OBSERVATIONS.
+    """
+    data_through_month = datetime.date.fromisoformat(
+        data_through_date).strftime("%Y-%m")
+    must(data_through_month == last_month,
+         "reviewed NHTSA cutoff month must match the latest incident month",
+         data_through=data_through_date, last_month=last_month)
+    fracs = sorted(n / d for n, d in FIVE_DAY_RECEIPT_OBSERVATIONS.values())
+    best, lo, hi = FIVE_DAY_RECEIPT_COVERAGE
+    median = statistics.median(fracs)
+    must(abs(best - median) < 0.02 and lo <= fracs[0] and fracs[-1] <= hi
+         and 0 < lo <= best <= hi <= 1,
+         "five-day receipt-coverage constants disagree with their measurements",
+         best=best, lo=lo, hi=hi, median=median, observed=fracs)
+    return best, lo, hi
 
 
 def parse_fault_csv(path):
@@ -635,56 +693,41 @@ def parse_vmt_values(raw_text):
     return result
 
 
-def incident_coverage(nhtsa_rows, last_month, vmt):
-    """Compute incident reporting completeness for the last month.
+def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
+    """Compute conditional pooled incident coverage for the last month.
 
     The best estimate is a pooled rate-ratio: observed incidents in the
-    incomplete month vs the count expected from each helmer's most recent
-    complete reference month (VMT-scaled), clamped to (0, 1].  Assuming
+    cutoff month vs the count expected from each helmer's most recent usable
+    earlier reference month (VMT-scaled), clamped to (0, 1].  This is a
+    stationary-rate heuristic; it does not prove the reference month complete.
+    Assuming
     f = 1.0 instead would assert "these are all the incidents" and
     overstate the month's safety.  The lo bound subtracts 1.96 SE (normal
     approximation to the rate ratio); the hi bound is 1.0 (all incidents
     may already be in).  The CI thus spans our ignorance about the true
-    reporting fraction f.
+    conditional incident-coverage fraction f.
 
     last_month: ISO month string (e.g. "2026-02") — the latest month with
     any incident data.  Derived from the data, not hardcoded.
+    receipt_coverage: best-estimate fraction of that month's five-day-track
+    incidents present in the release (FIVE_DAY_RECEIPT_COVERAGE[0]). The
+    returned fractions are conditional on that receipt frontier; the product
+    receipt_coverage * best is invariant to the choice of receipt_coverage.
     vmt: dict from parse_vmt_values(), mapping (helmer, iso_month) to VMT.
 
     Returns {(helmer, iso_month): (best, lo, hi)} where best/lo/hi are the
-    incident coverage fractions (1.0 for complete months).
+    conditional incident-coverage fractions.
     """
-    # Determine which submission months contain a MONTHLY-track report. A
-    # stray 5-Day/1-Day filing early in the deadline month must not certify
-    # the previous month's Monthly batch as present (defense-in-depth added
-    # 2026-08-21; every historical NHTSA release satisfies both definitions
-    # identically).
-    monthly_submission_months = set()
-    for r in nhtsa_rows:
-        sub = r["Report Submission Date"].strip()
-        if sub and r["Report Type"].strip() == "Monthly":
-            monthly_submission_months.add(nhtsa_month_to_iso(sub))
-
-    # Monthly reports for the last month are due the following month
-    end_year, end_mon = int(last_month[:4]), int(last_month[5:7])
-    next_mon = end_mon + 1
-    next_year = end_year
-    if next_mon > 12:
-        next_mon = 1
-        next_year += 1
-    monthly_deadline_month = f"{next_year}-{next_mon:02d}"
-    # If submissions from the deadline month are absent, Monthly reports for
-    # the last month are structurally missing.
-    last_month_incomplete = monthly_deadline_month not in monthly_submission_months
-
-    if not last_month_incomplete:
-        return {}  # all months complete, no adjustments needed
-
     # Count incidents per helmer-month, deduplicated exactly like the main
     # ingestion path: by Report ID first (to safely handle when "Same
     # Incident ID" changes between versions), then by Same Incident ID (with
     # the same split-report override).
-    counted_rows = [r for r in nhtsa_rows if is_public_service_incident(r)]
+    counted_rows = [
+        r for r in nhtsa_rows
+        if r["Report ID"].strip() and r["Report Version"].strip() and
+        r["Same Incident ID"].strip() and r["Incident Date"].strip() and
+        is_public_service_incident(r)
+    ]
     by_rid = {}  # rid -> {ver, row}
     for r in counted_rows:
         rid = r["Report ID"]
@@ -709,26 +752,30 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
         counts[key] = counts.get(key, 0) + 1
 
     import math
-    helmers = sorted(set(k[0] for k in counts))
+    last_month_helmers = sorted({
+        helmer for (helmer, month), miles in vmt.items()
+        if month == last_month and miles > 0
+    })
+    must(last_month_helmers,
+         "pooled incident coverage requires positive cutoff-month VMT",
+         last_month=last_month)
 
-    # Incompleteness is a property of the reporting CYCLE, not of any one helmer,
-    # so the incomplete last month gets ONE pooled coverage applied to every
-    # helmer with VMT that month. Per-helmer counts are too noisy (and conflate
-    # "few incidents" with "not yet reported") to justify different values.
+    # Every fleet with cutoff-month VMT shares ONE pooled coverage value.
+    # Request No. 2 requires a report per qualifying crash; one Monthly row
+    # cannot certify that a company's entire cycle is complete. Per-fleet
+    # counts are too noisy to justify different factors.
     pooled_obs = 0.0   # observed incidents in the incomplete month
-    pooled_exp = 0.0   # expected-if-complete incidents
+    pooled_exp = 0.0   # expected through the cutoff at the reference rate
     pooled_ref = 0.0   # reference-month incidents (for the pooled lower bound)
-    for helmer in helmers:
+    for helmer in last_month_helmers:
         last_key = (helmer, last_month)
         last_count = counts.get(last_key, 0)
-        last_vmt = vmt.get(last_key, 0)
-        if last_vmt == 0:
-            continue
+        last_vmt = vmt[last_key]
         # NOTE: helmers with VMT but ZERO observed incidents in the incomplete
         # month stay in the pool: observing 0 where the reference predicts >0
         # is exactly the "not yet reported" evidence the pooled rate-ratio is
         # designed to capture (excluding them would one-directionally overstate
-        # the month's reporting completeness).
+        # the month's conditional incident coverage).
         # Reference: most recent earlier month with >= 3 incidents and VMT.
         ref = None
         for (drv, mo), c in sorted(counts.items(), key=lambda x: x[0][1],
@@ -742,23 +789,23 @@ def incident_coverage(nhtsa_rows, last_month, vmt):
             continue
         ref_mo, ref_count, ref_vmt = ref
         pooled_obs += last_count
-        pooled_exp += ref_count * (last_vmt / ref_vmt)
+        pooled_exp += ref_count * (last_vmt * receipt_coverage / ref_vmt)
         pooled_ref += ref_count
 
+    must(pooled_exp > 0 and pooled_ref > 0,
+         "pooled incident coverage requires a usable reference month",
+         helmers=last_month_helmers, last_month=last_month)
     result = {}
-    if pooled_exp > 0:
-        # Pooled rate-ratio point estimate (clamped to (0, 1]); using 1.0 would
-        # assert "these are all the incidents", overstating the month's safety.
-        p_best = max(0.01, min(1.0, pooled_obs / pooled_exp))
-        se = p_best * math.sqrt(1 / max(pooled_obs, 1) + 1 / pooled_ref)
-        p_lo = max(0.01, p_best - 1.96 * se)
-        for helmer in helmers:
-            last_key = (helmer, last_month)
-            if vmt.get(last_key, 0) == 0:
-                continue
-            result[last_key] = (round(p_best, 4), round(p_lo, 4), 1.0)
-        print(f"  {last_month} pooled incident_coverage: best={p_best:.4f}"
-              f" lo={p_lo:.4f} (observed {int(pooled_obs)} / expected {pooled_exp:.1f})")
+    # Pooled rate-ratio point estimate (clamped to (0, 1]); using 1.0 would
+    # assert "these are all the incidents", overstating the month's safety.
+    p_best = max(0.01, min(1.0, pooled_obs / pooled_exp))
+    se = p_best * math.sqrt(1 / max(pooled_obs, 1) + 1 / pooled_ref)
+    p_lo = max(0.01, p_best - 1.96 * se)
+    for helmer in last_month_helmers:
+        last_key = (helmer, last_month)
+        result[last_key] = (round(p_best, 4), round(p_lo, 4), 1.0)
+    print(f"  {last_month} pooled incident_coverage: best={p_best:.4f}"
+          f" lo={p_lo:.4f} (observed {int(pooled_obs)} / expected {pooled_exp:.1f})")
 
     return result
 
@@ -773,11 +820,14 @@ def parse_vmt_months(raw_text):
     return {row[1].strip() for row in _vmt_data_rows(raw_text)}
 
 
-def build_vmt_csv(raw_text, inc_cov, active_months):
+def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
     """Add coverage + incident_coverage columns to the raw VMT CSV text.
 
     inc_cov: dict from incident_coverage(), mapping (helmer, iso_month) to
     (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
+    coverage_by_month: {iso_month: (best, lo, hi)} receipt coverage of the
+    data-through month (release_month_coverage()). Missing months default to
+    (1, 1, 1).
     active_months: set of ISO months to include (months with incident data).
     """
     rows = list(csv.reader(io.StringIO(raw_text)))
@@ -791,9 +841,9 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
     writer = csv.writer(out_buf, lineterminator="\n")
     writer.writerow(["helmer", "month", "vmt", "helmer_cumulative_vmt",
                      "kyoom_min", "kyoom_max", "vmt_min", "vmt_max",
-                     "coverage", "incident_coverage",
-                     "incident_coverage_min", "incident_coverage_max",
-                     "rationale"])
+                     "coverage", "coverage_min", "coverage_max",
+                     "incident_coverage", "incident_coverage_min",
+                     "incident_coverage_max", "rationale"])
     for row in rows[1:]:
         if not any(cell.strip() for cell in row):
             continue
@@ -802,13 +852,14 @@ def build_vmt_csv(raw_text, inc_cov, active_months):
             continue
         ic_best, ic_lo, ic_hi = inc_cov.get(
             (_canonical_helmer(row[0].strip()), month), (1, 1, 1))
+        cov_best, cov_lo, cov_hi = coverage_by_month.get(month, (1, 1, 1))
         # Normalize the six numeric columns to plain integers: a
         # thousands-separated "22,000,000" entered in the master CSV becomes
         # 22000000, matching the plain-integer convention of the rest of
         # the data and keeping the emitted CSV safe for naive parsers.
         nums = [cell.strip().replace(",", "") for cell in row[2:8]]
         rationale = row[8] if len(row) > 8 else ""
-        writer.writerow([row[0], row[1], *nums, "1.0",
+        writer.writerow([row[0], row[1], *nums, cov_best, cov_lo, cov_hi,
                          ic_best, ic_lo, ic_hi, rationale])
     return out_buf.getvalue().rstrip("\n")
 
@@ -946,8 +997,11 @@ SUBMISSION_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
 
 def main():
     run_stamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-    rows, nhtsa_modified_date = fetch_nhtsa_csv(run_stamp)
+    rows, nhtsa_headers = fetch_nhtsa_csv(run_stamp)
     must(len(rows) > 0, "NHTSA CSV has no rows")
+    release_rows = rows
+    nhtsa_last_modified, _etag = nhtsa_headers[NHTSA_ADS_CSV_URL]
+    nhtsa_modified_date = modified_date_from_last_modified(nhtsa_last_modified)
 
     # Anti-Postel: fail loud on unexpected field values.
     # Skip placeholder rows (empty incident ID or date) from archive.
@@ -1066,6 +1120,30 @@ def main():
     last_month = max(incident_months_with_vmt)
     vmt_months = {m for m in vmt_months if m <= last_month}
     print(f"Last incident month: {last_month}")
+    submission_months = {
+        nhtsa_month_to_iso(r["Report Submission Date"].strip())
+        for r in release_rows if r["Report Submission Date"].strip()
+    }
+    must(submission_months, "NHTSA data has no report-submission months")
+    must(max(submission_months) == last_month,
+         "latest report-submission month must match the incident frontier",
+         submission_month=max(submission_months), last_month=last_month)
+    last_month_coverage = release_month_coverage(
+        NHTSA_DATA_THROUGH_DATE, last_month)
+    coverage_by_month = {last_month: last_month_coverage}
+    # Content guard for the reviewed cutoff: Monthly filings for the
+    # data-through month are due on the 15th of the following month, so none
+    # can be in a release whose reports were received through the 15th of the
+    # data-through month itself. A Monthly filing here means the cutoff
+    # assumption (and FIVE_DAY_RECEIPT_COVERAGE) no longer describes the file.
+    last_month_report_types = sorted({
+        r["Report Type"].strip() for r in release_rows
+        if r["Incident Date"].strip() and is_public_service_incident(r) and
+        nhtsa_month_to_iso(r["Incident Date"].strip()) == last_month
+    })
+    must(last_month_report_types and "Monthly" not in last_month_report_types,
+         "data-through month contains Monthly filings; re-review the receipt cutoff",
+         report_types=last_month_report_types, last_month=last_month)
 
     window_by_incident = {}
     excluded_count = 0
@@ -1138,17 +1216,22 @@ def main():
         r["time"],
     ))
 
-    # Compute incident reporting completeness before building VMT CSV.
+    # Compute conditional pooled incident coverage before building VMT CSV.
     # Compare last month's observed rate to the reference month's rate.
-    window_rows = [r for r in rows
-                   if nhtsa_month_to_iso(r.get("Incident Date", "").strip())
-                   in vmt_months]
+    window_rows = [
+        r for r in release_rows
+        if not r.get("Incident Date", "").strip() or
+        nhtsa_month_to_iso(r["Incident Date"].strip()) in vmt_months
+    ]
     vmt_values = parse_vmt_values(vmt_raw)
-    inc_cov = incident_coverage(window_rows, last_month, vmt_values)
+    inc_cov = incident_coverage(
+        window_rows, last_month, last_month_coverage[0], vmt_values)
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
-    vmt_text = build_vmt_csv(vmt_raw, inc_cov, vmt_months).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+    vmt_text = build_vmt_csv(
+        vmt_raw, inc_cov, coverage_by_month, vmt_months,
+    ).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
 
     def inject(source, start_marker, end_marker, payload):
@@ -1164,10 +1247,12 @@ def main():
     inc_js = inject(inc_js,
                     "/* NHTSA_FETCH_DATE_START */", "/* NHTSA_FETCH_DATE_END */",
                     f'"{fetch_date}"')
-    modified_val = f'"{nhtsa_modified_date}"' if nhtsa_modified_date else "null"
     inc_js = inject(inc_js,
                     "/* NHTSA_MODIFIED_DATE_START */", "/* NHTSA_MODIFIED_DATE_END */",
-                    modified_val)
+                    f'"{nhtsa_modified_date}"')
+    inc_js = inject(inc_js,
+                    "/* NHTSA_DATA_THROUGH_DATE_START */", "/* NHTSA_DATA_THROUGH_DATE_END */",
+                    f'"{NHTSA_DATA_THROUGH_DATE}"')
     inc_js = inject(inc_js,
                     "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
                     incident_json)
@@ -1185,8 +1270,8 @@ def main():
     # Summary
     counts = Counter(r["helmer"] for r in incidents)
     total = len(incidents)
-    if nhtsa_modified_date:
-        print(f"NHTSA file last modified: {nhtsa_modified_date}")
+    print(f"NHTSA file last modified: {nhtsa_modified_date}")
+    print(f"NHTSA incident data through: {NHTSA_DATA_THROUGH_DATE}")
     print(f"Updated {relpath(INCIDENT_JS)} and {relpath(VMT_JS)}")
     print(f"Total incidents: {total}")
     for helmer, n in counts.most_common():

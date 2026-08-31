@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 
@@ -24,6 +25,8 @@ const vmtData = vm.runInContext(`
     vmtMin: r.vmtMin,
     vmtMax: r.vmtMax,
     coverage: r.coverage,
+    coverageMin: r.coverageMin,
+    coverageMax: r.coverageMax,
     incCov: r.incCov,
     incCovMin: r.incCovMin,
     incCovMax: r.incCovMax,
@@ -39,6 +42,42 @@ Resultata: ${row.incCovMin} <= ${row.incCov} <= ${row.incCovMax}.`);
   assert.ok(row.incCov > 0 && row.incCov <= 1,
     `incCov must be in (0, 1] for ${row.helmer} ${row.month}`);
 }
+
+// --- Receipt coverage: 1 everywhere except NHTSA's data-through month ---
+// The release holds reports RECEIVED through NHTSA_DATA_THROUGH_DATE (the
+// 15th), so that month's five-day-track incidents are only partly present.
+// slurp.py measures the fraction from snapshot history; the generated CSV
+// must carry exactly that reviewed (best, lo, hi) triple for the data-through
+// month and (1, 1, 1) everywhere else. Single source of truth: the constant
+// is read from data/slurp.py, so a release re-measurement is one edit.
+const dataThroughMonth = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx).slice(0, 7);
+const slurpSource = readFileSync(new URL("../data/slurp.py", import.meta.url), "utf8");
+const covMatch = slurpSource.match(/^FIVE_DAY_RECEIPT_COVERAGE = \(([0-9.]+), ([0-9.]+), ([0-9.]+)\)/m);
+assert.ok(covMatch,
+  `Replicata: read FIVE_DAY_RECEIPT_COVERAGE = (best, lo, hi) from data/slurp.py.
+Expectata: the reviewed receipt-coverage triple is a literal constant.
+Resultata: not found.`);
+const [covBest, covLo, covHi] = covMatch.slice(1, 4).map(Number);
+assert.ok(0 < covLo && covLo < covBest && covBest < covHi && covHi < 1,
+  `Replicata: inspect the reviewed receipt-coverage triple.
+Expectata: 0 < lo < best < hi < 1 — the data-through month is partial and uncertain.
+Resultata: ${JSON.stringify([covBest, covLo, covHi])}.`);
+for (const row of vmtData) {
+  assert.ok(row.coverageMin > 0 && row.coverageMin <= row.coverage &&
+      row.coverage <= row.coverageMax && row.coverageMax <= 1,
+    `Replicata: check coverage ordering for ${row.helmer} ${row.month}.
+Expectata: 0 < coverage_min <= coverage <= coverage_max <= 1.
+Resultata: ${row.coverageMin} <= ${row.coverage} <= ${row.coverageMax}.`);
+  const expected = row.month === dataThroughMonth ? [covBest, covLo, covHi] : [1, 1, 1];
+  assert.deepEqual([row.coverage, row.coverageMin, row.coverageMax], expected,
+    `Replicata: compare ${row.helmer} ${row.month} receipt coverage with the reviewed constant.
+Expectata: ${JSON.stringify(expected)} (${row.month === dataThroughMonth ? "the data-through month" : "a fully received month"}).
+Resultata: ${JSON.stringify([row.coverage, row.coverageMin, row.coverageMax])}.`);
+}
+assert.ok(vmtData.some(r => r.month === dataThroughMonth),
+  `Replicata: look for VMT rows in the NHTSA data-through month ${dataThroughMonth}.
+Expectata: at least one (the window always reaches the data-through month).
+Resultata: none.`);
 
 // Identify months with coverage uncertainty (incCovMin < 1 means the lo bound
 // is less than certain, even though p_best = 1.0 to avoid circularity)
@@ -200,7 +239,7 @@ if (incompleteRows.length > 0) {
     `Replicata: render the ${raw.helmer} ${raw.month} fatality band while the
 month's Monthly batch is missing (incCov=${raw.incCov}).
 Expectata: fatality is five-day-track (SGO Request No. 1.D.i), so its band
-uses the raw calendar-coverage VMT triple — its reports are already filed.
+uses the receipt-coverage-scaled raw VMT triple without Monthly-track thinning.
 Resultata: got [${bandCheck.fatalityGot.lo}, ${bandCheck.fatalityGot.hi}],
 raw-VMT band [${bandCheck.fatalityRaw.lo}, ${bandCheck.fatalityRaw.hi}],
 thinned band [${bandCheck.fatalityThinned.lo}, ${bandCheck.fatalityThinned.hi}].`);
@@ -233,7 +272,7 @@ thinned band [${bandCheck.allThinned.lo}, ${bandCheck.allThinned.hi}].`);
   assert.ok(close(windowCheck.fatalityVmtBest, windowCheck.rawSum),
     `Replicata: sum the ${raw.helmer} window's fatality-metric effective VMT
 with an incomplete month (incCov=${raw.incCov}) in the window.
-Expectata: five-day metrics sum the raw calendar-coverage VMT (${windowCheck.rawSum}).
+Expectata: five-day metrics sum the receipt-coverage-scaled raw VMT (${windowCheck.rawSum}).
 Resultata: ${windowCheck.fatalityVmtBest}.`);
   assert.ok(close(windowCheck.allVmtBest, windowCheck.thinnedSum),
     `Replicata: sum the ${raw.helmer} window's all-incidents effective VMT.
@@ -244,16 +283,21 @@ Resultata: ${windowCheck.allVmtBest}.`);
 Expectata: rawSum > thinnedSum (otherwise this qual isn't exercising the split).
 Resultata: raw=${windowCheck.rawSum}, thinned=${windowCheck.thinnedSum}.`);
 
-  // The five-day exemption is only sound once every five-day report for the
-  // month is due: NHTSA's data release must postdate month-end + 5 days.
-  // The app must enforce that loudly (anti-Postel) rather than assume it.
-  assert.ok(/month.?end.*5|five.day.*due|fiveDayDue/i.test(
-    vm.runInContext("''", ctx) + appScript.match(/assert\([^;]*NHTSA_MODIFIED_DATE[^;]*\)/s)?.[0]),
-    `Replicata: grep crashla.js for an assert tying NHTSA_MODIFIED_DATE to the
-incomplete month's five-day reporting deadline.
-Expectata: an assert exists that fails loudly if the NHTSA release predates
-month-end + 5 days while five-day metrics skip the coverage thinning.
+  // Partial receipt coverage is only meaningful for the data-through month;
+  // the app must enforce that loudly (anti-Postel) rather than trust the CSV.
+  assert.ok(/assert\(vmt\.coverage === 1 \|\| month === NHTSA_DATA_THROUGH_DATE\.slice\(0, 7\)/.test(appScript),
+    `Replicata: grep crashla.js for an assert tying partial receipt coverage to
+the NHTSA data-through month.
+Expectata: an assert exists that fails loudly if any other month carries
+coverage < 1.
 Resultata: no such assert found.`);
+  // No release-date inference remains: the old NHTSA_MODIFIED_DATE >=
+  // month-end + 5 assert passed vacuously (the file's modification date is a
+  // month after its receipt cutoff) and was retired 2026-08-28.
+  assert.doesNotMatch(appScript, /fiveDayDue/,
+    `Replicata: grep crashla.js for the retired five-day-due inference.
+Expectata: absent — receipt coverage is measured, not inferred from the modification date.
+Resultata: fiveDayDue remains.`);
 }
 
-console.log("qual pass: incident coverage adjusts CIs for months with missing Monthly reports");
+console.log("qual pass: receipt coverage (data-through month) and Monthly-track incident coverage select metric-specific effective VMT");

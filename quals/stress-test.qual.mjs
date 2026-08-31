@@ -140,13 +140,32 @@ Resultata: verdict was ${plain.byHelmer.Waymo[key].verdictKey}.`,
   );
 }
 
-assert.equal(
-  plain.byHelmer.Zoox.all.verdictKey,
-  "ambiguous",
-  `Replicata: compute stress-test verdict for Zoox on all incidents.
-Expectata: Zoox remains ambiguous on the all-incident metric.
-Resultata: verdict was ${plain.byHelmer.Zoox.all.verdictKey}.`,
+// byHelmer rows are the FULL series. Flipped ambiguous -> worse on
+// 2026-08-28: the data-through month's exposure is capped by receipt
+// coverage (reports received through Jul 15 cover only ~a third of July's
+// five-day-track crashes), trimming the effective-VMT upper edge that had
+// held Zoox's full-window AV/human ratio ceiling at exactly 1.00x.
+assert.ok(
+  plain.byHelmer.Zoox.all.verdictKey === "worse" && plain.byHelmer.Zoox.all.ratioHi < 1,
+  `Replicata: compute the full-history stress verdict for Zoox on all incidents.
+Expectata: robustly worse — the AV/human ratio ceiling is below 1x once the data-through month's exposure is receipt-capped.
+Resultata: ${plain.byHelmer.Zoox.all.verdictKey} at ${plain.byHelmer.Zoox.all.ratioLo}x–${plain.byHelmer.Zoox.all.ratioHi}x.`,
 );
+
+// Default slider window (what the page shows on load): still ambiguous, the
+// ratio ceiling sitting just above 1x — the verdict a reader sees must not be
+// silently promoted by the full-history flip above.
+const zooxDefault = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const row = monthlySummaryRows(activeSeries).find(r => r.helmer === "Zoox");
+  const stress = helmerHumanStress(row, "all");
+  return {verdictKey: stress.verdictKey, ratioHi: stress.ratioHi, k: stress.av.k, months: [activeSeries.months[0], activeSeries.months[activeSeries.months.length - 1]]};
+})()
+`, ctx)));
+assert.ok(zooxDefault.verdictKey === "ambiguous" && zooxDefault.ratioHi > 1,
+  `Replicata: compute the default-window stress verdict for Zoox on all incidents.
+Expectata: ambiguous, with the AV/human ratio ceiling just above 1x.
+Resultata: ${JSON.stringify(zooxDefault)}.`);
 
 // Magnitude drift guard on Tesla's optimistic edge (the straddles-1x claim
 // itself is the verdictKey assert above). Bound moved 3 -> 3.5 on 2026-07-22

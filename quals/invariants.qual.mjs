@@ -27,8 +27,8 @@ Resultata: no throw.`,
 
 // --- Anti-Postel: parseVmtCsv rejects malformed inputs ---
 
-const goodHeader = "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale";
-const goodRow = "tesla,2025-07,100,200,150,250,80,120,1,1,1,1,test";
+const goodHeader = "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,coverage_min,coverage_max,incident_coverage,incident_coverage_min,incident_coverage_max,rationale";
+const goodRow = "tesla,2025-07,100,200,150,250,80,120,1,1,1,1,1,1,test";
 
 function mustThrowParse(label, csv) {
   let caught = false;
@@ -48,16 +48,22 @@ mustThrowParse("old-format header missing kyoom/incident_coverage",
   "helmer,month,vmt,helmer_cumulative_vmt,vmt_min,vmt_max,coverage,rationale\ntesla,2025-07,100,200,80,120,1,test");
 // vmt_min > vmt (violates ordering)
 mustThrowParse("vmt_min > vmt",
-  goodHeader + "\ntesla,2025-07,100,200,150,250,120,80,1,1,1,1,test");
+  goodHeader + "\ntesla,2025-07,100,200,150,250,120,80,1,1,1,1,1,1,test");
 // kyoom_min > helmer_cumulative_vmt (cumulative band must bracket the central)
 mustThrowParse("kyoom_min > cume",
-  goodHeader + "\ntesla,2025-07,100,200,250,300,80,120,1,1,1,1,test");
+  goodHeader + "\ntesla,2025-07,100,200,250,300,80,120,1,1,1,1,1,1,test");
 // coverage = 0 (must be > 0)
 mustThrowParse("coverage = 0",
-  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,0,1,1,1,test");
+  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,0,0,0,1,1,1,test");
+// coverage_min > coverage (receipt-coverage triple must be ordered)
+mustThrowParse("coverage_min > coverage",
+  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,0.3,0.4,0.5,1,1,1,test");
+// pre-2026-08-28 12-numeric-column header (no coverage_min/max)
+mustThrowParse("header without coverage_min/coverage_max",
+  "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,incident_coverage,incident_coverage_min,incident_coverage_max,rationale\ntesla,2025-07,100,200,150,250,80,120,1,1,1,1,test");
 // incident_coverage = 0 (must be > 0)
 mustThrowParse("incident_coverage = 0",
-  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,0,0,0,test");
+  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,1,1,0,0,0,test");
 // incident_coverage_min > incident_coverage (ordering violation)
 mustThrowParse("incCovMin > incCov",
   goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,0.5,0.6,0.7,test");

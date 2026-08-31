@@ -7,6 +7,10 @@ const doc = fs.readFileSync("data/README.md", "utf8");
 assert.ok(
   preprocess.includes("NHTSA_ADS_CSV_URL") &&
     preprocess.includes("NHTSA_ADS_ARCHIVE_URL") &&
+    /^NHTSA_DATA_THROUGH_DATE = "\d{4}-\d{2}-\d{2}"$/m.test(preprocess) &&
+    /^FIVE_DAY_RECEIPT_COVERAGE = \([0-9.]+, [0-9.]+, [0-9.]+\)$/m.test(preprocess) &&
+    !preprocess.includes("NHTSA_EXPECTED_ETAG") &&
+    !preprocess.includes("NHTSA_EXPECTED_LAST_MODIFIED") &&
     preprocess.includes('VMT_MASTER = DATA_DIR / "vmt.csv"') &&
     !preprocess.includes("VMT_SHEET_URL"),
   `Replicata: inspect data/slurp.py data-source constants.
@@ -18,7 +22,8 @@ assert.ok(
   preprocess.includes("def fetch_nhtsa_csv(stamp):") &&
     preprocess.includes("def read_vmt_master():") &&
     !preprocess.includes("def fetch_vmt_sheet_raw") &&
-    preprocess.includes("def build_vmt_csv(raw_text, inc_cov, active_months):") &&
+    preprocess.includes("def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):") &&
+    preprocess.includes("def release_month_coverage(data_through_date, last_month):") &&
     preprocess.includes("def snapshot_csv_if_changed(prefix, text, stamp):") &&
     preprocess.includes("urllib.request.urlopen"),
   `Replicata: inspect data/slurp.py data-loading code path.
