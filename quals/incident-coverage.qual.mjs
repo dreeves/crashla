@@ -79,8 +79,10 @@ assert.ok(vmtData.some(r => r.month === dataThroughMonth),
 Expectata: at least one (the window always reaches the data-through month).
 Resultata: none.`);
 
-// Identify months with coverage uncertainty (incCovMin < 1 means the lo bound
-// is less than certain, even though p_best = 1.0 to avoid circularity)
+// Identify months with Monthly-track incompleteness: slurp.py's pooled
+// rate-ratio gives incCov = clamp(observed / expected) (0.33 for 2026-07)
+// with lo = best - 1.96 SE and hi = 1, so incCovMin < 1 marks the
+// data-through month.
 const incompleteRows = vmtData.filter(r => r.incCovMin < 1);
 const completeRows = vmtData.filter(r => r.incCovMin === 1);
 
@@ -151,13 +153,20 @@ if (incompleteRows.length > 0) {
     const eff = allSeriesData.find(r => r.helmer === helmer && r.month === raw.month);
     if (!eff) continue;
 
-    // p_best = 1.0, so vmtBest is unaffected; but vmtMin uses incCovMin < 1,
-    // widening the CI to reflect coverage uncertainty
+    // The Monthly-track effective triple composes the receipt coverage and
+    // the pooled incident coverage exactly: best x best x best; the low edge
+    // pairs vmt_min with the receipt BEST and incCovMin (incCovMin is the
+    // rate-ratio bound CONDITIONAL on the receipt best — pairing it with the
+    // receipt lo double-counted the receipt uncertainty until 2026-09-04);
+    // the high edge pairs vmt_max with the receipt hi and incCovMax (= 1).
+    const near = (a, b) => Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(b));
     assert.ok(
-      eff.vmtMin < eff.vmtBest,
-      `Replicata: verify incCovMin widens CI for ${helmer} ${raw.month}.
-Expectata: vmtMin < vmtBest because incCovMin < 1.
-Resultata: vmtMin=${eff.vmtMin}, vmtBest=${eff.vmtBest}.`);
+      near(eff.vmtMin, raw.vmtMin * raw.coverage * raw.incCovMin) &&
+        near(eff.vmtBest, raw.vmtBest * raw.coverage * raw.incCov) &&
+        near(eff.vmtMax, raw.vmtMax * raw.coverageMax * raw.incCovMax),
+      `Replicata: recompose the effective VMT triple for ${helmer} ${raw.month} from the CSV row.
+Expectata: [${raw.vmtMin * raw.coverage * raw.incCovMin}, ${raw.vmtBest * raw.coverage * raw.incCov}, ${raw.vmtMax * raw.coverageMax * raw.incCovMax}] = vmt_min x coverage x incCovMin, vmt x coverage x incCov, vmt_max x coverage_max x incCovMax.
+Resultata: [${eff.vmtMin}, ${eff.vmtBest}, ${eff.vmtMax}].`);
 
     // MPI CI should be wider than it would be with incCovMin=1
     const mpiCheck = vm.runInContext(`
@@ -198,13 +207,17 @@ Resultata: withCovMin lo=${mpiCheck.withMin.toFixed(0)}, withoutCovMin lo=${mpiC
 
 const fiveDayKeys = [...vm.runInContext(
   `METRIC_DEFS.filter(m => m.fiveDay === true).map(m => m.key).sort()`, ctx)];
-assert.deepEqual(fiveDayKeys, ["airbag", "fatality", "hospitalization"],
+assert.deepEqual(fiveDayKeys, ["airbag", "fatality", "hospitalization", "seriousInjury"],
   `Replicata: list METRIC_DEFS entries with fiveDay: true.
-Expectata: exactly [airbag, fatality, hospitalization] — the metrics whose
-counting predicate GUARANTEES a Request No. 1.D five-day trigger (airbag
-deployment, fatality, hospital transport). seriousInjury stays on the blended
-coverage: a "Serious"-severity injury without hospital transport is
-Monthly-track, so no structural guarantee exists.
+Expectata: exactly [airbag, fatality, hospitalization, seriousInjury] — the
+metrics whose counting predicate GUARANTEES a Request No. 1.D five-day
+trigger (airbag deployment, fatality, hospital transport). seriousInjury
+joined 2026-09-04: every SSI+ severity the whitelist admits ("Serious",
+"Serious W/ Hospitalization", "Fatality") is hosp:true in SEVERITY_INFO, so
+SSI+ is a strict subset of the five-day hospitalization metric and cannot
+have a smaller denominator than its superset. (If NHTSA ever files the
+dictionary's "Serious Without Hospitalization", the severity whitelist
+crashes and this is a human decision again.)
 Resultata: ${JSON.stringify(fiveDayKeys)}.`);
 
 if (incompleteRows.length > 0) {

@@ -9,8 +9,8 @@ import fs from "node:fs";
 //     company disclosure, superseding the earlier ~1M-late-2025 press floor)
 //   ~2M cumulative autonomous miles late Mar 2026 (CleanTechnica 2026-03-24 /
 //     Robot Report)
-//   >3M miles on public roads, announced Aug 6, 2026 (Bloomberg/Claims
-//     Journal; scope caveat: "miles on public roads" vs the earlier
+//   >3M miles on public roads, stated Aug 5, 2026 (CNBC/Bloomberg; Claims
+//     Journal Aug 6; scope caveat: "miles on public roads" vs the earlier
 //     "autonomous miles" wording)
 // The milestones carry real slack ("~"/">"/"approximately"), so centrals are
 // pinned within 15% and the kyoom band must contain the round published number.
@@ -47,4 +47,4 @@ Expectata: within 15% (the milestones are "~" figures and the series is anchored
 Resultata: ratio ${ratio.toFixed(3)}.`);
 }
 
-console.log(`qual pass: zoox cumulative VMT tracks all three published mileage milestones (1.3M Dec 2025, ~2M late Mar 2026, >3M Aug 2026)`);
+console.log(`qual pass: zoox cumulative VMT tracks all three published mileage milestones (1.3M Dec 2025, ~2M late Mar 2026, >3M by end-Jul 2026 per the Aug-5 statement)`);

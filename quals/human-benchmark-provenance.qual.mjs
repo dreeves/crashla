@@ -1,6 +1,6 @@
 // Pins the AV-cities human benchmark bands for injury / airbag / serious-injury+
 // to Waymo's LIVE Safety Impact hub per-city benchmark rates (data through
-// Mar 2026, six cities incl. LA/Austin/Atlanta; retrieved 2026-08-22 —
+// Mar 2026, five areas: Phoenix, SF Bay Area, LA, Austin, Atlanta; retrieved 2026-08-22 —
 // supersedes the Kusano & Scanlon 56.7M paper pin: same methodology family,
 // updated denominators and city set), so a band edge can't silently drift
 // from its source. Each band edge = 1e6 / per-city IPMM: the lo (fewest miles
@@ -128,6 +128,28 @@ Resultata: ${band.src}.`);
     `Replicata: inspect the HumansAV fatality provenance for the retired 2012-era floor.
 Expectata: 0.77 no longer appears.
 Resultata: ${band.src}.`);
+}
+
+// --- HumansUS hospitalization / airbag / serious-injury+ bands (2026-09-04) ---
+// These three have no published national per-mile rate; they are placed by
+// log-interpolation between the national injury and fatality anchors at the
+// severity position each metric holds on the AV-cities ladder. Re-derive
+// that position from the CURRENT bands so an AV-cities or fatality repin
+// re-flags them (the 06-18 values silently went 13-23% stale after the
+// 06-28/08-22 repins).
+{
+  const bands = vm.runInContext(`Object.fromEntries(METRIC_DEFS.map(m => [m.key, m.humanMPI]))`, ctx);
+  const geo = b => Math.sqrt(b.lo * b.hi);
+  const av = k => geo(bands[k].HumansAV), us = k => geo(bands[k].HumansUS);
+  for (const key of ["airbag", "hospitalization", "seriousInjury"]) {
+    const t = Math.log(av(key) / av("injury")) / Math.log(av("fatality") / av("injury"));
+    const center = us("injury") * Math.pow(us("fatality") / us("injury"), t);
+    const ratio = us(key) / center;
+    assert.ok(Math.abs(Math.log(ratio)) < Math.log(1.06),
+      `Replicata: log-interpolate the national ${key} center from the AV-cities severity ladder (t = ${t.toFixed(3)}) between the national injury and fatality centers.
+Expectata: the HumansUS ${key} band's geometric center within 6% of ${Math.round(center)}.
+Resultata: band [${bands[key].HumansUS.lo}, ${bands[key].HumansUS.hi}], center ${Math.round(us(key))} (${ratio.toFixed(3)}x).`);
+  }
 }
 
 console.log("qual pass: AV-cities injury/airbag/serious-injury+ bands pinned to the Waymo hub per-city rates (thru Mar 2026); geomean centrals ~match the blended benchmark; HumansUS fatality band pinned to the FARS 2024 deaths/fatal-crash numerators");

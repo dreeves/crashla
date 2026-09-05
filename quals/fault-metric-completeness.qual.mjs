@@ -98,11 +98,16 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 const checks = vm.runInContext(`
 (() => {
-  incidents = INCIDENT_DATA;
+  // Every incident carries a judgment in a passing build (fault-coverage.qual),
+  // so the incomplete-month branch below could never run on the real data and
+  // this qual passed with zero assertions until 2026-09-04. Inject the gap:
+  // one Waymo incident in a mid-window month loses its fault judgment.
+  const target = INCIDENT_DATA.find(r => r.helmer === "Waymo" && r.date === "MAR-2026");
+  incidents = INCIDENT_DATA.map(r => r === target ? {...r, fault: null} : r);
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
-  faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
+  faultData = buildFaultDataFromIncidents(incidents);
   buildMonthlyViews();
-  // Dynamically find the latest Waymo month with incomplete fault data
+  // The synthetic gap month must be the (only) Waymo month with incomplete fault data
   const incompleteMonth = fullMonthSeries.points.slice().reverse()
     .find(p => p.helmers.Waymo && p.helmers.Waymo.mpiByMetric.atfault === null
            && p.helmers.Waymo.mpiByMetric.all !== null);
@@ -134,10 +139,11 @@ const checks = vm.runInContext(`
 
 const plain = JSON.parse(JSON.stringify(checks));
 
-if (plain.allComplete) {
-  // All Waymo months have complete fault data — the invariant is trivially satisfied
-  console.log("qual pass: fault-weighted metrics exclude months with incomplete fault judgments");
-} else {
+assert.ok(!plain.allComplete && plain.testMonth === "2026-03",
+  `Replicata: null one Waymo MAR-2026 incident's fault judgment and rebuild the month series.
+Expectata: 2026-03 becomes the (only) Waymo month with incomplete fault data, so the exclusion path below is exercised.
+Resultata: ${JSON.stringify(plain)}.`);
+{
   assert.ok(
     plain.atfaultNull && plain.allPresent,
     `Replicata: inspect Waymo monthly metric availability in ${plain.testMonth}.

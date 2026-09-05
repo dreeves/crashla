@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Slurp live NHTSA SGO crash data into inline data for the web tool.
 
-Fetches current + archive ADS incident CSVs from NHTSA, filters to Driver /
-Operator Type = "None", deduplicates by Same Incident ID (keeping highest
-Report Version), joins in the in-repo VMT master (data/vmt.csv) and fault
-inputs (data/faultfrac.csv), and injects the data into data/incidents.js and
-data/vmt.js (between marker comments).
+Fetches current + archive ADS incident CSVs from NHTSA, deduplicates by
+Report ID (keeping the highest Report Version) and then by Same Incident ID
+(with the SPLIT_SAME_INCIDENT_REPORTS exemption), filters to each entity's
+public robotaxi service (Driver / Operator Type "None", plus Tesla's
+"In-Vehicle (Commercial / Test)" and "Remote (Commercial / Test)" modes — see
+PUBLIC_SERVICE_OPERATOR_TYPES), joins in the in-repo VMT master
+(data/vmt.csv) and fault inputs (data/faultfrac.csv), and injects the data
+into data/incidents.js and data/vmt.js (between marker comments).
 """
 
 import csv
@@ -40,14 +43,17 @@ NHTSA_ADS_ARCHIVE_URL = (
 # NHTSA's canonical SGO page labels each release "through <date>": reports
 # RECEIVED through that date, which has been the 15th of the month before the
 # release for every release on record (verified from data/snapshots history:
-# each release's newest incident month holds only five-day-track filings and
-# grows ~6x in the next release; the second-newest month never grows again).
+# each release's newest incident month holds almost only five-day-track
+# filings and grows ~6x in the next release; the second-newest month never
+# grows again).
 # https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
 # That page 403s scripted fetches, so the reviewed cutoff is recorded here —
 # one edit per release — and guarded by content asserts in main(): the cutoff
 # month must equal both the newest incident month and the newest submission
-# month, and no incident in that month may carry a Monthly filing (Monthly
-# reports for it cannot have been received by the 15th).
+# month (a report received after the cutoff carries a later Report Submission
+# Date, so a stale cutoff trips there). Monthly filings submitted within the
+# incident month itself are rare but real (Tesla files early; the Feb-2026
+# release held four JAN-2026 ones) and are consistent with the cutoff.
 NHTSA_DATA_THROUGH_DATE = "2026-07-15"
 # Receipt coverage of the data-through month. Reports received through the
 # 15th cover only crashes from roughly the first third of that month: the
@@ -56,17 +62,20 @@ NHTSA_DATA_THROUGH_DATE = "2026-07-15"
 # public-service Waymo/Tesla/Zoox incidents of month M present in the first
 # release containing M) / (M's eventual five-day-type total), deduplicated by
 # Same Incident ID. Re-measure and re-review on each release.
+# Re-measured 2026-09-04 (the 2026-08-28 table read 18/38, 25/69, 16/57,
+# 17/60 — a transcription slip; every filter variant reproduces the counts
+# below, e.g. the Feb numerator includes Zoox 30610-14026).
 FIVE_DAY_RECEIPT_OBSERVATIONS = {
-    "2026-02": (18, 38),   # Mar-16-2026 release vs the Aug-17-2026 file
-    "2026-03": (25, 69),   # Apr-15-2026 release
-    "2026-05": (16, 57),   # Jun-15-2026 release
-    "2026-06": (17, 60),   # Jul-15-2026 release
-    # 2026-04 excluded: the May-15-2026 release was cut early (2 April
+    "2026-02": (19, 38),   # Mar-16-2026 release vs the Aug-17-2026 file
+    "2026-03": (25, 72),   # Apr-15-2026 release
+    "2026-05": (16, 58),   # Jun-15-2026 release
+    "2026-06": (17, 61),   # Jul-15-2026 release
+    # 2026-04 excluded: the May-15-2026 release was cut early (3 April
     # incidents / 19 April submissions vs ~17 / ~90 in every other release).
 }
-# (best, lo, hi): best = median of the observed fractions; lo/hi pad the
-# observed range [0.28, 0.47]. release_month_coverage() asserts both.
-FIVE_DAY_RECEIPT_COVERAGE = (0.32, 0.25, 0.48)
+# (best, lo, hi): best = median of the observed fractions (0.313); lo/hi pad
+# the observed range [0.28, 0.50]. release_month_coverage() asserts both.
+FIVE_DAY_RECEIPT_COVERAGE = (0.31, 0.25, 0.52)
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
 # In-repo master for the VMT estimates (one row per helmer-month).
@@ -275,15 +284,21 @@ NARRATIVE_MOJIBAKE = {
 }
 
 # Redaction markers in the source narratives are mostly "[XXX]" but a few
-# arrive typo'd ("{XXX}", "]XXX]", "[XXX[") or short ("[XX]"). Normalize to
-# the dominant form so redactions read uniformly. Exact-keyed, anti-Postel:
-# only these observed variants are rewritten. ("[XX]" cannot match inside a
-# well-formed "[XXX]", so the blanket replace is safe.)
+# arrive typo'd ("{XXX}", "]XXX]", "[XXX[", "[XXX}", "{XXX]"), short ("[XX]")
+# or long ("[XXXX]"). Normalize to the dominant form so redactions read
+# uniformly. Exact-keyed, anti-Postel: only these observed variants are
+# rewritten. (None of the keys can match inside a well-formed "[XXX]", so the
+# blanket replace is safe.) Two bracket-less variants remain as filed —
+# 30270-8827 "September XXX]," and 30270-11190 "[XXX at" — because a
+# substring rewrite there would need report-specific handling.
 NARRATIVE_TYPOS = {
     "{XXX}": "[XXX]",
     "]XXX]": "[XXX]",
     "[XXX[": "[XXX]",
+    "[XXX}": "[XXX]",
+    "{XXX]": "[XXX]",
     "[XX]":  "[XXX]",
+    "[XXXX]": "[XXX]",
 }
 
 # Tesla also appends a meta-correction note when an earlier filing had wrong
@@ -406,8 +421,9 @@ STATE_OVERRIDE = {
 # Airbag deployments the SGO structured columns cannot record, keyed by Same
 # Incident ID (added 2026-08-22, human-approved): narratives assert deployment
 # — including Waymo's own "because of airbag deployment" reporting-trigger
-# sentences — but the SV/CP columns say No (third-vehicle deployments in chain
-# crashes, and one column-vs-narrative contradiction). airbagAny is defined as
+# sentences — but the SV/CP columns say No or Unknown (third-vehicle
+# deployments in chain crashes, and one column-vs-narrative contradiction;
+# 30270-6542's CP column is Unknown). airbagAny is defined as
 # any-vehicle deployment (matching the Kusano human benchmark), so these are
 # forced true. (Distinct from the archive CP-column merge in
 # _normalize_archive_row, which already ORs the recorded columns.)
@@ -441,11 +457,21 @@ ARCHIVE_COLUMN_MAP = {
 }
 
 
+# Current-schema columns the archive CSV never had. They are filled with ""
+# explicitly here (one documented place) so the strict field lookup in main()
+# can fail loudly on any OTHER missing column.
+ARCHIVE_ABSENT_COLUMNS = {"Weather - Partly Cloudy"}
+
+
 def _normalize_archive_row(row):
     """Add missing current-schema keys to an archive row using column map."""
     for archive_key, current_key in ARCHIVE_COLUMN_MAP.items():
         if current_key not in row and archive_key in row:
             row[current_key] = row[archive_key]
+    for absent_key in ARCHIVE_ABSENT_COLUMNS:
+        must(absent_key not in row, "archive row unexpectedly carries a column "
+             "listed in ARCHIVE_ABSENT_COLUMNS", column=absent_key)
+        row[absent_key] = ""
     # The current CSV's single "Any Air Bags Deployed?" means ANY involved
     # vehicle; the archive splits it into SV + CP and ARCHIVE_COLUMN_MAP copies
     # only SV. OR in the crash-partner column so archive-era airbag deployments
@@ -675,13 +701,17 @@ def _vmt_number(cell):
 
 
 def _canonical_helmer(helmer_raw):
-    """Map a VMT-master helmer label to the canonical short name."""
-    return next(
-        (v for k, v in HELMER_SHORT.items()
-         if k.lower().startswith(helmer_raw.lower())
-         or v.lower() == helmer_raw.lower()),
-        helmer_raw,
-    )
+    """Map a VMT-master helmer label ("tesla") to the canonical short name.
+
+    Exact case-insensitive match against the short names only: a blank or
+    abbreviated label used to prefix-match the first HELMER_SHORT key ("" ->
+    Waymo) and silently key another helmer's VMT.
+    """
+    wanted = helmer_raw.strip().lower()
+    hits = [v for v in HELMER_SHORT.values() if v.lower() == wanted]
+    must(len(hits) == 1, "VMT master helmer label is not a canonical short name",
+         helmer=helmer_raw, allowed=sorted(set(HELMER_SHORT.values())))
+    return hits[0]
 
 
 def parse_vmt_values(raw_text):
@@ -702,7 +732,7 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     stationary-rate heuristic; it does not prove the reference month complete.
     Assuming
     f = 1.0 instead would assert "these are all the incidents" and
-    overstate the month's safety.  The lo bound subtracts 1.96 SE (normal
+    overstate the month's safety.  The lo bound is p_best * exp(-1.96 SE) (log-scale normal
     approximation to the rate ratio); the hi bound is 1.0 (all incidents
     may already be in).  The CI thus spans our ignorance about the true
     conditional incident-coverage fraction f.
@@ -722,14 +752,16 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     # ingestion path: by Report ID first (to safely handle when "Same
     # Incident ID" changes between versions), then by Same Incident ID (with
     # the same split-report override).
-    counted_rows = [
+    # Version dedup runs over every filed row BEFORE the public-service
+    # filter, so a later version that moves a report out of scope retires it
+    # (main() does the same; see the 30270-8403 note there).
+    filed_rows = [
         r for r in nhtsa_rows
         if r["Report ID"].strip() and r["Report Version"].strip() and
-        r["Same Incident ID"].strip() and r["Incident Date"].strip() and
-        is_public_service_incident(r)
+        r["Same Incident ID"].strip() and r["Incident Date"].strip()
     ]
     by_rid = {}  # rid -> {ver, row}
-    for r in counted_rows:
+    for r in filed_rows:
         rid = r["Report ID"]
         ver = int(r["Report Version"])
         if rid not in by_rid or ver > by_rid[rid]["ver"]:
@@ -737,6 +769,8 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     by_incident = {}  # iid -> {ver, helmer, month}
     for entry in by_rid.values():
         r = entry["row"]
+        if not is_public_service_incident(r):
+            continue
         rid = r["Report ID"]
         iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
         ver = int(r["Report Version"])
@@ -799,8 +833,14 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     # Pooled rate-ratio point estimate (clamped to (0, 1]); using 1.0 would
     # assert "these are all the incidents", overstating the month's safety.
     p_best = max(0.01, min(1.0, pooled_obs / pooled_exp))
-    se = p_best * math.sqrt(1 / max(pooled_obs, 1) + 1 / pooled_ref)
-    p_lo = max(0.01, p_best - 1.96 * se)
+    # Lower bound on the log scale: sqrt(1/obs + 1/ref) is the SE of
+    # log(rate ratio), and at obs = 12 the linear Wald interval it was used
+    # in until 2026-09-04 was skewed (0.134 vs 0.183) and could go negative
+    # (hidden by a clamp). The bound is positive by construction.
+    log_se = math.sqrt(1 / max(pooled_obs, 1) + 1 / pooled_ref)
+    p_lo = p_best * math.exp(-1.96 * log_se)
+    must(0 < p_lo <= p_best, "pooled incident-coverage bound out of range",
+         p_lo=p_lo, p_best=p_best)
     for helmer in last_month_helmers:
         last_key = (helmer, last_month)
         result[last_key] = (round(p_best, 4), round(p_lo, 4), 1.0)
@@ -828,7 +868,9 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
     coverage_by_month: {iso_month: (best, lo, hi)} receipt coverage of the
     data-through month (release_month_coverage()). Missing months default to
     (1, 1, 1).
-    active_months: set of ISO months to include (months with incident data).
+    active_months: set of ISO months to include — every master month at or
+    before the latest incident month (strictly-future master months are
+    excluded; months with VMT but no incidents stay in).
     """
     rows = list(csv.reader(io.StringIO(raw_text)))
     must(len(rows) > 1, "VMT master CSV must include header and rows")
@@ -858,7 +900,11 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
         # 22000000, matching the plain-integer convention of the rest of
         # the data and keeping the emitted CSV safe for naive parsers.
         nums = [cell.strip().replace(",", "") for cell in row[2:8]]
-        rationale = row[8] if len(row) > 8 else ""
+        # Exactly nine cells: a rationale with an unquoted comma would
+        # otherwise be truncated at that comma without a word.
+        must(len(row) == 9, "VMT master row must have exactly 9 cells",
+             helmer=row[0], month=month, cells=len(row))
+        rationale = row[8]
         writer.writerow([row[0], row[1], *nums, cov_best, cov_lo, cov_hi,
                          ic_best, ic_lo, ic_hi, rationale])
     return out_buf.getvalue().rstrip("\n")
@@ -1053,22 +1099,29 @@ def main():
         valid_rows.append(r)
     rows = valid_rows
 
-    # Filter to driverless incidents only
-    counted_rows = [r for r in rows if is_public_service_incident(r)]
-
-    # Dedup: group by Report ID first to safely handle when "Same Incident ID" changes
+    # Dedup by Report ID first, over EVERY filed row, keeping the highest
+    # Report Version. Grouping by Report ID safely handles a "Same Incident
+    # ID" that changes between versions, and running it before the
+    # public-service filter lets a later version retire a report from scope:
+    # 30270-8403 v2 (Waymo, JUL-2024) reclassified the crash as
+    # "In-Vehicle and Remote (Commercial / Test)" — "a test driver was
+    # present" — so v1's "None" must not survive (it did until 2026-09-04).
     by_rid = {}
-    for r in counted_rows:
+    for r in rows:
         rid = r["Report ID"]
         ver = int(r["Report Version"])
         if rid not in by_rid or ver > by_rid[rid]["_ver"]:
             by_rid[rid] = {"_ver": ver, "_row": r}
 
-    # Then deduplicate those by Same Incident ID (except the known
-    # distinct-crash reports, which keep their own Report ID as the key)
+    # Then filter the surviving versions to each entity's public-service
+    # operator types (see PUBLIC_SERVICE_OPERATOR_TYPES) and deduplicate by
+    # Same Incident ID (except the known distinct-crash reports, which keep
+    # their own Report ID as the key)
     by_incident = {}
     for entry in by_rid.values():
         r = entry["_row"]
+        if not is_public_service_incident(r):
+            continue
         rid = r["Report ID"]
         iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
         ver = int(r["Report Version"])
@@ -1131,19 +1184,23 @@ def main():
     last_month_coverage = release_month_coverage(
         NHTSA_DATA_THROUGH_DATE, last_month)
     coverage_by_month = {last_month: last_month_coverage}
-    # Content guard for the reviewed cutoff: Monthly filings for the
-    # data-through month are due on the 15th of the following month, so none
-    # can be in a release whose reports were received through the 15th of the
-    # data-through month itself. A Monthly filing here means the cutoff
-    # assumption (and FIVE_DAY_RECEIPT_COVERAGE) no longer describes the file.
-    last_month_report_types = sorted({
-        r["Report Type"].strip() for r in release_rows
+    # The data-through month must hold public-service filings at all (a
+    # release whose newest month is empty for our fleets would make the
+    # receipt-coverage scaling meaningless). Until 2026-09-04 a further guard
+    # rejected ANY Monthly filing in this month on the premise that none can
+    # exist before the 15th of the following month; that premise was false
+    # (Tesla files some Monthly reports within the incident month — the
+    # Feb-2026 release held four JAN-2026 ones) and the case it meant to
+    # catch, a Monthly report received after the cutoff, is already caught by
+    # the submission-month guard above (such a report carries a later
+    # Report Submission Date).
+    last_month_rows = [
+        r for r in release_rows
         if r["Incident Date"].strip() and is_public_service_incident(r) and
         nhtsa_month_to_iso(r["Incident Date"].strip()) == last_month
-    })
-    must(last_month_report_types and "Monthly" not in last_month_report_types,
-         "data-through month contains Monthly filings; re-review the receipt cutoff",
-         report_types=last_month_report_types, last_month=last_month)
+    ]
+    must(last_month_rows, "data-through month has no public-service filings",
+         last_month=last_month)
 
     window_by_incident = {}
     excluded_count = 0
@@ -1162,7 +1219,10 @@ def main():
         rec = {}
         for csv_field in FIELDS:
             key = KEY_MAP[csv_field]
-            val = r.get(csv_field, "").strip().replace("\r\n", "\n").replace("\r", "\n")
+            # Strict lookup: a FIELDS column missing from a source CSV fails
+            # here instead of blanking silently (the archive's absent columns
+            # are filled explicitly in _normalize_archive_row).
+            val = r[csv_field].strip().replace("\r\n", "\n").replace("\r", "\n")
             rec[key] = val
         # Shorten helmer name
         rec["helmer"] = HELMER_SHORT.get(rec["helmer"], rec["helmer"])
@@ -1242,6 +1302,8 @@ def main():
 
     fetch_date = datetime.date.today().isoformat()
 
+    # Compute BOTH injected texts before writing EITHER file, so a missing
+    # marker in the second file cannot leave the pair half-updated.
     with open(INCIDENT_JS) as f:
         inc_js = f.read()
     inc_js = inject(inc_js,
@@ -1256,14 +1318,13 @@ def main():
     inc_js = inject(inc_js,
                     "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
                     incident_json)
-    with open(INCIDENT_JS, "w") as f:
-        f.write(inc_js)
-
     with open(VMT_JS) as f:
         vmt_js = f.read()
     vmt_js = inject(vmt_js,
                     "/* VMT_CSV_START */", "/* VMT_CSV_END */",
                     vmt_template)
+    with open(INCIDENT_JS, "w") as f:
+        f.write(inc_js)
     with open(VMT_JS, "w") as f:
         f.write(vmt_js)
 
@@ -1282,13 +1343,14 @@ def main():
     for helmer in sorted(counts):
         co_incidents = [r for r in incidents if r["helmer"] == helmer]
         n = len(co_incidents)
+        # Same three classes as crashla.js PAX_NONE / PAX_UNKNOWN / PAX_PRESENT
+        # (both no-passenger encodings count as no passenger).
+        pax_none = {"Subject Vehicle - No Passenger In Vehicle",
+                    "No Passengers in Vehicle"}
+        pax_unknown = {"Unknown", ""}
         with_pax = sum(1 for r in co_incidents
-                       if r["belted"] not in
-                       ("Subject Vehicle - No Passenger In Vehicle",
-                        "Unknown", ""))
-        no_pax = sum(1 for r in co_incidents
-                     if r["belted"] ==
-                     "Subject Vehicle - No Passenger In Vehicle")
+                       if r["belted"] not in pax_none | pax_unknown)
+        no_pax = sum(1 for r in co_incidents if r["belted"] in pax_none)
         unk = n - with_pax - no_pax
         pct = f"{100*with_pax/n:.0f}%" if n else "n/a"
         print(f"  {helmer}: {with_pax}/{n} with passenger ({pct})"

@@ -16,6 +16,17 @@ const ridIdx = header.indexOf("reportID");
 assert.ok(ridIdx >= 0, "faultfrac.csv missing reportID column");
 const rated = new Set(csv.slice(1).map(line => line.split(",")[ridIdx]));
 
+// The reverse direction (added 2026-09-04): a judgment row whose reportId is
+// no longer in data/incidents.js is an orphan — a typo, or a report that a
+// later NHTSA version retired from scope (30270-8403). slurp.py's sync keys
+// on the raw NHTSA rows, so it cannot see this; the qual must.
+const emitted = new Set(incidents.map(r => r.reportId));
+const orphans = [...rated].filter(rid => !emitted.has(rid));
+assert.deepEqual(orphans, [],
+  `Replicata: scan data/faultfrac.csv reportIDs for ids absent from data/incidents.js.
+Expectata: none — every judgment row describes an emitted incident.
+Resultata: ${orphans.length} orphan(s): ${orphans.join(", ")}.`);
+
 const MONTH_NUM = {
   JAN:1, FEB:2, MAR:3, APR:4, MAY:5, JUN:6,
   JUL:7, AUG:8, SEP:9, OCT:10, NOV:11, DEC:12,

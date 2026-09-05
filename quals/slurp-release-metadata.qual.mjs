@@ -4,8 +4,9 @@ import { spawnSync } from "node:child_process";
 // data/slurp.py's handling of NHTSA's release frontier. Each NHTSA CSV holds
 // reports RECEIVED through the reviewed NHTSA_DATA_THROUGH_DATE (the 15th of
 // the month before the release). The reviewed cutoff must (1) match the data
-// by month, (2) be guarded by content (no Monthly filing can exist for the
-// data-through month), (3) carry the measured five-day receipt-coverage
+// by month, (2) be guarded by content (the newest submission month must be
+// the cutoff month; early Monthly filings inside it are legitimate), (3)
+// carry the measured five-day receipt-coverage
 // triple, and (4) never be enforced by pinning the CSV's HTTP headers or
 // bytes — a redaction touch-up (Aug 27, 2026: one Stack AV narrative) must
 // not break ingestion. Offline regeneration from the newest snapshots must
@@ -68,8 +69,10 @@ def report(entity, rid, incident, submission, report_type='5-Day'):
 # pooled incident coverage: scale-free in the receipt coverage (the product
 # receipt * best is invariant while obs/expected stays below the 1.0 clamp —
 # eight reference incidents per fleet keep this fixture well inside that
-# regime), one factor for every fleet with VMT, and Monthly/consumer/no-new
-# rows leave it alone
+# regime), one factor for every fleet with VMT; consumer/no-new rows leave it
+# alone, while a Monthly row in the cutoff month IS a counted incident (it
+# raises the observed count; main()'s submission-month guard is what rejects
+# filings submitted after the cutoff)
 base_rows = []
 for entity in ['Waymo LLC', 'Tesla, Inc.']:
     for i in range(8):
@@ -94,7 +97,10 @@ no_new['Same Incident ID'] = ''
 no_new['Driver / Operator Type'] = ''
 for addition in [consumer, no_new]:
     assert slurp.incident_coverage(base_rows + [addition], '2026-07', 0.32, vmt) == baseline
-assert set(slurp.incident_coverage(base_rows + [tesla_monthly], '2026-07', 0.32, vmt)) == set(baseline)
+with_monthly = slurp.incident_coverage(base_rows + [tesla_monthly], '2026-07', 0.32, vmt)
+assert set(with_monthly) == set(baseline)
+for key in baseline:
+    assert with_monthly[key][0] > baseline[key][0], (with_monthly[key], baseline[key])
 try:
     slurp.incident_coverage([], '2026-07', 0.32, {('Waymo', '2026-06'): 100, ('Waymo', '2026-07'): 100})
 except AssertionError:
@@ -145,21 +151,32 @@ for start, end in [
     assert segment(incident_original, start, end) == segment(inc_regen, start, end), start
 assert segment(vmt_original, '/* VMT_CSV_START */', '/* VMT_CSV_END */') == segment(vmt_regen, '/* VMT_CSV_START */', '/* VMT_CSV_END */')
 
-# (2) a Monthly filing for the data-through month means the reviewed cutoff
-# no longer describes the file: ingestion must stop, not recompute coverage
+# (2) a filing for the data-through month SUBMITTED in a later month means the
+# reviewed cutoff no longer describes the file: ingestion must stop (the
+# submission-month guard), not recompute coverage. A Monthly filing submitted
+# within the incident month (Tesla files some early) is consistent with the
+# cutoff and must pass — the pre-2026-09-04 guard wrongly rejected it.
 last_iso = slurp.NHTSA_DATA_THROUGH_DATE[:7]
-last_label = datetime.date.fromisoformat(slurp.NHTSA_DATA_THROUGH_DATE).strftime('%b-%Y').upper()
+last_date = datetime.date.fromisoformat(slurp.NHTSA_DATA_THROUGH_DATE)
+last_label = last_date.strftime('%b-%Y').upper()
+next_label = (last_date.replace(day=1) + datetime.timedelta(days=32)).strftime('%b-%Y').upper()
 template = next(r for r in rows if r['Reporting Entity'] == 'Waymo LLC' and r['Report Type'].strip() == '5-Day' and r['Incident Date'].strip() == last_label)
-monthly = dict(template)
-monthly['Report ID'] = 'synthetic-monthly-guard'
-monthly['Same Incident ID'] = 'synthetic-monthly-guard'
-monthly['Report Type'] = 'Monthly'
+early_monthly = dict(template)
+early_monthly['Report ID'] = 'synthetic-early-monthly'
+early_monthly['Same Incident ID'] = 'synthetic-early-monthly'
+early_monthly['Report Type'] = 'Monthly'
+early_monthly['Report Submission Date'] = last_label
+regenerate(rows + [early_monthly])  # must not raise
+late_monthly = dict(early_monthly)
+late_monthly['Report ID'] = 'synthetic-late-monthly'
+late_monthly['Same Incident ID'] = 'synthetic-late-monthly'
+late_monthly['Report Submission Date'] = next_label
 try:
-    regenerate(rows + [monthly])
+    regenerate(rows + [late_monthly])
 except AssertionError as exc:
-    assert 'Monthly filings' in str(exc), exc
+    assert 'submission month' in str(exc), exc
 else:
-    raise AssertionError('slurp accepted a Monthly filing inside the data-through month')
+    raise AssertionError('slurp accepted a filing submitted after the data-through month')
 `;
 const run = spawnSync("python3", ["-c", py], {
   cwd: new URL("..", import.meta.url),

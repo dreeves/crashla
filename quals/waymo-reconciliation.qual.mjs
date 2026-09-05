@@ -34,7 +34,10 @@ vm.runInContext("incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 const pub = vm.runInContext("WAYMO_PUBLISHED_IPMM", ctx);
 const stats = vm.runInContext(`(() => {
   const way = INCIDENT_DATA.filter(r => r.helmer === "Waymo");
-  const vmtM = vmtRows.filter(r => r.helmer === "Waymo").reduce((s, r) => s + r.vmtBest, 0) / 1e6;
+  // Receipt-coverage-scaled: the numerator holds only reports received
+  // through the data-through cutoff, so the data-through month counts at its
+  // coverage fraction, not at full weight (the sanity section does the same).
+  const vmtM = vmtRows.filter(r => r.helmer === "Waymo").reduce((s, r) => s + r.vmtBest * r.coverage, 0) / 1e6;
   return {
     vmtM,
     injury: way.filter(r => INJURY_SEVERITIES.has(r.severity)).length / vmtM,

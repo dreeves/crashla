@@ -29,7 +29,7 @@ holds only five-day-track filings and grows ~6x in the next release). That
 page blocks scripted fetches, so `NHTSA_DATA_THROUGH_DATE` in `slurp.py`
 records the reviewed cutoff — one edit per release — and content asserts
 guard it: the cutoff month must be the newest incident month and the newest
-submission month, and no incident in that month may carry a Monthly filing.
+submission month (early Monthly filings inside that month are legitimate).
 The CSV's HTTP headers and bytes are deliberately not pinned (a redaction
 touch-up must not break ingestion; the Aug 27, 2026 re-publish changed one
 Stack AV narrative and nothing else).
@@ -39,9 +39,9 @@ third of the data-through month (the five-day clock runs from the company's
 notice, plus processing). `FIVE_DAY_RECEIPT_COVERAGE` = (best, lo, hi) is
 that fraction, measured from `data/snapshots` history as the share of a
 month's eventual five-day-track incidents present in the first release
-containing that month (`FIVE_DAY_RECEIPT_OBSERVATIONS`: Feb 0.47, Mar 0.36,
-May 0.28, Jun 0.28 of 2026; the anomalous May-15 release is excluded). It is
-re-measured and re-reviewed on each release.
+containing that month (`FIVE_DAY_RECEIPT_OBSERVATIONS`: Feb 0.50, Mar 0.35,
+May 0.28, Jun 0.28 of 2026, re-measured 2026-09-04; the anomalous May-15
+release is excluded). It is re-measured and re-reviewed on each release.
 
 It also reads two local input files:
 
@@ -51,20 +51,23 @@ It also reads two local input files:
 The slurp pipeline is:
 
 1. Fetch current + archive NHTSA CSVs directly from NHTSA
-2. Verify the reviewed data-through cutoff against the CSV contents (month
-   and five-day-only guards above)
+2. Verify the reviewed data-through cutoff against the CSV contents (the
+   newest incident month and newest submission month must both equal it)
 3. Normalize archive-only column-name differences
-4. Filter to each company's public robotaxi service (`Driver / Operator Type == "None"`, plus `"In-Vehicle (Commercial / Test)"` and `"Remote (Commercial / Test)"` for Tesla — the safety-monitor and remote-assistance modes of the same paid fleet)
-5. Deduplicate two-stage — by `Report ID` first (a report's `Same Incident ID`
-   can change between versions), then by `Same Incident ID` — keeping the
-   highest `Report Version`; `SPLIT_SAME_INCIDENT_REPORTS` in `slurp.py`
+4. Deduplicate by `Report ID` over every filed row, keeping the highest
+   `Report Version` (a report's `Same Incident ID` can change between
+   versions, and a later version can retire a report from scope)
+5. Filter the surviving versions to each company's public robotaxi service (`Driver / Operator Type == "None"`, plus `"In-Vehicle (Commercial / Test)"` and `"Remote (Commercial / Test)"` for Tesla — the safety-monitor and remote-assistance modes of the same paid fleet), then deduplicate by `Same Incident ID`; `SPLIT_SAME_INCIDENT_REPORTS` in `slurp.py`
    exempts reports that share an ID but describe distinct crashes
-6. Apply narrative-verified field overrides from `slurp.py` (severity, airbag,
-   state, vehicles-involved — see `quals/field-overrides.qual.mjs` for the
-   pins and the dict comments for each row's justification)
-7. Restrict to the app's VMT analysis window
-8. Join in local fault-fraction inputs from `data/faultfrac.csv`
-9. Read the VMT master from `data/vmt.csv`
+6. Read the VMT master from `data/vmt.csv` (first, to fail fast on a stale
+   ledger before any file is written)
+7. Sync the six mirrored columns of `data/faultfrac.csv` from the NHTSA
+   rows and load the fault fractions
+8. Restrict to the app's VMT analysis window
+9. Apply narrative-verified field overrides from `slurp.py` (severity, airbag,
+   state — see `quals/field-overrides.qual.mjs` for the pins; vehicles-involved
+   — see `quals/fatality-guard.qual.mjs`; the dict comments carry each row's
+   justification) and join in the fault fractions
 10. Apply the data-through month's receipt coverage (`coverage`,
     `coverage_min`, `coverage_max`) and the pooled Monthly-track incident
     coverage (`incident_coverage`, `_min`, `_max`) — the generated CSV in

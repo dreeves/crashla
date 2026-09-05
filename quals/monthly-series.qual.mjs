@@ -133,7 +133,7 @@ const plain = JSON.parse(JSON.stringify(metrics));
 assert(
   plain.months.includes("2025-06") && plain.months.includes("2026-02"),
   `Replicata: aggregate month series from inline incident data + inline VMT sheet CSV.
-Expectata: month axis includes the NHTSA window (2025-06 through 2026-02); may extend earlier with Waymo-only VMT.
+Expectata: month axis includes the NHTSA window (2025-06 through at least 2026-02; it runs to the data-through month); may extend earlier with Waymo-only VMT.
 Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 );
 
@@ -286,7 +286,7 @@ assert.ok(
     summaryByHelmer.Tesla.incSeriousInjury === 0 &&
     summaryByHelmer.Zoox.incSeriousInjury === 0,
   `Replicata: compute serious injury (SSI+) incident counts per helmer.
-Expectata: Waymo has 1\u201310 serious injury incidents (Moderate W/ Hosp + Fatality); Tesla and Zoox have 0.
+Expectata: Waymo has 1\u201310 serious injury incidents (Serious / Serious W/ Hospitalization / Fatality — Moderate W/ Hosp is KABCO B/C, not SSI+); Tesla and Zoox have 0.
 Resultata: Waymo=${summaryByHelmer.Waymo.incSeriousInjury} Tesla=${summaryByHelmer.Tesla.incSeriousInjury} Zoox=${summaryByHelmer.Zoox.incSeriousInjury}.`,
 );
 

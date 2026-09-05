@@ -17,7 +17,7 @@ const FRESH_THROUGH = "2026-08";
 // edit or a running-sum slip on the newest rows trips these.
 const CUME_PINS = {
   "waymo|2026-08": 314513000,
-  "tesla|2026-08": 2850000,
+  "tesla|2026-08": 3150000, // 2026-09-04: Jul/Aug re-pinned to the Sep-3 "1 million unsupervised miles" statement
   "zoox|2026-08": 3306000,
 };
 

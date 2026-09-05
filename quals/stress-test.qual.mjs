@@ -211,8 +211,8 @@ const flips = JSON.parse(JSON.stringify(vm.runInContext(`
   const out = {};
   for (const row of rows) {
     const stress = helmerHumanStress(row, "atfault");
-    const flip = faultFlipMultiplier(stress.av, stress.human);
-    out[row.helmer] = flip === null ? null : {mult: String(flip.mult), flipped: flip.flipped};
+    const flip = faultFlipMultiplier(stress.av, stress.human, row.incTotal);
+    out[row.helmer] = flip === null ? null : {mult: String(flip.mult), flipped: flip.flipped, sMax: row.incTotal / stress.av.k};
   }
   return {out,
     distHtml: document.getElementById("chart-distributions").innerHTML,
@@ -229,11 +229,22 @@ Expectata: a finite multiplier > 1 at which "robustly safer" degrades to "ambigu
 Resultata: flip was ${JSON.stringify(flips.out.Waymo)}.`,
 );
 
+// Tesla: 6.65 judged at-fault incidents out of 24. Even with every one of the
+// 24 at fault (s = 3.61) the verdict stays ambiguous, so the flip is
+// unreachable: the multiplier must be Infinity, not the 5.85x (39 at-fault
+// incidents out of 24) the uncapped search reported until 2026-09-04.
 assert.ok(
-  flips.out.Tesla !== null && flips.out.Tesla.flipped === "worse",
-  `Replicata: compute the faultfrac flip multiplier for Tesla's at-fault verdict.
-Expectata: scaling Tesla's judged fault mass up eventually flips ambiguous to robustly worse.
+  flips.out.Tesla !== null && flips.out.Tesla.mult === "Infinity" && flips.out.Tesla.flipped === null &&
+    flips.out.Tesla.sMax < 10,
+  `Replicata: compute the faultfrac flip multiplier for Tesla's at-fault verdict with the incident-count cap.
+Expectata: unreachable — mult Infinity, flipped null, because every Tesla incident at fault (s = incidents / k) leaves the verdict ambiguous.
 Resultata: flip was ${JSON.stringify(flips.out.Tesla)}.`,
+);
+assert.ok(
+  Number(flips.out.Waymo.mult) < flips.out.Waymo.sMax,
+  `Replicata: compare Waymo's flip multiplier to its cap (incidents / judged at-fault mass).
+Expectata: the flip is feasible (multiplier below the cap), so a finite value is reported.
+Resultata: flip was ${JSON.stringify(flips.out.Waymo)}.`,
 );
 
 // The k=0 branch: scaling zero judged at-fault mass can never change a
@@ -241,7 +252,7 @@ Resultata: flip was ${JSON.stringify(flips.out.Tesla)}.`,
 // happens to have zero mass this month (Zoox was zero until its incidents
 // were rated).
 const zeroMassFlip = vm.runInContext(
-  `faultFlipMultiplier({k: 0, vmtMin: 1e5, vmtBest: 2e5, vmtMax: 4e5, lo: 1, hi: 1}, {lo: 1e5, hi: 3e5})`,
+  `faultFlipMultiplier({k: 0, vmtMin: 1e5, vmtBest: 2e5, vmtMax: 4e5, lo: 1, hi: 1}, {lo: 1e5, hi: 3e5}, 5)`,
   ctx);
 assert.equal(
   zeroMassFlip,

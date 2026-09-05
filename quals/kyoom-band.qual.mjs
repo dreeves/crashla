@@ -61,22 +61,42 @@ Resultata: kyoom [${r.kmin}, ${r.kmax}].`,
 Expectata: cumulative miles don't decrease, so kyoom_min and kyoom_max are non-decreasing.
 Resultata: prev [${s.pkmin}, ${s.pkmax}], this [${r.kmin}, ${r.kmax}].`,
   );
+  // Local chain invariant (added 2026-09-04): this month's cumulative band
+  // can be no wider than last month's band plus this month's monthly band,
+  // because cume[t] = cume[t-1] + vmt[t]. The global running-sum check above
+  // cannot see a single loose knot (the Waymo Dec-2025 anchor sat at ±8.8%
+  // while its neighbours were ±1%, and Jan-2026's floor fell below Dec's
+  // floor plus January's minimum).
+  if (!first) assert.ok(
+    r.kmin >= s.pkmin + r.vmin && r.kmax <= s.pkmax + r.vmax,
+    `Replicata: compare ${r.helmer} ${r.month} kyoom band to last month's band plus this month's monthly band.
+Expectata: kyoom_min >= ${s.pkmin} + ${r.vmin} = ${s.pkmin + r.vmin} and kyoom_max <= ${s.pkmax} + ${r.vmax} = ${s.pkmax + r.vmax}.
+Resultata: kyoom [${r.kmin}, ${r.kmax}].`,
+  );
   if (r.kmin > s.min || r.kmax < s.max) tightened += 1;
   s.pkmin = r.kmin;
   s.pkmax = r.kmax;
 }
 
-// The Tesla Q1-2026 cumulative anchor must actually tighten the band somewhere.
-const teslaMar = rows.find(r => r.helmer === "tesla" && r.month === "2026-03");
+// The Tesla Q1-2026 deck-chart anchor must actually tighten the band AT that
+// row (not merely somewhere in the file: 101 of 105 rows tighten, so a global
+// count could not fail).
+const teslaRun = { min: 0, max: 0 };
+let teslaMar = null;
+for (const r of rows.filter(r => r.helmer === "tesla")) {
+  teslaRun.min += r.vmin;
+  teslaRun.max += r.vmax;
+  if (r.month === "2026-03") { teslaMar = { ...r, runMin: teslaRun.min, runMax: teslaRun.max }; break; }
+}
 assert.ok(
-  teslaMar && (teslaMar.kmax - teslaMar.kmin) > 0,
+  teslaMar !== null,
   "Replicata: locate the Tesla 2026-03 row. Expectata: present. Resultata: missing.",
 );
 assert.ok(
-  tightened > 0,
-  `Replicata: count rows whose kyoom band is strictly tighter than the running sum.
-Expectata: at least one anchored row (the cumulative anchor is exercised, not just the running-sum default).
-Resultata: ${tightened} tightened rows.`,
+  teslaMar.kmin > teslaMar.runMin && teslaMar.kmax < teslaMar.runMax,
+  `Replicata: compare the Tesla 2026-03 kyoom band to the running sum of Tesla's monthly bands.
+Expectata: strictly tighter on both edges — kyoom_min ${teslaMar.kmin} > ${teslaMar.runMin} and kyoom_max ${teslaMar.kmax} < ${teslaMar.runMax} (the deck chart pins the cumulative).
+Resultata: not tighter.`,
 );
 
 console.log(`qual pass: kyoom cumulative band is bracketed, monotonic, anchor-tightened (${tightened} rows)`);

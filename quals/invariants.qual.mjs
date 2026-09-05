@@ -64,20 +64,35 @@ mustThrowParse("header without coverage_min/coverage_max",
 // incident_coverage = 0 (must be > 0)
 mustThrowParse("incident_coverage = 0",
   goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,1,1,0,0,0,test");
+// Each rejection case below is a well-formed 15-field row that violates
+// exactly the labeled invariant, and the thrown message must name that
+// invariant: until 2026-09-04 these rows had 13 fields, so they tripped the
+// column-count regex and the labeled asserts went unexercised.
+function mustThrowParseWith(label, csv, messageRe) {
+  let message = null;
+  try {
+    vm.runInContext(`parseVmtCsv(${JSON.stringify(csv)})`, ctx);
+  } catch (e) {
+    message = String(e.message || e);
+  }
+  assert.ok(message !== null && messageRe.test(message),
+    `Replicata: parseVmtCsv rejects ${label}.\nExpectata: throw with a message matching ${messageRe}.\nResultata: ${message === null ? "no throw" : JSON.stringify(message)}.`);
+}
 // incident_coverage_min > incident_coverage (ordering violation)
-mustThrowParse("incCovMin > incCov",
-  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,0.5,0.6,0.7,test");
+mustThrowParseWith("incCovMin > incCov",
+  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,1,1,0.5,0.6,0.7,test", /incident_coverage_min/i);
 // incident_coverage_max < incident_coverage (ordering violation)
-mustThrowParse("incCovMax < incCov",
-  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,0.5,0.3,0.4,test");
+mustThrowParseWith("incCovMax < incCov",
+  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1,1,1,0.5,0.3,0.4,test", /incident_coverage_max/i);
 // coverage > 1 (must be <= 1)
-mustThrowParse("coverage > 1",
-  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1.5,1,1,1,test");
-// negative vmt
-mustThrowParse("negative vmt",
-  goodHeader + "\ntesla,2025-07,-100,200,150,250,80,120,1,1,1,1,test");
+mustThrowParseWith("coverage > 1",
+  goodHeader + "\ntesla,2025-07,100,200,150,250,80,120,1.5,1,1,1,1,1,test", /coverage/i);
+// negative vmt: the row regex admits only unsigned numbers, so a minus sign
+// is a malformed row (the numeric >= 0 asserts are unreachable from CSV)
+mustThrowParseWith("negative vmt",
+  goodHeader + "\ntesla,2025-07,-100,200,150,250,80,120,1,1,1,1,1,1,test", /malformed/i);
 // unknown helmer
-mustThrowParse("unknown helmer",
-  goodHeader + "\nUnknownCo,2025-07,100,200,150,250,80,120,1,1,1,1,test");
+mustThrowParseWith("unknown helmer",
+  goodHeader + "\nUnknownCo,2025-07,100,200,150,250,80,120,1,1,1,1,1,1,test", /helmer/i);
 
 console.log("qual pass: fail-loud invariants and idempotent estimator rendering");

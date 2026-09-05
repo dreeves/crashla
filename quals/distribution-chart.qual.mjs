@@ -504,11 +504,12 @@ Expectata: a single rise-then-fall (unimodal) -- no quadrature bumps, no flat-to
 Resultata: ${JSON.stringify(bumpy)}.`,
 );
 
-// --- 7. Peak-marker dot sits at the MPI value its own tooltip reports ---
-// The dot must be at mapX(markerX) where markerX = the MLE point estimate (or its
-// lower bound when k=0 makes the MLE infinite) -- the same finite/∞ split mpiPoint
-// uses for the displayed number -- NOT at the curve's mode (which sits left of the
-// stated MPI on a right-skewed bell). Replicates the chart's own mapX exactly.
+// --- 7. Marker dots sit at the MPI values their own tooltips report ---
+// Two dots per curve: "Median" at mapX(postMedian) (the marginal posterior's
+// median, the same quantity as the CI) and "Peak" at the sampled density's
+// refined argmax. (The old MLE/mpiPoint marker convention was retired
+// 2026-06-19; distribution-peak.qual pins that the frame contains every peak.)
+// Replicates the chart's own mapX exactly.
 const markerCheck = vm.runInContext(`
 (() => {
   incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
