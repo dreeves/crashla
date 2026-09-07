@@ -1,37 +1,24 @@
-/* Handwriting face, self-hosted (no third-party requests from this page).
-   Patrick Hand is the face Nicky Case uses in ncase.me/crowds and
-   ncase.me/remember; SIL OFL, see fonts/PatrickHand-OFL.txt. Two subsets so
-   accented sources and city names do not fall back mid-word. */
-@font-face {
-  font-family: "Patrick Hand";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(fonts/PatrickHand-latin.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-                 U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
-                 U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: "Patrick Hand";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(fonts/PatrickHand-latin-ext.woff2) format("woff2");
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
-                 U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
 /* Design tokens: the single palette. Every gray/red/verdict-color in this
    file must come from here so the whole app agrees with itself. */
 :root {
-  /* Two type roles. --hand is the drawn face: headings, buttons, axis labels,
-     legends -- the chrome you look AT. --sans is the face you read THROUGH:
-     prose, tables, every figure. Patrick Hand has one weight, no tabular
-     figures, and no Greek, so the statistics stay on --sans on purpose. */
-  --hand: "Patrick Hand", "Bradley Hand", "Segoe Print", cursive;
-  --sans: system-ui, -apple-system, sans-serif;
-  --mono: "SF Mono", "Menlo", "Consolas", monospace;
+  /* One face: the platform's own UI face, so every OS renders the page in the
+     type it renders itself in, with real weights and tabular figures. The
+     sketch skin lives in the drawn rules, wobbled boxes and pills, not in the
+     lettering (the Patrick Hand handwriting face was retired 2026-09-07). */
+  --sans: system-ui, sans-serif;
+
+  /* Type scale: six steps, the sizes the page already used with the
+     near-duplicates between them removed. Chart text inside the SVGs stays in
+     px (viewBox user units) on .month-tick and .month-label. */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.85rem;
+  --fs-base: 1.0625rem;
+  --fs-lg: 1.2rem;
+  --fs-xl: 1.6rem;
+  --fs-2xl: 2.4rem;
+  --lh-body: 1.6;
+  --lh-tight: 1.2;
+  --lh-dense: 1.45;
 
   /* #333 is ncase.me's body ink; the lighter two step down from it. */
   --ink: #333333;
@@ -49,7 +36,7 @@
 
   /* A drawn line has weight, so --line IS ink; --line-soft is the quiet rule
      that separates table rows without fencing them in. */
-  --line: #333333;
+  --line: var(--ink);
   --line-soft: #cdc7bc;
 
   --paper: #fffdf8;
@@ -99,16 +86,27 @@
   --shadow-tip: 0 3px 10px rgba(51, 51, 51, 0.35);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Form controls do not inherit typography from the page in any browser. One
+   reset so a button or select takes its container's face and size; longhands
+   rather than the font shorthand so body's line-height is not dragged in. */
+button, select { font-family: inherit; font-size: inherit; color: inherit; }
+/* iOS Safari inflates some text blocks after an orientation change; 100% (not
+   none) keeps every size exactly what this sheet says. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   font-family: var(--sans);
-  font-size: 1.0625rem;
-  line-height: 1.6;
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
   color: var(--ink);
   background: var(--paper);
-  max-width: 960px;
+  max-width: 60rem;
   margin: 0 auto;
   padding: 1rem;
 }
+p, li, .colophon { text-wrap: pretty; overflow-wrap: break-word; }
+/* Reading measure: prose blocks stop near 70 characters a line; tables and
+   charts keep the full column. */
+.abstract, #sanity-checks p, .month-note { max-width: 70ch; }
 a {
   color: var(--accent);
   /* ncase.me lifts a link 2px on hover instead of changing its underline. */
@@ -120,28 +118,29 @@ a:hover { color: var(--accent-ink); top: -2px; }
 input { accent-color: var(--ink); }
 .ai-text { color: var(--ai-ink); }
 
-/* Everything set in --hand. Patrick Hand ships one weight, so a browser asked
-   for bold smears the outline instead; ncase.me's own trick is to keep the
-   weight and lay a 1px copy of the glyph beside itself. */
-h1, h2, h3, .sec-head, .filters button, th, .month-tick, .month-label,
-.month-legend-label, .month-helmer-toggle, #month-metric-select,
-.date-range-label, .date-range-tick-label, .date-range-end-label,
-.mpi-card-helmer, .incident-count, .month-note,
-.predmarket-loading, .colophon {
-  font-family: var(--hand);
+/* The display tier: tighter leading, balanced wraps. */
+h1, h2, h3, .mpi-card-helmer {
+  line-height: var(--lh-tight);
+  text-wrap: balance;
 }
-h1, h2, h3, .mpi-card-helmer, .date-range-label {
-  font-weight: 400;
-  text-shadow: 1px 0 0 currentColor;
+/* One emphasis weight, headings included. */
+h1, h2, h3, .mpi-card-helmer, b, strong, th, .mpi-card-mpi, .mpi-card-mult, .stress-badge, .pm-card-odds {
+  font-weight: 600;
+}
+/* Tabular figures wherever figures stack; prose keeps proportional ones. */
+table, .mpi-card, .predmarket-grid, .chart-tip, .month-svg, #date-range-controls {
+  font-variant-numeric: tabular-nums;
+}
+/* Dense data blocks: shorter lines, tighter leading. */
+.mpi-card, .predmarket-grid, .chart-tip { line-height: var(--lh-dense); }
+/* Quiet captions: one role for the notes, counts and credits around the data. */
+.abstract-links, .incident-count, .month-note, .predmarket-loading, .colophon {
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
 }
 h1 {
-  font-size: 2.4rem;
-  line-height: 1.15;
-  letter-spacing: 0.01em;
+  font-size: var(--fs-2xl);
   margin: 0.75rem 0;
-  /* A title set down slightly off-square, the way a hand would letter it. */
-  transform: rotate(-0.7deg);
-  transform-origin: left center;
 }
 .abstract {
   margin: 0.5rem 0 1.6rem;
@@ -156,14 +155,11 @@ h1 {
 .abstract li {
   margin-bottom: 0.15rem;
 }
-.abstract .abstract-links {
+.abstract-links {
   margin: 0.3rem 0 0;
-  font-size: 0.9rem;
-  color: var(--ink-soft);
 }
 h2 {
-  font-size: 1.6rem;
-  letter-spacing: 0.01em;
+  font-size: var(--fs-xl);
   margin: 2rem 0 0.75rem;
 }
 /* The heading rule is drawn, not ruled. */
@@ -180,8 +176,10 @@ h2::after {
   mask-repeat: repeat-x;
   -webkit-mask-repeat: repeat-x;
 }
-h3 { font-size: 1.2rem; margin: 1rem 0 0.5rem; }
-.sec-head { cursor: pointer; user-select: none; }
+h3 { font-size: var(--fs-lg); margin: 1rem 0 0.5rem; }
+.sec-head { cursor: pointer; }
+/* Safari still needs the prefixed twin. */
+.sec-head, .table-scroll th, .month-helmer-toggle { -webkit-user-select: none; user-select: none; }
 /* CSS-drawn down-triangle (▾) rather than a Unicode glyph, so it renders even
    in browsers/fonts lacking the glyph (e.g. some in-car browsers showed tofu). */
 .sec-head::before {
@@ -206,19 +204,21 @@ h3 { font-size: 1.2rem; margin: 1rem 0 0.5rem; }
   border: 2px solid var(--line);
   border-radius: var(--wobble-pill);
   background: var(--card);
-  color: var(--ink);
   cursor: pointer;
-  font-size: 1rem;
   transition: transform 0.1s ease-out, background 0.1s ease-out;
 }
 .filters button:not(.active):hover { background: var(--wash); transform: translateY(-2px); }
-.filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .filters button:active { transform: translateY(1px) scale(0.98); }
-.filters button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.filters button.active { background: var(--ink); color: var(--paper); }
+/* One focus ring for every custom-styled control outside a scroll container. */
+.filters button:focus-visible, #month-metric-select:focus-visible, .pm-refresh:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   margin-top: 0.5rem;
 }
 th, td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px dashed var(--line-soft); }
@@ -226,26 +226,41 @@ th {
   background: var(--wash);
   position: sticky;
   top: 0;
-  font-weight: 400;
-  font-size: 1rem;
-  text-shadow: 1px 0 0 currentColor;
 }
-th .sort-arrow { font-size: 0.7em; margin-left: 0.2em; }
-tr:hover { background: var(--accent-wash); }
+/* Sort direction drawn like the section triangle, keyed on the aria-sort the
+   renderer already sets, so it never depends on a glyph the face lacks. */
+th[aria-sort]::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 0.3em solid transparent;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0.38em solid currentColor;
+  margin-left: 0.35em;
+  vertical-align: middle;
+}
+th[aria-sort="descending"]::after {
+  border-bottom: none;
+  border-top: 0.38em solid currentColor;
+}
+/* Numeric cells: right-aligned, headers matching their data. */
+td.num, th.num { text-align: right; white-space: nowrap; }
 /* Scroll container so the sticky header actually sticks (and hundreds of
    incident rows don't make the page itself miles long) */
-.table-scroll { overflow: auto; max-height: 80vh; }
+.table-scroll { overflow: auto; max-height: 80vh; overscroll-behavior-x: contain; }
 .table-scroll th {
   cursor: pointer;
-  user-select: none;
   /* border-collapse drops sticky-header borders while stuck; box-shadow stands in */
   border-bottom: none;
   box-shadow: 0 2px 0 var(--line);
 }
 .table-scroll th:hover { background: var(--wash-deep); }
 .table-scroll th:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.table-scroll tbody tr:nth-child(even) { background: var(--wash); }
-.table-scroll tbody tr:hover { background: var(--accent-wash); }
+:where(.table-scroll) tbody tr:nth-child(even) { background: var(--wash); }
+tbody tr:hover { background: var(--accent-wash); }
+/* Wide generated tables pan inside their own box instead of widening the page. */
+.table-wrap { overflow-x: auto; }
 .narrative-cell {
   max-width: 300px;
   white-space: nowrap;
@@ -254,13 +269,11 @@ tr:hover { background: var(--accent-wash); }
   cursor: pointer;
 }
 .narrative-cell.expanded { white-space: normal; }
-.cbi { color: var(--ink-faint); font-style: italic; }
-.incident-count { font-size: 1.05rem; color: var(--ink-soft); margin: 0.35rem 0; }
+.cbi { color: var(--ink-soft); font-style: italic; }
+.incident-count { margin: 0.35rem 0; }
 .fault-cell {
-  font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
-  cursor: help;
 }
 .fault-bar {
   display: inline-block;
@@ -275,8 +288,6 @@ tr:hover { background: var(--accent-wash); }
   margin-bottom: 1rem;
 }
 .month-note {
-  font-size: 1.05rem;
-  color: var(--ink-soft);
   margin-bottom: 0.6rem;
 }
 /* Date range slider */
@@ -290,7 +301,7 @@ tr:hover { background: var(--accent-wash); }
   margin-bottom: 0.2rem;
 }
 .date-range-label {
-  font-size: 1.05rem;
+  font-size: var(--fs-base);
   color: var(--ink-soft);
 }
 .date-filtered .date-range-label {
@@ -323,9 +334,7 @@ tr:hover { background: var(--accent-wash); }
   background: var(--accent-wash);
   border: 2px solid var(--accent);
   border-radius: var(--wobble-pill);
-  box-sizing: border-box;
   z-index: 1;
-  pointer-events: auto;
   cursor: grab;
   touch-action: none;
 }
@@ -338,8 +347,6 @@ tr:hover { background: var(--accent-wash); }
   width: 100%;
   height: 100%;
   background: transparent;
-  margin: 0;
-  padding: 0;
   pointer-events: none;
   outline: none;
 }
@@ -386,7 +393,7 @@ tr:hover { background: var(--accent-wash); }
 .date-range-end-label {
   position: absolute;
   top: 20px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--ink-soft);
   white-space: nowrap;
   pointer-events: none;
@@ -407,7 +414,7 @@ tr:hover { background: var(--accent-wash); }
   margin: -7px auto 0;
 }
 .date-range-tick-label {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--ink-soft);
   text-align: center;
   margin-top: 1px;
@@ -426,22 +433,18 @@ tr:hover { background: var(--accent-wash); }
   gap: 0.9rem;
 }
 /* Charts sit straight on the paper. A frame around each one would be four more
-   machined lines competing with the drawn ones everywhere else. */
+   machined lines competing with the drawn ones everywhere else. Chart text
+   inherits the reading face from body. */
 .month-svg {
   width: 100%;
   height: auto;
   display: block;
-  background: transparent;
 }
 .month-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
   margin-top: 0.3rem;
-  font-size: 0.82rem;
-}
-#month-legend-speed {
-  row-gap: 0.25rem;
 }
 #month-legend-mpi-helmers {
   gap: 1.5rem;
@@ -452,9 +455,6 @@ tr:hover { background: var(--accent-wash); }
 }
 .metric-select { cursor: pointer; }
 #month-metric-select {
-  font-family: var(--hand);
-  font-size: 1.05rem;
-  color: var(--ink);
   background: var(--card);
   border: 2px solid var(--line);
   border-radius: var(--wobble-pill);
@@ -471,18 +471,8 @@ tr:hover { background: var(--accent-wash); }
 .month-legend-item-empty {
   opacity: 0.4;
 }
-.month-legend-label {
-  font-size: 1.05rem;
-  color: var(--ink-soft);
-}
-.month-legend-break {
-  flex-basis: 100%;
-  height: 0;
-}
 .month-helmer-toggle {
   cursor: pointer;
-  user-select: none;
-  font-size: 1.05rem;
 }
 .month-helmer-toggle input[type="checkbox"],
 .month-helmer-toggle input[type="radio"] {
@@ -501,8 +491,10 @@ tr:hover { background: var(--accent-wash); }
   border-radius: var(--wobble-nib);
   display: inline-block;
 }
+/* Gridlines of the distribution and forecast charts: the lightest warm gray. */
 .month-grid {
-  display: none;
+  stroke: var(--wash-deep);
+  stroke-width: 0.5;
 }
 /* Axes get a drawn line's weight and rounded ends. They are deliberately NOT
    run through the roughen filter: a filter region has to cover the whole plot
@@ -539,9 +531,6 @@ tr:hover { background: var(--accent-wash); }
   background: var(--ink-soft);
   opacity: 0.8;
 }
-.month-mark-tri {
-  stroke-width: 1.4;
-}
 .month-tick {
   fill: var(--ink-soft);
   font-size: 13px;
@@ -564,31 +553,28 @@ tr:hover { background: var(--accent-wash); }
   background: var(--card);
   border: 2px solid var(--line);
   border-radius: var(--wobble-c);
-  border-left: 5px solid var(--ink-faint);
+  border-left-width: 5px;
   padding: 0.55rem 0.75rem;
   box-shadow: var(--shadow);
 }
 .mpi-cards > .mpi-card:nth-child(even) { border-radius: var(--wobble-d); }
 .mpi-card-helmer {
-  font-size: 1.2rem;
+  font-size: var(--fs-lg);
   margin-bottom: 0.15rem;
 }
 .mpi-card-vmt {
-  font-size: 0.75rem;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
   margin-bottom: 0.35rem;
-  font-variant-numeric: tabular-nums;
 }
 .mpi-card-stress {
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   color: var(--ink-soft);
   margin-bottom: 0.45rem;
-  font-variant-numeric: tabular-nums;
 }
 .mpi-card-metric {
   margin-bottom: 0.4rem;
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: var(--fs-sm);
 }
 .mpi-card-metric:last-child {
   margin-bottom: 0;
@@ -596,69 +582,35 @@ tr:hover { background: var(--accent-wash); }
 .mpi-card-metric:not(.primary) {
   color: var(--ink-soft);
 }
-.mpi-card-formula {
-  font-variant-numeric: tabular-nums;
-}
-.mpi-card-mpi {
-  font-weight: 600;
-}
-.mpi-card-metric.primary .mpi-card-mpi {
-  font-size: 0.95rem;
-}
 .mpi-card-mult {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: var(--fs-xs);
   margin-left: 0.3em;
-  opacity: 0.7;
 }
 .mpi-card-mult.safer { color: var(--safer); }
 .mpi-card-mult.worse { color: var(--worse); }
 .mpi-card-ci {
-  font-size: 0.72rem;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
 }
+/* A finger-sized hit area on the [?] hint without moving the line. */
 .mpi-card-src {
-  cursor: help;
-  color: var(--ink-faint);
-  font-size: 0.65rem;
+  padding: 0.4rem;
+  margin: -0.4rem;
 }
 .mpi-card-sources {
-  font-size: 0.65rem;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
   margin-top: 0.1rem;
 }
 .source-table {
-  font-size: 0.8rem;
-  border-collapse: collapse;
-  margin: 0.5rem 0;
-  width: 100%;
+  margin-bottom: 0.5rem;
 }
 .source-table th, .source-table td {
   border: 1px dashed var(--line-soft);
   padding: 0.25rem 0.5rem;
-  text-align: left;
 }
 .source-table th {
-  background: var(--wash);
   border-bottom: 2px solid var(--line);
-}
-.source-table td:nth-child(2), .source-table td:nth-child(3) {
-  text-align: right;
-  white-space: nowrap;
-}
-.source-table a {
-  font-weight: 600;
-}
-.stress-table td:nth-child(3),
-.stress-table td:nth-child(4),
-.stress-table td:nth-child(5),
-.stress-table td:nth-child(6) {
-  text-align: right;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.stress-badge {
-  font-weight: 700;
 }
 .stress-badge.safer {
   color: var(--safer);
@@ -689,14 +641,12 @@ tr:hover { background: var(--accent-wash); }
   color: var(--ink);
 }
 @media (max-width: 760px) {
+  :root {
+    --fs-2xl: 1.9rem;
+    --fs-xl: 1.45rem;
+  }
   body {
     padding: 0.75rem;
-  }
-  h1 {
-    font-size: 1.9rem;
-  }
-  h2 {
-    font-size: 1.45rem;
   }
   .month-tick {
     font-size: 14px;
@@ -709,14 +659,6 @@ tr:hover { background: var(--accent-wash); }
 /* Prediction markets panel */
 .predmarket-panel {
   margin: 1.2rem 0 1.5rem;
-}
-.predmarket-loading {
-  font-size: 1.05rem;
-  color: var(--ink-faint);
-}
-.predmarket-error {
-  font-size: 0.85rem;
-  color: var(--worse);
 }
 /* One drawn box around the whole list. Stroking each row separately gave
    25 stacked rectangles, and the wobbled corners only landed on the first and
@@ -740,23 +682,22 @@ tr:hover { background: var(--accent-wash); }
 }
 .pm-card:first-child { border-top: none; }
 .pm-card-question {
-  font-size: 0.9rem;
-  line-height: 1.35;
+  font-size: var(--fs-sm);
   flex: 1;
   color: var(--ink-soft);
 }
-.pm-card-question a {
+/* Links inside lists of links (market questions, card citations) keep the
+   quiet ink with a rule-colored underline; links in running prose stay accent
+   blue. Every link keeps its underline. */
+.pm-card-question a, .mpi-card-vmt a, .mpi-card-sources a {
   color: var(--ink-soft);
-  text-decoration: none;
+  text-decoration-color: var(--line-soft);
 }
-.pm-card-question a:hover {
+.pm-card-question a:hover, .mpi-card-vmt a:hover, .mpi-card-sources a:hover {
   color: var(--accent);
 }
 .pm-card-odds {
-  font-family: var(--mono);
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
   white-space: nowrap;
   min-width: 3em;
   text-align: right;
@@ -765,9 +706,8 @@ tr:hover { background: var(--accent-wash); }
 .pm-card-odds.mid  { color: var(--iffy); }
 .pm-card-odds.low  { color: var(--worse); }
 .pm-card-vol {
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
   white-space: nowrap;
   min-width: 3.5em;
   text-align: right;
@@ -776,19 +716,15 @@ tr:hover { background: var(--accent-wash); }
   padding-left: 1.6rem;
   background: var(--wash);
 }
-.pm-subcard .pm-card-question { font-size: 0.85rem; }
-.pm-subcard .pm-card-odds { font-size: 0.8rem; }
 .pm-footer {
   display: flex;
   align-items: center;
   gap: 0.5em;
-  font-size: 0.75rem;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
   margin-top: 0.45rem;
   justify-content: flex-end;
 }
-.pm-footer a { text-decoration: none; }
-.pm-footer a:hover { text-decoration: underline; }
 .pm-dot {
   display: inline-block;
   width: 7px;
@@ -800,10 +736,8 @@ tr:hover { background: var(--accent-wash); }
 .pm-dot.stale  { background: var(--iffy); }
 .pm-dot.rotten { background: var(--worse); }
 .pm-age {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
 }
 .pm-refresh {
   display: inline-flex;
@@ -815,20 +749,17 @@ tr:hover { background: var(--accent-wash); }
   border: 2px solid var(--line-soft);
   border-radius: var(--wobble-c);
   cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--ink-faint);
-  padding: 0;
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
   transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s ease-out;
 }
-.pm-refresh:hover { background: var(--wash); border-color: var(--line); color: var(--ink-soft); transform: translateY(-2px); }
+.pm-refresh:hover { background: var(--wash); border-color: var(--line); color: var(--ink); transform: translateY(-2px); }
 .pm-refresh:disabled { cursor: default; opacity: 0.35; }
 
 .colophon {
   position: relative;
   margin-top: 3rem;
   padding: 1.1rem 0 0.5rem;
-  font-size: 1.05rem;
-  color: var(--ink-soft);
   text-align: center;
 }
 /* Torn-off-the-page rule above the footer, drawn like the heading rules. */
@@ -865,12 +796,19 @@ tr:hover { background: var(--accent-wash); }
   padding: 0.5rem 0.7rem;
   background: var(--ink);
   color: var(--paper);
-  font-family: var(--sans);
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: var(--fs-sm);
   border-radius: var(--wobble-c);
   white-space: pre-line;
   pointer-events: none;
   box-shadow: var(--shadow-tip);
-  font-variant-numeric: tabular-nums;
+}
+
+/* Under the OS reduce-motion setting the hover lifts, press and triangle turn
+   stop moving; colour and background feedback stay, since they are not motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { transition-duration: 0s; }
+  a:hover, .filters button:not(.active):hover, .filters button:active, .pm-refresh:hover {
+    top: 0;
+    transform: none;
+  }
 }

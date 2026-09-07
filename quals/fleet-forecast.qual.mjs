@@ -40,8 +40,8 @@ assert.equal(
   bottomLabelInset,
   9,
   `Replicata: render the fleet forecast at 320px through 1000px wide.
-Expectata: the bottom label's baseline is inset nine SVG units, keeping Patrick
-Hand's descender inside the viewport in Chromium, Firefox, and WebKit.
+Expectata: the bottom label's baseline is inset nine SVG units, keeping the
+label's descenders inside the viewport in Chromium, Firefox, and WebKit.
 Resultata: ${JSON.stringify(bottomLabel?.[2])} was inset ${bottomLabelInset}.`,
 );
 

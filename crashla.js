@@ -1725,11 +1725,9 @@ function drawSingleMonthAxes(
   const labelStep = months.length <= 12 ? 1 : months.length <= 24 ? 2 : 3;
   return `
     ${months.map((month, i) => `
-      <line class="month-grid" x1="${mapX(i)}" y1="${mTop}" x2="${mapX(i)}" y2="${axisY}"${i % labelStep !== 0 ? ' style="opacity:0.3"' : ""}></line>
       ${i === months.length - 1 || (i % labelStep === 0 && months.length - 1 - i >= labelStep) ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
     `).join("")}
     ${yTicks.map(y => `
-      <line class="month-grid" x1="${mLeft}" y1="${mapY(y)}" x2="${mLeft + pW}" y2="${mapY(y)}"></line>
       <text class="month-tick" x="${mLeft - 8}" y="${mapY(y) + 4}" text-anchor="end">${yFmt(y)}</text>
     `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${axisY}"></line>
@@ -1879,7 +1877,7 @@ function renderAllHelmersMpiChart(series) {
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
       const qOpacity = (1 - mpi.covRatio).toFixed(3);
       const glyph = renderDot(x, yc, color, 1, k === 0);
-      const qmark = `<text x="${(x + 7).toFixed(2)}" y="${(yc - 3).toFixed(2)}" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#555;opacity:${qOpacity};pointer-events:none">?</text>`;
+      const qmark = `<text class="month-tick" x="${(x + 7).toFixed(2)}" y="${(yc - 3).toFixed(2)}" text-anchor="middle" style="opacity:${qOpacity};pointer-events:none">?</text>`;
       return `<g opacity="${dotOpacity}">${glyph}</g>${qmark}<circle cx="${x}" cy="${yc}" r="12" fill="none" data-tip="${escAttr(tip)}"></circle>`;
     }).join("")
   ).join("");
@@ -2057,7 +2055,7 @@ function renderDistributionChart(series) {
   const axes = `
     ${ticks.map(v => `
       <line x1="${mapX(v).toFixed(2)}" y1="${mTop}" x2="${mapX(v).toFixed(2)}" y2="${baseline}"
-        style="stroke:#e0e4ef;stroke-width:0.5"></line>
+        class="month-grid"></line>
       <text class="month-tick" x="${mapX(v).toFixed(2)}" y="${svgH - 16}" text-anchor="middle">${fmtMiles(v)}</text>
     `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
@@ -2113,10 +2111,10 @@ function renderDistributionChart(series) {
       ["Peak", c.peakX, `median ${fmtMiles(c.est.postMedian)}`],
       ["Median", c.est.postMedian, `peak ${fmtMiles(c.peakX)}`],
     ];
-    const dotStyle = c.est.k === 0 ? `fill:none;stroke:${color}` : `fill:${color};stroke:#fff`; // k=0: hollow (prior only)
+    const dotStyle = c.est.k === 0 ? `fill:none;stroke:${color}` : `fill:${color}`; // k=0: hollow (prior only)
     return dots.map(([label, mx, other]) => {
       const tip = `${label}: ${fmtMiles(mx)}${c.est.k !== null ? `\n${other}${tail}` : ""}\n${ciLine}`;
-      return `<circle cx="${mapX(mx).toFixed(2)}" cy="${mapY(c.densityFn(mx)).toFixed(2)}" r="3.5" style="${dotStyle};stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
+      return `<circle cx="${mapX(mx).toFixed(2)}" cy="${mapY(c.densityFn(mx)).toFixed(2)}" r="3.5" class="month-dot" style="${dotStyle}" data-tip="${escAttr(tip)}"></circle>`;
     }).join("");
   }).join("");
 
@@ -2423,7 +2421,7 @@ function renderFleetForecastChart() {
   const axes = `
     ${ticks.map(v => `
       <line x1="${mapX(v).toFixed(2)}" y1="${mTop}" x2="${mapX(v).toFixed(2)}" y2="${baseline}"
-        style="stroke:#e0e4ef;stroke-width:0.5"></line>
+        class="month-grid"></line>
       <text class="month-tick" x="${mapX(v).toFixed(2)}" y="${baseline + 16}" text-anchor="middle">${spec.fmt(v)}</text>
     `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
@@ -2447,7 +2445,7 @@ function renderFleetForecastChart() {
 
   const markers = curves.map(c => {
     const tip = `${c.legendLabel}\nMedian: ${fmtWhole(c.median)}\n90% CI: ${fmtWhole(c.lo90)} – ${fmtWhole(c.hi90)}`;
-    return `<circle cx="${mapX(c.median).toFixed(2)}" cy="${mapY(c.densityFn(c.median)).toFixed(2)}" r="3.5" style="fill:${c.color};stroke:#fff;stroke-width:1.5" data-tip="${escAttr(tip)}"></circle>`;
+    return `<circle cx="${mapX(c.median).toFixed(2)}" cy="${mapY(c.densityFn(c.median)).toFixed(2)}" r="3.5" class="month-dot" style="fill:${c.color}" data-tip="${escAttr(tip)}"></circle>`;
   }).join("");
 
   return `
@@ -2749,7 +2747,7 @@ function renderFleetTimeSeriesChart() {
     const fcTip = `${lane.label} · ${fc.month} (forecast)\nMedian: ${spec.fmt(fc.best)}\n90% CI: ${spec.fmt(fc.lo)} – ${spec.fmt(fc.hi)}`;
     marks.push(`
       <line class="month-err" x1="${fx.toFixed(2)}" y1="${mapY(fc.lo).toFixed(2)}" x2="${fx.toFixed(2)}" y2="${mapY(fc.hi).toFixed(2)}" style="stroke:${color}"></line>
-      <circle cx="${fx.toFixed(2)}" cy="${mapY(fc.best).toFixed(2)}" r="4" style="fill:#fff;stroke:${color};stroke-width:1.5" data-tip="${escAttr(fcTip)}"></circle>`);
+      <circle cx="${fx.toFixed(2)}" cy="${mapY(fc.best).toFixed(2)}" r="4" class="month-dot" style="fill:var(--card);stroke:${color}" data-tip="${escAttr(fcTip)}"></circle>`);
   }
 
   return `
@@ -2920,7 +2918,7 @@ function renderMpiSummaryCards(series) {
             ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`).join(", ")}</div>`
             : "";
           const srcHint = (est.k === null && humanBench && humanBench.src)
-            ? ` <span class="mpi-card-src" title="${escAttr(humanBench.src)}">[?]</span>`
+            ? ` <span class="mpi-card-src" data-tip="${escAttr(humanBench.src)}">[?]</span>`
             : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
@@ -2942,10 +2940,10 @@ function renderStressTestTable(series) {
       return `<tr>
         <td>${escHtml(row.helmer)}</td>
         <td>${escHtml(stress.metric.cardLabel)}</td>
-        <td>${fmtCount(stress.av.k)}</td>
-        <td>${fmtWhole(stress.av.postMedian)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
-        <td>${fmtWhole(stress.human.lo)} \u2013 ${fmtWhole(stress.human.hi)}</td>
-        <td>${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</td>
+        <td class="num">${fmtCount(stress.av.k)}</td>
+        <td class="num">${fmtWhole(stress.av.postMedian)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
+        <td class="num">${fmtWhole(stress.human.lo)} \u2013 ${fmtWhole(stress.human.hi)}</td>
+        <td class="num">${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</td>
         <td>${stressBadge(stress, stress.av.k)}</td>
       </tr>`;
     })
@@ -2963,9 +2961,9 @@ function renderStressTestTable(series) {
         : `<span class="stress-badge ${STRESS_VERDICT_META[flip.flipped].className}">${STRESS_VERDICT_META[flip.flipped].label}</span>`;
       return `<tr>
         <td>${escHtml(row.helmer)}</td>
-        <td>${fmtCount(stress.av.k)}</td>
+        <td class="num">${fmtCount(stress.av.k)}</td>
         <td>${stressBadge(stress, stress.av.k)}</td>
-        <td>${multCell}</td>
+        <td class="num">${multCell}</td>
         <td>${flippedCell}</td>
       </tr>`;
     }).join("");
@@ -2975,20 +2973,20 @@ How wrong Claude's fault judgments would have to be to change the verdicts.
 The multiplier is the smallest factor that the true at-fault fraction would need to exceed the judged at-fault fraction before changing the at-fault verdict.
 <span class="ai-text">"At-fault" here means, on the robotaxi side, the probability that an expert human driver would have avoided the collision (judged by Claude from the narratives); the human band bounds the same quantity using legal-fault shares (50% floor), since expert avoidability cannot be lower.</span>
     </p>
-    <table class="source-table stress-table">
-      <thead><tr><th>Company</th><th>Judged fault</th><th>Current verdict</th><th>Flip multiplier</th><th>Verdict after flip</th></tr></thead>
+    <div class="table-wrap"><table class="source-table stress-table">
+      <thead><tr><th>Company</th><th class="num">Judged fault</th><th>Current verdict</th><th class="num">Flip multiplier</th><th>Verdict after flip</th></tr></thead>
       <tbody>${faultRows}</tbody>
-    </table>`;
+    </table></div>`;
   return `
     <h3>Sensitivity analysis</h3>
     <p>
 The "AV/human ratio" column gives the possible range for that ratio based on the confidence intervals.
 If the whole range is above 1, we call that "robustly safer".
     </p>
-    <table class="source-table stress-table">
-      <thead><tr><th>Company</th><th>Metric</th><th>k</th><th>MPI AV (median; 95%)</th><th>Human MPI (AV cities)</th><th>AV/human ratio</th><th>Verdict</th></tr></thead>
+    <div class="table-wrap"><table class="source-table stress-table">
+      <thead><tr><th>Company</th><th>Metric</th><th class="num">k</th><th class="num">MPI AV (median; 95%)</th><th class="num">Human MPI (AV cities)</th><th class="num">AV/human ratio</th><th>Verdict</th></tr></thead>
       <tbody>${body}</tbody>
-    </table>
+    </table></div>
     ${faultSensitivity}`;
 }
 
@@ -3002,7 +3000,7 @@ function renderHumanBenchmarkTable() {
       const derivation = escHtml(h.src) + (links ? ` (${links})` : "");
       // srcNote: an AI-authored precision note on the derivation (green).
       const note = h.srcNote === undefined ? "" : ` <span class="ai-text">${escHtml(h.srcNote)}</span>`;
-      return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td>${fmtMiles(h.lo)}</td><td>${fmtMiles(h.hi)}</td><td>${derivation}${note}</td></tr>`;
+      return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td class="num">${fmtMiles(h.lo)}</td><td class="num">${fmtMiles(h.hi)}</td><td>${derivation}${note}</td></tr>`;
     })).join("");
   return `
     <h3>Specific human benchmark derivations</h3>
@@ -3011,10 +3009,10 @@ Sources: Kusano & Scanlon, Waymo's safety impact page, FARS.
 This differs from Waymo's location-adjusted safety-impact methodology.
 The all-incidents comparison is broader than Waymo's surface-street, injury-focused numbers.
     </p>
-    <table class="source-table">
-      <thead><tr><th>Cohort</th><th>Metric</th><th>Low MPI</th><th>High MPI</th><th>Derivation</th></tr></thead>
+    <div class="table-wrap"><table class="source-table">
+      <thead><tr><th>Cohort</th><th>Metric</th><th class="num">Low MPI</th><th class="num">High MPI</th><th>Derivation</th></tr></thead>
       <tbody>${rows}</tbody>
-    </table>`;
+    </table></div>`;
 }
 
 function renderMonthlyLegends() {
@@ -3551,9 +3549,6 @@ function renderHeaders() {
     const th = document.createElement("th");
     const col = SORT_COLUMNS[i];
     let label = HEADER_LABELS[i];
-    if (sortCol === col.key) {
-      label += sortAsc ? " \u25B2" : " \u25BC";
-    }
     th.textContent = label;
     th.tabIndex = 0;
     if (sortCol === col.key) {
@@ -3748,7 +3743,7 @@ Caveat:
 If the passenger-seat safety monitor (present in almost all Tesla robotaxi rides so far) is able to intervene to prevent incidents, then the true unsupervised miles per incident (MPI) for Tesla would be lower (worse) than what these graphs and data show.
 But I am now almost sure that the passenger-seat safety monitors have at least not had the ability to intervene in real time at normal driving speeds.
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th>With passenger</th>
@@ -3758,7 +3753,7 @@ But I am now almost sure that the passenger-seat safety monitors have at least n
         <th>% with passenger</th>
       </tr></thead>
       <tbody>${paxTableRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 2. Narrative redaction (CBI) ---
 /* 
@@ -3837,7 +3832,7 @@ Confidential Business Information (CBI).
 <p>
 (Note that in one fatality the AV was stationary and in the other the AV was turning at 8 mph; in both cases the AI fault estimates are near zero.)
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th>Property damage only</th>
@@ -3848,7 +3843,7 @@ Confidential Business Information (CBI).
         <th>Total</th>
       </tr></thead>
       <tbody>${sevTableRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 4. VMT uncertainty ---
   // Restrict to incidentObservable months for like-for-like comparison
@@ -3876,7 +3871,7 @@ Below is the total adjusted Vehicle Miles Traveled (VMT) for each company across
 The "range ratio" (max &divide; min) is a measure of uncertainty in the VMT numbers.
 For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be off by up to a factor of 2.
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th>VMT low</th>
@@ -3885,7 +3880,7 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
         <th>Range ratio</th>
       </tr></thead>
       <tbody>${vmtUncRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 5. Poisson dispersion (VMT-normalized) ---
   // Pearson chi-squared dispersion test: X² = Σ(k_i - λ̂·m_i)² / (λ̂·m_i)
@@ -3954,7 +3949,7 @@ Here we check that assumption using a Pearson chi-squared dispersion test normal
 A dispersion index near 1 supports the Poisson model; values much greater than 1 suggest that either something's awry or the robotaxis are getting better or worse.
 <span class="ai-text">Claude: Where the dispersion index is much greater than 1 (today: Tesla), the pooled full-window estimates average over a fleet, geography, and software mix that changed rapidly; narrow the date-range slider to look at a recent, more homogeneous window.</span>
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th>Monthly rate (per M mi)</th>
@@ -3963,7 +3958,7 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
         <th>Assessment</th>
       </tr></thead>
       <tbody>${dispRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 6. Reporting threshold asymmetry ---
   const rptRows = [];
@@ -4013,7 +4008,7 @@ Within-AV comparisons stay consistent (same rules for all three companies), and
 the at-fault metrics are essentially immune (the exempted crashes are ~99% not 
 the AV's fault).
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th>Speed = 0 mph</th>
@@ -4022,7 +4017,7 @@ the AV's fault).
         <th>Total</th>
       </tr></thead>
       <tbody>${rptRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 7. Geographic scope ---
   const geoByHelmer = {};
@@ -4058,14 +4053,14 @@ Human crash rates vary by city, presumably.
 Maybe that affects AVs too?
 (So far we're only counting cities in which at least one incident has been reported.)
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th># cities</th>
         <th>Cities (incident count)</th>
       </tr></thead>
       <tbody>${geoRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 8. VMT sources ---
   const vmtSrcRows = [];
@@ -4088,13 +4083,13 @@ Where the Vehicle Miles Traveled (VMT) estimates come from for each company.
 These are the denominators in every miles per incident (MPI) calculation, so any errors here matter a lot.
 In general we don't trust anything Tesla says <i>except</i> numbers in their official reports to investors which seem to be reliable and would be a big deal (e.g., securities fraud) if they weren't.
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th>Source and methodology (<span class="ai-text">green text = AI-generated</span>)</th>
       </tr></thead>
       <tbody>${vmtSrcRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 9. Incident coverage for partial months ---
   const icRows = [];
@@ -4127,7 +4122,7 @@ NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Month
 Claude notes: 
 <span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE)}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (fatality, hospitalization, airbag deployment) use the raw VMT -- but reports received through the 15th cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (median of past releases, with its band), not a fraction of days.</span>
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Company</th>
         <th>Month</th>
@@ -4136,7 +4131,7 @@ Claude notes:
         <th>Calendar coverage</th>
       </tr></thead>
       <tbody>${icRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 9b. Waymo published-rate cross-check ---
   // Coarse cross-check: our full-history Waymo SGO rates vs Waymo's own
@@ -4164,7 +4159,7 @@ Claude notes:
 Our full-history Waymo rates (${wayAll.length} incidents over ${fmtMiles(wayVmtM * 1e6)} miles; SGO self-reported) vs Waymo's own published rates (surface-street only? location-weighted).
 A ratio very different from 1 suggests a problem.
 </p>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr>
         <th>Metric</th>
         <th>Ours (per M mi)</th>
@@ -4172,7 +4167,7 @@ A ratio very different from 1 suggests a problem.
         <th>Ratio</th>
       </tr></thead>
       <tbody>${wayXRows.join("")}</tbody>
-    </table>`);
+    </table></div>`);
 
   // --- 10. Human benchmark derivations ---
   sections.push(renderHumanBenchmarkTable());

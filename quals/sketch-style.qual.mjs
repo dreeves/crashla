@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 // The stylesheet emulates Nicky Case's faux-hand-sketched look (ncase.me):
-// a self-hosted handwriting face, wobbly asymmetric border-radii, and masked
-// vector rules. Each can silently rot -- a missing font source, a prefixed-only
-// mask, or a filter on a layout ancestor -- so this qual pins those hazards.
+// wobbly asymmetric border-radii and masked vector rules (the handwriting
+// face was retired 2026-09-07; the skin is the drawing, not the lettering).
+// Each can silently rot -- a prefixed-only mask, or a filter on a layout
+// ancestor -- so this qual pins those hazards.
 
 const css = fs.readFileSync("style.css", "utf8");
 const html = fs.readFileSync("index.html", "utf8");
@@ -80,72 +81,17 @@ assert.deepEqual(
   "declaration scanning must be case-insensitive and retain duplicates",
 );
 
-// --- 1. The handwriting face is self-hosted -----------------------------
-
-const faces = parsed.filter(r => r.sel.toLowerCase() === "@font-face").map(r => r.body);
-assert.ok(
-  faces.length > 0,
-  `Replicata: open style.css and look for @font-face.
-Expectata: at least one @font-face declares the handwriting face.
-Resultata: no @font-face rule in the stylesheet.`,
-);
-const families = faces.map((face, i) => onlyDecl(face, "font-family", `@font-face ${i + 1}`));
-assert.ok(
-  families.includes('"Patrick Hand"'),
-  `Replicata: read every @font-face block in style.css.
-Expectata: one of them declares font-family: "Patrick Hand".
-Resultata: families were ${JSON.stringify(families)}.`,
-);
-for (const [i, face] of faces.entries()) {
-  const source = onlyDecl(face, "src", `@font-face ${i + 1}`);
-  const urls = [...source.matchAll(/url\s*\(([^)]+)\)/gi)];
-  assert.ok(
-    urls.length > 0,
-    `Replicata: read the src declaration in each @font-face block.
-Expectata: at least one url(...) points to the checked-in font.
-Resultata: src was ${JSON.stringify(source.trim())}.`,
-  );
-  for (const [, raw] of urls) {
-    const url = raw.trim().replace(/^["']|["']$/g, "");
-    assert.ok(
-      !/^(https?:)?\/\//.test(url),
-      `Replicata: read the src: url(...) values in style.css's @font-face blocks.
-Expectata: every font is served from this repo -- the page has no third-party
-requests and must keep it that way.
-Resultata: ${url} points off-site.`,
-    );
-    assert.ok(
-      fs.existsSync(url) && fs.statSync(url).isFile(),
-      `Replicata: resolve each @font-face src: url(...) against the repo root.
-Expectata: the font is a checked-in regular file.
-Resultata: ${url} is missing or is not a regular file.`,
-    );
-    assert.equal(
-      fs.readFileSync(url).subarray(0, 4).toString("ascii"),
-      "wOF2",
-      `Replicata: inspect the first four bytes of ${url}.
-Expectata: the wOF2 signature of a WOFF2 font.
-Resultata: the source is not WOFF2 data.`,
-    );
-  }
-}
-
-// --- 2. Two type roles, both tokenized ----------------------------------
+// --- 2. The reading face is tokenized ------------------------------------
 
 const rootRules = parsed.filter(r => r.sel === ":root" && r.context.length === 0);
 assert.equal(rootRules.length, 1, `expected one top-level :root rule; found ${rootRules.length}`);
 const root = rootRules[0].body;
-assert.match(
-  onlyDecl(root, "--hand", ":root"),
-  /^["']Patrick Hand["']\s*,/,
-  "--hand must use the self-hosted Patrick Hand face first",
-);
-for (const token of ["--hand", "--sans"]) {
+for (const token of ["--sans"]) {
   assert.ok(
     new RegExp(`\\${token}\\s*:`).test(root),
     `Replicata: open style.css and read the :root block.
-Expectata: ${token} is defined there -- the handwriting and the reading face are
-each named once so the whole app agrees which is which.
+Expectata: ${token} is defined there -- the reading face is named once so the
+whole app agrees which it is.
 Resultata: no ${token} in :root.`,
   );
   assert.ok(
@@ -405,8 +351,8 @@ assert.deepEqual(
   verticalLabelAnchors,
   [18, 18, 18],
   `Replicata: render every vertical .month-label at devicePixelRatio 2.
-Expectata: each of the three templates anchors at x=18, leaving six pixels for
-Patrick Hand's left overhang inside the SVG viewport.
+Expectata: each of the three templates anchors at x=18, leaving six pixels of
+margin inside the SVG viewport.
 Resultata: anchors were ${JSON.stringify(verticalLabelAnchors)}.`,
 );
 
@@ -504,4 +450,4 @@ Resultata: ${hexOf(ink)} on ${hexOf(ground)} is ${ratio.toFixed(2)}:1.`,
   }
 }
 
-console.log("qual pass: sketch styling is self-hosted, tokenized, artifact-free, and clears AA");
+console.log("qual pass: sketch styling is tokenized, artifact-free, and clears AA");
