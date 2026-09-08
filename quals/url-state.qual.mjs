@@ -9,12 +9,20 @@ const locationStub = {
 };
 let replaceUrl = "";
 
+// The unknown-key banner: a stub with the two properties the code touches
+// (hidden + its text span) and a dismiss button that records its handler.
+const bannerText = { textContent: "" };
+const banner = { hidden: true, querySelector(sel) { return sel === ".banner-text" ? bannerText : null; } };
+let dismiss = null;
+const dismissButton = { addEventListener(type, fn) { if (type === "click") dismiss = fn; } };
+const DOM = { "url-banner": banner, "url-banner-dismiss": dismissButton };
 const ctx = vm.createContext({
   console,
   Math,
+  Set,
   URLSearchParams,
   document: {
-    getElementById() { return null; },
+    getElementById(id) { return DOM[id] ?? null; },
     createElement() { return { textContent: "", innerHTML: "" }; },
   },
   window: {
@@ -219,21 +227,6 @@ Expectata: immediate throw.
 Resultata: no throw.`,
 );
 
-let threwUnknownKey = false;
-try {
-  vm.runInContext(
-    `applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&z=1")`,
-    ctx,
-  );
-} catch (_err) {
-  threwUnknownKey = true;
-}
-assert.ok(
-  threwUnknownKey,
-  `Replicata: apply URL state containing unknown key z.
-Expectata: immediate throw.
-Resultata: no throw.`,
-);
 
 // --- Collapsed-section URL state (optional key x) ---
 
@@ -362,4 +355,72 @@ Expectata: one per collapsible section (${sectionIds.length}).
 Resultata: found ${headCount}.`,
 );
 
-console.log("qual pass: URL state round-trips and fails loudly on invalid query params");
+// --- Keys the page does not own: reported and stripped, never fatal ---
+// A link shared through Facebook arrives with ?fbclid=... appended; treating
+// it as malformed state took the whole page down (2026-09-07). Foreign keys
+// are not state: they are named in a dismissable banner and removed from the
+// address bar, and the keys the page does own are still read strictly.
+
+const withUnknown = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  activeFilter = "All"; sortCol = null; sortAsc = true;
+  const unknown = applyUiStateQuery("f=Waymo&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&z=1&fbclid=abc");
+  return { unknown, activeFilter };
+})()
+`, ctx)));
+assert.deepEqual(
+  withUnknown,
+  { unknown: ["z", "fbclid"], activeFilter: "Waymo" },
+  `Replicata: apply URL state carrying the page's keys plus z=1 and fbclid=abc.
+Expectata: the parser returns the foreign keys in order and still applies the
+owned state (filter Waymo).
+Resultata: ${JSON.stringify(withUnknown)}.`,
+);
+
+const FBCLID = "IwY2xjawUMO35wZG9mBWV4dG4DYWVtAjEwAGJyaWQRMWRmTjNGSE1rR1AyYmVWRmRzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEeaMUK5pu8wD8vvBPhBBbhY4Vwlgdb25V8cMyRGCfujKdJ3kEUkpSqLF-PUKM_aem_qDHlZgziCVls0uwOE4M_eQ";
+locationStub.search = `?fbclid=${FBCLID}`;
+replaceUrl = "";
+const fbLoad = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  activeFilter = "All"; sortCol = null; sortAsc = true; selectedMetricKey = "all";
+  loadUiStateFromLocation();
+  return { activeFilter, sortCol, search: window.location.search };
+})()
+`, ctx)));
+assert.deepEqual(
+  { ...fbLoad, hidden: banner.hidden, names: bannerText.textContent.includes("fbclid") },
+  { activeFilter: "All", sortCol: null, search: `?${vm.runInContext("encodeUiStateQuery()", ctx)}`, hidden: false, names: true },
+  `Replicata: open the page from a Facebook link (only ?fbclid=... in the URL).
+Expectata: default state, the banner shown and naming fbclid, and the address
+bar rewritten to the page's own state without it.
+Resultata: ${JSON.stringify({ ...fbLoad, hidden: banner.hidden, text: bannerText.textContent })}.`,
+);
+assert.ok(!replaceUrl.includes("fbclid"), `the rewritten URL still carries fbclid: ${replaceUrl}`);
+
+assert.equal(typeof dismiss, "function", "the dismiss button has a click handler");
+dismiss();
+assert.equal(banner.hidden, true, "dismissing hides the banner");
+
+locationStub.search = "";
+replaceUrl = "";
+vm.runInContext("loadUiStateFromLocation()", ctx);
+assert.deepEqual(
+  { hidden: banner.hidden, search: locationStub.search },
+  { hidden: true, search: `?${vm.runInContext("encodeUiStateQuery()", ctx)}` },
+  `Replicata: open the page with no query string.
+Expectata: no banner; the address bar carries the page's own state, as it
+always has after init.
+Resultata: ${JSON.stringify({ hidden: banner.hidden, search: locationStub.search })}.`,
+);
+
+const html = fs.readFileSync("index.html", "utf8");
+assert.match(
+  html,
+  /<div id="url-banner" class="banner" role="alert" hidden>[\s\S]*?<span class="banner-text"><\/span>[\s\S]*?<button id="url-banner-dismiss" type="button">[^<]+<\/button>[\s\S]*?<\/div>/,
+  "index.html carries the hidden banner with its text span and dismiss button",
+);
+const css = fs.readFileSync("style.css", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+assert.match(css, /\.banner\[hidden\]\s*\{\s*display:\s*none;?\s*\}/,
+  ".banner[hidden] must restore display: none, since .banner is a flex box");
+
+console.log("qual pass: URL state round-trips, fails loudly on invalid owned keys, and reports foreign ones");

@@ -118,6 +118,29 @@ a:hover { color: var(--accent-ink); top: -2px; }
 input { accent-color: var(--ink); }
 .ai-text { color: var(--ai-ink); }
 
+/* Error banner, shown only when there is something to report (URL keys the
+   page does not own): the drawn box, in the verdict red. */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem 0.9rem;
+  border: 2px solid var(--worse);
+  border-radius: var(--wobble-c);
+  background: var(--card);
+  color: var(--worse);
+}
+.banner[hidden] { display: none; }
+.banner button {
+  flex: none;
+  padding: 0.15rem 0.9rem;
+  border: 2px solid currentColor;
+  border-radius: var(--wobble-pill);
+  background: var(--card);
+  cursor: pointer;
+}
+
 /* The display tier: tighter leading, balanced wraps. */
 h1, h2, h3, .mpi-card-helmer {
   line-height: var(--lh-tight);

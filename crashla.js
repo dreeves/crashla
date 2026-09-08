@@ -1718,6 +1718,21 @@ function sliceSeries(series, startIdx, endIdx) {
   return {months, points};
 }
 
+// Left margin of a chart whose y axis carries tick labels beside its rotated
+// title: the title's band, the widest label, and the gap to the axis line. A
+// literal margin fits the label column only by coincidence (the 2026-09-07
+// face change widened "136.9K" into the title). Labels are digits in tabular
+// figures (style.css .month-svg), so one per-glyph bound stands in for
+// measuring text the browser has not laid out yet: a 13px tabular digit is
+// ~7.8 units, and every K/M label carries a "." that pays for its wide letter.
+const Y_TITLE_BAND = 24; // the title's baseline is x=18; its descenders reach ~21
+const TICK_GLYPH = 8;
+const TICK_GAP = 8;
+function axisLeftMargin(tickLabels) {
+  assert(tickLabels.length > 0, "axisLeftMargin: no tick labels", {tickLabels});
+  return Y_TITLE_BAND + TICK_GLYPH * Math.max(...tickLabels.map(label => label.length)) + TICK_GAP;
+}
+
 function drawSingleMonthAxes(
   months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, yFmt, yLabel,
 ) {
@@ -1728,7 +1743,7 @@ function drawSingleMonthAxes(
       ${i === months.length - 1 || (i % labelStep === 0 && months.length - 1 - i >= labelStep) ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
     `).join("")}
     ${yTicks.map(y => `
-      <text class="month-tick" x="${mLeft - 8}" y="${mapY(y) + 4}" text-anchor="end">${yFmt(y)}</text>
+      <text class="month-tick" x="${mLeft - TICK_GAP}" y="${mapY(y) + 4}" text-anchor="end">${yFmt(y)}</text>
     `).join("")}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${axisY}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${axisY}" x2="${mLeft + pW}" y2="${axisY}"></line>
@@ -1753,11 +1768,9 @@ function renderAllHelmersMpiChart(series) {
   const metric = selectedMonthMetric();
   const svgW = 900;
   const svgH = 520;
-  const mLeft = 68;
   const mRight = 16;
   const mTop = 14;
   const mBot = 40;
-  const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
   // hollow = k=0 month (prior-only median, no event data), matching the
   // distribution chart's hollow k=0 dots.
@@ -1821,6 +1834,8 @@ function renderAllHelmersMpiChart(series) {
   }
 
   const yTicks = linearTicks(0, yMax, 4);
+  const mLeft = axisLeftMargin(yTicks.map(fmtMiles));
+  const pW = svgW - mLeft - mRight;
   const xPad = 28;
   const mapX = idx => scaleLinear(
     idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad,
@@ -2707,7 +2722,9 @@ function renderFleetTimeSeriesChart() {
   const months = [];
   for (let i = 0; i <= fleetMonthIndex(FLEET_TS_END_MONTH); i++) months.push(fleetMonthIso(i));
 
-  const svgW = 900, svgH = 280, mLeft = 68, mRight = 24, mTop = 14, mBot = 48;
+  const yTicks = growthYTicks(spec);
+  const svgW = 900, svgH = 280, mRight = 24, mTop = 14, mBot = 48;
+  const mLeft = axisLeftMargin(yTicks.map(v => spec.fmt(v)));
   const pW = svgW - mLeft - mRight, pH = svgH - mTop - mBot;
   const xPad = 28;
   const {yMin, yMax} = spec; // log scale framed per metric (vehicles / miles / rides)
@@ -2761,7 +2778,7 @@ function renderFleetTimeSeriesChart() {
       ${lines.join("")}
       ${marks.join("")}
       </g>
-      ${drawSingleMonthAxes(months, svgH, mLeft, mTop, pW, pH, mapX, growthYTicks(spec), mapY, spec.fmt, spec.yLabel)}
+      ${drawSingleMonthAxes(months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, spec.fmt, spec.yLabel)}
     </svg>
   `;
 }
@@ -2818,11 +2835,9 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   };
   const svgW = 900;
   const svgH = 250;
-  const mLeft = 68;
   const mRight = 24;
   const mTop = 14;
   const mBot = 48;
-  const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
   const rows = helmerMonthRows(series, helmer);
   // Monthly vs cumulative VMT view (global toggle). Cumulative plots the kyoom
@@ -2833,6 +2848,8 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const yLabel = vmtCumulative ? "Cumulative VMT" : "Vehicle Miles Traveled (VMT)";
   const vmtMax = Math.max(1, ...rows.map(row => row ? hi(row) : 0));
   const yTicks = linearTicks(0, vmtMax, 4);
+  const mLeft = axisLeftMargin(yTicks.map(fmtMiles));
+  const pW = svgW - mLeft - mRight;
   const xPad = 28; // match the cross-helmer MPI chart's edge inset
   const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad);
   const mapVmtY = y => scaleLinear(y, 0, vmtMax, mTop + pH, mTop);
@@ -3389,18 +3406,22 @@ function encodeUiStateQuery() {
   return params.toString();
 }
 
+// Reads the page's own keys strictly. Keys the page does not own are not
+// state (a Facebook fbclid took the whole page down on 2026-09-07): they are
+// stripped here and returned so the caller can report them.
 function applyUiStateQuery(queryString) {
   const raw = queryString.startsWith("?") ? queryString.slice(1) : queryString;
-  if (raw === "") return;
   const params = new URLSearchParams(raw);
   const expectedKeys = Object.values(URL_STATE_KEYS);
   const expectedSet = new Set(expectedKeys);
+  const unknownKeys = [...new Set(params.keys())].filter(key => !expectedSet.has(key));
+  unknownKeys.forEach(key => params.delete(key));
+  if ([...params.keys()].length === 0) return unknownKeys;
   const seenKeys = new Set();
 
   for (const key of params.keys()) {
     assert(!seenKeys.has(key), "Duplicate URL state key", {key, raw});
     seenKeys.add(key);
-    assert(expectedSet.has(key), "Unexpected URL state key", {key, raw});
   }
   for (const key of URL_STATE_REQUIRED) {
     assert(params.has(key), "Missing URL state key", {key, raw});
@@ -3467,6 +3488,7 @@ function applyUiStateQuery(queryString) {
       ...parseEnabledKeyString(params.get(URL_STATE_KEYS.collapsed), SECTION_IDS, "collapsed"),
     };
   }
+  return unknownKeys;
 }
 
 function canSyncUrlState() {
@@ -3482,7 +3504,19 @@ function canSyncUrlState() {
 
 function loadUiStateFromLocation() {
   if (!canSyncUrlState()) return;
-  applyUiStateQuery(window.location.search);
+  const unknownKeys = applyUiStateQuery(window.location.search);
+  const banner = byId("url-banner");
+  // The banner tells the reader that the link carried URL parameters this
+  // page does not recognize (listed by name), that they were ignored and removed
+  // from the address bar, and that the page itself is unaffected.
+  banner.querySelector(".banner-text").textContent =
+    `Unknown URL parameter(s) -- ${unknownKeys.join(", ")} -- stripped.` + 
+    (unknownKeys.includes('fbclid') ? " Facebook is the worst." : "");
+  banner.hidden = unknownKeys.length === 0;
+  byId("url-banner-dismiss").addEventListener("click", () => { banner.hidden = true; });
+  // The strip: the address bar is rewritten from state, which never carries
+  // foreign keys.
+  syncUrlState();
 }
 
 function syncUrlState() {
