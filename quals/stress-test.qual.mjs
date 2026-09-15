@@ -140,15 +140,23 @@ Resultata: verdict was ${plain.byHelmer.Waymo[key].verdictKey}.`,
   );
 }
 
-// byHelmer rows are the FULL series. Flipped ambiguous -> worse on
-// 2026-08-28: the data-through month's exposure is capped by receipt
-// coverage (reports received through Jul 15 cover only ~a third of July's
-// five-day-track crashes), trimming the effective-VMT upper edge that had
-// held Zoox's full-window AV/human ratio ceiling at exactly 1.00x.
+// byHelmer rows are the FULL series. This verdict sits ON the 1.00x knife
+// edge and therefore moves with the receipt frontier every release:
+//   - before 2026-08-28: ambiguous, ceiling exactly 1.00x
+//   - 2026-08-28: flipped to worse, because capping the data-through month's
+//     exposure by receipt coverage trimmed the effective-VMT upper edge
+//   - 2026-09-15: flipped BACK to ambiguous, ceiling 1.0010x. The Sep-15
+//     release advanced the cutoff to 2026-08, so 2026-07 is no longer the
+//     capped month: its coverage_max went 0.52 -> 1.0 in data/vmt.js, which
+//     restores the very upper-edge miles the previous release had trimmed.
+//     (coverage_max is what sets ratioHi, so the same release's 0.31 -> 0.28
+//     best / 0.25 -> 0.20 lo re-measurement does NOT bear on this.)
+// Expect this assertion to keep alternating; re-pin it each release rather
+// than treating either direction as the stable truth.
 assert.ok(
-  plain.byHelmer.Zoox.all.verdictKey === "worse" && plain.byHelmer.Zoox.all.ratioHi < 1,
+  plain.byHelmer.Zoox.all.verdictKey === "ambiguous" && plain.byHelmer.Zoox.all.ratioHi > 1,
   `Replicata: compute the full-history stress verdict for Zoox on all incidents.
-Expectata: robustly worse — the AV/human ratio ceiling is below 1x once the data-through month's exposure is receipt-capped.
+Expectata: ambiguous — the AV/human ratio ceiling sits just above 1x now that the previous data-through month's exposure is uncapped again.
 Resultata: ${plain.byHelmer.Zoox.all.verdictKey} at ${plain.byHelmer.Zoox.all.ratioLo}x–${plain.byHelmer.Zoox.all.ratioHi}x.`,
 );
 

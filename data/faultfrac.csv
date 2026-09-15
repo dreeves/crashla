@@ -2047,3 +2047,93 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-15812,10,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.8,Undercarriage grounded on raised parking lot entrance during left turn
 30610-15722,0,Passenger Car,rear left + rear + rear right,front left + front + front right,Property Damage. No Injured Reported,0,Zoox stopped for ped and dog in crosswalk; car behind rear-ended it
 13781-15395,2,Pole / Tree,front right,,Property Damage. No Injured Reported,0,"Remote assistance operator, not the ADS, drove into hidden tree stump"
+13781-16255,1,Other Fixed Object,left,,Property Damage. No Injured Reported,0.9,Tesla squeezed past stopped shuttle bus and struck a metal bollard
+13781-16256,1,Other Fixed Object,front left + front right,,Property Damage. No Injured Reported,1,Tesla turned out of lot exit into a low-hanging chain
+30270-15785,16,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo slowing at T-intersection; car behind rear-ended it
+30270-15788,0,SUV,left,right,Property Damage. No Injured Reported,0.1,Parked AV's passenger opened door into a passing SUV
+30270-15813,0,Passenger Car,rear,left,Property Damage. No Injured Reported,0,AV stopped with hazards for pickup; passing car nudged its rear left
+30270-15828,0,Passenger Car,left,right,Property Damage. No Injured Reported,0.1,AV stopped for dropoff; passenger opened rear door into passing car
+30270-15829,22,Pickup Truck,rear left,front,Property Damage. No Injured Reported,0.05,"Pickup changed lanes into AV's lane; hit rear right, nearly clear"
+30270-15830,0,Non-Motorist: Cyclist,front right,,Serious W/ Hospitalization,0,AV stopped; car's u-turn knocked cyclist's bike into its front
+30270-15831,11,Passenger Car,left,front left,Property Damage. No Injured Reported,0.3,Waymo pulled from stop sign into cross traffic; t-boned on left side
+30270-15832,0,Pickup Truck,rear,front left + front,Minor W/O Hospitalization,0,AV stopped in queue; pickup shoved into its rear by a separate crash
+30270-15836,29,Passenger Car,front,rear left,Property Damage. No Injured Reported,0.1,Car passed AV then cut right for the on-ramp; hit AV's front left
+30270-15889,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,AV stopped to yield; SUV ahead reversed into its front
+30270-15890,13,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,AV slowing for queue at red; car behind rear-ended it
+30270-15892,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,AV stopped to yield for unprotected left; car rear-ended it
+30270-15893,0,Pickup Truck,rear left,right,Property Damage. No Injured Reported,0.2,AV stopped protruding at lot exit mid-turn; passing pickup clipped rear
+30270-15894,1,Passenger Car,rear left,front,Property Damage. No Injured Reported,0,AV creeping in queue; car deflected into its rear by adjacent crash
+30270-15895,0,Heavy Truck,rear left,left,Property Damage. No Injured Reported,0,AV stopped at red past the queue; truck overtaking on the right clipped rear
+30270-15896,14,SUV,right + rear left,front + front right + rear,Serious W/ Hospitalization,0,AV slowing for stop sign; SUV overtaking from behind clipped rear right
+30270-15897,0,Heavy Truck,front right,rear right,Property Damage. No Injured Reported,0,AV stopped yielding to hazard-lit truck; truck reversed into front twice
+30270-15898,16,SUV,rear,front left,Property Damage. No Injured Reported,0.05,"SUV left the adjacent lane into the slowing AV's rear left, nearly clear"
+30270-15899,0,SUV,rear left,front,Property Damage. No Injured Reported,0,Waymo stopped part-way into left turn; SUV behind rear-ended it
+30270-15900,1,Heavy Truck,front right,rear right,Property Damage. No Injured Reported,0,Stopped behind garbage truck; truck reversed into AV's front
+30270-15901,23,SUV,rear,front left,Property Damage. No Injured Reported,0.05,"SUV changed lanes into AV's path on green; hit AV's rear left, nearly clear"
+30270-15906,20,SUV,rear left,front,Property Damage. No Injured Reported,0.05,"SUV pulled from lot exit into AV's lane; hit AV's rear, nearly clear"
+30270-15909,15,SUV,front left,front,Property Damage. No Injured Reported,0.1,SUV pulled from curb into AV's lane on green; hit AV's front right
+30270-15925,5,Passenger Car,rear left,front,Minor W/O Hospitalization,0,AV advancing from turn lane on green; car behind hit its rear
+30270-15927,4,SUV,front left,left,Property Damage. No Injured Reported,0.2,Waymo edged left to pass slow SUV; SUV turned left across its path
+30270-15930,20,SUV,rear left + rear right,front right,Property Damage. No Injured Reported,0.05,SUV crossed into T-intersection; hit AV's rear as it nearly cleared
+30270-15931,0,Heavy Truck,front,rear left,Property Damage. No Injured Reported,0,AV parked at curb; u-turning truck's flatbed trailer swept into its front
+30270-15932,0,Bus,rear,right,Property Damage. No Injured Reported,0,AV stopped yielding to queue; bus changed lanes and clipped rear left
+30270-15933,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,AV held at green for passing emergency vehicle; SUV rear-ended it
+30270-15934,4,Pole / Tree,front,,No Injured Reported,1,AV made a slow left turn in a parking lot into a pole
+30270-15938,0,SUV,front right,rear right,Property Damage. No Injured Reported,0,Waymo stopped behind SUV in intersection; SUV reversed into its front
+30270-15939,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,AV stopped for a queue of traffic; passenger car rear-ended it
+30270-15984,0,Heavy Truck,rear,rear,Property Damage. No Injured Reported,0,AV stopped yielding; turning truck squeezed past and clipped its rear left
+30270-15985,0,SUV,rear,left,Property Damage. No Injured Reported,0,AV braked to a stop in narrow street; oncoming SUV squeezed past rear
+30270-15986,0,Bus,rear,left,Property Damage. No Injured Reported,0,AV stopped yielding on narrow street; passing bus clipped rear left
+30270-15987,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV parked at the curb; passing heavy truck clipped its rear
+30270-15988,0,SUV,front,front,Property Damage. No Injured Reported,0,Waymo stopped yielding to hazard-lit SUV; SUV drove into its front
+30270-15989,40,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,AV proceeding straight; speeding car rear-ended it at 40 mph
+30270-15990,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,AV stopped at a red light; SUV behind crept forward into its rear
+30270-15991,0,Bus,rear left,left,Property Damage. No Injured Reported,0,AV parked in loading zone; bus passed too close and clipped its rear
+30270-15992,4,Bus,rear,front left,Property Damage. No Injured Reported,0,AV slowing for yellow; bus changed lanes from behind into rear left
+30270-15993,29,"Other, see Narrative",bottom,unknown,Property Damage. No Injured Reported,0.4,AV drove through standing water in its lane at 29 mph
+30270-15994,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo stopped in traffic queue; car behind rear-ended it
+30270-15996,0,SUV,rear right,front right,Moderate W/ Hospitalization,0,AV stopped yielding for unprotected left; SUV rear-ended it
+30270-15997,1,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0,AV slowing for the intersection; pickup behind rear-ended it
+30270-16000,0,Non-Motorist: Cyclist,front,,Property Damage. No Injured Reported,0,AV stopped yielding to e-bikes; one u-turned into its front
+30270-16001,0,Passenger Car,front right,rear right,Property Damage. No Injured Reported,0,AV stopped behind stop-sign queue; car ahead reversed into its front
+30270-16020,0,Heavy Truck,front,rear left,Property Damage. No Injured Reported,0,AV parked for dropoff; heavy truck ahead reversed into its front
+30270-16022,3,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo easing forward from queue on green; car behind rear-ended it
+30270-16023,0,Bus,front,front left,Moderate W/ Hospitalization,0.2,AV merged in front of a stopped bus; bus moved off on green into it
+30270-16024,3,Bus,left,rear left,Property Damage. No Injured Reported,0.25,AV began passing a bus already mid left turn; bus's rear swung into it
+30270-16025,0,Heavy Truck,front,right,Property Damage. No Injured Reported,0.25,AV passed a truck still actively reversing; trailer swung into front
+30270-16028,20,Passenger Car,front + front right,front right,Serious W/ Hospitalization,0.1,Oncoming car struck a ped then crossed double yellow into moving AV
+30270-16032,0,Heavy Truck,rear,left,Property Damage. No Injured Reported,0,AV stopped in the intersection; truck's wide left clipped its rear
+30270-16033,23,SUV,rear,rear right,Property Damage. No Injured Reported,0.15,"Rule b: SUV stopped in driveway, reversed out only after AV committed"
+30270-16034,0,Pickup Truck,front,front left,Property Damage. No Injured Reported,0.2,AV squeezed past a straddling pickup; pickup moved right on green
+30270-16035,3,Passenger Car,front right,front,Property Damage. No Injured Reported,0.1,Car ran the lot stop sign turning left into the turning AV's path
+30270-16036,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,AV stopped at red in queue; car behind proceeded into its rear
+30270-16038,5,Passenger Car,right,front right,Property Damage. No Injured Reported,1,AV threaded a self-chosen gap and drove into a visible parked car
+30270-16039,24,SUV,rear left,front,Property Damage. No Injured Reported,0.1,AV passing a slow curb-hugging SUV; SUV pulled left into its rear
+30270-16050,25,SUV,right,front,Property Damage. No Injured Reported,0.1,SUV ran stop and swung wide across lanes; AV slowed and passed left
+30270-16080,0,Passenger Car,rear,front + right,Property Damage. No Injured Reported,0,AV parked for dropoff; car clipped a truck and was shoved into it
+30270-16081,0,Passenger Car,rear right,front left,Property Damage. No Injured Reported,0,AV stopped in crosswalk yielding to debris; car behind rear-ended it
+30270-16082,0,SUV,rear left,front left,Property Damage. No Injured Reported,0,Waymo braked to a stop in intersection; stop-sign-running SUV hit it
+30270-16083,4,Passenger Car,rear,front,Property Damage. No Injured Reported,0.2,AV edged left past a stopped car; car moved left into its rear
+30270-16084,0,Passenger Car,left,rear right,No Injured Reported,0,AV stopped with hazards for dropoff; car reversed from driveway into it
+30270-16085,16,SUV,front left,front,No Injured Reported,0.1,Slow curb-hugging SUV moved left into the passing AV's front right
+30270-16090,9,Other Fixed Object,bottom,,Property Damage. No Injured Reported,0.8,Undercarriage grounded on sloped raised lot exit during left turn
+30270-16091,0,Heavy Truck,front right,rear right,Property Damage. No Injured Reported,0,AV stopped behind heavy truck; truck reversed into its front
+30270-16093,0,Passenger Car,rear right,front right,Minor W/O Hospitalization,0,AV stopped at a red light; passenger car rear-ended it
+30270-16110,0,SUV,rear right,front right,Property Damage. No Injured Reported,0,AV parked at curb; SUV behind repeatedly drove forward into its rear
+30270-16112,45,"Other, see Narrative",front right + top,unknown,Property Damage. No Injured Reported,0,Tree branch broke off above the roadway and fell onto the AV
+30270-16123,0,SUV,rear,front left,Property Damage. No Injured Reported,0,AV stopped in right turn pocket; SUV passed via bus lane into its rear
+30270-16164,0,Pickup Truck,rear right,front right,Property Damage. No Injured Reported,0,AV stopped in queue at red; pickup behind rear-ended it
+30270-16165,0,SUV,rear,front left,Property Damage. No Injured Reported,0,AV stopped for a prior crash; sideswiped SUV shoved into its rear
+30270-16166,6,Pickup Truck,rear left,front,Property Damage. No Injured Reported,0.3,Waymo changed lanes into middle lane occupied by overtaking pickup
+30270-16167,15,Pickup Truck,rear,front left,No Injured Reported,0.1,Pickup in the adjacent lane changed lanes into the AV's rear left
+30270-16168,0,Van,rear right,front right,No Injured Reported,0,AV stopped for a red-light queue; van behind rear-ended it
+30270-16171,3,Other Fixed Object,front left,,Property Damage. No Injured Reported,0.9,Waymo reversing in lot struck a parking bollard; self-inflicted
+30270-16172,0,Passenger Car,rear right,front right,Property Damage. No Injured Reported,0,Waymo stopped in queue after green; car behind rear-ended it
+30270-16174,12,Passenger Car,right,left,Property Damage. No Injured Reported,0,Parked Waymo's passenger doored the passing Waymo as it went by
+30270-16196,5,Non-Motorist: Pedestrian,rear,,Fatality,0,"SUV struck ped into slowing Waymo's rear; secondary, unavoidable"
+30270-16205,7,Passenger Car,rear left,front,Minor W/O Hospitalization,0,AV slowing for red-light queue; car from behind struck its rear
+30270-16207,0,SUV,left,right,Property Damage. No Injured Reported,0.1,AV's own passenger doored a second Waymo passing on the left
+30270-16208,0,Heavy Truck,front,right,Property Damage. No Injured Reported,0.1,AV stopped mid right turn; lane-straddling truck swung wide into its front
+30270-16210,3,Passenger Car,rear,front left,Property Damage. No Injured Reported,0,AV slowing for queue; car overtaking from behind clipped its rear left
+30610-15822,4,Non-Motorist: Other,front left + front right,,Property Damage. No Injured Reported,0.4,AV drove into smoke-obscured active fire scene; responder struck it
+30610-15826,0,Passenger Car,front + front right,front left + front right,Property Damage. No Injured Reported,0.1,Zoox got underway on right-on-red as a car cut in from the cross street

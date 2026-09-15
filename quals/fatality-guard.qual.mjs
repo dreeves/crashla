@@ -1,6 +1,7 @@
 // The "Severity breakdown" sanity section prints a hard-coded parenthetical
-// (crashla.js): "in one fatality the AV was stationary and in the other the AV
-// was turning at 8 mph; in both cases the AI fault estimates are near zero."
+// (crashla.js): Latin copy saying the AV was stationary in one fatality, was
+// slowing at 5 mph in another, and was turning at 8 mph in the third, and that
+// the AI fault estimates are near zero in all three.
 // That sentence is true only for the EXACT current fatality set. A code comment
 // just above it ("[COPY CURRENT AS OF 2026-06-11]") warns the sentence "must be
 // rewritten before it silently becomes wrong" if a new Fatality incident
@@ -23,20 +24,20 @@ const fatalities = vm.runInContext(
   ctx);
 
 const SEEN = JSON.stringify(fatalities);
-const FIX = `=> If a Fatality incident was added/changed, the on-page "Severity breakdown" parenthetical ("in one fatality the AV was stationary and in the other ... 8 mph; ... fault estimates are near zero") and the "[COPY CURRENT AS OF ...]" comment above it may now be WRONG. Re-read and rewrite both, then update this qual's expectations.`;
+const FIX = `=> If a Fatality incident was added/changed, the on-page "Severity breakdown" parenthetical (Latin: "immotum stabat, ad 5 mph tardabat, ad 8 mph flectebat; ... prope nullae") and the "[COPY CURRENT AS OF ...]" comment above it may now be WRONG. Re-read and rewrite both, then update this qual's expectations.`;
 
-assert.equal(fatalities.length, 2,
-  `Replicata: count Fatality incidents in INCIDENT_DATA.\nExpectata: exactly 2.\nResultata: ${fatalities.length} — ${SEEN}.\n${FIX}`);
+assert.equal(fatalities.length, 3,
+  `Replicata: count Fatality incidents in INCIDENT_DATA.\nExpectata: exactly 3.\nResultata: ${fatalities.length} — ${SEEN}.\n${FIX}`);
 
 assert.ok(fatalities.every(f => f.helmer === "Waymo"),
-  `Replicata: which helmers the fatalities belong to.\nExpectata: both Waymo.\nResultata: ${SEEN}.\n${FIX}`);
+  `Replicata: which helmers the fatalities belong to.\nExpectata: all three Waymo.\nResultata: ${SEEN}.\n${FIX}`);
 
 // Join to a primitive string: `fatalities` lives in the vm realm, so an array
 // deepEqual against a host-realm literal would fail the cross-realm prototype
 // check even with identical contents.
 const speedKey = fatalities.map(f => f.speed).sort((a, b) => a - b).join(",");
-assert.equal(speedKey, "0,8",
-  `Replicata: fatality speeds (parenthetical: one stationary, one at 8 mph).\nExpectata: "0,8".\nResultata: "${speedKey}" — ${SEEN}.\n${FIX}`);
+assert.equal(speedKey, "0,5,8",
+  `Replicata: fatality speeds (parenthetical: one stationary, one slowing at 5 mph, one turning at 8 mph).\nExpectata: "0,5,8".\nResultata: "${speedKey}" — ${SEEN}.\n${FIX}`);
 
 assert.ok(fatalities.every(f => f.fault <= 0.05),
   `Replicata: AI fault estimates for the fatalities (parenthetical: "near zero").\nExpectata: each faultfrac <= 0.05.\nResultata: ${JSON.stringify(fatalities.map(f => f.fault))} — ${SEEN}.\n${FIX}`);
@@ -49,12 +50,15 @@ assert.ok(fatalities.every(f => f.fault <= 0.05),
 //   30270-9724 (JAN-2025 SF): AV + car behind + SUV + a fourth car + "at
 //     least two other vehicles" per SFPD ("the other three vehicles") = 6.
 //   30270-11713 (SEP-2025 Tempe): AV + motorcycle + hit-and-run car = 3.
+//   30270-16196 (AUG-2026 Dallas): AV + the SUV that struck the pedestrian = 2,
+//     which is the default — pinned anyway so the divisor is asserted, not
+//     merely inherited. The pedestrian is the decedent, not a third vehicle.
 // A new fatality already trips the count assertion above, forcing a human to
 // assess its vehicle count before it silently divides by the default 2.
-const EXPECTED_VEHICLES = { "30270-9724": 6, "30270-11713": 3 };
+const EXPECTED_VEHICLES = { "30270-9724": 6, "30270-11713": 3, "30270-16196": 2 };
 for (const f of fatalities) {
   assert.equal(f.vehiclesInvolved, EXPECTED_VEHICLES[f.reportId],
     `Replicata: read vehiclesInvolved for fatality ${f.reportId} and compare to its narrative's vehicle count.\nExpectata: ${EXPECTED_VEHICLES[f.reportId]} (from the narrative; see VEHICLES_INVOLVED in data/slurp.py).\nResultata: ${f.vehiclesInvolved}.\n${FIX}`);
 }
 
-console.log(`qual pass: exactly 2 fatalities, both Waymo, speeds {0, 8} mph, fault near zero — the on-page severity-breakdown parenthetical still holds (${SEEN})`);
+console.log(`qual pass: exactly 3 fatalities, all Waymo, speeds {0, 5, 8} mph, fault near zero — the on-page severity-breakdown parenthetical still holds (${SEEN})`);

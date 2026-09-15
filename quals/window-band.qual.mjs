@@ -70,8 +70,11 @@ Expectata: [${r.expFiveDay.min}, ${r.expFiveDay.max}].
 Resultata: [${r.fatality.min}, ${r.fatality.max}].`);
   assert.ok(r.row.min <= r.row.best && r.row.best <= r.row.max,
     `Replicata: check ${helmer}'s window band brackets its best. Resultata: [${r.row.min}, ${r.row.best}, ${r.row.max}].`);
-  assert.equal(JSON.stringify([...r.partialMonths]), JSON.stringify(["2026-07"]),
-    `Replicata: list ${helmer}'s partially received months in the default window. Expectata: only the NHTSA data-through month 2026-07. Resultata: ${JSON.stringify(r.partialMonths)}.`);
+  // Re-pinned each release, with NHTSA_DATA_THROUGH_DATE in data/slurp.py
+  // (2026-09-15: 2026-07 -> 2026-08). quals/incident-coverage.qual.mjs derives
+  // the same month from the constant instead of pinning it; worth unifying.
+  assert.equal(JSON.stringify([...r.partialMonths]), JSON.stringify(["2026-08"]),
+    `Replicata: list ${helmer}'s partially received months in the default window. Expectata: only the NHTSA data-through month 2026-08. Resultata: ${JSON.stringify(r.partialMonths)}.`);
 }
 // The anchors bite: Waymo's hub-pinned cumulative and Tesla's deck-pinned
 // cumulative both tighten the window band on BOTH edges vs the plain sum.

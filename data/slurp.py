@@ -54,7 +54,7 @@ NHTSA_ADS_ARCHIVE_URL = (
 # Date, so a stale cutoff trips there). Monthly filings submitted within the
 # incident month itself are rare but real (Tesla files early; the Feb-2026
 # release held four JAN-2026 ones) and are consistent with the cutoff.
-NHTSA_DATA_THROUGH_DATE = "2026-07-15"
+NHTSA_DATA_THROUGH_DATE = "2026-08-15"
 # Receipt coverage of the data-through month. Reports received through the
 # 15th cover only crashes from roughly the first third of that month: the
 # five-day clock runs from the company's notice, plus NHTSA processing. It is
@@ -65,17 +65,24 @@ NHTSA_DATA_THROUGH_DATE = "2026-07-15"
 # Re-measured 2026-09-04 (the 2026-08-28 table read 18/38, 25/69, 16/57,
 # 17/60 — a transcription slip; every filter variant reproduces the counts
 # below, e.g. the Feb numerator includes Zoox 30610-14026).
+# A month's denominator is final at its second NORMAL release: verified across
+# every release snapshot (Feb 19->38 then flat x5; Apr 3->57 flat; May 16->58
+# flat; Jun 17->61 flat). The one exception proves the rule — Mar ran 25->53->72
+# because its second release WAS the truncated May-15 one.
 FIVE_DAY_RECEIPT_OBSERVATIONS = {
     "2026-02": (19, 38),   # Mar-16-2026 release vs the Aug-17-2026 file
     "2026-03": (25, 72),   # Apr-15-2026 release
     "2026-05": (16, 58),   # Jun-15-2026 release
     "2026-06": (17, 61),   # Jul-15-2026 release
+    "2026-07": (12, 58),   # Aug-17-2026 release vs the Sep-15-2026 file
     # 2026-04 excluded: the May-15-2026 release was cut early (3 April
     # incidents / 19 April submissions vs ~17 / ~90 in every other release).
 }
-# (best, lo, hi): best = median of the observed fractions (0.313); lo/hi pad
-# the observed range [0.28, 0.50]. release_month_coverage() asserts both.
-FIVE_DAY_RECEIPT_COVERAGE = (0.31, 0.25, 0.52)
+# (best, lo, hi): best = median of the observed fractions (0.279); lo/hi pad
+# the observed range [0.21, 0.50]. release_month_coverage() asserts both.
+# Added 2026-07 on the 2026-09-15 release: 0.207 is a new low, so lo fell
+# 0.25 -> 0.20 and the median moved 0.313 -> 0.279.
+FIVE_DAY_RECEIPT_COVERAGE = (0.28, 0.20, 0.52)
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
 # In-repo master for the VMT estimates (one row per helmer-month).
@@ -951,6 +958,13 @@ EXPECTED_SEVERITIES = {
 }
 # All reporting entities in the NHTSA ADS CSV (current + archive).
 # Anti-Postel: if NHTSA adds a new reporting entity, we want to crash and review.
+# Being listed here only means "known to NHTSA and classified by a human" -- it
+# does NOT put the entity in scope; scope is HELMER_SHORT (Waymo/Tesla/Zoox).
+# MOIA America LLC (added 2026-09-15 release): Volkswagen's ID. Buzz AD
+# subsidiary, filing separately from "Volkswagen Group of America, Inc.";
+# first report 35021-16268 is a JUL-2026 Beverly Hills, CA test drive with a
+# safety driver in the driver's seat (ADS disengaged 9 s before contact).
+# Out of scope: no public driverless service, so no VMT denominator.
 EXPECTED_HELMERS = {
     "Ambarella",
     "Apollo Autonomous Driving USA",
@@ -974,6 +988,7 @@ EXPECTED_HELMERS = {
     "Kodiak Robotics",
     "Local Motors Industries",
     "Lucid USA, Inc.",
+    "MOIA America LLC",
     "May Mobility",
     "Mercedes-Benz USA, LLC",
     "Mobileye Vision Technologies",
