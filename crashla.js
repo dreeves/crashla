@@ -3828,14 +3828,6 @@ Confidential Business Information (CBI).
 */
 
   // --- 3. Severity breakdown ---
-  // [COPY CURRENT AS OF 2026-09-15] The parenthetical note below assumes the
-  // dataset's only fatalities are the three Waymo ones (SF JAN-2025,
-  // stationary, faultfrac 0; Tempe SEP-2025, right turn at 8 mph,
-  // faultfrac 0; Dallas AUG-2026, slowing at 5 mph to yield to a pedestrian
-  // whom an oncoming SUV then struck into the AV's rear left, faultfrac 0).
-  // Verified true today. If a new severity === "Fatality" incident appears in
-  // data/incidents.js, this sentence must be rewritten before it silently
-  // becomes wrong. Guarded by quals/fatality-guard.qual.mjs.
   const sevTableRows = [];
   for (const helmer of ADS_HELMERS) {
     const helmerRows = rows.filter(r => r.helmer === helmer);
