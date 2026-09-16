@@ -23,11 +23,14 @@ assert.equal(onlyDecl(dot.body, "stroke", ".month-dot"), "var(--card)");
 assert.equal(onlyDecl(dot.body, "stroke-width", ".month-dot"), "1.5");
 
 const gridSites = (js.match(/class="month-grid"/g) || []).length;
-assert.equal(gridSites, 2,
+assert.equal(gridSites, 1,
   `Replicata: grep crashla.js for class="month-grid".
-Expectata: exactly two sites -- the distribution and fleet-forecast charts draw
-visible gridlines through the class; the monthly axes emit none (they used to
-emit one hidden line per tick).
+Expectata: exactly one site -- drawLogXTicks, the shared log x axis that both
+the distribution and fleet-forecast charts draw through (quals/axis-ticks.qual.mjs
+pins that both call it, and that the ladder lives in one place); the monthly axes
+emit none (they used to emit one hidden line per tick). This read two until
+2026-09-15, when the two charts' duplicated axis blocks collapsed into the
+helper -- the count is a duplication pin, so one is the tighter claim.
 Resultata: ${gridSites} sites.`);
 assert.ok(!js.includes("#e0e4ef"),
   "gridline colour comes from the palette (decision 3), not a pre-skin literal");

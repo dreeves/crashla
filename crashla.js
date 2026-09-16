@@ -1733,6 +1733,43 @@ function axisLeftMargin(tickLabels) {
   return Y_TITLE_BAND + TICK_GLYPH * Math.max(...tickLabels.map(label => label.length)) + TICK_GAP;
 }
 
+// The 1-2-5 gridlines of a log x axis, and the labels that fit beneath them.
+// The lines never collide; their labels do, since the 2026-09-07 face change
+// widened "1,000,000" from 46 units to 64. So a label goes on every
+// labelStep-th rung of the ladder, counting from the decades -- the stride
+// idiom drawSingleMonthAxes uses for month labels, sized by the per-glyph
+// bound axisLeftMargin uses for the label column. labelStep is the fewest
+// rungs that span the widest label plus its gap, rounded up to whole decades
+// because only a stride of one rung or of whole decades puts every label on
+// the same mantissa: a stride of two rungs would read 200, 1,000, 5,000,
+// 20,000, dropping the decade anchor from every other decade.
+const LOG_LADDER = [1, 2, 5]; // one decade of gridlines; a "rung" is one of these
+function drawLogXTicks(xMin, xMax, mapX, fmt, yTop, yBase, yText) {
+  assert(0 < xMin && xMin < xMax, "drawLogXTicks: degenerate x range", {xMin, xMax});
+  const rungs = [];
+  for (let e = Math.floor(Math.log10(xMin)); e <= Math.ceil(Math.log10(xMax)); e++) {
+    for (const [j, m] of LOG_LADDER.entries()) {
+      const v = m * Math.pow(10, e);
+      // n counts rungs from 10^0 upward, so n % LOG_LADDER.length === 0 is a
+      // decade and a stride anchored on it keeps every decade labelled.
+      if (v >= xMin && v <= xMax) rungs.push({v, n: LOG_LADDER.length * e + j});
+    }
+  }
+  // 1->2 and 5->10 are the ladder's tightest rungs and mapX is linear in log x,
+  // so one probe gives the pitch however many rungs there are (a frame narrower
+  // than a rung, e.g. 101M-169M, holds none and draws none).
+  const pitch = mapX(2 * xMin) - mapX(xMin);
+  assert(pitch > 0, "drawLogXTicks: mapX must grow with x", {pitch});
+  const widest = rungs.reduce((w, r) => Math.max(w, TICK_GLYPH * fmt(r.v).length), 0) + TICK_GAP;
+  const needed = Math.ceil(widest / pitch);
+  const labelStep = needed <= 1 ? 1 : LOG_LADDER.length * Math.ceil(needed / LOG_LADDER.length);
+  return rungs.map(r => `
+    <line x1="${mapX(r.v).toFixed(2)}" y1="${yTop}" x2="${mapX(r.v).toFixed(2)}" y2="${yBase}"
+      class="month-grid"></line>
+    ${r.n % labelStep === 0 ? `<text class="month-tick" x="${mapX(r.v).toFixed(2)}" y="${yText}" text-anchor="middle">${fmt(r.v)}</text>` : ""}
+  `).join("");
+}
+
 function drawSingleMonthAxes(
   months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, yFmt, yLabel,
 ) {
@@ -2056,23 +2093,8 @@ function renderDistributionChart(series) {
   const mapX = x => mLeft + (Math.log(x) - logMin) / (logMax - logMin) * pW;
   const mapY = y => mTop + pH * (1 - y / yMax);
 
-  // Log-scale x-axis ticks
-  const ticks = [];
-  const e0 = Math.floor(Math.log10(xMin));
-  const e1 = Math.ceil(Math.log10(xMax));
-  for (let e = e0; e <= e1; e++) {
-    for (const m of [1, 2, 5]) {
-      const v = m * Math.pow(10, e);
-      if (v >= xMin && v <= xMax) ticks.push(v);
-    }
-  }
-
   const axes = `
-    ${ticks.map(v => `
-      <line x1="${mapX(v).toFixed(2)}" y1="${mTop}" x2="${mapX(v).toFixed(2)}" y2="${baseline}"
-        class="month-grid"></line>
-      <text class="month-tick" x="${mapX(v).toFixed(2)}" y="${svgH - 16}" text-anchor="middle">${fmtMiles(v)}</text>
-    `).join("")}
+    ${drawLogXTicks(xMin, xMax, mapX, fmtMiles, mTop, baseline, svgH - 16)}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
     <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">Probability Density for True MPI</text>
@@ -2426,19 +2448,8 @@ function renderFleetForecastChart() {
   const mapX = x => mLeft + (Math.log(x) - logMin) / (logMax - logMin) * pW;
   const mapY = y => mTop + pH * (1 - y / yMax);
 
-  const ticks = [];
-  const e0 = Math.floor(Math.log10(xMin)), e1 = Math.ceil(Math.log10(xMax));
-  for (let e = e0; e <= e1; e++) for (const m of [1, 2, 5]) {
-    const v = m * Math.pow(10, e);
-    if (v >= xMin && v <= xMax) ticks.push(v);
-  }
-
   const axes = `
-    ${ticks.map(v => `
-      <line x1="${mapX(v).toFixed(2)}" y1="${mTop}" x2="${mapX(v).toFixed(2)}" y2="${baseline}"
-        class="month-grid"></line>
-      <text class="month-tick" x="${mapX(v).toFixed(2)}" y="${baseline + 16}" text-anchor="middle">${spec.fmt(v)}</text>
-    `).join("")}
+    ${drawLogXTicks(xMin, xMax, mapX, spec.fmt, mTop, baseline, baseline + 16)}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
     <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">Probability density for 2027 Jan 1</text>

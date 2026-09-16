@@ -469,9 +469,6 @@ tbody tr:hover { background: var(--accent-wash); }
   gap: 0.7rem;
   margin-top: 0.3rem;
 }
-#month-legend-mpi-helmers {
-  gap: 1.5rem;
-}
 #month-legend-mpi-lines {
   flex-direction: column;
   gap: 0.25rem;
