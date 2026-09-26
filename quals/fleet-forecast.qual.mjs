@@ -235,15 +235,29 @@ Resultata: CDF(median=${q.median}) = ${q.cdfMedian.toFixed(3)}, CDF(lo90) = ${q.
 // The scenario mixture restores the property that motivated it: Tesla's
 // robotaxi-scope miles median sits with scenario A's ~71% mass, not in the
 // no-man's-land (~32M) the single fat-tailed curve produced; the HW4 lane
-// is dashed/conditional in the hundreds of millions. Range re-pinned
-// [7M, 15M] -> [3.4M, 6.5M] (= scenario A's band) on 2026-07-22 when A was
-// recalibrated down to the Q2-deck actuals (end-Jun 2.44M after the
-// utilization-led Q2 slowdown); the median lands ~5M.
+// is dashed/conditional in the hundreds of millions. The band is read from
+// MILES_FORECAST A itself (2026-09-26): the hardcoded [3.4M, 6.5M] of
+// 2026-07-22 went stale when A was re-based on 2026-09-04 and the median
+// sat 3% under its ceiling with no regression.
+const milesA = JSON.parse(vm.runInContext(`JSON.stringify(MILES_FORECAST.find(f => f.helmer === "Tesla").components.find(c => c.weight > 0.5))`, ctx));
 const milesByKey = Object.fromEntries(quantileStats.filter(q => q.metric === "miles").map(q => [q.key, q]));
-assert.ok(milesByKey.robotaxi.median > 3400000 && milesByKey.robotaxi.median < 6500000 && !milesByKey.robotaxi.dashed,
+assert.ok(milesByKey.robotaxi.median > milesA.lo && milesByKey.robotaxi.median < milesA.hi && !milesByKey.robotaxi.dashed,
   `Replicata: read Tesla's robotaxi-scope cumulative-miles median.
-Expectata: in [3.4M, 6.5M] (scenario A's band; A carries ~71% of the mass) and drawn solid.
+Expectata: inside scenario A's band [${milesA.lo}, ${milesA.hi}] (A carries ~71% of the mass) and drawn solid.
 Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
+// Tesla's robotaxi FLEET lane four months out must not put 5% of its mass
+// below the LAST OBSERVED floor: FLEET_HISTORY's 2026-08 row (150 [90, 220])
+// re-based the miles scenarios on 2026-09-04 but not the fleet scenario A,
+// which still sat on the mid-2026 ~25-28-car anchor (median 180, 5th
+// percentile 79 < 90) until 2026-09-26.
+{
+  const lastTesla = JSON.parse(vm.runInContext(`JSON.stringify(FLEET_HISTORY.Tesla.at(-1))`, ctx));
+  const fleetRobotaxi = JSON.parse(vm.runInContext(`JSON.stringify(fleetDistributionCurves("fleet").find(c => c.key === "robotaxi"))`, ctx));
+  assert.ok(fleetRobotaxi.lo90 >= lastTesla.lo && fleetRobotaxi.median >= lastTesla.best,
+    `Replicata: compare Tesla's robotaxi fleet lane at Jan 2027 with the latest FLEET_HISTORY observation (${lastTesla.month}: ${lastTesla.best} [${lastTesla.lo}, ${lastTesla.hi}]).
+Expectata: 5th percentile >= the observed low edge ${lastTesla.lo} and median >= the observed best ${lastTesla.best}.
+Resultata: lo90 ${Math.round(fleetRobotaxi.lo90)}, median ${Math.round(fleetRobotaxi.median)}.`);
+}
 assert.ok(milesByKey.hw4.median > 150000000 && milesByKey.hw4.dashed,
   `Replicata: read Tesla's HW4-scope cumulative-miles curve.
 Expectata: median past 150M and drawn dashed (conditional scenario).

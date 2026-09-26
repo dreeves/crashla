@@ -2259,8 +2259,10 @@ function renderDistributionChart(series) {
 // Anchors (mid-2026): Waymo ~3,600 (Q1 2026) -> ~3,871 (Jun), ~280 cars/mo, Mesa/
 // Magna plant (tens of thousands/yr capacity) now building the Ojai (Zeekr 6th-gen,
 // public rides from May 28 2026), Ioniq 5 next (50k by 2028, GA Metaplant); Tesla
-// ~42 registered in TX (~20-25 active unsupervised), Cybercab ramping (~85 built
-// Jun 2026), unsupervised FSD "probably Q4 2026" (Musk), ~2-4M HW4 cars in the US;
+// ~150 [90, 220] in service Aug 2026 (FLEET_HISTORY; 546 registered in TX by
+// Sep 25 2026 = 420 Model Y + 126 Cybercab; public Cybercab rides in Austin
+// from Sep 4), unsupervised FSD "probably Q4 2026" (Musk), ~2-4M HW4 cars in
+// the US;
 // Zoox ~50->100 vehicles, redesigned production robotaxi unveiled Jun 24 2026.
 //
 // median = exp(mu) of each component; sigma is the log-scale spread. The weights
@@ -2272,7 +2274,13 @@ function renderDistributionChart(series) {
 // shares the band-mixture machinery.
 const FLEET_FORECAST = [
   { helmer: "Tesla", components: [
-    { weight: 0.71, median: 180,    sigma: 0.55, scope: "robotaxi" }, // A: slow robotaxi ramp continues
+    // A re-based 2026-09-26 on FLEET_HISTORY's 2026-08 row (150 [90, 220]; the
+    // June setting, median 180 / sigma 0.55, predated it and put the Jan-2027
+    // 5th percentile at 79, below August's floor): August's ~150 plus the 126
+    // Cybercabs already registered in Texas by Sep 25 and a flat Model Y count
+    // (Tesla told JPMorgan ~Aug 19 it is holding Model Y adds for Cybercab) ->
+    // ~240, sigma 0.45 (90% ~[114, 503]).
+    { weight: 0.71, median: 240,    sigma: 0.45, scope: "robotaxi" }, // A: slow robotaxi ramp continues
     { weight: 0.24, median: 9000,   sigma: 0.70, scope: "robotaxi" }, // B: aggressive robotaxi/Cybercab scale-up
     { weight: 0.05, median: 600000, sigma: 0.95, scope: "hw4" },      // C: eyes-off FSD across the HW4 fleet
   ] },
