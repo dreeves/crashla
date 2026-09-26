@@ -1094,15 +1094,59 @@ OPERATOR_TYPE_OVERRIDE = {
 must(set(OPERATOR_TYPE_OVERRIDE.values()) <= EXPECTED_DRIVER_TYPES,
      "OPERATOR_TYPE_OVERRIDE names an unknown Driver / Operator Type")
 
+# Crashes in which a remote human, not the ADS, was driving, keyed by Report
+# ID with the narrative's own words (2026-09-26, human decision: the metrics
+# assess the self-driving software, so a crash counts only when the ADS was
+# driving -- the same line that keeps Waymo/Zoox safety-driver crashes out).
+# Excluded from every metric. Their miles stay in Tesla's denominator (Tesla
+# does not split them out), but they are walking-pace recoveries, so dropping
+# the crash while keeping those miles is nearly exact. The operator code cannot
+# find these -- two are coded "None" -- hence the narrative tripwire below.
+TELEOP_DRIVEN_REPORTS = {
+    "13781-11459": "The teleoperator took over vehicle control and gradually increased vehicle speed",
+    "13781-14043": "took over vehicle control when the ADS was stopped and proceeded straight on the street",
+    "13781-15395": "As the remote assistance operator continued to recover the vehicle, they made contact with a hidden tree stump",
+}
+# In-scope reports whose narrative matches TELEOP_PATTERN but in which the ADS
+# was driving at impact (none so far), keyed by Report ID with the reason.
+REMOTE_LANGUAGE_ADS_DRIVEN = {}
+# Language saying a remote human may have been driving. Calibrated 2026-09-26
+# on every in-scope narrative: it matches exactly the three reports above and
+# not "remote controlled" toys or a "fleet response team" arriving on scene.
+TELEOP_PATTERN = re.compile(
+    r"tele-?operat|remote (assistance )?operator|supported remotely|"
+    r"remotely (driven|operated|controlled|piloted)|"
+    r"took over (the )?(vehicle )?control", re.I)
+must(not set(TELEOP_DRIVEN_REPORTS) & set(REMOTE_LANGUAGE_ADS_DRIVEN),
+     "a report is classified both teleoperator-driven and ADS-driven")
 
-def is_public_service_incident(row):
-    """True if <row> is an incident from the reporting entity's public
-    robotaxi service (the service the VMT master measures)."""
+
+def operator_in_scope(row):
+    """True if <row>'s operator type is one whose miles are in the reporting
+    entity's VMT denominator (the service the VMT master measures)."""
     counted = PUBLIC_SERVICE_OPERATOR_TYPES.get(
         row["Reporting Entity"].strip(), set())
     operator = OPERATOR_TYPE_OVERRIDE.get(
         row["Report ID"], row["Driver / Operator Type"].strip())
     return operator in counted
+
+
+def is_public_service_incident(row):
+    """True if <row> counts: an in-scope operator type, with the ADS (not a
+    remote human) driving."""
+    return operator_in_scope(row) and row["Report ID"] not in TELEOP_DRIVEN_REPORTS
+
+
+def check_teleop_classified(row):
+    """Stop the run on an in-scope report whose narrative says a remote human
+    may have been driving, until a human classifies it."""
+    rid = row["Report ID"]
+    must(not (operator_in_scope(row) and TELEOP_PATTERN.search(row["Narrative"]))
+         or rid in TELEOP_DRIVEN_REPORTS or rid in REMOTE_LANGUAGE_ADS_DRIVEN,
+         "narrative says a remote human may have been driving (read it; add "
+         "the report to TELEOP_DRIVEN_REPORTS if a remote human was driving at "
+         "impact, else to REMOTE_LANGUAGE_ADS_DRIVEN)",
+         reportId=rid, narrative=row["Narrative"][:300])
 
 
 INCIDENT_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
@@ -1144,6 +1188,7 @@ def main():
              "(classify this mode: add it to PUBLIC_SERVICE_OPERATOR_TYPES "
              "or EXCLUDED_OPERATOR_TYPES)",
              row=i, entity=driver, value=dt)
+        check_teleop_classified(r)
         sev = r["Highest Injury Severity Alleged"].strip()
         must(sev in EXPECTED_SEVERITIES,
              "unexpected Highest Injury Severity Alleged", row=i, value=sev,

@@ -145,27 +145,30 @@ Expectata: month aggregation preserves totals from the raw incident data within 
 Resultata: expected=${JSON.stringify(plain.expectedTotalByHelmer)} actual=${JSON.stringify(plain.totalByHelmer)}.`,
 );
 
+// Re-pinned 2026-09-26: four 1-10 mph -> three, when the teleoperator-driven
+// 13781-14043 (9 mph into a construction barricade) left scope
+// (teleop-scope.qual).
 assert.deepEqual(
   plain.janTeslaBins,
-  { "0": 1, "31+": 0, "11-30": 0, "1-10": 4, unknown: 0 },
+  { "0": 1, "31+": 0, "11-30": 0, "1-10": 3, unknown: 0 },
   `Replicata: inspect January 2026 Tesla speed bins.
-Expectata: bins reflect one 0-mph incident and four 1-10 mph incidents.
+Expectata: bins reflect one 0-mph incident and three 1-10 mph incidents.
 Resultata: bins were ${JSON.stringify(plain.janTeslaBins)}.`,
 );
 
 assert.equal(
   plain.janTeslaNonstationary,
-  4,
+  3, // re-pinned 2026-09-26 (4 -> 3) with the bins above
   `Replicata: compute January 2026 Tesla nonstationary monthly incident count.
-Expectata: only the four 1-10 mph incidents count toward the nonstationary series.
+Expectata: only the three 1-10 mph incidents count toward the nonstationary series.
 Resultata: nonstationary count was ${JSON.stringify(plain.janTeslaNonstationary)}.`,
 );
 
 assert.equal(
   plain.janTeslaRoadwayNonstationary,
-  2,
+  1, // re-pinned 2026-09-26 (2 -> 1): the removed 13781-14043 was on a street
   `Replicata: compute January 2026 Tesla nonstationary-roadway monthly incident count.
-Expectata: two January Tesla incidents are both nonstationary and not in a parking lot.
+Expectata: one January Tesla incident is both nonstationary and not in a parking lot.
 Resultata: nonstationary-roadway count was ${JSON.stringify(plain.janTeslaRoadwayNonstationary)}.`,
 );
 

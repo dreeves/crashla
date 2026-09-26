@@ -59,7 +59,7 @@ The slurp pipeline is:
 4. Deduplicate by `Report ID` over every filed row, keeping the highest
    `Report Version` (a report's `Same Incident ID` can change between
    versions, and a later version can retire a report from scope)
-5. Filter the surviving versions to each company's public robotaxi service (`Driver / Operator Type == "None"`, plus `"In-Vehicle (Commercial / Test)"` and `"Remote (Commercial / Test)"` for Tesla — the safety-monitor and remote-assistance modes of the same paid fleet), then deduplicate by `Same Incident ID`; `SPLIT_SAME_INCIDENT_REPORTS` in `slurp.py`
+5. Filter the surviving versions to the operator modes whose miles are in each company's VMT denominator (`PUBLIC_SERVICE_OPERATOR_TYPES` / `EXCLUDED_OPERATOR_TYPES` in `slurp.py`: `"None"` and `"Remote (Commercial / Test)"` for all three, plus `"In-Vehicle (Commercial / Test)"` for Tesla, whose deck miles include monitor-aboard miles; Waymo/Zoox safety-driver modes are excluded because their miles are not in those denominators; `"Other, see Narrative"` is classified per report via `OPERATOR_TYPE_OVERRIDE`), drop crashes in which a remote human was driving (`TELEOP_DRIVEN_REPORTS`, guarded by a narrative tripwire), then deduplicate by `Same Incident ID`; `SPLIT_SAME_INCIDENT_REPORTS` in `slurp.py`
    exempts reports that share an ID but describe distinct crashes
 6. Read the VMT master from `data/vmt.csv` (first, to fail fast on a stale
    ledger before any file is written)
