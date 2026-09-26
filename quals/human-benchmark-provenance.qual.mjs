@@ -1,8 +1,12 @@
 // Pins the AV-cities human benchmark bands for injury / airbag / serious-injury+
 // to Waymo's LIVE Safety Impact hub per-city benchmark rates (data through
-// Mar 2026, five areas: Phoenix, SF Bay Area, LA, Austin, Atlanta; retrieved 2026-08-22 —
-// supersedes the Kusano & Scanlon 56.7M paper pin: same methodology family,
-// updated denominators and city set), so a band edge can't silently drift
+// Jun 2026, five areas: Phoenix, SF Bay Area, LA, Austin, Atlanta; retrieved 2026-09-25,
+// previously the thru-Mar-2026 values of 2026-08-22 — supersedes the Kusano &
+// Scanlon 56.7M paper pin: same methodology family, updated denominators and
+// city set). The rates are Waymo's DYNAMIC benchmarks (CSV3 rows without the
+// "(non-Dynamic)" suffix), re-weighted to where Waymo drove, so they shift
+// every release. Three significant figures (the page rounds to 2 dp, which
+// would move the SSI+ hi edge 3.5%: Phoenix 0.1035 shows as "0.10"). So a band edge can't silently drift
 // from its source. Each band edge = 1e6 / per-city IPMM: the lo (fewest miles
 // between crashes) = the highest-rate city, the hi = the lowest-rate city.
 // The geometric-mean central the cards use must sit near the hub's
@@ -16,13 +20,13 @@ const ctx = vm.createContext({ console, Math, Number, Object, JSON, Array, Set, 
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
-// Waymo Safety Impact hub, per-city human benchmark IPMM (thru Mar 2026):
-// hiRate = the highest-rate city (SF for injury/SSI+, Atlanta for airbag),
+// Waymo Safety Impact hub, per-city human benchmark IPMM (thru Jun 2026):
+// hiRate = the highest-rate city (SF Bay Area for injury/SSI+, Atlanta for airbag),
 // loRate = the lowest-rate city (Phoenix for injury/SSI+, LA for airbag).
 const SRC = {
-  injury:        { hiRate: 7.25, loRate: 2.03, blended: 3.91 },
-  airbag:        { hiRate: 2.99, loRate: 1.19, blended: 1.68 },
-  seriousInjury: { hiRate: 0.44, loRate: 0.12, blended: 0.23 },
+  injury:        { hiRate: 6.64, loRate: 1.95, blended: 3.77 },
+  airbag:        { hiRate: 2.83, loRate: 1.27, blended: 1.62 },
+  seriousInjury: { hiRate: 0.391, loRate: 0.104, blended: 0.213 },
 };
 const REL_TOL = 0.01; // 1% — allows rounding of the edges to clean integers
 
@@ -39,13 +43,17 @@ Expectata: lo = 1e6/${r.hiRate} ≈ ${Math.round(expLo)} and hi = 1e6/${r.loRate
 Resultata: lo=${band.lo} (off ${(100 * (band.lo - expLo) / expLo).toFixed(1)}%), hi=${band.hi} (off ${(100 * (band.hi - expHi) / expHi).toFixed(1)}%).`);
 
   // The geometric-mean central (used by the "Nx safer" cards) must sit near
-  // Kusano's mileage-blended value — sanity that the band brackets the right point.
+  // the hub's mileage-blended value — sanity that the band brackets the right
+  // point. 20% (was 15% until 2026-09-25, human-approved): the thru-Jun-2026
+  // airbag span is lopsided around its blend (geomean 17% off), because the
+  // high-rate edge is Atlanta, whose hub mileage is itself in question
+  // (CSV4 lists ~85 Fulton/DeKalb S2 cells twice).
   const geo = Math.sqrt(band.lo * band.hi);
   const geoIpmm = 1e6 / geo;
   assert.ok(
-    Math.abs(geoIpmm - r.blended) / r.blended <= 0.15,
+    Math.abs(geoIpmm - r.blended) / r.blended <= 0.20,
     `Replicata: geometric-mean central of the ${key} band.
-Expectata: within 15% of the hub's All-Locations blended ${r.blended} IPMM.
+Expectata: within 20% of the hub's All-Locations blended ${r.blended} IPMM.
 Resultata: ${geoIpmm.toFixed(2)} IPMM.`);
 }
 
@@ -152,4 +160,4 @@ Resultata: band [${bands[key].HumansUS.lo}, ${bands[key].HumansUS.hi}], center $
   }
 }
 
-console.log("qual pass: AV-cities injury/airbag/serious-injury+ bands pinned to the Waymo hub per-city rates (thru Mar 2026); geomean centrals ~match the blended benchmark; HumansUS fatality band pinned to the FARS 2024 deaths/fatal-crash numerators");
+console.log("qual pass: AV-cities injury/airbag/serious-injury+ bands pinned to the Waymo hub per-city rates (thru Jun 2026); geomean centrals ~match the blended benchmark; HumansUS fatality band pinned to the FARS 2024 deaths/fatal-crash numerators");

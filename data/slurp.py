@@ -41,8 +41,12 @@ NHTSA_ADS_ARCHIVE_URL = (
     "SGO-2021-01_Incident_Reports_ADS.csv"
 )
 # NHTSA's canonical SGO page labels each release "through <date>": reports
-# RECEIVED through that date, which has been the 15th of the month before the
-# release for every release on record (verified from data/snapshots history:
+# RECEIVED through that date, which is the 15th of the month before the
+# release rolled forward to the next business day when the 15th falls on a
+# weekend or federal holiday (NHTSA's data-dictionary change log: "9/15/2026
+# Data release of reports received through August 17, 2026"; likewise Nov 17
+# 2025, Feb 17 and Mar 16 2026; quals/nhtsa-cutoff-date pins the rule)
+# (verified from data/snapshots history:
 # each release's newest incident month holds almost only five-day-track
 # filings and grows ~6x in the next release; the second-newest month never
 # grows again).
@@ -54,7 +58,7 @@ NHTSA_ADS_ARCHIVE_URL = (
 # Date, so a stale cutoff trips there). Monthly filings submitted within the
 # incident month itself are rare but real (Tesla files early; the Feb-2026
 # release held four JAN-2026 ones) and are consistent with the cutoff.
-NHTSA_DATA_THROUGH_DATE = "2026-08-15"
+NHTSA_DATA_THROUGH_DATE = "2026-08-17"
 # Receipt coverage of the data-through month. Reports received through the
 # 15th cover only crashes from roughly the first third of that month: the
 # five-day clock runs from the company's notice, plus NHTSA processing. It is
@@ -390,8 +394,11 @@ SEVERITY_OVERRIDE = {
     "df322c129346f66": "Minor W/O Hospitalization",
     # Waymo deflected crate into scooterist who fell; no injuries mentioned
     "0fa98029f8f1cef": "Property Damage. No Injured Reported",
-    # Red-runner chain crash into stopped Waymo; occupant transported to hospital
-    "3f40494138fe83f": "Minor W/ Hospitalization",
+    # Red-runner chain crash into stopped Waymo; occupant transported to
+    # hospital. Was Minor W/ until Waymo's Sep-24-2026 hub release notes quoted
+    # a police General Offense Report: the other driver "was treated at a
+    # hospital for injuries described as life threatening" (30270-13817)
+    "3f40494138fe83f": "Serious W/ Hospitalization",
     # Freeway chain shoved car into Waymo; driver transported, AV passenger minor
     "20d6da83946bc6a": "Minor W/ Hospitalization",
     # Driver doored passing Zoox; hurt hand/neck per media, declined hospital
@@ -1028,28 +1035,74 @@ EXPECTED_HELMERS = {
 # Included per human decision 2026-08-19: those vehicles' miles are already in
 # the VMT denominator, so their crashes belong in the numerator; fault is
 # judged 0 when a remote human, not the ADS, was driving (same convention as
-# passenger-caused incidents). For entities configured here the set must stay
-# EXHAUSTIVE over the operator types they file -- main() must()s that, so a
-# novel mode crashes the run for a human to classify instead of silently
-# dropping out of scope (which is how 13781-15395 went unnoticed for a month).
+# passenger-caused incidents).
+# Waymo and Zoox (made explicit 2026-09-25, human-approved): their VMT
+# denominators are driverless miles only (Waymo hub rider-only miles, Zoox
+# driverless miles), so "None" and "Remote (Commercial / Test)" (a driverless
+# car with a remote operator involved -- both such reports so far say the ADS
+# was engaged) count, and every mode with a safety driver aboard is excluded
+# whatever the ADS was doing: those miles are not in the denominator.
+# "Other, see Narrative" is excluded by type and classified per report via
+# OPERATOR_TYPE_OVERRIDE below. Every helmer has both a counted and an excluded
+# set, and together they must stay EXHAUSTIVE over the operator types it files
+# -- main() must()s that, so a novel mode crashes the run for a human to
+# classify instead of silently dropping out of scope (which is how 13781-15395
+# went unnoticed for a month). Other reporting entities never count.
 PUBLIC_SERVICE_OPERATOR_TYPES = {
     "Tesla, Inc.": {"None", "In-Vehicle (Commercial / Test)",
                     "Remote (Commercial / Test)"},
+    "Waymo LLC": {"None", "Remote (Commercial / Test)"},
+    "Zoox, Inc.": {"None", "Remote (Commercial / Test)"},
 }
-must(set(PUBLIC_SERVICE_OPERATOR_TYPES) <= EXPECTED_HELMERS,
-     "PUBLIC_SERVICE_OPERATOR_TYPES names an unknown reporting entity",
-     unknown=set(PUBLIC_SERVICE_OPERATOR_TYPES) - EXPECTED_HELMERS)
-must(all(types <= EXPECTED_DRIVER_TYPES
-         for types in PUBLIC_SERVICE_OPERATOR_TYPES.values()),
-     "PUBLIC_SERVICE_OPERATOR_TYPES names an unknown Driver / Operator Type")
+EXCLUDED_OPERATOR_TYPES = {
+    "Tesla, Inc.": set(),
+    "Waymo LLC": {"In-Vehicle (Commercial / Test)",
+                  "In-Vehicle and Remote (Commercial / Test)",
+                  "Other, see Narrative"},
+    "Zoox, Inc.": {"In-Vehicle (Commercial / Test)", "Other, see Narrative"},
+}
+must(set(PUBLIC_SERVICE_OPERATOR_TYPES) == set(HELMER_SHORT) ==
+     set(EXCLUDED_OPERATOR_TYPES),
+     "operator scope must be configured for exactly the helmers",
+     counted=sorted(PUBLIC_SERVICE_OPERATOR_TYPES),
+     excluded=sorted(EXCLUDED_OPERATOR_TYPES), helmers=sorted(HELMER_SHORT))
+must(all(PUBLIC_SERVICE_OPERATOR_TYPES[e] | EXCLUDED_OPERATOR_TYPES[e]
+         <= EXPECTED_DRIVER_TYPES for e in HELMER_SHORT),
+     "operator scope names an unknown Driver / Operator Type")
+must(all(not PUBLIC_SERVICE_OPERATOR_TYPES[e] & EXCLUDED_OPERATOR_TYPES[e]
+         for e in HELMER_SHORT),
+     "an operator type is both counted and excluded")
+
+# Operator types the SGO field gets wrong, keyed by Report ID (added
+# 2026-09-25, human-approved). 30270-14625 (Waymo, Washington DC, MAR-2026) is
+# coded "None", but its narrative says "a test driver was present (in the
+# driver's seating position)" -- the situation 30270-8403's v2 filing
+# corrected upstream. DC is a Waymo testing market with no rider-only miles in
+# data/vmt.csv, and Waymo's own safety hub leaves the crash out of its
+# rider-only set.
+# 30270-8750 (Waymo, Tempe, SEP-2024) is coded "Other, see Narrative"; its
+# narrative names no test driver (Waymo's filings say "a test driver was
+# present" when one is) and it is on Waymo's own rider-only crash list (hub
+# CSV2), so it is a driverless-service crash. Deliberately NOT overridden:
+# Zoox 30610-9578 ("Other", "in autonomy", no operator named) -- 51 of Zoox's
+# 110 safety-driver narratives never mention the driver either, so silence
+# cannot show the car was driverless.
+OPERATOR_TYPE_OVERRIDE = {
+    "30270-14625": "In-Vehicle (Commercial / Test)",
+    "30270-8750": "None",
+}
+must(set(OPERATOR_TYPE_OVERRIDE.values()) <= EXPECTED_DRIVER_TYPES,
+     "OPERATOR_TYPE_OVERRIDE names an unknown Driver / Operator Type")
 
 
 def is_public_service_incident(row):
     """True if <row> is an incident from the reporting entity's public
     robotaxi service (the service the VMT master measures)."""
     counted = PUBLIC_SERVICE_OPERATOR_TYPES.get(
-        row["Reporting Entity"].strip(), {"None"})
-    return row["Driver / Operator Type"].strip() in counted
+        row["Reporting Entity"].strip(), set())
+    operator = OPERATOR_TYPE_OVERRIDE.get(
+        row["Report ID"], row["Driver / Operator Type"].strip())
+    return operator in counted
 
 
 INCIDENT_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
@@ -1084,13 +1137,13 @@ def main():
         must(driver in EXPECTED_HELMERS,
              "unexpected Reporting Entity", row=i, value=driver,
              expected=sorted(EXPECTED_HELMERS))
-        counted = PUBLIC_SERVICE_OPERATOR_TYPES.get(driver)
-        if counted is not None:
-            must(dt in counted,
-                 "operator type outside the configured public-service set "
-                 "(classify this mode: add it to PUBLIC_SERVICE_OPERATOR_TYPES "
-                 "or record an explicit exclusion)",
-                 row=i, entity=driver, value=dt, counted=sorted(counted))
+        must(driver not in HELMER_SHORT or
+             dt in PUBLIC_SERVICE_OPERATOR_TYPES[driver] |
+             EXCLUDED_OPERATOR_TYPES[driver],
+             "operator type outside the configured public-service set "
+             "(classify this mode: add it to PUBLIC_SERVICE_OPERATOR_TYPES "
+             "or EXCLUDED_OPERATOR_TYPES)",
+             row=i, entity=driver, value=dt)
         sev = r["Highest Injury Severity Alleged"].strip()
         must(sev in EXPECTED_SEVERITIES,
              "unexpected Highest Injury Severity Alleged", row=i, value=sev,

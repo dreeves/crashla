@@ -3,13 +3,14 @@ import { spawnSync } from "node:child_process";
 
 // data/slurp.py's handling of NHTSA's release frontier. Each NHTSA CSV holds
 // reports RECEIVED through the reviewed NHTSA_DATA_THROUGH_DATE (the 15th of
-// the month before the release). The reviewed cutoff must (1) match the data
+// the month before the release, or the next business day when the 15th falls
+// on a weekend or holiday; quals/nhtsa-cutoff-date.qual.mjs). The reviewed cutoff must (1) match the data
 // by month, (2) be guarded by content (the newest submission month must be
 // the cutoff month; early Monthly filings inside it are legitimate), (3)
 // carry the measured five-day receipt-coverage
 // triple, and (4) never be enforced by pinning the CSV's HTTP headers or
-// bytes — a redaction touch-up (Aug 27, 2026: one Stack AV narrative) must
-// not break ingestion. Offline regeneration from the newest snapshots must
+// bytes — a narrative correction (Aug 27, 2026: NHTSA replaced the wrong
+// narrative on Stack AV 34952-11803 v1) must not break ingestion. Offline regeneration from the newest snapshots must
 // reproduce the committed payloads byte for byte.
 
 const py = String.raw`

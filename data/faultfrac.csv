@@ -1626,7 +1626,6 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-14267,0,SUV,rear,rear,Property Damage. No Injured Reported,0,AV stopped at stop sign; passing SUV clipped its rear left
 30270-14332,0,Pickup Truck,front left,rear,Property Damage. No Injured Reported,0,AV stopped for pickup parallel-parking; pickup reversed into its front right
 30270-14220,31,SUV,rear left,front,No Injured Reported,0.05,SUV exited lot without stopping into AV's lane; hit rear right (nearly clear)
-30270-14625,4,SUV,rear right,front right,Minor W/O Hospitalization,0,AV slowing for ambulance siren; SUV behind rear-ended it
 30270-14234,0,Passenger Car,rear,front left,Property Damage. No Injured Reported,0,AV parked at curb; speeding car clipped its rear left passing
 30270-14231,23,SUV,rear left,front,Property Damage. No Injured Reported,0.05,SUV turned left from adjacent lane into AV; hit rear right (nearly clear)
 30270-14425,0,First Responder Vehicle,rear,left,Property Damage. No Injured Reported,0,AV stopped for ambulance; it clipped AV's rear left passing
@@ -2137,3 +2136,6 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-16210,3,Passenger Car,rear,front left,Property Damage. No Injured Reported,0,AV slowing for queue; car overtaking from behind clipped its rear left
 30610-15822,4,Non-Motorist: Other,front left + front right,,Property Damage. No Injured Reported,0.4,AV drove into smoke-obscured active fire scene; responder struck it
 30610-15826,0,Passenger Car,front + front right,front left + front right,Property Damage. No Injured Reported,0.1,Zoox got underway on right-on-red as a car cut in from the cross street
+30270-13378,0,Non-Motorist: Cyclist,right,,Minor W/ Hospitalization,0,AV stopped in crosswalk yielding; cyclist ran red and rode into it
+30270-8750,28,Passenger Car,front right,front left,No Injuries Reported,0.1,AV on through road; car from stop-controlled road slowly pulled into its lane
+30610-11752,0,Passenger Car,rear left,front,Property Damage. No Injured Reported,0,Unoccupied Zoox slowing to a stop; rear-ended

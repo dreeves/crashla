@@ -279,14 +279,22 @@ Expectata: chart includes stroke-width:2 (standard line width).
 Resultata: stroke-width:2 not found in rendered chart.`,
 );
 
-// Serious injury (SSI+) assertions
+// Serious injury (SSI+) assertions. De-magicked 2026-09-25 (human-approved):
+// the old fixed "Waymo 1-10" ceiling sat at exactly 10 and broke on the next
+// legitimate serious injury. The expected count is recomputed from
+// INCIDENT_DATA with the SSI+ severity strings spelled out here, independent
+// of the app's SEVERITY_INFO, so counting Moderate W/ Hosp (KABCO B/C) as
+// SSI+ still fails, and a new severity string fails until a human classifies it.
+const SSI_STRINGS = ["Serious", "Serious W/ Hospitalization", "Fatality"];
+const expSsi = h => vm.runInContext(
+  `INCIDENT_DATA.filter(r => r.helmer === ${JSON.stringify(h)} && ${JSON.stringify(SSI_STRINGS)}.includes(r.severity)).length`, ctx);
 assert.ok(
-  summaryByHelmer.Waymo.incSeriousInjury >= 1 &&
-    summaryByHelmer.Waymo.incSeriousInjury <= 10 &&
-    summaryByHelmer.Tesla.incSeriousInjury === 0 &&
-    summaryByHelmer.Zoox.incSeriousInjury === 0,
-  `Replicata: compute serious injury (SSI+) incident counts per helmer.
-Expectata: Waymo has 1\u201310 serious injury incidents (Serious / Serious W/ Hospitalization / Fatality — Moderate W/ Hosp is KABCO B/C, not SSI+); Tesla and Zoox have 0.
+  expSsi("Waymo") >= 1 &&
+    summaryByHelmer.Waymo.incSeriousInjury === expSsi("Waymo") &&
+    summaryByHelmer.Tesla.incSeriousInjury === expSsi("Tesla") &&
+    summaryByHelmer.Zoox.incSeriousInjury === expSsi("Zoox"),
+  `Replicata: compute serious injury (SSI+) incident counts per helmer and compare to a flat count of INCIDENT_DATA.
+Expectata: counts of Serious / Serious W/ Hospitalization / Fatality incidents (Moderate W/ Hosp is KABCO B/C, not SSI+): Waymo=${expSsi("Waymo")} (at least 1), Tesla=${expSsi("Tesla")}, Zoox=${expSsi("Zoox")}.
 Resultata: Waymo=${summaryByHelmer.Waymo.incSeriousInjury} Tesla=${summaryByHelmer.Tesla.incSeriousInjury} Zoox=${summaryByHelmer.Zoox.incSeriousInjury}.`,
 );
 
@@ -322,9 +330,9 @@ Resultata: label not found in card HTML.`,
 
 const humanSsi = vm.runInContext("METRIC_DEFS.find(m => m.key === 'seriousInjury').humanMPI.HumansAV", ctx);
 assert.ok(
-  humanSsi && humanSsi.lo >= 1800000 && humanSsi.hi <= 9000000 && humanSsi.lo < humanSsi.hi,
+  humanSsi && humanSsi.lo >= 1800000 && humanSsi.hi <= 12000000 && humanSsi.lo < humanSsi.hi,
   `Replicata: inspect humanMPI for seriousInjury metric.
-Expectata: SSI+ human benchmark spans the Waymo hub per-city range ~2.3M (SF 0.44 IPMM) to ~8.3M (Phoenix 0.12 IPMM), blended ~0.23 (repinned 2026-08-22; human-benchmark-provenance.qual pins the exact edges).
+Expectata: SSI+ human benchmark within [1.8M, 12M], spanning the Waymo hub per-city range ~2.56M (SF 0.391 IPMM) to ~9.62M (Phoenix 0.104 IPMM), blended ~0.213 (repinned 2026-09-25, thru Jun 2026; human-benchmark-provenance.qual pins the exact edges).
 Resultata: ${JSON.stringify(humanSsi)}.`,
 );
 

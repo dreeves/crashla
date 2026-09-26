@@ -4,6 +4,23 @@ Other name ideas:
 * Via et Veritas
 * Bayes Against the Machine
 
+VMT discrepancy in Waymo data (2026-09-25):
+
+Subject:
+possible double-counted Atlanta miles in Safety Impact hub data
+
+In "CSV4 - Miles and Benchmark Crashes for Dynamic Benchmark 202009-202606-2022benchmark.csv", 67 Fulton and 18 DeKalb S2 cells appear twice within every Outcome. Each pair has the same S2 Cell ID, Waymo RO Miles and HPMS Yearly VMT, but a different crash count. No other county has repeated cells. Same patten in the 202603 files (54 Fulton, 14 DeKalb).
+
+Replicata:
+Within one Outcome (e.g. "ka"), sum Waymo RO Miles by county, (a) over all rows and (b) counting each S2 cell once.
+Expected: (a) = (b).
+Actual: (a) Fulton 7.860M, DeKalb 0.764M, matching CSV1 exactly; (b) Fulton 5.143M, DeKalb 0.640M.
+
+If that's indeed an error, the headline 271.329 mile number includes ~2.84M double-counted Atlanta miles (1.79M in the March release) and the Atlanta crash rates would be understated.
+
+Thanks for being amazing, saving lives, and for all the transparency!
+Daniel Reeves
+
 
 ## How safe are robotaxis?
 

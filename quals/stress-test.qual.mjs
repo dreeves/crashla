@@ -151,12 +151,17 @@ Resultata: verdict was ${plain.byHelmer.Waymo[key].verdictKey}.`,
 //     restores the very upper-edge miles the previous release had trimmed.
 //     (coverage_max is what sets ratioHi, so the same release's 0.31 -> 0.28
 //     best / 0.25 -> 0.20 lo re-measurement does NOT bear on this.)
+//   - 2026-09-25: worse again, ceiling 0.978x. The explicit operator scope
+//     (operator-scope.qual) counts 30610-11752, an unoccupied Zoox rear-ended
+//     in Las Vegas in SEP-2025 that the old "None"-only filter dropped because
+//     NHTSA coded it "Remote (Commercial / Test)": one more real in-scope
+//     incident over the same driverless miles.
 // Expect this assertion to keep alternating; re-pin it each release rather
 // than treating either direction as the stable truth.
 assert.ok(
-  plain.byHelmer.Zoox.all.verdictKey === "ambiguous" && plain.byHelmer.Zoox.all.ratioHi > 1,
+  plain.byHelmer.Zoox.all.verdictKey === "worse" && plain.byHelmer.Zoox.all.ratioHi < 1,
   `Replicata: compute the full-history stress verdict for Zoox on all incidents.
-Expectata: ambiguous — the AV/human ratio ceiling sits just above 1x now that the previous data-through month's exposure is uncapped again.
+Expectata: worse — with 30610-11752 counted, the AV/human ratio ceiling sits just below 1x.
 Resultata: ${plain.byHelmer.Zoox.all.verdictKey} at ${plain.byHelmer.Zoox.all.ratioLo}x–${plain.byHelmer.Zoox.all.ratioHi}x.`,
 );
 

@@ -25,6 +25,10 @@ const SEVERITY_PINS = {
   "30270-9860":  "Moderate W/ Hospitalization", // three transported; bare Moderate
   "30270-11450": "Moderate W/ Hospitalization", // transport stated as SGO trigger; field said W/O
   "30610-10473": "Minor W/O Hospitalization",  // v2 filed to add injury claim; field never updated
+  // Field "Unknown"; narrative says transported with unknown injuries; Waymo's
+  // Sep-24-2026 hub release notes quote a police General Offense Report:
+  // "treated at a hospital for injuries described as life threatening"
+  "30270-13817": "Serious W/ Hospitalization",
 };
 for (const [rid, want] of Object.entries(SEVERITY_PINS)) {
   const rec = byId.get(rid);
@@ -54,4 +58,15 @@ Expectata: Phoenix, AZ (upstream data-entry error patched via STATE_OVERRIDE).
 Resultata: ${rec === undefined ? "row missing" : JSON.stringify(rec.city + ", " + rec.state)}.`);
 }
 
-console.log("qual pass: narrative-contradiction severity, airbag, and location overrides flow into incidents.js");
+// Scope patch: 30270-14625 (Waymo, Washington DC, MAR-2026) is coded Driver /
+// Operator Type "None", but its narrative says "a test driver was present (in
+// the driver's seating position)". DC is a Waymo testing market whose miles
+// are not in the rider-only VMT denominator, and Waymo's own hub excludes the
+// crash; OPERATOR_TYPE_OVERRIDE in slurp.py applies the narrative's operator
+// type, as 30270-8403's v2 filing did for the same situation.
+assert.ok(!byId.has("30270-14625"),
+  `Replicata: look up 30270-14625 in data/incidents.js.
+Expectata: absent (test driver present per the narrative; OPERATOR_TYPE_OVERRIDE in slurp.py).
+Resultata: present.`);
+
+console.log("qual pass: narrative-contradiction severity, airbag, location, and operator-scope overrides flow into incidents.js");

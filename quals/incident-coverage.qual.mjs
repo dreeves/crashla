@@ -45,7 +45,9 @@ Resultata: ${row.incCovMin} <= ${row.incCov} <= ${row.incCovMax}.`);
 
 // --- Receipt coverage: 1 everywhere except NHTSA's data-through month ---
 // The release holds reports RECEIVED through NHTSA_DATA_THROUGH_DATE (the
-// 15th), so that month's five-day-track incidents are only partly present.
+// 15th, or the next business day when the 15th falls on a weekend or holiday;
+// quals/nhtsa-cutoff-date.qual.mjs), so that month's five-day-track incidents
+// are only partly present.
 // slurp.py measures the fraction from snapshot history; the generated CSV
 // must carry exactly that reviewed (best, lo, hi) triple for the data-through
 // month and (1, 1, 1) everywhere else. Single source of truth: the constant
