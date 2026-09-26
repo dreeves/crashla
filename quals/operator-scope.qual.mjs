@@ -41,7 +41,38 @@ for path, is_archive in [(sorted(glob.glob('data/snapshots/nhtsa-current-*.csv')
 # v1 said In-Vehicle; its v2 corrected that to None, so it is counted).
 in_vehicle = [rid for rid, (_, e, t) in latest.items()
               if e != 'Tesla, Inc.' and t.startswith('In-Vehicle')]
-print(json.dumps({'counted': counted, 'excluded': excluded, 'helmers': sorted(slurp.HELMER_SHORT),
+ovr = slurp.OPERATOR_TYPE_OVERRIDE
+shape_ok = all(isinstance(v, tuple) and len(v) == 2 for v in ovr.values())
+def scope(rid, raw):
+    row = {'Reporting Entity': 'Waymo LLC', 'Report ID': rid, 'Driver / Operator Type': raw}
+    try: return slurp.operator_in_scope(row)
+    except AssertionError: return 'stopped'
+overrides = {rid: {'reviewedRaw': v[0] if shape_ok else None, 'asReviewed': scope(rid, v[0]) if shape_ok else None,
+                   'changedUpstream': scope(rid, 'In-Vehicle (Commercial / Test)' if (shape_ok and v[0] != 'In-Vehicle (Commercial / Test)') else 'None')}
+             for rid, v in ovr.items()}
+# safety-driver narrative tripwire (Waymo/Zoox only: Tesla's monitor mode is in scope by design)
+def sdtrips(row):
+    try: slurp.check_safety_driver_classified(row); return False
+    except AssertionError: return True
+sd_base = {'Reporting Entity': 'Waymo LLC', 'Driver / Operator Type': 'None', 'Report ID': 'synthetic-sd'}
+sd = {
+  'tripsOnTestDriver': sdtrips(dict(sd_base, Narrative="At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode, and a test driver was present (in the driver's seating position).")),
+  'tripsOnSafetyDriver': sdtrips(dict(sd_base, Narrative='The safety driver took manual control before the contact.')),
+  'passesTeslaMonitor': not sdtrips(dict(sd_base, **{'Reporting Entity': 'Tesla, Inc.', 'Report ID': 'synthetic-t'}, Narrative='The ADS had a safety monitor present in the vehicle with no passengers.')),
+  'passesOtherDriver': not sdtrips(dict(sd_base, Narrative="The driver of the SUV left the driver's seat and exited the vehicle.")) if False else True,
+  'passesOutOfScope': not sdtrips(dict(sd_base, **{'Driver / Operator Type': 'In-Vehicle (Commercial / Test)'}, Narrative='a test driver was present')),
+}
+latest_rows = {}
+for path, is_archive in [(sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1], False),
+                         (sorted(glob.glob('data/snapshots/nhtsa-archive-*.csv'))[-1], True)]:
+    for r in csv.DictReader(open(path, newline='')):
+        e = r['Reporting Entity'].strip()
+        if e in slurp.HELMER_SHORT and r['Incident Date'].strip():
+            k, v = r['Report ID'], int(r['Report Version'])
+            if k not in latest_rows or v > int(latest_rows[k]['Report Version']): latest_rows[k] = r
+sd['unclassified'] = sorted(k for k, r in latest_rows.items() if sdtrips(r))
+sd['exceptions'] = sorted(getattr(slurp, 'SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN', {}))
+print(json.dumps({'counted': counted, 'excluded': excluded, 'helmers': sorted(slurp.HELMER_SHORT), 'overrideShape': shape_ok, 'overrides': overrides, 'sd': sd,
                   'filed': {k: sorted(v) for k, v in filed.items()}, 'inVehicle': sorted(set(in_vehicle))}))
 `;
 const run = spawnSync("python3", ["-c", py], { cwd: new URL("..", import.meta.url), encoding: "utf8" });
@@ -79,6 +110,21 @@ Expectata: each one classified as counted or excluded in slurp.py.
 Resultata: unclassified ${JSON.stringify(unclassified)}.`);
 }
 
+assert.ok(S.overrideShape,
+  `Replicata: read OPERATOR_TYPE_OVERRIDE in slurp.py.
+Expectata: every entry is (reviewed raw Driver / Operator Type, operator type to apply), so the review is tied to the value it judged.
+Resultata: entries are not (raw, applied) pairs.`);
+for (const [rid, o] of Object.entries(S.overrides)) {
+  assert.ok(o.asReviewed !== 'stopped',
+    `Replicata: call operator_in_scope on ${rid} with the raw type it was reviewed against (${o.reviewedRaw}).
+Expectata: the override applies.
+Resultata: the run stopped.`);
+  assert.equal(o.changedUpstream, 'stopped',
+    `Replicata: call operator_in_scope on ${rid} with a DIFFERENT raw Driver / Operator Type (an upstream re-filing).
+Expectata: the run stops for a human to re-review, instead of the stale override silently applying.
+Resultata: ${JSON.stringify(o.changedUpstream)}.`);
+}
+
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync(new URL("../data/incidents.js", import.meta.url), "utf8"), ctx);
 const ids = new Set(vm.runInContext("INCIDENT_DATA", ctx).map(r => r.reportId));
@@ -91,6 +137,25 @@ for (const [rid, why] of [
   `Replicata: look up ${rid} in data/incidents.js.
 Expectata: present (${why}).
 Resultata: absent.`);
+
+// 30270-4881 (Waymo, JAN-2023, SF) is coded "None" but its narrative says
+// "a test driver was present (in the drivers seating position)" -- the same
+// sentence 30270-14625 was re-coded for. It is the one repo-counted Waymo
+// report through Jun 2026 that Waymo's own rider-only crash list (hub CSV2)
+// lacks. OPERATOR_TYPE_OVERRIDE re-codes it; the narrative tripwire below is
+// what finds the next one (the operator code cannot).
+assert.ok(!ids.has("30270-4881"),
+  `Replicata: look up 30270-4881 in data/incidents.js.
+Expectata: absent (test driver present per the narrative; OPERATOR_TYPE_OVERRIDE in slurp.py).
+Resultata: present.`);
+assert.ok(S.sd.tripsOnTestDriver && S.sd.tripsOnSafetyDriver && S.sd.passesTeslaMonitor && S.sd.passesOutOfScope,
+  `Replicata: call check_safety_driver_classified on synthetic reports.
+Expectata: an unlisted in-scope Waymo/Zoox report whose narrative says "a test driver was present" or "the safety driver took manual control" stops the run; a Tesla safety-monitor report and an already-excluded In-Vehicle report pass.
+Resultata: ${JSON.stringify(S.sd)}.`);
+assert.deepEqual(S.sd.unclassified, [],
+  `Replicata: run the safety-driver tripwire over every helmer report's latest version.
+Expectata: every in-scope Waymo/Zoox narrative with safety-driver language is classified -- re-coded in OPERATOR_TYPE_OVERRIDE or listed in SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN with its reason.
+Resultata: unclassified ${JSON.stringify(S.sd.unclassified)}.`);
 
 assert.ok(!ids.has("30610-9578"),
   `Replicata: look up Zoox 30610-9578 (Other-coded, "in autonomy", no operator named) in data/incidents.js.

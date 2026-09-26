@@ -43,7 +43,15 @@ for (const literal of ["fill:#555", "font-weight:bold"]) {
   assert.ok(!js.includes(literal),
     `the k = 0 '?' marker takes the tick style (decision 4), not an inline ${literal}`);
 }
-assert.ok(js.includes('<text class="month-tick" x="${(x + 7).toFixed(2)}"'),
-  "the '?' marker is a .month-tick text");
+assert.equal((js.match(/<text class="month-tick"[^>]*>\?<\/text>/g) || []).length, 1,
+  "the '?' marker is one .month-tick text template");
+assert.ok(!js.includes('r="12" fill="none" data-tip') && js.includes('r="8" fill="none" data-tip'),
+  "MPI-chart dot hit circles are r=8 (r=12 discs stacked over neighbouring helmers' dots and stole their tooltips)");
+for (const sel of [".month-err", ".month-axis"]) {
+  const rule = parsed.find(r => r.sel === sel && r.context.length === 0);
+  assert.ok(rule, `a ${sel} rule exists`);
+  assert.equal(onlyDecl(rule.body, "pointer-events", sel), "none",
+    `${sel} is not a tooltip target, so it must not cover one (error bars and the x axis sat on top of markers)`);
+}
 
 console.log("qual pass: chart marks paint from the palette and emit no hidden gridlines");

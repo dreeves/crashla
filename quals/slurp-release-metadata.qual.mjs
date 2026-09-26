@@ -178,6 +178,43 @@ except AssertionError as exc:
     assert 'submission month' in str(exc), exc
 else:
     raise AssertionError('slurp accepted a filing submitted after the data-through month')
+
+# (5) each release must add the receipt observation for the month that just
+# became final (its second normal release), or list it as excluded with a
+# reason: a cutoff one month past the table's last observation must stop.
+try:
+    slurp.release_month_coverage('2026-09-15', '2026-09')
+except AssertionError as exc:
+    assert 'receipt' in str(exc).lower(), exc
+else:
+    raise AssertionError('release_month_coverage accepted a cutoff with no receipt observation for the month that just became final')
+assert '2026-04' in slurp.RECEIPT_MONTHS_EXCLUDED, 'the truncated May-15-2026 release month is the documented exclusion'
+
+# (6) a Same-Incident version tie between two Report IDs is broken by the
+# later Report Submission Date, and an exact tie stops the run. The one real
+# pair, 6f2cffa37c36b66 = 30270-1583 (v1, NOV-2021 re-filing) and 30270-1535
+# (v1, OCT-2021), resolves to 30270-1583 by that rule, not by CSV row order.
+assert '"reportId": "30270-1583"' in inc_regen and '"reportId": "30270-1535"' not in inc_regen
+tie = dict(template)
+tie['Report ID'] = 'synthetic-tie'
+tie['Report Submission Date'] = template['Report Submission Date']
+try:
+    regenerate(rows + [tie])
+except AssertionError as exc:
+    assert 'tie' in str(exc).lower(), exc
+else:
+    raise AssertionError('slurp accepted two Report IDs at the same version and submission month for one Same Incident ID')
+
+# (7) the archive's crash-partner airbag column is required, not defaulted:
+# without it 19 archive-era CP-only deployments would silently revert.
+arch_row = next(r for r in csv.DictReader(open(archive, newline='')) if r['Same Incident ID'].strip())
+arch_copy = dict(arch_row); del arch_copy['CP Any Air Bags Deployed?']
+try:
+    slurp._normalize_archive_row(arch_copy)
+except AssertionError as exc:
+    assert 'airbag' in str(exc).lower(), exc
+else:
+    raise AssertionError('_normalize_archive_row accepted an archive row without the CP airbag column')
 `;
 const run = spawnSync("python3", ["-c", py], {
   cwd: new URL("..", import.meta.url),

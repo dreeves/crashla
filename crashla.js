@@ -699,7 +699,7 @@ const METRIC_DEFS = [
         srcNote: "94% = NHTSA 812115's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
         srcLinks: [
           {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-          {label: 'Waymo safety impact (220.6M mi)', url: 'https://waymo.com/safety/impact/'},
+          {label: 'Waymo safety impact (271.3M mi)', url: 'https://waymo.com/safety/impact/'},
           {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
           {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
         ]},
@@ -1063,7 +1063,8 @@ function parseVmtCsv(text) {
     const vmtMax = Number(hit[8]);
     // Receipt coverage: the fraction of the month's five-day-track incidents
     // present in the NHTSA release. 1 for every month except the release's
-    // data-through month (reports received through the 15th), where slurp.py
+    // data-through month (reports received through the cutoff: the 15th of
+    // the prior month, or the next business day), where slurp.py
     // supplies the measured (best, lo, hi) triple FIVE_DAY_RECEIPT_COVERAGE.
     // Scales the raw VMT that five-day-track metrics (m.fiveDay) use.
     const coverage    = Number(hit[9]);
@@ -1224,8 +1225,10 @@ function fmtCount(n) {
 }
 
 // Pluralize a count: splur(1, "incident") -> "1 incident"; splur(2) -> "2 incidents".
+// The plural agrees with the DISPLAYED count: 0.96 shows as "1", so "1 incident".
 function splur(n, singular, plural = singular + "s") {
-  return `${fmtCount(n)} ${n === 1 ? singular : plural}`;
+  const shown = fmtCount(n);
+  return `${shown} ${shown === "1" ? singular : plural}`;
 }
 
 function monthHelmerToggleId(helmer) {
@@ -1391,7 +1394,7 @@ function estimateMpiWindow(k, fracs, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS
   const tail = (1 - massFrac) / 2;
   return {
     k, comps, quant, vmtMin, vmtBest, vmtMax,
-    median: vmtBest / k, // MLE point estimate (∞ at k=0; rendered as "≥ lo")
+    median: vmtBest / k, // MLE point estimate (∞ at k=0); shown only in the distribution marker tooltip, never as the point estimate (that is postMedian)
     // Exact tail-mass quantiles of the marginal posterior (the drawn bell), so
     // "95% CI" means exactly 95% — under the two-piece VMT prior that puts
     // exactly 95% of prior mass between the authored band endpoints (S1
@@ -1474,7 +1477,7 @@ function helmerHumanStress(row, metricKey) {
   // the robotaxis operate in, so closer to apples-to-apples than a national
   // baseline. NOT fully exposure-matched, though: the band spans the per-city
   // extremes rather than weighting any one AV's city mix (Zoox's Las Vegas
-  // isn't among the hub's six benchmark cities), and the severity benchmarks
+  // isn't among the hub's five benchmark areas), and the severity benchmarks
   // are surface-street rates while AV miles now include some freeway driving
   // (immaterial today — see the METRIC_DEFS scope note).
   const human = metric && metric.humanMPI && metric.humanMPI.HumansAV;
@@ -1567,6 +1570,7 @@ function monthSeriesData() {
   // MPI), one per benchmark cohort (see HUMAN_HELMERS).
   const humanEntryFor = cohort => ({
     month: null, coverage: 1,
+    incCov: 1, incCovMin: 1, // literature-based: nothing is still being reported
     vmtMin: 0, vmtBest: 0, vmtMax: 0,
     vmtRawMin: 0, vmtRawBest: 0, vmtRawMax: 0,
     vmtMonthMin: 0, vmtMonthBest: 0, vmtMonthMax: 0,
@@ -1645,6 +1649,10 @@ function monthSeriesData() {
         vmtMin: vmt.vmtMin * vmt.coverage * vmt.incCovMin,
         vmtBest: vmt.vmtBest * vmt.coverage * vmt.incCov,
         vmtMax: vmt.vmtMax * vmt.coverageMax * vmt.incCovMax,
+        // Monthly-track incident coverage (pooled; 1 except in the data-through
+        // month) -- the MPI chart's incomplete-reporting fade reads these
+        incCov: vmt.incCov,
+        incCovMin: vmt.incCovMin,
         // Raw VMT: receipt-coverage-scaled, no Monthly-track thinning — the
         // five-day-track metrics' denominator
         vmtRawMin: vmt.vmtMin * vmt.coverageMin,
@@ -1777,7 +1785,13 @@ function drawSingleMonthAxes(
   months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, yFmt, yLabel,
 ) {
   const axisY = mTop + pH;
-  const labelStep = months.length <= 12 ? 1 : months.length <= 24 ? 2 : 3;
+  // Label stride from the same per-glyph model as the log axes: a "YYYY-MM"
+  // label is 7 glyphs wide and neighbours keep TICK_GAP clear. (A 1/2/3
+  // ladder capped the stride at 3, so windows of 37+ months overlapped;
+  // 2026-09-26.) A one-month series has pitch 0, so the stride is Infinity
+  // and only the always-drawn last label appears.
+  const pitch = (mapX(months.length - 1) - mapX(0)) / Math.max(1, months.length - 1);
+  const labelStep = Math.max(1, Math.ceil((TICK_GLYPH * 7 + TICK_GAP) / pitch));
   return `
     ${months.map((month, i) => `
       ${i === months.length - 1 || (i % labelStep === 0 && months.length - 1 - i >= labelStep) ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
@@ -1834,11 +1848,12 @@ function renderAllHelmersMpiChart(series) {
       // triple — the same metric-data selection mpiByMetric makes. Drives dot
       // opacity so incomplete months are visually demoted without a separate
       // code path. covBest is the pooled best estimate (incident_coverage),
-      // shown in the tooltip to match the sanity table's "best" column.
-      const trackVmtMin = metric.fiveDay === true ? row.vmtRawMin : row.vmtMin;
-      const trackVmtBest = metric.fiveDay === true ? row.vmtRawBest : row.vmtBest;
-      const covRatio = row.vmtRawMin > 0 ? trackVmtMin / row.vmtRawMin : 1;
-      const covBest = row.vmtRawBest > 0 ? trackVmtBest / row.vmtRawBest : 1;
+      // shown in the tooltip to match the sanity table's "best" column. Read
+      // from the coverage columns directly: until 2026-09-26 it was the ratio
+      // of two differently composed VMT edges, (receipt best / receipt min) x
+      // incCovMin, i.e. 24% where the sanity table said 17.3%.
+      const covRatio = metric.fiveDay === true ? 1 : row.incCovMin;
+      const covBest = metric.fiveDay === true ? 1 : row.incCov;
       // Y-range: every point's median dot is on-scale; fully-reported k≥1 months
       // also contribute their finite VMT spread (mpiMax = ∞ at k=0, so excluded).
       yMax = Math.max(yMax, covRatio > 0.99 && Number.isFinite(mpi.mpiMax)
@@ -1930,12 +1945,24 @@ function renderAllHelmersMpiChart(series) {
       // (prior-only, no event data) like the distribution chart.
       const yc = clampY(mpi.mpiMedian);
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
-      const qOpacity = (1 - mpi.covRatio).toFixed(3);
       const glyph = renderDot(x, yc, color, 1, k === 0);
-      const qmark = `<text class="month-tick" x="${(x + 7).toFixed(2)}" y="${(yc - 3).toFixed(2)}" text-anchor="middle" style="opacity:${qOpacity};pointer-events:none">?</text>`;
-      return `<g opacity="${dotOpacity}">${glyph}</g>${qmark}<circle cx="${x}" cy="${yc}" r="12" fill="none" data-tip="${escAttr(tip)}"></circle>`;
+      // Hit circle r=8: an r=12 disc stacked over a neighbouring helmer's dot
+      // and took its tooltip (the human dot showed Tesla's in 9 of 15 default
+      // months); 8 still clears the 4-unit dot on every side.
+      return `<g opacity="${dotOpacity}">${glyph}</g><circle cx="${x}" cy="${yc}" r="8" fill="none" data-tip="${escAttr(tip)}"></circle>`;
     }).join("")
   ).join("");
+
+  // One "?" per month at the top of its column, fading in as that month's
+  // reporting completeness falls (opacity 0 when complete: grayed out, not
+  // suppressed). Incompleteness is a property of the MONTH -- the receipt and
+  // Monthly-track factors are pooled -- so until 2026-09-26, when a "?" sat
+  // beside every helmer's dot, helmers whose dots were close overprinted
+  // each other's glyph.
+  const qmarks = series.months.map((_month, i) => {
+    const incomplete = Math.max(0, ...seriesRows.map(r => r.vals[i]).filter(v => v !== null).map(v => 1 - v.covRatio));
+    return `<text class="month-tick" x="${mapX(i).toFixed(2)}" y="${(mTop + 12).toFixed(2)}" text-anchor="middle" style="opacity:${incomplete.toFixed(3)};pointer-events:none">?</text>`;
+  }).join("");
 
   // Fan chart: nested CI bands at 50%, 80%, 95% with decreasing opacity.
   // Bands are always continuous — even months with k=0 have a valid posterior
@@ -1984,6 +2011,7 @@ function renderAllHelmersMpiChart(series) {
       ${lines}
       ${errs}
       ${marks}
+      ${qmarks}
     </svg>
   `;
 }
@@ -2034,7 +2062,12 @@ function distributionExtent(curves) {
     peakLo.push(at(Math.max(best - 1, 0)));
     peakHi.push(at(Math.min(best + 1, probe - 1)));
   }
-  return {xMin: Math.min(band.xMin, ...medians, ...peakLo), xMax: Math.max(band.xMax, ...medians, ...peakHi)};
+  // Medians get the same one-probe margin as the peaks: covered with
+  // equality, the curve with the largest median put its Median dot on the
+  // frame's right edge, where the clip-path halved it (2026-09-26).
+  const step = Math.exp((hi - lo) / (probe - 1));
+  return {xMin: Math.min(band.xMin, ...medians.map(m => m / step), ...peakLo),
+          xMax: Math.max(band.xMax, ...medians.map(m => m * step), ...peakHi)};
 }
 
 function renderDistributionChart(series) {
@@ -2181,9 +2214,9 @@ function renderDistributionChart(series) {
 
 // --- Fleet-size forecast (Jan 1, 2027) ---------------------------------------
 // [AI TEXT] A forward-looking forecast of how many vehicles each helmer will have
-// in genuine driverless / ADS robotaxi service (this page's NHTSA "operator = none"
-// scope, plus Tesla's "In-Vehicle" driver-monitor and "Remote" remote-assistance
-// Commercial/Test modes) on Jan 1,
+// in the service whose crashes this page counts (the operator modes whose
+// miles are in each helmer's VMT denominator: data/slurp.py
+// PUBLIC_SERVICE_OPERATOR_TYPES) on Jan 1,
 // 2027. This is an EXTERNAL judgment forecast — NOT derived from the NHTSA incident
 // or VMT pipelines. It is anchored to mid-2026 fleet counts and announced expansion
 // plans and is the author's own predictive distribution.
@@ -2601,30 +2634,6 @@ const RIDES_HISTORY = {
     {month: "2026-06", best: 333000, lo: 250000, hi: 417000},
   ],
 };
-// Cumulative-rides forecast through Jan 1, 2027. Tesla mirrors FLEET_FORECAST's
-// scenario mixture (same A/B/C weights and robotaxi/HW4 scope split), because
-// cumulative rides are the push-forward of the fleet scenarios and a
-// one-humped band can't represent "71% boring / 24% aggressive / 5% HW4" —
-// its computed median lands between the scenarios instead of inside one.
-// Tesla's scenario bands derive from the miles scenarios at the same
-// [4.7, 6.2, 8.3] miles-per-ride corridor as RIDES_HISTORY; C's rides are
-// Tesla-Network rides from eyes-off personal cars (participation deeply
-// uncertain, hence the width). Zoox extends its rider-milestone trajectory
-// with expansion upside (Miami/Austin launches, 4x SF geofence, paid rides
-// from 2026 per Fortune 2025-12-08).
-const RIDES_FORECAST = [
-  { helmer: "Tesla", components: [
-    { weight: 0.71, best: 730000,   lo: 410000,  hi: 1380000, scope: "robotaxi" },   // A: (4.5M mi)/[4.7, 6.2, 8.3]
-    { weight: 0.24, best: 6500000,  lo: 1800000, hi: 25500000, scope: "robotaxi" },  // B: (40M mi)/~6
-    { weight: 0.05, best: 15000000, lo: 2000000, hi: 120000000, scope: "hw4" },      // C: Tesla Network on eyes-off HW4
-  ] },
-  { helmer: "Waymo", components: [
-    { weight: 1, best: 50000000, lo: 43000000, hi: 60000000 }, // ~31M May 2026 + ~31 weeks at 600-750k/wk
-  ] },
-  { helmer: "Zoox", components: [
-    { weight: 1, best: 550000, lo: 350000, hi: 1100000 }, // >500k riders late Jun 2026 + ~50k riders/mo run-rate + LV Uber-app launch upside, / 1.2-2.0 occupancy
-  ] },
-];
 // Cumulative-miles forecast through Jan 1, 2027, extending each helmer's
 // cumulative VMT from the last month drawn (data/vmt.js stops at the NHTSA
 // data-through month; each component below names its own base). Tesla
@@ -2637,8 +2646,9 @@ const RIDES_FORECAST = [
 // Orlando/Tampa unsupervised) + ~175 registered TX vehicles pull monthly
 // miles back toward ~400-700k by Dec. Re-based 2026-09-04 on the Sep-3
 // "1 million unsupervised miles" statement (end-Aug cume ~3.15M
-// [2.88M, 3.79M], August ~470k/mo): 2.44M plus ~2.1M (Aug rate holds) to
-// ~5.4M (rate doubles again by Dec), central ~+3.1M. B's Cybercab ramp to ~9k arrives
+// [2.88M, 3.79M], August ~470k/mo): floor 4.5M = 3.15M + 4 x ~340k (below
+// August's rate), central 5.5M = + 4 x ~590k, ceiling 7.8M = + 4 x ~1.16M
+// (the rate doubles again by Dec). B's Cybercab ramp to ~9k arrives
 // mostly in Q4 at ramping utilization (production started Jun 2026; the
 // earlier same-day x1.25 per-vehicle rescale is reverted — it didn't survive
 // the Q2 utilization data). C's miles are ADS miles on eyes-off personal
@@ -2656,13 +2666,47 @@ const MILES_FORECAST = [
   // at ~20.3M/mo growing ~3%/mo (Denver/San Diego/Tampa opened Sep 1, Ojai
   // ramp) -> ~402M; lo = kyoom lo + 4 x 18M ~376M; hi = kyoom hi + 4 x 26M
   // ~435M (authored 400M / 375M / 440M, rounded; kept on the 09-25 re-check).
-  // Zoox end-Aug 3.31M [2.28M, 4.33M] plus Sep-Dec at ~0.27-0.30M/mo (LAS
+  // Zoox end-Aug 3.31M [2.28M, 4.42M] plus Sep-Dec at ~0.27-0.30M/mo (LAS
   // airport trips from Sep 3, fleet toward the 100-car NTA cap) -> ~4.5M.
   { helmer: "Waymo", components: [
     { weight: 1, best: 400000000, lo: 375000000, hi: 440000000 },
   ] },
   { helmer: "Zoox", components: [
     { weight: 1, best: 4500000, lo: 3500000, hi: 6000000 },
+  ] },
+];
+
+// Tesla miles per paid ride (RIDES_HISTORY's corridor: 4-5 loaded miles over a
+// 0.6-0.85 on-trip share; rides-provenance.qual pins the implied ratio to
+// [4.5, 8.5]). Divides the miles scenarios into the rides scenarios.
+const TESLA_MILES_PER_RIDE = { lo: 4.7, best: 6.2, hi: 8.3 };
+// Cumulative-rides forecast through Jan 1, 2027. Tesla mirrors FLEET_FORECAST's
+// scenario mixture (same A/B/C weights and robotaxi/HW4 scope split), because
+// cumulative rides are the push-forward of the fleet scenarios and a
+// one-humped band can't represent "71% boring / 24% aggressive / 5% HW4" —
+// its computed median lands between the scenarios instead of inside one.
+// Tesla's A/B bands are the miles scenarios divided by the same
+// [4.7, 6.2, 8.3] miles-per-ride corridor as RIDES_HISTORY (a low corridor
+// value gives the HIGH rides edge, so lo/hi swap); C's rides are
+// Tesla-Network rides from eyes-off personal cars (participation deeply
+// uncertain, hence the width). Zoox extends its rider-milestone trajectory
+// with expansion upside (Miami/Austin launches, 4x SF geofence, paid rides
+// from 2026 per Fortune 2025-12-08).
+const RIDES_FORECAST = [
+  { helmer: "Tesla", components: [
+    // A and B are the miles scenarios over the ride corridor, tied in code
+    // (2026-09-26: A had stayed on the 2026-07-22 miles figures when
+    // MILES_FORECAST A was re-based on 2026-09-04). C is authored: Tesla-
+    // Network rides from eyes-off personal cars have their own miles per ride.
+    ...MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi")
+      .map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_RIDE.best, lo: c.lo / TESLA_MILES_PER_RIDE.hi, hi: c.hi / TESLA_MILES_PER_RIDE.lo, scope: "robotaxi" })),
+    { weight: 0.05, best: 15000000, lo: 2000000, hi: 120000000, scope: "hw4" },      // C: Tesla Network on eyes-off HW4
+  ] },
+  { helmer: "Waymo", components: [
+    { weight: 1, best: 50000000, lo: 43000000, hi: 60000000 }, // ~31M May 2026 + ~31 weeks at 600-750k/wk
+  ] },
+  { helmer: "Zoox", components: [
+    { weight: 1, best: 550000, lo: 350000, hi: 1100000 }, // >500k riders late Jun 2026 + ~50k riders/mo run-rate + LV Uber-app launch upside, / 1.2-2.0 occupancy
   ] },
 ];
 
@@ -2920,10 +2964,22 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
 function renderMpiSummaryCards(series) {
   const rows = monthlySummaryRows(series);
   return rows.map(row => {
-    const fiveDayLine = est => `Claude: Five-day-tracked VMT denominator (fatality, hospitalization, airbag: raw VMT times the data-through month's receipt coverage): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
-    const vmtLine = row.vmtBest > 0
-      ? `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}\n${row.vmtRationales.join('\n')}`)}">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`
-      : `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
+    const fiveDayLabels = METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ");
+    const fiveDayLine = est => `Claude: Five-day-tracked VMT denominator (${fiveDayLabels}: raw VMT times the data-through month's receipt coverage): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
+    // The tooltip states the denominators only; the per-month VMT rationales
+    // are in the sanity section's VMT-sources table (embedded here they made
+    // the tooltip 7,000-8,700px tall).
+    const effectiveVmtLine = () => `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}`)}">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`;
+    // TODO (rule 7): Latin placeholder for an ADS helmer with no VMT rows in
+    // the selected window (Tesla before 2025-06, Zoox before 2024-05):
+    // "No miles in this window" -- the human writes the English.
+    const noMilesLine = `<div class="mpi-card-vmt">Nulla milia in hac fenestra</div>`;
+    const benchmarksLine = `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
+    // Branch on the cohort, not on vmtBest > 0: an ADS helmer with no VMT in
+    // the window used to fall into the human-cohort template and render a
+    // dangling "Benchmarks:" with an empty list (2026-09-26).
+    const vmtLine = HUMAN_HELMERS.includes(row.helmer) ? benchmarksLine
+      : row.vmtBest > 0 ? effectiveVmtLine() : noMilesLine;
     const stressLine = row.vmtBest > 0
       ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: ${stressBadge(stress, stress.av.k)} ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
       : "";
@@ -3466,15 +3522,12 @@ function applyUiStateQuery(queryString) {
 
   const metricsVal = params.get(URL_STATE_KEYS.metrics);
   assert(metricsVal !== null, "Missing metrics URL state", {raw});
-  if (METRIC_KEYS.includes(metricsVal)) {
-    selectedMetricKey = metricsVal;
-  } else {
-    // Fall back: try parsing old multi-key format, pick first enabled
-    const parsed = parseEnabledKeyString(metricsVal, METRIC_KEYS, "metrics");
-    const firstEnabled = METRIC_KEYS.find(k => parsed[k]);
-    assert(firstEnabled !== undefined, "Empty metrics URL state", {metricsVal, raw});
-    selectedMetricKey = firstEnabled;
-  }
+  // One metric key. The multi-metric "a.b" form was retired with the radio
+  // buttons (54ebcb8); its fallback silently reduced such a URL to the first
+  // key in METRIC_KEYS order and rewrote the address bar, the last DWIM path
+  // in this parser (removed 2026-09-26).
+  assert(METRIC_KEYS.includes(metricsVal), "Invalid metrics URL state", {metricsVal, raw});
+  selectedMetricKey = metricsVal;
 
   if (params.has(URL_STATE_KEYS.dateRange)) {
     const drVal = params.get(URL_STATE_KEYS.dateRange);
@@ -3887,24 +3940,20 @@ Confidential Business Information (CBI).
     </table></div>`);
 
   // --- 4. VMT uncertainty ---
-  // Restrict to incidentObservable months for like-for-like comparison
-  const obsMonths = new Set(series.points.filter(p => p.incidentObservable).map(p => p.month));
-  const vmtUncRows = [];
-  for (const helmer of ADS_HELMERS) {
-    const helmerVmt = vmt.filter(r => r.helmer === helmer && obsMonths.has(r.month));
-    if (helmerVmt.length === 0) continue;
-    const totalMin = helmerVmt.reduce((s, r) => s + r.vmtMin * r.coverageMin, 0);
-    const totalBest = helmerVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0);
-    const totalMax = helmerVmt.reduce((s, r) => s + r.vmtMax * r.coverageMax, 0);
-    const ratio = (totalMax / totalMin).toFixed(1);
-    vmtUncRows.push(`<tr>
-      <td>${escHtml(helmer)}</td>
-      <td>${fmtMiles(totalMin)}</td>
-      <td>${fmtMiles(totalBest)}</td>
-      <td>${fmtMiles(totalMax)}</td>
-      <td>${ratio}x</td>
+  // The window band every card and CI uses (monthlySummaryRows: summed month
+  // bands intersected with the kyoom difference, plus the data-through
+  // month's thinned band). Until 2026-09-26 this table re-summed each month's
+  // receipt-scaled 95% edges -- the perfectly-correlated band abandoned on
+  // 2026-09-04 -- and so contradicted the cards beside it.
+  const vmtUncRows = monthlySummaryRows(series)
+    .filter(r => ADS_HELMERS.includes(r.helmer) && r.vmtBest > 0)
+    .map(r => `<tr>
+      <td>${escHtml(r.helmer)}</td>
+      <td>${fmtMiles(r.vmtMin)}</td>
+      <td>${fmtMiles(r.vmtBest)}</td>
+      <td>${fmtMiles(r.vmtMax)}</td>
+      <td>${(r.vmtMax / r.vmtMin).toFixed(1)}x</td>
     </tr>`);
-  }
   sections.push(`
 <h3>VMT uncertainty</h3>
 <p>
@@ -3922,6 +3971,9 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       </tr></thead>
       <tbody>${vmtUncRows.join("")}</tbody>
     </table></div>`);
+
+  // Months whose incident reporting is complete (like-for-like months)
+  const obsMonths = new Set(series.points.filter(p => p.incidentObservable).map(p => p.month));
 
   // --- 5. Poisson dispersion (VMT-normalized) ---
   // Pearson chi-squared dispersion test: X² = Σ(k_i - λ̂·m_i)² / (λ̂·m_i)
@@ -4161,7 +4213,7 @@ In general we don't trust anything Tesla says <i>except</i> numbers in their off
 "Incident coverage" estimates what fraction of incidents from that period have actually been reported.
 NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Monthly (must be reported by the following month).
 Claude notes: 
-<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE)}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (fatality, hospitalization, airbag deployment) use the raw VMT -- but reports received through the 15th cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (median of past releases, with its band), not a fraction of days.</span>
+<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE)}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (median of past releases, with its band), not a fraction of days.</span>
 </p>
     <div class="table-wrap"><table>
       <thead><tr>
@@ -4310,6 +4362,21 @@ function initTooltips() {
       tip.style.display = "none";
     }
   }, true);
+
+  // WebKit (iPhone Safari) turns a tap into a click only on nodes it deems
+  // clickable: ones with their own click/mouse listeners, links, controls.
+  // The delegated listener above never saw a tap on a chart dot or a card's
+  // "[?]" hint (and the hint's tap was retargeted to the neighbouring source
+  // link), so every tooltip target carries a no-op click listener of its own.
+  // Renders replace innerHTML, so a MutationObserver re-arms after each one;
+  // addEventListener de-duplicates the same listener, so re-arming is a no-op.
+  armTipTargets(document);
+  new MutationObserver(() => armTipTargets(document)).observe(document.body, { childList: true, subtree: true });
+}
+
+function tipTapNoop() {}
+function armTipTargets(root) {
+  for (const el of root.querySelectorAll("[data-tip]")) el.addEventListener("click", tipTapNoop);
 }
 
 // --- Prediction markets (Polymarket + Manifold) ---

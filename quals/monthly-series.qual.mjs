@@ -629,4 +629,69 @@ Expectata: helmer legend has colors+checkboxes; the metric selector is a "Miles 
 Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}.`,
 );
 
+// --- 2026-09-26 render pins ---
+// (a) An ADS helmer with no VMT rows in the window (Tesla and Zoox on the
+// first month, 2021-07) is not a human cohort: its card must not fall into
+// the "Benchmarks:" template (it rendered a dangling label with an empty
+// list), and must say it has no miles in the window instead.
+const firstMonthCards = vm.runInContext(`renderMpiSummaryCards(sliceSeries(monthSeriesData(), 0, 0))`, ctx);
+const cardOf = (html, helmer) => html.split('class="mpi-card-helmer">')
+  .find(s => s.startsWith(helmer + "<")) || "";
+for (const helmer of ["Tesla", "Zoox"]) {
+  const card = cardOf(firstMonthCards, helmer);
+  assert.ok(card.length > 0 && !card.includes("Benchmarks:") && card.includes("Nulla milia"),
+    `Replicata: render the summary cards on the 2021-07 window (no ${helmer} VMT) and read the ${helmer} card.
+Expectata: no "Benchmarks:" template (that is the human-cohort layout) and a no-miles line ("Nulla milia ...").
+Resultata: ${JSON.stringify(card.slice(0, 200))}.`);
+}
+assert.ok(cardOf(firstMonthCards, "Humans (AV cities)").includes("Benchmarks:"),
+  "the human card keeps its Benchmarks: line on the 2021-07 window");
+// (b) The incomplete-reporting "?" marker is a property of the MONTH (the
+// receipt and incident-coverage factors are pooled), so the MPI-over-time
+// chart draws one per incomplete month, not one per helmer dot (per-helmer
+// glyphs overprinted each other wherever two dots sat close).
+const incompleteMonths = vm.runInContext(`
+  new Set(parseVmtCsv(VMT_CSV_TEXT).filter(r => r.coverage < 1 || r.incCov < 1).map(r => r.month)).size`, ctx);
+const qmarkOpacities = [...plain.chartMpiAll.matchAll(/<text class="month-tick"[^>]*style="opacity:([\d.]+);pointer-events:none">\?<\/text>/g)].map(m => Number(m[1]));
+const visibleQmarks = qmarkOpacities.filter(o => o > 0).length;
+const windowMonths = vm.runInContext(`(() => { const s = monthSeriesData(); return s.months.length - s.months.indexOf(DEFAULT_START_MONTH); })()`, ctx);
+assert.ok(qmarkOpacities.every(o => o >= 0 && o <= 1) && qmarkOpacities.length === windowMonths && visibleQmarks === incompleteMonths,
+  `Replicata: count "?" marker texts on the default-window MPI-over-time chart and how many are visible (opacity > 0).
+Expectata: one per month in the window (${windowMonths}; complete months carry it at opacity 0, grayed out rather than suppressed), each with a finite opacity in [0, 1], of which ${incompleteMonths} visible.
+Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
+// (d) The MPI-over-time tooltip's "worst case" coverage IS incident_coverage_min.
+// Until 2026-09-26 the chart derived it as vmtMin / vmtRawMin, i.e. (receipt
+// best / receipt min) x incCovMin = 24% for 2026-08 while the sanity table
+// said 17.3%; the same ratio set the dot and "?" opacity.
+{
+  const dt = vm.runInContext(`
+    (() => { const rows = parseVmtCsv(VMT_CSV_TEXT); const m = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
+      return { month: m, incCovMin: rows.find(r => r.month === m).incCovMin }; })()`, ctx);
+  const tips = [...plain.chartMpiAll.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]).filter(t => t.startsWith(dt.month));
+  // ADS dots carry an incident count; the human dots carry no coverage note (their data is complete).
+  const adsTips = tips.filter(t => /incident/.test(t));
+  const worst = [...new Set(adsTips.map(t => (t.match(/worst case ~(\d+)%/) || [])[1]))];
+  assert.ok(adsTips.length >= 1 && worst.length === 1 && Number(worst[0]) === Math.round(dt.incCovMin * 100),
+    `Replicata: read the ${dt.month} ADS dot tooltips on the default (Monthly-track) MPI chart.
+Expectata: every one says "worst case ~${Math.round(dt.incCovMin * 100)}%" = incident_coverage_min, the figure the sanity table shows.
+Resultata: ${JSON.stringify(worst)} from ${adsTips.length} tooltips.`);
+  const fiveDayTips = vm.runInContext(`
+    (() => { const s = monthSeriesData(); const start = s.months.indexOf(DEFAULT_START_MONTH);
+      const saved = selectedMetricKey; selectedMetricKey = "fatality";
+      const html = renderAllHelmersMpiChart(sliceSeries(s, start, s.months.length - 1)); selectedMetricKey = saved;
+      return [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]).filter(t => t.startsWith(${JSON.stringify(dt.month)})); })()`, ctx);
+  assert.ok(fiveDayTips.length >= 1 && fiveDayTips.every(t => !/incident coverage/.test(t)),
+    `Replicata: the same month's dot tooltips on a five-day-track metric (fatality).
+Expectata: no incident-coverage note (five-day metrics carry no Monthly-track thinning).
+Resultata: ${JSON.stringify(fiveDayTips.slice(0, 2))}.`);
+}
+// (c) The card's Effective-VMT tooltip states the numbers only; the per-month
+// VMT rationales live in the sanity section's VMT-sources table (embedded
+// here they made the tooltip 7,000-8,700px tall, unreadable and unpinnable).
+const vmtTips = [...plain.summaryCardHtml.matchAll(/class="mpi-card-vmt" data-tip="([^"]*)"/g)].map(m => m[1]);
+assert.ok(vmtTips.length === 3 && vmtTips.every(t => t.length < 700 && !/US (rough )?est\.|deck|CPUC/.test(t)),
+  `Replicata: read the three ADS cards' Effective-VMT data-tips on the default window.
+Expectata: each under 700 characters and free of rationale prose.
+Resultata: lengths ${JSON.stringify(vmtTips.map(t => t.length))}.`);
+
 console.log("qual pass: monthly charts render cross-helmer and per-helmer incident-rate views");

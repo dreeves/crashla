@@ -126,3 +126,18 @@ Resultata: found ${residual} occurrence(s).`,
 }
 
 console.log("qual pass: Tesla redacted-update boilerplate is stripped from narratives");
+
+// --- No narrative in incidents.js starts or ends with whitespace -----------
+// slurp's "Summary:" strip ran before the mojibake pass, so a narrative that
+// began "Summary:Â The ..." kept a leading space (13781-14630, the
+// one such record until 2026-09-26).
+{
+  const vm = await import("node:vm");
+  const ctx = vm.createContext({});
+  vm.runInContext(fs.readFileSync("data/incidents.js", "utf8"), ctx);
+  const padded = JSON.parse(vm.runInContext(`JSON.stringify(INCIDENT_DATA.filter(r => r.narrative !== r.narrative.trim()).map(r => r.reportId))`, ctx));
+  assert.deepEqual(padded, [],
+    `Replicata: compare every incidents.js narrative with its trimmed form.
+Expectata: identical (the cleanup passes run mojibake -> prefix strip -> typos, then strip).
+Resultata: padded ${JSON.stringify(padded)}.`);
+}

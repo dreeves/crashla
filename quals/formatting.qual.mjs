@@ -158,3 +158,18 @@ Resultata: ${JSON.stringify(s)}.`);
 }
 
 console.log("qual pass: formatting functions handle boundaries correctly");
+
+// --- splur: the plural follows the DISPLAYED count, not the raw number ------
+// fmtCount rounds to one decimal, so a fault mass of 0.96 shows as "1"; the
+// word must agree with what the reader sees ("1 incident"), not with the
+// unrounded value (until 2026-09-26: "1 incidents" on the cards and dot
+// tooltips whenever the at-fault mass fell in [0.95, 1.05) but was not 1).
+for (const [n, expected] of [
+  [1, "1 incident"], [0.96, "1 incident"], [1.04, "1 incident"],
+  [1.06, "1.1 incidents"], [0.5, "0.5 incidents"], [2, "2 incidents"], [0, "0 incidents"],
+]) {
+  assert.equal(run(`splur(${n}, "incident")`), expected,
+    `Replicata: splur(${n}, "incident").
+Expectata: ${JSON.stringify(expected)} (singular iff the displayed count is "1").
+Resultata: ${JSON.stringify(run(`splur(${n}, "incident")`))}.`);
+}

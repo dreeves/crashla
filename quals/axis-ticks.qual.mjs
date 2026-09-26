@@ -201,3 +201,34 @@ Resultata: ${ticks.length} labels on ${onGrid.size} gridlines, steps spanning ${
 
 console.log(`qual pass: log x axes label the decades they have room for `
   + `(${charts.length} chart states, tightest ${tightest.gap.toFixed(1)} units: ${tightest.pair}, ${tightest.what})`);
+
+// --- 5. Monthly axes: the label stride follows the label width -------------
+// drawSingleMonthAxes used a 1/2/3 stride ladder, so any window of 43+ months
+// (the full history is 62) drew "YYYY-MM" labels ~38 units apart under
+// 56-unit glyph runs on the cross-helmer MPI chart and the Waymo VMT chart
+// (found 2026-09-26). The stride now comes from the same per-glyph model as
+// the log axes: TICK_GLYPH per glyph, TICK_GAP clear between neighbours. The
+// last month is always labelled.
+const monthTicks = svg =>
+  [...svg.matchAll(/<text class="month-tick" x="(-?[\d.]+)" y="[\d.]+" text-anchor="middle">(\d{4}-\d{2})<\/text>/g)]
+    .map(m => ({ x: Number(m[1]), label: m[2] }));
+run(`selectedMetricKey = "all"; for (const h of ALL_HELMERS) monthHelmerEnabled[h] = ["HumansAV", "Tesla", "Waymo"].includes(h);`);
+const lastMonth = run(`activeSeries.months[${months - 1}]`);
+let widest = { clear: Infinity, len: 0 };
+for (let len = 1; len <= months; len++) {
+  const svg = run(`renderAllHelmersMpiChart(sliceSeries(activeSeries, ${months - len}, ${months - 1}))`);
+  const ticks = monthTicks(svg);
+  assert.ok(ticks.length >= 1 && ticks.at(-1).label === lastMonth,
+    `Replicata: render the cross-helmer MPI chart on a ${len}-month window ending ${lastMonth}.
+Expectata: the last month is labelled.
+Resultata: labels ${JSON.stringify(ticks.map(t => t.label))}.`);
+  for (let i = 1; i < ticks.length; i++) {
+    const clear = ticks[i].x - ticks[i - 1].x - GLYPH * ticks[i - 1].label.length;
+    if (clear < widest.clear) widest = { clear, len };
+    assert.ok(clear >= GAP - 1e-6,
+      `Replicata: render the cross-helmer MPI chart on a ${len}-month window and measure neighbouring month labels under the per-glyph model (${GLYPH}/glyph, ${GAP} clear).
+Expectata: ${ticks[i - 1].label} and ${ticks[i].label} keep at least ${GAP} units clear.
+Resultata: ${clear.toFixed(1)} units (labels ${(ticks[i].x - ticks[i - 1].x).toFixed(1)} apart).`);
+  }
+}
+console.log(`qual pass: monthly axes keep >= ${GAP} units between month labels on every window length 1..${months} (tightest ${widest.clear.toFixed(1)} at ${widest.len} months)`);

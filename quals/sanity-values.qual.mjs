@@ -316,3 +316,35 @@ Resultata: attributes were ${JSON.stringify(m[1])}.`);
 }
 
 console.log("qual pass: sanity check computed values are arithmetically consistent");
+
+// --- The "VMT uncertainty" table reports the band the cards actually use ---
+// Until 2026-09-26 it re-summed each month's receipt-scaled 95% edges (the
+// perfectly-correlated band the app abandoned on 2026-09-04), so it showed
+// Waymo 165M-269M (1.6x) beside cards whose every CI used 198M-233M (1.2x).
+{
+  const rows = JSON.parse(vm.runInContext(`
+    JSON.stringify(monthlySummaryRows(activeSeries).filter(r => ADS_HELMERS.includes(r.helmer) && r.vmtBest > 0)
+      .map(r => [r.helmer, fmtMiles(r.vmtMin), fmtMiles(r.vmtBest), fmtMiles(r.vmtMax), (r.vmtMax / r.vmtMin).toFixed(1) + "x"]))`, ctx));
+  const cells = [...vmtSection.matchAll(/<tr>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>/g)].map(m => m.slice(1, 6));
+  assert.deepEqual(cells, rows,
+    `Replicata: read the VMT uncertainty table and recompute it from monthlySummaryRows (the window band every card and CI uses).
+Expectata: ${JSON.stringify(rows)}.
+Resultata: ${JSON.stringify(cells)}.`);
+}
+// --- The five-day-track metric list is derived, not hand-written ------------
+// seriousInjury gained fiveDay on 2026-09-04; two strings still named three
+// metrics until 2026-09-26.
+{
+  const labels = JSON.parse(vm.runInContext(`JSON.stringify(METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel))`, ctx));
+  const note = html.split("5-Day-track metrics (")[1] || "";
+  assert.ok(note && labels.every(l => note.slice(0, 200).toLowerCase().includes(l.toLowerCase())),
+    `Replicata: read the sanity note's "5-Day-track metrics (...)" parenthetical.
+Expectata: it names every fiveDay metric: ${JSON.stringify(labels)}.
+Resultata: ${JSON.stringify(note.slice(0, 200))}.`);
+  const cards = vm.runInContext(`renderMpiSummaryCards(activeSeries)`, ctx);
+  const tip = (cards.match(/Five-day-tracked VMT denominator \(([^)]*)\)/) || [])[1] || "";
+  assert.ok(labels.every(l => tip.toLowerCase().includes(l.toLowerCase())),
+    `Replicata: read the cards' Effective-VMT tooltip's five-day clause.
+Expectata: it names every fiveDay metric: ${JSON.stringify(labels)}.
+Resultata: ${JSON.stringify(tip)}.`);
+}

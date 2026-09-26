@@ -80,3 +80,27 @@ Expectata: none — an edge peak means the frame cut the curve's mode off.
 Resultata: ${JSON.stringify(edge)}.`);
 }
 console.log("qual pass: distribution-chart frame contains every curve's density peak; k=0 peaks sit left of their medians and off the frame edge");
+
+// --- Median markers are on-frame with margin, on every toggle set ---------
+// distributionExtent covered each curve's median only with equality, so the
+// curve with the largest median could put its Median dot at exactly the
+// frame's right edge, where the clip-path cut it to a half-disc (fatality
+// with all six helmers, until 2026-09-26). Medians now get the same one-probe
+// margin the peaks have.
+{
+  const medians = vm.runInContext(`
+    (() => {
+      selectedMetricKey = "fatality";
+      for (const d of ALL_HELMERS) monthHelmerEnabled[d] = true;
+      const full = monthSeriesData();
+      const series = sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1);
+      const html = renderDistributionChart(series);
+      return [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*r="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
+        .map(m => ({cx: Number(m[1]), r: Number(m[2]), text: m[3].split("\\n")[0]})).filter(p => p.text.startsWith("Median:"));
+    })()`, ctx);
+  const [left, right] = [68, 900 - 16];
+  assert.ok(medians.length >= 6 && medians.every(p => p.cx - p.r > left && p.cx + p.r < right),
+    `Replicata: render the fatality distribution with all six helmers on and locate every Median marker.
+Expectata: each disc fully inside the frame [${left}, ${right}].
+Resultata: ${JSON.stringify(medians.map(p => [p.text, p.cx]))}.`);
+}

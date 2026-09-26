@@ -242,10 +242,11 @@ Expectata: a finite multiplier > 1 at which "robustly safer" degrades to "ambigu
 Resultata: flip was ${JSON.stringify(flips.out.Waymo)}.`,
 );
 
-// Tesla: 6.65 judged at-fault incidents out of 24. Even with every one of the
-// 24 at fault (s = 3.61) the verdict stays ambiguous, so the flip is
-// unreachable: the multiplier must be Infinity, not the 5.85x (39 at-fault
-// incidents out of 24) the uncapped search reported until 2026-09-04.
+// Tesla: 8.55 judged at-fault incidents out of 23 (2026-09-26 data; 6.65 of
+// 24 when written). Even with every one of the 23 at fault (s = 2.69) the
+// verdict stays ambiguous, so the flip is unreachable: the multiplier must be
+// Infinity, not the 5.85x (39 at-fault incidents out of 24) the uncapped
+// search reported until 2026-09-04.
 assert.ok(
   flips.out.Tesla !== null && flips.out.Tesla.mult === "Infinity" && flips.out.Tesla.flipped === null &&
     flips.out.Tesla.sMax < 10,

@@ -41,9 +41,12 @@ import fs from "node:fs";
 // sat in E, D = the same one-third share (1,791,464 / 5,379,205) of
 // Atlanta's published-basis ramp (knots 0.056M Mar-2025, the Dec-2025 E
 // share ~3.5M, 5.379M Mar-2026; shaped by the hub's Atlanta crash list
-// with pre-Third-Amended-SGO crashes at half weight). D's low edge is 0 (the
-// published total is right), so the kyoom band must also contain the
-// uncorrected reading. If Waymo fixes the file, D recomputes to 0.
+// with pre-Third-Amended-SGO crashes at half weight). The Mar-2025 knot is
+// the hub's exact depot-basis listing, so D is 0 at that anchor; the ramp's
+// one-third share of it (18,650 mi) is booked in April 2025's increment.
+// D's low edge is 0 (the published total is right), so the kyoom band must
+// also contain the uncorrected reading. If Waymo fixes the file, D
+// recomputes to 0.
 
 const PRE_SERIES_MILES = 150000;
 
@@ -72,21 +75,29 @@ const PINS = [
   ["2024-12", 50000000, [0, 0, 0], 0, 0.97, 1.03, false], // year-in-review
   ["2025-01", 56700000, [0, 0, 0], 0, 0.96, 1.02, false],
   // Hub CSV1 202503: blended 71.432M; Atlanta 0.056M + Mountain View 0.132M listed but excluded (exact E)
-  ["2025-03", 71432000, [188000, 188000, 188000], 0, 0.98, 1.02, false],
+  // Exact hub-CSV1 anchors (2025-03 on) carry ±0.1%: the rows land on
+  // figure + E_best - D - 0.15M to within 400 mi, and 0.1% is below the
+  // smallest nonzero D (0.22% at Jun-2025), so a series whose centrals sit on
+  // the uncorrected published reading fails here (2026-09-26). Milestone
+  // statements keep their loose tolerances.
+  ["2025-03", 71432000, [188000, 188000, 188000], 0, 0.999, 1.001, false],
   // Hub CSV1 202506: 95.965M (PHX/SF/LA/ATX); Atlanta + Santa Clara/MTV excluded
-  ["2025-06", 95965000, [400000, 700000, 1300000], 213419, 0.98, 1.02, false],
+  ["2025-06", 95965000, [400000, 700000, 1300000], 213419, 0.999, 1.001, false],
   // Company-wide milestone statement (not a hub total): no scope exclusion, E = 0
   ["2025-07", 100000000, [0, 0, 0], 0, 1.00, 1.13, true], // crossed ~Jul 15
   // Hub CSV1 202509: 127.158M; Atlanta + Santa Clara excluded
-  ["2025-09", 127158000, [1300000, 2000000, 3100000], 473111, 0.98, 1.02, false],
+  ["2025-09", 127158000, [1300000, 2000000, 3100000], 473111, 0.999, 1.001, false],
   // Hub CSV1 202512: 170.712M (county basis, Santa Clara now in); Atlanta ~3.5M, Miami, DAL/HOU/SAT/ORL excluded
-  ["2025-12", 170712000, [3000000, 3700000, 4600000], 1165623, 0.98, 1.02, false],
+  ["2025-12", 170712000, [3000000, 3700000, 4600000], 1165623, 0.999, 1.001, false],
   // Hub CSV1 202603: 220.613M (Atlanta now in); Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson excluded
-  ["2026-03", 220613000, [1200000, 2000000, 3300000], 1791464, 0.98, 1.02, false],
-  // Hub CSV1 202606 (Sep 24, 2026): 271.329M, same eight counties; E = the
-  // carried monthly E (2.0M thru Mar + 1.4/1.45/1.8M Apr-Jun), lo/hi from the
-  // crash-count proxy (41 unbenchmarked-county crashes Jan-Jun at 4.5-9.5 per M mi)
-  ["2026-06", 271329379, [4000000, 6650000, 10200000], 2840745, 0.98, 1.02, false],
+  ["2026-03", 220613000, [1200000, 2000000, 3300000], 1791464, 0.999, 1.001, false],
+  // Hub CSV1 202606 (Sep 24, 2026): 271.329M, same eight counties; E best =
+  // the carried monthly E (2.0M thru Mar + 1.4/1.45/1.8M Apr-Jun). E lo pairs
+  // with the D-corrected reading, so it uses the proxy at the D-corrected
+  // young-market crash rate (Travis 114/17.839M + Atlanta 61/5.784M = 7.41/M
+  // on 41 unbenchmarked-county crashes Jan-Jun, Poisson-widened): 3.5M. E hi
+  // pairs with the published reading and keeps the published-basis proxy: 10.2M.
+  ["2026-06", 271329379, [3500000, 6650000, 10200000], 2840745, 0.999, 1.001, false],
 ];
 
 for (const [month, figure, [eLo, eBest, eHi], atlD, loTol, hiTol, midMonth] of PINS) {
@@ -104,6 +115,20 @@ Resultata: ${row.cume}.`);
   if (!midMonth) assert.ok(row.kmin <= figure + eLo - atlD - PRE_SERIES_MILES && figure + eHi - PRE_SERIES_MILES <= row.kmax,
     `Replicata: check waymo ${month}'s kyoom band against the published figure and the excluded-metro range.
 Expectata: the authored cumulative band [kyoom_min, kyoom_max] contains [${figure + eLo - atlD - PRE_SERIES_MILES}, ${figure + eHi - PRE_SERIES_MILES}] (the Atlanta-corrected low reading through the published high reading).
+Resultata: [${row.kmin}, ${row.kmax}].`);
+}
+
+// At the hub anchors from Sep-2025 on, the kyoom band IS the anchor band:
+// [figure + E_lo - D, figure + E_hi] - PRE_SERIES_MILES exactly (the
+// 2025-10..12 rationales say so; Sep-2025 sat 0.85M looser below and 0.45M
+// above until 2026-09-26). Earlier anchors keep their looser authored bands.
+const EXACT_KNOTS = new Set(["2025-09", "2025-12", "2026-03", "2026-06"]);
+for (const [month, figure, [eLo, , eHi], atlD] of PINS.filter(p => EXACT_KNOTS.has(p[0]))) {
+  const row = byMonth[month];
+  const wantMin = figure + eLo - atlD - PRE_SERIES_MILES, wantMax = figure + eHi - PRE_SERIES_MILES;
+  assert.ok(row.kmin === wantMin && row.kmax === wantMax,
+    `Replicata: compare waymo ${month}'s kyoom band with its anchor band.
+Expectata: exactly [${wantMin}, ${wantMax}] (hub + E lo - D .. hub + E hi, minus the pre-series slice).
 Resultata: [${row.kmin}, ${row.kmax}].`);
 }
 

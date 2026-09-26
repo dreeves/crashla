@@ -296,3 +296,27 @@ Resultata: no throw.`,
 );
 
 console.log("qual pass: fleet forecast draws four normalized curves; Tesla split into robotaxi (~95%) + all-HW4-ADS (~5%) scopes");
+
+// --- Tesla's rides scenarios are the miles scenarios over the ride corridor -
+// RIDES_FORECAST Tesla A stayed at the 2026-07-22 miles figures when
+// MILES_FORECAST A was re-based on 2026-09-04; the two tables are now tied in
+// code, so a miles re-base moves rides with it.
+{
+  const d = vm.runInContext(`(() => {
+    const m = MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi");
+    const r = RIDES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi");
+    return {m, r, corridor: TESLA_MILES_PER_RIDE};
+  })()`, ctx);
+  assert.ok(d.m.length === 2 && d.r.length === 2,
+    `Replicata: read the robotaxi-scope Tesla components of MILES_FORECAST and RIDES_FORECAST.
+Expectata: two each (A and B).
+Resultata: ${d.m.length} / ${d.r.length}.`);
+  d.m.forEach((mc, i) => {
+    const rc = d.r[i];
+    const want = { best: mc.best / d.corridor.best, lo: mc.lo / d.corridor.hi, hi: mc.hi / d.corridor.lo };
+    assert.ok(rc.weight === mc.weight && ["best", "lo", "hi"].every(k => Math.abs(rc[k] - want[k]) / want[k] < 1e-9),
+      `Replicata: divide Tesla miles scenario ${i === 0 ? "A" : "B"} {${mc.best}, ${mc.lo}, ${mc.hi}} by the [${d.corridor.lo}, ${d.corridor.best}, ${d.corridor.hi}] miles-per-ride corridor.
+Expectata: the rides scenario {${want.best}, ${want.lo}, ${want.hi}} with the same weight.
+Resultata: {${rc.best}, ${rc.lo}, ${rc.hi}} weight ${rc.weight}.`);
+  });
+}

@@ -57,6 +57,32 @@ Expectata: within 20% of the hub's All-Locations blended ${r.blended} IPMM.
 Resultata: ${geoIpmm.toFixed(2)} IPMM.`);
 }
 
+// --- Derived HumansAV bands and Waymo's own published rates (2026-09-26) ---
+// hospitalization is bracketed by its severity neighbours (1M/airbag blended
+// .. 1M/SSI+ blended); at-fault injury = injury lo/0.94 .. injury hi/0.5
+// (documented at the METRIC_DEFS entries). Both went stale silently once
+// before (2026-07-24), so they are pinned to the SRC constants here.
+// WAYMO_PUBLISHED_IPMM is the hub's All-Locations Waymo rates (CSV3 thru Jun
+// 2026: 0.6745 / 0.2948 / 0.0111), at the page's 2 dp.
+{
+  const band = k => vm.runInContext(`METRIC_DEFS.find(m => m.key === ${JSON.stringify(k)}).humanMPI.HumansAV`, ctx);
+  const near = (x, y) => Math.abs(x - y) / y <= 0.01;
+  const hosp = band("hospitalization"), inj = band("injury"), afi = band("atfaultInjury");
+  assert.ok(near(hosp.lo, 1e6 / SRC.airbag.blended) && near(hosp.hi, 1e6 / SRC.seriousInjury.blended),
+    `Replicata: derive the HumansAV hospitalization band from the hub blended rates.
+Expectata: lo = 1e6/${SRC.airbag.blended} ≈ ${Math.round(1e6 / SRC.airbag.blended)}, hi = 1e6/${SRC.seriousInjury.blended} ≈ ${Math.round(1e6 / SRC.seriousInjury.blended)} (within 1%).
+Resultata: [${hosp.lo}, ${hosp.hi}].`);
+  assert.ok(near(afi.lo, inj.lo / 0.94) && near(afi.hi, inj.hi / 0.5),
+    `Replicata: derive the HumansAV at-fault injury band from the injury band.
+Expectata: lo = injury lo/0.94 ≈ ${Math.round(inj.lo / 0.94)}, hi = injury hi/0.5 = ${inj.hi / 0.5} (within 1%).
+Resultata: [${afi.lo}, ${afi.hi}].`);
+  const pub = vm.runInContext("WAYMO_PUBLISHED_IPMM", ctx);
+  assert.equal(JSON.stringify(pub), JSON.stringify({ injury: 0.67, airbag: 0.29, ssi: 0.01 }),
+    `Replicata: read WAYMO_PUBLISHED_IPMM.
+Expectata: the hub's All-Locations Waymo rates thru Jun 2026, {injury 0.67, airbag 0.29, ssi 0.01}.
+Resultata: ${JSON.stringify(pub)}.`);
+}
+
 // --- HumansRideshare fatality band: the sourced Uber/Lyft rates ---
 // 0.62 (Uber 2019-2020) to 0.94 (Lyft) fatalities per 100M VMT -> 106M/161M
 // MPI. The only rideshare-specific published per-mile rate; every nonfatal
@@ -153,9 +179,12 @@ Resultata: ${band.src}.`);
     const t = Math.log(av(key) / av("injury")) / Math.log(av("fatality") / av("injury"));
     const center = us("injury") * Math.pow(us("fatality") / us("injury"), t);
     const ratio = us(key) / center;
-    assert.ok(Math.abs(Math.log(ratio)) < Math.log(1.06),
+    // 2% (was 6% until 2026-09-26): the 09-25 repin moved these centers by
+    // 1.5-4.8%, inside the old tolerance, so a stale band could not fail.
+    // Edges are authored to 2 significant figures, which costs <= ~1%.
+    assert.ok(Math.abs(Math.log(ratio)) < Math.log(1.02),
       `Replicata: log-interpolate the national ${key} center from the AV-cities severity ladder (t = ${t.toFixed(3)}) between the national injury and fatality centers.
-Expectata: the HumansUS ${key} band's geometric center within 6% of ${Math.round(center)}.
+Expectata: the HumansUS ${key} band's geometric center within 2% of ${Math.round(center)}.
 Resultata: band [${bands[key].HumansUS.lo}, ${bands[key].HumansUS.hi}], center ${Math.round(us(key))} (${ratio.toFixed(3)}x).`);
   }
 }

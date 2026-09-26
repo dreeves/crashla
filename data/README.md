@@ -26,9 +26,9 @@ NHTSA's canonical SGO page labels each release "through <date>": reports
 received through that date, which is the 15th of the month before the
 release, rolled forward to the next business day when the 15th falls on a
 weekend or federal holiday (e.g. "through August 17, 2026" for the Sep 15,
-2026 release; `quals/nhtsa-cutoff-date.qual.mjs` pins the rule). Each release's newest incident month
-holds only five-day-track filings and grows ~6x in the next release). That
-page blocks scripted fetches, so `NHTSA_DATA_THROUGH_DATE` in `slurp.py`
+2026 release; `quals/nhtsa-cutoff-date.qual.mjs` pins the rule). Each
+release's newest incident month holds only five-day-track filings and grows
+~6x in the next release. That page blocks scripted fetches, so `NHTSA_DATA_THROUGH_DATE` in `slurp.py`
 records the reviewed cutoff — one edit per release — and content asserts
 guard it: the cutoff month must be the newest incident month and the newest
 submission month (early Monthly filings inside that month are legitimate).
@@ -36,14 +36,16 @@ The CSV's HTTP headers and bytes are deliberately not pinned (a correction
 must not break ingestion; the Aug 27, 2026 re-publish replaced one wrong
 Stack AV narrative, 34952-11803 v1, and changed nothing else).
 
-Reports received through the 15th cover only crashes from roughly the first
-third of the data-through month (the five-day clock runs from the company's
-notice, plus processing). `FIVE_DAY_RECEIPT_COVERAGE` = (best, lo, hi) is
-that fraction, measured from `data/snapshots` history as the share of a
-month's eventual five-day-track incidents present in the first release
-containing that month (`FIVE_DAY_RECEIPT_OBSERVATIONS`: Feb 0.50, Mar 0.35,
-May 0.28, Jun 0.28 of 2026, re-measured 2026-09-04; the anomalous May-15
-release is excluded). It is re-measured and re-reviewed on each release.
+Reports received through the cutoff cover only crashes from roughly the
+first quarter to third of the data-through month (the five-day clock runs
+from the company's notice, plus processing). `FIVE_DAY_RECEIPT_COVERAGE` =
+(best, lo, hi) is that fraction, measured from `data/snapshots` history as
+the share of a month's eventual five-day-track incidents present in the first
+release containing that month (`FIVE_DAY_RECEIPT_OBSERVATIONS`: Feb 0.50,
+Mar 0.35, May 0.28, Jun 0.28, Jul 0.21 of 2026; currently (0.28, 0.20, 0.52),
+best = the median). April 2026 is excluded because its first release, May 15,
+was truncated. A month's denominator is final at its second normal release,
+so one observation is added per release, one release in arrears.
 
 It also reads two local input files:
 
@@ -53,9 +55,11 @@ It also reads two local input files:
 The slurp pipeline is:
 
 1. Fetch current + archive NHTSA CSVs directly from NHTSA
-2. Verify the reviewed data-through cutoff against the CSV contents (the
-   newest incident month and newest submission month must both equal it)
-3. Normalize archive-only column-name differences
+2. Normalize archive-only column-name differences
+3. Validate every row against the whitelists (report type, operator type,
+   reporting entity, severity, date formats), the per-helmer operator scope
+   (every helmer row must file a counted or an excluded type), and the
+   teleoperator narrative tripwire; any surprise stops the run
 4. Deduplicate by `Report ID` over every filed row, keeping the highest
    `Report Version` (a report's `Same Incident ID` can change between
    versions, and a later version can retire a report from scope)
@@ -65,7 +69,9 @@ The slurp pipeline is:
    ledger before any file is written)
 7. Sync the six mirrored columns of `data/faultfrac.csv` from the NHTSA
    rows and load the fault fractions
-8. Restrict to the app's VMT analysis window
+8. Verify the reviewed data-through cutoff against the CSV contents (the
+   newest incident month and newest submission month must both equal it)
+   and restrict to the app's VMT analysis window
 9. Apply narrative-verified field overrides from `slurp.py` (severity, airbag,
    state — see `quals/field-overrides.qual.mjs` for the pins; vehicles-involved
    — see `quals/fatality-guard.qual.mjs`; the dict comments carry each row's
@@ -101,8 +107,8 @@ Editing rules:
 - `vmt_min <= vmt <= vmt_max`, all non-negative (asserted downstream)
 - `kyoom_min <= helmer_cumulative_vmt <= kyoom_max`, and the cumulative
   column must equal the running sum of `vmt` (asserted downstream)
-- Thousands-separator commas in numbers are tolerated (quote the field);
-  slurp normalizes them to plain integers in the generated artifact
+- Numbers are plain integers (no thousands separators: slurp.py would
+  accept a quoted "2,501,777", but the quals' parsers would not)
 - `rationale` is free text explaining the estimate's source and uncertainty
 
 To change VMT data: edit `data/vmt.csv`, run `python3 data/slurp.py`, and
@@ -124,12 +130,12 @@ a metro, set that metro's share of E to 0 at that anchor and re-chain
 
 | Data through | Hub figure (hub CSV1) | Counted | E lo / best / hi | Atlanta D | Excluded metros |
 |---|---|---|---|---|---|
-| Mar 2025 | 71.432M | PHX, SF, LA, ATX | 0.188 / 0.188 / 0.188M | 0 | Atlanta 0.056M + Mountain View 0.132M (listed, excluded — exact) |
+| Mar 2025 | 71.432M | PHX, SF, LA, ATX | 0.188 / 0.188 / 0.188M | 0 (exact depot-basis listing; its one-third share, 18,650 mi, is booked in April 2025) | Atlanta 0.056M + Mountain View 0.132M (listed, excluded — exact) |
 | Jun 2025 | 95.965M | PHX, SF, LA, ATX | 0.4 / 0.7 / 1.3M | 0.213M | Atlanta (rider-only Jan 30, public Jun 24, 2025); Santa Clara / Mountain View |
 | Sep 2025 | 127.158M | PHX, SF, LA, ATX | 1.3 / 2.0 / 3.1M | 0.473M | Atlanta; Santa Clara |
 | Dec 2025 | 170.712M | Maricopa, SF, San Mateo, Santa Clara (newly counted), LA, Travis | 3.0 / 3.7 / 4.6M | 1.166M | Atlanta (~3.5M lifetime); Miami (rider-only Nov 18); Dallas, Houston, San Antonio, Orlando (Dec) |
 | Mar 2026 | 220.613M | + Fulton, DeKalb (Atlanta, 5.379M lifetime) | 1.2 / 2.0 / 3.3M | 1.791M | Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson |
-| Jun 2026 | 271.329M | same eight counties (Atlanta 8.624M lifetime) | 4.0 / 6.65 / 10.2M | 2.841M | Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson; plus employee rider-only Denver, Las Vegas, San Diego, Tampa from ~Jul |
+| Jun 2026 | 271.329M | same eight counties (Atlanta 8.624M lifetime) | 3.5 / 6.65 / 10.2M | 2.841M | Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson; plus employee rider-only Denver, Las Vegas, San Diego, Tampa from ~Jul |
 
 Atlanta D (2026-09-25). The hub's per-cell detail file ("CSV4 - Miles and
 Benchmark Crashes for Dynamic Benchmark") lists 67 Fulton and 18 DeKalb S2
@@ -146,7 +152,9 @@ published Mar-2026 figure, so the same one-third share applies there. It is
 applied to Atlanta's published-basis ramp: 0.056M at Mar 2025, the ~3.5M E
 share at Dec 2025, and 5.379M at Mar 2026. Between knots the ramp is shaped
 by the hub's own Atlanta crash list (CSV2), with pre-Third-Amended-SGO
-crashes at half weight. D's low edge is 0 (the published total is right):
+crashes at half weight. The Mar-2025 knot is the hub's exact depot-basis
+listing, so D is 0 at that anchor and the ramp's one-third share of it
+(18,650 mi) is booked in April 2025's increment. D's low edge is 0 (the published total is right):
 the rows subtract D's monthly increments from `vmt` and `vmt_min` and D from
 `helmer_cumulative_vmt` and `kyoom_min`, leaving `vmt_max`/`kyoom_max` on the
 published reading. Recompute D with every hub release. If Waymo fixes the
@@ -166,9 +174,12 @@ registry; local reporting) and rider disclosures (Dallas "nearly 150,000
 riders since February", Houston ">100,000", Orlando ">60,000"). Monthly
 excluded-metro estimates carried in the 2026 rows: Apr 1.4M, May 1.45M,
 Jun 1.8M, Jul 2.0M, Aug 2.3M, Sep 2.85M (lo/hi in the row bands). The Jun
-2026 anchor's E lo/hi (4.0 / 10.2M) come from the same proxy on the hub's
-own crash list (41 unbenchmarked-county crashes Jan-Jun 2026 at 4.5-9.5 per
-M mi); its best (6.65M) is the carried monthly sum. The Sep 24, 2026 update
+2026 anchor's E best (6.65M) is the carried monthly sum. Its lo (3.5M) pairs
+with the D-corrected reading, so it uses the same proxy on the hub's own
+crash list at the D-corrected young-market rate (Travis 114 crashes /
+17.839M + Atlanta 61 / 5.784M = 7.4 per M mi, on the 41 unbenchmarked-county
+crashes of Jan-Jun 2026, Poisson noise folded in); its hi (10.2M) pairs with
+the published reading and keeps the published-basis rate (6.6 per M mi). The Sep 24, 2026 update
 added no metro; the next (data through Sep 2026) is expected ~mid/late Dec
 2026.
 

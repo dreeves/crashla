@@ -453,7 +453,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": " The Tesla ADS was stopped at a stop sign. A truck behind the ADS proceeded forward and rear ended the ADS. The ADS had a safety monitor present in the vehicle with one passenger.",
+    "narrative": "The Tesla ADS was stopped at a stop sign. A truck behind the ADS proceeded forward and rear ended the ADS. The ADS had a safety monitor present in the vehicle with one passenger.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -993,37 +993,6 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign yielding; rear-ended by pickup"
-    },
-    "vehiclesInvolved": 2
-  },
-  {
-    "reportId": "30270-4881",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "JAN-2023",
-    "time": "17:08",
-    "incidentId": "5bb5073dab94bae",
-    "city": "San Francisco",
-    "state": "CA",
-    "road": "Intersection",
-    "crashWith": "Passenger Car",
-    "severity": "No Injuries Reported",
-    "speed": 34,
-    "svMovement": "Proceeding Straight",
-    "cpMovement": "Proceeding Straight",
-    "narrative": "On January [XXX], 2023 at 5:08 PM PST a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a passenger vehicle on [XXX] at [XXX].\nThe Waymo AV was traveling north on [XXX] when, upon entering the intersection at [XXX], a passenger vehicle which had previously been stopped at a red light, proceeded through the red light. The passenger vehicle approached from the left and made contact with the left rear bumper of the Waymo AV. The other vehicle immediately left the scene of the collision. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode, and a test driver was present (in the drivers seating position). Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 2 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Yes",
-    "svHit": "rear left",
-    "cpHit": "front left + front + front right",
-    "fault": {
-      "faultfrac": 0.0,
-      "reasoning": "Other car ran red light at intersection; struck and left scene"
     },
     "vehiclesInvolved": 2
   },

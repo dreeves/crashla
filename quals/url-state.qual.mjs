@@ -424,3 +424,17 @@ assert.match(css, /\.banner\[hidden\]\s*\{\s*display:\s*none;?\s*\}/,
   ".banner[hidden] must restore display: none, since .banner is a flex box");
 
 console.log("qual pass: URL state round-trips, fails loudly on invalid owned keys, and reports foreign ones");
+
+// --- A dotted legacy m= value is invalid, not silently reduced -------------
+// Until 2026-09-26 "m=injury.all" was parsed as the retired multi-metric
+// format and rewritten to the first enabled key in METRIC_KEYS order (not
+// even URL order), with no banner: the last DWIM path in the parser.
+{
+  let threw = false;
+  try { vm.runInContext(`applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=injury.all")`, ctx); }
+  catch (_err) { threw = true; }
+  assert.ok(threw,
+    `Replicata: apply URL state with a dotted metrics value (m=injury.all).
+Expectata: it asserts (one metric key only), as m= empty and unknown keys do.
+Resultata: accepted and reduced to one metric.`);
+}

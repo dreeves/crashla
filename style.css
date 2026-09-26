@@ -523,6 +523,7 @@ tbody tr:hover { background: var(--accent-wash); }
   stroke: var(--ink);
   stroke-width: 1.6;
   stroke-linecap: round;
+  pointer-events: none; /* not a tooltip target; must not cover one */
 }
 .month-vmt-line {
   fill: none;
@@ -543,6 +544,7 @@ tbody tr:hover { background: var(--accent-wash); }
   stroke-width: 1;
   stroke-linecap: round;
   opacity: 0.8;
+  pointer-events: none; /* not a tooltip target; must not cover one */
 }
 .errbar-key {
   width: 3px;

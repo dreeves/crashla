@@ -26,7 +26,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 const fatalities = vm.runInContext(
   `INCIDENT_DATA.filter(r => r.severity === "Fatality")
-     .map(r => ({reportId: r.reportId, helmer: r.helmer, city: r.city, date: r.date, speed: r.speed, fault: Number(r.fault.faultfrac), vehiclesInvolved: r.vehiclesInvolved}))`,
+     .map(r => ({reportId: r.reportId, helmer: r.helmer, city: r.city, date: r.date, speed: r.speed, fault: r.fault === null ? null : Number(r.fault.faultfrac), vehiclesInvolved: r.vehiclesInvolved}))`,
   ctx);
 
 const SEEN = JSON.stringify(fatalities);
@@ -38,8 +38,11 @@ assert.equal(fatalities.length, 3,
 assert.ok(fatalities.every(f => f.helmer === "Waymo"),
   `Replicata: which helmers the fatalities belong to.\nExpectata: all three Waymo — a first Tesla or Zoox fatality is a headline-level change and must not land silently.\nResultata: ${SEEN}.\n${FIX}`);
 
-assert.ok(fatalities.every(f => f.fault <= 0.05),
-  `Replicata: AI fault estimates for the fatalities.\nExpectata: each faultfrac <= 0.05 — no fatality in this dataset is judged avoidable by the AV, and the first one that is deserves a human read before it moves the at-fault metric.\nResultata: ${JSON.stringify(fatalities.map(f => f.fault))} — ${SEEN}.\n${FIX}`);
+// A fatality with no faultfrac row yet (fault null: the month's batch is not
+// done) must fail HERE with the FIX text, not crash the map above with a
+// TypeError before any message prints (as it did until 2026-09-26).
+assert.ok(fatalities.every(f => f.fault !== null && f.fault <= 0.05),
+  `Replicata: AI fault estimates for the fatalities.\nExpectata: each assessed, and each faultfrac <= 0.05 — no fatality in this dataset is judged avoidable by the AV, and the first one that is deserves a human read before it moves the at-fault metric.\nResultata: ${JSON.stringify(fatalities.map(f => f.fault))} — ${SEEN}.\n${FIX}`);
 
 // Pin each known fatality's divisor to the count its own narrative supports:
 //   30270-9724 (JAN-2025 SF): AV + car behind + SUV + a fourth car + "at

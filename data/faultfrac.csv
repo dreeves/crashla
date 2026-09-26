@@ -49,7 +49,6 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-4363,11,Other Fixed Object,front left + front + front right + right + rear right,,No Injuries Reported,0.9,Waymo slowed for parking lot barrier arm then drove into it; aligned to bar/bollard/curb tier 0.9 as 11467 (2026-09-04)
 30270-4768,8,Motorcycle,front right,unknown,No Injuries Reported,0.1,"Riderless minibike tumbled into Waymo's lane; max brake, unavoidable"
 30270-4882,0,Pickup Truck,rear left,front right,No Injuries Reported,0,Waymo stopped at stop sign yielding; rear-ended by pickup
-30270-4881,34,Passenger Car,rear left,front left + front + front right,No Injuries Reported,0,Other car ran red light at intersection; struck and left scene
 30270-4880,0,First Responder Vehicle,rear left,right,No Injuries Reported,0,Waymo stopped in lot; tow truck reversed into rear sensor
 30270-5083,14,Passenger Car,left,front left + front,No Injuries Reported,0,Waymo making left turn; cross vehicle struck left side and fled
 30270-5081,12,Other Fixed Object,front,,No Injuries Reported,0.4,Waymo struck cardboard debris in intersection; visibility ambiguous; sizable-visible-object band tops at 0.4 (2026-09-04)

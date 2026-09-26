@@ -3,10 +3,11 @@
 
 Fetches current + archive ADS incident CSVs from NHTSA, deduplicates by
 Report ID (keeping the highest Report Version) and then by Same Incident ID
-(with the SPLIT_SAME_INCIDENT_REPORTS exemption), filters to each entity's
-public robotaxi service (Driver / Operator Type "None", plus Tesla's
-"In-Vehicle (Commercial / Test)" and "Remote (Commercial / Test)" modes — see
-PUBLIC_SERVICE_OPERATOR_TYPES), joins in the in-repo VMT master
+(with the SPLIT_SAME_INCIDENT_REPORTS exemption), keeps the crashes in which
+each helmer's ADS was driving in a mode whose miles are in its VMT
+denominator (PUBLIC_SERVICE_OPERATOR_TYPES / EXCLUDED_OPERATOR_TYPES,
+OPERATOR_TYPE_OVERRIDE, TELEOP_DRIVEN_REPORTS, and the narrative tripwires
+beside them), joins in the in-repo VMT master
 (data/vmt.csv) and fault inputs (data/faultfrac.csv), and injects the data
 into data/incidents.js and data/vmt.js (between marker comments).
 """
@@ -60,7 +61,8 @@ NHTSA_ADS_ARCHIVE_URL = (
 # release held four JAN-2026 ones) and are consistent with the cutoff.
 NHTSA_DATA_THROUGH_DATE = "2026-08-17"
 # Receipt coverage of the data-through month. Reports received through the
-# 15th cover only crashes from roughly the first third of that month: the
+# cutoff cover only crashes from roughly the first quarter to third of that
+# month: the
 # five-day clock runs from the company's notice, plus NHTSA processing. It is
 # measured, not assumed, from data/snapshots history: (five-day-type
 # public-service Waymo/Tesla/Zoox incidents of month M present in the first
@@ -87,6 +89,13 @@ FIVE_DAY_RECEIPT_OBSERVATIONS = {
 # Added 2026-07 on the 2026-09-15 release: 0.207 is a new low, so lo fell
 # 0.25 -> 0.20 and the median moved 0.313 -> 0.279.
 FIVE_DAY_RECEIPT_COVERAGE = (0.28, 0.20, 0.52)
+# Months with no usable first-release observation, with the reason; every
+# other month from the first observation on must be measured (see
+# release_month_coverage).
+RECEIPT_MONTHS_EXCLUDED = {
+    "2026-04": "its first release (May 15, 2026) was truncated: 3 April "
+               "incidents of an eventual 57, 19 April submissions",
+}
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
 # In-repo master for the VMT estimates (one row per helmer-month).
@@ -490,7 +499,10 @@ def _normalize_archive_row(row):
     # vehicle; the archive splits it into SV + CP and ARCHIVE_COLUMN_MAP copies
     # only SV. OR in the crash-partner column so archive-era airbag deployments
     # in the OTHER vehicle aren't dropped (airbagAny is defined as any-vehicle).
-    if "Yes" in (row.get("CP Any Air Bags Deployed?") or ""):
+    must("CP Any Air Bags Deployed?" in row,
+         "archive row lacks the CP airbag column (19 archive-era crash-partner "
+         "deployments would silently revert to airbagAny false)")
+    if "Yes" in row["CP Any Air Bags Deployed?"]:
         row["Any Air Bags Deployed?"] = "Yes"
     return row
 
@@ -577,6 +589,23 @@ def release_month_coverage(data_through_date, last_month):
     must(data_through_month == last_month,
          "reviewed NHTSA cutoff month must match the latest incident month",
          data_through=data_through_date, last_month=last_month)
+    # Every month from the first observation through the month that just
+    # became final (the one before the data-through month: its second normal
+    # release is this one) must be observed or explicitly excluded, so the
+    # "re-measure on each release" step cannot be skipped silently.
+    first = min(FIVE_DAY_RECEIPT_OBSERVATIONS)
+    due = (datetime.date.fromisoformat(data_through_date).replace(day=1)
+           - datetime.timedelta(days=1)).strftime("%Y-%m")
+    month = first
+    while month <= due:
+        must(month in FIVE_DAY_RECEIPT_OBSERVATIONS
+             or month in RECEIPT_MONTHS_EXCLUDED,
+             "no five-day receipt observation for a month that is now final "
+             "(measure it from the snapshots and add it to "
+             "FIVE_DAY_RECEIPT_OBSERVATIONS, or exclude it with a reason)",
+             month=month, data_through=data_through_date)
+        y, m = divmod(int(month[:4]) * 12 + int(month[5:]), 12)
+        month = f"{y}-{m + 1:02d}"
     fracs = sorted(n / d for n, d in FIVE_DAY_RECEIPT_OBSERVATIONS.values())
     best, lo, hi = FIVE_DAY_RECEIPT_COVERAGE
     median = statistics.median(fracs)
@@ -787,12 +816,11 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
             continue
         rid = r["Report ID"]
         iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
-        ver = int(r["Report Version"])
         helmer = HELMER_SHORT.get(r["Reporting Entity"].strip(),
                                    r["Reporting Entity"].strip())
         month = nhtsa_month_to_iso(r["Incident Date"].strip())
-        if iid not in by_incident or ver > by_incident[iid]["ver"]:
-            by_incident[iid] = {"ver": ver, "helmer": helmer, "month": month}
+        if iid not in by_incident or newer_filing(r, by_incident[iid]["row"]):
+            by_incident[iid] = {"row": r, "helmer": helmer, "month": month}
 
     counts = {}  # (helmer, month) -> count
     for rec in by_incident.values():
@@ -1032,10 +1060,10 @@ EXPECTED_HELMERS = {
 # (Commercial / Test)", so that mode counts as public service for Tesla too.
 # Tesla additionally files remote-assistance maneuvers as "Remote (Commercial
 # / Test)" (one report so far: 13781-15395, the Houston tree-stump recovery).
-# Included per human decision 2026-08-19: those vehicles' miles are already in
-# the VMT denominator, so their crashes belong in the numerator; fault is
-# judged 0 when a remote human, not the ADS, was driving (same convention as
-# passenger-caused incidents).
+# The code itself counts for Tesla -- a remote operator can be involved while
+# the ADS drives -- but crashes in which the remote human was DRIVING, that
+# report among them, leave every metric via TELEOP_DRIVEN_REPORTS below
+# (human decision 2026-09-26, reversing the 2026-08-19 inclusion).
 # Waymo and Zoox (made explicit 2026-09-25, human-approved): their VMT
 # denominators are driverless miles only (Waymo hub rider-only miles, Zoox
 # driverless miles), so "None" and "Remote (Commercial / Test)" (a driverless
@@ -1087,12 +1115,22 @@ must(all(not PUBLIC_SERVICE_OPERATOR_TYPES[e] & EXCLUDED_OPERATOR_TYPES[e]
 # Zoox 30610-9578 ("Other", "in autonomy", no operator named) -- 51 of Zoox's
 # 110 safety-driver narratives never mention the driver either, so silence
 # cannot show the car was driverless.
+# Each entry is (the raw Driver / Operator Type the review judged, the type to
+# apply). operator_in_scope() must()s that the filed value still equals the
+# reviewed one, so an upstream re-filing (a v2 that changes the code, as
+# 30270-8403's did) stops the run for a re-review instead of being overridden.
+# 30270-4881 (Waymo, San Francisco, JAN-2023) is coded "None" with the same
+# narrative sentence as 30270-14625 ("a test driver was present (in the
+# drivers seating position)"); Waymo's own rider-only crash list (hub CSV2)
+# leaves it out. Found 2026-09-26 by the safety-driver tripwire below.
 OPERATOR_TYPE_OVERRIDE = {
-    "30270-14625": "In-Vehicle (Commercial / Test)",
-    "30270-8750": "None",
+    "30270-14625": ("None", "In-Vehicle (Commercial / Test)"),
+    "30270-4881": ("None", "In-Vehicle (Commercial / Test)"),
+    "30270-8750": ("Other, see Narrative", "None"),
 }
-must(set(OPERATOR_TYPE_OVERRIDE.values()) <= EXPECTED_DRIVER_TYPES,
-     "OPERATOR_TYPE_OVERRIDE names an unknown Driver / Operator Type")
+must(all(len(v) == 2 and set(v) <= EXPECTED_DRIVER_TYPES
+         for v in OPERATOR_TYPE_OVERRIDE.values()),
+     "OPERATOR_TYPE_OVERRIDE entries must be (reviewed raw type, applied type)")
 
 # Crashes in which a remote human, not the ADS, was driving, keyed by Report
 # ID with the narrative's own words (2026-09-26, human decision: the metrics
@@ -1107,16 +1145,29 @@ TELEOP_DRIVEN_REPORTS = {
     "13781-14043": "took over vehicle control when the ADS was stopped and proceeded straight on the street",
     "13781-15395": "As the remote assistance operator continued to recover the vehicle, they made contact with a hidden tree stump",
 }
-# In-scope reports whose narrative matches TELEOP_PATTERN but in which the ADS
-# was driving at impact (none so far), keyed by Report ID with the reason.
-REMOTE_LANGUAGE_ADS_DRIVEN = {}
+# In-scope reports that trip the tripwire below (remote-human language, or
+# the "Remote (Commercial / Test)" code itself) but in which the ADS was
+# driving at impact, keyed by Report ID with the reason.
+REMOTE_LANGUAGE_ADS_DRIVEN = {
+    # coded Remote; "Level 4 ADS was engaged in autonomous mode": stationary,
+    # yielding in a crosswalk, when a cyclist ran the red into it
+    "30270-13378": "ADS engaged; stationary AV struck by a red-running cyclist",
+    # coded Remote; "an unoccupied Zoox autonomous vehicle ... gradually slowed
+    # to a stop when it was rear ended"
+    "30610-11752": "ADS engaged; unoccupied AV slowing to a stop, rear-ended",
+}
 # Language saying a remote human may have been driving. Calibrated 2026-09-26
-# on every in-scope narrative: it matches exactly the three reports above and
-# not "remote controlled" toys or a "fleet response team" arriving on scene.
+# on every in-scope narrative (all versions): it matches exactly the three
+# TELEOP_DRIVEN_REPORTS and not "remote controlled" toys or a "fleet response
+# team" arriving on scene; widened the same day to cover wording seen
+# elsewhere in the SGO corpus (Cruise 30412-6179: "A remote assistance advisor
+# ... shifted the AV out of park"), "remote driver/pilot", and any whitespace
+# between words.
 TELEOP_PATTERN = re.compile(
-    r"tele-?operat|remote (assistance )?operator|supported remotely|"
-    r"remotely (driven|operated|controlled|piloted)|"
-    r"took over (the )?(vehicle )?control", re.I)
+    r"tele-?operat|remote\s+assist\w*|remote\s+(operator|driver|pilot)|"
+    r"supported\s+remotely|"
+    r"remotely\s+(driven|operated|controlled|piloted|assisted|supported)|"
+    r"took\s+over\s+(the\s+)?(vehicle\s+)?control", re.I)
 must(not set(TELEOP_DRIVEN_REPORTS) & set(REMOTE_LANGUAGE_ADS_DRIVEN),
      "a report is classified both teleoperator-driven and ADS-driven")
 
@@ -1126,9 +1177,13 @@ def operator_in_scope(row):
     entity's VMT denominator (the service the VMT master measures)."""
     counted = PUBLIC_SERVICE_OPERATOR_TYPES.get(
         row["Reporting Entity"].strip(), set())
-    operator = OPERATOR_TYPE_OVERRIDE.get(
-        row["Report ID"], row["Driver / Operator Type"].strip())
-    return operator in counted
+    filed = row["Driver / Operator Type"].strip()
+    reviewed, applied = OPERATOR_TYPE_OVERRIDE.get(row["Report ID"], (filed, filed))
+    must(reviewed == filed,
+         "OPERATOR_TYPE_OVERRIDE was reviewed against a different Driver / "
+         "Operator Type (the report was re-filed; re-review it)",
+         reportId=row["Report ID"], reviewed=reviewed, filed=filed)
+    return applied in counted
 
 
 def is_public_service_incident(row):
@@ -1137,16 +1192,79 @@ def is_public_service_incident(row):
     return operator_in_scope(row) and row["Report ID"] not in TELEOP_DRIVEN_REPORTS
 
 
-def check_teleop_classified(row):
-    """Stop the run on an in-scope report whose narrative says a remote human
-    may have been driving, until a human classifies it."""
+# Language saying a human was in the driver's seat. For Waymo and Zoox the
+# operator code is supposed to carry this ("In-Vehicle ..."), and their
+# denominators hold driverless miles only, so an in-scope narrative that says
+# otherwise must be classified: re-coded in OPERATOR_TYPE_OVERRIDE, or listed
+# below as ADS-driven at impact with the reason. Tesla's monitor-aboard mode
+# is in scope by design (its deck miles include it), so Tesla is exempt.
+# Calibrated 2026-09-26 on every in-scope Waymo/Zoox narrative, all versions:
+# exactly 30270-4881 (re-coded above) and 30270-7075 (below).
+SAFETY_DRIVER_PATTERN = re.compile(
+    r"test driver|safety driver|safety operator|vehicle operator|"
+    r"driver'?s seat|seating position|behind the wheel|manual mode|in manual",
+    re.I)
+SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN = {
+    # "returned to the depot in manual mode" -- after the crash; the AV was
+    # driverless at impact (a cyclist struck it)
+    "30270-7075": "manual mode only for the return to the depot after the crash",
+}
+SAFETY_DRIVER_EXEMPT_ENTITIES = {"Tesla, Inc."}
+
+
+def check_safety_driver_classified(row):
+    """Stop the run on an in-scope Waymo/Zoox report whose narrative says a
+    human was in the driver's seat, until a human classifies it."""
     rid = row["Report ID"]
-    must(not (operator_in_scope(row) and TELEOP_PATTERN.search(row["Narrative"]))
-         or rid in TELEOP_DRIVEN_REPORTS or rid in REMOTE_LANGUAGE_ADS_DRIVEN,
-         "narrative says a remote human may have been driving (read it; add "
-         "the report to TELEOP_DRIVEN_REPORTS if a remote human was driving at "
+    flagged = (operator_in_scope(row)
+               and row["Reporting Entity"].strip() not in SAFETY_DRIVER_EXEMPT_ENTITIES
+               and SAFETY_DRIVER_PATTERN.search(row["Narrative"]) is not None)
+    must(not flagged or rid in SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN,
+         "a safety driver may have been aboard (read the narrative; re-code the "
+         "report in OPERATOR_TYPE_OVERRIDE if a human was in the driver's seat, "
+         "else list it in SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN)",
+         reportId=rid, operator=row["Driver / Operator Type"].strip(),
+         narrative=row["Narrative"][:300])
+
+
+def check_teleop_classified(row):
+    """Stop the run on an in-scope report that says a remote human may have
+    been driving -- by its narrative (TELEOP_PATTERN) or by its operator code
+    ("Remote (Commercial / Test)") -- until a human classifies it."""
+    rid = row["Report ID"]
+    flagged = operator_in_scope(row) and (
+        TELEOP_PATTERN.search(row["Narrative"]) is not None or
+        row["Driver / Operator Type"].strip() == "Remote (Commercial / Test)")
+    must(not flagged or rid in TELEOP_DRIVEN_REPORTS
+         or rid in REMOTE_LANGUAGE_ADS_DRIVEN,
+         "a remote human may have been driving (read the narrative; add the "
+         "report to TELEOP_DRIVEN_REPORTS if a remote human was driving at "
          "impact, else to REMOTE_LANGUAGE_ADS_DRIVEN)",
-         reportId=rid, narrative=row["Narrative"][:300])
+         reportId=rid, operator=row["Driver / Operator Type"].strip(),
+         narrative=row["Narrative"][:300])
+
+
+def report_rank(row):
+    """Order two filings of one Same Incident ID: higher Report Version wins,
+    then the later Report Submission Date. An exact tie between distinct
+    Report IDs is undecidable and stops the run (until 2026-09-26 CSV row
+    order decided it; the one real pair, 6f2cffa37c36b66 = 30270-1583 v1
+    submitted NOV-2021 and 30270-1535 v1 submitted OCT-2021, resolves to the
+    NOV-2021 re-filing under this rule as it did by row order)."""
+    return (int(row["Report Version"]),
+            nhtsa_month_to_iso(row["Report Submission Date"].strip()))
+
+
+def newer_filing(candidate, incumbent):
+    """True if <candidate> outranks <incumbent> for the same Same Incident ID."""
+    a, b = report_rank(candidate), report_rank(incumbent)
+    must(a != b or candidate["Report ID"] == incumbent["Report ID"],
+         "two Report IDs tie for one Same Incident ID at the same version and "
+         "submission month (decide which report stands: SPLIT_SAME_INCIDENT_"
+         "REPORTS if they are distinct crashes, else a newer filing)",
+         reports=sorted([candidate["Report ID"], incumbent["Report ID"]]),
+         sameIncidentId=candidate["Same Incident ID"])
+    return a > b
 
 
 INCIDENT_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
@@ -1189,6 +1307,7 @@ def main():
              "or EXCLUDED_OPERATOR_TYPES)",
              row=i, entity=driver, value=dt)
         check_teleop_classified(r)
+        check_safety_driver_classified(r)
         sev = r["Highest Injury Severity Alleged"].strip()
         must(sev in EXPECTED_SEVERITIES,
              "unexpected Highest Injury Severity Alleged", row=i, value=sev,
@@ -1237,9 +1356,8 @@ def main():
             continue
         rid = r["Report ID"]
         iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
-        ver = int(r["Report Version"])
-        if iid not in by_incident or ver > by_incident[iid]["_ver"]:
-            by_incident[iid] = {"_ver": ver, "_row": r}
+        if iid not in by_incident or newer_filing(r, by_incident[iid]["_row"]):
+            by_incident[iid] = {"_row": r}
 
     # Load VMT data up front so we can fail fast on stale VMT before any
     # file writes (fault CSV sync below).
@@ -1297,23 +1415,6 @@ def main():
     last_month_coverage = release_month_coverage(
         NHTSA_DATA_THROUGH_DATE, last_month)
     coverage_by_month = {last_month: last_month_coverage}
-    # The data-through month must hold public-service filings at all (a
-    # release whose newest month is empty for our fleets would make the
-    # receipt-coverage scaling meaningless). Until 2026-09-04 a further guard
-    # rejected ANY Monthly filing in this month on the premise that none can
-    # exist before the 15th of the following month; that premise was false
-    # (Tesla files some Monthly reports within the incident month — the
-    # Feb-2026 release held four JAN-2026 ones) and the case it meant to
-    # catch, a Monthly report received after the cutoff, is already caught by
-    # the submission-month guard above (such a report carries a later
-    # Report Submission Date).
-    last_month_rows = [
-        r for r in release_rows
-        if r["Incident Date"].strip() and is_public_service_incident(r) and
-        nhtsa_month_to_iso(r["Incident Date"].strip()) == last_month
-    ]
-    must(last_month_rows, "data-through month has no public-service filings",
-         last_month=last_month)
 
     window_by_incident = {}
     excluded_count = 0
@@ -1355,12 +1456,16 @@ def main():
             "", nar.removeprefix(NARRATIVE_BOILERPLATE))
         # Tesla's filing template opens with a contentless "Summary:" label
         # (other helmers have none); drop it so blurbs read uniformly.
-        nar = nar.removeprefix("Summary:").lstrip()
+        # Mojibake first: "Summary:\u00c2\u00a0The ..." only loses its prefix
+        # once the "\u00c2\u00a0" is a plain space (13781-14630 kept a leading
+        # space until 2026-09-26); then the prefix, then typos, then a final
+        # strip so no narrative starts or ends with whitespace.
         for bad, good in NARRATIVE_MOJIBAKE.items():
             nar = nar.replace(bad, good)
+        nar = nar.removeprefix("Summary:").lstrip()
         for bad, good in NARRATIVE_TYPOS.items():
             nar = nar.replace(bad, good)
-        rec["narrative"] = nar
+        rec["narrative"] = nar.strip()
         # Compact contact area summaries from NHTSA boolean columns
         rec["svHit"] = _contact_areas(r, "SV Contact Area")
         rec["cpHit"] = _contact_areas(r, "CP Contact Area")
