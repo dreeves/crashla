@@ -761,8 +761,9 @@ const METRIC_DEFS = [
     // Impact hub's per-city human benchmark (1.27 LA to 2.83 Atlanta IPMM
     // across five areas, thru Jun 2026; supersedes Kusano 56.7M; airbags are
     // mechanically triggered and rarely underreported, so no Blincoe
-    // adjustment), blended 1.62. The Atlanta edge carries the hub's Atlanta
-    // mileage question (CSV4 lists ~85 Fulton/DeKalb S2 cells twice).
+    // adjustment), blended 1.62. Waymo's unlinked CSV3 v2 (Sep 28, 2026, after
+    // fixing duplicated Atlanta cells in CSV4) moves these edges to 1.23 / 2.77;
+    // re-pin when the hub links it or posts release notes.
     humanMPI: {
       // No published national airbag-deployment per-mile rate; HumansUS is
       // estimated by log-interpolation between the national injury and fatality
@@ -2669,15 +2670,15 @@ const MILES_FORECAST = [
   ] },
   // Waymo/Zoox re-derived 2026-09-04 from the rebuilt master (the 06-30
   // values predated the 2026-08-28 Waymo hub+E rebuild, which lowered
-  // Apr-Aug 2026 by ~2-3M/mo): Waymo end-Aug 314.4M [303.9M, 330.9M] (after
-  // the 2026-09-25 hub thru-Jun re-chain with the Atlanta D term) plus Sep-Dec
-  // at ~20.3M/mo growing ~3%/mo (Denver/San Diego/Tampa opened Sep 1, Ojai
-  // ramp) -> ~402M; lo = kyoom lo + 4 x 18M ~376M; hi = kyoom hi + 4 x 26M
-  // ~435M (authored 400M / 375M / 440M, rounded; kept on the 09-25 re-check).
+  // Apr-Aug 2026 by ~2-3M/mo): Waymo end-Aug 318.1M [307.4M, 330.8M] (after
+  // the 2026-09-25 hub thru-Jun re-chain, Atlanta D withdrawn 2026-09-29)
+  // plus Sep-Dec at Aug's 20.8M/mo growing ~3%/mo (Denver/San Diego/Tampa
+  // opened Sep 1, Ojai ramp) -> ~407M; lo = kyoom lo + 4 x 18M ~379M; hi =
+  // kyoom hi + 4 x 26M ~435M (authored 405M / 380M / 440M, rounded).
   // Zoox end-Aug 3.31M [2.28M, 4.42M] plus Sep-Dec at ~0.27-0.30M/mo (LAS
   // airport trips from Sep 3, fleet toward the 100-car NTA cap) -> ~4.5M.
   { helmer: "Waymo", components: [
-    { weight: 1, best: 400000000, lo: 375000000, hi: 440000000 },
+    { weight: 1, best: 405000000, lo: 380000000, hi: 440000000 },
   ] },
   { helmer: "Zoox", components: [
     { weight: 1, best: 4500000, lo: 3500000, hi: 6000000 },

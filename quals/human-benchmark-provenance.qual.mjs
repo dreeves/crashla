@@ -46,8 +46,8 @@ Resultata: lo=${band.lo} (off ${(100 * (band.lo - expLo) / expLo).toFixed(1)}%),
   // the hub's mileage-blended value — sanity that the band brackets the right
   // point. 20% (was 15% until 2026-09-25, human-approved): the thru-Jun-2026
   // airbag span is lopsided around its blend (geomean 17% off), because the
-  // high-rate edge is Atlanta, whose hub mileage is itself in question
-  // (CSV4 lists ~85 Fulton/DeKalb S2 cells twice).
+  // high-rate edge is Atlanta. Waymo's unlinked CSV3 v2 (Sep 28) narrows it to
+  // +14.9%; whether to return to 15% is open until the hub links v2.
   const geo = Math.sqrt(band.lo * band.hi);
   const geoIpmm = 1e6 / geo;
   assert.ok(

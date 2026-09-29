@@ -122,44 +122,31 @@ and crashes from unbenchmarked cities "were not included in the All Locations
 (mileage blended) analysis"). The repo's series is US-wide — its incident
 numerator already includes crashes in the unbenchmarked metros — so each
 cumulative anchor is the hub figure plus E, an explicit estimate of rider-only
-miles (incl. deadhead) in metros the hub had not yet benchmarked at that date,
-minus D, the Atlanta miles the hub appears to count twice (below).
+miles (incl. deadhead) in metros the hub had not yet benchmarked at that date.
 `quals/waymo-vmt-provenance.qual.mjs` pins the same table. When the hub adds
 a metro, set that metro's share of E to 0 at that anchor and re-chain
 `data/vmt.csv` (the monthly shape inside each interval is preserved).
 
-| Data through | Hub figure (hub CSV1) | Counted | E lo / best / hi | Atlanta D | Excluded metros |
-|---|---|---|---|---|---|
-| Mar 2025 | 71.432M | PHX, SF, LA, ATX | 0.188 / 0.188 / 0.188M | 0 (exact depot-basis listing; its one-third share, 18,650 mi, is booked in April 2025) | Atlanta 0.056M + Mountain View 0.132M (listed, excluded — exact) |
-| Jun 2025 | 95.965M | PHX, SF, LA, ATX | 0.4 / 0.7 / 1.3M | 0.213M | Atlanta (rider-only Jan 30, public Jun 24, 2025); Santa Clara / Mountain View |
-| Sep 2025 | 127.158M | PHX, SF, LA, ATX | 1.3 / 2.0 / 3.1M | 0.473M | Atlanta; Santa Clara |
-| Dec 2025 | 170.712M | Maricopa, SF, San Mateo, Santa Clara (newly counted), LA, Travis | 3.0 / 3.7 / 4.6M | 1.166M | Atlanta (~3.5M lifetime); Miami (rider-only Nov 18); Dallas, Houston, San Antonio, Orlando (Dec) |
-| Mar 2026 | 220.613M | + Fulton, DeKalb (Atlanta, 5.379M lifetime) | 1.2 / 2.0 / 3.3M | 1.791M | Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson |
-| Jun 2026 | 271.329M | same eight counties (Atlanta 8.624M lifetime) | 3.5 / 6.65 / 10.2M | 2.841M | Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson; plus employee rider-only Denver, Las Vegas, San Diego, Tampa from ~Jul |
+| Data through | Hub figure (hub CSV1) | Counted | E lo / best / hi | Excluded metros |
+|---|---|---|---|---|
+| Mar 2025 | 71.432M | PHX, SF, LA, ATX | 0.188 / 0.188 / 0.188M | Atlanta 0.056M + Mountain View 0.132M (listed, excluded — exact) |
+| Jun 2025 | 95.965M | PHX, SF, LA, ATX | 0.4 / 0.7 / 1.3M | Atlanta (rider-only Jan 30, public Jun 24, 2025); Santa Clara / Mountain View |
+| Sep 2025 | 127.158M | PHX, SF, LA, ATX | 1.3 / 2.0 / 3.1M | Atlanta; Santa Clara |
+| Dec 2025 | 170.712M | Maricopa, SF, San Mateo, Santa Clara (newly counted), LA, Travis | 3.0 / 3.7 / 4.6M | Atlanta (~3.5M lifetime); Miami (rider-only Nov 18); Dallas, Houston, San Antonio, Orlando (Dec) |
+| Mar 2026 | 220.613M | + Fulton, DeKalb (Atlanta, 5.379M lifetime) | 1.2 / 2.0 / 3.3M | Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson |
+| Jun 2026 | 271.329M | same eight counties (Atlanta 8.624M lifetime) | 4.0 / 6.65 / 10.2M | Miami-Dade, Dallas, Harris, Bexar, Orange, Davidson; plus employee rider-only Denver, Las Vegas, San Diego, Tampa from ~Jul |
 
-Atlanta D (2026-09-25). The hub's per-cell detail file ("CSV4 - Miles and
-Benchmark Crashes for Dynamic Benchmark") lists 67 Fulton and 18 DeKalb S2
-cells twice within every Outcome in the thru-Jun-2026 release (54 and 14 in
-thru-Mar-2026), each pair with identical Waymo RO Miles and HPMS VMT but a
-different Benchmark Crash Count; no other county repeats a cell. The county
-totals in CSV1 equal the every-row sums (Fulton 7.860M, DeKalb 0.764M thru
-Jun 2026); counting each cell once gives 5.143M and 0.640M. The best reading
-is a join artifact, so D = every-row sum minus distinct-cell sum for Fulton +
-DeKalb, within one Outcome: 1,791,464 (Mar 2026) and 2,840,745 (Jun 2026),
-one third of Atlanta's published total both times. Anchors from before
-Atlanta entered the hub carried Atlanta inside E, estimated from the
-published Mar-2026 figure, so the same one-third share applies there. It is
-applied to Atlanta's published-basis ramp: 0.056M at Mar 2025, the ~3.5M E
-share at Dec 2025, and 5.379M at Mar 2026. Between knots the ramp is shaped
-by the hub's own Atlanta crash list (CSV2), with pre-Third-Amended-SGO
-crashes at half weight. The Mar-2025 knot is the hub's exact depot-basis
-listing, so D is 0 at that anchor and the ramp's one-third share of it
-(18,650 mi) is booked in April 2025's increment. D's low edge is 0 (the published total is right):
-the rows subtract D's monthly increments from `vmt` and `vmt_min` and D from
-`helmer_cumulative_vmt` and `kyoom_min`, leaving `vmt_max`/`kyoom_max` on the
-published reading. Recompute D with every hub release. If Waymo fixes the
-file, D comes out 0. If Waymo confirms the published total, set D to 0
-here, in the qual, and in the rows.
+Atlanta D (applied 2026-09-25, withdrawn 2026-09-29). The hub's thru-Mar and
+thru-Jun 2026 per-cell detail files ("CSV4 - Miles and Benchmark Crashes for
+Dynamic Benchmark") listed ~85 Fulton/DeKalb S2 cells twice, and CSV1's
+county totals equalled the sums that count both copies, so the anchors
+briefly subtracted D, the apparently double-counted Atlanta miles (2.841M
+thru Jun 2026). Waymo answered that the duplicates came from a processing
+error in the Atlanta benchmark data and that county miles come from a
+separate process, and on Sep 28, 2026 posted "..._v2.csv" versions of CSV3 and
+CSV4: v2 lists each cell once and still sums to the published county totals,
+because per-cell miles are shares of those fixed totals. The published
+figures stand; no D.
 
 Hub-vs-CPUC California (2026-09-25). The hub's four California counties ran
 1.040x CPUC's statewide TotalVMTZEV (deployment + pilot) in Q1 2026 and
@@ -174,12 +161,11 @@ registry; local reporting) and rider disclosures (Dallas "nearly 150,000
 riders since February", Houston ">100,000", Orlando ">60,000"). Monthly
 excluded-metro estimates carried in the 2026 rows: Apr 1.4M, May 1.45M,
 Jun 1.8M, Jul 2.0M, Aug 2.3M, Sep 2.85M (lo/hi in the row bands). The Jun
-2026 anchor's E best (6.65M) is the carried monthly sum. Its lo (3.5M) pairs
-with the D-corrected reading, so it uses the same proxy on the hub's own
-crash list at the D-corrected young-market rate (Travis 114 crashes /
-17.839M + Atlanta 61 / 5.784M = 7.4 per M mi, on the 41 unbenchmarked-county
-crashes of Jan-Jun 2026, Poisson noise folded in); its hi (10.2M) pairs with
-the published reading and keeps the published-basis rate (6.6 per M mi). The Sep 24, 2026 update
+2026 anchor's E best (6.65M) is the carried monthly sum. Its lo and hi
+(4.0M / 10.2M) apply the same proxy to the hub's own crash list: the 41
+unbenchmarked-county crashes of Jan-Jun 2026 at the young-market rate
+(Travis 114 crashes / 17.839M + Atlanta 61 / 8.624M = 6.6 per M mi), with
+the 4.5-9.5 per M range and Poisson noise folded in. The Sep 24, 2026 update
 added no metro; the next (data through Sep 2026) is expected ~mid/late Dec
 2026.
 
