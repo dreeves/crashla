@@ -82,9 +82,12 @@ Expectata: at least one (the window always reaches the data-through month).
 Resultata: none.`);
 
 // Identify months with Monthly-track incompleteness: slurp.py's pooled
-// rate-ratio gives incCov = clamp(observed / expected) (0.33 for 2026-07)
-// with lo = best - 1.96 SE and hi = 1, so incCovMin < 1 marks the
-// data-through month.
+// rate-ratio gives incCov = clamp(observed / expected) (0.33 for 2026-08)
+// with lo = best x exp(-1.96 SE) and hi = 1, so incCovMin < 1 marks the
+// data-through month; since 2026-10-04 it also marks each month inside a
+// helmer's Monthly-report lag (data/slurp.py MONTHLY_ARRIVAL_LAG; incCov =
+// the helmer's 5-Day share there, receipt coverage 1). quals/
+// monthly-arrival-lag.qual.mjs pins which months those are.
 const incompleteRows = vmtData.filter(r => r.incCovMin < 1);
 const completeRows = vmtData.filter(r => r.incCovMin === 1);
 

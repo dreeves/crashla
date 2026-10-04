@@ -96,6 +96,65 @@ RECEIPT_MONTHS_EXCLUDED = {
     "2026-04": "its first release (May 15, 2026) was truncated: 3 April "
                "incidents of an eventual 57, 19 April submissions",
 }
+# Monthly-track report arrival, per helmer (modeled 2026-10-03, human
+# decision). SGO Request No. 2 (Monthly) reports for incident month M are due
+# by the 15th of M+1, so they normally reach the public file at the release
+# whose data-through month is M+1 (M's second release), and from then on the
+# app treats M as complete. A helmer whose Monthly reports land later leaves
+# months that look complete but are not: every in-scope Zoox Monthly-track
+# report of 2026 so far reached the file one release late, so the
+# Sep-15-2026 file held only Zoox's one July 5-Day report (30610-15722).
+# MONTHLY_ARRIVAL_LAG is each helmer's extra lag, in releases. The months
+# inside it (the ones just before the data-through month) get a Monthly-track
+# incident coverage of the helmer's in-scope 5-Day share instead of 1
+# (monthly_lag_coverage()); five-day-track metrics are unaffected, because
+# the 5-Day reports arrive on the normal schedule.
+#
+# MONTHLY_ARRIVAL_OBSERVATIONS: for each helmer and incident month M, its
+# in-scope Monthly-track incidents (deduplicated as main() does, in the newest
+# file; an incident's track is its surviving report's version-1 Report Type)
+# counted by the release at which that report first appeared, as (by the
+# release whose data-through month is M+1, one release later, ...). Measured
+# from data/snapshots history; a month enters at the release whose
+# data-through month is M+2, when an arrival one release late is visible
+# (monthly_lag_coverage() requires it then). The recipe and its independent
+# recompute are in quals/monthly-arrival-lag.qual.mjs; re-measure on each
+# release with FIVE_DAY_RECEIPT_OBSERVATIONS. Measurable from Dec 2025 (the
+# oldest snapshot release holds data through Dec 2025), where Zoox's two
+# Monthly reports (30610-13660, -13661) arrived on time: the late pattern
+# holds for every 2026 month, and the table starts there.
+MONTHLY_ARRIVAL_OBSERVATIONS = {
+    "Waymo": {"2026-01": (30, 0), "2026-02": (34, 1), "2026-04": (53, 1),
+              "2026-05": (42, 0), "2026-06": (46, 0)},
+    "Tesla": {"2026-01": (4, 0), "2026-02": (0, 0), "2026-04": (1, 0),
+              "2026-05": (2, 0), "2026-06": (2, 0)},
+    "Zoox": {"2026-01": (0, 0), "2026-02": (0, 3), "2026-04": (0, 3),
+             "2026-05": (0, 0), "2026-06": (0, 2)},
+}
+# Months whose arrivals cannot be measured, with the reason; every other month
+# from the first observation on must be observed (monthly_lag_coverage()).
+MONTHLY_ARRIVAL_MONTHS_EXCLUDED = {
+    "2026-03": "its second release (May 15, 2026) was truncated, so its "
+               "Monthly reports reached the file one release late for "
+               "Waymo too (all 44 in scope; Tesla 2 of 2 on time, Zoox 0 of 2)",
+}
+# Each helmer's lag is the extra lag of the majority of its newest observed
+# month with any Monthly-track incident (ties count as late), which
+# monthly_lag_coverage() checks.
+MONTHLY_ARRIVAL_LAG = {"Waymo": 0, "Tesla": 0, "Zoox": 1}
+# For each helmer with a lag: (in-scope 5-Day-track incidents, all in-scope
+# incidents) per incident month, deduplicated as main() does and counted in
+# the newest file (monthly_lag_coverage() checks them against it), from
+# 2026-01 through the newest month that is final for the helmer (data-through
+# month - 1 - lag). Its lagged months' Monthly-track incident coverage is
+# (pooled share, lowest monthly share, 1.0): Zoox Jan-Jun 2026 = 17/27 =
+# 0.6296, February's 1/4 = 0.25 the lowest. A month with share 0 would put the
+# band's low edge at 0, which the app cannot use: it stops the run for a
+# decision.
+FIVE_DAY_SHARE_OBSERVATIONS = {
+    "Zoox": {"2026-01": (2, 2), "2026-02": (1, 4), "2026-03": (6, 8),
+             "2026-04": (2, 5), "2026-05": (2, 2), "2026-06": (4, 6)},
+}
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
 # In-repo master for the VMT estimates (one row per helmer-month).
@@ -652,6 +711,12 @@ def modified_date_from_last_modified(last_modified):
     return parsedate_to_datetime(last_modified).date().isoformat()
 
 
+def month_shift(month, n):
+    """The ISO month <n> months after <month> (before it, for negative n)."""
+    y, m = divmod(int(month[:4]) * 12 + int(month[5:]) - 1 + n, 12)
+    return f"{y}-{m + 1:02d}"
+
+
 def release_month_coverage(data_through_date, last_month):
     """Return the (best, lo, hi) receipt coverage of the data-through month.
 
@@ -668,10 +733,8 @@ def release_month_coverage(data_through_date, last_month):
     # became final (the one before the data-through month: its second normal
     # release is this one) must be observed or explicitly excluded, so the
     # "re-measure on each release" step cannot be skipped silently.
-    first = min(FIVE_DAY_RECEIPT_OBSERVATIONS)
-    due = (datetime.date.fromisoformat(data_through_date).replace(day=1)
-           - datetime.timedelta(days=1)).strftime("%Y-%m")
-    month = first
+    due = month_shift(data_through_month, -1)
+    month = min(FIVE_DAY_RECEIPT_OBSERVATIONS)
     while month <= due:
         must(month in FIVE_DAY_RECEIPT_OBSERVATIONS
              or month in RECEIPT_MONTHS_EXCLUDED,
@@ -679,8 +742,7 @@ def release_month_coverage(data_through_date, last_month):
              "(measure it from the snapshots and add it to "
              "FIVE_DAY_RECEIPT_OBSERVATIONS, or exclude it with a reason)",
              month=month, data_through=data_through_date)
-        y, m = divmod(int(month[:4]) * 12 + int(month[5:]), 12)
-        month = f"{y}-{m + 1:02d}"
+        month = month_shift(month, 1)
     fracs = sorted(n / d for n, d in FIVE_DAY_RECEIPT_OBSERVATIONS.values())
     best, lo, hi = FIVE_DAY_RECEIPT_COVERAGE
     median = statistics.median(fracs)
@@ -841,12 +903,52 @@ def parse_vmt_values(raw_text):
     return result
 
 
+def filed_incident_rows(rows):
+    """The rows of <rows> that file an incident: placeholder rows (e.g. "No
+    New or Updated Incident Reports") have no Report ID, Report Version,
+    Same Incident ID or Incident Date."""
+    return [r for r in rows
+            if r["Report ID"].strip() and r["Report Version"].strip() and
+            r["Same Incident ID"].strip() and r["Incident Date"].strip()]
+
+
+def public_service_incidents(rows):
+    """{incident key: surviving row} for the in-scope incidents of <rows>, the
+    one deduplication every count uses. First by Report ID over EVERY filed
+    row, keeping the highest Report Version: grouping by Report ID handles a
+    "Same Incident ID" that changes between versions, and running before the
+    public-service filter lets a later version retire a report from scope
+    (30270-8403 v2, Waymo JUL-2024, reclassified the crash as "In-Vehicle and
+    Remote (Commercial / Test)" -- "a test driver was present" -- so v1's
+    "None" must not survive; it did until 2026-09-04). Then the surviving
+    versions are filtered to each entity's public-service operator types
+    (is_public_service_incident) and deduplicated by Same Incident ID, keyed
+    by Report ID for the distinct crashes in SPLIT_SAME_INCIDENT_REPORTS, the
+    newer filing winning (newer_filing)."""
+    by_rid = {}
+    for r in rows:
+        rid = r["Report ID"]
+        ver = int(r["Report Version"])
+        if rid not in by_rid or ver > by_rid[rid][0]:
+            by_rid[rid] = (ver, r)
+    by_incident = {}
+    for _ver, r in by_rid.values():
+        if not is_public_service_incident(r):
+            continue
+        rid = r["Report ID"]
+        iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
+        if iid not in by_incident or newer_filing(r, by_incident[iid]):
+            by_incident[iid] = r
+    return by_incident
+
+
 def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     """Compute conditional pooled incident coverage for the last month.
 
     The best estimate is a pooled rate-ratio: observed incidents in the
     cutoff month vs the count expected from each helmer's most recent usable
-    earlier reference month (VMT-scaled), clamped to (0, 1].  This is a
+    reference month that is complete for it (before the cutoff month and
+    outside its MONTHLY_ARRIVAL_LAG; VMT-scaled), clamped to (0, 1].  This is a
     stationary-rate heuristic; it does not prove the reference month complete.
     Assuming
     f = 1.0 instead would assert "these are all the incidents" and
@@ -867,40 +969,11 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     conditional incident-coverage fractions.
     """
     # Count incidents per helmer-month, deduplicated exactly like the main
-    # ingestion path: by Report ID first (to safely handle when "Same
-    # Incident ID" changes between versions), then by Same Incident ID (with
-    # the same split-report override).
-    # Version dedup runs over every filed row BEFORE the public-service
-    # filter, so a later version that moves a report out of scope retires it
-    # (main() does the same; see the 30270-8403 note there).
-    filed_rows = [
-        r for r in nhtsa_rows
-        if r["Report ID"].strip() and r["Report Version"].strip() and
-        r["Same Incident ID"].strip() and r["Incident Date"].strip()
-    ]
-    by_rid = {}  # rid -> {ver, row}
-    for r in filed_rows:
-        rid = r["Report ID"]
-        ver = int(r["Report Version"])
-        if rid not in by_rid or ver > by_rid[rid]["ver"]:
-            by_rid[rid] = {"ver": ver, "row": r}
-    by_incident = {}  # iid -> {ver, helmer, month}
-    for entry in by_rid.values():
-        r = entry["row"]
-        if not is_public_service_incident(r):
-            continue
-        rid = r["Report ID"]
-        iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
-        helmer = HELMER_SHORT.get(r["Reporting Entity"].strip(),
-                                   r["Reporting Entity"].strip())
-        month = nhtsa_month_to_iso(r["Incident Date"].strip())
-        if iid not in by_incident or newer_filing(r, by_incident[iid]["row"]):
-            by_incident[iid] = {"row": r, "helmer": helmer, "month": month}
-
-    counts = {}  # (helmer, month) -> count
-    for rec in by_incident.values():
-        key = (rec["helmer"], rec["month"])
-        counts[key] = counts.get(key, 0) + 1
+    # ingestion path (public_service_incidents()).
+    counts = Counter(
+        (HELMER_SHORT[r["Reporting Entity"].strip()],
+         nhtsa_month_to_iso(r["Incident Date"].strip()))
+        for r in public_service_incidents(filed_incident_rows(nhtsa_rows)).values())
 
     import math
     last_month_helmers = sorted({
@@ -927,11 +1000,16 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
         # is exactly the "not yet reported" evidence the pooled rate-ratio is
         # designed to capture (excluding them would one-directionally overstate
         # the month's conditional incident coverage).
-        # Reference: most recent earlier month with >= 3 incidents and VMT.
+        # Reference: the most recent month with >= 3 incidents and VMT that is
+        # complete for this helmer: before the cutoff month and outside its
+        # extra Monthly-report lag (MONTHLY_ARRIVAL_LAG; a lagged month still
+        # lacks its Monthly reports, so its count would understate the rate).
+        complete_through = month_shift(
+            last_month, -1 - MONTHLY_ARRIVAL_LAG[helmer])
         ref = None
         for (drv, mo), c in sorted(counts.items(), key=lambda x: x[0][1],
                                     reverse=True):
-            if drv == helmer and mo < last_month and c >= 3:
+            if drv == helmer and mo <= complete_through and c >= 3:
                 ref_vmt = vmt.get((drv, mo), 0)
                 if ref_vmt > 0:
                     ref = (mo, c, ref_vmt)
@@ -967,6 +1045,152 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     return result
 
 
+# An incident's track is the Report Type of its first filing: 1-Day or 5-Day
+# (the prompt reports of SGO Request No. 1) or Monthly (Request No. 2).
+REPORT_TRACK = {"1-Day": "five_day", "5-Day": "five_day", "Monthly": "monthly"}
+
+
+def monthly_track_counts(rows):
+    """Counter {(helmer, iso_month, track): incidents} over the in-scope
+    incidents of <rows> (public_service_incidents()), by the track of the
+    surviving report's version-1 filing (REPORT_TRACK)."""
+    filed = filed_incident_rows(rows)
+    first_type = {r["Report ID"]: r["Report Type"].strip()
+                  for r in filed if int(r["Report Version"]) == 1}
+    counts = Counter()
+    for r in public_service_incidents(filed).values():
+        first = first_type.get(r["Report ID"])
+        must(first in REPORT_TRACK,
+             "in-scope report has no version-1 filing of a known track",
+             reportId=r["Report ID"], firstReportType=first)
+        counts[(HELMER_SHORT[r["Reporting Entity"].strip()],
+                nhtsa_month_to_iso(r["Incident Date"].strip()),
+                REPORT_TRACK[first])] += 1
+    return counts
+
+
+def monthly_lag_coverage(counts, last_month):
+    """The Monthly-track incident coverage of the months inside each helmer's
+    extra Monthly-report lag (MONTHLY_ARRIVAL_LAG): {(helmer, iso_month):
+    (best, lo, 1.0)} for the lag's months just before the data-through month
+    <last_month>, best = the helmer's pooled in-scope 5-Day share and lo its
+    lowest monthly share (FIVE_DAY_SHARE_OBSERVATIONS); the high edge 1.0 says
+    the month may have no Monthly-track crash at all. <counts> is
+    monthly_track_counts() of this release.
+
+    Stops the run unless the tables cover the helmers they must, each lag is
+    what its observations say, every month that is now measurable is observed
+    (or excluded with a reason), the observations agree with this release, and
+    no lagged month already holds a Monthly-track report (which would mean
+    the helmer's Monthly reports are no longer late)."""
+    helmers = set(HELMER_SHORT.values())
+    must(set(MONTHLY_ARRIVAL_LAG) == helmers == set(MONTHLY_ARRIVAL_OBSERVATIONS),
+         "MONTHLY_ARRIVAL_LAG and MONTHLY_ARRIVAL_OBSERVATIONS must cover "
+         "every helmer", helmers=sorted(helmers),
+         lag=sorted(MONTHLY_ARRIVAL_LAG),
+         observations=sorted(MONTHLY_ARRIVAL_OBSERVATIONS))
+    must(all(isinstance(lag, int) and lag >= 0
+             for lag in MONTHLY_ARRIVAL_LAG.values()),
+         "MONTHLY_ARRIVAL_LAG values must be whole numbers of releases",
+         lag=MONTHLY_ARRIVAL_LAG)
+    observed = {tuple(sorted(table)) for table in
+                MONTHLY_ARRIVAL_OBSERVATIONS.values()}
+    must(len(observed) == 1,
+         "every helmer's MONTHLY_ARRIVAL_OBSERVATIONS must cover the same "
+         "months", months={h: sorted(t) for h, t in
+                           MONTHLY_ARRIVAL_OBSERVATIONS.items()})
+    months = set(next(iter(observed)))
+    must(not months & set(MONTHLY_ARRIVAL_MONTHS_EXCLUDED),
+         "a month is both observed and excluded",
+         months=sorted(months & set(MONTHLY_ARRIVAL_MONTHS_EXCLUDED)))
+    # Each lag is the extra lag of the majority of its helmer's newest
+    # observed month with any Monthly-track incident (ties count as late).
+    for helmer, table in MONTHLY_ARRIVAL_OBSERVATIONS.items():
+        newest = max((m for m, c in table.items() if sum(c) > 0), default=None)
+        must(newest is not None,
+             "a helmer's MONTHLY_ARRIVAL_OBSERVATIONS hold no Monthly-track "
+             "incident", helmer=helmer)
+        arrived = table[newest]
+        majority = next(j for j in range(len(arrived))
+                        if 2 * sum(arrived[:j + 1]) > sum(arrived))
+        must(majority == MONTHLY_ARRIVAL_LAG[helmer],
+             "a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations "
+             "(the extra lag of the majority of its newest observed month "
+             "with any Monthly-track incident; ties count as late)",
+             helmer=helmer, lag=MONTHLY_ARRIVAL_LAG[helmer], month=newest,
+             observed=arrived)
+    # The month whose third release is this one is now measurable: it must be
+    # observed or excluded, so the per-release re-measurement cannot be
+    # skipped. The data-through month itself cannot be observed.
+    due = month_shift(last_month, -2)
+    month = min(months)
+    while month <= due:
+        must(month in months or month in MONTHLY_ARRIVAL_MONTHS_EXCLUDED,
+             "no Monthly-report arrival observation for a month that is now "
+             "measurable (its third release is this one: measure it from the "
+             "snapshots and add it to MONTHLY_ARRIVAL_OBSERVATIONS, or exclude "
+             "it with a reason)", month=month, last_month=last_month)
+        month = month_shift(month, 1)
+    must(max(months) < last_month,
+         "an arrival observation for the data-through month or later",
+         month=max(months), last_month=last_month)
+    for helmer, table in MONTHLY_ARRIVAL_OBSERVATIONS.items():
+        for month, arrived in table.items():
+            release = counts[(helmer, month, "monthly")]
+            must(sum(arrived) == release,
+                 "MONTHLY_ARRIVAL_OBSERVATIONS disagree with this release "
+                 "(a row must total its month's in-scope Monthly-track "
+                 "incidents in the newest file: re-measure)",
+                 helmer=helmer, month=month, observed=arrived, release=release)
+    lagged = {h for h, lag in MONTHLY_ARRIVAL_LAG.items() if lag > 0}
+    must(set(FIVE_DAY_SHARE_OBSERVATIONS) == lagged,
+         "FIVE_DAY_SHARE_OBSERVATIONS must cover exactly the lagged helmers",
+         shares=sorted(FIVE_DAY_SHARE_OBSERVATIONS), lagged=sorted(lagged))
+    result = {}
+    for helmer, table in FIVE_DAY_SHARE_OBSERVATIONS.items():
+        lag = MONTHLY_ARRIVAL_LAG[helmer]
+        final = month_shift(last_month, -1 - lag)
+        span = [min(table)]
+        while span[-1] < final:
+            span.append(month_shift(span[-1], 1))
+        must(span[-1] == final and sorted(table) == span,
+             "a lagged helmer's FIVE_DAY_SHARE_OBSERVATIONS must hold every "
+             "month from its first through the newest month final for it "
+             "(data-through month - 1 - lag)", helmer=helmer,
+             months=sorted(table), want=span)
+        for month, (five_day, total) in table.items():
+            release = (counts[(helmer, month, "five_day")],
+                       counts[(helmer, month, "five_day")]
+                       + counts[(helmer, month, "monthly")])
+            must((five_day, total) == release,
+                 "FIVE_DAY_SHARE_OBSERVATIONS disagree with this release "
+                 "(a row is the month's in-scope 5-Day-track and all in-scope "
+                 "incidents in the newest file: re-measure)",
+                 helmer=helmer, month=month, observed=(five_day, total),
+                 release=release)
+        shares = [n / d for n, d in table.values() if d > 0]
+        must(shares and min(shares) > 0,
+             "a lagged helmer's lowest monthly 5-Day share is 0 (or it has no "
+             "incidents), so its lagged months' coverage band would reach 0: "
+             "decide how to bound it", helmer=helmer, observations=table)
+        best = round(sum(n for n, _ in table.values())
+                     / sum(d for _, d in table.values()), 4)
+        lo = round(min(shares), 4)
+        for i in range(lag):
+            month = month_shift(last_month, i - lag)
+            must(counts[(helmer, month, "monthly")] == 0,
+                 "a lagged month already holds an in-scope Monthly-track "
+                 "report in the newest file, so this helmer's Monthly reports "
+                 "are no longer late (re-measure: record the month's on-time "
+                 "count in MONTHLY_ARRIVAL_OBSERVATIONS and set its "
+                 "MONTHLY_ARRIVAL_LAG)", helmer=helmer, month=month,
+                 monthly=counts[(helmer, month, "monthly")])
+            result[(helmer, month)] = (best, lo, 1.0)
+            print(f"  {month} {helmer} Monthly-track coverage (Monthly-report "
+                  f"lag {lag}): best={best} lo={lo}")
+    return result
+
+
 def read_vmt_master():
     """Read raw VMT CSV text from the in-repo master (data/vmt.csv)."""
     return VMT_MASTER.read_text()
@@ -980,8 +1204,9 @@ def parse_vmt_months(raw_text):
 def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
     """Add coverage + incident_coverage columns to the raw VMT CSV text.
 
-    inc_cov: dict from incident_coverage(), mapping (helmer, iso_month) to
-    (best, lo, hi) tuples.  Missing keys default to (1, 1, 1).
+    inc_cov: dict from incident_coverage() and monthly_lag_coverage(),
+    mapping (helmer, iso_month) to (best, lo, hi) tuples.  Missing keys
+    default to (1, 1, 1).
     coverage_by_month: {iso_month: (best, lo, hi)} receipt coverage of the
     data-through month (release_month_coverage()). Missing months default to
     (1, 1, 1).
@@ -1431,33 +1656,12 @@ def main():
         valid_rows.append(r)
     rows = valid_rows
 
-    # Dedup by Report ID first, over EVERY filed row, keeping the highest
-    # Report Version. Grouping by Report ID safely handles a "Same Incident
-    # ID" that changes between versions, and running it before the
-    # public-service filter lets a later version retire a report from scope:
-    # 30270-8403 v2 (Waymo, JUL-2024) reclassified the crash as
-    # "In-Vehicle and Remote (Commercial / Test)" — "a test driver was
-    # present" — so v1's "None" must not survive (it did until 2026-09-04).
-    by_rid = {}
-    for r in rows:
-        rid = r["Report ID"]
-        ver = int(r["Report Version"])
-        if rid not in by_rid or ver > by_rid[rid]["_ver"]:
-            by_rid[rid] = {"_ver": ver, "_row": r}
-
-    # Then filter the surviving versions to each entity's public-service
-    # operator types (see PUBLIC_SERVICE_OPERATOR_TYPES) and deduplicate by
-    # Same Incident ID (except the known distinct-crash reports, which keep
-    # their own Report ID as the key)
-    by_incident = {}
-    for entry in by_rid.values():
-        r = entry["_row"]
-        if not is_public_service_incident(r):
-            continue
-        rid = r["Report ID"]
-        iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
-        if iid not in by_incident or newer_filing(r, by_incident[iid]["_row"]):
-            by_incident[iid] = {"_row": r}
+    # Deduplicate by Report ID over every filed row, filter the surviving
+    # versions to each entity's public-service operator types (see
+    # PUBLIC_SERVICE_OPERATOR_TYPES), then deduplicate by Same Incident ID:
+    # public_service_incidents(), the one deduplication every count uses.
+    by_incident = {iid: {"_row": r}
+                   for iid, r in public_service_incidents(rows).items()}
 
     # Load VMT data up front so we can fail fast on stale VMT before any
     # file writes (fault CSV sync below).
@@ -1515,6 +1719,9 @@ def main():
     last_month_coverage = release_month_coverage(
         NHTSA_DATA_THROUGH_DATE, last_month)
     coverage_by_month = {last_month: last_month_coverage}
+    # The months inside a helmer's extra Monthly-report lag, checked against
+    # this release (MONTHLY_ARRIVAL_LAG).
+    lag_coverage = monthly_lag_coverage(monthly_track_counts(rows), last_month)
 
     window_by_incident = {}
     excluded_count = 0
@@ -1616,6 +1823,10 @@ def main():
     vmt_values = parse_vmt_values(vmt_raw)
     inc_cov = incident_coverage(
         window_rows, last_month, last_month_coverage[0], vmt_values)
+    must(not set(inc_cov) & set(lag_coverage),
+         "a helmer-month has both the pooled and the Monthly-lag coverage",
+         both=sorted(set(inc_cov) & set(lag_coverage)))
+    inc_cov = {**inc_cov, **lag_coverage}
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"

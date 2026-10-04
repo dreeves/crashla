@@ -1325,9 +1325,12 @@ function parseVmtCsv(text) {
     // When Monthly reports are structurally absent for the last month, this
     // is slurp.py's pooled cross-helmer rate-ratio (observed incidents vs
     // the receipt-coverage-scaled VMT expectation from each helmer's
-    // reference month). Multiplied into effective VMT on top of receipt
-    // coverage so the Gamma posterior reflects the thinned observation — for
-    // Monthly-track metrics only; five-day-track metrics skip it.
+    // reference month); in the months inside a helmer's extra Monthly-report
+    // lag (slurp.py MONTHLY_ARRIVAL_LAG) it is that helmer's measured 5-Day
+    // share, its Monthly reports being still to come. Multiplied into
+    // effective VMT on top of receipt coverage so the Gamma posterior
+    // reflects the thinned observation — for Monthly-track metrics only;
+    // five-day-track metrics skip it.
     const incCov     = Number(hit[12]); // best estimate
     const incCovMin  = Number(hit[13]); // most pessimistic (smallest p)
     const incCovMax  = Number(hit[14]); // most optimistic (largest p)
@@ -1549,11 +1552,12 @@ const VMT_RANGE_EDGE = {lo: "Low end", hi: "High end"};
 function vmtEndTooltip(month, miles, edge) {
   return `${month}\n${fmtWhole(miles)} miles\n${edge}`;
 }
-// The line under the data-through month's incident count, which holds only
-// the reports received by the cutoff: an estimated coverage x incCov of the
-// month's eventual incidents, coverage x incCovMin at worst (incCov is
-// conditional on the receipt-coverage best, so the product is the month's
-// expected share; data/vmt.js). The VMT chart's miles are the full month's,
+// The line under a partially received month's incident count (the
+// data-through month, or a month inside a helmer's extra Monthly-report lag),
+// which holds only the reports received by the cutoff: an estimated
+// coverage x incCov of the month's eventual incidents, coverage x incCovMin
+// at worst (incCov is conditional on the receipt-coverage best, so the
+// product is the month's expected share; data/vmt.js). The VMT chart's miles are the full month's,
 // so August's 10 Waymo incidents beside 20.8M miles read as a tenth of the
 // usual crash rate until 2026-10-03 (audit #60). This is not the MPI chart's
 // "incident coverage", which is incCov alone: there the receipt coverage is
@@ -1584,9 +1588,12 @@ function helmerMonthRows(series, helmer) {
 // if its series begins inside the window). That difference and the summed
 // month bands both bound the total, so the band is their intersection,
 // taken over the fully received months (where every metric's triple equals
-// the authored month band); the data-through month's own thinned band
-// (receipt coverage, plus the Monthly-track factor for non-five-day
-// metrics) is then added, since its kyoom row is full-month. The kyoom
+// the authored month band); the partially received months' own thinned
+// bands are then added, since their kyoom rows are full-month: the
+// data-through month (receipt coverage, plus the Monthly-track factor for
+// non-five-day metrics) and, for Monthly-track metrics, the months inside the
+// helmer's extra Monthly-report lag just before it (slurp.py
+// MONTHLY_ARRIVAL_LAG: Zoox's 2026-07 on the Sep-15-2026 release). The kyoom
 // difference bounds a CONTIGUOUS span only, so it applies when the fully
 // received rows cover every master month in their span (always, today; a
 // needsFault gap would fall back to the plain sum). Until 2026-09-04 the
@@ -1595,15 +1602,18 @@ function helmerMonthRows(series, helmer) {
 function windowVmtBand(helmer, metricRows, minOf, bestOf, maxOf) {
   // Fully received, for this metric: its triple is the authored month band
   // (no receipt or Monthly-track factor below 1 applies to it), which is what
-  // the full-month kyoom difference bounds. Only the data-through month is
-  // thinned in real data, where both factors fall together; testing the
-  // triple rather than the receipt coverage alone keeps a month thinned by
-  // the Monthly-track factor only out of the kyoom intersection.
+  // the full-month kyoom difference bounds. Testing the triple rather than
+  // the receipt coverage alone keeps a month thinned by the Monthly-track
+  // factor only (a lagged month) out of the kyoom intersection.
   const isFull = r => minOf(r) === r.vmtMonthMin && maxOf(r) === r.vmtMonthMax;
   const full = metricRows.filter(isFull);
   const partial = metricRows.filter(r => !isFull(r));
-  assert(partial.length <= 1, "more than one partially received month in a window",
-    {helmer, months: partial.map(r => r.month)});
+  // Partially received months are the release frontier, so they come after
+  // every fully received one. Until 2026-10-04 this asserted at most one,
+  // the data-through month.
+  assert(partial.every(p => full.every(f => f.month < p.month)),
+    "a partially received month precedes a fully received one in a window",
+    {helmer, partial: partial.map(r => r.month), full: full.map(r => r.month)});
   let min = full.reduce((sum, r) => sum + minOf(r), 0);
   const best = metricRows.reduce((sum, r) => sum + bestOf(r), 0);
   let max = full.reduce((sum, r) => sum + maxOf(r), 0);
@@ -2030,8 +2040,12 @@ function monthSeriesData() {
         "partial receipt coverage outside the NHTSA data-through month",
         {month, coverage: vmt.coverage, NHTSA_DATA_THROUGH_DATE});
       // Incident coverage: for the data-through month the Monthly-track (SGO
-      // Request No. 2) reports are structurally absent. Scaling VMT by the
-      // coverage fraction f gives the posterior Gamma(k+0.5, VMT*f). Since f
+      // Request No. 2) reports are structurally absent, and in the months
+      // inside a helmer's extra Monthly-report lag (slurp.py
+      // MONTHLY_ARRIVAL_LAG) its Monthly reports have not arrived yet (there
+      // f is the helmer's 5-Day share and the receipt coverage is 1).
+      // Scaling VMT by the coverage fraction f gives the posterior
+      // Gamma(k+0.5, VMT*f). Since f
       // is itself uncertain, incCovMin (smallest f) widens the effective-VMT
       // band's low edge and incCovMax (= 1.0: all Monthly-track incidents may
       // already be in, i.e. as complete as the five-day track) its high edge.
@@ -2054,8 +2068,9 @@ function monthSeriesData() {
         vmtMin: vmt.vmtMin * vmt.coverage * vmt.incCovMin,
         vmtBest: vmt.vmtBest * vmt.coverage * vmt.incCov,
         vmtMax: vmt.vmtMax * vmt.coverageMax * vmt.incCovMax,
-        // Monthly-track incident coverage (pooled; 1 except in the data-through
-        // month) -- the MPI chart's incomplete-reporting fade reads these
+        // Monthly-track incident coverage (1 except in the data-through month,
+        // where it is pooled, and in a helmer's Monthly-lag months) -- the MPI
+        // chart's incomplete-reporting fade reads these
         incCov: vmt.incCov,
         incCovMin: vmt.incCovMin,
         // Raw VMT: receipt-coverage-scaled, no Monthly-track thinning — the
@@ -2471,10 +2486,11 @@ function renderAllHelmersMpiChart(series) {
 
   // One "?" per month at the top of its column, fading in as that month's
   // reporting completeness falls (opacity 0 when complete: grayed out, not
-  // suppressed). Incompleteness is a property of the MONTH -- the receipt and
-  // Monthly-track factors are pooled -- so until 2026-09-26, when a "?" sat
-  // beside every helmer's dot, helmers whose dots were close overprinted
-  // each other's glyph.
+  // suppressed): the largest incompleteness among the shown helmers' dots
+  // that month. The receipt and pooled Monthly-track factors are the same
+  // for every helmer (a helmer's Monthly-lag months add its own), so until
+  // 2026-09-26, when a "?" sat beside every helmer's dot, helmers whose dots
+  // were close overprinted each other's glyph.
   const qmarks = series.months.map((_month, i) => {
     const incomplete = Math.max(0, ...seriesRows.map(r => r.vals[i]).filter(v => v !== null).map(v => 1 - v.covRatio));
     return `<text class="month-tick" x="${mapX(i).toFixed(2)}" y="${(mTop + 12).toFixed(2)}" text-anchor="middle" style="opacity:${incomplete.toFixed(3)};pointer-events:none">?</text>`;
@@ -3608,8 +3624,8 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     const y = mapVmtY(best(row));
     dots.push(`<circle class="month-dot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
     const month = series.months[i];
-    // Only the data-through month's count is partial (both factors are 1
-    // elsewhere).
+    // Only the data-through month's count, and a helmer's Monthly-lag
+    // months', are partial (both factors are 1 elsewhere).
     const worst = row.coverage * row.incCovMin;
     const note = worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
     targets.push(

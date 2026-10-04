@@ -1,8 +1,8 @@
 // A prediction-market card says whether its odds are live (2026-10-03,
 // audit #21, #85).
 //  - #21: a market that has resolved, or stopped trading, is grayed and
-//    labelled (Latin until the human's English: "resolved: <outcome>",
-//    "closed"). Until 2026-10-03 neither fetcher read closed / resolved /
+//    labelled (in the human's English: "resolved: <outcome>", "closed",
+//    "canceled"). Until 2026-10-03 neither fetcher read closed / resolved /
 //    closeTime, so a market that resolved YES on 2026-07-10 kept showing its
 //    last price, 94%, as live odds under a fresh green dot. The state rides in
 //    the same fields in the snapshot and in both fetchers' output, so one
@@ -14,7 +14,8 @@
 //    panel's render.
 //  - #85: a card whose odds did not come from this page load's fetch (the
 //    snapshot's, because the fetch failed or has not finished) is grayed; the
-//    footer's dot and age carry a tooltip saying what they mean; the
+//    footer's dot and age carry a tooltip that names the snapshot date (the
+//    human's English, since 2026-10-04, explains the age but not the dot); the
 //    markets are fetched at once (one after another, the stale first paint
 //    lasted ~8.7 s in Firefox).
 // Driven in a vm with a DOM stub and a scripted fetch, plus one offline run of
@@ -256,7 +257,7 @@ if (!errors.some(e => e.includes(FAILING))) problems.push(`the failed fetch of $
   if (!errors.some(e => e.includes(POLY.slug))) problems.push(`a nameless Polymarket resolution of ${POLY.slug} was not reported on the console`);
 }
 
-// --- 4. The footer's dot and age explain themselves -------------------------
+// --- 4. The footer's dot and age carry a tooltip naming the snapshot date ---
 {
   const status = after.footer && after.footer.children.find(c => c.classes.has("pm-status"));
   const tip = status && status.getAttribute("data-tip");
@@ -282,15 +283,19 @@ if (!errors.some(e => e.includes(FAILING))) problems.push(`the failed fetch of $
   if (keys(ev) !== keys(POLY) || keys(ev.markets[0]) !== keys(POLY.markets[0])) problems.push(`fetchPolymarketEvent keys ${keys(ev)} / ${keys(ev.markets[0])}; the snapshot's ${keys(POLY)} / ${keys(POLY.markets[0])}`);
 }
 
-// --- 6. Rule 7: the new copy is Latin with a TODO recap directly above it ----
+// --- 6. Rule 6: the labels and the status tooltip are the human's English --
+// pinned to the character (committed 2026-10-04 in b068a10; until then they
+// were agent Latin, "decisa:", "clausa", "irrita" and a four-sentence tip,
+// and this block checked for the TODO recap above each). Section 3 checks the
+// cards' state labels against these labels; this section checks the footer's
+// tooltip as rendered after the refresh (section 4 ties its visually hidden
+// copy to it). The tip ends in a space, as the human wrote it.
 {
-  const src = fs.readFileSync("crashla.js", "utf8").split("\n");
-  for (const re of [/^const RESOLVED_LABEL = /, /^const CLOSED_LABEL = /, /^const CANCELLED_LABEL = /, /^function predmarketStatusTip\(/]) {
-    const line = src.findIndex(l => re.test(l));
-    let j = line - 1;
-    while (j >= 0 && /^\s*\/\//.test(src[j])) j--;
-    if (line < 0 || !/\/\/ TODO/.test(src.slice(j + 1, line).join("\n"))) problems.push(`crashla.js: ${re.source} has no TODO recap directly above it`);
-  }
+  const LABELS = { resolved: "resolved:", closed: "closed", cancelled: "canceled" };
+  if (JSON.stringify(L) !== JSON.stringify(LABELS)) problems.push(`crashla.js: the state labels are ${JSON.stringify(L)}; want the human's English ${JSON.stringify(LABELS)}`);
+  const TIP = `The age is the time since the market odds were fetched or, if fetching failed, since the last snapshot we have (${snap.d.slice(0, 10)}). `;
+  const shownTip = after.footer?.children.find(c => c.classes.has("pm-status"))?.getAttribute("data-tip");
+  if (shownTip !== TIP) problems.push(`the market status tooltip reads ${JSON.stringify(shownTip)}; want the human's English ${JSON.stringify(TIP)}`);
   const css = fs.readFileSync("style.css", "utf8");
   if (!/\.pm-card\.pm-faded\s*\{[^}]*opacity:\s*0?\.\d+/.test(css)) problems.push("style.css: no .pm-card.pm-faded rule with an opacity below 1");
 }
@@ -437,7 +442,7 @@ globalThis.fetch = async url => ({ ok: true, status: 200, json: async () =>
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: load data/predmarkets.js and crashla.js in a vm on 2026-10-05, paint the snapshot, then refresh with scripted API replies (Polymarket's event resolved Yes; Manifold's Portland market resolved YES at 0.9373, one market past its closeTime, one CANCELled, one MKT at 46%, one answer of the vision-only market resolved NO, one fetch failing with HTTP 500); read the cards and the footer; compare the fetchers' output with the snapshot; run data/refresh-predmarkets.mjs offline on fixtures.
-Expectata: (#21) the snapshot and both fetchers carry closeTime / resolution / resolutionProbability (Manifold) and closed / endDate / umaResolutionStatus (Polymarket) in one shape; a resolved card is grayed (pm-faded) and reads RESOLVED_LABEL and its outcome (Polymarket's outcome name, YES / NO, MKT's settled percentage, CANCEL as CANCELLED_LABEL), a closed one CLOSED_LABEL, the rest of a market's answers keep trading; a resolution the cards cannot name (an unknown Manifold code, a 50-50 Polymarket resolution, an MKT one without its settled probability) fails only that market's fetch, which stays grayed with the failure on the console; the refresh script writes the page fetchers' shape, warns about a passed closeTime and a resolved answer and about nothing else, and stops before writing on an unnameable resolution (an unknown code, an MKT one without its settled probability); (#85) every snapshot card is grayed until its fetch lands and stays grayed if the fetch fails, all ${total} fetches start at once, and the footer's dot and age sit in one Tab stop whose tooltip (also visually hidden text) explains them and names the snapshot date; the new Latin has TODO recaps; an empty state label takes no room (no card changes height without it, 320-400 px, three engines).
+Expectata: (#21) the snapshot and both fetchers carry closeTime / resolution / resolutionProbability (Manifold) and closed / endDate / umaResolutionStatus (Polymarket) in one shape; a resolved card is grayed (pm-faded) and reads RESOLVED_LABEL and its outcome (Polymarket's outcome name, YES / NO, MKT's settled percentage, CANCEL as CANCELLED_LABEL), a closed one CLOSED_LABEL, the rest of a market's answers keep trading; a resolution the cards cannot name (an unknown Manifold code, a 50-50 Polymarket resolution, an MKT one without its settled probability) fails only that market's fetch, which stays grayed with the failure on the console; the refresh script writes the page fetchers' shape, warns about a passed closeTime and a resolved answer and about nothing else, and stops before writing on an unnameable resolution (an unknown code, an MKT one without its settled probability); (#85) every snapshot card is grayed until its fetch lands and stays grayed if the fetch fails, all ${total} fetches start at once, and the footer's dot and age sit in one Tab stop whose tooltip (also visually hidden text) names the snapshot date; the labels read the human's English exactly ("resolved:", "closed", "canceled"), and so does the footer's tooltip ("The age is the time since the market odds were fetched or, if fetching failed, since the last snapshot we have (<snapshot date>). ", with its final space); an empty state label takes no room (no card changes height without it, 320-400 px, three engines).
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 14).join("\n")}`);
-console.log("qual pass: market cards gray when not live, mark resolved and closed markets, the footer explains its dot and age, and the refresh script carries and warns on market state");
+console.log("qual pass: market cards gray when not live, mark resolved and closed markets in the human's English, the footer's dot and age carry the human's tooltip, and the refresh script carries and warns on market state");

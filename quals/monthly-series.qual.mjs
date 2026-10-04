@@ -635,25 +635,31 @@ Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JS
 // (a) An ADS helmer with no VMT rows in the window (Tesla and Zoox on the
 // first month, 2021-07) is not a human cohort: its card must not fall into
 // the "Benchmarks:" template (it rendered a dangling label with an empty
-// list), and must say it has no miles in the window instead.
+// list), and must say it has no miles in the window instead. That line is the
+// human's English, pinned to the character (committed 2026-10-04 in b068a10;
+// until then it was the Latin placeholder "Nulla milia in hac fenestra").
 const firstMonthCards = vm.runInContext(`renderMpiSummaryCards(sliceSeries(monthSeriesData(), 0, 0))`, ctx);
 const cardOf = (html, helmer) => html.split('class="mpi-card-helmer">')
   .find(s => s.startsWith(helmer + "<")) || "";
+const NO_MILES_LINE = '<div class="mpi-card-vmt">No miles in this window</div>';
 for (const helmer of ["Tesla", "Zoox"]) {
   const card = cardOf(firstMonthCards, helmer);
-  assert.ok(card.length > 0 && !card.includes("Benchmarks:") && card.includes("Nulla milia"),
+  assert.ok(card.length > 0 && !card.includes("Benchmarks:") && card.includes(NO_MILES_LINE),
     `Replicata: render the summary cards on the 2021-07 window (no ${helmer} VMT) and read the ${helmer} card.
-Expectata: no "Benchmarks:" template (that is the human-cohort layout) and a no-miles line ("Nulla milia ...").
+Expectata: no "Benchmarks:" template (that is the human-cohort layout) and the no-miles line in the human's English, ${JSON.stringify(NO_MILES_LINE)}.
 Resultata: ${JSON.stringify(card.slice(0, 200))}.`);
 }
 assert.ok(cardOf(firstMonthCards, "Humans (AV cities)").includes("Benchmarks:"),
   "the human card keeps its Benchmarks: line on the 2021-07 window");
-// (b) The incomplete-reporting "?" marker is a property of the MONTH (the
-// receipt and incident-coverage factors are pooled), so the MPI-over-time
-// chart draws one per incomplete month, not one per helmer dot (per-helmer
-// glyphs overprinted each other wherever two dots sat close).
+// (b) The incomplete-reporting "?" marker is drawn per MONTH, not per helmer
+// dot (per-helmer glyphs overprinted each other wherever two dots sat close):
+// one per month, visible when a shown helmer's dot that month is incomplete.
+// The receipt and pooled incident-coverage factors are the same for every
+// helmer; the months inside a helmer's Monthly-report lag (since 2026-10-04,
+// data/slurp.py MONTHLY_ARRIVAL_LAG) are its own, so they count only while
+// that helmer is shown (Zoox, off by default).
 const incompleteMonths = vm.runInContext(`
-  new Set(parseVmtCsv(VMT_CSV_TEXT).filter(r => r.coverage < 1 || r.incCov < 1).map(r => r.month)).size`, ctx);
+  new Set(parseVmtCsv(VMT_CSV_TEXT).filter(r => monthHelmerEnabled[r.helmer] && (r.coverage < 1 || r.incCov < 1)).map(r => r.month)).size`, ctx);
 const qmarkOpacities = [...plain.chartMpiAll.matchAll(/<text class="month-tick"[^>]*style="opacity:([\d.]+);pointer-events:none">\?<\/text>/g)].map(m => Number(m[1]));
 const visibleQmarks = qmarkOpacities.filter(o => o > 0).length;
 const windowMonths = vm.runInContext(`(() => { const s = monthSeriesData(); return s.months.length - s.months.indexOf(DEFAULT_START_MONTH); })()`, ctx);

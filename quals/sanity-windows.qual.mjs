@@ -163,14 +163,17 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
 }
 assert.ok(dispersionChecked >= 12, `the sweep recomputed ${dispersionChecked} dispersion rows (expected at least 12)`);
 
-// #9: the grayed row is styled, and its reason is Latin with a TODO recap.
+// #9: the grayed row is styled, and its reason is the human's English, pinned
+// to the character for every count a grayed row can show, 0, 1 or 2 months
+// (committed 2026-10-04 in b068a10; until then it was agent Latin and this
+// block checked for the TODO recap above dispersionFewMonthsNote). The rows
+// checked above carry exactly this text.
 const css = fs.readFileSync("style.css", "utf8");
 if (!/tr\.insufficient\s*\{[^}]*opacity:\s*0?\.\d+/.test(css)) problems.dispersion.push("style.css: no tr.insufficient rule with an opacity below 1");
-const app = fs.readFileSync("crashla.js", "utf8").split("\n");
-const noteLine = app.findIndex(l => /^function dispersionFewMonthsNote\(/.test(l));
-let j = noteLine - 1;
-while (j >= 0 && /^\s*\/\//.test(app[j])) j--;
-if (noteLine < 0 || !/\/\/ TODO/.test(app.slice(j + 1, noteLine).join("\n"))) problems.dispersion.push("crashla.js: dispersionFewMonthsNote lacks a TODO recap directly above it");
+for (const n of [0, 1, 2]) {
+  const want = `Months in the window: ${n}. Dispersion test needs at least 3 months.`, got = fewNote(n);
+  if (got !== want) problems.dispersion.push(`dispersionFewMonthsNote(${n}) reads ${JSON.stringify(got)}; want the human's English ${JSON.stringify(want)}`);
+}
 
 // #40: each rationale's months are contiguous across all of data/vmt.csv
 // (the rows the page shows at later releases too), so a first-last prefix
@@ -189,7 +192,7 @@ for (const helmer of [...new Set(csv.map(r => r.helmer))]) {
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
   `Replicata: build the sanity section for ${Object.keys(WINDOWS).join(", ")} and compare its Poisson dispersion, VMT sources, Incident coverage, Reporting threshold and count cells with a recompute from INCIDENT_DATA and the VMT rows.
-Expectata: (dispersion) one row per ADS helmer: over its own VMT months in the window when it has 3 or more (rates, overall rate, index and verdict as recomputed), else a grayed row (class insufficient) whose one cell gives the reason with the month count; (vmtSources) each rationale prefixed "first – last: " (or "month: "), in month order, each rationale's months contiguous in data/vmt.csv; (coverageRows) rows only for helmers with VMT months in the window; (coverageNote) "data-through month (${dataThroughMonth})", not the cutoff date; (avStopped) Stopped + Parked; (separators) counts of 1,000 or more grouped "1,164", and the cross-check reads "(${inc.filter(i => i.helmer === "Waymo").length.toLocaleString("en-US")} incidents over".
+Expectata: (dispersion) one row per ADS helmer: over its own VMT months in the window when it has 3 or more (rates, overall rate, index and verdict as recomputed), else a grayed row (class insufficient) whose one cell gives the reason with the month count, in the human's English exactly ("Months in the window: <n>. Dispersion test needs at least 3 months."); (vmtSources) each rationale prefixed "first – last: " (or "month: "), in month order, each rationale's months contiguous in data/vmt.csv; (coverageRows) rows only for helmers with VMT months in the window; (coverageNote) "data-through month (${dataThroughMonth})", not the cutoff date; (avStopped) Stopped + Parked; (separators) counts of 1,000 or more grouped "1,164", and the cross-check reads "(${inc.filter(i => i.helmer === "Waymo").length.toLocaleString("en-US")} incidents over".
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: sanity tables over ${Object.keys(WINDOWS).length} windows (${dispersionChecked} dispersion rows recomputed) use each helmer's own months, label rationale spans, list coverage only for helmers with months, count Stopped + Parked, and group thousands`);

@@ -47,6 +47,25 @@ best = the median). April 2026 is excluded because its first release, May 15,
 was truncated. A month's denominator is final at its second normal release,
 so one observation is added per release, one release in arrears.
 
+Monthly-track (SGO Request No. 2) reports for a month are due by the 15th of
+the next, so they normally reach the file at the month's second release, and
+the app treats the month as complete from then on. Some companies' arrive
+later: every in-scope Zoox Monthly-track report of 2026 so far arrived one
+release after that, so in the Sep 15, 2026 file Zoox's July held only its one
+5-Day report. `MONTHLY_ARRIVAL_LAG` in `slurp.py` is each company's extra lag in
+releases (Waymo 0, Tesla 0, Zoox 1), next to the observations it is measured
+from (`MONTHLY_ARRIVAL_OBSERVATIONS`: per company and incident month, the
+in-scope Monthly-track incidents by the release at which they first
+appeared). The months inside a company's lag get Monthly-track incident
+coverage = its in-scope 5-Day share instead of 1
+(`FIVE_DAY_SHARE_OBSERVATIONS`; Zoox Jan-Jun 2026: 17 of 27 = 0.63, band
+from the lowest month, February's 0.25, to 1.0); five-day-track metrics are
+unaffected. The run stops if a lagged company's lagged month already holds a
+Monthly-track report, if a table disagrees with the newest file, or if a
+month that has become measurable has no observation.
+`quals/monthly-arrival-lag.qual.mjs` re-measures the tables from
+`data/snapshots` (its embedded script is the measurement recipe).
+
 It also reads two local input files:
 
 - `data/vmt.csv` — the in-repo VMT master (see "VMT master" below)
@@ -70,8 +89,9 @@ The slurp pipeline is:
 7. Sync the six mirrored columns of `data/faultfrac.csv` from the NHTSA
    rows and load the fault fractions
 8. Verify the reviewed data-through cutoff against the CSV contents (the
-   newest incident month and newest submission month must both equal it)
-   and restrict to the app's VMT analysis window
+   newest incident month and newest submission month must both equal it),
+   check the Monthly-report arrival tables against them (see above), and
+   restrict to the app's VMT analysis window
 9. Apply narrative-verified field overrides from `slurp.py` (severity, airbag,
    city and state — see `quals/field-overrides.qual.mjs` for the pins;
    vehicles-involved — see `quals/fatality-guard.qual.mjs`; Tesla passenger
@@ -86,11 +106,32 @@ The slurp pipeline is:
    such check)
 10. Apply the data-through month's receipt coverage (`coverage`,
     `coverage_min`, `coverage_max`) and the pooled Monthly-track incident
-    coverage (`incident_coverage`, `_min`, `_max`) — the generated CSV in
-    `data/vmt.js` carries these six columns after `vmt_max`; every other
-    month gets 1
+    coverage (`incident_coverage`, `_min`, `_max`), plus the Monthly-track
+    incident coverage of the months inside each company's Monthly-report lag
+    (`MONTHLY_ARRIVAL_LAG`) — the generated CSV in `data/vmt.js` carries these
+    six columns after `vmt_max`; every other month gets 1
 11. Inject the resulting incident data into `data/incidents.js`
 12. Inject the resulting VMT CSV text into `data/vmt.js`
+
+## Each NHTSA release
+
+`slurp.py` stops until these are done:
+
+1. `NHTSA_DATA_THROUGH_DATE`: the new release's cutoff.
+2. `FIVE_DAY_RECEIPT_OBSERVATIONS`: the month that just became final (the
+   one before the new data-through month).
+3. The Monthly-report arrival table, re-measured alongside the receipt
+   observations: each company's `MONTHLY_ARRIVAL_OBSERVATIONS` row for the
+   month whose third release this is (data-through month - 2); a check that
+   `MONTHLY_ARRIVAL_LAG` still matches each company's newest observed month;
+   and each lagged company's `FIVE_DAY_SHARE_OBSERVATIONS` row for the month
+   that just became final for it (data-through month - 1 - lag). If a lagged
+   company's Monthly reports start arriving on time, the run stops on its
+   lagged month: record that month's on-time count as its observation and
+   set the lag.
+
+Then re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
+comments say.
 
 ## VMT master
 

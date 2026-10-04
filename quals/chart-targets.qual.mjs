@@ -24,15 +24,19 @@
 //    through that month, on the basis of the cumulative miles beside it (#59:
 //    "318,066,136 miles / 10 incidents" paired all-time miles with August's
 //    10);
-//  - the data-through month's count says it is partial: reports received
-//    through the cutoff, and roughly what share of the month's incidents
-//    they hold (#60: "20,759,027 miles / 10 incidents" read as a month with a
-//    tenth of the usual crash rate).
+//  - a partially received month's count says it is partial: reports
+//    received through the cutoff, and roughly what share of the month's
+//    incidents they hold (#60: "20,759,027 miles / 10 incidents" read as a
+//    month with a tenth of the usual crash rate). That is the data-through
+//    month and, since 2026-10-04, each month inside a helmer's extra
+//    Monthly-report lag (data/slurp.py MONTHLY_ARRIVAL_LAG: Zoox's 2026-07 on
+//    the Sep-15-2026 release), read from slurp.py by quals/monthly-lag.mjs.
 // Empty charts draw their y axis with the single label "0" (#51: a 0..1
 // placeholder scale read "0, 0, 1, 1, 1").
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { monthlyLagKeys } from "./monthly-lag.mjs";
 
 class ElementStub {
   constructor() { this._html = ""; this._attributes = {}; this.style = {}; this.children = []; }
@@ -155,6 +159,7 @@ const vmt = run(`(() => {
 const fmtWhole = n => Math.round(n).toLocaleString("en-US");
 const plural = n => `${n.toLocaleString("en-US")} ${n === 1 ? "incident" : "incidents"}`;
 const throughMonth = vmt.throughDate.slice(0, 7);
+const lagged = monthlyLagKeys(throughMonth);
 if (vmt.edge === null || typeof vmt.edge.lo !== "string" || typeof vmt.edge.hi !== "string"
     || vmt.edge.lo.trim() === "" || vmt.edge.hi.trim() === "" || vmt.edge.lo === vmt.edge.hi)
   fail(`VMT_RANGE_EDGE must name the two range ends with two distinct labels; got ${JSON.stringify(vmt.edge)}`);
@@ -179,8 +184,8 @@ for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
       const partial = r.coverage * r.incCovMin < 0.999;
       const best100 = Math.round(100 * r.coverage * r.incCov), worst100 = Math.round(100 * r.coverage * r.incCovMin);
       const carries = dot[0].includes(vmt.throughDate) && dot[0].includes(`~${best100}%`) && dot[0].includes(`~${worst100}%`);
-      if (partial !== carries || partial !== (r.month === throughMonth))
-        fail(`${where}: ${partial ? `the data-through month's count must say it holds the reports received through ${vmt.throughDate}, ~${best100}% of the month's incidents (worst case ~${worst100}%)` : "a fully reported month must carry no partial-reporting note"}; tooltip ${JSON.stringify(dot[0])}`);
+      if (partial !== carries || partial !== (r.month === throughMonth || lagged.has(`${helmer}|${r.month}`)))
+        fail(`${where}: ${partial ? `a partially received month's count (the data-through month, or a month inside the helmer's Monthly-report lag) must say it holds the reports received through ${vmt.throughDate}, ~${best100}% of the month's incidents (worst case ~${worst100}%)` : "a fully reported month must carry no partial-reporting note"}; tooltip ${JSON.stringify(dot[0])}`);
       if (vmt.edge !== null) for (const [edge, v] of [[vmt.edge.lo, lo], [vmt.edge.hi, hi]]) {
         const end = mine.filter(t => t === `${r.month}\n${fmtWhole(v)} miles\n${edge}`);
         if (end.length !== 1) fail(`${where}: expected one range-end tooltip "${r.month} / ${fmtWhole(v)} miles / ${edge}"; found ${JSON.stringify(mine)}`);
@@ -210,7 +215,7 @@ for (const [what, labels] of [["the MPI chart with no helmer checked", empty.mpi
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render the MPI, distribution, VMT and growth charts in vm (${charts.length} charts, ${targetsSeen} tooltip targets) and read their hit circles and tooltips; render the MPI chart with no helmer and Tesla's VMT chart before its series.
-Expectata: every target an invisible hit circle drawn after the glyphs, its radius clamp(nearest/2, ${HIT_R_MIN}, ${HIT_R_MAX}) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the data-through month's count marked partial; empty charts labelled "0" only.
+Expectata: every target an invisible hit circle drawn after the glyphs, its radius clamp(nearest/2, ${HIT_R_MIN}, ${HIT_R_MAX}) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the partially received months' counts (the data-through month, and the months inside a helmer's Monthly-report lag) marked partial; empty charts labelled "0" only.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 10).join("\n")}`);
 console.log(`qual pass: ${targetsSeen} chart tooltip targets are capped invisible hit circles over the glyphs; VMT tooltips give ranges, edges, running counts and the partial-month note; empty axes read "0"`);

@@ -5,9 +5,11 @@ import fs from "node:fs";
 // headings over empty bodies, plus a "Loading…" under Prediction Markets that
 // never resolved, and nothing said the page needs JavaScript (audit #102).
 // Spec: one <noscript> notice in the body, ahead of the abstract, whose text
-// is Latin with a TODO recap directly above it (AGENTS.md rule 7); and a
-// <noscript><style> in the head that hides the static "Loading…", so the
-// markup's own text stays as written.
+// is the human's English, "JavaScript required for charts, tables", to the
+// character (AGENTS.md rule 6; until the human wrote it, committed 2026-10-04
+// in b068a10, the notice was Latin and this qual checked for its TODO recap);
+// and a <noscript><style> in the head that hides the static "Loading…", so
+// the markup's own text stays as written.
 
 const html = fs.readFileSync("index.html", "utf8");
 const headEnd = html.indexOf("</head>");
@@ -38,11 +40,12 @@ assert.equal(notices.length, 1,
   `Replicata: count <noscript> blocks in index.html's body.
 Expectata: exactly one, the notice that the page needs JavaScript.
 Resultata: ${notices.length}: ${JSON.stringify(notices)}.`);
-const notice = /^\s*<!--\s*TODO\b([\s\S]*?)-->\s*<p\b[^>]*>([^<]+)<\/p>\s*$/.exec(notices[0]);
-assert.ok(notice !== null && /JavaScript/.test(notice[1]) && notice[2].trim().length > 0,
+// HTML comments are not shown, so they are dropped before the block is read.
+const NOTICE = "JavaScript required for charts, tables";
+const notice = /^\s*<p\b[^>]*>([^<]*)<\/p>\s*$/.exec(notices[0].replace(/<!--[\s\S]*?-->/g, ""));
+assert.ok(notice !== null && notice[1] === NOTICE,
   `Replicata: read the body's <noscript> block.
-Expectata: a TODO comment recapping in English that the page needs JavaScript to show its charts
-and tables, directly above one paragraph carrying the (Latin) notice.
+Expectata: one paragraph whose text is the human's English, exactly ${JSON.stringify(NOTICE)}.
 Resultata: ${JSON.stringify(notices[0])}.`);
 assert.ok(body.indexOf("<noscript>") < body.indexOf('<div class="abstract">'),
   `Replicata: find the body's <noscript> notice and the abstract in index.html.

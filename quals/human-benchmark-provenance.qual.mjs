@@ -128,6 +128,27 @@ const HUB_AREAS = {
   "Atlanta Area":       [4.48736, 2.83121],
 };
 const HUB_BLENDED = [2.58069, 1.61538]; // All Locations (mileage blended), same two comparisons
+// Two sources' URLs as the bands' srcLinks give them. crashla.js's
+// BENCHMARK_SOURCES holds each URL's one label, the text of its link on the
+// page; the CRSS one must name CRSS.
+const CRSS2024_URL = "https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/";
+const BLINCOE2023_URL = "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403";
+{
+  const label = vm.runInContext(`BENCHMARK_SOURCES[${JSON.stringify(CRSS2024_URL)}]`, ctx);
+  assert.match(String(label), /CRSS/,
+    `Replicata: read the label BENCHMARK_SOURCES gives ${CRSS2024_URL}.
+Expectata: it names CRSS, so every band citing that URL names CRSS on the page.
+Resultata: ${JSON.stringify(label)}.`);
+}
+// The comment lines of one METRIC_DEFS entry in crashla.js, from its
+// `{ key: "<key>",` to the next entry's: the derivation written beside the
+// bands, without their src strings.
+function metricDefComments(key) {
+  const start = appScript.indexOf(`{ key: ${JSON.stringify(key)},`);
+  const end = appScript.indexOf("{ key: ", start + 1);
+  assert.ok(start >= 0 && end > start, `crashla.js: no METRIC_DEFS entry for ${key} followed by another`);
+  return appScript.slice(start, end).split("\n").filter(l => /^\s*\/\//.test(l)).join("\n");
+}
 {
   const bands = vm.runInContext(`Object.fromEntries(["hospitalization"].map(k => [k, METRIC_DEFS.find(m => m.key === k).humanMPI]))`, ctx);
   const near = (x, y) => Math.abs(x - y) / y <= 0.01;
@@ -151,16 +172,33 @@ Resultata: ${Math.round(geo)}.`);
     `Replicata: derive the HumansUS hospitalization band from the CRSS 2024 national rate (${CRSS2024.usHospPerM} per M mi) and Blincoe et al. 2023's ${(BLINCOE2023_INJURY_UNREPORTED * 100).toFixed(1)}% unreported injury-crash vehicles.
 Expectata: hi ≈ ${Math.round(usHi)}, lo ≈ ${Math.round(usLo)} (within 1%).
 Resultata: [${us.lo}, ${us.hi}].`);
+  // Provenance in the code, not in the src sentences (2026-10-04, human-
+  // approved): the src texts are the human's English, which this qual does
+  // not dictate. Until 2026-10-04 the AV src had to state 0.543 and 0.657,
+  // the US src 31.9, and both had to name CRSS. Now each band's srcLinks cite
+  // CRSS 2024 (on the page, its source link reads "NHTSA CRSS 2024"), the US
+  // band's also Blincoe et al. 2023, and the comments of crashla.js's
+  // hospitalization entry state the inputs this block derives the edges
+  // from. The src keeps one check: it must not claim that no human
+  // hospital-transport rate exists (audit #1).
   for (const [cohort, h] of [["HumansAV", av], ["HumansUS", us]]) {
-    assert.ok(!/no direct|No national hospital-transport/.test(h.src) && /CRSS/.test(h.src),
-      `Replicata: read the ${cohort} hospitalization provenance (src).
-Expectata: it names CRSS, and no longer claims that no human hospital-transport rate exists.
-Resultata: ${h.src}`);
+    assert.ok(!/no direct|No national hospital-transport/.test(h.src) && h.srcLinks.includes(CRSS2024_URL),
+      `Replicata: read the ${cohort} hospitalization band's src and srcLinks.
+Expectata: srcLinks cite CRSS 2024 (${CRSS2024_URL}), and the src no longer claims that no human hospital-transport rate exists.
+Resultata: srcLinks ${JSON.stringify(h.srcLinks)}; src ${h.src}`);
   }
-  assert.ok(/0\.543/.test(av.src) && /0\.657/.test(av.src) && /31\.9/.test(us.src),
-    `Replicata: read the hospitalization provenance figures.
-Expectata: AV cities states both CRSS ratios (0.543, 0.657); US average states the 31.9% Blincoe share.
-Resultata: AV ${av.src} | US ${us.src}`);
+  assert.ok(us.srcLinks.includes(BLINCOE2023_URL),
+    `Replicata: read the HumansUS hospitalization band's srcLinks.
+Expectata: they cite Blincoe et al. 2023 (${BLINCOE2023_URL}), the source of the 31.9% share.
+Resultata: ${JSON.stringify(us.srcLinks)}.`);
+  const stated = [CRSS2024.hospPerInjury, CRSS2024.hospPerAirbag, CRSS2024.usHospPerM].map(x => x.toFixed(5))
+    .concat([`${(BLINCOE2023_INJURY_UNREPORTED * 100).toFixed(1)}%`, "CRSS 2024"]);
+  const comments = metricDefComments("hospitalization");
+  const unstated = stated.filter(s => !comments.includes(s));
+  assert.deepEqual(unstated, [],
+    `Replicata: read the comments of the hospitalization entry of METRIC_DEFS in crashla.js (its derivation).
+Expectata: they state the inputs this qual derives the bands from: ${stated.join(", ")}.
+Resultata: not stated: ${JSON.stringify(unstated)}.`);
 }
 
 // --- Nonstationary bands: remove the CRSS share stopped in the roadway (2026-10-03, audit #2) ---
@@ -192,11 +230,15 @@ Resultata: [${ns.lo}, ${ns.hi}].`);
       `Replicata: compare the ${cohort} non-parking-lot band with its nonstationary band.
 Expectata: identical, since both human benchmarks already exclude parking-lot crashes.
 Resultata: non-parking-lot [${rw.lo}, ${rw.hi}], nonstationary [${ns.lo}, ${ns.hi}].`);
+    // CRSS is named by the srcLinks, not required of the src sentence (the
+    // human's English; 2026-10-04, as for Hospitalization+ above). The src
+    // keeps one check: neither the parked-share step nor the claim that
+    // Kusano's base is "CRSS trafficway-only" may return (audit #2).
     for (const [key, h] of [["nonstationary", ns], ["roadwayNonstationary", rw]]) {
-      assert.ok(!/hit-while-parked|trafficway-only/.test(h.src) && /CRSS/.test(h.src),
-        `Replicata: read the ${cohort} ${key} provenance (src).
-Expectata: it names CRSS, with neither the parked-share step nor the claim that Kusano's base is "CRSS trafficway-only".
-Resultata: ${h.src}`);
+      assert.ok(!/hit-while-parked|trafficway-only/.test(h.src) && h.srcLinks.includes(CRSS2024_URL),
+        `Replicata: read the ${cohort} ${key} band's src and srcLinks.
+Expectata: srcLinks cite CRSS 2024 (${CRSS2024_URL}), and the src has neither the parked-share step nor the claim that Kusano's base is "CRSS trafficway-only".
+Resultata: srcLinks ${JSON.stringify(h.srcLinks)}; src ${h.src}`);
     }
   }
 }

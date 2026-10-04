@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { monthlyLagKeys } from "./monthly-lag.mjs";
 
 // The window VMT band (2026-09-04). Summing each month's 95% band edges
 // treats the monthly errors as perfectly correlated, which overstates the
@@ -10,11 +11,13 @@ import { appScript, dataScript } from "./load-app.mjs";
 // cume(end) - cume(start-1), so its band is bounded by
 // [kyoom_min(end) - kyoom_max(before), kyoom_max(end) - kyoom_min(before)];
 // the app takes the intersection of that difference and the summed month
-// bands over the fully received months, then adds the data-through month's
-// own thinned band (receipt coverage; plus the Monthly-track factor for
-// non-five-day metrics). This qual recomputes that from the CSV for the
-// default window and pins that the anchors actually bite for Waymo, Tesla and
-// Zoox.
+// bands over the fully received months, then adds the partially received
+// months' own thinned bands: the data-through month's (receipt coverage; plus
+// the Monthly-track factor for non-five-day metrics) and, for the Monthly
+// track, those of the months inside a helmer's extra Monthly-report lag
+// (data/slurp.py MONTHLY_ARRIVAL_LAG, since 2026-10-04). This qual recomputes
+// that from the CSV for the default window and pins that the anchors
+// actually bite for Waymo, Tesla and Zoox.
 
 const ctx = vm.createContext({
   console, Math, Number,
@@ -22,10 +25,13 @@ const ctx = vm.createContext({
 });
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
-// The one partially received month is NHTSA's data-through month, derived
-// from the reviewed cutoff constant (as incident-coverage.qual does) so this
-// qual needs no re-pin when a release advances the cutoff.
+// The partially received months are NHTSA's data-through month (both tracks)
+// and the months inside a helmer's Monthly-report lag (the Monthly track),
+// derived from the reviewed cutoff constant (as incident-coverage.qual does)
+// and slurp.py's lag table, so this qual needs no re-pin when a release
+// advances the cutoff.
 const dataThroughMonth = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx).slice(0, 7);
+const lagged = monthlyLagKeys(dataThroughMonth);
 
 const out = vm.runInContext(`
 (() => {
@@ -39,23 +45,33 @@ const out = vm.runInContext(`
   for (const helmer of ADS_HELMERS) {
     const row = rows.find(r => r.helmer === helmer);
     const pts = series.points.map(p => p.helmers[helmer]).filter(p => p !== null);
-    const fullPts = pts.filter(p => p.coverage === 1), partial = pts.filter(p => p.coverage < 1);
     const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
-    const before = master.filter(r => r.month < fullPts[0].month).at(-1) || {kyoomMin: 0, kyoomMax: 0};
-    const last = master.find(r => r.month === fullPts.at(-1).month);
+    const csv = Object.fromEntries(master.map(r => [r.month, r]));
+    // From the coverage columns: a month is partially received for the five-day
+    // track when its receipt coverage is below 1, for the Monthly track when
+    // its receipt or its Monthly-track incident coverage is.
+    const short = (r, keys) => keys.some(k => r[k] < 1);
+    const receipt = ["coverage", "coverageMin", "coverageMax"], incident = ["incCov", "incCovMin", "incCovMax"];
     const sum = (arr, f) => arr.reduce((s, p) => s + f(p), 0);
-    const band = (minOf, maxOf) => ({
-      min: Math.max(sum(fullPts, minOf), last.kyoomMin - before.kyoomMax) + sum(partial, minOf),
-      max: Math.min(sum(fullPts, maxOf), last.kyoomMax - before.kyoomMin) + sum(partial, maxOf),
-      sumMin: sum(pts, minOf), sumMax: sum(pts, maxOf),
-    });
+    const band = (minOf, maxOf, isPartial) => {
+      const fullPts = pts.filter(p => !isPartial(csv[p.month])), partial = pts.filter(p => isPartial(csv[p.month]));
+      const before = master.filter(r => r.month < fullPts[0].month).at(-1) || {kyoomMin: 0, kyoomMax: 0};
+      const last = master.find(r => r.month === fullPts.at(-1).month);
+      return {
+        min: Math.max(sum(fullPts, minOf), last.kyoomMin - before.kyoomMax) + sum(partial, minOf),
+        max: Math.min(sum(fullPts, maxOf), last.kyoomMax - before.kyoomMin) + sum(partial, maxOf),
+        sumMin: sum(pts, minOf), sumMax: sum(pts, maxOf),
+        partialMonths: partial.map(p => p.month),
+      };
+    };
+    const expMonthly = band(p => p.vmtMin, p => p.vmtMax, r => short(r, [...receipt, ...incident]));
+    const expFiveDay = band(p => p.vmtRawMin, p => p.vmtRawMax, r => short(r, receipt));
     res[helmer] = {
       row: {min: row.vmtMin, best: row.vmtBest, max: row.vmtMax},
       all: {min: row.mpiEstimates.all.vmtMin, max: row.mpiEstimates.all.vmtMax},
       fatality: {min: row.mpiEstimates.fatality.vmtMin, max: row.mpiEstimates.fatality.vmtMax},
-      expMonthly: band(p => p.vmtMin, p => p.vmtMax),
-      expFiveDay: band(p => p.vmtRawMin, p => p.vmtRawMax),
-      partialMonths: partial.map(p => p.month),
+      expMonthly, expFiveDay,
+      partialMonths: {monthly: expMonthly.partialMonths, fiveDay: expFiveDay.partialMonths},
     };
   }
   return res;
@@ -66,7 +82,7 @@ for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
   const r = out[helmer];
   assert.ok(near(r.row.min, r.expMonthly.min) && near(r.row.max, r.expMonthly.max) &&
     near(r.all.min, r.expMonthly.min) && near(r.all.max, r.expMonthly.max),
-    `Replicata: recompute ${helmer}'s default-window Monthly-track VMT band from data/vmt.js (summed month bands ∩ kyoom difference, plus the data-through month's thinned band).
+    `Replicata: recompute ${helmer}'s default-window Monthly-track VMT band from data/vmt.js (summed month bands ∩ kyoom difference, plus the partially received months' thinned bands).
 Expectata: [${r.expMonthly.min}, ${r.expMonthly.max}] for both the summary row and the all-incidents estimate.
 Resultata: row [${r.row.min}, ${r.row.max}], all-incidents [${r.all.min}, ${r.all.max}].`);
   assert.ok(near(r.fatality.min, r.expFiveDay.min) && near(r.fatality.max, r.expFiveDay.max),
@@ -75,8 +91,11 @@ Expectata: [${r.expFiveDay.min}, ${r.expFiveDay.max}].
 Resultata: [${r.fatality.min}, ${r.fatality.max}].`);
   assert.ok(r.row.min <= r.row.best && r.row.best <= r.row.max,
     `Replicata: check ${helmer}'s window band brackets its best. Resultata: [${r.row.min}, ${r.row.best}, ${r.row.max}].`);
-  assert.equal(JSON.stringify([...r.partialMonths]), JSON.stringify([dataThroughMonth]),
-    `Replicata: list ${helmer}'s partially received months in the default window. Expectata: only the NHTSA data-through month ${dataThroughMonth}. Resultata: ${JSON.stringify(r.partialMonths)}.`);
+  const lagMonths = [...lagged].filter(k => k.startsWith(helmer + "|")).map(k => k.slice(helmer.length + 1)).sort();
+  assert.equal(JSON.stringify(r.partialMonths), JSON.stringify({monthly: [...lagMonths, dataThroughMonth], fiveDay: [dataThroughMonth]}),
+    `Replicata: list ${helmer}'s partially received months in the default window, per track.
+Expectata: the Monthly track's are the months inside ${helmer}'s Monthly-report lag (${JSON.stringify(lagMonths)}) and the NHTSA data-through month ${dataThroughMonth}; the five-day track's the data-through month alone.
+Resultata: ${JSON.stringify(r.partialMonths)}.`);
 }
 // The anchors bite: Waymo's hub-pinned cumulative, Tesla's deck-pinned
 // cumulative and (since 2026-10-03) Zoox's Dec-2025 knot on its official 1.3M
@@ -91,7 +110,7 @@ Resultata: [${r.row.min}, ${r.row.max}].`);
 // Waymo: the summed bands ran 0.76x-1.28x of best; the anchors imply ~0.93x-1.12x.
 assert.ok(out.Waymo.row.max / out.Waymo.row.min < 1.3,
   `Replicata: Waymo default-window band ratio hi/lo. Expectata: < 1.3 (was 1.68 with summed month bands). Resultata: ${(out.Waymo.row.max / out.Waymo.row.min).toFixed(3)}.`);
-console.log(`qual pass: window VMT band = summed month bands ∩ kyoom difference (+ the data-through month's thinned band); Waymo default window ${(out.Waymo.row.min / 1e6).toFixed(1)}-${(out.Waymo.row.max / 1e6).toFixed(1)}M`);
+console.log(`qual pass: window VMT band = summed month bands ∩ kyoom difference (+ the partially received months' thinned bands); Waymo default window ${(out.Waymo.row.min / 1e6).toFixed(1)}-${(out.Waymo.row.max / 1e6).toFixed(1)}M`);
 
 // --- One month, one posterior (2026-10-03, audit #15) -----------------------
 // A one-month window's cards and distribution chart take that month's band

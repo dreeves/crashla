@@ -183,6 +183,10 @@ Resultata: ${plain.byHelmer.Waymo[key].verdictKey} at ${plain.byHelmer.Waymo[key
 //   - 2026-10-03: still worse, ceiling 0.978x -> 0.90x, from the CA DMV
 //     rebuild of Zoox's early rows and the Dec-2025 knot (see the default-
 //     window pin below).
+//   - 2026-10-04: still worse, ceiling 0.902x -> 0.891x: the Monthly-report
+//     lag model (data/slurp.py MONTHLY_ARRIVAL_LAG) thins Zoox's 2026-07
+//     Monthly-track miles to its 5-Day share, 0.63 [0.25, 1.0], because its
+//     July Monthly reports are not in the Sep-15-2026 file yet.
 // Expect this assertion to keep alternating; re-pin it each release rather
 // than treating either direction as the stable truth.
 assert.ok(
@@ -201,6 +205,8 @@ Resultata: ${plain.byHelmer.Zoox.all.verdictKey} at ${plain.byHelmer.Zoox.all.ra
 //     miles now come off the official 1.3M, ceiling 1.0486x -> 1.0023x) and the
 //     Dec-2025 knot that pins the cumulative band to that disclosure's own
 //     uncertainty (audit finding #18; 1.0023x -> 0.980x).
+//   - 2026-10-04: still worse, ceiling 0.980x -> 0.968x, from the
+//     Monthly-report lag model (Zoox's 2026-07 at its 5-Day share).
 // Re-pin it like the full-history one when a release or a VMT re-pin moves it.
 const zooxDefault = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
