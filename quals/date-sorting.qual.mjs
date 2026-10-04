@@ -91,7 +91,7 @@ const ctx = vm.createContext({
   window: {
     innerWidth: 1024,
     innerHeight: 768,
-    location: {search: "", pathname: "/crashla"},
+    location: {search: "", pathname: "/crashla", hash: ""},
     history: {replaceState() {}},
   },
 });
@@ -109,7 +109,8 @@ const sorted = vm.runInContext(`
   sortAsc = true;
   renderTable();
   const firstRow = document.getElementById("incidents-body").children[0];
-  const hit = firstRow.innerHTML.match(/<td>[^<]*<\\/td>\\s*<td>([^<]+)<\\/td>/);
+  // The Date cell is .date-cell since 2026-10-03 (kept on one line; audit #64).
+  const hit = firstRow.innerHTML.match(/<td>[^<]*<\\/td>\\s*<td class="date-cell">([^<]+)<\\/td>/);
   const firstRenderedDate = hit && hit[1];
   const expectedDate = activeIncidents().reduce((best, row) =>
     monthKeyFromIncidentLabel(row.date) < monthKeyFromIncidentLabel(best) ? row.date : best,

@@ -3,42 +3,66 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { appScript } from "./load-app.mjs";
 
-const locationStub = {
-  pathname: "/crashla",
-  search: "",
-};
-let replaceUrl = "";
+// The VMT master alone: the encoder and parser name the window by its months
+// (d=YYYY-MM.YYYY-MM), so they need the month series, which is parseVmtCsv's.
+const vmtScript = fs.readFileSync("data/vmt.js", "utf8");
 
-// The unknown-key banner: a stub with the two properties the code touches
-// (hidden + its text span) and a dismiss button that records its handler.
-const bannerText = { textContent: "" };
-const banner = { hidden: true, querySelector(sel) { return sel === ".banner-text" ? bannerText : null; } };
-let dismiss = null;
-const dismissButton = { addEventListener(type, fn) { if (type === "click") dismiss = fn; } };
-const DOM = { "url-banner": banner, "url-banner-dismiss": dismissButton };
-const ctx = vm.createContext({
-  console,
-  Math,
-  Set,
-  URLSearchParams,
-  document: {
-    getElementById(id) { return DOM[id] ?? null; },
-    createElement() { return { textContent: "", innerHTML: "" }; },
-  },
-  window: {
-    location: locationStub,
-    history: {
-      replaceState(_state, _title, url) {
-        replaceUrl = String(url);
-        locationStub.search = replaceUrl.includes("?")
-          ? replaceUrl.slice(replaceUrl.indexOf("?"))
-          : "";
+// A fresh page: the app's top level (no init) over stubs for the address bar
+// and the URL banner. Every global holds its default, as at page load.
+function makeHarness() {
+  const location = { pathname: "/crashla", search: "", hash: "" };
+  const replaced = [];
+  // The banner: a stub with the two properties the code touches (hidden +
+  // its text spans) and a dismiss button that records its handler.
+  const bannerText = { textContent: "", hidden: false };
+  const bannerRejected = { textContent: "", hidden: false };
+  const banner = {
+    hidden: true,
+    querySelector(sel) {
+      return { ".banner-text": bannerText, ".banner-rejected": bannerRejected }[sel] ?? null;
+    },
+  };
+  const dismissButton = { addEventListener(type, fn) { if (type === "click") harness.dismiss = fn; } };
+  const DOM = { "url-banner": banner, "url-banner-dismiss": dismissButton };
+  const ctx = vm.createContext({
+    console,
+    Math,
+    Set,
+    URLSearchParams,
+    document: {
+      getElementById(id) { return DOM[id] ?? null; },
+      createElement() { return { textContent: "", innerHTML: "" }; },
+    },
+    window: {
+      location,
+      history: {
+        replaceState(_state, _title, url) {
+          const s = String(url);
+          replaced.push(s);
+          const q = s.indexOf("?");
+          const h = s.indexOf("#");
+          location.search = q < 0 ? "" : s.slice(q, h < 0 ? s.length : h);
+          location.hash = h < 0 ? "" : s.slice(h);
+        },
       },
     },
-  },
-});
+  });
+  vm.runInContext(vmtScript, ctx, { filename: "data/vmt.js" });
+  vm.runInContext(appScript, ctx, { filename: "crashla.js" });
+  vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
+  const run = code => JSON.parse(JSON.stringify(vm.runInContext(code, ctx)));
+  // Every piece of state a link can set (Infinity survives JSON as a string).
+  const stateCode = `({activeFilter, sortCol, sortAsc, monthHelmerEnabled, selectedMetricKey,
+    monthRangeStart, monthRangeEnd: String(monthRangeEnd), vmtCumulative,
+    selectedGrowthMetric, sectionCollapsed})`;
+  const harness = { ctx, run, location, replaced, banner, bannerText, bannerRejected,
+    dismiss: null, state: () => run(stateCode) };
+  return harness;
+}
 
-vm.runInContext(appScript, ctx, { filename: "crashla.js" });
+const page = makeHarness();
+const { ctx, location: locationStub, banner, bannerText } = page;
+const lastReplace = () => page.replaced[page.replaced.length - 1] ?? "";
 
 const state = vm.runInContext(`
 (() => {
@@ -128,14 +152,18 @@ Expectata: selectedMetricKey restored to injury.
 Resultata: selectedMetricKey was ${plain.selectedMetricKey}.`,
 );
 
-// --- Date range URL state ---
+// --- Date range URL state: the window's months, not indices ---------------
+// d= used to hold indices into the month series, whose first month moved
+// twice (2025-06 -> 2022-11 on 2026-03-16, -> 2021-07 on 2026-06-17), so a
+// March link d=1-6 (2025-07..2025-12) silently opened 2021-08..2022-01
+// (audit #45). It now names the first and last month, dotted like c= and x=.
 
 const dateRangeState = vm.runInContext(`
 (() => {
-  // Set a non-default date range
-  monthRangeStart = 2;
-  monthRangeEnd = 5;
-  fullMonthSeries = {months: ["2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01"]};
+  const months = vmtMonthList();
+  // Set a non-default date range: 2025-07 .. 2025-12
+  monthRangeStart = months.indexOf("2025-07");
+  monthRangeEnd = months.indexOf("2025-12");
   const queryWithRange = encodeUiStateQuery();
 
   // Apply a query with d= to restore range
@@ -153,38 +181,55 @@ const dateRangeState = vm.runInContext(`
   const unchangedEnd = monthRangeEnd;
 
   // Verify default range omits d=
-  monthRangeStart = 0;
+  monthRangeStart = -1;
   monthRangeEnd = Infinity;
   const defaultQuery = encodeUiStateQuery();
+  // ... also once the default start has been resolved to its index
+  monthRangeStart = months.indexOf(DEFAULT_START_MONTH);
+  monthRangeEnd = months.length - 1;
+  const resolvedDefaultQuery = encodeUiStateQuery();
 
-  // Clean up
-  fullMonthSeries = null;
+  // Round trips at the series' two ends and a single month
+  const roundTrip = (a, b) => {
+    monthRangeStart = months.indexOf(a); monthRangeEnd = months.indexOf(b);
+    const q = encodeUiStateQuery();
+    monthRangeStart = -1; monthRangeEnd = Infinity;
+    applyUiStateQuery(q);
+    return {q, start: months[monthRangeStart], end: months[monthRangeEnd]};
+  };
+  const last = months[months.length - 1];
+  const trips = [roundTrip(months[0], last), roundTrip(last, last), roundTrip(months[0], months[0]),
+    roundTrip(DEFAULT_START_MONTH, months[months.length - 2])];
 
-  return {queryWithRange, restoredStart, restoredEnd, unchangedStart, unchangedEnd, defaultQuery};
+  monthRangeStart = -1;
+  monthRangeEnd = Infinity;
+  return {queryWithRange, restoredStart, restoredEnd, unchangedStart, unchangedEnd, defaultQuery,
+    resolvedDefaultQuery, trips, first: months[0], last,
+    expectStart: months.indexOf("2025-07"), expectEnd: months.indexOf("2025-12")};
 })()
 `, ctx);
 const drPlain = JSON.parse(JSON.stringify(dateRangeState));
 
 assert.ok(
-  drPlain.queryWithRange.includes("d=2-5"),
-  `Replicata: encode UI state with monthRangeStart=2, monthRangeEnd=5.
-Expectata: query string contains d=2-5.
+  drPlain.queryWithRange.includes("d=2025-07.2025-12"),
+  `Replicata: encode UI state with the window 2025-07 .. 2025-12.
+Expectata: query string contains d=2025-07.2025-12.
 Resultata: query was ${drPlain.queryWithRange}.`,
 );
 
 assert.equal(
   drPlain.restoredStart,
-  2,
-  `Replicata: apply query with d=2-5.
-Expectata: monthRangeStart restored to 2.
+  drPlain.expectStart,
+  `Replicata: apply query with d=2025-07.2025-12.
+Expectata: monthRangeStart restored to the index of 2025-07 (${drPlain.expectStart}).
 Resultata: monthRangeStart was ${drPlain.restoredStart}.`,
 );
 
 assert.equal(
   drPlain.restoredEnd,
-  5,
-  `Replicata: apply query with d=2-5.
-Expectata: monthRangeEnd restored to 5.
+  drPlain.expectEnd,
+  `Replicata: apply query with d=2025-07.2025-12.
+Expectata: monthRangeEnd restored to the index of 2025-12 (${drPlain.expectEnd}).
 Resultata: monthRangeEnd was ${drPlain.restoredEnd}.`,
 );
 
@@ -205,11 +250,41 @@ Resultata: monthRangeEnd was ${drPlain.unchangedEnd}.`,
 );
 
 assert.ok(
-  !drPlain.defaultQuery.includes("d="),
-  `Replicata: encode UI state with default (full) date range.
+  !drPlain.defaultQuery.includes("d=") && !drPlain.resolvedDefaultQuery.includes("d="),
+  `Replicata: encode UI state with the default window (DEFAULT_START_MONTH to the latest month), unresolved and resolved.
 Expectata: query string does not contain d= key.
-Resultata: query was ${drPlain.defaultQuery}.`,
+Resultata: queries were ${drPlain.defaultQuery} and ${drPlain.resolvedDefaultQuery}.`,
 );
+
+for (const trip of drPlain.trips) {
+  const [, a, b] = /[?&]?d=(\d{4}-\d{2})\.(\d{4}-\d{2})/.exec(trip.q) ?? [];
+  assert.ok(
+    a !== undefined && trip.start === a && trip.end === b,
+    `Replicata: encode a window, apply the query to a reset state, read the window back.
+Expectata: d= names the window's first and last month and restores exactly those months.
+Resultata: ${JSON.stringify(trip)}.`,
+  );
+}
+
+// Unreadable d= values throw, as every unreadable owned value does: the
+// index form (old links), a reversed window, months outside the series, and
+// anything that is not two dotted months.
+for (const d of ["abc", "5-2", "1-6", "47-62", "34-42", "2025-12.2025-07", "2019-01.2019-03",
+                 `${drPlain.first}.2099-01`, "2025-07", "2025-7.2025-12", "2025-07.2025-12.2026-01",
+                 "2025-07-2025-12", ""]) {
+  let threw = false;
+  try {
+    vm.runInContext(`applyUiStateQuery(${JSON.stringify(`f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&d=${d}`)})`, ctx);
+  } catch (_err) {
+    threw = true;
+  }
+  assert.ok(
+    threw,
+    `Replicata: apply URL state with date range d=${d}.
+Expectata: immediate throw (d= must be two months of the series, dotted, first <= last).
+Resultata: no throw.`,
+  );
+}
 
 let threwInvalid = false;
 try {
@@ -268,6 +343,8 @@ Expectata: sectionCollapsed restored (browser+sanity collapsed, all others open)
 Resultata: sectionCollapsed was ${JSON.stringify(collapseState.restored)}.`,
 );
 
+vm.runInContext("sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));", ctx);
+
 let threwBadCollapse = false;
 try {
   vm.runInContext(
@@ -303,7 +380,7 @@ Resultata: no throw.`,
 let threwReversedRange = false;
 try {
   vm.runInContext(
-    `applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&d=5-2")`,
+    `applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&d=2025-12.2025-07")`,
     ctx,
   );
 } catch (_err) {
@@ -311,17 +388,35 @@ try {
 }
 assert.ok(
   threwReversedRange,
-  `Replicata: apply URL state with reversed date range d=5-2.
+  `Replicata: apply URL state with reversed date range d=2025-12.2025-07.
 Expectata: immediate throw (start > end).
 Resultata: no throw.`,
 );
 
 assert.ok(
-  replaceUrl.endsWith("?" + plain.query),
+  page.replaced.length > 0 && page.replaced[0].endsWith("?" + plain.query),
   `Replicata: sync URL state.
 Expectata: replaceState called with encoded query.
-Resultata: replaceState URL was ${replaceUrl}.`,
+Resultata: replaceState URL was ${page.replaced[0]}.`,
 );
+
+// A throw leaves the state as it was: the parser assigns nothing until every
+// owned key has been read (a rejected link must not leave a half-applied
+// state behind it).
+{
+  const before = page.state();
+  let threw = false;
+  try {
+    vm.runInContext(`applyUiStateQuery("f=Tesla&s=speed&a=0&c=Waymo&m=injury&g=bogus")`, ctx);
+  } catch (_err) {
+    threw = true;
+  }
+  assert.ok(threw, "g=bogus must throw");
+  assert.deepEqual(page.state(), before,
+    `Replicata: apply a link whose f, s, a, c and m are readable but whose g= is not.
+Expectata: it throws and no state changes (f=Tesla, s=speed, a=0, c=Waymo, m=injury are not applied).
+Resultata: state changed to ${JSON.stringify(page.state())}.`);
+}
 
 // Every SECTION_ID must have matching collapsible markup in index.html, and
 // vice versa — so the collapse machinery can't drift from the page structure.
@@ -379,7 +474,7 @@ Resultata: ${JSON.stringify(withUnknown)}.`,
 
 const FBCLID = "IwY2xjawUMO35wZG9mBWV4dG4DYWVtAjEwAGJyaWQRMWRmTjNGSE1rR1AyYmVWRmRzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEeaMUK5pu8wD8vvBPhBBbhY4Vwlgdb25V8cMyRGCfujKdJ3kEUkpSqLF-PUKM_aem_qDHlZgziCVls0uwOE4M_eQ";
 locationStub.search = `?fbclid=${FBCLID}`;
-replaceUrl = "";
+page.replaced.length = 0;
 const fbLoad = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
   activeFilter = "All"; sortCol = null; sortAsc = true; selectedMetricKey = "all";
@@ -395,14 +490,18 @@ Expectata: default state, the banner shown and naming fbclid, and the address
 bar rewritten to the page's own state without it.
 Resultata: ${JSON.stringify({ ...fbLoad, hidden: banner.hidden, text: bannerText.textContent })}.`,
 );
-assert.ok(!replaceUrl.includes("fbclid"), `the rewritten URL still carries fbclid: ${replaceUrl}`);
+assert.ok(!lastReplace().includes("fbclid"), `the rewritten URL still carries fbclid: ${lastReplace()}`);
+assert.ok(!bannerText.hidden && page.bannerRejected.hidden,
+  `Replicata: open the page from a Facebook link (only ?fbclid=... in the URL).
+Expectata: the foreign-key sentence shows and the rejected-parameter sentence stays hidden (nothing of the page's own was rejected).
+Resultata: foreign hidden=${bannerText.hidden}, rejected hidden=${page.bannerRejected.hidden} (${JSON.stringify(page.bannerRejected.textContent)}).`);
 
-assert.equal(typeof dismiss, "function", "the dismiss button has a click handler");
-dismiss();
+assert.equal(typeof page.dismiss, "function", "the dismiss button has a click handler");
+page.dismiss();
 assert.equal(banner.hidden, true, "dismissing hides the banner");
 
 locationStub.search = "";
-replaceUrl = "";
+page.replaced.length = 0;
 vm.runInContext("loadUiStateFromLocation()", ctx);
 assert.deepEqual(
   { hidden: banner.hidden, search: locationStub.search },
@@ -416,14 +515,20 @@ Resultata: ${JSON.stringify({ hidden: banner.hidden, search: locationStub.search
 const html = fs.readFileSync("index.html", "utf8");
 assert.match(
   html,
-  /<div id="url-banner" class="banner" role="alert" hidden>[\s\S]*?<span class="banner-text"><\/span>[\s\S]*?<button id="url-banner-dismiss" type="button">[^<]+<\/button>[\s\S]*?<\/div>/,
-  "index.html carries the hidden banner with its text span and dismiss button",
+  /<div id="url-banner" class="banner" role="alert" hidden>[\s\S]*?<span class="banner-text"><\/span>[\s\S]*?<span class="banner-rejected"><\/span>[\s\S]*?<button id="url-banner-dismiss" type="button">[^<]+<\/button>[\s\S]*?<\/div>/,
+  "index.html carries the hidden banner with its two text spans (foreign keys, rejected own parameters) and dismiss button",
 );
 const css = fs.readFileSync("style.css", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 assert.match(css, /\.banner\[hidden\]\s*\{\s*display:\s*none;?\s*\}/,
   ".banner[hidden] must restore display: none, since .banner is a flex box");
-
-console.log("qual pass: URL state round-trips, fails loudly on invalid owned keys, and reports foreign ones");
+// The banner quotes values as the link gave them, and one long unbroken value
+// (c=HumansAV.HumansUS.HumansRideshare.Tesla.Waymo.Zoox.Bogus) pushed the
+// page 250px wider than a 400px phone, the dismiss button off screen.
+assert.match(css, /(^|\})\s*\.banner\s*\{[^}]*\boverflow-wrap:\s*anywhere\b/,
+  `Replicata: read style.css's .banner rule.
+Expectata: overflow-wrap: anywhere, so a long quoted value wraps inside the banner (a flex item's
+minimum width only shrinks below a long word with "anywhere", not with "break-word").
+Resultata: the rule has no overflow-wrap: anywhere.`);
 
 // --- A dotted legacy m= value is invalid, not silently reduced -------------
 // Until 2026-09-26 "m=injury.all" was parsed as the retired multi-metric
@@ -438,3 +543,119 @@ console.log("qual pass: URL state round-trips, fails loudly on invalid owned key
 Expectata: it asserts (one metric key only), as m= empty and unknown keys do.
 Resultata: accepted and reduced to one metric.`);
 }
+
+// --- A link this page cannot read: the default view, with the banner -------
+// Until 2026-10-03 any owned-key rejection stopped init: nothing rendered
+// below the abstract, the banner stayed hidden, the bad query stayed in the
+// address bar, and the only trace was a console error (audit #3). That hit
+// every default URL the site itself wrote 2026-03-18..06-11 (c=Humans...).
+// Spec, extending the 2026-09-07 foreign-key rule to the page's own keys:
+// the parser stays strict, and the loader shows the default view, names the
+// rejected parameter(s) in the banner (key=value as given; a bare key for a
+// required one the link left out; '' for an empty string), names any
+// foreign keys as before, and rewrites the address bar from state.
+const D = "f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
+const REJECTIONS = [
+  // [query, rejected items the banner must name, foreign keys it must name]
+  ["?f=All&s=-&a=1&c=Humans.Tesla.Waymo.Zoox&m=all", ["c=Humans.Tesla.Waymo.Zoox"], []],
+  ["?m=injury", ["f", "s", "a", "c"], []],
+  [`?${D.replace("m=atfault", "m=all.atfault")}`, ["m=all.atfault"], []],
+  [`?${D.replace("m=atfault", "m=stationary")}`, ["m=stationary"], []],
+  [`?${D.replace("m=atfault", "m=noInjury")}`, ["m=noInjury"], []],
+  [`?${D.replace("m=atfault", "m=injuryOnly")}`, ["m=injuryOnly"], []],
+  [`?${D.replace("m=atfault", "m=hospitalizationOnly")}`, ["m=hospitalizationOnly"], []],
+  [`?${D.replace("m=atfault", "m=parkingLotNonstationary")}`, ["m=parkingLotNonstationary"], []],
+  [`?${D.replace("m=atfault", "m=faultVariance")}`, ["m=faultVariance"], []],
+  [`?${D.replace("s=-", "s=driver")}`, ["s=driver"], []],
+  [`?${D.replace("s=-", "s=company")}`, ["s=company"], []],
+  [`?${D}&v=0`, ["v=0"], []],
+  [`?${D}&g=vmt`, ["g=vmt"], []],
+  [`?${D}&x=bogus`, ["x=bogus"], []],
+  [`?${D}&d=47-62`, ["d=47-62"], []],
+  ["?f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&d=1-6", ["d=1-6"], []],
+  [`?${D}&d=34-42`, ["d=34-42"], []],
+  [`?${D}&d=2025-12.2025-07`, ["d=2025-12.2025-07"], []],
+  ["?F=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault", ["f"], ["F"]],
+  ["?utm_source=x&m=injury", ["f", "s", "a", "c"], ["utm_source"]],
+  [`?${D.replace("f=All", "f=All&f=Tesla")}`, ["f=All", "f=Tesla"], []],
+  [`?${D.replace("m=atfault", "m=")}`, ["m=''"], []],
+];
+for (const [query, items, foreign] of REJECTIONS) {
+  const p = makeHarness();
+  const defaults = p.state();
+  const defaultQuery = p.run("encodeUiStateQuery()");
+  p.location.search = query;
+  let threw = null;
+  try { vm.runInContext("loadUiStateFromLocation()", p.ctx); } catch (err) { threw = err.message; }
+  const rejectedText = p.bannerRejected.textContent;
+  // Each item must stand as its own word of the sentence, the list in order
+  // (so a bare "f" cannot be satisfied by a letter of some other word).
+  const words = text => text.split(/[\s,]+/);
+  const listed = items.every(item => words(rejectedText).includes(item)) &&
+    rejectedText.includes(items.join(", "));
+  const got = {
+    threw, state: p.state(), search: p.location.search,
+    bannerHidden: p.banner.hidden, rejectedHidden: p.bannerRejected.hidden, rejectedText,
+    foreignHidden: p.bannerText.hidden, foreignText: p.bannerText.textContent,
+  };
+  const ok = threw === null &&
+    JSON.stringify(got.state) === JSON.stringify(defaults) &&
+    got.search === `?${defaultQuery}` &&
+    !got.bannerHidden && !got.rejectedHidden && listed &&
+    got.foreignHidden === (foreign.length === 0) &&
+    foreign.every(key => words(got.foreignText).includes(key));
+  assert.ok(ok,
+    `Replicata: open the page at ${query}.
+Expectata: no exception; the default view's state; the address bar rewritten to ?${defaultQuery};
+the banner shown, naming ${items.join(", ")} as rejected${foreign.length ? ` and ${foreign.join(", ")} as foreign` : ", with the foreign-key sentence hidden"}.
+Resultata: ${JSON.stringify(got)}.`);
+}
+
+// A key-less "=x" is a foreign key with an empty name: the banner shows it
+// as '' rather than a blank between the dashes (audit #96).
+{
+  const p = makeHarness();
+  p.location.search = `?=x&${D}`;
+  vm.runInContext("loadUiStateFromLocation()", p.ctx);
+  assert.ok(!p.banner.hidden && !p.bannerText.hidden && /''/.test(p.bannerText.textContent) && p.bannerRejected.hidden,
+    `Replicata: open the page at ?=x&${D}.
+Expectata: the banner names the stripped key-less parameter visibly, as '', and rejects nothing of the page's own.
+Resultata: ${JSON.stringify({hidden: p.banner.hidden, text: p.bannerText.textContent, rejectedHidden: p.bannerRejected.hidden})}.`);
+}
+
+// --- The URL fragment survives the rewrite ---------------------------------
+// syncUrlState's replaceState used to drop location.hash (audit #95): a
+// #sec-... link lost its fragment, and Chromium and WebKit, which scroll to
+// the fragment the URL carries when the page finishes loading, stayed at the
+// top. With the fragment kept, all three engines land on the section on
+// their own (checked in the browser, 2026-10-03); the page adds no scrolling
+// of its own.
+{
+  const p = makeHarness();
+  p.location.search = `?${D}`;
+  p.location.hash = "#sec-fleet";
+  vm.runInContext("loadUiStateFromLocation()", p.ctx);
+  const url = p.replaced[p.replaced.length - 1] ?? "";
+  assert.ok(url.endsWith(`?${D}#sec-fleet`) && p.location.hash === "#sec-fleet",
+    `Replicata: open the page at ?${D}#sec-fleet.
+Expectata: the rewritten address keeps #sec-fleet.
+Resultata: replaceState URL ${JSON.stringify(url)}, hash ${JSON.stringify(p.location.hash)}.`);
+  // ... and every later rewrite (a slider release, a collapsed section) too.
+  vm.runInContext("monthRangeStart = vmtMonthList().indexOf('2025-07'); monthRangeEnd = vmtMonthList().indexOf('2025-12'); syncUrlState();", p.ctx);
+  const later = p.replaced[p.replaced.length - 1] ?? "";
+  assert.ok(later.endsWith("&d=2025-07.2025-12#sec-fleet"),
+    `Replicata: open the page at ?${D}#sec-fleet, then change the window to 2025-07..2025-12.
+Expectata: the address carries the new window and still ends in #sec-fleet.
+Resultata: replaceState URL ${JSON.stringify(later)}.`);
+
+  const bare = makeHarness();
+  bare.location.hash = "#sec-sanity";
+  vm.runInContext("loadUiStateFromLocation()", bare.ctx);
+  const bareUrl = bare.replaced[bare.replaced.length - 1] ?? "";
+  assert.ok(bareUrl === `/crashla?${bare.run("encodeUiStateQuery()")}#sec-sanity`,
+    `Replicata: open the page at /#sec-sanity (no query).
+Expectata: the address bar gains the default query and keeps #sec-sanity.
+Resultata: replaceState URL ${JSON.stringify(bareUrl)}.`);
+}
+
+console.log("qual pass: URL state round-trips (d= by month), shows unreadable links as the default view with the banner, keeps the fragment, and reports foreign keys");

@@ -26,6 +26,10 @@ class ElementStub {
 
   querySelector() { return null; }
 
+  setAttribute(name, value) { this.attributes = { ...this.attributes, [name]: String(value) }; }
+
+  getAttribute(name) { return (this.attributes || {})[name] ?? null; }
+
   set textContent(v) {
     this._innerHTML = String(v)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -112,7 +116,7 @@ Resultata: ${JSON.stringify(mana)}.`,
 
 const panelStats = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
-  renderPredmarketsPanel(POLYMARKET_SNAPSHOT, MANIFOLD_SNAPSHOT, PREDMARKET_SNAPSHOT_DATE);
+  renderPredmarketsPanel(snapshotMarkets(POLYMARKET_SNAPSHOT), snapshotMarkets(MANIFOLD_SNAPSHOT), PREDMARKET_SNAPSHOT_DATE);
   const panel = document.getElementById("predmarket-panel");
   const grid = panel.children[0];
   const cardHtml = grid.children.map(c => c.innerHTML);
@@ -159,6 +163,23 @@ assert.equal(
   `Replicata: count the bold header cards rendered for multi-outcome markets (e.g. the Manifold "what year" date markets).
 Expectata: one header per multi-outcome market and none for single-outcome markets.
 Resultata: ${panelStats.headerCards} headers, expected ${panelStats.expectedHeaders}.`,
+);
+
+// --- 3b. The refresh button is named by its purpose, not its glyph (audit #93) ---
+
+const refresh = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  renderPredmarketsPanel(snapshotMarkets(POLYMARKET_SNAPSHOT), snapshotMarkets(MANIFOLD_SNAPSHOT), PREDMARKET_SNAPSHOT_DATE);
+  const footer = document.getElementById("predmarket-panel").children[1];
+  const btn = footer.children.find(c => c.className === "pm-refresh");
+  return { title: btn.title, label: btn.getAttribute("aria-label"), html: btn.innerHTML };
+})()
+`, ctx)));
+assert.ok(
+  refresh.label !== null && refresh.label === refresh.title && refresh.html === '<span aria-hidden="true">\u21bb</span>',
+  `Replicata: render the prediction markets panel and read the refresh button.
+Expectata: aria-label is its title text ("Refetch prediction market data") and the ↻ glyph sits in an aria-hidden span.
+Resultata: ${JSON.stringify(refresh)}.`,
 );
 
 // --- 4. Refresh path regressions (source-level: the network calls themselves

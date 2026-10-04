@@ -13,8 +13,8 @@ import { appScript, dataScript } from "./load-app.mjs";
 // axis, so labelStep is rounded up to whole decades above 1. Tick labels are
 // digits in tabular figures (style.css .month-svg), so the per-glyph bound
 // axisLeftMargin stands on also models text no qual can lay out: a label
-// centred on its rung is TICK_GLYPH units per glyph, and neighbours owe each
-// other TICK_GAP.
+// centred on its rung is tickLabelWidth wide (TICK_GLYPH units per glyph,
+// half a glyph more per unit letter), and neighbours owe each other TICK_GAP.
 
 const js = fs.readFileSync("crashla.js", "utf8");
 
@@ -42,6 +42,10 @@ const run = expr => vm.runInContext(expr, ctx);
 // carried its own 8 would keep passing after someone retuned the constant.
 const GLYPH = run("TICK_GLYPH");
 const GAP = run("TICK_GAP");
+// A label's modelled width: the app's own bound (TICK_GLYPH per character,
+// plus half a glyph per unit letter since whole values dropped their ".0" on
+// 2026-10-03, audit #58), so the qual cannot drift from the constants.
+const width = label => run(`tickLabelWidth(${JSON.stringify(label)})`);
 
 const gridlines = svg =>
   [...svg.matchAll(/<line x1="(-?[\d.]+)"[^>]*class="month-grid"><\/line>/g)].map(m => m[1]);
@@ -77,6 +81,35 @@ and fmtWhole.
 Expectata: all ten 1-2-5 rungs keep a gridline -- thinning takes labels, never
 geometry -- and the labels are ${JSON.stringify(expected)}, because ${why}.
 Resultata: ${JSON.stringify(drawn)}.`,
+  );
+}
+
+// --- 1b. Fewer than two labels: the frame's outermost finer rungs -----------
+// A narrow frame can hold one 1-2-5 rung or none (84M-91M, the Humans (US
+// average) fatality band alone, holds none), and then the axis had no scale
+// at all (audit #27: 92 of 770 chart states had fewer than two labels, 21 had
+// none). When the 1-2-5 ladder leaves fewer than two labels, the axis labels
+// instead the first and last rung of the coarsest ladder with two rungs in
+// the frame: the 1-2-5 ladder itself, then one significant digit (1-9 per
+// decade), then two, and so on. Each gets a gridline; the 1-2-5 gridlines stay.
+// (The labels drop fmtMiles' ".0" on whole values since 2026-10-03, audit #58:
+// "84M" was "84.0M".)
+const drawNarrow = (lo, hi) =>
+  run(`drawLogXTicks(${lo}, ${hi}, x => 68 + 816 * Math.log(x / ${lo}) / Math.log(${hi / lo}), fmtMiles, 14, 240, 264)`);
+for (const [lo, hi, expected, why] of [
+  [83.2e6, 91.9e6, ["84M", "91M"], "no 1-2-5 rung and one one-digit rung (90M) fall in it, so two significant digits"],
+  [1.3e6, 4.4e6, ["2M", "4M"], "only 2M is a 1-2-5 rung, so one significant digit: 2M, 3M, 4M"],
+  [137e3, 160.3e3, ["140K", "160K"], "no rung of one significant digit falls in it, so two"],
+  [60e3, 190e3, ["60K", "100K"], "only 100K is a 1-2-5 rung; one significant digit gives 60K to 100K"],
+]) {
+  const svg = drawNarrow(lo, hi);
+  const drawn = centredTicks(svg);
+  const onGrid = new Set(gridlines(svg));
+  assert.ok(
+    JSON.stringify(drawn.map(t => t.label)) === JSON.stringify(expected) && drawn.every(t => onGrid.has(t.xText)),
+    `Replicata: call drawLogXTicks over [${lo}, ${hi}] with 816 units across the frame and fmtMiles.
+Expectata: the labels ${JSON.stringify(expected)}, each on a gridline: ${why}.
+Resultata: labels ${JSON.stringify(drawn.map(t => t.label))} on gridlines ${JSON.stringify([...onGrid])}.`,
   );
 }
 
@@ -132,14 +165,20 @@ for (const key of ["fleet", "rides", "miles"]) {
 // A single month gives the widest posteriors, hence the most decades on the
 // axis; a lone ADS helmer beside a human benchmark widens it further. Those
 // are the states that crowd -- "HumansUS+Tesla+Zoox" on fatality is the worst
-// reachable one (23 rungs, overlapping by 16 units before this helper).
-const subsets = [["HumansUS", "Tesla", "Zoox"], ["Waymo"], JSON.parse(run("JSON.stringify(ALL_HELMERS)"))];
+// reachable one (23 rungs, overlapping by 16 units before this helper). A lone
+// narrow curve gives the fewest rungs (Waymo alone on the full history,
+// Humans (US average) alone on fatality), and the default helmers, the
+// default window and no helmer at all put rungs on the frame's right edge
+// (audit #27 and #50).
+const subsets = [["HumansUS", "Tesla", "Zoox"], ["Waymo"], JSON.parse(run("JSON.stringify(ALL_HELMERS)")),
+  ["HumansUS"], ["HumansAV", "Tesla", "Waymo"], []];
+const defaultStart = run("activeSeries.months.indexOf(DEFAULT_START_MONTH)");
 for (const helmers of subsets) {
   run(`for (const h of ALL_HELMERS) monthHelmerEnabled[h] = ${JSON.stringify(helmers)}.includes(h);`);
   for (const key of JSON.parse(run("JSON.stringify(METRIC_KEYS)"))) {
-    for (const [from, to] of [[0, months - 1], [months - 1, months - 1]]) {
+    for (const [from, to] of [[0, months - 1], [months - 1, months - 1], [defaultStart, months - 1]]) {
       charts.push({
-        what: `MPI density chart, ${helmers.join("+")}, metric ${JSON.stringify(key)}, months ${from}-${to}`,
+        what: `MPI density chart, ${helmers.join("+") || "no helmer"}, metric ${JSON.stringify(key)}, months ${from}-${to}`,
         svg: run(`selectedMetricKey = ${JSON.stringify(key)}; renderDistributionChart(sliceSeries(activeSeries, ${from}, ${to}))`),
       });
     }
@@ -163,22 +202,40 @@ never nudges one off its rung.
 Resultata: ${JSON.stringify(stray.label)} floats at x=${stray.x}.`,
     );
   }
+  // At least two labels, whatever the frame (tightened 2026-10-03, audit
+  // #27): the old floor of min(2, gridlines) let a frame holding one 1-2-5
+  // rung or none (101M-169M, or 84M-91M) draw a single label or a bare axis.
   assert.ok(
-    ticks.length >= Math.min(2, onGrid.size),
+    ticks.length >= 2,
     `Replicata: render the ${chart.what} and count gridlines and labels.
-Expectata: at least ${Math.min(2, onGrid.size)} of its ${onGrid.size} gridlines carry a
-label -- thinning may not empty the axis. (A range can hold no 1-2-5 rung at
-all, e.g. 101M-169M, which draws neither line nor label; hence the min.)
+Expectata: at least two labelled gridlines, so the axis has a readable scale
+-- a frame with fewer than two 1-2-5 rungs labels the outermost rungs of a
+finer ladder instead.
 Resultata: ${ticks.length} labels on ${onGrid.size} gridlines.`,
   );
+  // Labels stay inside the SVG, keeping TICK_GAP from its edges as they do
+  // from each other (audit #50: "200.0M" centred within half a label of the
+  // frame's right edge ran up to 8 units past the 900-unit SVG, which clips).
+  // The gap is also the slack for faces wider than the glyph model: Firefox at
+  // phone size draws "200.0M" 61 units wide, 6.4 past the model on each side.
+  const svgW = Number(chart.svg.match(/viewBox="0 0 ([\d.]+) /)[1]);
+  for (const t of ticks) {
+    const half = width(t.label) / 2;
+    assert.ok(
+      t.x - half >= GAP && t.x + half <= svgW - GAP,
+      `Replicata: render the ${chart.what} and model each x tick label (tickLabelWidth: ${GLYPH} units per glyph, half a glyph more per unit letter) centred on its gridline.
+Expectata: every label lies inside the ${svgW}-unit SVG with ${GAP} units to spare on each side.
+Resultata: ${JSON.stringify(t.label)} spans ${(t.x - half).toFixed(1)}-${(t.x + half).toFixed(1)}.`,
+    );
+  }
   for (let i = 1; i < ticks.length; i++) {
     const left = ticks[i - 1], right = ticks[i];
-    const gap = (right.x - GLYPH * right.label.length / 2) - (left.x + GLYPH * left.label.length / 2);
+    const gap = (right.x - width(right.label) / 2) - (left.x + width(left.label) / 2);
     if (gap < tightest.gap) tightest = { gap, what: chart.what, pair: `${left.label} | ${right.label}` };
     assert.ok(
       gap >= GAP,
-      `Replicata: render the ${chart.what}, model each x tick label as ${GLYPH} units
-per glyph centred on its gridline, and measure the gaps between neighbours.
+      `Replicata: render the ${chart.what}, model each x tick label (tickLabelWidth:
+${GLYPH} units per glyph, half a glyph more per unit letter) centred on its gridline, and measure the gaps between neighbours.
 Expectata: every neighbouring pair clears ${GAP} units.
 Resultata: ${JSON.stringify(left.label)} at x=${left.x} and ${JSON.stringify(right.label)}
 at x=${right.x} leave ${gap.toFixed(1)}.`,

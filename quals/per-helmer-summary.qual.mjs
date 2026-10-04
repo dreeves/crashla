@@ -88,7 +88,7 @@ const ctx = vm.createContext({
   window: {
     innerWidth: 1024,
     innerHeight: 768,
-    location: {search: "", pathname: "/crashla"},
+    location: {search: "", pathname: "/crashla", hash: ""},
     history: {replaceState() {}},
   },
 });
@@ -97,9 +97,12 @@ vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 // monthlySummaryRows uses per-helmer filtering (helmers[helmer] !== null),
-// NOT the cross-helmer incidentObservable flag.  This means Waymo's summary
-// includes pre-window months where only Waymo has VMT, while Tesla/Zoox
-// correctly show zero for those months.
+// NOT the months where every ADS helmer has VMT (the cross-helmer
+// "incidentObservable" flag, deleted 2026-10-03 with its last consumer, the
+// sanity section's dispersion test, which now uses each helmer's own months
+// too; audit #9).  This means Waymo's summary includes pre-window months
+// where only Waymo has VMT, while Tesla/Zoox correctly show zero for those
+// months.
 const checks = vm.runInContext(`
 (() => {
   incidents = INCIDENT_DATA;
@@ -125,11 +128,12 @@ const checks = vm.runInContext(`
   // Count months where each helmer has data in the full series
   const waymoMonths = series.points.filter(p => p.helmers.Waymo !== null).length;
   const teslaMonths = series.points.filter(p => p.helmers.Tesla !== null).length;
-  const obsMonths = series.points.filter(p => p.incidentObservable).length;
+  const obsMonths = series.points.filter(p => ADS_HELMERS.every(h => p.helmers[h] !== null)).length;
+  const flagged = series.points.filter(p => "incidentObservable" in p).length;
 
   return {
     hasPreWindowMonth: preWindowMonth !== undefined,
-    waymoMonths, teslaMonths, obsMonths,
+    waymoMonths, teslaMonths, obsMonths, flagged,
     fullWaymoVmt: summary.Waymo.vmtBest,
     fullTeslaVmt: summary.Tesla.vmtBest,
     preWaymoVmt: preSummary.Waymo.vmtBest,
@@ -150,8 +154,8 @@ Resultata: no such month found.`,
 
 assert.ok(
   plain.waymoMonths > plain.obsMonths,
-  `Replicata: compare Waymo's month count against the incidentObservable month count.
-Expectata: Waymo has data in more months than the cross-helmer observable window (${plain.obsMonths}).
+  `Replicata: compare Waymo's month count against the count of months where every ADS helmer has VMT.
+Expectata: Waymo has data in more months than the cross-helmer window (${plain.obsMonths}).
 Resultata: Waymo months=${plain.waymoMonths}, observable months=${plain.obsMonths}.`,
 );
 
@@ -169,4 +173,9 @@ Expectata: Tesla has zero VMT because it has no data in those months.
 Resultata: vmtBest=${plain.preTeslaVmt}.`,
 );
 
-console.log("qual pass: monthlySummaryRows uses per-helmer filtering not incidentObservable");
+assert.equal(plain.flagged, 0,
+  `Replicata: look for the incidentObservable flag on the month series' points.
+Expectata: none carry it: the dispersion test, its last consumer, uses each helmer's own months (audit #9).
+Resultata: ${plain.flagged} points carry it.`);
+
+console.log("qual pass: monthlySummaryRows uses per-helmer filtering, not the months where every ADS helmer has VMT");

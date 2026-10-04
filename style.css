@@ -130,6 +130,10 @@ input { accent-color: var(--ink); }
   border-radius: var(--wobble-c);
   background: var(--card);
   color: var(--worse);
+  /* It quotes URL values as given; a long unbroken one must wrap inside the
+     box, not push the page wider than a phone ("anywhere" also lowers the
+     flex item's minimum width, which "break-word" does not). */
+  overflow-wrap: anywhere;
 }
 .banner[hidden] { display: none; }
 .banner button {
@@ -233,8 +237,10 @@ h3 { font-size: var(--fs-lg); margin: 1rem 0 0.5rem; }
 .filters button:not(.active):hover { background: var(--wash); transform: translateY(-2px); }
 .filters button:active { transform: translateY(1px) scale(0.98); }
 .filters button.active { background: var(--ink); color: var(--paper); }
-/* One focus ring for every custom-styled control outside a scroll container. */
-.filters button:focus-visible, #month-metric-select:focus-visible, .pm-refresh:focus-visible {
+/* One focus ring for every custom-styled control with room around it. Inside
+   the incident table's scroll box the sticky headers draw theirs inset (below);
+   a narrative's ring fits in its cell's padding. */
+.filters button:focus-visible, #month-metric-select:focus-visible, .pm-refresh:focus-visible, .sec-toggle:focus-visible, .narrative-toggle:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -269,6 +275,12 @@ th[aria-sort="descending"]::after {
 }
 /* Numeric cells: right-aligned, headers matching their data. */
 td.num, th.num { text-align: right; white-space: nowrap; }
+/* A numeric cell holding a median and its interval may put the interval on
+   a line of its own; each figure stays whole. Kept on one line, those cells
+   made the Sensitivity-analysis table 952-969px wide in its 928px box, and
+   the Verdict column was cut off (2026-10-03, audit #23). */
+td.num.pair { white-space: normal; }
+td.num.pair > span { white-space: nowrap; }
 /* Scroll container so the sticky header actually sticks (and hundreds of
    incident rows don't make the page itself miles long) */
 .table-scroll { overflow: auto; max-height: 80vh; overscroll-behavior-x: contain; }
@@ -284,14 +296,37 @@ td.num, th.num { text-align: right; white-space: nowrap; }
 tbody tr:hover { background: var(--accent-wash); }
 /* Wide generated tables pan inside their own box instead of widening the page. */
 .table-wrap { overflow-x: auto; }
+/* An incident date ("JUL-2025") stays on one line: Chromium and WebKit broke
+   every one at its hyphen (Firefox did not). The width the whole date needs
+   comes out of the narrative preview, the one column that truncates rather
+   than wraps (300px until 2026-10-03): left at 300, WebKit squeezed the
+   Location column instead, "San Francisco, CA" broke over three lines, and
+   its table grew 12% (68,787 -> 77,335px; at 280 every engine's table is
+   about 1% shorter than with the broken dates). Audit #64. */
+.date-cell { white-space: nowrap; }
 .narrative-cell {
-  max-width: 300px;
+  max-width: 280px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
 }
 .narrative-cell.expanded { white-space: normal; }
+/* The narrative is the cell's disclosure button: a block box, so it carries
+   its own ellipsis and its focus ring is not clipped by the cell. The fault
+   reasoning under it shows only while the narrative is open. */
+.narrative-toggle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.narrative-fault { display: none; }
+.narrative-cell.expanded .narrative-fault {
+  display: block;
+  white-space: pre-line;
+  margin-top: 0.35rem;
+  color: var(--ink-soft);
+}
 .cbi { color: var(--ink-soft); font-style: italic; }
 .incident-count { margin: 0.35rem 0; }
 .fault-cell {
@@ -473,13 +508,19 @@ tbody tr:hover { background: var(--accent-wash); }
   flex-direction: column;
   gap: 0.25rem;
 }
-.metric-select { cursor: pointer; }
+/* "Miles per [select] incident" wraps on a narrow phone, and the select (as
+   wide as its longest option) never outgrows the column: on one line the
+   control was 381-393px wide, so a phone under ~393px scrolled sideways
+   (2026-10-03, audit #24). */
+.metric-select { cursor: pointer; flex-wrap: wrap; }
 #month-metric-select {
   background: var(--card);
   border: 2px solid var(--line);
   border-radius: var(--wobble-pill);
   padding: 0.05rem 0.5rem;
   cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
 }
 .month-legend-item {
   display: inline-flex;
@@ -580,6 +621,11 @@ tbody tr:hover { background: var(--accent-wash); }
   box-shadow: var(--shadow);
 }
 .mpi-cards > .mpi-card:nth-child(even) { border-radius: var(--wobble-d); }
+/* An unchecked helmer's card: kept, grayed like the legend's empty helmers,
+   rather than dropped (Anti-Magic Principle). */
+.mpi-card.unchecked {
+  opacity: 0.4;
+}
 .mpi-card-helmer {
   font-size: var(--fs-lg);
   margin-bottom: 0.15rem;
@@ -643,11 +689,16 @@ tbody tr:hover { background: var(--accent-wash); }
 .stress-badge.ambiguous {
   color: var(--iffy);
 }
-/* k = 0 verdicts rest on the prior alone: faded + italic, mirroring the
-   charts' hollow-dot convention for zero observed incidents. */
-.stress-badge.prior-only {
+/* k = 0 verdicts and multipliers rest on the prior alone: faded + italic,
+   mirroring the charts' hollow-dot convention for zero observed incidents. */
+.stress-badge.prior-only, .mpi-card-mult.prior-only {
   opacity: 0.55;
   font-style: italic;
+}
+/* A sanity-table row whose test cannot run in the window (too few months):
+   kept, faded like a prior-only verdict, with its reason in the row. */
+tr.insufficient {
+  opacity: 0.55;
 }
 #sanity-checks p {
   margin: 0.45rem 0 0.7rem;
@@ -703,6 +754,24 @@ tbody tr:hover { background: var(--accent-wash); }
   padding: 0.45rem 0.85rem;
 }
 .pm-card:first-child { border-top: none; }
+/* A market row whose odds are not a live price: the snapshot's (its fetch
+   failed or has not finished), or its market has closed or resolved. Kept
+   and grayed, as the prior-only verdicts are, rather than dropped
+   (Anti-Magic Principle). */
+.pm-card.pm-faded {
+  opacity: 0.55;
+}
+/* "closed" / "resolved: YES" after the question (crashla.js
+   marketStateLabel); empty while the market trades, and then it must take no
+   room: an empty inline box still lays out its horizontal margin, which
+   wrapped some trading markets' questions onto an extra line in Firefox and
+   WebKit (quals/market-state.qual.mjs section 8). */
+.pm-card-state {
+  font-style: italic;
+}
+.pm-card-state:not(:empty) {
+  margin-left: 0.4em;
+}
 .pm-card-question {
   font-size: var(--fs-sm);
   flex: 1;
@@ -747,6 +816,16 @@ tbody tr:hover { background: var(--accent-wash); }
   margin-top: 0.45rem;
   justify-content: flex-end;
 }
+/* The dot and the age: one tooltip target (crashla.js predmarketStatusTip).
+   The age's margin, not a flex gap, spaces them, so the visually hidden tip
+   text adds no room. */
+.pm-status {
+  display: inline-flex;
+  align-items: center;
+}
+.pm-status .pm-age {
+  margin-left: 0.5em;
+}
 .pm-dot {
   display: inline-block;
   width: 7px;
@@ -776,7 +855,7 @@ tbody tr:hover { background: var(--accent-wash); }
   transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s ease-out;
 }
 .pm-refresh:hover { background: var(--wash); border-color: var(--line); color: var(--ink); transform: translateY(-2px); }
-.pm-refresh:disabled { cursor: default; opacity: 0.35; }
+.pm-refresh[aria-disabled="true"] { cursor: default; opacity: 0.35; }
 
 .colophon {
   position: relative;
@@ -808,6 +887,46 @@ tbody tr:hover { background: var(--accent-wash); }
    tooltip cursor. This is the source of truth: per-element inline cursor and
    pointer-events were removed in favour of this rule. */
 [data-tip] { cursor: help; pointer-events: all; }
+/* A hit circle's target is its disc and nothing more: under pointer-events:
+   all its stroke counts too, painted or not, and the default stroke-width of
+   1 added half a unit to every radius crashla.js hitCircles chose. */
+circle[fill="none"][data-tip] { stroke-width: 0; }
+/* An invisible hit circle (fill="none": every chart mark's tooltip target
+   since 2026-10-03, crashla.js hitCircles) gives Firefox nothing to draw its
+   focus ring around, so the focused circle draws itself, in every engine
+   alike. */
+circle[fill="none"][data-tip]:focus-visible { outline: none; stroke: var(--accent); stroke-width: 2; }
+
+/* Text for assistive technology only: a tooltip target's tip, read with the
+   target (crashla.js tipText). An in-flow 1px box, clipped, whose negative
+   margin cancels its width, rather than the usual absolutely positioned one:
+   inside the tables' scroll boxes absolute text escaped their clipping and
+   widened a phone page to 955px, and making the boxes its containing blocks
+   changed how Chromium rasterizes the charts. */
+.visually-hidden {
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+  margin-right: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Forced colours (Windows contrast themes) repaint backgrounds and borders in
+   theme colours but leave the SVG series alone, so the legend chips and CI
+   swatches went blank while the curves kept their colours, and the chevrons'
+   transparent sides turned them into bars. Marks whose colour is data keep it. */
+.month-chip, .ci-fan-swatch, .errbar-key, .fault-bar, .pm-dot, .sec-head::before, th[aria-sort]::after {
+  forced-color-adjust: none;
+}
+/* The sort arrow is drawn in currentColor, so besides its transparent sides it
+   must keep the header's forced text colour: under "none" Chromium painted it
+   in the page's #333 ink, all but invisible on a dark theme's black canvas.
+   preserve-parent-color keeps the sides and passes that colour through.
+   Firefox does not know the value, drops this line and keeps "none" above,
+   under which it already passes the colour through. */
+th[aria-sort]::after { forced-color-adjust: preserve-parent-color; }
 
 /* Floating tooltip (replaces SVG <title> for mobile support) */
 .chart-tip {
@@ -828,7 +947,9 @@ tbody tr:hover { background: var(--accent-wash); }
 /* Under the OS reduce-motion setting the hover lifts, press and triangle turn
    stop moving; colour and background feedback stay, since they are not motion. */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after { transition-duration: 0s; }
+  /* !important: a universal selector has no specificity, and without it
+     every specific transition rule (links, the chevron, the pills) won. */
+  *, ::before, ::after { transition-duration: 0s !important; }
   a:hover, .filters button:not(.active):hover, .filters button:active, .pm-refresh:hover {
     top: 0;
     transform: none;

@@ -69,15 +69,41 @@ Expectata: the conditional HW4 curve is dashed.
 Resultata: no dashed stroke found.`,
 );
 
-// One median marker per curve (4), each carrying a data-tip tooltip.
-const markerCount = (html.match(/<circle/g) || []).length;
-const tipCount = (html.match(/data-tip=/g) || []).length;
+// One median marker per curve (4), each with one tooltip target: since
+// 2026-10-03 (audit #28) an invisible hit circle over the visible dot.
+const markerCount = (html.match(/<circle[^>]*class="month-dot"/g) || []).length;
+const tipCount = (html.match(/<circle[^>]*fill="none" data-tip=/g) || []).length;
 assert.ok(
-  markerCount === 4 && tipCount === 4,
+  markerCount === 4 && tipCount === 4 && (html.match(/data-tip=/g) || []).length === 4,
   `Replicata: count median markers and tooltips in the fleet chart.
-Expectata: one median dot with one tooltip per curve (4 each).
-Resultata: ${markerCount} circles, ${tipCount} tooltips.`,
+Expectata: one median dot with one tooltip target per curve (4 each).
+Resultata: ${markerCount} dots, ${tipCount} targets.`,
 );
+
+// --- 1b. Median markers are drawn whole (2026-10-03, audit #25) -------------
+// The y scale topped out at the tallest sampled density and the markers sat
+// inside the clip-path group, so Waymo's median marker (near its curve's peak)
+// lost its top 1.5-2.3 units on every metric. Markers now draw outside the
+// clip group, and the scale leaves headroom above the tallest marker and
+// sample.
+for (const key of ["fleet", "rides", "miles"]) {
+  const svg = vm.runInContext(`selectedGrowthMetric = ${JSON.stringify(key)}; renderFleetForecastChart()`, ctx);
+  const clip = svg.match(/<clipPath id="fleet-clip"><rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/).slice(1).map(Number);
+  const group = svg.indexOf('<g clip-path="url(#fleet-clip)">');
+  const groupEnd = svg.indexOf("</g>", group);
+  // The visible dots (class month-dot); their hit circles follow them, also
+  // outside the clip group.
+  const circles = [...svg.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="([\d.]+)" class="month-dot"/g)]
+    .map(m => ({at: m.index, cx: Number(m[1]), cy: Number(m[2]), r: Number(m[3])}));
+  const hits = [...svg.matchAll(/<circle cx="[\d.-]+" cy="[\d.-]+" r="[\d.]+" fill="none" data-tip=/g)];
+  const bad = circles.filter(c => (c.at > group && c.at < groupEnd) || c.cy - c.r - 0.75 < clip[1]
+    || c.cx < clip[0] || c.cx > clip[0] + clip[2]);
+  assert.ok(circles.length === 4 && bad.length === 0 && hits.length === 4 && hits.every(h => h.index > groupEnd),
+    `Replicata: render the fleet forecast's ${key} chart and locate its four median markers.
+Expectata: each drawn outside the clip-path group, its centre inside the frame and its disc (r plus the 0.75 halo) at or below the frame's top edge (y ${clip[1]}).
+Resultata: ${JSON.stringify(bad)} of ${circles.length}.`);
+}
+vm.runInContext(`selectedGrowthMetric = "fleet";`, ctx);
 
 // --- 2. The chart container exists in index.html (init has a render target) ---
 
@@ -245,18 +271,48 @@ assert.ok(milesByKey.robotaxi.median > milesA.lo && milesByKey.robotaxi.median <
   `Replicata: read Tesla's robotaxi-scope cumulative-miles median.
 Expectata: inside scenario A's band [${milesA.lo}, ${milesA.hi}] (A carries ~71% of the mass) and drawn solid.
 Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
-// Tesla's robotaxi FLEET lane four months out must not put 5% of its mass
-// below the LAST OBSERVED floor: FLEET_HISTORY's 2026-08 row (150 [90, 220])
-// re-based the miles scenarios on 2026-09-04 but not the fleet scenario A,
-// which still sat on the mid-2026 ~25-28-car anchor (median 180, 5th
-// percentile 79 < 90) until 2026-09-26.
+// No FLEET lane four months out may put 5% of its mass below the LAST
+// OBSERVED floor of its helmer, nor its median below the last observed best.
+// Tesla's robotaxi lane broke this until 2026-09-26: FLEET_HISTORY's 2026-08
+// row (150 [90, 220]) re-based the miles scenarios on 2026-09-04 but not the
+// fleet scenario A, which still sat on the mid-2026 ~25-28-car anchor (median
+// 180, 5th percentile 79 < 90). The rule held for Tesla alone until
+// 2026-10-03, when Zoox's June setting (median 150, sigma 0.45) still put its
+// 5th percentile at 72 under a fleet observed at 100 [80, 130] (audit #19).
+// Every lane is checked, Tesla's all-HW4 fork against Tesla's history.
 {
-  const lastTesla = JSON.parse(vm.runInContext(`JSON.stringify(FLEET_HISTORY.Tesla.at(-1))`, ctx));
-  const fleetRobotaxi = JSON.parse(vm.runInContext(`JSON.stringify(fleetDistributionCurves("fleet").find(c => c.key === "robotaxi"))`, ctx));
-  assert.ok(fleetRobotaxi.lo90 >= lastTesla.lo && fleetRobotaxi.median >= lastTesla.best,
-    `Replicata: compare Tesla's robotaxi fleet lane at Jan 2027 with the latest FLEET_HISTORY observation (${lastTesla.month}: ${lastTesla.best} [${lastTesla.lo}, ${lastTesla.hi}]).
-Expectata: 5th percentile >= the observed low edge ${lastTesla.lo} and median >= the observed best ${lastTesla.best}.
-Resultata: lo90 ${Math.round(fleetRobotaxi.lo90)}, median ${Math.round(fleetRobotaxi.median)}.`);
+  const lanes = JSON.parse(vm.runInContext(`JSON.stringify(fleetDistributionCurves("fleet").map(c => ({
+    label: c.legendLabel, helmer: c.historyHelmer, lo90: c.lo90, median: c.median,
+    last: FLEET_HISTORY[c.historyHelmer].at(-1)})))`, ctx));
+  const below = lanes.filter(l => !(l.lo90 >= l.last.lo && l.median >= l.last.best));
+  assert.ok(lanes.length === 4 && below.length === 0,
+    `Replicata: compare each fleet lane's Jan-2027 forecast with its helmer's latest FLEET_HISTORY observation.
+Expectata: in all 4 lanes, 5th percentile >= the observed low edge and median >= the observed best.
+Resultata: ${below.map(l => `${l.label}: lo90 ${Math.round(l.lo90)}, median ${Math.round(l.median)} vs ${l.last.month} ${l.last.best} [${l.last.lo}, ${l.last.hi}]`).join("; ")}.`);
+}
+
+// Each fleet history runs as far as the evidence the repo holds (audit #87,
+// #19): Waymo said "more than 4,000 vehicles" on Sep 1, 2026 (TechCrunch;
+// data/vmt.csv's 2026-07..09 Waymo rationales), and Zoox had "about 100
+// custom-built robotaxis ... spread across four U.S. cities" on Sep 17, 2026
+// (TechCrunch), after recall 26E044000 covered 105 units, its whole deployed
+// driverless fleet, on Jul 10. Until 2026-10-03 the histories stopped at
+// 2026-05 (Waymo, 3,750) and 2026-06 (Zoox, 100). A stock counted on Sep 1
+// or Sep 17 sits at the 2026-09 step, as the Jan-1 forecast sits at 2027-01.
+{
+  const hist = JSON.parse(vm.runInContext(`JSON.stringify(FLEET_HISTORY)`, ctx));
+  const at = (helmer, month) => hist[helmer].find(r => r.month === month);
+  const waymo = at("Waymo", "2026-09"), zoox = at("Zoox", "2026-09");
+  const problems = [];
+  if (!(waymo && waymo.lo >= 4000)) problems.push(`Waymo 2026-09: ${JSON.stringify(waymo)}, want a row whose low edge is at least 4,000 ("more than 4,000 vehicles")`);
+  if (!(zoox && zoox.lo <= 100 && 105 <= zoox.hi)) problems.push(`Zoox 2026-09: ${JSON.stringify(zoox)}, want a row whose range holds "about 100" and the Jul-10 recall's 105`);
+  for (const helmer of ["Waymo", "Zoox"]) {
+    if (hist[helmer].at(-1).month < "2026-09") problems.push(`${helmer}'s history ends at ${hist[helmer].at(-1).month}`);
+  }
+  assert.ok(problems.length === 0,
+    `Replicata: read FLEET_HISTORY's last Waymo and Zoox rows.
+Expectata: both run through 2026-09, on the Sep-1 Waymo and Sep-17 Zoox fleet statements.
+Resultata: ${problems.join("; ")}.`);
 }
 assert.ok(milesByKey.hw4.median > 150000000 && milesByKey.hw4.dashed,
   `Replicata: read Tesla's HW4-scope cumulative-miles curve.

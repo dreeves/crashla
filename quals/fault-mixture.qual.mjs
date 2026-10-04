@@ -111,7 +111,9 @@ const fanMass = run(`
   const mpi = entry.mpiByMetric.atfault;
   const fracs = entry.incidents.atFaultFracs;
   const comps = mixtureComponents(entry.incidents.atFault, fracs);
-  const cdf = makeMarginalMpiCdf(comps, entry.vmtMin, entry.vmtBest, entry.vmtMax);
+  // the band behind the month's posterior (the one-month window band, which
+  // the record carries since 2026-10-03)
+  const cdf = makeMarginalMpiCdf(comps, mpi.vmtMin, mpi.vmtBest, mpi.vmtMax);
   return CI_FAN_LEVELS.map((level, i) =>
     ({ level, mass: cdf(mpi.bands[i].hi) - cdf(mpi.bands[i].lo) }));
 })()`);
@@ -129,21 +131,61 @@ Resultata: ${mass}.`);
 // outside [vmtMin, vmtMax] is exactly 5% (split sigmaLo:sigmaHi between the
 // tails) even when the band is asymmetric — the S1 audit finding: a single
 // symmetric sigma left only 92.45% between Tesla-July-style endpoints.
-// Pinned against an INDEPENDENT scipy integration (trapezoid over the
-// +/-4-sigma-truncated renormalized two-piece prior, gammaincc + brentq),
-// computed 2026-08-21, NOT against the app's own machinery.
+// Pinned against an INDEPENDENT scipy integration, NOT against the app's own
+// machinery. Until 2026-10-03 the pins were 14996 / 67703 / 419456 within
+// 0.3%: the values of the prior TRUNCATED at +/-4 sigma (the app's
+// integration range then), which moves this band's 2.5% edge by 4e-4. They
+// are now the untruncated prior's (Gauss-Legendre on each half of the prior,
+// gammaincc + brentq; impl/reports/E1-evidence/scripts/ref_pins.py), held to
+// the model tolerance of section 7.
+const MODEL_TOL = 5e-5;
 const asym = run(`
 (() => {
   const est = estimateMpiWindow(2, null, 55000, 170000, 340000);
   return { lo: est.lo, median: est.quant(0.5), hi: est.hi };
 })()`);
-const ASYM_PINS = { lo: 14996, median: 67703, hi: 419456 };
+const ASYM_PINS = { lo: 14989.976863, median: 67702.026848, hi: 419518.508250 };
 for (const [key, pin] of Object.entries(ASYM_PINS)) {
-  assert.ok(Math.abs(asym[key] / pin - 1) < 0.003,
+  assert.ok(Math.abs(asym[key] / pin - 1) < MODEL_TOL,
     `Replicata: estimateMpiWindow(k=2, asymmetric band [55k, 170k, 340k]), ${key} quantile.
-Expectata: ${pin} within 0.3% (independent scipy integration of the two-piece
-prior — mode at vmtBest, endpoints at 1.96 of their own side's sigma).
-Resultata: ${asym[key]}.`);
+Expectata: ${pin} within ${MODEL_TOL} relative (independent scipy integration of
+the untruncated two-piece prior — mode at vmtBest, endpoints at 1.96 of their
+own side's sigma).
+Resultata: ${asym[key]} (${(asym[key] / pin - 1).toExponential(2)}).`);
+}
+
+// --- 7. Displayed quantiles are the documented model's (audit #88) ---------
+// The page's cards and tooltips print MPIs to the mile and to four
+// significant figures, so the quadrature behind them must reproduce the
+// model those numbers claim: until 2026-10-03 the Simpson grid straddled the
+// two-piece prior's kink at its mode and cut the prior at +/-4 sigma, and the
+// default window's Tesla card read 126,364 (83,588 - 202,762) for a model
+// value of 126,328 (83,576 - 202,725); a data-through month's wide band missed
+// by up to 1.2e-3. Synthetic inputs shaped like the page's hardest estimates
+// (a 23-incident window, a fault mixture on it, the widest single-month band
+// with 10 incidents, a 1.1-incident mixture and k = 0 on wide bands, 1,164
+// incidents on a tight one), pinned to the untruncated model by the same
+// independent recompute as section 6.
+const MODEL_PINS = {
+  "k=23 window": [23, null, [2534258.56, 2723730.68, 3498000], [83575.547504, 126328.332973, 202724.861202]],
+  "k=8.55 fault mixture": [8.55, [1, 1, 0.75, 0.9, 1, 1, 1, 1, 0.9], [2534258.56, 2723730.68, 3498000], [179390.468547, 336182.511894, 739438.709780]],
+  "k=10, widest band": [10, null, [800818.32768, 1931502.908188, 13342288.96], [74613.841714, 275894.293438, 1694666.935489]],
+  "k=1.1 mixture, widest band": [1.1, [0.1, 0.1, 0.9], [800818.32768, 1931502.908188, 13342288.96], [333840.885551, 2463490.814450, 85526942.372793]],
+  "k=0, wide band": [0, null, [8656.536, 23726.22, 172380], [8826.256018, 164979.315485, 84521164.084808]],
+  "k=1164, tight band": [1164, null, [200843798.32768, 211033758.908188, 232946420.96], [169252.198746, 184539.003026, 204701.744262]],
+};
+for (const [name, [k, fracs, band, pins]] of Object.entries(MODEL_PINS)) {
+  const got = run(`(() => {
+    const est = estimateMpiWindow(${k}, ${JSON.stringify(fracs)}, ${band.join(", ")});
+    return [est.lo, est.quant(0.5), est.hi];
+  })()`);
+  got.forEach((value, i) => {
+    const which = ["2.5%", "50%", "97.5%"][i];
+    assert.ok(Math.abs(value / pins[i] - 1) < MODEL_TOL,
+      `Replicata: estimateMpiWindow for "${name}" (k=${k}, fracs ${JSON.stringify(fracs)}, band [${band.join(", ")}]), ${which} quantile.
+Expectata: the documented model's ${pins[i]} within ${MODEL_TOL} relative.
+Resultata: ${value} (${(value / pins[i] - 1).toExponential(2)}).`);
+  });
 }
 
 console.log("qual pass: fault fractions enter as a Poisson-binomial mixture and every displayed CI is an exact quantile pair of its drawn posterior");

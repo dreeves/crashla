@@ -171,50 +171,16 @@ function mixtureComponents(k, fracs) {
 
 // Marginal CDF of true MPI: P(MPI <= x) with the rate-posterior mixture
 // integrated over the same two-piece log-normal VMT prior as the drawn bell
-// (makeMarginalMpiDensity). P(MPI <= x | K, v) = Q(a_K, v/x) (upper
-// regularized gamma). Consecutive shapes use the recurrence
-// Q(a+1, w) = Q(a, w) + w^a e^{-w} / Γ(a+1), so each prior node costs ONE
-// gammainc plus cheap multiplies regardless of how many K components exist.
-// Returns cdf(x); cdf.evalBoth(x) gives {cdf, dens} where dens is
-// dF/d(ln x) (the marginal density w.r.t. log x), for Newton quantile-finding.
-// Simpson nodes over log(VMT); odd, adaptive. The conditional CDF Q(a, v/x)
-// transitions over a width of ~1/sqrt(a) in ln(v), so the node spacing
-// 8·sigma/(n-1) must stay under ~0.5/sqrt(aMax) or the quantiles of data-rich
-// estimates (Waymo all-incidents, a ~ 2000) pick up an O(0.3%) staircase bias
-// — measured as CI mass 0.952 instead of 0.950 at a fixed 21 nodes. The
-// adaptive count keeps every displayed window quantile within ~1e-4 relative
-// of the exact marginal (the widest single-month bands — the data-through
-// month, hi/lo ratio > 4 — reach ~1e-3 from the ±4σ prior truncation, not
-// from the node count). Relative to the
-// exact marginal. Callers can force a small fixed count where only coarse
-// threshold comparisons are needed (the fault-flip search uses 13).
-const MPI_CDF_MIN_NODES = 21;
-const MPI_CDF_MAX_NODES = 161;
-function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax, nNodes = 0) {
-  const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
-  if (!nNodes) {
-    const aMax = comps[comps.length - 1].a;
-    const wanted = Math.ceil(1 + 8 * (sigmaLo + sigmaHi) * Math.sqrt(aMax));
-    nNodes = Math.min(MPI_CDF_MAX_NODES, Math.max(MPI_CDF_MIN_NODES, wanted)) | 1;
-  }
-  const nodes = [];
-  if (sigmaLo + sigmaHi > 0) {
-    const h = VMT_MARGIN_SIGMAS * (sigmaLo + sigmaHi) / (nNodes - 1);
-    let wsum = 0;
-    for (let i = 0; i < nNodes; i++) {
-      const u = mu - VMT_MARGIN_SIGMAS * sigmaLo + i * h;
-      const sw = i === 0 || i === nNodes - 1 ? 1 : i % 2 ? 4 : 2;
-      const z = u === mu ? 0 : u < mu ? (u - mu) / sigmaLo : (u - mu) / sigmaHi;
-      const pw = sw * Math.exp(-0.5 * z * z);
-      nodes.push({v: Math.exp(u), lnv: u, pw});
-      wsum += pw;
-    }
-    // Normalize the prior weights exactly so cdf -> 1 as x -> Infinity (the
-    // +/-4-sigma truncation would otherwise strand ~6e-5 of mass).
-    for (const n of nodes) n.pw /= wsum;
-  } else {
-    nodes.push({v: vmtBest, lnv: Math.log(vmtBest), pw: 1});
-  }
+// (makeMarginalMpiDensity), on the same nodes (vmtPriorNodes). P(MPI <= x |
+// K, v) = Q(a_K, v/x) (upper regularized gamma). Consecutive shapes use the
+// recurrence Q(a+1, w) = Q(a, w) + w^a e^{-w} / Γ(a+1), so each prior node
+// costs ONE gammainc plus cheap multiplies regardless of how many K
+// components exist. Returns cdf(x); cdf.evalBoth(x) gives {cdf, dens} where
+// dens is dF/d(ln x) (the marginal density w.r.t. log x), for Newton
+// quantile-finding. The fault-flip search uses this same CDF (it forced a
+// 13-node one until 2026-10-03). Accuracy: see vmtPriorNodes.
+function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax) {
+  const prior = vmtPriorNodes(vmtMin, vmtBest, vmtMax, comps[comps.length - 1].a);
   const a0 = comps[0].a;
   const lg0 = lgamma(a0);      // for the density recurrence base
   const lg1 = lgamma(a0 + 1);  // for the CDF recurrence base
@@ -227,9 +193,9 @@ function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax, nNodes = 0) {
   const evalBoth = x => {
     const lnx = Math.log(x);
     let cdf = 0, dens = 0;
-    for (const node of nodes) {
-      const w = node.v / x;
-      const lnw = node.lnv - lnx;
+    for (let i = 0; i < prior.v.length; i++) {
+      const w = prior.v[i] / x;
+      const lnw = prior.lnv[i] - lnx;
       let cdfSum = 0, densSum = 0;
       if (consecutive) {
         let q = 1 - gammainc(a0, w);              // Q(a0, w)
@@ -250,8 +216,8 @@ function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax, nNodes = 0) {
           densSum += comps[j].w * Math.exp(comps[j].a * lnw - w - lgs[j]);
         }
       }
-      cdf += node.pw * cdfSum;
-      dens += node.pw * densSum;
+      cdf += prior.w[i] * cdfSum;
+      dens += prior.w[i] * densSum;
     }
     return {cdf, dens};
   };
@@ -305,50 +271,24 @@ function makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax) {
 
 // Mixture version of makeMarginalMpiDensity (below): the drawn bell for a
 // fault metric is the weighted sum of the per-K marginal bells. Falls back to
-// the single-component builder so integer-count metrics keep bit-identical
-// curves. Same node grid and recurrence trick as the CDF: consecutive shapes
-// differ by 1, so each node costs two exps plus cheap multiplies.
+// the single-component builder for integer-count metrics. Same nodes and
+// recurrence trick as the CDF: consecutive shapes differ by 1, so each node
+// costs one exp plus cheap multiplies. The returned function carries .mean,
+// the drawn curve's mean (marginalMpiMean).
 function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
   if (comps.length === 1) {
     return makeMarginalMpiDensity(comps[0].a, vmtMin, vmtBest, vmtMax);
   }
-  const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
+  const prior = vmtPriorNodes(vmtMin, vmtBest, vmtMax, comps[comps.length - 1].a);
   const a0 = comps[0].a;
   const lg0 = lgamma(a0);
-  if (!(sigmaLo + sigmaHi > 0)) {
-    return x => {
-      const lnw = Math.log(vmtBest) - Math.log(x); // ln(v/x)
-      let d = Math.exp(a0 * lnw - vmtBest / x - lg0);
-      let sum = comps[0].w * d;
-      const w = vmtBest / x;
-      for (let j = 1; j < comps.length; j++) {
-        d *= w / comps[j - 1].a;
-        sum += comps[j].w * d;
-      }
-      return sum;
-    };
-  }
-  const h = VMT_MARGIN_SIGMAS * (sigmaLo + sigmaHi) / (VMT_MARGIN_NODES - 1);
-  const lnNorm = Math.log(2 / ((sigmaLo + sigmaHi) * Math.sqrt(2 * Math.PI)));
-  const lnvs = new Float64Array(VMT_MARGIN_NODES);
-  const betas = new Float64Array(VMT_MARGIN_NODES);
-  const logPW = new Float64Array(VMT_MARGIN_NODES); // ln(simpson_w · prior), no alpha terms
-  for (let i = 0; i < VMT_MARGIN_NODES; i++) {
-    const u = mu - VMT_MARGIN_SIGMAS * sigmaLo + i * h;
-    const sw = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
-    const z = u === mu ? 0 : u < mu ? (u - mu) / sigmaLo : (u - mu) / sigmaHi;
-    lnvs[i] = u;
-    betas[i] = Math.exp(u);
-    logPW[i] = Math.log(sw) + lnNorm - 0.5 * z * z;
-  }
-  const hOver3 = h / 3;
-  return x => {
-    const lnx = Math.log(x), invX = 1 / x;
+  const logW = prior.w.map(w => Math.log(w)); // ln(prior weight), no alpha terms
+  const density = x => {
+    const lnx = Math.log(x);
     let sum = 0;
-    for (let i = 0; i < VMT_MARGIN_NODES; i++) {
-      const t = lnvs[i] - lnx;      // ln(v/x)
-      const r = betas[i] * invX;    // v/x
-      let d = Math.exp(logPW[i] + a0 * t - r - lg0);
+    for (let i = 0; i < prior.v.length; i++) {
+      const r = prior.v[i] / x;    // v/x
+      let d = Math.exp(logW[i] + a0 * (prior.lnv[i] - lnx) - r - lg0);
       let inner = comps[0].w * d;
       for (let j = 1; j < comps.length; j++) {
         d *= r / comps[j - 1].a;
@@ -356,8 +296,10 @@ function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
       }
       sum += inner;
     }
-    return sum * hOver3;
+    return sum;
   };
+  density.mean = marginalMpiMean(comps, prior);
+  return density;
 }
 
 // Inverse-gamma density w.r.t. log(x): f(x)·x where f is the InvGamma PDF.
@@ -386,12 +328,6 @@ function logNormalLogDensity(x, mu, sigma) {
 // the sampling bell is narrower than the band (e.g. data-rich Waymo), so the prior
 // must be smooth. Returns a density w.r.t. log(x), matching invGammaLogDensity so
 // the two compose on the same log axis.
-const VMT_MARGIN_NODES = 81;  // Simpson nodes over log(VMT); odd. Driven by SMOOTHNESS
-                              // of the highest-alpha curve (Waymo all-incident): fewer
-                              // nodes leave point-accuracy fine but let the narrow
-                              // sampling spike drift between nodes, putting sub-pixel
-                              // bumps in the bell (61 -> non-unimodal; 81 is clean).
-const VMT_MARGIN_SIGMAS = 4;  // integrate the prior over ± this many sigma (per side)
 
 // Two-piece ("split") log-normal prior on VMT: MODE at vmtBest, and each
 // authored band endpoint sits at exactly ±1.96 of its own side's sigma, so
@@ -411,34 +347,105 @@ function splitPriorSigmas(vmtMin, vmtBest, vmtMax) {
   return {mu, sigmaLo, sigmaHi};
 }
 
+// Quadrature nodes for integrating over the two-piece VMT prior: every
+// marginal MPI CDF, density and mean on the page integrates on these.
+// Simpson's rule in z = (ln VMT - mu) / sigma, on each half of the prior
+// separately, out to VMT_MARGIN_SIGMAS of that half's own sigma, so the mode
+// is a node of both halves. Until 2026-10-03 one grid spanned
+// mu - 4·sigmaLo .. mu + 4·sigmaHi, so for any asymmetric band a panel
+// straddled the mode, where the prior's second derivative jumps (from
+// -1/sigmaLo² to -1/sigmaHi², relative to its height) and Simpson's rule loses
+// its h^4 accuracy; together with the ±4σ cut that put displayed MPIs up to
+// 7.7e-4 from the documented (untruncated) model (audit #88; the default
+// Tesla card read 126,364 for a model value of 126,328). Each half's panel
+// count is even and grows with two needs: a z-step of at most
+// VMT_MARGIN_SIGMAS / VMT_PRIOR_MIN_PANELS for the Gaussian itself, and a
+// step in ln(VMT) of at most VMT_PRIOR_LNV_STEP / sqrt(aMax), because the
+// conditional CDF Q(a, v/x) turns over a width of ~1/sqrt(a) in ln v (a
+// fixed 21 nodes once biased Waymo's all-incident CI mass to 0.952) and the
+// drawn density's narrow sampling bell must not drift between nodes (61 fixed
+// nodes put sub-pixel bumps in it). VMT_PRIOR_MAX_PANELS caps the cost.
+// Weights carry the Simpson factor, the step and the prior's shape, and are
+// normalized to sum to 1 (the stranded tail mass beyond VMT_MARGIN_SIGMAS is
+// ~4e-8). Measured on 2026-10-03 against an independent integration of the
+// untruncated model (Gauss-Legendre in scipy) over 150 window cards and all
+// 1,050 per-month posteriors, the displayed 2.5/50/97.5% quantiles sit
+// within 4e-5 relative (the worst are k = 0 on a data-through month's wide
+// band; the median window card's error is 3.2e-6), against up to 7.7e-4
+// before. That is finer than any tooltip's rounding (one decimal of K, M or
+// B: at most four figures) but not the cards' whole miles: the default
+// window's Tesla card reads 126,329 for the model's 126,328, 322 of the 450
+// whole-mile card values still differ from the model's in their last
+// digits, and 16 of 3,150 tooltip values round differently from the model's
+// (211 before), each within 4e-5 of a rounding boundary.
+// fault-mixture.qual holds six such estimates to 5e-5.
+// A degenerate band (vmtMin = vmtBest = vmtMax) is one node of weight 1 at
+// vmtBest exactly, so the marginal reduces bit-for-bit to the point posterior.
+const VMT_MARGIN_SIGMAS = 5.5;     // each half of the prior out to this many of its sigmas
+const VMT_PRIOR_MIN_PANELS = 20;   // per half: z-steps of at most 5.5 / 20
+const VMT_PRIOR_MAX_PANELS = 160;  // per half
+const VMT_PRIOR_LNV_STEP = 0.25;   // ln(VMT) steps of at most this / sqrt(aMax)
+function vmtPriorNodes(vmtMin, vmtBest, vmtMax, aMax) {
+  const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
+  if (sigmaLo + sigmaHi === 0) return {lnv: [mu], v: [vmtBest], w: [1]};
+  const lnv = [], w = [];
+  for (const [sigma, sign] of [[sigmaLo, -1], [sigmaHi, 1]]) {
+    const wanted = Math.ceil(VMT_MARGIN_SIGMAS * sigma * Math.sqrt(aMax) / VMT_PRIOR_LNV_STEP);
+    const panels = 2 * Math.ceil(Math.min(VMT_PRIOR_MAX_PANELS, Math.max(VMT_PRIOR_MIN_PANELS, wanted)) / 2);
+    const dz = VMT_MARGIN_SIGMAS / panels;
+    for (let j = 0; j <= panels; j++) {
+      const z = j * dz;
+      const simpson = j === 0 || j === panels ? 1 : j % 2 ? 4 : 2;
+      lnv.push(mu + sign * sigma * z);
+      w.push(simpson * sigma * dz * Math.exp(-0.5 * z * z));
+    }
+  }
+  // A half of zero width (vmtMin = vmtBest, or vmtBest = vmtMax) carries no
+  // mass; its nodes are dropped rather than evaluated.
+  const total = w.reduce((s, x) => s + x, 0);
+  const keep = w.map(x => x > 0);
+  return {
+    lnv: lnv.filter((_, i) => keep[i]),
+    v: lnv.filter((_, i) => keep[i]).map(u => Math.exp(u)),
+    w: w.filter((_, i) => keep[i]).map(x => x / total),
+  };
+}
+
+// Mean of a marginal MPI curve: MPI | K, v ~ InvGamma(a_K, v) has mean
+// v / (a_K - 1), so E[MPI] = E[V] · sum_K w_K / (a_K - 1), infinite when a
+// component has a_K <= 1 (k = 0, or fractional fault mass reaching K = 0).
+// E[V] is the prior's mean on the curve's own nodes, so this is the mean of
+// the drawn curve. Until 2026-10-03 the distribution tooltip used v = vmtBest,
+// the mean at the prior's mode, so right-skewed curves printed mean < peak <
+// median (Tesla all incidents: 121.1K for a drawn mean of 130.7K; audit #14).
+function marginalMpiMean(comps, prior) {
+  const meanV = prior.v.reduce((s, v, i) => s + prior.w[i] * v, 0);
+  return comps.some(c => c.a <= 1) ? Infinity
+    : meanV * comps.reduce((s, c) => s + c.w / (c.a - 1), 0);
+}
+
 // Build a density function for true MPI marginalized over the VMT band. All the
 // alpha/band-dependent work (lgamma, node positions, two-piece prior weights) is
 // hoisted here so the returned closure's per-x hot loop is just one exp per node —
-// the distribution chart evaluates it ~250x per curve, live, on the slider drag.
-// Each node's exponent stays combined in a single exp (the large alpha*u, lgamma,
-// and alpha*ln(x) terms cancel) to avoid overflow at large alpha.
+// the distribution chart evaluates it a few hundred times per curve, live, on the
+// slider drag. Each node's exponent stays combined in a single exp (the large
+// alpha*u, lgamma, and alpha*ln(x) terms cancel) to avoid overflow at large
+// alpha, in the same order as invGammaLogDensity, so a degenerate band's single
+// node reproduces the point density bit-for-bit. The returned function carries
+// .mean, the drawn curve's mean (marginalMpiMean).
 function makeMarginalMpiDensity(alpha, vmtMin, vmtBest, vmtMax) {
-  const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
-  if (!(sigmaLo + sigmaHi > 0)) return x => invGammaLogDensity(x, alpha, vmtBest);
-  const h = VMT_MARGIN_SIGMAS * (sigmaLo + sigmaHi) / (VMT_MARGIN_NODES - 1);
-  const lnNorm = Math.log(2 / ((sigmaLo + sigmaHi) * Math.sqrt(2 * Math.PI)));
+  const prior = vmtPriorNodes(vmtMin, vmtBest, vmtMax, alpha);
   const lg = lgamma(alpha);
-  const betas = new Float64Array(VMT_MARGIN_NODES); // VMT at each node
-  const logW = new Float64Array(VMT_MARGIN_NODES);  // ln(simpson_w · prior) + alpha·u − lgamma
-  for (let i = 0; i < VMT_MARGIN_NODES; i++) {
-    const u = mu - VMT_MARGIN_SIGMAS * sigmaLo + i * h;
-    const sw = i === 0 || i === VMT_MARGIN_NODES - 1 ? 1 : i % 2 ? 4 : 2;
-    const z = u === mu ? 0 : u < mu ? (u - mu) / sigmaLo : (u - mu) / sigmaHi;
-    betas[i] = Math.exp(u);
-    logW[i] = Math.log(sw) + lnNorm - 0.5 * z * z + alpha * u - lg;
-  }
-  const hOver3 = h / 3;
-  return x => {
-    const alnx = alpha * Math.log(x), invX = 1 / x;
+  // ln(prior weight) + alpha·ln(v) − lgamma, per node
+  const logW = prior.lnv.map((u, i) => Math.log(prior.w[i]) + alpha * u - lg);
+  const density = x => {
+    const alnx = alpha * Math.log(x);
     let sum = 0;
-    for (let i = 0; i < VMT_MARGIN_NODES; i++) sum += Math.exp(logW[i] - alnx - betas[i] * invX);
-    return sum * hOver3; // Simpson; the two-piece prior integrates to ~1 over ±4 sigma
+    for (let i = 0; i < prior.v.length; i++) sum += Math.exp(logW[i] - alnx - prior.v[i] / x);
+    return sum;
   };
+  density.mean = marginalMpiMean([{a: alpha, w: 1}], prior);
+  return density;
 }
 // Convenience point-evaluator (rebuilds the closure for one x); used by quals.
 function marginalMpiLogDensity(x, alpha, vmtMin, vmtBest, vmtMax) {
@@ -485,20 +492,34 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // hi = most conservative (police-reported or observed, lower rate)
 //
 // Sources:
-//   Kusano/Scanlon 7.1M-mi paper (arxiv 2312.12675, Table 3):
+//   Kusano et al. 7.1M-mi paper (arxiv 2312.12675, Table 3):
 //     All crashes: Blincoe-adj 9.67 IPMM, police-reported 4.68 IPMM
 //     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.92 IPMM (Table 3; the
 //       paper's results table prints 1.91)
 //   Waymo Safety Impact hub per-city human IPMM (thru Jun 2026, five areas,
-//   Sep-24-2026 release; supersedes the Kusano & Scanlon 56.7M paper
-//   2026-08-22): Any-injury 1.95..6.64 -> blended 3.77; Airbag (any vehicle)
-//   1.27..2.83 -> 1.62; SSI+ 0.104..0.391 -> 0.213.
+//   Sep-24-2026 release; supersedes the Kusano et al. 56.7M paper
+//   2026-08-22): Any-injury 1.95..6.64 -> blended 3.77 (observed, i.e.
+//   without the hub's 32% Blincoe correction: 1.34..4.54 -> 2.58); Airbag
+//   (any vehicle) 1.27..2.83 -> 1.62; SSI+ 0.104..0.391 -> 0.213.
+//   CRSS 2024 microdata (NHTSA; weighted crashed in-transport vehicles, VMT
+//   3,294,031M per 813791): Hospitalization+ (anyone transported for
+//   treatment, or an A or K injury) 0.512 per M mi nationally; for urban
+//   non-interstate passenger vehicles, Hospitalization+ involvements per
+//   injury-crash involvement 0.543 and per airbag-crash involvement 0.657;
+//   "Stopped in Roadway" pre-crash movement 14.6% of crashed in-transport
+//   vehicles (urban non-interstate passenger vehicles), 12.9% (all vehicles,
+//   all roads). human-benchmark-provenance.qual holds the recipe.
+//   Blincoe et al. 2023 (813403): 31.9% of injury-crash vehicles and 59.7% of
+//   PDO vehicles unreported (Table 2-9); its crashes exclude parking lots.
 //   FARS 2024: national 1.19 fatalities/100M VMT (2023: 1.26).
 //   IIHS urban/rural: urban all-road deaths 1.17 (2022), 1.07 (2023), 1.01 (2024)
 //   per 100M VMT; 2021 urban peak 1.20.
 //
 // Derived metrics use the subset-bounding approach: if metric B is a subset
 // of metric A, then MPI-B >= MPI-A. The true value is bounded by neighbors.
+//
+// srcLinks: the URLs of the sources a band's numbers come from; each URL's
+// one label is in BENCHMARK_SOURCES below.
 //
 // fiveDay: true marks metrics whose qualifying incidents are structurally on
 // NHTSA's five-day reporting track — Third Amended SGO (Apr 24, 2025)
@@ -528,6 +549,36 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // a pro-AV residual for the crash-frequency metrics; per the 2026-06-26
 // investigation it is immaterial today (9 of 2049 incidents freeway-coded,
 // all Waymo, none airbag/serious/fatal).
+//
+// One label per benchmark source, keyed by URL (audit #68, 2026-10-03). Every
+// humanMPI srcLinks entry is a URL from this table, so a list that gathers
+// several bands' sources (a human card's "Benchmarks:" line) names each
+// source once. Until 2026-10-03 each srcLinks entry carried its own label, and
+// the same URL appeared under two (e.g. arXiv 2312.12675 as "... 2024, Table 3"
+// and "... 2024"); where it did, the table keeps the more specific one.
+const BENCHMARK_SOURCES = {
+  "https://arxiv.org/abs/2312.12675": "Kusano et al. 2024, Table 3",
+  "https://arxiv.org/abs/2505.01515": "Kusano et al. 56.7M (arxiv 2505.01515)",
+  "https://waymo.com/safety/impact/": "Waymo safety impact (271.3M mi)",
+  "https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260924.pdf": "Waymo Data Hub release notes",
+  "https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf": "Third Amended SGO (2025)",
+  "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791": "NHTSA 2024 crash summary",
+  "https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/": "NHTSA CRSS 2024",
+  "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013": "Blincoe et al. 2015 (underreporting)",
+  "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403": "Blincoe et al. 2023",
+  "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115": "NHTSA critical reason (94%)",
+  "https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison": "IIHS urban/rural comparison",
+  "https://www.uber.com/us/en/about/reports/us-safety-report/": "Uber US Safety Report",
+  "https://www.lyft.com/blog/posts/2024-safety-transparency-report": "Lyft Safety Transparency Report",
+};
+// Link lists join with a semicolon: "Kusano et al. 2024, Table 3" carries a
+// comma, which made a comma-joined list read it as two entries.
+const SOURCE_LIST_SEP = "; ";
+function sourceLink(url) {
+  const label = BENCHMARK_SOURCES[url];
+  assert(label !== undefined, "benchmark source URL missing from BENCHMARK_SOURCES", {url});
+  return `<a href="${escAttr(url)}">${escHtml(label)}</a>`;
+}
 const METRIC_DEFS = [
   { key: "all",
     blank: "any",
@@ -540,10 +591,14 @@ const METRIC_DEFS = [
       HumansAV: {lo: 103000, hi: 214000,
         // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
         src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM; caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000 damage, no severity trigger) are exempt from AV reporting; this deflates AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible.',
+        // Kusano's 9.67 is Blincoe et al. 2023-adjusted (its p. 5); the release
+        // notes are the current (Sep 24, 2026) edition, which keeps the cited
+        // "impossible" passage (audit #42, #69).
         srcLinks: [
-          {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-          {label: 'Third Amended SGO (2025)', url: 'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf'},
-          {label: 'Waymo Data Hub release notes', url: 'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260624.pdf'},
+          'https://arxiv.org/abs/2312.12675',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf',
+          'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260924.pdf',
         ]},
       // CRSS 2024 (813791): ~6.18M police-reported crashes/yr, ~1.77 vehicles
       // per crash, ~3,294B VMT -> ~3.3 crashed vehicles per M mi (unchanged
@@ -554,10 +609,11 @@ const METRIC_DEFS = [
       HumansUS: {lo: 140000, hi: 300000,
         src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
-          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
-          {label: 'Third Amended SGO (2025)', url: 'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf'},
-          {label: 'Waymo Data Hub release notes', url: 'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260624.pdf'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf',
+          'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260924.pdf',
         ]},
     },
   },
@@ -568,17 +624,48 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => nonstationaryIncidentCount(rec.incidents.speeds),
-    // ~95-97% of all crashes are nonstationary (excl hit-while-parked)
+    // The AV side drops every 0-mph incident (nonstationaryIncidentCount), so
+    // the human band drops the crashed vehicles that were stationary at
+    // impact: the all-crash band / (1 - the CRSS 2024 share of crashed
+    // in-transport vehicles whose pre-crash movement was "Stopped in
+    // Roadway", P_CRASH1 = 5) — 14.587% for urban non-interstate passenger
+    // vehicles (AV cities; 14.79% if the 1.35% coded "Unknown" (P_CRASH1 = 99)
+    // are left out of the base, 14.62% with "Disabled or Parked in Travel Lane"
+    // added), 12.937% for all vehicles on all roads (US average). Both human
+    // benchmarks count in-transport vehicles only (Kusano et al. 2024: those
+    // "traveling (moving or stopped) in the roadway"), so parked vehicles were
+    // never in them. Until 2026-10-03 the bands instead divided by 0.95-0.97
+    // for a "hit-while-parked" share and kept the stopped vehicles the AV side
+    // drops (106k-225k and 144k-316k; audit #2). P_CRASH1 is the movement
+    // before the critical event, so a vehicle coded "Decelerating" (5% of
+    // vehicles) or "Starting in Road" (0.9%) may also have been at 0 mph at
+    // impact: the share is a floor, a pro-AV residual if anything. Edges to 3
+    // significant figures; human-benchmark-provenance.qual re-derives them.
     humanMPI: {
-      HumansAV: {lo: 106000, hi: 225000,
-        src: 'All-crash range adjusted for ~3\u20135% hit-while-parked share (CRSS)',
+      HumansAV: {lo: 121000, hi: 251000,
+        // All-crash range (AV cities)
+        // divided by (1 - 14.6%), the CRSS 2024 share of crashed in-transport
+        // vehicles that were stopped in the roadway at impact (pre-crash
+        // movement "Stopped in Roadway"; urban non-interstate passenger
+        // vehicles), matching the AV side's removal of its 0-mph incidents;
+        // parked vehicles are not in the in-transport benchmark, so there is no
+        // parked-vehicle step.
+        src: "All-crash range (AV cities) divided by (1 - 14.6%), the CRSS 2024 share of crashed in-transport vehicles that were stopped in the roadway at impact, matching the AV side's removal of its 0mph incidents",
         srcLinks: [
-          {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+          'https://arxiv.org/abs/2312.12675',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
         ]},
-      HumansUS: {lo: 144000, hi: 316000,
-        src: 'US-average all-crash range adjusted for ~3\u20135% hit-while-parked share (CRSS)',
+      HumansUS: {lo: 161000, hi: 345000,
+        // US-average all-crash range
+        // divided by (1 - 12.9%), the CRSS 2024 share of crashed in-transport
+        // vehicles stopped in the roadway at impact (all vehicles, all roads).
+        src: "US-average all-crash range divided by (1 - 12.9%), the CRSS 2024 share of crashed in-transport vehicles stopped in the roadway at impact (all vehicles, all roads).",
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
         ]},
     },
   },
@@ -589,17 +676,44 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => roadwayNonstationaryIncidentCount(rec),
-    // CRSS is already trafficway-only ≈ non-parking-lot; ~same ratio
+    // Same bands as nonstationary: both human benchmarks already exclude
+    // parking-lot crashes. CRSS samples trafficway crashes only; Kusano et
+    // al.'s AV-city benchmark is state police crash data restricted to
+    // surface streets (not CRSS, as the src said until 2026-10-03; audit #2),
+    // whose Blincoe et al. 2023 underreporting adjustment "does not include
+    // off-road or parking lot crashes" (813403 p. 1, note 1). So the human
+    // band is a non-parking-lot band for both metrics; the nonstationary
+    // metric's AV count keeps its parking-lot incidents, an anti-AV residual
+    // there, which this metric removes. (Until 2026-10-03 these edges were
+    // the nonstationary ones nudged up ~1.3% for a "similar ratio".)
     humanMPI: {
-      HumansAV: {lo: 108000, hi: 228000,
-        src: 'CRSS trafficway-only rates \u2248 non-parking-lot; similar ratio',
+      HumansAV: {lo: 121000, hi: 251000,
+        // the same band as
+        // Nonstationary (the all-crash range minus the CRSS 2024 share of
+        // crashed vehicles stopped in the roadway), because the police-reported
+        // benchmark (state crash records for the AV counties, per Kusano et al.
+        // 2024) and Blincoe et al. 2023's underreporting estimate both cover
+        // crashes on roadways only, not parking-lot crashes, so the human
+        // benchmark is already a non-parking-lot benchmark.
+        src: "The same band as Nonstationary because the police-reported benchmark and Blincoe et al 2023's underreporting estimate both cover crashes on roadways only, not parking-lot crashes. Ie, the human benchmark is already a non-parking-lot benchmark.",
         srcLinks: [
-          {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
+          'https://arxiv.org/abs/2312.12675',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
         ]},
-      HumansUS: {lo: 147000, hi: 320000,
-        src: 'CRSS trafficway-only rates \u2248 non-parking-lot; similar ratio applied to US-average range',
+      HumansUS: {lo: 161000, hi: 345000,
+        // the same band as
+        // Nonstationary (the US all-crash range minus the CRSS 2024 share of
+        // crashed vehicles stopped in the roadway), because CRSS covers
+        // trafficway crashes only and Blincoe et al. 2023's underreporting
+        // estimate excludes parking-lot crashes.
+        src: "The same band as Nonstationary because CRSS covers roadway crashes only and Blincoe et al 2023's underreporting estimate excludes parking-lot crashes.",
+        //'Idem ambitus ac "Nonstationary" (omnes collisiones demptis vehiculis in via stantibus, CRSS 2024): CRSS solas collisiones in viis publicis comprehendit, et aestimatio Blincoe et al. 2023 collisiones in areis stationis excludit.',
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
         ]},
     },
   },
@@ -624,15 +738,18 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 103000, hi: 430000,
         src: 'lo: all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity; marginal unreported contacts are mostly self-inflicted); hi: all-crash hi / 50% police-reported-universe share',
+        // Blincoe et al. 2023, the edition behind Kusano's 9.67 (until
+        // 2026-10-03 this linked the 2015 edition; audit #42).
         srcLinks: [
-          {label: 'Kusano & Scanlon 2024', url: 'https://arxiv.org/abs/2312.12675'},
-          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
+          'https://arxiv.org/abs/2312.12675',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
         ]},
       HumansUS: {lo: 140000, hi: 600000,
         src: 'lo: US-average all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity); hi: US-average all-crash hi / 50% police-reported-universe share',
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
-          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
         ]},
     },
   },
@@ -651,8 +768,8 @@ const METRIC_DEFS = [
       HumansAV: {lo: 151000, hi: 513000,
         src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-injury 1.95 (Phoenix) to 6.64 (SF) IPMM, blended 3.77 (supersedes the Kusano 56.7M paper values 2.09-8.02)',
         srcLinks: [
-          {label: 'Waymo Safety Impact hub', url: 'https://waymo.com/safety/impact/'},
-          {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
+          'https://waymo.com/safety/impact/',
+          'https://arxiv.org/abs/2505.01515',
         ]},
       // CRSS/813791 (2024): 1,676,700 injury crashes/yr * ~1.77 vehicles per
       // crash (1.83 for injury crashes) / 3,294B VMT -> ~0.90-0.93
@@ -661,9 +778,12 @@ const METRIC_DEFS = [
       // Blincoe (24-32% of injury crashes unreported) -> ~1.28 per M mi.
       HumansUS: {lo: 780000, hi: 1090000,
         src: 'lo: ~1.28 IPMM Blincoe-adjusted injury crashed-vehicle rate; hi: ~0.92 IPMM police-reported (CRSS national)',
+        // Both Blincoe editions: 0.92/(1 - 0.28) = 1.28, 28% being the
+        // midpoint of 2015's 24% and 2023's 32% (audit #42).
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
-          {label: 'Blincoe 2015 (underreporting)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
         ]},
     },
   },
@@ -697,17 +817,22 @@ const METRIC_DEFS = [
       HumansAV: {lo: 161000, hi: 1026000,
         src: 'lo: injury lo (151k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (513k) / 50% legal-allocation floor',
         srcNote: "94% = NHTSA 812115's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
+        // The injury band's source and the 94%'s (audit #41: Kusano Table 3
+        // and NHTSA 813791, linked until 2026-10-03, feed no number here).
         srcLinks: [
-          {label: 'Kusano & Scanlon 2024, Table 3', url: 'https://arxiv.org/abs/2312.12675'},
-          {label: 'Waymo safety impact (271.3M mi)', url: 'https://waymo.com/safety/impact/'},
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
-          {label: 'NHTSA critical reason (94%)', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115'},
+          'https://waymo.com/safety/impact/',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115',
         ]},
       HumansUS: {lo: 830000, hi: 2180000,
         src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
         srcNote: "[same as above for humans in AV cities]",
+        // The US injury band's sources and the 94%'s (audit #41: 812115 was
+        // missing until 2026-10-03).
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115',
         ]},
     },
   },
@@ -719,33 +844,84 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     fiveDay: true, // hospital transport = SGO Request No. 1.D.ii
     countFn: rec => rec.incidents.hospitalization,
-    // Between airbag-deployment proxy (1.62 IPMM ≈ crashes with enough
-    // force to likely send someone to ER) and SSI+ (0.213 IPMM = KABCO
-    // A+K). SGO "W/ Hospitalization" = transported to hospital (incl ER
-    // visits for minor injuries — most Waymo hosp are "Minor W/ Hosp").
+    // SGO "W/ Hospitalization" = transported to hospital (incl ER visits for
+    // minor injuries — most Waymo hosp are "Minor W/ Hosp"); with "Serious"
+    // and "Fatality" (hosp: true in SEVERITY_INFO) this is Hospitalization+.
+    // The human bands rest on CRSS's direct measurement of transport (audit
+    // #1, 2026-10-03; until then both said no human hospital-transport rate
+    // exists: AV cities was bracketed between airbag and SSI+, 617k-4.695M,
+    // and US average log-interpolated, 1.8M-7.9M, both centers ~2x too safe).
+    // CRSS 2024 person.csv HOSPITAL 1-6 = transported for treatment (EMS air,
+    // law enforcement, EMS unknown mode, transported unknown source, EMS
+    // ground, other; 0 = not transported; 8/9 not reported/unknown, counted
+    // as not transported: imputing them at the known transport rate of their
+    // injury severity would add ~3.5%). The human Hospitalization+ crash
+    // = anyone transported, or an A or K injury (MAX_SEV 3-4), the analog of
+    // the page's hosp severities. Weighted crashed in-transport vehicles,
+    // VMT 3,294,031M (813791). human-benchmark-provenance.qual holds the
+    // per-area inputs and re-derives every edge.
     humanMPI: {
-      // No direct national "transported to hospital" per-mile rate; HumansUS is
-      // estimated by log-interpolation between the national injury and fatality
-      // anchors (positioned by the AV-cities severity ladder) with a wide band.
-      // Re-derived 2026-09-25 on the thru-Jun-2026 hub ladder (and 2026-09-04,
-      // when the 06-18 values used the pre-repin anchors and sat 13-23% low):
-      // t = ln(c_metric/c_injury) / ln(c_fatality/c_injury) on AV-cities
-      // geometric centers (injury 278k, airbag 527k, hospitalization 1.70M,
-      // SSI+ 4.96M, fatality 93.4M) -> t = 0.11 / 0.31 / 0.50, mapped onto the
-      // national injury..fatality centers (922k..87.4M) -> airbag 1.52M,
-      // hospitalization 3.80M, SSI+ 8.79M; each band keeps its prior log-width
-      // (2.9x / 4.3x / 4.7x) around that center, edges to 2 significant
-      // figures. human-benchmark-provenance.qual re-derives the centers.
+      // AV cities: CRSS 2024 urban non-interstate passenger vehicles (BODY_TYP
+      // 1-49): Hospitalization+ involvements / injury-crash involvements =
+      // 0.54291, / airbag-crash involvements = 0.65732 (a ratio of rates, not
+      // a share: only 37% of airbag-crash involvements had a transport).
+      // Applied to the hub's per-area police-reported rates (CSV3 v1, thru
+      // Jun 2026, Dynamic): OBSERVED any-injury (not the 32% Blincoe-
+      // corrected 1.95..6.64 the injury band uses, since the CRSS ratio is
+      // police-reported on both sides) Phoenix 1.339, SF Bay 4.539, LA 1.747,
+      // Austin 2.226, Atlanta 4.487; any-vehicle airbag 1.323 / 1.919 /
+      // 1.266 / 2.323 / 2.831. Band = the per-area extremes across both
+      // routes: lo 1M/(4.539 x 0.54291) = 405.8k (SF Bay, injury route), hi
+      // 1M/(1.339 x 0.54291) = 1.376M (Phoenix, injury route); the
+      // mileage-blended routes give 714k (injury) and 942k (airbag), and the
+      // band's geometric center is 749k. On the all-vehicle basis the ratios
+      // are 0.552 / 0.702 (edges within 2%); restricted to posted limits <= 50
+      // mph (a surface-street proxy that also drops the 15% with no limit
+      // reported) they are 0.525 / 0.600 (injury-route edges +3.5%). The
+      // hub's injury and airbag benchmarks carry no underreporting correction
+      // here (the hub applies none to airbag), so unlike the US band this one
+      // has no Blincoe edge.
       // HumansRideshare is computed from HumansAV by the loop below.
-      HumansAV: {lo: 617000, hi: 4695000,
-        src: "lo: 1M/1.62 airbag-deploy IPMM; hi: 1M/0.213 SSI+ IPMM; no direct human hospital-transport rate exists — the band is bracketed between its severity neighbors (airbag deployment and SSI+)",
+      HumansAV: {lo: 406000, hi: 1380000,
+        // CRSS-measured ratio of
+        // crash involvements with a hospital transport (or a serious or fatal
+        // injury) to injury-crash involvements (0.543) and to airbag-crash
+        // involvements (0.657) (CRSS 2024, urban non-interstate passenger
+        // vehicles), applied to the Waymo hub's per-area police-reported
+        // any-injury rates (observed, not underreporting-adjusted: 1.34 Phoenix
+        // to 4.54 SF Bay Area IPMM) and airbag rates (1.27 LA to 2.83 Atlanta)
+        // (hub CSV3, thru Jun 2026); the band spans the per-area extremes of
+        // both routes, 1M/2.46 (SF Bay Area, injury route) to 1M/0.727
+        // (Phoenix, injury route); mileage-blended: 1M/1.40 (injury route),
+        // 1M/1.06 (airbag route).
+        src: "CRSS-measured ratio of crashes with hospital transport or serious/fatal injury to injury crashes and to airbag crashes applied to Waymo's per-area police-reported any-injury rates, not underreporting-adjusted",
         srcLinks: [
-          {label: 'Waymo safety impact (271.3M mi)', url: 'https://waymo.com/safety/impact/'},
+          'https://waymo.com/safety/impact/',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
         ]},
-      HumansUS: {lo: 1800000, hi: 7900000,
-        src: 'No national hospital-transport per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
+      // US average: hi = the police-reported national Hospitalization+ rate,
+      // 0.51169 per M mi (all in-transport vehicles, all roads) = 1.954M;
+      // lo = that rate raised for the 31.9% of injury-crash vehicles not
+      // reported to police (Blincoe et al. 2023, Table 2-9) = 1.331M. 31.9%
+      // is an upper bound for transport crashes: unreported injury crashes
+      // "tend to involve only minor or moderate injuries" (813403 p. 3), and
+      // the unreported share falls with severity (MAIS1 33.9%, MAIS2 27.2%,
+      // MAIS3 6.3%, MAIS4+ 0). Transport alone (no A/K) gives 0.504 per M mi
+      // (1.98M). Edges to 4 significant figures (at 3, fmtMiles would show
+      // 1,950,000 as "1.9M").
+      HumansUS: {lo: 1331000, hi: 1954000,
+        // hi is the CRSS 2024
+        // national rate of crashed in-transport vehicles in police-reported
+        // crashes with a hospital transport or a serious or fatal injury, 0.512
+        // per M mi (all vehicles, all roads; VMT from NHTSA 813791); lo is that
+        // rate raised for the 31.9% of injury-crash vehicles not reported to
+        // police (Blincoe et al. 2023, Table 2-9), an upper bound for transport
+        // crashes since unreported injury crashes are mostly minor or moderate.
+        src: "hi is the CRSS 2024 national rate of crashed in-transport vehicles in police-reported crashes with hospital transport or serious/fatal injury; lo is that rate raised for the 31.9% of injury-crash vehicles not reported to police (Blincoe et al 2023, Table 2-9) which is an upper bound for transport crashes since unreported injury crashes are mostly minor or moderate",
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
         ]},
     },
   },
@@ -765,20 +941,33 @@ const METRIC_DEFS = [
     // fixing duplicated Atlanta cells in CSV4) moves these edges to 1.23 / 2.77;
     // re-pin when the hub links it or posts release notes.
     humanMPI: {
-      // No published national airbag-deployment per-mile rate; HumansUS is
-      // estimated by log-interpolation between the national injury and fatality
-      // anchors (positioned by the AV-cities severity ladder) with a wide band.
+      // HumansUS airbag and SSI+ are estimated by log-interpolation between
+      // the national injury and fatality anchors (positioned by the AV-cities
+      // severity ladder) with a wide band. Re-derived 2026-09-25 on the
+      // thru-Jun-2026 hub ladder (and 2026-09-04, when the 06-18 values used
+      // the pre-repin anchors and sat 13-23% low): t = ln(c_metric/c_injury) /
+      // ln(c_fatality/c_injury) on AV-cities geometric centers (injury 278k,
+      // airbag 527k, SSI+ 4.96M, fatality 93.4M) -> t = 0.11 / 0.50, mapped
+      // onto the national injury..fatality centers (922k..87.4M) -> airbag
+      // 1.52M, SSI+ 8.79M; each band keeps its prior log-width (2.9x / 4.7x)
+      // around that center, edges to 2 significant figures.
+      // human-benchmark-provenance.qual re-derives the centers. (Hospitalization+
+      // was the third such band until 2026-10-03; it is now CRSS-measured.)
+      // CRSS 2024 measures both directly too (police-reported, all vehicles,
+      // all roads): airbag 0.740 per M mi (1.35M MPI), A+K 0.086 (11.6M), each
+      // inside its band; the src text's "no national ... rate" predates that
+      // check.
       // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 353000, hi: 787000,
         src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-vehicle airbag 1.27 (LA) to 2.83 (Atlanta) IPMM, blended 1.62 (supersedes the Kusano 56.7M paper values 1.42-2.31; Austin, Tesla\'s main market, sits at 2.32)',
         srcLinks: [
-          {label: 'Waymo Safety Impact hub', url: 'https://waymo.com/safety/impact/'},
-          {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
+          'https://waymo.com/safety/impact/',
+          'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 900000, hi: 2600000,
         src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
         ]},
     },
   },
@@ -794,20 +983,19 @@ const METRIC_DEFS = [
     // worse). AV-cities band = the hub's per-city human SSI+ range (SF 0.391
     // to Phoenix 0.104 IPMM across five areas, thru Jun 2026), blended 0.213.
     humanMPI: {
-      // No clean national SSI+ (KABCO A+K) per-mile rate; HumansUS is estimated
-      // by log-interpolation between the national injury and fatality anchors
-      // (positioned by the AV-cities severity ladder) with a wide band.
+      // HumansUS is estimated by log-interpolation between the national injury
+      // and fatality anchors (see the airbag entry for the derivation).
       // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 2560000, hi: 9620000,
         src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human SSI+ 0.104 (Phoenix) to 0.391 (SF) IPMM, blended 0.213 (supersedes the Kusano 56.7M paper values 0.12-0.46)',
         srcLinks: [
-          {label: 'Waymo Safety Impact hub', url: 'https://waymo.com/safety/impact/'},
-          {label: 'Kusano & Scanlon 56.7M (arxiv 2505.01515)', url: 'https://arxiv.org/abs/2505.01515'},
+          'https://waymo.com/safety/impact/',
+          'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 4000000, hi: 19000000,
         src: 'No clean national SSI+ (KABCO A+K) per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
         srcLinks: [
-          {label: 'NHTSA 2024 crash summary', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
         ]},
     },
   },
@@ -831,7 +1019,7 @@ const METRIC_DEFS = [
       HumansAV: {lo: 83000000, hi: 105000000,
         src: "Claude: IIHS urban all-road fatality rate, 2022–2024: 1.17 / 1.07 / 1.01 deaths per 100M VMT; band 0.95–1.20 (the 2021 urban peak 1.20 as the high-rate edge, 0.95 as a continued-improvement floor below the 2024 value)",
         srcLinks: [
-          {label: 'IIHS urban/rural comparison', url: 'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison'},
+          'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison',
         ]},
       HumansUS: {lo: 84000000, hi: 91000000,
         // Re-derived 2026-08-24 on the numerators consistent with the AV
@@ -847,15 +1035,20 @@ const METRIC_DEFS = [
         // AV-favorable edge).
         src: "FARS 2024 national: 1.19 deaths per 100M VMT (39,254 deaths) to 1.10 fatal crashes per 100M VMT (36,297 crashes) — numerators matching the AV side's fractional-death count.",
         srcLinks: [
-          {label: 'NHTSA FARS 2024', url: 'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791'},
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
         ]},
       // The one rideshare-specific per-mile rate that is published (the
-      // safety reports otherwise cover only fatalities and assaults).
+      // safety reports otherwise cover only fatalities and assaults). Lyft's
+      // 2020-2022 report (p. 11) gives 2021 as 36 deaths at 0.86 and 2022 as
+      // 50 at 1.02 per 100M VMT: 86 deaths over 36/0.86 + 50/1.02 = 90.88 x
+      // 100M miles = 0.946 mile-weighted (0.95); until 2026-10-03 the src
+      // said 0.94, the plain mean (audit #71). lo = 1e8/0.946 = 105.7M, kept
+      // at 106M (3 significant figures; 1e8/0.94 = 106.4M rounds the same).
       HumansRideshare: {lo: 106000000, hi: 161000000,
-        src: 'Uber & Lyft US Safety Reports: 0.62 (Uber, 2019-2020) to 0.94 (Lyft, 2021-2022 mile-weighted average of its 0.86 and 1.02 yearly rates) fatalities per 100M VMT',
+        src: 'Uber & Lyft US Safety Reports: 0.62 (Uber, 2019-2020) to 0.95 (Lyft, 2021-2022 mile-weighted average of its 0.86 and 1.02 yearly rates) fatalities per 100M VMT',
         srcLinks: [
-          {label: 'Uber US Safety Report', url: 'https://www.uber.com/us/en/about/reports/us-safety-report/'},
-          {label: 'Lyft Safety Transparency Report', url: 'https://www.lyft.com/blog/posts/2024-safety-transparency-report'},
+          'https://www.uber.com/us/en/about/reports/us-safety-report/',
+          'https://www.lyft.com/blog/posts/2024-safety-transparency-report',
         ]},
     },
   },
@@ -898,6 +1091,19 @@ for (const m of METRIC_DEFS) {
     };
   }
 }
+// Anti-Postel: every band cites at least one source, and every source it
+// cites has its one label (sourceLink also asserts at render time; this
+// catches a mistyped URL at load).
+for (const m of METRIC_DEFS) {
+  for (const [cohort, h] of Object.entries(m.humanMPI || {})) {
+    assert(Array.isArray(h.srcLinks) && h.srcLinks.length > 0, "human benchmark band without srcLinks",
+      {metric: m.key, cohort});
+    for (const url of h.srcLinks) {
+      assert(BENCHMARK_SOURCES[url] !== undefined, "srcLinks URL missing from BENCHMARK_SOURCES",
+        {metric: m.key, cohort, url});
+    }
+  }
+}
 
 // Derived accessors — consumed by rendering code throughout
 const METRIC_KEYS = METRIC_DEFS.map(m => m.key);
@@ -909,12 +1115,29 @@ const STRESS_VERDICT_META = {
   ambiguous: {label: "ambiguous", className: "ambiguous"},
 };
 const PRIOR_ONLY_TIP = "Zero incidents of this type observed in the window so this verdict is based solely on priors, i.e., be skeptical! This mirrors the chart's hollow dot convention for k=0.";
-// Verdict badge; k = 0 gets the faded prior-only treatment + tooltip.
-function stressBadge(meta, k) {
-  const cls = `stress-badge ${meta.className}${k === 0 ? " prior-only" : ""}`;
-  const tip = k === 0 ? ` data-tip="${escAttr(PRIOR_ONLY_TIP)}"` : "";
-  return `<span class="${cls}"${tip}>${meta.label}</span>`;
+// The prior-only marking of an estimate resting on zero incidents (k = 0):
+// the class "prior-only" (faded, italic) and PRIOR_ONLY_TIP, whose target is a
+// Tab stop carrying the tip as visually hidden text (tipText). The stress
+// badges and the summary cards' multipliers share it; until 2026-10-03 only
+// the badges had it, so Tesla's k = 0 fatality multiplier was a solid red
+// "0.1x" beside a faded "ambiguous" badge (audit #16).
+function priorOnlyMarks(k) {
+  return k === 0
+    ? {cls: " prior-only", attrs: ` data-tip="${escAttr(PRIOR_ONLY_TIP)}" tabindex="0"`, body: tipText(PRIOR_ONLY_TIP)}
+    : {cls: "", attrs: "", body: ""};
 }
+// Verdict badge; k = 0 gets the prior-only marking.
+function stressBadge(meta, k) {
+  const marks = priorOnlyMarks(k);
+  return `<span class="stress-badge ${meta.className}${marks.cls}"${marks.attrs}>${meta.label}${marks.body}</span>`;
+}
+// This label heads the summary
+// card's stress line, which is the verdict on the All incidents metric alone
+// (the AV's CI against the AV-cities band, as in the Sensitivity analysis),
+// not a summary over every metric. It read "Overall:" until 2026-10-03, so
+// the Waymo card said "Overall: ambiguous" while the Sensitivity analysis
+// called Waymo robustly safer on most metrics (audit #6).
+const CARD_STRESS_LABEL = "All incidents:";
 let selectedMetricKey = METRIC_DEFS.find(m => m.defaultEnabled).key;
 let vmtCumulative = false; // per-helmer VMT charts: false = monthly, true = cumulative
 let selectedGrowthMetric = "fleet"; // growth extrapolator metric: fleet | miles | rides
@@ -972,7 +1195,12 @@ function helmerLabel(helmer) {
 }
 const HELMER_COLORS = {
   HumansAV: "#c9a800",
-  HumansUS: "#8a7400",
+  // The human cohorts step down in lightness (gold, orange, dark olive), the
+  // one dimension every colour-vision deficiency keeps. HumansUS was #8a7400
+  // until 2026-10-03, which a deuteranope sees as the same olive as Tesla
+  // (CIEDE2000 2.9); #4b3b00 stays >= 12 from every series under normal
+  // vision, deuteranopia, protanopia and tritanopia (helmer-colors-cvd.qual).
+  HumansUS: "#4b3b00",
   HumansRideshare: "#cc7a00",
   Tesla: "#d13b2d",
   Waymo: "#2060c0",
@@ -1020,6 +1248,13 @@ function scaleLinear(v, d0, d1, r0, r1) {
   return r0 + (v - d0) * (r1 - r0) / span;
 }
 
+// The locale of every number the page prints: its English copy and its "."
+// decimals (toFixed) are en-US, so the grouping must be too. A locale-less
+// toLocaleString() follows the browser: in a de-DE browser "1.164 incidents"
+// (1,164) sat beside "93.2 incidents", and "37.125x" (37,125x) beside "11x",
+// until 2026-10-03 (audit #37).
+const NUMBER_LOCALE = "en-US";
+
 function fmtMiles(n) {
   assert(Number.isFinite(n) && n >= 0, "fmtMiles: invalid input", {n});
   const suffixes = ["", "K", "M", "B", "T"];
@@ -1030,7 +1265,22 @@ function fmtMiles(n) {
     val /= 1000;
     tier++;
   }
-  return tier === 0 ? Math.round(n).toLocaleString() : val.toFixed(1) + suffixes[tier];
+  // A whole number of its unit drops the ".0" ("200K", "1M": tick labels and
+  // authored band edges read "200.0K", "1.0M", "103.0K" until 2026-10-03;
+  // audit #58). A value that only rounds to one keeps it, as a digit of
+  // precision: 1,954,000 is "2.0M", not "2M".
+  const digits = Number.isInteger(val) ? 0 : 1;
+  return tier === 0 ? Math.round(n).toLocaleString(NUMBER_LOCALE) : val.toFixed(digits) + suffixes[tier];
+}
+
+// A count's share of its total, as a whole percent. A nonzero share that
+// rounds to 0 reads "<1%", so a percent never contradicts its count (the
+// Severity breakdown printed Waymo's 2 fatalities in 1,164 as "2 (0%)" until
+// 2026-10-03; audit #58).
+function fmtShare(count, total) {
+  assert(Number.isFinite(count) && count >= 0 && total > 0 && count <= total, "fmtShare: invalid input", {count, total});
+  const pct = Math.round(100 * count / total);
+  return count > 0 && pct === 0 ? "<1%" : `${pct}%`;
 }
 
 function csvUnquote(field) {
@@ -1202,12 +1452,32 @@ const UNKNOWN_SEVERITIES = severitiesWhere("unk");
 const SEVERITY_RANK =
   Object.fromEntries(Object.entries(SEVERITY_INFO).map(([s, i]) => [s, i.rank]));
 
+// count + 1 evenly spaced ticks from min to max. A range with no width (a
+// chart with no data, whose max stays at its floor) has one tick, the floor:
+// a placeholder 0..1 scale rounded to "0, 0, 1, 1, 1" on empty charts until
+// 2026-10-03 (audit #51).
 function linearTicks(min, max, count) {
-  const out = [];
-  for (let i = 0; i <= count; i++) {
+  assert(Number.isFinite(min) && max >= min && count >= 1, "linearTicks: invalid range", {min, max, count});
+  const out = [min];
+  for (let i = 1; i <= count && max > min; i++) {
     out.push(min + (max - min) * i / count);
   }
   return out;
+}
+
+// Fault values sit on a 0.05 grid (data/faultfrac.csv: 0, 0.05, ..., 1), so
+// a sum of them is a whole number of twentieths. Summed as doubles it drifts
+// off the grid: Waymo's default-window at-fault mass came to
+// 93.24999999999997 and printed 93.2, while 8.55 printed 8.6, until
+// 2026-10-03 (audit #56). So fault mass is summed in twentieths, and a value
+// off the grid is an error, not a rounding.
+const FAULT_GRID = 20;
+function faultSum(fracs) {
+  return fracs.reduce((sum, f) => {
+    const twentieths = Math.round(f * FAULT_GRID);
+    assert(Math.abs(f * FAULT_GRID - twentieths) < 1e-9, "fault fraction off the 0.05 grid", {f});
+    return sum + twentieths;
+  }, 0) / FAULT_GRID;
 }
 
 function nonstationaryIncidentCount(speeds) {
@@ -1218,11 +1488,13 @@ function roadwayNonstationaryIncidentCount(rec) {
   return rec.incidents.roadwayNonstationary;
 }
 
+// A count to one decimal, grouped whether whole or fractional ("1,164",
+// "93.3", "1,234.5"); a whole count prints no decimals. Until 2026-10-03 the
+// fractional branch was toFixed(1), ungrouped, so a fault mass of 1,234.5
+// would have read "1234.5" beside "1,234" (audit #54's one format).
 function fmtCount(n) {
   assert(Number.isFinite(n) && n >= 0, "fmtCount: invalid input", {n});
-  const rounded = Math.round(n * 10) / 10;
-  if (Number.isInteger(rounded)) return rounded.toLocaleString();
-  return rounded.toFixed(1);
+  return (Math.round(n * 10) / 10).toLocaleString(NUMBER_LOCALE, {maximumFractionDigits: 1});
 }
 
 // Pluralize a count: splur(1, "incident") -> "1 incident"; splur(2) -> "2 incidents".
@@ -1256,17 +1528,99 @@ function seriesMonthBounds(series) {
 
 function fmtWhole(n) {
   assert(Number.isFinite(n), "fmtWhole: invalid input", {n});
-  return Math.round(n).toLocaleString();
+  return Math.round(n).toLocaleString(NUMBER_LOCALE);
 }
 
-function vmtTooltip(month, miles, incidents) {
-  // Minimal (x, y): month, the value in miles, and (for dots only) the incident count.
-  const inc = incidents === undefined ? "" : `\n${splur(incidents, "incident")}`;
-  return `${month}\n${fmtWhole(miles)} miles${inc}`;
+// A VMT chart dot's tooltip: the month, its miles and their range (the
+// month's authored band; the kyoom band in the cumulative view), and the
+// incidents on the same basis as the miles (that month's, or all of them
+// through it). The range is also its error-bar ends', so an end hidden under
+// its dot (Tesla's 2025 bands are a fraction of a unit tall) loses nothing
+// (audit #28); until 2026-10-03 the cumulative view paired all-time miles
+// with the month's count alone (audit #59).
+function vmtDotTooltip(month, miles, lo, hi, incidents) {
+  return `${month}\n${fmtWhole(miles)} miles\nRange: ${fmtWhole(lo)} – ${fmtWhole(hi)}\n${splur(incidents, "incident")}`;
+}
+// An error-bar end's tooltip: the month, the end's miles, and which end it is
+// (until 2026-10-03 the two ends read alike; audit #59).
+// The two labels: the low end and the high end of the
+// month's VMT range (of the cumulative range, in the cumulative view).
+const VMT_RANGE_EDGE = {lo: "Low end", hi: "High end"};
+function vmtEndTooltip(month, miles, edge) {
+  return `${month}\n${fmtWhole(miles)} miles\n${edge}`;
+}
+// The line under the data-through month's incident count, which holds only
+// the reports received by the cutoff: an estimated coverage x incCov of the
+// month's eventual incidents, coverage x incCovMin at worst (incCov is
+// conditional on the receipt-coverage best, so the product is the month's
+// expected share; data/vmt.js). The VMT chart's miles are the full month's,
+// so August's 10 Waymo incidents beside 20.8M miles read as a tenth of the
+// usual crash rate until 2026-10-03 (audit #60). This is not the MPI chart's
+// "incident coverage", which is incCov alone: there the receipt coverage is
+// already in the denominator.
+// Note must say that the count above holds only
+// the reports NHTSA had received by the cutoff date shown, about X% of the
+// month's eventual incidents (worst case about Y%), so it is far below the
+// month's full count.
+function vmtPartialNote(share, worst) {
+  return `Count above only includes incidents received by ${NHTSA_DATA_THROUGH_DATE}: ~${Math.round(share * 100)}% of the month's eventual incidents (worst case ~${Math.round(worst * 100)}%)`;
 }
 
 function helmerMonthRows(series, helmer) {
   return series.points.map(point => point.helmers[helmer]);
+}
+
+// The VMT band of a window's exposure: one helper for every window the page
+// shows, a single month included, so a month's chart posterior and a
+// one-month window's card are one posterior (until 2026-10-03 the chart took
+// the authored month band alone, and six months showed two posteriors; audit
+// #15). Summing each month's 95% edges treats the monthly errors as
+// perfectly correlated, which overstates the window's spread wherever the
+// master pins the CUMULATIVE more tightly than the months (Waymo's hub
+// anchors, Tesla's deck chart). The window total is
+// cume(end) - cume(start-1), whose band is
+// [kyoom_min(end) - kyoom_max(before), kyoom_max(end) - kyoom_min(before)]
+// (before = the helmer's last master row before the window, or zero miles
+// if its series begins inside the window). That difference and the summed
+// month bands both bound the total, so the band is their intersection,
+// taken over the fully received months (where every metric's triple equals
+// the authored month band); the data-through month's own thinned band
+// (receipt coverage, plus the Monthly-track factor for non-five-day
+// metrics) is then added, since its kyoom row is full-month. The kyoom
+// difference bounds a CONTIGUOUS span only, so it applies when the fully
+// received rows cover every master month in their span (always, today; a
+// needsFault gap would fall back to the plain sum). Until 2026-09-04 the
+// plain sum was used: Waymo's default window ran 0.76x-1.28x of best where
+// its anchors imply ~0.93x-1.12x (window-band.qual pins the recompute).
+function windowVmtBand(helmer, metricRows, minOf, bestOf, maxOf) {
+  // Fully received, for this metric: its triple is the authored month band
+  // (no receipt or Monthly-track factor below 1 applies to it), which is what
+  // the full-month kyoom difference bounds. Only the data-through month is
+  // thinned in real data, where both factors fall together; testing the
+  // triple rather than the receipt coverage alone keeps a month thinned by
+  // the Monthly-track factor only out of the kyoom intersection.
+  const isFull = r => minOf(r) === r.vmtMonthMin && maxOf(r) === r.vmtMonthMax;
+  const full = metricRows.filter(isFull);
+  const partial = metricRows.filter(r => !isFull(r));
+  assert(partial.length <= 1, "more than one partially received month in a window",
+    {helmer, months: partial.map(r => r.month)});
+  let min = full.reduce((sum, r) => sum + minOf(r), 0);
+  const best = metricRows.reduce((sum, r) => sum + bestOf(r), 0);
+  let max = full.reduce((sum, r) => sum + maxOf(r), 0);
+  const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
+  const first = full[0], last = full[full.length - 1];
+  const span = full.length === 0 ? 0
+    : master.filter(r => r.month >= first.month && r.month <= last.month).length;
+  if (span > 0 && span === full.length) {
+    const earlier = master.filter(r => r.month < first.month);
+    const before = earlier.length === 0 ? {kyoomMin: 0, kyoomMax: 0} : earlier[earlier.length - 1];
+    min = Math.max(min, last.kyoomMin - before.kyoomMax);
+    max = Math.min(max, last.kyoomMax - before.kyoomMin);
+  }
+  for (const r of partial) { min += minOf(r); max += maxOf(r); }
+  assert(min <= best && best <= max, "window VMT band does not bracket its best",
+    {helmer, min, best, max});
+  return {min, best, max};
 }
 
 function monthlySummaryRows(series) {
@@ -1274,59 +1628,28 @@ function monthlySummaryRows(series) {
     const rows = series.points
       .filter(p => p.helmers[helmer] !== null)
       .map(p => p.helmers[helmer]);
-    // Window VMT band (one helper for the row's own triple and every
-    // metric's). Summing each month's 95% edges treats the monthly errors as
-    // perfectly correlated, which overstates the window's spread wherever the
-    // master pins the CUMULATIVE more tightly than the months (Waymo's hub
-    // anchors, Tesla's deck chart). The window total is
-    // cume(end) - cume(start-1), whose band is
-    // [kyoom_min(end) - kyoom_max(before), kyoom_max(end) - kyoom_min(before)]
-    // (before = the helmer's last master row before the window, or zero miles
-    // if its series begins inside the window). That difference and the summed
-    // month bands both bound the total, so the band is their intersection,
-    // taken over the fully received months (where every metric's triple equals
-    // the authored month band); the data-through month's own thinned band
-    // (receipt coverage, plus the Monthly-track factor for non-five-day
-    // metrics) is then added, since its kyoom row is full-month. The kyoom
-    // difference bounds a CONTIGUOUS span only, so it applies when the fully
-    // received rows cover every master month in their span (always, today; a
-    // needsFault gap would fall back to the plain sum). Until 2026-09-04 the
-    // plain sum was used: Waymo's default window ran 0.76x-1.28x of best where
-    // its anchors imply ~0.93x-1.12x (window-band.qual pins the recompute).
-    const windowBand = (metricRows, minOf, bestOf, maxOf) => {
-      const full = metricRows.filter(r => r.coverage === 1);
-      const partial = metricRows.filter(r => r.coverage < 1);
-      assert(partial.length <= 1, "more than one partially received month in a window",
-        {helmer, months: partial.map(r => r.month)});
-      let min = full.reduce((sum, r) => sum + minOf(r), 0);
-      const best = metricRows.reduce((sum, r) => sum + bestOf(r), 0);
-      let max = full.reduce((sum, r) => sum + maxOf(r), 0);
-      const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
-      const first = full[0], last = full[full.length - 1];
-      const span = full.length === 0 ? 0
-        : master.filter(r => r.month >= first.month && r.month <= last.month).length;
-      if (span > 0 && span === full.length) {
-        const earlier = master.filter(r => r.month < first.month);
-        const before = earlier.length === 0 ? {kyoomMin: 0, kyoomMax: 0} : earlier[earlier.length - 1];
-        min = Math.max(min, last.kyoomMin - before.kyoomMax);
-        max = Math.min(max, last.kyoomMax - before.kyoomMin);
-      }
-      for (const r of partial) { min += minOf(r); max += maxOf(r); }
-      assert(min <= best && best <= max, "window VMT band does not bracket its best",
-        {helmer, min, best, max});
-      return {min, best, max};
-    };
     const {min: vmtMin, best: vmtBest, max: vmtMax} =
-      windowBand(rows, row => row.vmtMin, row => row.vmtBest, row => row.vmtMax);
+      windowVmtBand(helmer, rows, row => row.vmtMin, row => row.vmtBest, row => row.vmtMax);
     // Raw window total — the authored monthly estimates with neither the
     // receipt-coverage nor the Monthly-track thinning — for the summary cards'
     // Effective-VMT tooltip (the five-day denominator is listed separately).
     const vmtRawBest = rows.reduce((sum, row) => sum + row.vmtMonthBest, 0);
     const metricRowsByKey = Object.fromEntries(
       METRIC_DEFS.map(m => [m.key, rows.filter(row => row.mpiByMetric[m.key] !== null)]));
+    // Each metric's window count. Fault mass (the metrics with fracsFn) is the
+    // exact grid sum of the window's fault fractions (faultSum; a float sum of
+    // the months' masses drifts off the grid, audit #56), and the fractions
+    // also feed its Poisson-binomial mixture; every other count is a plain
+    // sum (whole incidents, and fatality's 1/vehicles fractions).
+    const windowCounts = Object.fromEntries(METRIC_DEFS.map(m => {
+      const metricRows = metricRowsByKey[m.key];
+      if (!m.fracsFn) return [m.key, {k: metricRows.reduce((sum, row) => sum + m.countFn(row), 0), fracs: null}];
+      const fracs = metricRows.flatMap(row => m.fracsFn(row));
+      return [m.key, {k: faultSum(fracs), fracs}];
+    }));
     // Auto-generate inc fields from METRIC_DEFS
     const incFields = Object.fromEntries(
-      METRIC_DEFS.map(m => [m.incField, metricRowsByKey[m.key].reduce((sum, row) => sum + m.countFn(row), 0)]));
+      METRIC_DEFS.map(m => [m.incField, windowCounts[m.key].k]));
 
     const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
     // Pre-compute MPI estimates for each metric (consumed by cards + distribution).
@@ -1337,13 +1660,12 @@ function monthlySummaryRows(series) {
       // Five-day-track metrics (m.fiveDay, see METRIC_DEFS) sum the raw
       // receipt-coverage-scaled VMT; Monthly-track metrics keep the incCov-thinned
       // sums — mirroring the per-month selection in mpiByMetric.
-      const {min: metricVmtMin, best: metricVmtBest, max: metricVmtMax} = windowBand(metricRows,
+      const {min: metricVmtMin, best: metricVmtBest, max: metricVmtMax} = windowVmtBand(helmer, metricRows,
         row => m.fiveDay === true ? row.vmtRawMin : row.vmtMin,
         row => m.fiveDay === true ? row.vmtRawBest : row.vmtBest,
         row => m.fiveDay === true ? row.vmtRawMax : row.vmtMax);
       if (metricVmtBest > 0) {
-        const k = incFields[m.incField];
-        const fracs = m.fracsFn ? metricRows.flatMap(row => m.fracsFn(row)) : null;
+        const {k, fracs} = windowCounts[m.key];
         const est = estimateMpiWindow(k, fracs, metricVmtMin, metricVmtBest, metricVmtMax);
         return [m.key, {
           ...est,
@@ -1406,12 +1728,34 @@ function estimateMpiWindow(k, fracs, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS
   };
 }
 
+// The stress verdict of an AV CI [lo, hi] against a human band: robustly
+// safer when the whole AV/human ratio range is above 1, robustly worse when
+// it is below 1. One rule for the stress table, the cards and the fault-flip
+// search.
+function stressVerdictKey(lo, hi, human) {
+  return lo / human.hi > 1 ? "safer" : hi / human.lo < 1 ? "worse" : "ambiguous";
+}
+
+// Verdicts in the order more at-fault mass moves them (MPI only falls as the
+// mass grows), for the flip-direction check in faultFlipMultiplier.
+const STRESS_VERDICT_ORDER = ["safer", "ambiguous", "worse"];
+
+// How close, in ln(MPI), a band edge may sit to the displayed CI edge for
+// the flip search's own s = 1 verdict to differ from the displayed one as
+// numerics rather than as a genuine inconsistency. Both come from the same
+// CDF; the displayed edges are its quantiles, solved to |F - p| < 1e-8. On
+// 2026-10-03 every one of 7,760 displayed CI edges (all metrics; single
+// months, 3-month windows, every window ending at the latest month) sat
+// within 7.7e-7 of its exact quantile, so 1e-4 leaves 100x.
+const FLIP_CDF_TOLERANCE = 1e-4;
+
 // Faultfrac sensitivity: the faultfracs are Claude's judgments from
 // company-written narratives, so ask how undercounted the true at-fault mass
-// would have to be to change the stress verdict. Returns the smallest
-// multiplier s > 1 on the judged mass at which the verdict (vs the AV-cities
-// band) changes, plus the verdict it changes to; null when k = 0 (scaling
-// zero mass changes nothing); mult Infinity when no s <= 10^4 flips it.
+// would have to be to change the stress verdict. Returns the verdict the
+// search starts from (base, the displayed one), the smallest multiplier
+// s > 1 on the judged mass at which the verdict (vs the AV-cities band)
+// changes, and the verdict it changes to; null when k = 0 (scaling zero mass
+// changes nothing); mult Infinity when no s <= 10^4 flips it.
 // nIncidents: the metric universe's incident count (e.g. incTotal for
 // at-fault). Fault fractions are probabilities, so the true at-fault mass
 // can never exceed it: the search stops at s = nIncidents / k ("every
@@ -1427,29 +1771,36 @@ function faultFlipMultiplier(est, human, nIncidents) {
   const tail = (1 - CI_MASS_DEFAULT_PCT / 100) / 2;
   const verdictAt = s => {
     // Scale the judged at-fault mass inside each mixture component (a_K =
-    // K·s + 1/2, weights renormalized after trimming). The verdict needs
-    // only two CDF evaluations, no quantile search: lo > human.hi <=>
-    // F(human.hi) < tail, and hi < human.lo <=> F(human.lo) > 1 - tail.
-    // Lighter machinery than the display path (trimmed components, fewer
-    // prior nodes): the flip search needs only which side of two thresholds
-    // the CDF lands on, evaluated ~120 times per table row.
-    const kept = est.comps.filter(c => c.w > 1e-4);
-    const wSum = kept.reduce((sum, c) => sum + c.w, 0);
-    const scaled = kept.map(c => ({a: (c.a - 0.5) * s + 0.5, w: c.w / wSum}));
-    const cdf = makeMarginalMpiCdf(scaled, est.vmtMin, est.vmtBest, est.vmtMax, 13);
+    // K·s + 1/2). The verdict needs only two CDF evaluations, no quantile
+    // search: lo > human.hi <=> F(human.hi) < tail, and hi < human.lo <=>
+    // F(human.lo) > 1 - tail. The CDF is the displayed CI's own (every
+    // component, the adaptive node count), so the search measures what the
+    // CI shows. Until 2026-10-03 it ran a lighter CDF (components under 1e-4
+    // dropped, 13 prior nodes) whose CI edges sat up to 0.7% from the
+    // displayed ones, and asserted its s = 1 verdict equal to the displayed
+    // one: a CI edge inside that gap threw, blanking the sanity section and
+    // the incident browser for the window. The full CDF (scaled shapes are
+    // not consecutive, so it loses its cheap recurrence) measured ~20 ms
+    // more per sanity rebuild in Chromium, ~90 ms at 4x CPU throttling.
+    const scaled = est.comps.map(c => ({a: (c.a - 0.5) * s + 0.5, w: c.w}));
+    const cdf = makeMarginalMpiCdf(scaled, est.vmtMin, est.vmtBest, est.vmtMax);
     return cdf(human.hi) < tail ? "safer"
       : cdf(human.lo) > 1 - tail ? "worse" : "ambiguous";
   };
-  const base = verdictAt(1);
-  // Belt and braces: the lightweight verdict path (trimmed components, 13
-  // nodes) must agree with the displayed CI's verdict at s = 1, else the
-  // flip search would measure from the wrong baseline. Fails loudly if a
-  // future razor-thin case ever splits the two machineries.
-  const displayed = est.lo / human.hi > 1 ? "safer"
-    : est.hi / human.lo < 1 ? "worse" : "ambiguous";
-  assert(base === displayed,
-    "faultFlipMultiplier: light-CDF base verdict disagrees with displayed CI verdict",
-    {base, displayed});
+  // The search starts from the displayed verdict, read off the displayed CI.
+  const base = stressVerdictKey(est.lo, est.hi, human);
+  // Its own verdict at s = 1 may differ only where a band edge sits within
+  // the quantile solver's precision of the CI edge between the two verdicts
+  // (safer|worse borders no single edge); anywhere else the CI does not
+  // belong to this estimate.
+  const atOne = verdictAt(1);
+  const edgeGap = {
+    "ambiguous|safer": Math.abs(Math.log(est.lo / human.hi)),
+    "ambiguous|worse": Math.abs(Math.log(est.hi / human.lo)),
+  }[[base, atOne].sort().join("|")] ?? Infinity;
+  assert(atOne === base || edgeGap < FLIP_CDF_TOLERANCE,
+    "faultFlipMultiplier: CDF verdict at s = 1 disagrees with the displayed CI's away from any band edge",
+    {base, atOne, edgeGap, lo: est.lo, hi: est.hi, human});
   let lo = 1;
   let hi = null;
   for (let e = 1; e <= 80; e++) {
@@ -1458,18 +1809,37 @@ function faultFlipMultiplier(est, human, nIncidents) {
     lo = s;
     if (s === sMax) break; // every incident at fault and still no flip
   }
-  if (hi === null) return {mult: Infinity, flipped: null};
+  if (hi === null) return {base, mult: Infinity, flipped: null};
   for (let i = 0; i < 40; i++) {
     const mid = Math.sqrt(lo * hi);
     if (verdictAt(mid) === base) lo = mid; else hi = mid;
   }
-  return {mult: hi, flipped: verdictAt(hi)};
+  const flipped = verdictAt(hi);
+  assert(STRESS_VERDICT_ORDER.indexOf(flipped) > STRESS_VERDICT_ORDER.indexOf(base),
+    "faultFlipMultiplier: more at-fault mass flipped the verdict away from worse",
+    {base, flipped, mult: hi});
+  return {base, mult: hi, flipped};
 }
 
+// The one format of an AV-vs-human multiplier or ratio (the summary cards'
+// multipliers and their All-incidents line, the stress tables' ratio ranges,
+// the fault-flip multipliers): two significant figures below 10, a whole
+// number from 10. ratioShown is the value printed (9.96 rounds to 10, so it
+// prints "10"), and a multiplier's safer/worse colour is read off it. Until
+// 2026-10-03 the cards printed toFixed(1) below 10 ("0.0x" for Tesla's 0.026
+// fatality multiplier, "10.0x" for 9.96, and a 0.996 as "1.0x" in the worse
+// red) and this function three tiers ("0.00x", "10.0x" .. "99.9x"; audit #55).
+// The significant-figure formatter never writes an exponent (1e-7 prints
+// "0.00000010").
+const RATIO_TWO_SIG = new Intl.NumberFormat(NUMBER_LOCALE, {minimumSignificantDigits: 2, maximumSignificantDigits: 2});
+function ratioShown(n) {
+  assert(Number.isFinite(n) && n > 0, "ratioShown: invalid input", {n});
+  const twoSig = Number(n.toPrecision(2));
+  return twoSig >= 10 ? Math.round(n) : twoSig;
+}
 function fmtRatio(n) {
-  assert(Number.isFinite(n), "fmtRatio: invalid input", {n});
-  // 99.95 and 9.995: thresholds where toFixed would roll over to next tier
-  return n >= 99.95 ? fmtWhole(n) : n >= 9.995 ? n.toFixed(1) : n.toFixed(2);
+  const shown = ratioShown(n);
+  return shown >= 10 ? fmtWhole(shown) : RATIO_TWO_SIG.format(shown);
 }
 
 function helmerHumanStress(row, metricKey) {
@@ -1487,7 +1857,7 @@ function helmerHumanStress(row, metricKey) {
   assert(av != null, "Missing AV stress estimate", {helmer: row.helmer, metricKey});
   const ratioLo = av.lo / human.hi;
   const ratioHi = av.hi / human.lo;
-  const verdictKey = ratioLo > 1 ? "safer" : ratioHi < 1 ? "worse" : "ambiguous";
+  const verdictKey = stressVerdictKey(av.lo, av.hi, human);
   return {
     metric,
     human,
@@ -1499,15 +1869,21 @@ function helmerHumanStress(row, metricKey) {
   };
 }
 
+// The month series every view indexes: each month with a VMT row, in order.
+// The date slider holds indices into it; d= in the URL names its months.
+function vmtMonthList() {
+  return [...new Set(vmtRows.map(row => row.month))].sort();
+}
+
 function monthSeriesData() {
   assert(vmtRows.length > 0, "month series requires vmtRows");
-  const monthSet = new Set();
+  const months = vmtMonthList();
+  const monthSet = new Set(months);
   const vmtByKey = {};
   for (const row of vmtRows) {
     const key = row.helmer + "|" + row.month;
     assert(vmtByKey[key] === undefined, "Duplicate VMT row for helmer-month", {key});
     vmtByKey[key] = row;
-    monthSet.add(row.month);
   }
 
   const incidentsByKey = {};
@@ -1541,10 +1917,10 @@ function monthSeriesData() {
         "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
     }
     rec.faultKnown += Number(atFaultFrac !== null);
-    rec.atFault += atFaultFrac || 0;
-    rec.atFaultInjury += (atFaultFrac || 0) * Number(INJURY_SEVERITIES.has(inc.severity));
-    // Keep the individual nonzero fractions too: the at-fault posteriors mix
-    // over the Poisson-binomial of the true count (mixtureComponents).
+    // Keep the individual nonzero fractions: the at-fault posteriors mix over
+    // the Poisson-binomial of the true count (mixtureComponents), and the
+    // month's fault mass is their exact sum on the 0.05 grid (faultSum, after
+    // this loop).
     if (atFaultFrac) {
       rec.atFaultFracs.push(atFaultFrac);
       if (INJURY_SEVERITIES.has(inc.severity)) rec.atFaultInjuryFracs.push(atFaultFrac);
@@ -1565,6 +1941,10 @@ function monthSeriesData() {
     // them comparable (a 2-vehicle fatal crash = 0.5, a 3-vehicle = 0.33). See
     // theargumentmag.com/p/we-absolutely-do-know-that-waymos.
     rec.fatality += Number(inc.severity === "Fatality") / inc.vehiclesInvolved;
+  }
+  for (const rec of Object.values(incidentsByKey)) {
+    rec.atFault = faultSum(rec.atFaultFracs);
+    rec.atFaultInjury = faultSum(rec.atFaultInjuryFracs);
   }
 
   // Shared human entries: same reference in every month (literature-based
@@ -1594,9 +1974,32 @@ function monthSeriesData() {
   const humanEntries = Object.fromEntries(
     HUMAN_HELMERS.map(hh => [hh, humanEntryFor(hh)]));
 
-  const months = [...monthSet].sort();
   assert(months.length > 0, "No months to render");
+  // One month's posterior (median and fan bands), solved once per distinct
+  // input: within a month, metrics with the same mixture and band share it
+  // (k = 0 on every five-day metric, all = nonstationary when no crash was
+  // stationary), which is half of the 1,050 per-month posteriors (2026-10-03).
+  // Each costs seven quantile solves, and the quadrature behind them doubled
+  // its nodes that day (vmtPriorNodes), which this offsets.
+  const posteriors = new Map();
+  const monthPosterior = (comps, vMin, vBest, vMax) => {
+    const key = JSON.stringify([comps, vMin, vBest, vMax]);
+    if (!posteriors.has(key)) {
+      const quant = makeMarginalMpiQuant(comps, vMin, vBest, vMax);
+      posteriors.set(key, {
+        median: quant(0.5),
+        bands: CI_FAN_LEVELS.map(level => {
+          const t = (1 - level) / 2;
+          return {lo: quant(t), hi: quant(1 - t)};
+        }),
+      });
+    }
+    return posteriors.get(key);
+  };
   const points = [];
+  // Each helmer's incidents through the month, all-time like vmtCume: the
+  // count the VMT chart pairs with cumulative miles.
+  const incidentsToDate = Object.fromEntries(ADS_HELMERS.map(helmer => [helmer, 0]));
   for (const month of months) {
     const helmers = {...humanEntries};
     for (const helmer of ADS_HELMERS) {
@@ -1617,6 +2020,7 @@ function monthSeriesData() {
       assert(vmt.vmtBest > 0, "vmt must be positive", {helmer, month, vmtBest: vmt.vmtBest});
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {helmer, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [], injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
+      incidentsToDate[helmer] += inc.total;
       // Receipt coverage (vmt.coverage triple): the fraction of this month's
       // five-day-track incidents present in the NHTSA release — 1 except for
       // the release's data-through month, where slurp.py supplies the measured
@@ -1669,6 +2073,7 @@ function monthSeriesData() {
         kyoomMax: vmt.kyoomMax,
         rationale: vmt.rationale,
         incidents: inc,
+        incidentsCume: incidentsToDate[helmer],
       };
       // Pre-compute MPI estimates for each metric (consumed by MPI chart)
       entry.mpiByMetric = Object.fromEntries(METRIC_DEFS.map(m => {
@@ -1677,37 +2082,32 @@ function monthSeriesData() {
         }
         // Five-day-track metrics use the receipt-coverage-scaled raw VMT;
         // Monthly-track metrics keep the incCov-thinned triple. One branch,
-        // selected by metric data.
-        const vMin = m.fiveDay === true ? entry.vmtRawMin : entry.vmtMin;
-        const vBest = m.fiveDay === true ? entry.vmtRawBest : entry.vmtBest;
-        const vMax = m.fiveDay === true ? entry.vmtRawMax : entry.vmtMax;
+        // selected by metric data. The month's band is the one-month window's
+        // (windowVmtBand), so this posterior is that window's card.
+        const {min: vMin, best: vBest, max: vMax} = windowVmtBand(helmer, [entry],
+          r => m.fiveDay === true ? r.vmtRawMin : r.vmtMin,
+          r => m.fiveDay === true ? r.vmtRawBest : r.vmtBest,
+          r => m.fiveDay === true ? r.vmtRawMax : r.vmtMax);
         const k = m.countFn(entry);
         const comps = mixtureComponents(k, m.fracsFn ? m.fracsFn(entry) : null);
-        const quant = makeMarginalMpiQuant(comps, vMin, vBest, vMax);
         // Point estimate = posterior median (finite even at k=0). mpiBest = MLE
         // (miles/incidents, ∞ at k=0) is kept only for the subset-chain invariant.
         // The bands and median are exact quantiles of the month's marginal
         // posterior (Jeffreys-Gamma mixed over the Poisson-binomial fault count
         // and the VMT prior), well-defined at k=0.
+        const post = monthPosterior(comps, vMin, vBest, vMax);
         return [m.key, {
           mpiBest: vBest / k,
-          mpiMedian: quant(0.5),
+          mpiMedian: post.median,
           mpiMax:  vMax  / k,
           incidentCount: k,
-          bands: CI_FAN_LEVELS.map(level => {
-            const t = (1 - level) / 2;
-            return {
-              lo: quant(t),
-              hi: quant(1 - t),
-            };
-          }),
+          vmtMin: vMin, vmtBest: vBest, vmtMax: vMax, // the VMT band behind this posterior
+          bands: post.bands.map(b => ({...b})),
         }];
       }));
       helmers[helmer] = entry;
     }
-    // incidentObservable: all ADS helmers have VMT data = the NHTSA incident window
-    const incidentObservable = ADS_HELMERS.every(d => helmers[d] !== null);
-    points.push({month, helmers, incidentObservable});
+    points.push({month, helmers});
   }
   return {months, points};
 }
@@ -1722,7 +2122,7 @@ function sliceSeries(series, startIdx, endIdx) {
       helmers[helmer] = {...orig, incidents: {...orig.incidents, speeds: {...orig.incidents.speeds}},
         mpiByMetric: {...orig.mpiByMetric}};
     }
-    return {month: point.month, helmers, incidentObservable: point.incidentObservable};
+    return {month: point.month, helmers};
   });
   // vmtCume and the kyoom band stay all-time (not reset to the window start):
   // "cumulative VMT" means total miles, and the authored cumulative anchors
@@ -1734,15 +2134,23 @@ function sliceSeries(series, startIdx, endIdx) {
 // title: the title's band, the widest label, and the gap to the axis line. A
 // literal margin fits the label column only by coincidence (the 2026-09-07
 // face change widened "136.9K" into the title). Labels are digits in tabular
-// figures (style.css .month-svg), so one per-glyph bound stands in for
-// measuring text the browser has not laid out yet: a 13px tabular digit is
-// ~7.8 units, and every K/M label carries a "." that pays for its wide letter.
+// figures (style.css .month-svg), so a per-glyph bound stands in for
+// measuring text the browser has not laid out yet (tickLabelWidth).
 const Y_TITLE_BAND = 24; // the title's baseline is x=18; its descenders reach ~21
 const TICK_GLYPH = 8;
 const TICK_GAP = 8;
+// A tick label's width bound, in chart units: TICK_GLYPH per character, plus
+// half a glyph per unit letter (K, M, B, T), which is wider than a digit. At
+// 13px a tabular digit is ~7.8 units, "." ~3.6, K ~9.9, M ~12.1. Until
+// 2026-10-03 every K/M label carried a "." that paid for its letter; whole
+// values now drop their ".0" ("159M", audit #58), whose 35.6 units the plain
+// glyph count put at 32, and their y labels reached into the title.
+function tickLabelWidth(label) {
+  return TICK_GLYPH * (label.length + 0.5 * label.replace(/[^KMBT]/g, "").length);
+}
 function axisLeftMargin(tickLabels) {
   assert(tickLabels.length > 0, "axisLeftMargin: no tick labels", {tickLabels});
-  return Y_TITLE_BAND + TICK_GLYPH * Math.max(...tickLabels.map(label => label.length)) + TICK_GAP;
+  return Y_TITLE_BAND + Math.max(...tickLabels.map(tickLabelWidth)) + TICK_GAP;
 }
 
 // The 1-2-5 gridlines of a log x axis, and the labels that fit beneath them.
@@ -1756,30 +2164,77 @@ function axisLeftMargin(tickLabels) {
 // the same mantissa: a stride of two rungs would read 200, 1,000, 5,000,
 // 20,000, dropping the decade anchor from every other decade.
 const LOG_LADDER = [1, 2, 5]; // one decade of gridlines; a "rung" is one of these
-function drawLogXTicks(xMin, xMax, mapX, fmt, yTop, yBase, yText) {
-  assert(0 < xMin && xMin < xMax, "drawLogXTicks: degenerate x range", {xMin, xMax});
+// The 1-2-5 rungs in [xMin, xMax]. n counts rungs from 10^0 upward, so
+// n % LOG_LADDER.length === 0 is a decade and a stride anchored on it keeps
+// every decade labelled.
+function logLadderRungs(xMin, xMax) {
+  assert(0 < xMin && xMin < xMax, "logLadderRungs: degenerate x range", {xMin, xMax});
   const rungs = [];
   for (let e = Math.floor(Math.log10(xMin)); e <= Math.ceil(Math.log10(xMax)); e++) {
     for (const [j, m] of LOG_LADDER.entries()) {
       const v = m * Math.pow(10, e);
-      // n counts rungs from 10^0 upward, so n % LOG_LADDER.length === 0 is a
-      // decade and a stride anchored on it keeps every decade labelled.
       if (v >= xMin && v <= xMax) rungs.push({v, n: LOG_LADDER.length * e + j});
     }
   }
+  return rungs;
+}
+// The first and last rung of the coarsest ladder with two rungs in
+// [xMin, xMax]: values of one significant digit (1-9 per decade), then two,
+// and so on. When the 1-2-5 ladder leaves an axis fewer than two labels, the
+// axis labels these instead: a frame can hold one 1-2-5 rung or none
+// (84M-91M, Humans (US average) alone on fatality, holds none), and such
+// axes had no readable scale (audit #27: 92 of 770 chart states had fewer
+// than two labels, 21 none).
+function logTickExtremes(xMin, xMax) {
+  for (let digits = 1; digits <= 15; digits++) {
+    const step = x => Math.pow(10, Math.floor(Math.log10(x)) - digits + 1);
+    const first = Math.ceil(xMin / step(xMin)) * step(xMin);
+    const last = Math.floor(xMax / step(xMax)) * step(xMax);
+    if (first < last) return [first, last];
+  }
+  return fail("logTickExtremes: frame narrower than 15 significant digits", {xMin, xMax});
+}
+function drawLogXTicks(xMin, xMax, mapX, fmt, yTop, yBase, yText) {
+  const rungs = logLadderRungs(xMin, xMax);
   // 1->2 and 5->10 are the ladder's tightest rungs and mapX is linear in log x,
-  // so one probe gives the pitch however many rungs there are (a frame narrower
-  // than a rung, e.g. 101M-169M, holds none and draws none).
+  // so one probe gives the pitch however many rungs there are.
   const pitch = mapX(2 * xMin) - mapX(xMin);
   assert(pitch > 0, "drawLogXTicks: mapX must grow with x", {pitch});
-  const widest = rungs.reduce((w, r) => Math.max(w, TICK_GLYPH * fmt(r.v).length), 0) + TICK_GAP;
+  const widest = rungs.reduce((w, r) => Math.max(w, tickLabelWidth(fmt(r.v))), 0) + TICK_GAP;
   const needed = Math.ceil(widest / pitch);
   const labelStep = needed <= 1 ? 1 : LOG_LADDER.length * Math.ceil(needed / LOG_LADDER.length);
-  return rungs.map(r => `
-    <line x1="${mapX(r.v).toFixed(2)}" y1="${yTop}" x2="${mapX(r.v).toFixed(2)}" y2="${yBase}"
+  const strided = rungs.filter(r => r.n % labelStep === 0).map(r => r.v);
+  // Fewer than two labels give no scale: label the frame's outermost rungs of
+  // a finer ladder instead (each with its own gridline).
+  const labelled = new Set(strided.length >= 2 ? strided : logTickExtremes(xMin, xMax));
+  const lines = [...new Set([...rungs.map(r => r.v), ...labelled])].sort((a, b) => a - b);
+  return lines.map(v => `
+    <line x1="${mapX(v).toFixed(2)}" y1="${yTop}" x2="${mapX(v).toFixed(2)}" y2="${yBase}"
       class="month-grid"></line>
-    ${r.n % labelStep === 0 ? `<text class="month-tick" x="${mapX(r.v).toFixed(2)}" y="${yText}" text-anchor="middle">${fmt(r.v)}</text>` : ""}
+    ${labelled.has(v) ? `<text class="month-tick" x="${mapX(v).toFixed(2)}" y="${yText}" text-anchor="middle">${fmt(v)}</text>` : ""}
   `).join("");
+}
+
+// Right margin of a chart with a log x axis: the least that keeps every
+// label the axis could draw (every rung, and logTickExtremes), centred on
+// its rung, TICK_GAP inside the SVG's right edge -- the clearance labels keep
+// from each other, which also covers faces wider than the glyph model
+// (Firefox at phone size draws "200.0M" 61 units wide, 6.4 past the model on
+// each side). A literal 16 fitted the distribution chart's "200.0M" only when
+// no rung fell within half a label of the frame's edge; 104 of 770 states
+// clipped one (audit #50). A rung at fraction g of the frame sits at
+// mLeft + g (svgW - mLeft - mRight), so a label needing room h right of its
+// rung fits iff mRight >= (h - (svgW - mLeft)(1 - g)) / g. The floor, 16, is
+// the margin every chart had; most states keep it.
+const AXIS_MIN_RIGHT = 16;
+function axisRightMargin(xMin, xMax, fmt, mLeft, svgW) {
+  const span = Math.log(xMax / xMin), room = svgW - mLeft;
+  const candidates = [...logLadderRungs(xMin, xMax).map(r => r.v), ...logTickExtremes(xMin, xMax)];
+  return Math.max(AXIS_MIN_RIGHT, ...candidates.map(v => {
+    const g = Math.log(v / xMin) / span;
+    const h = tickLabelWidth(fmt(v)) / 2 + TICK_GAP;
+    return Math.ceil((h - room * (1 - g)) / g);
+  }));
 }
 
 function drawSingleMonthAxes(
@@ -1793,7 +2248,9 @@ function drawSingleMonthAxes(
   // and only the always-drawn last label appears.
   const pitch = (mapX(months.length - 1) - mapX(0)) / Math.max(1, months.length - 1);
   const labelStep = Math.max(1, Math.ceil((TICK_GLYPH * 7 + TICK_GAP) / pitch));
-  return `
+  // Ticks, axes and the axis title are hidden from assistive technology: the
+  // chart's own name says what it shows, and its marks carry the values.
+  return `<g aria-hidden="true">
     ${months.map((month, i) => `
       ${i === months.length - 1 || (i % labelStep === 0 && months.length - 1 - i >= labelStep) ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
     `).join("")}
@@ -1803,7 +2260,7 @@ function drawSingleMonthAxes(
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${axisY}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${axisY}" x2="${mLeft + pW}" y2="${axisY}"></line>
     <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">${yLabel}</text>
-  `;
+  </g>`;
 }
 
 // Legend chips for the selected helmers. Helmers in <emptyHelmers> have no data
@@ -1819,9 +2276,66 @@ function helmerChipLegend(helmers, emptyHelmers = new Set()) {
     </div>`;
 }
 
+// Chart width, in viewBox units: as many units as the charts' column has CSS
+// pixels, up to CHART_MAX_W, so a chart unit is about a CSS pixel at every
+// width and the charts' text and marks keep their declared sizes on a phone.
+// Every chart laid out a 900-unit viewBox until 2026-10-03, and a phone drew
+// it at 0.41-0.42 of that, putting 14-unit ticks at 5.7-5.9 CSS px and
+// 12-unit axis titles at 4.9-5.0 (audit #28). Every layout length (margins,
+// label strides, hit radii) is in these units, so a narrow viewBox only
+// draws fewer labels. Init measures the column and re-measures on resize
+// (outside the module the quals load, which keeps CHART_MAX_W).
+const CHART_MAX_W = 900;
+let chartViewW = CHART_MAX_W;
+// The charts' column, in CSS px, capped at CHART_MAX_W: #month-panel is a
+// plain block in the body's content box, laid out even when its sections are
+// collapsed.
+function chartColumnWidth() {
+  const w = byId("month-panel").clientWidth;
+  assert(w > 0, "the charts' column has no width", {w});
+  return Math.min(CHART_MAX_W, Math.round(w));
+}
+
+// Every chart's tooltip targets: one invisible circle per mark, drawn after
+// all of the chart's glyphs, so a glyph never covers a target. Its radius is
+// half the distance to the nearest other target more than HIT_R_MIN away, at
+// least HIT_R_MIN and at most HIT_R_MAX: a 24 CSS px target where there is
+// room (a chart unit is about a CSS px; chartViewW), and never so large that
+// it takes over a neighbour's centre. Until 2026-10-03 the MPI chart's fixed
+// r=8 circles took the tooltip of dots 6.4 units away that they did not
+// touch (audit #63), and the VMT, distribution and growth charts' marks were
+// their own 3.3-5 unit targets, 1.4-2.1 CSS px across on a phone (audit
+// #28). Only marks drawn within HIT_R_MIN of each other, which no radius can
+// separate, share a centre (the later target wins there), so they do not
+// shrink each other's targets: counted, they held the default view's six
+// distribution markers on a phone (each Peak beside its Median) to 8 CSS px
+// targets with no other mark near. Targets are given in Tab order; their
+// centres are rounded before the radii are taken, so the radii follow from
+// the drawn positions.
+const HIT_R_MIN = 4;
+const HIT_R_MAX = 12;
+function hitCircles(targets) {
+  const at = targets.map(t => ({x: Number(t.x.toFixed(2)), y: Number(t.y.toFixed(2)), tip: t.tip}));
+  // Each target's nearest neighbour more than HIT_R_MIN away, every pair
+  // measured once.
+  const near = at.map(() => Infinity);
+  for (let i = 0; i < at.length; i++) {
+    for (let j = i + 1; j < at.length; j++) {
+      const d = Math.hypot(at[j].x - at[i].x, at[j].y - at[i].y);
+      if (d <= HIT_R_MIN) continue;
+      near[i] = Math.min(near[i], d);
+      near[j] = Math.min(near[j], d);
+    }
+  }
+  return at.map((t, i) => {
+    const r = Math.max(HIT_R_MIN, Math.min(HIT_R_MAX, near[i] / 2));
+    return `<circle cx="${t.x}" cy="${t.y}" r="${r.toFixed(2)}" fill="none" data-tip="${escAttr(t.tip)}"${svgTipAttrs(t.tip)}></circle>`;
+  }).join("");
+}
+
 function renderAllHelmersMpiChart(series) {
   const metric = selectedMonthMetric();
-  const svgW = 900;
+  const svgW = chartViewW;
   const svgH = 520;
   const mRight = 16;
   const mTop = 14;
@@ -1835,7 +2349,7 @@ function renderAllHelmersMpiChart(series) {
   };
 
   const seriesRows = [];
-  let yMax = 1;
+  let yMax = 0; // stays 0 with no data, and the y axis is then labelled "0" alone (linearTicks)
   for (const helmer of includedHelmers()) {
     const rows = helmerMonthRows(series, helmer);
     const vals = rows.map(row => {
@@ -1929,9 +2443,12 @@ function renderAllHelmersMpiChart(series) {
     }).join("")
   ).join("");
 
-  const marks = seriesRows.map(row =>
-    row.vals.map((mpi, i) => {
-      if (mpi === null) return "";
+  // Each month's dot, then (hitCircles) every dot's tooltip target over all
+  // of them.
+  const glyphs = [], targets = [];
+  for (const row of seriesRows) {
+    row.vals.forEach((mpi, i) => {
+      if (mpi === null) return;
       const x = mapX(i);
       const color = metricMarkerColor(row.helmer);
       const k = mpi.incidentCount;
@@ -1946,13 +2463,11 @@ function renderAllHelmersMpiChart(series) {
       // (prior-only, no event data) like the distribution chart.
       const yc = clampY(mpi.mpiMedian);
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
-      const glyph = renderDot(x, yc, color, 1, k === 0);
-      // Hit circle r=8: an r=12 disc stacked over a neighbouring helmer's dot
-      // and took its tooltip (the human dot showed Tesla's in 9 of 15 default
-      // months); 8 still clears the 4-unit dot on every side.
-      return `<g opacity="${dotOpacity}">${glyph}</g><circle cx="${x}" cy="${yc}" r="8" fill="none" data-tip="${escAttr(tip)}"></circle>`;
-    }).join("")
-  ).join("");
+      glyphs.push(`<g opacity="${dotOpacity}">${renderDot(x, yc, color, 1, k === 0)}</g>`);
+      targets.push({x, y: yc, tip});
+    });
+  }
+  const marks = glyphs.join("") + hitCircles(targets);
 
   // One "?" per month at the top of its column, fading in as that month's
   // reporting completeness falls (opacity 0 when complete: grayed out, not
@@ -2004,7 +2519,7 @@ function renderAllHelmersMpiChart(series) {
       seriesRows.map(row => row.helmer),
       new Set(seriesRows.filter(row => !row.vals.some(v => v !== null)).map(row => row.helmer)),
     )}
-    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-labelledby="mpi-heading">
       ${drawSingleMonthAxes(
         series.months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, fmtMiles, "Miles Per Incident (MPI)",
       )}
@@ -2012,7 +2527,7 @@ function renderAllHelmersMpiChart(series) {
       ${lines}
       ${errs}
       ${marks}
-      ${qmarks}
+      <g aria-hidden="true">${qmarks}</g>
     </svg>
   `;
 }
@@ -2094,57 +2609,67 @@ function renderDistributionChart(series) {
   const {xMin, xMax} = distributionExtent(curves);
   assert(xMin < xMax, "distribution chart: degenerate x range", {xMin, xMax});
 
-  // Sample on log-uniform grid
-  const nPts = 250;
-  const logMin = Math.log(xMin);
-  const logMax = Math.log(xMax);
-  const logStep = (logMax - logMin) / (nPts - 1);
-  const xs = [];
-  for (let i = 0; i < nPts; i++) xs.push(Math.exp(logMin + logStep * i));
-
-  let yMax = 0;
-  for (const c of curves) {
-    c.ys = xs.map(x => c.densityFn(x));
-    const peakIdx = c.ys.reduce((best, y, i) => y > c.ys[best] ? i : best, 0);
-    // Refine the grid argmax by fitting a parabola (in log x) through the
-    // three samples around it: the grid step is 1-3% of x, so the raw node
-    // would misplace the reported peak by up to half a step and move it when
-    // other helmers are toggled (the frame, hence the grid, changes). An
-    // interior maximum has a concave triple (denominator < 0); an edge
-    // maximum keeps the node.
-    const interior = peakIdx > 0 && peakIdx < nPts - 1;
-    const y0 = c.ys[Math.max(peakIdx - 1, 0)], y1 = c.ys[peakIdx], y2 = c.ys[Math.min(peakIdx + 1, nPts - 1)];
-    const denom = y0 - 2 * y1 + y2;
-    const shift = interior && denom < 0 ? 0.5 * (y0 - y2) / denom : 0;
-    c.peakX = Math.exp(logMin + logStep * (peakIdx + shift));
-    c.peakY = c.ys[peakIdx];
-    yMax = Math.max(yMax, c.peakY);
-  }
-  yMax = yMax || 1; // no curves to scale against: default so the axes still draw
-
-  const svgW = 900, svgH = 280;
-  const mLeft = 68, mRight = 16, mTop = 14, mBot = 40;
+  const svgW = chartViewW, svgH = 280;
+  const mLeft = 68, mTop = 14, mBot = 40;
+  const mRight = axisRightMargin(xMin, xMax, fmtMiles, mLeft, svgW);
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
   const baseline = mTop + pH;
+  const logMin = Math.log(xMin);
+  const logMax = Math.log(xMax);
   const mapX = x => mLeft + (Math.log(x) - logMin) / (logMax - logMin) * pW;
-  const mapY = y => mTop + pH * (1 - y / yMax);
 
-  const axes = `
+  // Each curve is drawn through the frame's log-uniform grid merged with a
+  // dense grid of its own across its extent (clipped to the frame): on the
+  // shared grid alone, a band as narrow as Humans (US average) on fatality
+  // (sigma 0.020 in ln x) got 3-9 samples whenever ADS curves widened the
+  // frame, and drew as a jagged spike (audit #26). The peak is found on the
+  // curve's own grid, which is uniform in ln x, and refined by the parabola
+  // through the three samples around it, fit to ln(density): exact for a
+  // log-normal, whose mode is then its median to the last digit (a parabola
+  // on the density itself read a human band's Peak 87.5M against its Median
+  // 87.4M; audit #89). An interior maximum has a concave triple
+  // (denominator < 0); an edge maximum keeps the node.
+  const frameGrid = logUniformGrid(logMin, logMax, DIST_FRAME_POINTS);
+  let yMax = 0;
+  for (const c of curves) {
+    const ownLo = Math.max(logMin, Math.log(c.xMin)), ownHi = Math.min(logMax, Math.log(c.xMax));
+    const own = logUniformGrid(ownLo, ownHi, DIST_CURVE_POINTS);
+    const ownYs = own.map(u => c.densityFn(Math.exp(u)));
+    const i = ownYs.reduce((best, y, j) => y > ownYs[best] ? j : best, 0);
+    const interior = i > 0 && i < own.length - 1;
+    const [l0, l1, l2] = [ownYs[Math.max(i - 1, 0)], ownYs[i], ownYs[Math.min(i + 1, own.length - 1)]].map(Math.log);
+    const denom = l0 - 2 * l1 + l2;
+    const shift = interior && denom < 0 ? 0.5 * (l0 - l2) / denom : 0;
+    c.peakX = Math.exp(ownLo + (ownHi - ownLo) / (own.length - 1) * (i + shift));
+    assert(Number.isFinite(c.peakX), "distribution chart: peak refinement failed", {helmer: c.helmer, i, l0, l1, l2});
+    c.points = [...frameGrid.map(u => [u, c.densityFn(Math.exp(u))]), ...own.map((u, j) => [u, ownYs[j]])]
+      .sort((p, q) => p[0] - q[0]);
+    // The y scale covers every drawn sample and both markers (the refined
+    // peak's density tops the grid's samples).
+    yMax = Math.max(yMax, ...c.points.map(p => p[1]), c.densityFn(c.peakX), c.densityFn(c.postMedian));
+  }
+  yMax = yMax || 1; // no curves to scale against: default so the axes still draw
+  // DENSITY_HEADROOM above the tallest curve, so its markers draw whole (the
+  // scale topped out at the tallest sample, which put the Peak marker of the
+  // tallest curve half above the plot in every state; audit #25).
+  const mapY = y => mTop + pH * (1 - y / (yMax * DENSITY_HEADROOM));
+
+  const axes = `<g aria-hidden="true">
     ${drawLogXTicks(xMin, xMax, mapX, fmtMiles, mTop, baseline, svgH - 16)}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
     <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">Probability Density for True MPI</text>
-  `;
+  </g>`;
 
   // Curve fills (low opacity) and strokes — unified for all helmers
   const fills = curves.map(c => {
     const color = HELMER_COLORS[c.helmer];
-    let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
-    for (let i = 0; i < nPts; i++) {
-      d += ` L ${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
+    let d = `M ${mapX(Math.exp(c.points[0][0])).toFixed(2)} ${baseline.toFixed(2)}`;
+    for (const [u, y] of c.points) {
+      d += ` L ${mapX(Math.exp(u)).toFixed(2)} ${mapY(y).toFixed(2)}`;
     }
-    d += ` L ${mapX(xs[nPts - 1]).toFixed(2)} ${baseline.toFixed(2)} Z`;
+    d += ` L ${mapX(Math.exp(c.points[c.points.length - 1][0])).toFixed(2)} ${baseline.toFixed(2)} Z`;
     // k=0 curves carry no event data — they're just the Jeffreys prior shaped by VMT,
     // so two similar-mileage helmers coincide. Fade + dash them so they don't read as
     // a real overlap claim.
@@ -2152,10 +2677,7 @@ function renderDistributionChart(series) {
   }).join("");
 
   const strokes = curves.map(c => {
-    let d = "";
-    for (let i = 0; i < nPts; i++) {
-      d += `${i === 0 ? "M " : " L "}${mapX(xs[i]).toFixed(2)} ${mapY(c.ys[i]).toFixed(2)}`;
-    }
+    const d = c.points.map(([u, y], j) => `${j === 0 ? "M " : " L "}${mapX(Math.exp(u)).toFixed(2)} ${mapY(y).toFixed(2)}`).join("");
     // prior-only (k=0, no event data) and modeled-proxy human bands both dash
     const dash = c.est.k === 0 ? ";stroke-dasharray:6 4" : derivedBandDash(c.metric, c.helmer);
     return `<path d="${d}" style="${metricLineStyle(c.helmer)};fill:none${dash}"></path>`;
@@ -2164,33 +2686,37 @@ function renderDistributionChart(series) {
   // Two markers per curve: the visual peak ("most likely") and the posterior median.
   // They coincide for well-determined curves and separate for skewed near-zero-data
   // ones (the gap = the skew). Tooltip says which point it is plus the other central
-  // values (MLE is ∞ at k=0; the mean is the InvGamma MIXTURE's mean, ∞
-  // whenever a K=0 component carries weight — fractional fault mass or k=0 —
-  // the very curves where they'd matter). No
-  // helmer name — the dot colour + legend identify the curve.
+  // values (MLE is ∞ at k=0; the mean is the drawn curve's own, marginalMpiMean,
+  // ∞ whenever a K=0 component carries weight — fractional fault mass or k=0 —
+  // the very curves where they'd matter). No helmer name — the dot colour +
+  // legend identify the curve. The markers draw after the clip-path group,
+  // not inside it, so the frame never cuts one (a k=0 curve's markers sit on
+  // the baseline); distributionExtent puts every peak and median inside the
+  // frame, and that is asserted here.
   const infOr = v => Number.isFinite(v) ? fmtMiles(v) : "∞";
-  const markers = curves.map(c => {
+  // The markers, then (hitCircles) their tooltip targets over all of them.
+  const glyphs = [], targets = [];
+  for (const c of curves) {
     const color = HELMER_COLORS[c.helmer];
     const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})` : "";
     const ciLine = `${c.est.k !== null ? "95% CI" : "Range"}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}${kLine}`;
     const mle = c.est.k !== null ? c.est.median : NaN; // vmtBest/k, ∞ at k=0
-    // Posterior mean at vmtBest: sum_K w_K v/(a_K - 1) over the mixture,
-    // infinite when any component has a_K <= 1 (until 2026-09-04 the single-
-    // component v/(k - 0.5) printed a finite mean for at-fault mixtures).
-    const mean = c.est.k === null ? NaN
-      : c.est.comps.some(m => m.a <= 1) ? Infinity
-      : c.est.comps.reduce((s, m) => s + m.w * c.est.vmtBest / (m.a - 1), 0);
+    const mean = c.est.k !== null ? c.densityFn.mean : NaN;
     const tail = c.est.k !== null ? ` · mean ${infOr(mean)} · MLE ${infOr(mle)}` : "";
     const dots = [
       ["Peak", c.peakX, `median ${fmtMiles(c.est.postMedian)}`],
       ["Median", c.est.postMedian, `peak ${fmtMiles(c.peakX)}`],
     ];
     const dotStyle = c.est.k === 0 ? `fill:none;stroke:${color}` : `fill:${color}`; // k=0: hollow (prior only)
-    return dots.map(([label, mx, other]) => {
+    for (const [label, mx, other] of dots) {
+      assert(mx >= xMin && mx <= xMax, "distribution marker outside the frame", {helmer: c.helmer, label, mx, xMin, xMax});
       const tip = `${label}: ${fmtMiles(mx)}${c.est.k !== null ? `\n${other}${tail}` : ""}\n${ciLine}`;
-      return `<circle cx="${mapX(mx).toFixed(2)}" cy="${mapY(c.densityFn(mx)).toFixed(2)}" r="3.5" class="month-dot" style="${dotStyle}" data-tip="${escAttr(tip)}"></circle>`;
-    }).join("");
-  }).join("");
+      const x = mapX(mx), y = mapY(c.densityFn(mx));
+      glyphs.push(`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" class="month-dot" style="${dotStyle}"></circle>`);
+      targets.push({x, y, tip});
+    }
+  }
+  const markers = glyphs.join("") + hitCircles(targets);
 
   // Title lives in the collapsible section header (#dist-heading), set by
   // renderWindowedViews, so it stays visible when the section is collapsed.
@@ -2201,16 +2727,30 @@ function renderDistributionChart(series) {
         .filter(r => monthHelmerEnabled[r.helmer] && !curves.some(c => c.helmer === r.helmer))
         .map(r => r.helmer)),
     )}
-    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-labelledby="dist-heading">
       <defs><clipPath id="dist-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}
       <g clip-path="url(#dist-clip)">
       ${fills}
       ${strokes}
-      ${markers}
       </g>
+      ${markers}
     </svg>
   `;
+}
+
+// Density charts (the MPI distribution chart, the Jan-2027 forecast) scale y
+// to this multiple of the tallest drawn density, so the tallest curve peaks
+// 1/21 of the plot's height (~11 units) below its top and the r=3.5
+// markers on it (plus their 0.75 halo) stay inside the plot.
+const DENSITY_HEADROOM = 1.05;
+const DIST_FRAME_POINTS = 250; // the distribution chart's shared log grid
+const DIST_CURVE_POINTS = 121; // each curve's own grid across its extent
+
+// n points uniform on [lo, hi] (in ln x).
+function logUniformGrid(lo, hi, n) {
+  assert(lo < hi && n >= 2, "logUniformGrid: empty range", {lo, hi, n});
+  return Array.from({length: n}, (_, i) => lo + (hi - lo) * i / (n - 1));
 }
 
 // --- Fleet-size forecast (Jan 1, 2027) ---------------------------------------
@@ -2257,14 +2797,17 @@ function renderDistributionChart(series) {
 // 1M) ~20%). Hitting the 1M-weekly-rides fleet needs ~7,200 vehicles via a faster
 // Mesa/Magna + Ojai(Zeekr) + Ioniq-5 ramp — the hockeystick, weight ~0.18.
 //
-// Anchors (mid-2026): Waymo ~3,600 (Q1 2026) -> ~3,871 (Jun), ~280 cars/mo, Mesa/
+// Anchors (mid-2026): Waymo ~3,600 (Q1 2026) -> ~3,871 (Jun) -> "more than
+// 4,000" (Sep 1), ~280 cars/mo, Mesa/
 // Magna plant (tens of thousands/yr capacity) now building the Ojai (Zeekr 6th-gen,
 // public rides from May 28 2026), Ioniq 5 next (50k by 2028, GA Metaplant); Tesla
 // ~150 [90, 220] in service Aug 2026 (FLEET_HISTORY; 546 registered in TX by
-// Sep 25 2026 = 420 Model Y + 126 Cybercab; public Cybercab rides in Austin
+// Sep 25 2026 = 420 Model Y + 126 Cybercab, and 589 = 420 + 169 Cybercab by
+// Oct 3, TxDMV MCCS registry; public Cybercab rides in Austin
 // from Sep 4), unsupervised FSD "probably Q4 2026" (Musk), ~2-4M HW4 cars in
 // the US;
-// Zoox ~50->100 vehicles, redesigned production robotaxi unveiled Jun 24 2026.
+// Zoox ~50->100 vehicles, redesigned production robotaxi unveiled Jun 24 2026,
+// ~105 deployed (Jul 10 recall; "about 100", Sep 17).
 //
 // median = exp(mu) of each component; sigma is the log-scale spread. The weights
 // for each helmer must sum to 1 (asserted in forecastLanes). The `scope` tag
@@ -2280,7 +2823,11 @@ const FLEET_FORECAST = [
     // 5th percentile at 79, below August's floor): August's ~150 plus the 126
     // Cybercabs already registered in Texas by Sep 25 and a flat Model Y count
     // (Tesla told JPMorgan ~Aug 19 it is holding Model Y adds for Cybercab) ->
-    // ~240, sigma 0.45 (90% ~[114, 503]).
+    // ~240, sigma 0.45 (90% ~[114, 503]). Re-checked 2026-10-03 (audit #84):
+    // it still meets the floor rule (5th percentile 122 >= 90, median 292 >=
+    // 150), but its premise has moved: by Oct 3 the registry lists 169
+    // Cybercabs (Model Y still 420). Whether the median should rise is a
+    // forecast call left to the human.
     { weight: 0.71, median: 240,    sigma: 0.45, scope: "robotaxi" }, // A: slow robotaxi ramp continues
     { weight: 0.24, median: 9000,   sigma: 0.70, scope: "robotaxi" }, // B: aggressive robotaxi/Cybercab scale-up
     { weight: 0.05, median: 600000, sigma: 0.95, scope: "hw4" },      // C: eyes-off FSD across the HW4 fleet
@@ -2290,7 +2837,17 @@ const FLEET_FORECAST = [
     { weight: 0.18, median: 7500, sigma: 0.25 }, // hockeystick: Mesa/Ojai/Ioniq ramp toward the 1M-weekly-rides fleet
   ] },
   { helmer: "Zoox", components: [
-    { weight: 1, median: 150, sigma: 0.45 },
+    // Re-based 2026-10-03 on FLEET_HISTORY's 2026-09 row (105 [95, 120]; the
+    // June setting, median 150 / sigma 0.45, put the Jan-2027 5th percentile
+    // at 72, a ~30% shrink from a fleet that has held near 100-105 since June;
+    // audit #19). Zoox will "steadily increase the size of its robotaxi fleet
+    // over the next several months" (TechCrunch, Sep 17), the NTA's 100-
+    // vehicle Las Vegas cap ran out Sep 25, the NHTSA exemption allows 2,500
+    // a year and Hayward builds 5-6 a day (CEO, Aug 10): median 150 is ~13
+    // more a month, between the stalled summer and Q1's ~20; sigma 0.27
+    // (90% ~[96, 234]) leaves a pause or recall holding the fleet near today's
+    // as the low tail and a Hayward ramp (~35 a month) as the high one.
+    { weight: 1, median: 150, sigma: 0.27 },
   ] },
 ];
 
@@ -2363,10 +2920,14 @@ function forecastLanes(table) {
   return lanes;
 }
 
+// A scenario group's probability as the legend and the scenario note print it.
+function scenarioPct(prob) {
+  return Math.round(prob * 100);
+}
 // A lane's legend chip carries its scenario share when it isn't the whole helmer.
 function laneLegendLabel(lane) {
   return lane.scenarioProb < 0.999
-    ? `${lane.label} (~${Math.round(lane.scenarioProb * 100)}%)`
+    ? `${lane.label} (~${scenarioPct(lane.scenarioProb)}%)`
     : lane.label;
 }
 
@@ -2478,28 +3039,32 @@ function renderFleetForecastChart() {
   const xs = [];
   for (let i = 0; i < nPts; i++) xs.push(Math.exp(logMin + logStep * i));
 
+  // The y scale covers every sample and every median marker (a marker near
+  // its curve's peak can sit above the grid's samples), with DENSITY_HEADROOM.
   let yMax = 0;
   for (const c of curves) {
     c.ys = xs.map(x => c.densityFn(x));
-    for (const y of c.ys) if (y > yMax) yMax = y;
+    yMax = Math.max(yMax, ...c.ys, c.densityFn(c.median));
   }
   assert(yMax > 0, "fleet forecast chart: all densities zero", {yMax});
 
-  const svgW = 900, svgH = 280;
-  const mLeft = 68, mRight = 16, mTop = 14, mBot = 48;
+  const svgW = chartViewW, svgH = 280;
+  const mLeft = 68, mTop = 14, mBot = 48;
+  const mRight = axisRightMargin(xMin, xMax, spec.fmt, mLeft, svgW);
   const pW = svgW - mLeft - mRight;
   const pH = svgH - mTop - mBot;
   const baseline = mTop + pH;
   const mapX = x => mLeft + (Math.log(x) - logMin) / (logMax - logMin) * pW;
-  const mapY = y => mTop + pH * (1 - y / yMax);
+  const mapY = y => mTop + pH * (1 - y / (yMax * DENSITY_HEADROOM));
 
-  const axes = `
+  const yTitle = "Probability density for 2027 Jan 1";
+  const axes = `<g aria-hidden="true">
     ${drawLogXTicks(xMin, xMax, mapX, spec.fmt, mTop, baseline, baseline + 16)}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
     <line class="month-axis" x1="${mLeft}" y1="${baseline}" x2="${mLeft + pW}" y2="${baseline}"></line>
-    <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">Probability density for 2027 Jan 1</text>
+    <text class="month-label" x="18" y="${mTop + pH / 2}" transform="rotate(-90 18 ${mTop + pH / 2})" text-anchor="middle">${yTitle}</text>
     <text class="month-tick" x="${mLeft + pW / 2}" y="${svgH - 9}" text-anchor="middle">${spec.yLabel}</text>
-  `;
+  </g>`;
 
   const fills = curves.map(c => {
     let d = `M ${mapX(xs[0]).toFixed(2)} ${baseline.toFixed(2)}`;
@@ -2514,21 +3079,29 @@ function renderFleetForecastChart() {
     return `<path d="${d}" style="stroke:${c.color};stroke-width:2;fill:none${c.dashed ? ";stroke-dasharray:6 4" : ""}"></path>`;
   }).join("");
 
-  const markers = curves.map(c => {
-    const tip = `${c.legendLabel}\nMedian: ${fmtWhole(c.median)}\n90% CI: ${fmtWhole(c.lo90)} – ${fmtWhole(c.hi90)}`;
-    return `<circle cx="${mapX(c.median).toFixed(2)}" cy="${mapY(c.densityFn(c.median)).toFixed(2)}" r="3.5" class="month-dot" style="fill:${c.color}" data-tip="${escAttr(tip)}"></circle>`;
-  }).join("");
+  // Markers draw after the clip-path group, so the frame never cuts one
+  // (the tallest curve's median marker lost its top until 2026-10-03; audit
+  // #25). Each median lies inside the frame, which spans every curve's 90%
+  // interval.
+  // The markers, then (hitCircles) their tooltip targets over them.
+  const marks = curves.map(c => {
+    assert(c.median >= xMin && c.median <= xMax, "fleet forecast marker outside the frame", {label: c.legendLabel, median: c.median, xMin, xMax});
+    return {x: mapX(c.median), y: mapY(c.densityFn(c.median)), color: c.color,
+      tip: `${c.legendLabel}\n${forecastQuantilesText(spec, c.median, c.lo90, c.hi90)}`};
+  });
+  const markers = marks.map(m => `<circle cx="${m.x.toFixed(2)}" cy="${m.y.toFixed(2)}" r="3.5" class="month-dot" style="fill:${m.color}"></circle>`).join("")
+    + hitCircles(marks);
 
   return `
     ${fleetCurveLegend(curves)}
-    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(`${yTitle} ${spec.yLabel}`)}">
       <defs><clipPath id="fleet-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       ${axes}
       <g clip-path="url(#fleet-clip)">
       ${fills}
       ${strokes}
-      ${markers}
       </g>
+      ${markers}
     </svg>
   `;
 }
@@ -2553,7 +3126,20 @@ function renderFleetForecastChart() {
 // robotaxitracker, AP Sep 3 "more than 200 unsupervised robotaxis", 420
 // registered VINs; the Sep-3 "1 million unsupervised miles" implies ~100+
 // cars averaging ~100-150 mi/day); Zoox ~50 (Jan 2026) -> ~90 (Mar) -> ~100
-// (Jun).
+// (Jun). Added 2026-10-03 (audit #87, #19), each a stock at the step of the
+// day it was counted, as the Jan-1 forecast sits at 2027-01: Waymo 2026-09
+// = "more than 4,000 vehicles" (TechCrunch, Sep 1) as the floor: the Jun-13
+// recall's 3,871 5th-gen vehicles plus the ~300 6th-gen Ojai in service by
+// Sep 1 make ~4,200, later 5th-gen additions a little more, so ~4,300; the
+// ceiling is the ~280 cars/month pace the forecast assumes, run from Waymo's
+// "around 4,000" of Jun 29 (~4,600, rounded up);
+// Zoox 2026-09 = "about 100 custom-built robotaxis ... spread across four
+// U.S. cities" (TechCrunch, Sep 17), after recall 26E044000 covered 105
+// units, its whole deployed driverless fleet, on Jul 10, so ~105 [95, 120].
+// Tesla has no 2026-09 row: August's 150 rests on robotaxitracker's monthly
+// distinct-vehicle count, whose data paths the site does not allow automated
+// clients to read, and the rows before it use other definitions (audit #20,
+// a human call).
 const FLEET_HISTORY = {
   Tesla: [
     {month: "2025-06", best: 12, lo: 8,  hi: 20},
@@ -2568,11 +3154,13 @@ const FLEET_HISTORY = {
     {month: "2025-12", best: 3067, lo: 2850, hi: 3300},
     {month: "2026-02", best: 3300, lo: 3000, hi: 3700},
     {month: "2026-05", best: 3750, lo: 3400, hi: 4200},
+    {month: "2026-09", best: 4300, lo: 4000, hi: 4700},
   ],
   Zoox: [
     {month: "2026-01", best: 50,  lo: 35, hi: 70},
     {month: "2026-03", best: 90,  lo: 70, hi: 115},
     {month: "2026-06", best: 100, lo: 80, hi: 130},
+    {month: "2026-09", best: 105, lo: 95, hi: 120},
   ],
 };
 const FLEET_TS_END_MONTH = "2027-01"; // the Jan-1-2027 forecast cross-section
@@ -2611,22 +3199,35 @@ const RIDES_HISTORY = {
   // corridor reconciled the miles with a "~700k paid miles by late Apr 2026"
   // figure that was actually mid-February vintage; Tesla's Q1-2026 deck puts
   // end-Mar cumulative paid miles at ~1.717M, so these rows are ~2x the old.)
+  // The rows sit at quarter ends. Through 2026-06 they are deck-chart months,
+  // whose miles are near-exact, so each band is the corridor's alone (cume /
+  // 8.3 .. cume / 4.7); 2026-09 (added 2026-10-03, audit #87) is an estimate
+  // month of data/vmt.csv, so its band divides the kyoom band by the
+  // corridor's far ends, as RIDES_FORECAST does: 3,630,000 / 6.2, 3,194,800 /
+  // 8.3, 4,506,000 / 4.7. Re-derive it when the Q3 deck re-pins September.
   Tesla: [
     {month: "2025-09", best: 19500,  lo: 14500,  hi: 26000},
     {month: "2025-12", best: 106000, lo: 79000,  hi: 140000},
     {month: "2026-03", best: 277000, lo: 207000, hi: 365000},
     {month: "2026-06", best: 394000, lo: 294000, hi: 519000},
+    {month: "2026-09", best: 585000, lo: 385000, hi: 959000},
   ],
   // Waymo pinned to published cumulative milestones (rides-provenance.qual):
   // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
   // (Waymo 2025 year-in-review); interpolated with the published weekly rates
   // (250k/wk May 2025 -> 450k/wk Dec 2025 -> 500k/wk Mar 2026, CNBC/TechCrunch).
+  // 2026-09 (added 2026-10-03, audit #87) extends 2026-05 by the 17.4 weeks to
+  // Sep 30 on Waymo's "over half a million trips each week" (Sep 14; the floor
+  // it has stated since late March, so no newer level): lo = May's lo + 500k a
+  // week (rounded up), best = May's best + ~575k a week (the 2026-03 ->
+  // 2026-05 rows' pace), hi = May's hi + 700k a week.
   Waymo: [
     {month: "2025-06", best: 11500000, lo: 10500000, hi: 12800000},
     {month: "2025-09", best: 16000000, lo: 14500000, hi: 17800000},
     {month: "2025-12", best: 20000000, lo: 19000000, hi: 21500000},
     {month: "2026-03", best: 26000000, lo: 24000000, hi: 28500000},
     {month: "2026-05", best: 31000000, lo: 28000000, hi: 34500000},
+    {month: "2026-09", best: 41000000, lo: 36800000, hi: 46700000},
   ],
   // Zoox rides anchor to its published cumulative RIDER counts — >300k riders
   // by late 2025, >350k by late Mar 2026 (CleanTechnica 2026-03-24, The
@@ -2655,7 +3256,7 @@ const RIDES_HISTORY = {
 // Orlando/Tampa unsupervised) + ~175 registered TX vehicles pull monthly
 // miles back toward ~400-700k by Dec. Re-based 2026-09-04 on the Sep-3
 // "1 million unsupervised miles" statement (end-Aug cume ~3.15M
-// [2.88M, 3.79M], August ~470k/mo): floor 4.5M = 3.15M + 4 x ~340k (below
+// [2.89M, 3.79M], August ~470k/mo): floor 4.5M = 3.15M + 4 x ~340k (below
 // August's rate), central 5.5M = + 4 x ~590k, ceiling 7.8M = + 4 x ~1.16M
 // (the rate doubles again by Dec). B's Cybercab ramp to ~9k arrives
 // mostly in Q4 at ramping utilization (production started Jun 2026; the
@@ -2675,7 +3276,8 @@ const MILES_FORECAST = [
   // plus Sep-Dec at Aug's 20.8M/mo growing ~3%/mo (Denver/San Diego/Tampa
   // opened Sep 1, Ojai ramp) -> ~407M; lo = kyoom lo + 4 x 18M ~379M; hi =
   // kyoom hi + 4 x 26M ~435M (authored 405M / 380M / 440M, rounded).
-  // Zoox end-Aug 3.31M [2.28M, 4.42M] plus Sep-Dec at ~0.27-0.30M/mo (LAS
+  // Zoox end-Aug 3.27M [2.59M, 3.93M] (after the 2026-10-03 CA DMV rebuild
+  // and Dec-2025 knot) plus Sep-Dec at ~0.27-0.30M/mo (LAS
   // airport trips from Sep 3, fleet toward the 100-car NTA cap) -> ~4.5M.
   { helmer: "Waymo", components: [
     { weight: 1, best: 405000000, lo: 380000000, hi: 440000000 },
@@ -2737,26 +3339,48 @@ function growthMetricSpec(key) {
     fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole,
       yMin: 6, yMax: 4000000, yTicks: [10, 100, 1000, 10000, 100000, 1000000],
       note: "",
-      lanes: () => trajectoryLanes(fleetForecastCurves(), h => FLEET_HISTORY[h])},
+      lanes: () => trajectoryLanes(fleetForecastCurves(), h => FLEET_HISTORY[h], FLEET_TS_END_MONTH)},
     rides: {label: "Rides (cumulative)", yLabel: "Cumulative rides", valueLabel: "Rides", fmt: fmtWhole,
       yMin: 3000, yMax: 400000000, yTicks: [10000, 100000, 1000000, 10000000, 100000000],
       note: "Waymo's estimates based on published ride milestones; Zoox's on published rider counts; Tesla's on published miles with assumed ride length",
-      lanes: () => trajectoryLanes(bandForecastCurves(RIDES_FORECAST), h => RIDES_HISTORY[h])},
+      lanes: () => trajectoryLanes(bandForecastCurves(RIDES_FORECAST), h => RIDES_HISTORY[h], CUMULATIVE_END_MONTH)},
     miles: {label: "Miles (cumulative)", yLabel: "Cumulative miles", valueLabel: "Miles", fmt: fmtMiles,
       // yMin 500 keeps Tesla's first cumulative points (683 / 7k / 20k mi) and
       // Zoox's early lower band on-plot (yMin 100000 clipped them until 2026-09-04)
       yMin: 500, yMax: 4000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000],
       note: "Cumulative miles = the top section's VMT, carried through the last NHTSA data month and then extrapolated (dashed); the solid part should match the VMT charts above.",
-      lanes: () => trajectoryLanes(bandForecastCurves(MILES_FORECAST), milesHistory)},
+      lanes: () => trajectoryLanes(bandForecastCurves(MILES_FORECAST), milesHistory, CUMULATIVE_END_MONTH)},
   };
   assert(specs[key] !== undefined, "unknown growth metric", {key});
   return specs[key];
 }
 
-// A lane's point list: history + the Jan-1-2027 forecast endpoint, asserting
-// lo <= best <= hi on every point.
-function growthLanePoints(history, forecast) {
-  const points = [...history, {month: FLEET_TS_END_MONTH, ...forecast, forecast: true}];
+// The Jan-1-2027 forecast's step on the trajectory's month axis, by each
+// metric's own time convention. The fleet is a stock, counted at Jan 1: the
+// 2027-01 step (FLEET_TS_END_MONTH). Cumulative rides and miles are month-end
+// totals (the 2026-08 point is the total through Aug 31), so the total
+// through Dec 31, 2026 is the 2026-12 step. Until 2026-10-03 every metric put
+// it at 2027-01, five steps after August for four months of driving, so the
+// dashed leg showed 4/5 of its slope (audit #86). Either way its tooltip
+// names the date it stands for, GROWTH_FORECAST_DATE.
+const CUMULATIVE_END_MONTH = "2026-12";
+const GROWTH_FORECAST_DATE = "2027-01-01";
+
+// A forecast's median and 90% interval as both growth charts print them: in
+// the metric's own format, at FORECAST_SIG_FIGS significant figures, all that
+// an authored judgment forecast carries (until 2026-10-03 the forecast chart
+// printed "407,979,419" where the trajectory printed "408.0M", and rides to
+// eight digits in both; audit #57).
+const FORECAST_SIG_FIGS = 3;
+function forecastQuantilesText(spec, median, lo, hi) {
+  const f = v => spec.fmt(Number(v.toPrecision(FORECAST_SIG_FIGS)));
+  return `Median: ${f(median)}\n90% CI: ${f(lo)} – ${f(hi)}`;
+}
+
+// A lane's point list: history + the Jan-1-2027 forecast endpoint at
+// endMonth, asserting lo <= best <= hi on every point.
+function growthLanePoints(history, forecast, endMonth) {
+  const points = [...history, {month: endMonth, ...forecast, forecast: true}];
   for (const p of points) {
     assert(p.lo <= p.best && p.best <= p.hi,
       "growth point must satisfy lo <= best <= hi", {point: p});
@@ -2764,24 +3388,39 @@ function growthLanePoints(history, forecast) {
   return points;
 }
 
-// Trajectory lanes for any metric: Waymo, Zoox, Tesla's robotaxi mainline, and
-// the conditional HW4 scenario drawn as a faded dashed FORK off the last shared
-// Tesla history point. Forecast endpoints carry the distribution curves'
-// computed quantiles (median + 90% CI), so the two charts agree by
-// construction.
-function trajectoryLanes(curves, historyFn) {
-  const byKey = Object.fromEntries(curves.map(c => [c.key, c]));
-  const fc = c => ({best: c.median, lo: c.lo90, hi: c.hi90});
-  const teslaHist = historyFn("Tesla");
-  assert(teslaHist.length > 0, "trajectoryLanes: empty Tesla history (vmtRows not initialized?)");
-  return [
-    {label: "Waymo", color: HELMER_COLORS.Waymo, points: growthLanePoints(historyFn("Waymo"), fc(byKey.Waymo))},
-    {label: "Zoox", color: HELMER_COLORS.Zoox, points: growthLanePoints(historyFn("Zoox"), fc(byKey.Zoox))},
-    {label: byKey.robotaxi.legendLabel, color: byKey.robotaxi.color,
-      points: growthLanePoints(teslaHist, fc(byKey.robotaxi))},
-    {label: byKey.hw4.legendLabel, color: byKey.hw4.color, dashed: true, branchOnly: true,
-      points: growthLanePoints([teslaHist[teslaHist.length - 1]], fc(byKey.hw4))},
-  ];
+// Trajectory lanes for any metric, one per forecast curve and in the curves'
+// order (forecastLanes: Tesla's robotaxi and all-HW4 scopes, Waymo, Zoox), so
+// the two growth charts' legends agree (until 2026-10-03 the trajectory
+// listed Waymo and Zoox first; audit #65). A conditional curve (Tesla's
+// all-HW4 scenario) is a faded dashed FORK off its helmer's last history
+// point. Forecast endpoints carry the curves' computed quantiles (median +
+// 90% CI), so the two charts agree by construction.
+function trajectoryLanes(curves, historyFn, endMonth) {
+  return curves.map(c => {
+    const history = historyFn(c.historyHelmer);
+    assert(history.length > 0, "trajectoryLanes: empty history (vmtRows not initialized?)", {helmer: c.historyHelmer});
+    return {label: c.legendLabel, helmer: c.historyHelmer, key: c.key, share: c.scenarioProb,
+      color: c.color, branchOnly: !c.mainline,
+      points: growthLanePoints(c.mainline ? history : history.slice(-1),
+        {best: c.median, lo: c.lo90, hi: c.hi90}, endMonth)};
+  });
+}
+
+// Note under the growth charts' legend. It must convey
+// that Tesla's forecast splits into its robotaxi scenarios (the "(~95%)" on
+// the "Tesla robotaxi" chip) and the scenario in which eyes-off FSD runs on
+// every HW4 car (the "(~5%)" on "Tesla all-HW4 ADS"), and that those
+// percentages are the scenarios' probabilities, not shares of a fleet. Until
+// 2026-10-03 the page explained neither (audit #83).
+function growthScenarioNote(lanes) {
+  const pct = key => {
+    const lane = lanes.find(l => l.key === key);
+    assert(lane !== undefined, "growthScenarioNote: no lane for the scenario", {key});
+    return scenarioPct(lane.share);
+  };
+  return `Tesla forecast splits into two scenarios: the robotaxi (~${pct("robotaxi")}%) ` +
+    `and unsupervised FSD in all HW4 cars (~${pct("hw4")}%). ` +
+    "These numbers are the scenarios' probabilities.";
 }
 
 function renderFleetTimeSeriesChart() {
@@ -2792,7 +3431,7 @@ function renderFleetTimeSeriesChart() {
   for (let i = 0; i <= fleetMonthIndex(FLEET_TS_END_MONTH); i++) months.push(fleetMonthIso(i));
 
   const yTicks = growthYTicks(spec);
-  const svgW = 900, svgH = 280, mRight = 24, mTop = 14, mBot = 48;
+  const svgW = chartViewW, svgH = 280, mRight = 24, mTop = 14, mBot = 48;
   const mLeft = axisLeftMargin(yTicks.map(v => spec.fmt(v)));
   const pW = svgW - mLeft - mRight, pH = svgH - mTop - mBot;
   const xPad = 28;
@@ -2800,7 +3439,9 @@ function renderFleetTimeSeriesChart() {
   const mapX = idx => scaleLinear(idx, 0, months.length - 1, mLeft + xPad, mLeft + pW - xPad);
   const mapY = v => mTop + pH * (1 - (Math.log(v) - Math.log(yMin)) / (Math.log(yMax) - Math.log(yMin)));
 
-  const bands = [], lines = [], marks = [];
+  // The marks, then (hitCircles) every mark's tooltip target over them, in
+  // lane order (history points, then the forecast endpoint).
+  const bands = [], lines = [], marks = [], targets = [];
   for (const lane of lanes) {
     const color = lane.color;
     const pts = lane.points;
@@ -2823,29 +3464,35 @@ function renderFleetTimeSeriesChart() {
       for (const p of hist) {
         // History points carry the master's authored ranges (kyoom bands,
         // fleet/rides corridors), not a computed 90% interval — that label
-        // belongs to the forecast marker only.
-        const tip = `${lane.label} · ${p.month}\n${spec.valueLabel}: ${spec.fmt(p.best)}\nRange: ${spec.fmt(p.lo)} – ${spec.fmt(p.hi)}`;
-        marks.push(`<circle cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}" data-tip="${escAttr(tip)}"></circle>`);
+        // belongs to the forecast marker only. They are labelled by their
+        // helmer: a scenario share is a forecast's (until 2026-10-03 every
+        // Tesla point read "Tesla robotaxi (~95%) · ..."; audit #83).
+        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${spec.fmt(p.best)}\nRange: ${spec.fmt(p.lo)} – ${spec.fmt(p.hi)}`;
+        marks.push(`<circle cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}"></circle>`);
+        targets.push({x: X(p), y: mapY(p.best), tip});
       }
     }
     lines.push(`<path d="M ${X(last).toFixed(2)} ${mapY(last.best).toFixed(2)} L ${X(fc).toFixed(2)} ${mapY(fc.best).toFixed(2)}" style="${dashedStroke}"></path>`);
     const fx = X(fc);
-    const fcTip = `${lane.label} · ${fc.month} (forecast)\nMedian: ${spec.fmt(fc.best)}\n90% CI: ${spec.fmt(fc.lo)} – ${spec.fmt(fc.hi)}`;
     marks.push(`
       <line class="month-err" x1="${fx.toFixed(2)}" y1="${mapY(fc.lo).toFixed(2)}" x2="${fx.toFixed(2)}" y2="${mapY(fc.hi).toFixed(2)}" style="stroke:${color}"></line>
-      <circle cx="${fx.toFixed(2)}" cy="${mapY(fc.best).toFixed(2)}" r="4" class="month-dot" style="fill:var(--card);stroke:${color}" data-tip="${escAttr(fcTip)}"></circle>`);
+      <circle cx="${fx.toFixed(2)}" cy="${mapY(fc.best).toFixed(2)}" r="4" class="month-dot" style="fill:var(--card);stroke:${color}"></circle>`);
+    targets.push({x: fx, y: mapY(fc.best),
+      tip: `${lane.label} · ${GROWTH_FORECAST_DATE} (forecast)\n${forecastQuantilesText(spec, fc.best, fc.lo, fc.hi)}`});
   }
 
   return `
     ${renderGrowthMetricToggle()}
     ${fleetCurveLegend(lanes.map(l => ({color: l.color, legendLabel: l.label})))}
+    <p class="month-note">${growthScenarioNote(lanes)}</p>
     ${spec.note ? `<p class="month-note">${spec.note}</p>` : ""}
-    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(spec.yLabel)}">
       <defs><clipPath id="fleet-ts-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       <g clip-path="url(#fleet-ts-clip)">
       ${bands.join("")}
       ${lines.join("")}
       ${marks.join("")}
+      ${hitCircles(targets)}
       </g>
       ${drawSingleMonthAxes(months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, spec.fmt, spec.yLabel)}
     </svg>
@@ -2866,7 +3513,7 @@ function renderGrowthMetricToggle() {
   return `<div class="month-legend" id="growth-metric-toggle">${
     GROWTH_METRIC_KEYS.map(key => `
       <label class="month-legend-item">
-        <input type="radio" name="growth-metric" value="${key}" ${key === selectedGrowthMetric ? "checked" : ""}>
+        <input type="radio" name="growth-metric" data-focus-key="growth-${key}" value="${key}" ${key === selectedGrowthMetric ? "checked" : ""}>
         ${growthMetricSpec(key).label}
       </label>`).join("")
   }</div>`;
@@ -2880,8 +3527,10 @@ function initGrowthMetricToggle() {
     const value = e.target.value;
     assert(GROWTH_METRIC_KEYS.includes(value), "unknown growth metric toggle", {value});
     selectedGrowthMetric = value;
-    byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
-    byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+    rerenderKeepingFocus(() => {
+      byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
+      byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+    });
     syncUrlState();
   });
 }
@@ -2902,7 +3551,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     months: indices.map(i => globalSeries.months[i]),
     points: indices.map(i => globalSeries.points[i]),
   };
-  const svgW = 900;
+  const svgW = chartViewW;
   const svgH = 250;
   const mRight = 24;
   const mTop = 14;
@@ -2915,7 +3564,8 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const lo = row => vmtCumulative ? row.kyoomMin : row.vmtMonthMin;
   const hi = row => vmtCumulative ? row.kyoomMax : row.vmtMonthMax;
   const yLabel = vmtCumulative ? "Cumulative VMT" : "Vehicle Miles Traveled (VMT)";
-  const vmtMax = Math.max(1, ...rows.map(row => row ? hi(row) : 0));
+  // 0 with no rows in the window: the empty axes are labelled "0" alone (linearTicks).
+  const vmtMax = Math.max(0, ...rows.map(row => row ? hi(row) : 0));
   const yTicks = linearTicks(0, vmtMax, 4);
   const mLeft = axisLeftMargin(yTicks.map(fmtMiles));
   const pW = svgW - mLeft - mRight;
@@ -2931,14 +3581,10 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     const cx = mapX(i);
     const yLo = mapVmtY(lo(row));
     const yHi = mapVmtY(hi(row));
-    const loTip = vmtTooltip(series.months[i], lo(row));
-    const hiTip = vmtTooltip(series.months[i], hi(row));
     errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
-      <circle cx="${cx.toFixed(2)}" cy="${yLo.toFixed(2)}" r="5" fill="none" data-tip="${escAttr(loTip)}"></circle>
-      <circle cx="${cx.toFixed(2)}" cy="${yHi.toFixed(2)}" r="5" fill="none" data-tip="${escAttr(hiTip)}"></circle>
     `);
   }
 
@@ -2949,16 +3595,33 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     vmtPath += `${vmtPath ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
   }
 
-  const vmtMarks = rows.map((row, i) => {
-    if (!row) return "";
+  // The incident count on the miles' basis: the month's, or (cumulative
+  // view) all through it, as vmtCume is.
+  const incidentsOf = row => vmtCumulative ? row.incidentsCume : row.incidents.total;
+  // The dots, then (hitCircles) each month's targets over them: its range's
+  // low and high ends, then its dot, so the Tab order walks month by month
+  // and the dot wins where its ends lie under it.
+  const dots = [], targets = [];
+  rows.forEach((row, i) => {
+    if (!row) return;
     const x = mapX(i);
     const y = mapVmtY(best(row));
-    const vmtTip = vmtTooltip(series.months[i], best(row), row.incidents.total);
-    return `<circle class="month-dot" cx="${x}" cy="${y}" r="3.3" style="fill:${vmtColor}" data-tip="${escAttr(vmtTip)}"></circle>`;
-  }).join("");
+    dots.push(`<circle class="month-dot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
+    const month = series.months[i];
+    // Only the data-through month's count is partial (both factors are 1
+    // elsewhere).
+    const worst = row.coverage * row.incCovMin;
+    const note = worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
+    targets.push(
+      {x, y: mapVmtY(lo(row)), tip: vmtEndTooltip(month, lo(row), VMT_RANGE_EDGE.lo)},
+      {x, y: mapVmtY(hi(row)), tip: vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi)},
+      {x, y, tip: vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + note},
+    );
+  });
+  const vmtMarks = dots.join("") + hitCircles(targets);
 
   return `
-    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}">
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(`${helmer} ${yLabel}`)}">
       ${errs.join("")}
       <path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>
       ${vmtMarks}
@@ -2978,22 +3641,26 @@ function renderMpiSummaryCards(series) {
     // The tooltip states the denominators only; the per-month VMT rationales
     // are in the sanity section's VMT-sources table (embedded here they made
     // the tooltip 7,000-8,700px tall).
-    const effectiveVmtLine = () => `<div class="mpi-card-vmt" data-tip="${escAttr(`Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}`)}">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}</div>`;
-    // TODO (rule 7): Latin placeholder for an ADS helmer with no VMT rows in
-    // the selected window (Tesla before 2025-06, Zoox before 2024-05):
-    // "No miles in this window" -- the human writes the English.
-    const noMilesLine = `<div class="mpi-card-vmt">Nulla milia in hac fenestra</div>`;
-    const benchmarksLine = `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks || []).map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`))].join(", ")}</div>`;
+    const effectiveVmtLine = () => {
+      const tip = `Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}`;
+      return `<div class="mpi-card-vmt" data-tip="${escAttr(tip)}" tabindex="0">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}${tipText(tip)}</div>`;
+    };
+    const noMilesLine = `<div class="mpi-card-vmt">No miles in this window</div>`;
+    // Each source once, by URL (one label per URL: BENCHMARK_SOURCES).
+    const benchmarksLine = `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks))].map(sourceLink).join(SOURCE_LIST_SEP)}</div>`;
     // Branch on the cohort, not on vmtBest > 0: an ADS helmer with no VMT in
     // the window used to fall into the human-cohort template and render a
     // dangling "Benchmarks:" with an empty list (2026-09-26).
     const vmtLine = HUMAN_HELMERS.includes(row.helmer) ? benchmarksLine
       : row.vmtBest > 0 ? effectiveVmtLine() : noMilesLine;
     const stressLine = row.vmtBest > 0
-      ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">Overall: ${stressBadge(stress, stress.av.k)} ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
+      ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">${CARD_STRESS_LABEL} ${stressBadge(stress, stress.av.k)} ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
       : "";
+    // An unchecked helmer's card stays, grayed (class unchecked), as the
+    // other views gray rather than drop; until 2026-10-03 every card rendered
+    // ungrayed whatever was checked, even with nothing checked (audit #67).
     return `
-      <div class="mpi-card" style="border-left-color:${HELMER_COLORS[row.helmer]}">
+      <div class="mpi-card${monthHelmerEnabled[row.helmer] ? "" : " unchecked"}" style="border-left-color:${HELMER_COLORS[row.helmer]}">
         <div class="mpi-card-helmer">${helmerLabel(row.helmer)}</div>
         ${vmtLine}
         ${stressLine}
@@ -3006,17 +3673,22 @@ function renderMpiSummaryCards(series) {
           const humanGeo = humanRef ? Math.sqrt(humanRef.lo * humanRef.hi) : null;
           // Point estimate everywhere is the posterior median (finite even at k=0),
           // so the multiple is always a plain Nx. (est.k===null excludes humans.)
+          // It prints in the one ratio format (fmtRatio) and its colour follows
+          // the value printed (ratioShown), so "1.0x" is never the worse red;
+          // a multiplier resting on zero incidents gets the prior-only marking
+          // instead of a colour, like its stress badge (audit #16, #55).
           const mult = (humanGeo && est.k !== null) ? est.postMedian / humanGeo : null;
+          const marks = priorOnlyMarks(est.k);
           const multStr = mult !== null
-            ? ` <span class="mpi-card-mult ${mult >= 1 ? "safer" : "worse"}">${mult >= 10 ? fmtWhole(mult) : mult.toFixed(1)}x</span>`
+            ? ` <span class="mpi-card-mult${marks.cls || (ratioShown(mult) >= 1 ? " safer" : " worse")}"${marks.attrs}>${fmtRatio(mult)}x${marks.body}</span>`
             : "";
           const kLine = est.k !== null ? `${splur(est.k, "incident")} \u2192 ` : "";
           const ciLabel = est.k !== null ? "95% CI" : "Range";
-          const srcLine = (est.k === null && humanBench && humanBench.srcLinks)
-            ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`).join(", ")}</div>`
+          const srcLine = (est.k === null && humanBench)
+            ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)}</div>`
             : "";
           const srcHint = (est.k === null && humanBench && humanBench.src)
-            ? ` <span class="mpi-card-src" data-tip="${escAttr(humanBench.src)}">[?]</span>`
+            ? ` <span class="mpi-card-src" data-tip="${escAttr(humanBench.src)}" tabindex="0">[?]${tipText(humanBench.src)}</span>`
             : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
@@ -3039,7 +3711,7 @@ function renderStressTestTable(series) {
         <td>${escHtml(row.helmer)}</td>
         <td>${escHtml(stress.metric.cardLabel)}</td>
         <td class="num">${fmtCount(stress.av.k)}</td>
-        <td class="num">${fmtWhole(stress.av.postMedian)}; ${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</td>
+        <td class="num pair"><span>${fmtWhole(stress.av.postMedian)};</span> <span>${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</span></td>
         <td class="num">${fmtWhole(stress.human.lo)} \u2013 ${fmtWhole(stress.human.hi)}</td>
         <td class="num">${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</td>
         <td>${stressBadge(stress, stress.av.k)}</td>
@@ -3093,9 +3765,7 @@ function renderHumanBenchmarkTable() {
     .filter(m => m.humanMPI && m.humanMPI[hh])
     .map(m => {
       const h = m.humanMPI[hh];
-      const links = (h.srcLinks || [])
-        .map(s => `<a href="${escAttr(s.url)}">${escHtml(s.label)}</a>`).join(", ");
-      const derivation = escHtml(h.src) + (links ? ` (${links})` : "");
+      const derivation = `${escHtml(h.src)} (${h.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)})`;
       // srcNote: an AI-authored precision note on the derivation (green).
       const note = h.srcNote === undefined ? "" : ` <span class="ai-text">${escHtml(h.srcNote)}</span>`;
       return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td class="num">${fmtMiles(h.lo)}</td><td class="num">${fmtMiles(h.hi)}</td><td>${derivation}${note}</td></tr>`;
@@ -3113,10 +3783,26 @@ The all-incidents comparison is broader than Waymo's surface-street, injury-focu
     </table></div>`;
 }
 
+// A re-render replaces the controls it draws, so the control a keyboard user
+// had just operated was detached and focus fell to <body>: the next Tab
+// started the group over, and a second Enter on a sort header or a second
+// arrow key in a radio group did nothing (until 2026-10-03). Every control a
+// re-render replaces carries data-focus-key, a name the re-render gives its
+// replacement too; this hands focus from the one to the other. Focus outside
+// the re-rendered controls is left where it is.
+function rerenderKeepingFocus(render) {
+  const key = document.activeElement.getAttribute("data-focus-key");
+  render();
+  if (key === null) return;
+  const replacement = document.querySelector(`[data-focus-key="${key}"]`);
+  assert(replacement !== null, "a re-render dropped the control that had focus", {key});
+  replacement.focus({preventScroll: true});
+}
+
 function renderMonthlyLegends() {
   byId("month-legend-mpi-helmers").innerHTML = ALL_HELMERS.map(helmer => `
     <label class="month-legend-item month-helmer-toggle" for="${monthHelmerToggleId(helmer)}">
-      <input type="checkbox" id="${monthHelmerToggleId(helmer)}" ${monthHelmerEnabled[helmer] ? "checked" : ""}>
+      <input type="checkbox" id="${monthHelmerToggleId(helmer)}" data-focus-key="helmer-${helmer}" ${monthHelmerEnabled[helmer] ? "checked" : ""}>
       <span class="month-chip" style="background:${HELMER_COLORS[helmer]}"></span>${helmerLabel(helmer)}
     </label>
   `).join("");
@@ -3124,20 +3810,20 @@ function renderMonthlyLegends() {
     const input = byId(monthHelmerToggleId(helmer));
     input.addEventListener("change", () => {
       monthHelmerEnabled[helmer] = input.checked;
-      buildMonthlyViews();
+      rerenderKeepingFocus(buildMonthlyViews);
     });
   }
 
   byId("month-legend-mpi-lines").innerHTML = `
     <label class="month-legend-item metric-select" for="month-metric-select">Miles per
-      <select id="month-metric-select">${METRIC_DEFS.map(metric =>
+      <select id="month-metric-select" data-focus-key="metric">${METRIC_DEFS.map(metric =>
         `<option value="${metric.key}"${metric.key === selectedMetricKey ? " selected" : ""}>${metric.blank}</option>`
       ).join("")}</select>
       incident</label>
   `;
   byId("month-metric-select").addEventListener("change", e => {
     selectedMetricKey = e.target.value;
-    buildMonthlyViews();
+    rerenderKeepingFocus(buildMonthlyViews);
   });
 
   // CI fan legend: multi-stripe swatches showing each helmer's color at the
@@ -3189,6 +3875,21 @@ function renderMonthlyLegends() {
   byId("vmt-mode-cumulative").addEventListener("change", () => { vmtCumulative = true; renderWindowedViews(); syncUrlState(); });
 }
 
+// A range thumb is SLIDER_THUMB_PX wide (style.css), so its centre travels
+// from half that to the slider's width less half that; sliderAt maps a
+// fraction of the series into that inset span, and sliderSpan a fraction's
+// length. The default-start tick and the fill share them, so the fill runs
+// from thumb centre to thumb centre (until 2026-10-03 the fill ran on raw
+// percentages and stuck 4px out past the thumb in a one-month window at
+// either end of the series; audit #66).
+const SLIDER_THUMB_PX = 18;
+function sliderAt(frac) {
+  return `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${frac.toFixed(4)})`;
+}
+function sliderSpan(frac) {
+  return `calc((100% - ${SLIDER_THUMB_PX}px) * ${frac.toFixed(4)})`;
+}
+
 function renderDateRangeControls() {
   const container = byId("date-range-controls");
   const months = fullMonthSeries.months;
@@ -3196,16 +3897,14 @@ function renderDateRangeControls() {
   const endIdx = Math.min(
     monthRangeEnd === Infinity ? maxIdx : monthRangeEnd, maxIdx);
   const startIdx = Math.min(monthRangeStart, endIdx);
-  const lo = maxIdx > 0 ? (startIdx / maxIdx) * 100 : 0;
-  const w = maxIdx > 0 ? ((endIdx - startIdx) / maxIdx) * 100 : 100;
+  // A month's place along the slider (a one-month series has one place).
+  const frac = i => maxIdx > 0 ? i / maxIdx : 0;
   const rangeLabel = startIdx === endIdx
     ? months[startIdx]
     : `${months[startIdx]} \u2014 ${months[endIdx]}`;
   // Tick mark at DEFAULT_START_MONTH (the default analysis-window start —
   // Tesla's VMT series begins there; Zoox's runs from 2024-05)
   const defIdx = months.indexOf(DEFAULT_START_MONTH);
-  // Range thumb is 18px wide (style.css) so its center travels from 9px to (width-9px).
-  // Use calc() to map the percentage into that inset region.
   const defFrac = defIdx >= 0 && maxIdx > 0 ? defIdx / maxIdx : -1;
   container.innerHTML = `
     <div class="date-range-header">
@@ -3213,8 +3912,8 @@ function renderDateRangeControls() {
     </div>
     <div class="date-range-slider">
       <div class="date-range-track"></div>
-      <div class="date-range-fill" id="date-range-fill" style="left:${lo.toFixed(2)}%;width:${w.toFixed(2)}%"></div>
-      ${defFrac >= 0 ? `<div class="date-range-tick" style="left:calc(9px + (100% - 18px) * ${defFrac.toFixed(4)})">
+      <div class="date-range-fill" id="date-range-fill" style="left:${sliderAt(frac(startIdx))};width:${sliderSpan(frac(endIdx) - frac(startIdx))}"></div>
+      ${defFrac >= 0 ? `<div class="date-range-tick" style="left:${sliderAt(defFrac)}">
         <div class="date-range-tick-line"></div>
         <div class="date-range-tick-label">${DEFAULT_START_MONTH}</div>
       </div>` : ""}
@@ -3222,10 +3921,10 @@ function renderDateRangeControls() {
       <span class="date-range-end-label max">${months[maxIdx]}</span>
       <input type="range" class="date-range-input date-range-input-min" id="date-range-min"
              min="0" max="${maxIdx}" value="${startIdx}" step="1"
-             aria-label="Start month">
+             aria-label="Start month" aria-valuetext="${months[startIdx]}">
       <input type="range" class="date-range-input date-range-input-max" id="date-range-max"
              min="0" max="${maxIdx}" value="${endIdx}" step="1"
-             aria-label="End month">
+             aria-label="End month" aria-valuetext="${months[endIdx]}">
     </div>
   `;
   const minInput = byId("date-range-min");
@@ -3239,15 +3938,17 @@ function renderDateRangeControls() {
   // window-dependent charts on the next frame (coalescing rapid input events).
   // The slider DOM, incident table, sanity checks, and URL are left untouched
   // so the drag isn't interrupted; those commit on release (the change event).
+  // A slider's value is an index into the month series; screen readers
+  // announce the month instead (they read "47" until 2026-10-03).
   function updateLive() {
+    minInput.setAttribute("aria-valuetext", months[Number(minInput.value)]);
+    maxInput.setAttribute("aria-valuetext", months[Number(maxInput.value)]);
     const a = Math.min(Number(minInput.value), Number(maxInput.value));
     const b = Math.max(Number(minInput.value), Number(maxInput.value));
     monthRangeStart = a;
     monthRangeEnd = b;
-    const fLeft = maxIdx > 0 ? (a / maxIdx) * 100 : 0;
-    const fWidth = maxIdx > 0 ? ((b - a) / maxIdx) * 100 : 100;
-    fill.style.left = fLeft.toFixed(2) + "%";
-    fill.style.width = fWidth.toFixed(2) + "%";
+    fill.style.left = sliderAt(frac(a));
+    fill.style.width = sliderSpan(frac(b) - frac(a));
     label.textContent = a === b ? months[a] : `${months[a]} \u2014 ${months[b]}`;
     if (!rangeRafPending) {
       rangeRafPending = true;
@@ -3312,10 +4013,11 @@ function renderWindowedViews() {
     monthRangeStart = idx;
   }
   const maxIdx = fullMonthSeries.months.length - 1;
-  // Anti-Postel: a window index past the series (a stale or hand-edited d=
-  // in the URL) fails here, the first place the series length is known,
-  // instead of being silently narrowed to a one-month window and re-encoded
-  // as a URL the loader then rejects (which it was until 2026-09-04).
+  // Anti-Postel: a window index past the series fails here instead of being
+  // silently narrowed to a one-month window (which it was until 2026-09-04).
+  // Since 2026-10-03 d= names months and the URL parser rejects any month
+  // outside the series, so a link can no longer get here; only code that
+  // sets the indices wrongly can.
   assert(monthRangeStart <= maxIdx && (monthRangeEnd === Infinity || monthRangeEnd <= maxIdx),
     "date range index past the VMT month series", {monthRangeStart, monthRangeEnd, maxIdx});
   const endIdx = monthRangeEnd === Infinity ? maxIdx : monthRangeEnd;
@@ -3419,10 +4121,18 @@ let activeFilter = "All";
 let sortCol = null;   // column key or null
 let sortAsc = true;
 
+// "City, ST", or "Unknown" for a filing with no city or state (data/slurp.py
+// stops on one until LOCATION_OVERRIDE gives the narrative's place). One
+// definition for the incident browser's cell, its Location sort and the
+// Geography table, so a location-less filing never shows as a bare ", ".
+function incidentLocation(r) {
+  return r.city && r.state ? (r.city + ", " + r.state) : "Unknown";
+}
+
 const SORT_COLUMNS = [
   {key: "helmer",  val: r => r.helmer},
   {key: "date",     val: r => monthKeyFromIncidentLabel(r.date)},
-  {key: "location", val: r => (r.city + ", " + r.state)},
+  {key: "location", val: incidentLocation},
   {key: "crashWith",val: r => r.crashWith},
   {key: "speed",    val: r => r.speed !== null ? r.speed : -1},
   {key: "fault",    val: r => { const f = faultFrac(r.reportId); return f !== null ? f : -1; }},
@@ -3448,16 +4158,23 @@ function enabledKeyString(enabledByKey, orderedKeys) {
   return orderedKeys.filter(key => enabledByKey[key]).join(".");
 }
 
-function parseEnabledKeyString(raw, orderedKeys, label) {
+// A dotted key list (c=, x=) as an enabled-by-key map. `check` is told
+// whether the list is readable (no key twice, every key in orderedKeys) and
+// rejects it when it is not.
+function parseEnabledKeyString(raw, orderedKeys, check) {
   const keys = raw === "" ? [] : raw.split(".");
-  const allowed = new Set(orderedKeys);
   const unique = new Set(keys);
-  assert(unique.size === keys.length, "Duplicate URL state key", {label, raw});
-  for (const key of keys) {
-    assert(allowed.has(key), "Unknown URL state key value", {label, key, raw});
-  }
+  check(unique.size === keys.length && keys.every(key => orderedKeys.includes(key)));
   return Object.fromEntries(orderedKeys.map(key => [key, unique.has(key)]));
 }
+
+// d= is the window's first and last month, dotted like the lists in c= and
+// x= (d=2025-07.2025-12), and is omitted for the default window. Until
+// 2026-10-03 it held indices into the month series, whose first month moved
+// twice (2025-06 -> 2022-11 on 2026-03-16, -> 2021-07 on 2026-06-17), so an
+// old link such as d=1-6 silently opened a different window. That index form
+// is now rejected, like any other value this page cannot read.
+const DATE_RANGE_URL_RE = /^(\d{4}-\d{2})\.(\d{4}-\d{2})$/;
 
 function encodeUiStateQuery() {
   const params = new URLSearchParams();
@@ -3466,17 +4183,14 @@ function encodeUiStateQuery() {
   params.set(URL_STATE_KEYS.asc, sortAsc ? "1" : "0");
   params.set(URL_STATE_KEYS.helmers, enabledKeyString(monthHelmerEnabled, ALL_HELMERS));
   params.set(URL_STATE_KEYS.metrics, selectedMetricKey);
-  const fullLen = fullMonthSeries ? fullMonthSeries.months.length : 0;
-  const defaultStartIdx = fullMonthSeries
-    ? Math.max(0, fullMonthSeries.months.indexOf(DEFAULT_START_MONTH))
-    : 0;
-  const isDefaultRange = (monthRangeStart === -1 || monthRangeStart === defaultStartIdx) &&
-    (monthRangeEnd === Infinity || (fullLen > 0 && monthRangeEnd >= fullLen - 1));
-  if (!isDefaultRange) {
-    const endClamped = fullLen > 0
-      ? Math.min(monthRangeEnd === Infinity ? fullLen - 1 : monthRangeEnd, fullLen - 1)
-      : monthRangeEnd;
-    params.set(URL_STATE_KEYS.dateRange, `${monthRangeStart}-${endClamped}`);
+  const months = vmtMonthList();
+  const latest = months[months.length - 1];
+  const first = monthRangeStart === -1 ? DEFAULT_START_MONTH : months[monthRangeStart];
+  const last = monthRangeEnd === Infinity ? latest : months[monthRangeEnd];
+  assert(months.includes(first) && months.indexOf(first) <= months.indexOf(last),
+    "date range outside the VMT month series", {monthRangeStart, monthRangeEnd, months: months.length});
+  if (first !== DEFAULT_START_MONTH || last !== latest) {
+    params.set(URL_STATE_KEYS.dateRange, `${first}.${last}`);
   }
   const collapsed = enabledKeyString(sectionCollapsed, SECTION_IDS);
   if (collapsed !== "") params.set(URL_STATE_KEYS.collapsed, collapsed);
@@ -3487,9 +4201,27 @@ function encodeUiStateQuery() {
   return params.toString();
 }
 
+// A link whose own URL state this page cannot read. `rejected` lists the
+// offending parameters, each as [key, value] as the link gave it, or [key]
+// for a required key the link left out; `unknownKeys` lists the foreign keys
+// stripped alongside. loadUiStateFromLocation names both in the banner.
+class UrlStateError extends Error {
+  constructor(msg, rejected, unknownKeys) {
+    super(`${msg} ${JSON.stringify({rejected, unknownKeys})}`);
+    this.rejected = rejected;
+    this.unknownKeys = unknownKeys;
+  }
+}
+
+function rejectUrlState(msg, rejected, unknownKeys) {
+  throw new UrlStateError(msg, rejected, unknownKeys);
+}
+
 // Reads the page's own keys strictly. Keys the page does not own are not
 // state (a Facebook fbclid took the whole page down on 2026-09-07): they are
-// stripped here and returned so the caller can report them.
+// stripped here and returned so the caller can report them. All or nothing:
+// every owned key is read before any state is assigned, so a rejected link
+// (a UrlStateError) leaves the state as it was.
 function applyUiStateQuery(queryString) {
   const raw = queryString.startsWith("?") ? queryString.slice(1) : queryString;
   const params = new URLSearchParams(raw);
@@ -3498,74 +4230,81 @@ function applyUiStateQuery(queryString) {
   const unknownKeys = [...new Set(params.keys())].filter(key => !expectedSet.has(key));
   unknownKeys.forEach(key => params.delete(key));
   if ([...params.keys()].length === 0) return unknownKeys;
-  const seenKeys = new Set();
+  // A rejection names the offending parameter(s) as the link gave them.
+  const given = key => params.getAll(key).map(value => [key, value]);
+  const check = (ok, msg, rejected) => ok || rejectUrlState(msg, rejected, unknownKeys);
 
-  for (const key of params.keys()) {
-    assert(!seenKeys.has(key), "Duplicate URL state key", {key, raw});
-    seenKeys.add(key);
+  for (const key of new Set(params.keys())) {
+    check(params.getAll(key).length === 1, "Duplicate URL state key", given(key));
   }
-  for (const key of URL_STATE_REQUIRED) {
-    assert(params.has(key), "Missing URL state key", {key, raw});
-  }
+  const missing = URL_STATE_REQUIRED.filter(key => !params.has(key));
+  check(missing.length === 0, "Missing URL state key", missing.map(key => [key]));
 
   const filterVal = params.get(URL_STATE_KEYS.filter);
-  assert(filterVal !== null, "Missing filter URL state", {raw});
-  assert(["All", ...ADS_HELMERS].includes(filterVal), "Invalid filter URL state", {filterVal, raw});
-  activeFilter = filterVal;
+  check(["All", ...ADS_HELMERS].includes(filterVal), "Invalid filter URL state",
+    given(URL_STATE_KEYS.filter));
 
   const sortVal = params.get(URL_STATE_KEYS.sort);
-  assert(sortVal !== null, "Missing sort URL state", {raw});
-  sortCol = sortVal === URL_STATE_SORT_NONE ? null : sortVal;
-  assert(sortCol === null || SORT_COLUMN_KEYS.includes(sortCol), "Invalid sort URL state", {sortVal, raw});
+  const nextSortCol = sortVal === URL_STATE_SORT_NONE ? null : sortVal;
+  check(nextSortCol === null || SORT_COLUMN_KEYS.includes(nextSortCol), "Invalid sort URL state",
+    given(URL_STATE_KEYS.sort));
 
   const ascVal = params.get(URL_STATE_KEYS.asc);
-  assert(ascVal === "0" || ascVal === "1", "Invalid sort direction URL state", {ascVal, raw});
-  sortAsc = ascVal === "1";
+  check(ascVal === "0" || ascVal === "1", "Invalid sort direction URL state",
+    given(URL_STATE_KEYS.asc));
 
-  const helmersVal = params.get(URL_STATE_KEYS.helmers);
-  assert(helmersVal !== null, "Missing helmers URL state", {raw});
-  monthHelmerEnabled = {
-    ...monthHelmerEnabled,
-    ...parseEnabledKeyString(helmersVal, ALL_HELMERS, "helmers"),
-  };
+  const nextHelmers = parseEnabledKeyString(params.get(URL_STATE_KEYS.helmers), ALL_HELMERS,
+    ok => check(ok, "Invalid helmers URL state", given(URL_STATE_KEYS.helmers)));
 
   const metricsVal = params.get(URL_STATE_KEYS.metrics);
-  assert(metricsVal !== null, "Missing metrics URL state", {raw});
   // One metric key. The multi-metric "a.b" form was retired with the radio
   // buttons (54ebcb8); its fallback silently reduced such a URL to the first
   // key in METRIC_KEYS order and rewrote the address bar, the last DWIM path
   // in this parser (removed 2026-09-26).
-  assert(METRIC_KEYS.includes(metricsVal), "Invalid metrics URL state", {metricsVal, raw});
-  selectedMetricKey = metricsVal;
+  check(METRIC_KEYS.includes(metricsVal), "Invalid metrics URL state",
+    given(URL_STATE_KEYS.metrics));
 
+  // The optional keys: absent leaves the current value.
+  let nextRange = [monthRangeStart, monthRangeEnd];
   if (params.has(URL_STATE_KEYS.dateRange)) {
-    const drVal = params.get(URL_STATE_KEYS.dateRange);
-    const drHit = /^(\d+)-(\d+)$/.exec(drVal);
-    assert(drHit !== null, "Invalid date range URL state format", {drVal});
-    const drStart = Number(drHit[1]);
-    const drEnd = Number(drHit[2]);
-    assert(drStart >= 0 && drEnd >= drStart,
-      "Invalid date range URL state values", {drStart, drEnd});
-    monthRangeStart = drStart;
-    monthRangeEnd = drEnd;
+    const hit = DATE_RANGE_URL_RE.exec(params.get(URL_STATE_KEYS.dateRange));
+    check(hit !== null, "Invalid date range URL state format", given(URL_STATE_KEYS.dateRange));
+    const months = vmtMonthList();
+    nextRange = [months.indexOf(hit[1]), months.indexOf(hit[2])];
+    check(nextRange[0] >= 0 && nextRange[1] >= nextRange[0],
+      "Invalid date range URL state months (two months of the series, first <= last)",
+      given(URL_STATE_KEYS.dateRange));
   }
-
+  let nextCumulative = vmtCumulative;
   if (params.has(URL_STATE_KEYS.cumulative)) {
-    const v = params.get(URL_STATE_KEYS.cumulative);
-    assert(v === "1", "Invalid cumulative-VMT URL state", {v, raw});
-    vmtCumulative = true;
+    check(params.get(URL_STATE_KEYS.cumulative) === "1", "Invalid cumulative-VMT URL state",
+      given(URL_STATE_KEYS.cumulative));
+    nextCumulative = true;
   }
+  let nextGrowth = selectedGrowthMetric;
   if (params.has(URL_STATE_KEYS.growth)) {
-    const g = params.get(URL_STATE_KEYS.growth);
-    assert(GROWTH_METRIC_KEYS.includes(g), "Unknown growth-metric URL state", {g, raw});
-    selectedGrowthMetric = g;
+    nextGrowth = params.get(URL_STATE_KEYS.growth);
+    check(GROWTH_METRIC_KEYS.includes(nextGrowth), "Unknown growth-metric URL state",
+      given(URL_STATE_KEYS.growth));
   }
+  let nextCollapsed = sectionCollapsed;
   if (params.has(URL_STATE_KEYS.collapsed)) {
-    sectionCollapsed = {
+    nextCollapsed = {
       ...sectionCollapsed,
-      ...parseEnabledKeyString(params.get(URL_STATE_KEYS.collapsed), SECTION_IDS, "collapsed"),
+      ...parseEnabledKeyString(params.get(URL_STATE_KEYS.collapsed), SECTION_IDS,
+        ok => check(ok, "Invalid collapsed-sections URL state", given(URL_STATE_KEYS.collapsed))),
     };
   }
+
+  activeFilter = filterVal;
+  sortCol = nextSortCol;
+  sortAsc = ascVal === "1";
+  monthHelmerEnabled = {...monthHelmerEnabled, ...nextHelmers};
+  selectedMetricKey = metricsVal;
+  [monthRangeStart, monthRangeEnd] = nextRange;
+  vmtCumulative = nextCumulative;
+  selectedGrowthMetric = nextGrowth;
+  sectionCollapsed = nextCollapsed;
   return unknownKeys;
 }
 
@@ -3575,22 +4314,54 @@ function canSyncUrlState() {
     window.location !== undefined &&
     typeof window.location.search === "string" &&
     typeof window.location.pathname === "string" &&
+    typeof window.location.hash === "string" &&
     window.history !== undefined &&
     typeof window.history.replaceState === "function" &&
     typeof URLSearchParams === "function";
 }
 
+// How a URL parameter's name or value reads in the banner: as given, except
+// that the empty string shows as '' (a key-less "=x" used to leave a blank
+// between the dashes).
+function urlBannerToken(text) {
+  return text === "" ? "''" : text;
+}
+
 function loadUiStateFromLocation() {
   if (!canSyncUrlState()) return;
-  const unknownKeys = applyUiStateQuery(window.location.search);
+  // A link whose own parameters this page cannot read (an old or hand-edited
+  // one: c=Humans..., a partial ?m=injury, an index-form d=1-6) gets the
+  // default view, the rejected parameters named in the banner, and the
+  // address bar rewritten from state, the path foreign keys already take.
+  // Until 2026-10-03 the parser's throw stopped init and left a half-drawn
+  // page with no visible error. This runs once, at init, while the state
+  // holds its defaults, and the parser assigns nothing when it rejects. Any
+  // other exception is a bug and propagates.
+  let unknownKeys = [];
+  let rejected = [];
+  try {
+    unknownKeys = applyUiStateQuery(window.location.search);
+  } catch (err) {
+    if (!(err instanceof UrlStateError)) throw err;
+    ({unknownKeys, rejected} = err);
+  }
   const banner = byId("url-banner");
   // The banner tells the reader that the link carried URL parameters this
   // page does not recognize (listed by name), that they were ignored and removed
   // from the address bar, and that the page itself is unaffected.
   banner.querySelector(".banner-text").textContent =
-    `Unknown URL parameter(s) -- ${unknownKeys.join(", ")} -- stripped.` + 
+    `Unknown URL parameter(s) -- ${unknownKeys.map(urlBannerToken).join(", ")} -- stripped.` + 
     (unknownKeys.includes('fbclid') ? " Facebook is the worst." : "");
-  banner.hidden = unknownKeys.length === 0;
+  banner.querySelector(".banner-text").hidden = unknownKeys.length === 0;
+  // Banner sentence must convey: some of
+  // this page's own parameters in the link were missing or could not be read;
+  // they are listed (a bare name is a required parameter the link left out,
+  // name=value a value the page cannot read); the page is showing its default
+  // view instead, and the address bar now carries that default view.
+  banner.querySelector(".banner-rejected").textContent =
+    `Some of this page's URL parameters are missing -- ${rejected.map(param => param.map(urlBannerToken).join("=")).join(", ")} -- so we're showing the default view.`;
+  banner.querySelector(".banner-rejected").hidden = rejected.length === 0;
+  banner.hidden = unknownKeys.length + rejected.length === 0;
   byId("url-banner-dismiss").addEventListener("click", () => { banner.hidden = true; });
   // The strip: the address bar is rewritten from state, which never carries
   // foreign keys.
@@ -3599,13 +4370,20 @@ function loadUiStateFromLocation() {
 
 function syncUrlState() {
   if (!canSyncUrlState()) return;
-  window.history.replaceState(null, "", `${window.location.pathname}?${encodeUiStateQuery()}`);
+  // The fragment rides along: a #sec-... link keeps naming its section, and
+  // the browser's own scroll to it at load then lands there. Dropping it
+  // (until 2026-10-03) left Chromium and WebKit at the top of the page.
+  window.history.replaceState(null, "",
+    `${window.location.pathname}?${encodeUiStateQuery()}${window.location.hash}`);
 }
 
 function applyCollapsedState() {
   for (const id of SECTION_IDS) {
     const sec = byId("sec-" + id);
-    if (sec) sec.classList.toggle("collapsed", sectionCollapsed[id]);
+    if (sec) {
+      sec.classList.toggle("collapsed", sectionCollapsed[id]);
+      sec.querySelector(".sec-toggle").setAttribute("aria-expanded", String(!sectionCollapsed[id]));
+    }
   }
 }
 
@@ -3614,10 +4392,20 @@ function initCollapsibles() {
     const sec = byId("sec-" + id);
     if (sec === null) continue;
     const head = sec.querySelector(".sec-head");
-    head.addEventListener("click", () => {
+    const toggle = () => {
       sectionCollapsed[id] = !sectionCollapsed[id];
-      sec.classList.toggle("collapsed", sectionCollapsed[id]);
+      applyCollapsedState();
       syncUrlState();
+    };
+    head.addEventListener("click", toggle);
+    // The heading's text is a role="button" span in the Tab order
+    // (index.html), so Enter and Space toggle it as a click does: the
+    // sortable-th pattern. Until 2026-10-03 a collapsed section could not be
+    // opened without a pointer.
+    head.addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      toggle();
     });
   }
   applyCollapsedState();
@@ -3629,6 +4417,10 @@ const HEADER_LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)
 assert(HEADER_LABELS.length === SORT_COLUMNS.length,
   "HEADER_LABELS and SORT_COLUMNS must stay parallel",
   {labels: HEADER_LABELS.length, columns: SORT_COLUMNS.length});
+// Label: it introduces the row's fault
+// judgment (the judged fault fraction, the reasoning behind it, and the
+// contact areas) shown under an expanded incident narrative.
+const NARRATIVE_FAULT_LABEL = "Fault fraction:";
 
 function buildBrowser() {
   const {start, end} = seriesMonthBounds(activeSeries);
@@ -3642,11 +4434,15 @@ function buildBrowser() {
   for (const label of allHelmers) {
     const btn = document.createElement("button");
     const n = label === "All" ? rows.length : (counts[label] || 0);
-    btn.textContent = `${label} (${n})`;
-    btn.className = label === activeFilter ? "active" : "";
+    const isActive = label === activeFilter;
+    btn.textContent = `${label} (${fmtCount(n)})`;
+    btn.className = isActive ? "active" : "";
+    // The active filter is announced, not only drawn inverted.
+    btn.setAttribute("aria-pressed", String(isActive));
+    btn.setAttribute("data-focus-key", "filter-" + label);
     btn.addEventListener("click", () => {
       activeFilter = label;
-      buildBrowser();
+      rerenderKeepingFocus(buildBrowser);
     });
     filterDiv.appendChild(btn);
   }
@@ -3663,6 +4459,7 @@ function renderHeaders() {
     let label = HEADER_LABELS[i];
     th.textContent = label;
     th.tabIndex = 0;
+    th.setAttribute("data-focus-key", "sort-" + col.key);
     if (sortCol === col.key) {
       th.setAttribute("aria-sort", sortAsc ? "ascending" : "descending");
     }
@@ -3673,8 +4470,7 @@ function renderHeaders() {
         sortCol = col.key;
         sortAsc = true;
       }
-      renderHeaders();
-      renderTable();
+      rerenderKeepingFocus(() => { renderHeaders(); renderTable(); });
     };
     th.addEventListener("click", sortBy);
     th.addEventListener("keydown", e => {
@@ -3726,23 +4522,36 @@ function renderTable() {
     const faultHtml = fault !== null
       ? `<span class="fault-bar" style="width:${Math.round(fault * 40)}px;background:${faultColor(fault)}"></span>${fault.toFixed(2)}`
       : "—";
-    const faultTip = escAttr(faultTooltip(r));
+    const faultTip = faultTooltip(r);
 
+    // The fault cell's tip is also visually hidden text in the cell, before
+    // the number, so a screen reader reads the reasoning with the value; the
+    // fault cells are not Tab stops. The narrative is the row's disclosure
+    // button, inside its cell (role="button" on the <td> itself would take the
+    // cell out of the table's structure): opening it shows the whole narrative
+    // and, under it, the fault reasoning, which until 2026-10-03 only a
+    // pointer could reach (the cell's tooltip).
     tr.innerHTML = `
       <td>${escHtml(r.helmer)}</td>
-      <td>${escHtml(r.date)}</td>
-      <td>${escHtml(r.city)}, ${escHtml(r.state)}</td>
+      <td class="date-cell">${escHtml(r.date)}</td>
+      <td>${escHtml(incidentLocation(r))}</td>
       <td>${escHtml(r.crashWith)}</td>
       <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
-      <td class="fault-cell" data-tip="${faultTip}">${faultHtml}</td>
+      <td class="fault-cell" data-tip="${escAttr(faultTip)}">${tipText(faultTip)}${faultHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
-      <td class="${narrativeClass}">${escHtml(narrativeText)}</td>
+      <td class="${narrativeClass}"><span class="narrative-toggle" role="button" tabindex="0" aria-expanded="false">${escHtml(narrativeText)}</span><span class="narrative-fault">${NARRATIVE_FAULT_LABEL} ${escHtml(faultTip)}</span></td>
     `;
-    // Click to expand/collapse narrative
+    // Click, Enter or Space expands/collapses the narrative.
     const narrativeTd = tr.querySelector(".narrative-cell");
     assert(narrativeTd !== null, "Missing narrative cell");
-    narrativeTd.addEventListener("click", () => {
-      narrativeTd.classList.toggle("expanded");
+    const narrativeToggle = tr.querySelector(".narrative-toggle");
+    const flipNarrative = () => narrativeToggle.setAttribute("aria-expanded",
+      String(narrativeTd.classList.toggle("expanded")));
+    narrativeTd.addEventListener("click", flipNarrative);
+    narrativeTd.addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      flipNarrative();
     });
     tbody.appendChild(tr);
   }
@@ -3779,15 +4588,34 @@ function escAttr(s) {
   return escHtml(s).replace(/"/g, "&quot;");
 }
 
+// What a tooltip says must reach readers without a pointer (until 2026-10-03
+// only hover and tap showed it). Every [data-tip] element is a Tab stop whose
+// tooltip shows on focus as on hover (initTooltips), and carries its tip for
+// assistive technology: an SVG mark has no text of its own, so the tip is its
+// accessible name (svgTipAttrs, written right after its data-tip); an HTML
+// target keeps its visible text and holds the tip as visually hidden text
+// (tipText). The incident table's fault cells are the exception to the Tab
+// stops: their tips also show in the row's expandable narrative.
+function svgTipAttrs(tip) {
+  return ` tabindex="0" aria-label="${escAttr(tip)}"`;
+}
+function tipText(tip) {
+  return `<span class="visually-hidden">${escHtml(tip)}</span>`;
+}
+
 // --- Sanity Checks ---
 
 // Waymo's own published per-million-mile incident rates (waymo.com/safety/impact,
 // Sep 24 2026 update; 271.3M rider-only mi through Jun 2026), used only for the
 // Waymo published-rate cross-check sanity diagnostic. These are WAYMO's rates,
-// not the human benchmark (that lives in METRIC_DEFS' humanMPI). ssi is Waymo's
-// rounded 0.01; airbag is "any vehicle" — comparable to our airbagAny now that
-// the archive SV|CP drop is fixed (_normalize_archive_row). Keep in sync.
-const WAYMO_PUBLISHED_IPMM = { injury: 0.67, airbag: 0.29, ssi: 0.01 };
+// not the human benchmark (that lives in METRIC_DEFS' humanMPI). Unrounded,
+// from the hub's CSV3 v1 All Locations rows (0.67446 / 0.29484 / 0.011057), to
+// four significant figures; until 2026-10-03 they were the page's 2-dp 0.67 /
+// 0.29 / 0.01, and dividing by the rounded 0.01 showed serious-injury+ at 3.6x
+// where the unrounded rate gives 3.3x (audit #8). airbag is "any vehicle" —
+// comparable to our airbagAny now that the archive SV|CP drop is fixed
+// (_normalize_archive_row). Keep in sync.
+const WAYMO_PUBLISHED_IPMM = { injury: 0.6745, airbag: 0.2948, ssi: 0.01106 };
 
 // Passenger-presence inference from the SGO "Were All Passengers Belted?" field
 // (stored as `belted`). TWO distinct encodings mean no passenger; PAX_PRESENT
@@ -3804,8 +4632,29 @@ const PAX_PRESENT = new Set([
   "Subject Vehicle - Not Belted - see Narrative",
   "Yes",
   "No, see Narrative",
+  // Not an NHTSA value: data/slurp.py's TESLA_PASSENGER_OVERRIDE stores it for
+  // a Tesla report whose narrative states a passenger without saying whether
+  // they were belted (Tesla files its in-car safety monitor as a passenger, so
+  // its own "belted" value cannot tell a rider from the monitor).
+  "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated",
 ]);
 const PAX_UNKNOWN = new Set(["Unknown", ""]);
+
+// The SGO pre-crash movement codes of a stationary AV. "Parked" is a code only
+// Waymo files (mostly curbside pickups and drop-offs); counting "Stopped"
+// alone left Waymo's 120 default-window Parked incidents out of the
+// Reporting threshold table's "AV stopped" column, which read 47% beside a
+// 58% "Speed = 0 mph" share until 2026-10-03 (audit #90).
+const SV_STATIONARY = new Set(["Stopped", "Parked"]);
+
+// The dispersion test needs at least this many of a helmer's months.
+const DISPERSION_MIN_MONTHS = 3;
+// The reason in a grayed Poisson-dispersion row: the window
+// holds only n of this company's months (n, shown, is 0, 1 or 2), and the
+// dispersion test needs at least DISPERSION_MIN_MONTHS (three).
+function dispersionFewMonthsNote(n) {
+  return `Months in the window: ${n}. Dispersion test needs at least ${DISPERSION_MIN_MONTHS} months.`;
+}
 
 function buildSanityChecks() {
   const rows = activeIncidents();
@@ -3835,10 +4684,10 @@ function buildSanityChecks() {
       : `${pctLo}\u2013${pctHi}%`;
     paxTableRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
-      <td>${withPax}</td>
-      <td>${noPax}</td>
-      <td>${unk}</td>
-      <td>${n}</td>
+      <td>${fmtCount(withPax)}</td>
+      <td>${fmtCount(noPax)}</td>
+      <td>${fmtCount(unk)}</td>
+      <td>${fmtCount(n)}</td>
       <td>${pctStr}</td>
     </tr>`);
   }
@@ -3925,12 +4774,12 @@ Confidential Business Information (CBI).
       UNKNOWN_SEVERITIES.has(r.severity)).length;
     sevTableRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
-      <td>${propDmg} (${Math.round(100 * propDmg / n)}%)</td>
-      <td>${injOnly} (${Math.round(100 * injOnly / n)}%)</td>
-      <td>${hospOnly} (${Math.round(100 * hospOnly / n)}%)</td>
-      <td>${fatal} (${Math.round(100 * fatal / n)}%)</td>
-      <td>${sevUnk} (${Math.round(100 * sevUnk / n)}%)</td>
-      <td>${n}</td>
+      <td>${fmtCount(propDmg)} (${escHtml(fmtShare(propDmg, n))})</td>
+      <td>${fmtCount(injOnly)} (${escHtml(fmtShare(injOnly, n))})</td>
+      <td>${fmtCount(hospOnly)} (${escHtml(fmtShare(hospOnly, n))})</td>
+      <td>${fmtCount(fatal)} (${escHtml(fmtShare(fatal, n))})</td>
+      <td>${fmtCount(sevUnk)} (${escHtml(fmtShare(sevUnk, n))})</td>
+      <td>${fmtCount(n)}</td>
     </tr>`);
   }
   sections.push(`
@@ -3981,16 +4830,19 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       <tbody>${vmtUncRows.join("")}</tbody>
     </table></div>`);
 
-  // Months whose incident reporting is complete (like-for-like months)
-  const obsMonths = new Set(series.points.filter(p => p.incidentObservable).map(p => p.month));
-
   // --- 5. Poisson dispersion (VMT-normalized) ---
   // Pearson chi-squared dispersion test: X² = Σ(k_i - λ̂·m_i)² / (λ̂·m_i)
   // where λ̂ = Σk_i / Σm_i is the MLE rate and m_i is monthly VMT.
-  // Under the Poisson model, X²/(n-1) ≈ 1.
+  // Under the Poisson model, X²/(n-1) ≈ 1. A helmer's months are its own VMT
+  // months in the window, the months its summary card pools
+  // (per-helmer-summary.qual). Until 2026-10-03 only months in which all
+  // three ADS helmers had VMT counted (2025-06 on, Tesla's first month), so a
+  // long window showed the default window's result and an early or short one
+  // an empty table (audit #9). A helmer with too few months keeps a grayed
+  // row that says so.
   const dispRows = [];
   for (const helmer of ADS_HELMERS) {
-    const helmerVmt = vmt.filter(r => r.helmer === helmer && obsMonths.has(r.month));
+    const helmerVmt = vmt.filter(r => r.helmer === helmer);
     const monthData = [];
     for (const vmtRow of helmerVmt) {
       const count = rows.filter(r =>
@@ -4000,7 +4852,13 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       // to match the MPI calculation's Poisson rate estimation
       monthData.push({count, vmt: vmtRow.vmtBest * vmtRow.coverage * vmtRow.incCov});
     }
-    if (monthData.length < 3) continue;
+    if (monthData.length < DISPERSION_MIN_MONTHS) {
+      dispRows.push(`<tr class="insufficient">
+      <td>${escHtml(helmer)}</td>
+      <td colspan="4">${escHtml(dispersionFewMonthsNote(monthData.length))}</td>
+    </tr>`);
+      continue;
+    }
     const totalK = monthData.reduce((s, d) => s + d.count, 0);
     const totalM = monthData.reduce((s, d) => s + d.vmt, 0);
     const lambdaHat = totalK / totalM;
@@ -4069,16 +4927,16 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
     const n = helmerRows.length;
     if (n === 0) continue;
     const zeroMph = helmerRows.filter(r => r.speed === 0).length;
-    const stopped = helmerRows.filter(r => r.svMovement === "Stopped").length;
+    const stopped = helmerRows.filter(r => SV_STATIONARY.has(r.svMovement)).length;
     const propDmgOnly = helmerRows.filter(r =>
       !INJURY_SEVERITIES.has(r.severity) &&
       !UNKNOWN_SEVERITIES.has(r.severity)).length;
     rptRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
-      <td>${zeroMph} (${Math.round(100 * zeroMph / n)}%)</td>
-      <td>${stopped} (${Math.round(100 * stopped / n)}%)</td>
-      <td>${propDmgOnly} (${Math.round(100 * propDmgOnly / n)}%)</td>
-      <td>${n}</td>
+      <td>${fmtCount(zeroMph)} (${Math.round(100 * zeroMph / n)}%)</td>
+      <td>${fmtCount(stopped)} (${Math.round(100 * stopped / n)}%)</td>
+      <td>${fmtCount(propDmgOnly)} (${Math.round(100 * propDmgOnly / n)}%)</td>
+      <td>${fmtCount(n)}</td>
     </tr>`);
   }
   sections.push(`
@@ -4127,7 +4985,7 @@ the AV's fault).
     const helmerRows = rows.filter(r => r.helmer === helmer);
     const cities = {};
     for (const r of helmerRows) {
-      const loc = r.city && r.state ? (r.city + ", " + r.state) : "Unknown";
+      const loc = incidentLocation(r);
       cities[loc] = (cities[loc] || 0) + 1;
     }
     const sorted = Object.entries(cities).sort((a, b) => b[1] - a[1]);
@@ -4138,13 +4996,13 @@ the AV's fault).
     const locs = geoByHelmer[helmer];
     if (locs.length === 0) continue;
     const cityList = locs.map(([loc, cnt]) =>
-      `${escHtml(loc)}\u00a0(${cnt})`).join(", ");
+      `${escHtml(loc)}\u00a0(${fmtCount(cnt)})`).join(", ");
     // "Unknown" stays in the list but not in the city COUNT (the copy says
     // we count cities, and a location-less filing isn't one).
     const cityCount = locs.filter(([loc]) => loc !== "Unknown").length;
     geoRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
-      <td>${cityCount}</td>
+      <td>${fmtCount(cityCount)}</td>
       <td>${cityList}</td>
     </tr>`);
   }
@@ -4167,12 +5025,24 @@ Maybe that affects AVs too?
   // --- 8. VMT sources ---
   const vmtSrcRows = [];
   for (const helmer of ADS_HELMERS) {
-    const helmerVmt = vmt.filter(r => r.helmer === helmer);
+    const helmerVmt = vmt.filter(r => r.helmer === helmer).sort((a, b) => a.month.localeCompare(b.month));
     if (helmerVmt.length === 0) continue;
     // One entry per distinct rationale (the eras of a helmer's VMT series each
-    // carry their own sourcing note).
-    const rationales = [...new Set(helmerVmt.map(r => r.rationale).filter(Boolean))];
-    const ratStr = rationales.map(r => escHtml(r)).join("<br>");
+    // carry their own sourcing note), in month order, headed by the first and
+    // last month it covers in the window (one month alone when they are the
+    // same). Until 2026-10-03 no entry said which months it was for, so
+    // Waymo's April, May and June notes, which differ only in their numbers,
+    // read as three versions of one (audit #40). A rationale's months must be
+    // one run, or its first-last heading would hide a gap.
+    const rationales = [...new Set(helmerVmt.map(r => r.rationale))];
+    const ratStr = rationales.map(rationale => {
+      assert(rationale !== "", "VMT row without a rationale", {helmer});
+      const at = helmerVmt.flatMap((r, i) => r.rationale === rationale ? [i] : []);
+      assert(at[at.length - 1] - at[0] + 1 === at.length,
+        "a VMT rationale covers two separate runs of months", {helmer, months: at.map(i => helmerVmt[i].month)});
+      const span = [...new Set([helmerVmt[at[0]].month, helmerVmt[at[at.length - 1]].month])].join(" \u2013 ");
+      return `${span}: ${escHtml(rationale)}`;
+    }).join("<br>");
     vmtSrcRows.push(`<tr>
       <td>${escHtml(helmer)}</td>
       <td class="ai-text">${ratStr}</td>
@@ -4197,6 +5067,10 @@ In general we don't trust anything Tesla says <i>except</i> numbers in their off
   const icRows = [];
   for (const helmer of ADS_HELMERS) {
     const helmerVmt = vmt.filter(r => r.helmer === helmer);
+    // No months in the window, no coverage to report: an empty month list
+    // passed the "no partial months" test below and claimed full coverage
+    // (Tesla and Zoox in 2021) until 2026-10-03 (audit #53).
+    if (helmerVmt.length === 0) continue;
     const partial = helmerVmt.filter(r => r.incCov < 1 || r.coverage < 1);
     if (partial.length === 0) {
       icRows.push(`<tr>
@@ -4222,7 +5096,7 @@ In general we don't trust anything Tesla says <i>except</i> numbers in their off
 "Incident coverage" estimates what fraction of incidents from that period have actually been reported.
 NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Monthly (must be reported by the following month).
 Claude notes: 
-<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE)}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (median of past releases, with its band), not a fraction of days.</span>
+<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (median of past releases, with its band), not a fraction of days.</span>
 </p>
     <div class="table-wrap"><table>
       <thead><tr>
@@ -4243,22 +5117,42 @@ Claude notes:
   // e.g. the 2026-06 Minor/Serious silent-drop where our injury rate sagged to
   // ~0.40 vs Waymo's 0.71. waymo-reconciliation.qual bounds the ratios.
   const wayAll = incidents.filter(r => r.helmer === "Waymo");
+  const wayVmt = vmtRows.filter(r => r.helmer === "Waymo");
   // Receipt-coverage-scaled: the numerator holds only reports received
   // through the data-through cutoff, so that month counts at its coverage
-  // fraction, not at full weight (until 2026-09-04 it did, ~4.5% low).
-  const wayVmtM = vmtRows.filter(r => r.helmer === "Waymo")
-    .reduce((s, r) => s + r.vmtBest * r.coverage, 0) / 1e6;
+  // fraction, not at full weight (until 2026-09-04 it did, ~4.5% low). Each
+  // row then takes its metric's track, as the cards do: Monthly-track metrics
+  // (injury) are further thinned by that month's incident coverage; until
+  // 2026-10-03 every row used the five-day denominator (audit #48).
+  const wayVmtM = {
+    fiveDay: wayVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0) / 1e6,
+    monthly: wayVmt.reduce((s, r) => s + r.vmtBest * r.coverage * r.incCov, 0) / 1e6,
+  };
   const wayXChecks = [
-    ["Any injury", wayAll.filter(r => INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.injury],
-    ["Airbag deployment", wayAll.filter(r => r.airbagAny).length, WAYMO_PUBLISHED_IPMM.airbag],
-    ["Serious injury+", wayAll.filter(r => SERIOUS_INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.ssi],
+    ["Any injury", "injury", wayAll.filter(r => INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.injury],
+    ["Airbag deployment", "airbag", wayAll.filter(r => r.airbagAny).length, WAYMO_PUBLISHED_IPMM.airbag],
+    ["Serious injury+", "seriousInjury", wayAll.filter(r => SERIOUS_INJURY_SEVERITIES.has(r.severity)).length, WAYMO_PUBLISHED_IPMM.ssi],
   ];
-  const wayXRows = wayXChecks.map(([label, k, pub]) =>
-    `<tr><td>${label}</td><td>${(k / wayVmtM).toFixed(2)}</td><td>${pub.toFixed(2)}</td><td>${(k / wayVmtM / pub).toFixed(1)}x</td></tr>`);
+  // Rates to 3 significant figures, enough to reproduce the ratio beside
+  // them (at 2 dp the serious-injury+ row read 0.04 vs 0.01 beside 3.6x).
+  const wayXRows = wayXChecks.map(([label, metricKey, k, pub]) => {
+    const ours = k / wayVmtM[METRIC_BY_KEY[metricKey].fiveDay === true ? "fiveDay" : "monthly"];
+    return `<tr><td>${label}</td><td>${ours.toPrecision(3)}</td><td>${pub.toPrecision(3)}</td><td>${(ours / pub).toFixed(1)}x</td></tr>`;
+  });
+  // The serious-injury+ ratio is
+  // far from 1 because the page counts the severity alleged in the SGO
+  // filing, while Waymo counts police-report KABCO A+K (from police crash
+  // reports it obtains by public-records request); three SGO "Serious"
+  // filings (30270-8968, 30270-10112, 30270-15547) are not serious by the
+  // police reports, and one (30270-13817) still awaits a police crash report.
+  // (Facts: hub CSV2 v1 "Is Suspected Serious Injury+"; Sep-24-2026 release
+  // notes p. 2 on 30270-13817, p. 8 on relying on the police crash report.
+  // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
+  const waySsiNote = `The serious-injury+ ratio is far from 1 because the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious by the police reports, and one (30270-13817) still awaits a police crash report.`;
   sections.push(`
 <h3>Waymo cross-check</h3>
 <p>
-Our full-history Waymo rates (${wayAll.length} incidents over ${fmtMiles(wayVmtM * 1e6)} miles; SGO self-reported) vs Waymo's own published rates (surface-street only? location-weighted).
+Our full-history Waymo rates (${fmtCount(wayAll.length)} incidents over ${fmtMiles(wayVmtM.fiveDay * 1e6)} miles; SGO self-reported) vs Waymo's own published rates (surface-street only? location-weighted).
 A ratio very different from 1 suggests a problem.
 </p>
     <div class="table-wrap"><table>
@@ -4269,7 +5163,8 @@ A ratio very different from 1 suggests a problem.
         <th>Ratio</th>
       </tr></thead>
       <tbody>${wayXRows.join("")}</tbody>
-    </table></div>`);
+    </table></div>
+<p><span class="ai-text">${escHtml(waySsiNote)}</span></p>`);
 
   // --- 10. Human benchmark derivations ---
   sections.push(renderHumanBenchmarkTable());
@@ -4350,6 +5245,34 @@ function initTooltips() {
     if (tip.style.display === "block") position(evt);
   }, true);
 
+  // Keyboard: a focused target shows its tip at its corner, as hover does,
+  // and takes over from a pinned tip; leaving it hides the tip. Until
+  // 2026-10-03 only pointer events opened a tooltip. Focus that a press of
+  // the pointer gives a target (:focus-visible does not match it) is left to
+  // the pointer's own handlers, or the tip would jump to the target's corner
+  // between mousedown and click.
+  document.addEventListener("focusin", (evt) => {
+    const target = findTipTarget(evt.target);
+    if (!target || !target.matches(":focus-visible")) return;
+    pinned = false;
+    pinnedTarget = null;
+    const r = target.getBoundingClientRect();
+    show(target, {clientX: r.right, clientY: r.bottom});
+  });
+
+  document.addEventListener("focusout", (evt) => {
+    if (findTipTarget(evt.target)) hide();
+  });
+
+  // Escape dismisses the tooltip, whether hovered, focused or pinned, without
+  // moving the pointer (WCAG 1.4.13).
+  document.addEventListener("keydown", (evt) => {
+    if (evt.key !== "Escape") return;
+    pinned = false;
+    pinnedTarget = null;
+    tip.style.display = "none";
+  });
+
   // Click/tap to pin tooltip (mobile-friendly)
   document.addEventListener("click", (evt) => {
     const target = findTipTarget(evt.target);
@@ -4381,6 +5304,11 @@ function initTooltips() {
   // addEventListener de-duplicates the same listener, so re-arming is a no-op.
   armTipTargets(document);
   new MutationObserver(() => armTipTargets(document)).observe(document.body, { childList: true, subtree: true });
+  // The same heuristic swallowed a tap on a paragraph, a table cell or a
+  // chart's empty plot, so a pinned tooltip could not be dismissed on an
+  // iPhone and stayed on screen while scrolling (until 2026-10-03). A no-op
+  // listener on body makes every tap a click the dismissal above sees.
+  document.body.addEventListener("click", tipTapNoop);
 }
 
 function tipTapNoop() {}
@@ -4448,12 +5376,91 @@ function fmtMana(v) {
        :               String(Math.round(v)));
 }
 
-function renderMarketCard(question, url, prob, volText) {
+// --- Market state (2026-10-03, audit #21, #85) ---
+// A card's odds are a live price only while its market trades and this page
+// load has fetched them. A market that has resolved (Manifold's resolution; a
+// Polymarket sub-market whose UMA status reads "resolved") or stopped trading
+// (its close time has passed, or Polymarket has closed it) is grayed and
+// labelled; so is every card still showing the snapshot's odds, because its
+// fetch failed or has not finished. Until 2026-10-03 neither fetcher read any
+// of that state, so a market that resolved YES on 2026-07-10 kept showing its
+// last price, 94%, as live odds under a fresh green dot, and a failed fetch
+// left snapshot odds looking live. The snapshot carries the same state fields
+// as the live fetch (data/refresh-predmarkets.mjs writes them), so one render
+// path serves both, and a snapshot painted after a market's close time already
+// shows it closed. A Manifold market resolved as a whole (one winning answer
+// of a sum-to-one market) leaves its answers' own resolutions empty, so its
+// cards read closed rather than naming the winner.
+
+// Label heads the outcome a market,
+// or one answer of a multi-answer market, resolved to, as in "resolved: YES".
+const RESOLVED_LABEL = "resolved:";
+// Label marks a market whose trading has
+// stopped (its close time has passed, or Polymarket closed it) but which has
+// not resolved yet.
+const CLOSED_LABEL = "closed";
+// Label for this outcome name: "canceled" (Manifold shows this
+// resolution as N/A). It names the outcome of a market resolved CANCEL, i.e.
+// voided, after RESOLVED_LABEL.
+const CANCELLED_LABEL = "canceled";
+
+// How a card names a Manifold resolution: YES and NO are the market's own
+// outcome names, MKT settled at resolutionProbability (not the last price;
+// asserted present, since fmtPct would print a missing one as "0%"), CANCEL
+// voided the market.
+const MANIFOLD_RESOLUTIONS = {
+  YES: () => "YES",
+  NO: () => "NO",
+  MKT: settled => {
+    assert(Number.isFinite(settled) && settled >= 0 && settled <= 1,
+      "a Manifold MKT resolution needs the probability it settled at", {settled});
+    return fmtPct(settled);
+  },
+  CANCEL: () => CANCELLED_LABEL,
+};
+// The outcome a Manifold market or answer resolved to, or null while open.
+function manifoldResolutionText(o) {
+  if (o.resolution === null) return null;
+  assert(o.resolution in MANIFOLD_RESOLUTIONS, "unknown Manifold resolution", {resolution: o.resolution});
+  return MANIFOLD_RESOLUTIONS[o.resolution](o.resolutionProbability);
+}
+// The outcome a resolved Polymarket sub-market settled on, the one it prices
+// at 1, or null until its UMA status reads "resolved".
+function polymarketResolutionText(m) {
+  if (m.umaResolutionStatus !== "resolved") return null;
+  const prices = JSON.parse(m.outcomePrices).map(Number);
+  assert(prices.filter(p => p === 1).length === 1, "a resolved Polymarket market prices exactly one outcome at 1",
+    {question: m.question, outcomePrices: m.outcomePrices});
+  const name = JSON.parse(m.outcomes)[prices.indexOf(1)];
+  assert(typeof name === "string" && name !== "", "a resolved Polymarket market names the outcome it prices at 1",
+    {question: m.question, outcomes: m.outcomes, outcomePrices: m.outcomePrices});
+  return name;
+}
+// A row's state label: the resolved outcome after RESOLVED_LABEL, else
+// CLOSED_LABEL once trading has stopped, else "" while it trades.
+function marketStateLabel(resolution, closed) {
+  return resolution !== null ? `${RESOLVED_LABEL} ${resolution}` : closed ? CLOSED_LABEL : "";
+}
+// A row is grayed when its odds are not a live price: not fetched this page
+// load (`live` false: the snapshot's), or no longer trading (a state label).
+function marketRowFaded(state, live) {
+  assert(typeof state === "string" && typeof live === "boolean", "marketRowFaded: state must be a string, live a boolean", {state, live});
+  return !live || state !== "";
+}
+
+// One market row: the question (or an outcome's label) linked to its market,
+// its state label ("" while it trades; empty, the span takes no room), odds and
+// volume. A state label holds API text (a Polymarket outcome name), so it is
+// escaped like the question.
+function renderMarketCard(question, url, prob, volText, state, faded) {
+  assert(typeof state === "string" && typeof faded === "boolean",
+    "renderMarketCard: state must be a string, faded a boolean", {question, state, faded});
   const card = document.createElement("div");
   card.className = "pm-card";
+  card.classList.toggle("pm-faded", faded);
   card.innerHTML =
     `<span class="pm-card-question"><a href="${escAttr(url)}" ` +
-    `target="_blank" rel="noopener">${escHtml(question)}</a></span>` +
+    `target="_blank" rel="noopener">${escHtml(question)}</a><span class="pm-card-state">${escHtml(state)}</span></span>` +
     `<span class="pm-card-odds ${oddsClass(prob)}">${fmtPct(prob)}</span>` +
     `<span class="pm-card-vol">${volText}</span>`;
   return card;
@@ -4464,59 +5471,99 @@ function renderMarketCard(question, url, prob, volText) {
 // source order (chronological for the Manifold "what year" date markets). This
 // is the one rendering path for every source — a Polymarket event's curated
 // sub-markets and a Manifold market's binary/answers list both flow in as the
-// `outcomes` list [{label, prob, volText?}]; volText is the per-outcome volume
-// (Polymarket sub-markets have their own; Manifold answers share the market's).
-function appendMarketGroup(grid, title, url, volText, outcomes) {
+// `outcomes` list [{label, prob, volText?, resolution, closed}]; volText is the
+// per-outcome volume (Polymarket sub-markets have their own; Manifold answers
+// share the market's). The header carries the market's closed state (every
+// outcome closed); each outcome row its own resolution.
+function appendMarketGroup(grid, title, url, volText, outcomes, live) {
   assert(outcomes.length > 0, "market group needs at least one outcome", {title});
+  const row = (label, o, vol) => {
+    const state = marketStateLabel(o.resolution, o.closed);
+    return renderMarketCard(label, url, o.prob, vol, state, marketRowFaded(state, live));
+  };
   if (outcomes.length === 1) {
-    grid.appendChild(renderMarketCard(title, url, outcomes[0].prob, volText));
+    grid.appendChild(row(title, outcomes[0], volText));
     return;
   }
+  const headerState = marketStateLabel(null, outcomes.every(o => o.closed));
   const header = document.createElement("div");
   header.className = "pm-card";
+  header.classList.toggle("pm-faded", marketRowFaded(headerState, live));
   header.innerHTML =
     `<span class="pm-card-question"><a href="${escAttr(url)}" ` +
-    `target="_blank" rel="noopener"><b>${escHtml(title)}</b></a></span>` +
+    `target="_blank" rel="noopener"><b>${escHtml(title)}</b></a><span class="pm-card-state">${escHtml(headerState)}</span></span>` +
     `<span class="pm-card-vol">${volText}</span>`;
   grid.appendChild(header);
   for (const o of outcomes) {
-    const card = renderMarketCard(o.label, url, o.prob, o.volText || "");
+    const card = row(o.label, o, o.volText || "");
     card.classList.add("pm-subcard");
     grid.appendChild(card);
   }
 }
 
-function polymarketOutcomes(ev) {
-  return ev.markets.map(m => ({
-    label: m.question,
-    prob: yesProbability(m),
-    volText: fmtVol(parseFloat(m.volume) || 0),
-  }));
+// A Polymarket sub-market has closed once Polymarket says so or its end date
+// has passed.
+function polymarketOutcomes(ev, now) {
+  return ev.markets.map(m => {
+    assert(typeof m.closed === "boolean" && !Number.isNaN(Date.parse(m.endDate)),
+      "a Polymarket market needs closed and endDate", {question: m.question, closed: m.closed, endDate: m.endDate});
+    return {
+      label: m.question,
+      prob: yesProbability(m),
+      volText: fmtVol(parseFloat(m.volume) || 0),
+      resolution: polymarketResolutionText(m),
+      closed: m.closed || Date.parse(m.endDate) <= now,
+    };
+  });
 }
 
 // A Manifold market is either binary (one Yes probability) or multi-answer
-// (an `answers` list of {label, prob}, e.g. the "what year" DATE markets).
-// Normalize both to the outcome list. The binary outcome's label is unused (the
-// single-card path shows the question), so "Yes" is just self-documenting.
-function manifoldOutcomes(m) {
-  return m.answers || [{label: "Yes", prob: m.probability}];
+// (an `answers` list of {label, prob, ...}, e.g. the "what year" DATE
+// markets). Normalize both to the outcome list. The binary outcome's label is
+// unused (the single-card path shows the question), so "Yes" is just
+// self-documenting. A market (all its answers) has closed once its closeTime
+// has passed; Manifold moves the closeTime of a market resolved early to the
+// moment it resolved.
+function manifoldOutcomes(m, now) {
+  assert(Number.isFinite(m.closeTime), "a Manifold market needs a closeTime", {slug: m.slug, closeTime: m.closeTime});
+  const closed = m.closeTime <= now;
+  return (m.answers || [{label: "Yes", prob: m.probability, resolution: m.resolution, resolutionProbability: m.resolutionProbability}])
+    .map(o => ({label: o.label, prob: o.prob, resolution: manifoldResolutionText(o), closed}));
 }
 
+// Tooltip on the prediction markets' dot and age.
+// The age is the time since these odds were fetched from the
+// markets or, if any market's fetch failed, since the snapshot the page ships
+// with (taken on the date shown); the dot is green while that is under an
+// hour, amber under a week and red after; grayed odds are not live, they are
+// the snapshot's because their fetch failed or has not finished; a grayed
+// market marked closed or resolved no longer trades.
+function predmarketStatusTip(snapshotDate) {
+  assert(/^\d{4}-\d\d-\d\dT/.test(snapshotDate), "predmarketStatusTip: the snapshot date must be an ISO time", {snapshotDate});
+  return `The age is the time since the market odds were fetched or, if fetching failed, since the last snapshot we have (${snapshotDate.slice(0, 10)}). `;
+}
+
+// Each entry carries `live`: whether this page load fetched it (true) or it is
+// the snapshot's (false, grayed).
 function renderPredmarketsPanel(config, manifold, isoDate) {
   const panel = byId("predmarket-panel");
   const grid = document.createElement("div");
   grid.className = "predmarket-grid";
+  const now = Date.now();
+  for (const e of [...config, ...manifold]) {
+    assert(typeof e.live === "boolean", "a market entry must say whether it is live", {slug: e.slug, live: e.live});
+  }
 
   for (const ev of config) {
     if (ev.enabled === false) continue; // skip disabled events
     if (!(ev.markets || []).length) continue;
     appendMarketGroup(grid, ev.title, polymarketUrl(ev.slug),
-      fmtVol(parseFloat(ev.volume) || 0), polymarketOutcomes(ev));
+      fmtVol(parseFloat(ev.volume) || 0), polymarketOutcomes(ev, now), ev.live);
   }
 
   for (const m of manifold) {
     if (m.enabled === false) continue; // skip disabled markets
-    appendMarketGroup(grid, m.question, m.url, fmtMana(m.volume), manifoldOutcomes(m));
+    appendMarketGroup(grid, m.question, m.url, fmtMana(m.volume), manifoldOutcomes(m, now), m.live);
   }
 
   panel.textContent = "";
@@ -4525,10 +5572,25 @@ function renderPredmarketsPanel(config, manifold, isoDate) {
   const footer = document.createElement("div");
   footer.className = "pm-footer";
 
+  // The dot and the age are one tooltip target, a Tab stop that carries its
+  // tip as visually hidden text (svgTipAttrs / tipText's convention for HTML
+  // targets); until 2026-10-03 nothing on the page said what they meant. The
+  // refresh's re-render replaces it, so it carries a data-focus-key, as the
+  // refresh button does (rerenderKeepingFocus).
+  const tip = predmarketStatusTip(PREDMARKET_SNAPSHOT_DATE);
+  const status = document.createElement("span");
+  status.className = "pm-status";
+  status.setAttribute("data-tip", tip);
+  status.setAttribute("tabindex", "0");
+  status.setAttribute("data-focus-key", "pm-status");
   const dot = document.createElement("span");
   dot.className = "pm-dot";
   const ageSpan = document.createElement("span");
   ageSpan.className = "pm-age";
+  const hidden = document.createElement("span");
+  hidden.className = "visually-hidden";
+  hidden.textContent = tip;
+  status.append(dot, ageSpan, hidden);
   function tickAge() {
     const {text, cls} = fmtAge(isoDate);
     ageSpan.textContent = text;
@@ -4541,15 +5603,19 @@ function renderPredmarketsPanel(config, manifold, isoDate) {
   const refreshBtn = document.createElement("button");
   refreshBtn.className = "pm-refresh";
   refreshBtn.title = "Refetch prediction market data";
-  refreshBtn.textContent = "\u21bb";
+  // Named by its purpose: the glyph alone was the accessible name ("↻").
+  refreshBtn.setAttribute("aria-label", refreshBtn.title);
+  refreshBtn.setAttribute("data-focus-key", "pm-refresh");
+  refreshBtn.innerHTML = '<span aria-hidden="true">\u21bb</span>';
   refreshBtn.addEventListener("click", refreshPredmarkets);
 
-  footer.append(dot, ageSpan, refreshBtn);
+  footer.append(status, refreshBtn);
   panel.appendChild(footer);
 }
 
 // Fetch fresh data for a single slug, returning the event object with the
-// same shape as our snapshot entries. (gamma-api serves
+// same shape as our snapshot entries, state included (closed, endDate,
+// umaResolutionStatus on each curated sub-market). (gamma-api serves
 // access-control-allow-origin: * as of 2026-06, so no CORS proxy is needed;
 // the third-party proxy this used to go through is dead.)
 async function fetchPolymarketEvent(slug, templateEntry) {
@@ -4564,12 +5630,29 @@ async function fetchPolymarketEvent(slug, templateEntry) {
   const kept = new Set(templateEntry.markets.map(m => m.question));
   const freshMarkets = (ev.markets || [])
     .filter(m => kept.has(m.question))
-    .map(m => ({
-      question: m.question,
-      outcomes: m.outcomes,
-      outcomePrices: m.outcomePrices,
-      volume: m.volume || "0",
-    }));
+    .map(m => {
+      // Polymarket leaves umaResolutionStatus off a market until a resolution
+      // is proposed; it reads null here.
+      const uma = m.umaResolutionStatus ?? null;
+      assert(typeof m.closed === "boolean" && !Number.isNaN(Date.parse(m.endDate)) &&
+        (uma === null || typeof uma === "string"),
+        "a Polymarket market needs closed, endDate and umaResolutionStatus",
+        {slug, question: m.question, closed: m.closed, endDate: m.endDate, umaResolutionStatus: uma});
+      const fresh = {
+        question: m.question,
+        outcomes: m.outcomes,
+        outcomePrices: m.outcomePrices,
+        volume: m.volume || "0",
+        closed: m.closed,
+        endDate: m.endDate,
+        umaResolutionStatus: uma,
+      };
+      // A resolution the cards cannot name (e.g. a 50-50 one, no outcome at
+      // 1) fails this market's fetch here, so it stays grayed on the
+      // snapshot's data, rather than failing the panel's render.
+      polymarketResolutionText(fresh);
+      return fresh;
+    });
   // A curated sub-market whose question text no longer matches (creators can
   // edit it) must count as a refresh failure, not vanish from the grid with a
   // fresh green dot (which it did until 2026-09-04).
@@ -4587,8 +5670,11 @@ async function fetchPolymarketEvent(slug, templateEntry) {
 
 // Fetch fresh data for a single Manifold market. Binary markets carry one Yes
 // probability; multi-answer markets (e.g. the "what year" DATE markets) carry
-// an answers list. The returned shape mirrors the snapshot entry so the render
-// path (manifoldOutcomes) handles both without a special case.
+// an answers list. The returned shape mirrors the snapshot entry, state
+// included (closeTime, and resolution / resolutionProbability on a binary
+// market and on each answer), so the render path (manifoldOutcomes) handles
+// both without a special case. Manifold leaves the resolution fields off a
+// market or answer until it resolves; they read null here.
 async function fetchManifoldMarket(templateEntry) {
   const resp = await fetch("https://api.manifold.markets/v0/slug/" +
     encodeURIComponent(templateEntry.slug));
@@ -4599,49 +5685,74 @@ async function fetchManifoldMarket(templateEntry) {
   assert(binary || Array.isArray(m.answers),
     "Manifold market must be binary or carry answers",
     {slug: templateEntry.slug, outcomeType: m.outcomeType});
+  assert(Number.isFinite(m.closeTime), "a Manifold market needs a closeTime",
+    {slug: templateEntry.slug, closeTime: m.closeTime});
   const answers = binary ? undefined : m.answers
     .slice().sort((a, b) => a.index - b.index)
-    .map(a => ({label: a.text, prob: a.probability}));
-  return {
+    .map(a => ({label: a.text, prob: a.probability,
+      resolution: a.resolution ?? null, resolutionProbability: a.resolutionProbability ?? null}));
+  const fresh = {
     question: m.question,
     slug: templateEntry.slug,
     url: m.url,
     enabled: templateEntry.enabled,
+    closeTime: m.closeTime,
     probability: m.probability,
+    resolution: binary ? m.resolution ?? null : undefined,
+    resolutionProbability: binary ? m.resolutionProbability ?? null : undefined,
     answers,
     volume: m.volume || 0,
   };
+  // A resolution code the cards cannot name fails this market's fetch here,
+  // so it stays grayed on the snapshot's data, rather than failing the
+  // panel's render.
+  manifoldOutcomes(fresh, Date.now());
+  return fresh;
 }
 
 async function refreshPredmarkets() {
   const panel = byId("predmarket-panel");
   const btn = panel.querySelector(".pm-refresh");
-  if (btn) { btn.disabled = true; btn.textContent = "\u231b"; }
+  assert(btn !== null, "refreshPredmarkets: the panel has no refresh button");
+  // Busy, but still focusable: disabling the button dropped keyboard focus
+  // (until 2026-10-03). It stops answering clicks until the panel redraws
+  // with a fresh button.
+  btn.setAttribute("aria-disabled", "true");
+  btn.removeEventListener("click", refreshPredmarkets);
+  btn.firstElementChild.textContent = "\u231b";
 
   let failures = 0;
+  // A fetched entry is live; a failed one keeps the snapshot's data, grayed.
   const fetchOrKeep = async (entry, fetcher) => {
     try {
-      return await fetcher(entry);
+      return {...await fetcher(entry), live: true};
     } catch (err) {
       failures++;
       console.error("prediction market refresh failed", entry.slug, err);
-      return entry; // keep snapshot data for this one
+      return {...entry, live: false};
     }
   };
-  const fresh = [];
-  for (const entry of POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false)) {
-    fresh.push(await fetchOrKeep(entry, e => fetchPolymarketEvent(e.slug, e)));
-  }
-  const freshManifold = [];
-  for (const entry of MANIFOLD_SNAPSHOT.filter(e => e.enabled !== false)) {
-    freshManifold.push(await fetchOrKeep(entry, fetchManifoldMarket));
-  }
+  // Every market is fetched at once: one after another (until 2026-10-03)
+  // the snapshot's odds stayed up ~1 s in Chromium and ~8.7 s in Firefox
+  // (audit #85).
+  const [fresh, freshManifold] = await Promise.all([
+    Promise.all(POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false)
+      .map(entry => fetchOrKeep(entry, e => fetchPolymarketEvent(e.slug, e)))),
+    Promise.all(MANIFOLD_SNAPSHOT.filter(e => e.enabled !== false)
+      .map(entry => fetchOrKeep(entry, fetchManifoldMarket))),
+  ]);
   // The age label advances only when every market refreshed; any failure
   // keeps the snapshot date so the staleness dot stays honest.
   const dateLabel = failures === 0
     ? new Date().toISOString()
     : PREDMARKET_SNAPSHOT_DATE;
-  renderPredmarketsPanel(fresh, freshManifold, dateLabel);
+  rerenderKeepingFocus(() => renderPredmarketsPanel(fresh, freshManifold, dateLabel));
+}
+
+// The checked-in snapshot's entries as the panel draws them before (or
+// without) a live fetch: not live, so grayed.
+function snapshotMarkets(list) {
+  return list.map(e => ({...e, live: false}));
 }
 
 function loadPredmarketData() {
@@ -4649,7 +5760,7 @@ function loadPredmarketData() {
   assert(Array.isArray(MANIFOLD_SNAPSHOT), "MANIFOLD_SNAPSHOT must be an array");
   assert(typeof PREDMARKET_SNAPSHOT_DATE === "string",
     "PREDMARKET_SNAPSHOT_DATE must be a string");
-  renderPredmarketsPanel(POLYMARKET_SNAPSHOT, MANIFOLD_SNAPSHOT, PREDMARKET_SNAPSHOT_DATE);
+  renderPredmarketsPanel(snapshotMarkets(POLYMARKET_SNAPSHOT), snapshotMarkets(MANIFOLD_SNAPSHOT), PREDMARKET_SNAPSHOT_DATE);
   // Snapshot renders instantly; live prices replace it without a click.
   void refreshPredmarkets();
 }
@@ -4701,6 +5812,7 @@ function loadPredmarketData() {
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(incidentData);
   loadUiStateFromLocation();
+  chartViewW = chartColumnWidth();
   buildMonthlyViews();
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
@@ -4713,6 +5825,17 @@ function loadPredmarketData() {
   byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
   initGrowthMetricToggle();
   byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+  // A change of the column's width (a phone turned, a window resized or
+  // zoomed) redraws the charts at the new width; a resize that leaves it (a
+  // phone's toolbar hiding as the page scrolls) redraws nothing.
+  window.addEventListener("resize", () => {
+    const w = chartColumnWidth();
+    if (w === chartViewW) return;
+    chartViewW = w;
+    renderWindowedViews();
+    byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
+    byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+  });
   initTooltips();
   initCollapsibles();
   loadPredmarketData();

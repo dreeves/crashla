@@ -17,7 +17,7 @@ function makeEl() {
   let html = "";
   return {
     className: "",
-    classList: { add() {} },
+    classList: { add() {}, toggle() {} },
     set textContent(v) {
       html = String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     },
@@ -39,14 +39,18 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const XSS_Q = `<img src=x onerror=alert(1)>`;
 const XSS_URL = `https://x.test/" onmouseover="alert(1)`;
 
+// A state label (since 2026-10-03, audit #21) can carry a Polymarket
+// outcome name, which is API text too.
+const XSS_STATE = `<img src=y onerror=alert(2)>`;
 const html = vm.runInContext(
-  `renderMarketCard(${JSON.stringify(XSS_Q)}, ${JSON.stringify(XSS_URL)}, 0.5, "$1M").innerHTML`,
+  `renderMarketCard(${JSON.stringify(XSS_Q)}, ${JSON.stringify(XSS_URL)}, 0.5, "$1M", ${JSON.stringify(XSS_STATE)}, false).innerHTML`,
   ctx);
 
-// 1. Hostile title must be escaped as text, not parsed as an <img> element.
-assert.ok(!/<img/i.test(html) && html.includes("&lt;img"),
-  `Replicata: render a market card whose question is ${JSON.stringify(XSS_Q)}.
-Expectata: the literal "<img" never appears (escaped to "&lt;img") so no element is injected.
+// 1. Hostile title and state label must be escaped as text, not parsed as
+//    <img> elements.
+assert.ok(!/<img/i.test(html) && html.includes("&lt;img src=x") && html.includes("&lt;img src=y"),
+  `Replicata: render a market card whose question is ${JSON.stringify(XSS_Q)} and whose state label is ${JSON.stringify(XSS_STATE)}.
+Expectata: the literal "<img" never appears (both escaped to "&lt;img") so no element is injected.
 Resultata: ${html}`);
 
 // 2. Hostile url must not break out of the href: its embedded double-quote has
@@ -56,4 +60,4 @@ assert.ok(!html.includes('" onmouseover') && html.includes("&quot;"),
 Expectata: the url's double-quote is escaped to "&quot;" so no bare onmouseover= attribute can be injected.
 Resultata: ${html}`);
 
-console.log("qual pass: prediction-market card escapes hostile question (link text) and url (href attribute)");
+console.log("qual pass: prediction-market card escapes hostile question (link text), state label and url (href attribute)");

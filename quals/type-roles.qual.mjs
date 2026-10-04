@@ -202,8 +202,14 @@ for (const sel of [".filters button:focus-visible", "#month-metric-select:focus-
 }
 
 const reduced = parsed.filter(r => r.context.some(c => /prefers-reduced-motion\s*:\s*reduce/i.test(c)));
-assert.ok(reduced.some(r => decls(r.body, "transition-duration").includes("0s")),
-  "under prefers-reduced-motion every transition is instantaneous");
+// "!important" because the block's universal selector (specificity 0) lost
+// to `a`, `.sec-head::before`, `.filters button` and `.pm-refresh` until
+// 2026-10-03, so the chevron still turned (audit #94). user-preferences.qual
+// reads the computed durations in three engines.
+assert.ok(reduced.some(r => selectors(r).includes("*") && decls(r.body, "transition-duration").includes("0s !important")),
+  `Replicata: read the @media (prefers-reduced-motion: reduce) block in style.css.
+Expectata: a universal rule sets transition-duration: 0s !important, so it beats every specific transition rule.
+Resultata: ${JSON.stringify(reduced.map(r => [r.sel, decls(r.body, "transition-duration")]))}.`);
 const lift = reduced.find(r => selectors(r).includes(".filters button:not(.active):hover"));
 assert.ok(lift && decls(lift.body, "transform").includes("none"),
   "the hover lift is suppressed with a selector that out-specifies the lift rule (`:not(.active)` included)");

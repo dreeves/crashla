@@ -304,14 +304,17 @@ Expectata: SVG includes peak markers with data-tip tooltips.
 Resultata: no data-tip attributes found.`,
 );
 
-// Legend: one entry per curve; two markers per curve (mode + median).
+// Legend: one entry per curve; two markers per curve (mode + median), each a
+// visible dot plus (since 2026-10-03, audit #28) its own invisible hit circle
+// carrying the tooltip.
 const legendItemCount = (distChart.match(/month-legend-item/g) || []).length;
-const peakMarkerCount = (distChart.match(/<circle/g) || []).length;
+const peakMarkerCount = (distChart.match(/<circle[^>]*class="month-dot"/g) || []).length;
+const markerTargetCount = (distChart.match(/<circle[^>]*fill="none" data-tip=/g) || []).length;
 assert.ok(
-  legendItemCount > 0 && peakMarkerCount === 2 * legendItemCount,
-  `Replicata: call renderDistributionChart and count legend items vs markers.
-Expectata: two markers (mode + median) per legend entry.
-Resultata: ${legendItemCount} legend items, ${peakMarkerCount} markers.`,
+  legendItemCount > 0 && peakMarkerCount === 2 * legendItemCount && markerTargetCount === peakMarkerCount,
+  `Replicata: call renderDistributionChart and count legend items vs markers and their tooltip targets.
+Expectata: two markers (mode + median) per legend entry, one target per marker.
+Resultata: ${legendItemCount} legend items, ${peakMarkerCount} markers, ${markerTargetCount} targets.`,
 );
 
 for (const [helmer, color, label] of [
@@ -525,15 +528,18 @@ const markerCheck = vm.runInContext(`
     const curves = monthlySummaryRows(series)
       .filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]).map(r => r.mpiEstimates[mk]);
     const {xMin, xMax} = distributionExtent(curves); // same visible-band extent the chart uses
-    const mLeft = 68, svgW = 900, mRight = 16, pW = svgW - mLeft - mRight;
+    const html = renderDistributionChart(series);
+    // The plot frame is the clip rect: since 2026-10-03 its right margin
+    // follows the axis labels (axisRightMargin), so it is read, not assumed.
+    const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
+    const mLeft = Number(clip[1]), pW = Number(clip[2]);
     const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
     const medians = curves.map(e => ({ cx: mapX(e.postMedian),
       finite: Number.isFinite(e.postMedian), inCI: e.postMedian >= e.lo && e.postMedian <= e.hi }));
-    const html = renderDistributionChart(series);
     const circles = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
       .map(m => ({ cx: Number(m[1]), tip: m[2], head: m[2].split("\\n")[0] }));
     out[mk] = { nCurves: curves.length, medians, circles,
-      frame: [mLeft, svgW - mRight], helmers: ALL_HELMERS.map(h => helmerLabel(h)) };
+      frame: [mLeft, mLeft + pW], helmers: ALL_HELMERS.map(h => helmerLabel(h)) };
   }
   return out;
 })()
@@ -595,5 +601,57 @@ assert.ok(
 Expectata: one dashed stroke and two hollow dots per k=0 curve (${k0vis.k0}).
 Resultata: ${k0vis.dashed} dashed, ${k0vis.hollow} hollow.`,
 );
+
+// --- 9. The tooltip's mean is the drawn curve's mean (2026-10-03, audit #14) --
+// The marker tooltips list the curve's peak, median, mean and MLE. The peak,
+// median and CI come from the plotted, VMT-marginalized posterior; the mean
+// was its value at the best-estimate VMT alone, sum_K w_K vmtBest/(a_K - 1),
+// so a right-skewed curve printed mean < peak < median (Tesla all incidents:
+// 'mean 121.1K' for a drawn curve whose mean is 130.7K). Each ADS curve's mean
+// must be the integral of x over its own drawn density -- computed here
+// numerically, independent of the app's formula -- and infinite exactly when
+// a mixture component has a_K <= 1.
+const meanCheck = vm.runInContext(`
+(() => {
+  incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  const full = monthSeriesData();
+  const series = sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1);
+  const out = [];
+  for (const mk of ["all", "nonstationary", "roadwayNonstationary", "atfault", "injury", "fatality"]) {
+    selectedMetricKey = mk;
+    for (const d of ALL_HELMERS) monthHelmerEnabled[d] = ["HumansAV", "Tesla", "Waymo", "Zoox"].includes(d);
+    const rows = monthlySummaryRows(series);
+    const html = renderDistributionChart(series);
+    const tips = [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]);
+    for (const h of ADS_HELMERS) {
+      const e = rows.find(r => r.helmer === h).mpiEstimates[mk];
+      const tip = tips.find(t => t.startsWith("Median: " + fmtMiles(e.postMedian) + "\\n"));
+      const shown = (tip.match(/ · mean ([^ ]+) · /) || [])[1];
+      const aMin = Math.min(...e.comps.map(c => c.a));
+      // numeric mean of the drawn density (w.r.t. ln x): wide fine grid
+      let m0 = 0, m1 = 0;
+      const lo = Math.log(e.postMedian) - 9, hi = Math.log(e.postMedian) + 9, n = 40000, st = (hi - lo) / (n - 1);
+      for (let i = 0; i < n; i++) { const x = Math.exp(lo + st * i), d = e.densityFn(x); m0 += d; m1 += x * d; }
+      out.push({mk, h, shown, aMin, numeric: m1 / m0, median: e.postMedian});
+    }
+  }
+  return out;
+})()`, ctx);
+const fromMiles = s => Number(s.replace(/[KMB]$/, "")) * ({K: 1e3, M: 1e6, B: 1e9}[s.at(-1)] || 1);
+const meanProblems = [];
+for (const r of meanCheck) {
+  if (r.aMin <= 1) {
+    if (r.shown !== "∞") meanProblems.push(`${r.h} ${r.mk}: a component has a_K = ${r.aMin}, so the mean is infinite, but the tooltip says ${r.shown}`);
+  } else if (r.aMin > 3) {
+    // half a unit of the last displayed digit (one decimal of the K/M/B unit)
+    const unit = ({K: 1e3, M: 1e6, B: 1e9}[r.shown.at(-1)] || 1) * 0.1;
+    if (Math.abs(fromMiles(r.shown) - r.numeric) > 0.5 * unit * 1.001)
+      meanProblems.push(`${r.h} ${r.mk}: tooltip mean ${r.shown}, drawn curve's mean ${Math.round(r.numeric)} (median ${Math.round(r.median)})`);
+  }
+}
+assert.ok(meanCheck.filter(r => r.aMin > 3).length >= 6 && meanProblems.length === 0,
+  `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, and hover each ADS curve's Median marker on all, nonstationary, non-parking-lot, at-fault, injury and fatality.
+Expectata: the listed mean is the drawn curve's own mean (numerically, the integral of x over the plotted density), or "∞" when a mixture component has a_K <= 1.
+Resultata: ${JSON.stringify(meanProblems)}.`);
 
 console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy)`);

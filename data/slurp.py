@@ -285,6 +285,21 @@ NARRATIVE_BOILERPLATE = (
     "publicly available. "
 )
 
+# Waymo opens some updated filings with a fact-free preamble ("The content of
+# this report is unchanged from the initial report submitted on June 5, 2025
+# [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]."), so the
+# narrative preview showed only that (62 narratives; added 2026-10-03, audit
+# finding #91). Strip exactly that preamble, anchored at the start of the
+# narrative: the date may be written out ("December 12th, 2024") or redacted
+# ("February [XXX], 2025", "[XXX], 2023"), with or without the final period.
+# Preambles that carry facts ("Other than the updated Speed Limit field, the
+# content of this report ...", or the prior report IDs it repeats) stay as
+# filed. Applied after the redaction-marker typo pass, so "[XXX]" is uniform.
+NARRATIVE_UNCHANGED_PREAMBLE = re.compile(
+    r"^The content of this report is unchanged from the initial report "
+    r"submitted on (?:[A-Z][a-z]+ ?)?(?:\d{1,2}(?:st|nd|rd|th)?|\[XXX\]), "
+    r"\d{4} \[REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION\]\.?\s*")
+
 # NHTSA's published CSV bytes contain several mojibake patterns where the
 # source intended common characters (NBSP, curly quotes). Looks like Latin-1
 # / Windows-1252 / UTF-8 double-encoding upstream that they then republished
@@ -431,14 +446,29 @@ SEVERITY_OVERRIDE = {
     "4366476607eca89": "Minor W/ Hospitalization",
     # Speeding SUV clipped Waymo passing on left; driver "unknown injuries", no transport
     "eeafa92b2068aa7": "Minor W/O Hospitalization",
+    # Added 2026-10-03 (audit finding #44), the 2026-08-22 convention for an
+    # affirmative field the narrative contradicts: Zoox 30610-15722 (JUL-2026
+    # Austin), field "Property Damage. No Injured Reported"; rear-ended while
+    # stopped, the passenger "reported feeling \"dazed\" and \"kind of woozy\"
+    # and requested emergency services", no transport stated
+    "115c701a830774b": "Minor W/O Hospitalization",
 }
 
-# Known-erroneous upstream location fields, keyed by Same Incident ID: the
-# SGO row for 30270-7054 (JAN-2024) says City "Phoenix", State "CA" while its
-# own narrative reads "operating in Phoenix, Arizona" — an NHTSA data-entry
-# error that renders a phantom "Phoenix, CA" city in the Geography table.
-STATE_OVERRIDE = {
-    "f4e66fc9d21a5b9": "AZ",  # 30270-7054: narrative says Phoenix, Arizona
+# Known-erroneous or missing upstream location fields, keyed by Same Incident
+# ID: ((the filed City, State the review read), (the City, State to store)).
+# The SGO row for 30270-7054 (JAN-2024) says City "Phoenix", State "CA" while
+# its own narrative reads "operating in Phoenix, Arizona" — an NHTSA
+# data-entry error that rendered a phantom "Phoenix, CA" city in the Geography
+# table. 30270-11302 (JUL-2025) arrived with blank City, State and Address
+# (latitude/longitude PII-redacted) while its narrative says "operating in Los
+# Angeles, California"; it rendered as a bare ", " in the incident browser
+# (added 2026-10-03, audit finding #52, which also folded the old
+# STATE_OVERRIDE into this one mechanism). main() must()s that each filed
+# location still equals the reviewed one (a re-filing stops the run for a
+# re-read) and that every incident ends with a non-empty city and state.
+LOCATION_OVERRIDE = {
+    "f4e66fc9d21a5b9": (("Phoenix", "CA"), ("Phoenix", "AZ")),   # 30270-7054
+    "fe1703e2c778a2a": (("", ""), ("Los Angeles", "CA")),        # 30270-11302
 }
 
 # Airbag deployments the SGO structured columns cannot record, keyed by Same
@@ -461,6 +491,51 @@ AIRBAG_OVERRIDE = {
     "4efc9981e611aef": True,
     # 30270-6542: "video appears to show that airbags deployed in the striking vehicle"
     "2e94dccbdb96501": True,
+}
+
+# Tesla files its in-car safety monitor as a passenger: a ride with only the
+# monitor aboard carries "Subject Vehicle - All Belted" (or "Unknown"), so
+# "Were All Passengers Belted?" cannot tell a rider from the monitor, and the
+# sanity section's Passenger presence table (which counts riders, as against
+# deadhead) read 61-87% for Tesla where the narratives give 8 of 23. Every
+# Tesla narrative says whether a passenger was aboard, so each in-scope Tesla
+# report carries a reviewed entry (added 2026-10-03, audit finding #10), keyed
+# by Report ID: (the filed value the review read, the value to store).
+# reviewed_belted() must()s that the filed value is unchanged (a re-filing
+# stops the run for a re-read) and check_tesla_passengers_reviewed() must()s
+# that the map covers exactly the in-scope Tesla reports (a new one stops the
+# run until its narrative is read). Waymo and Zoox carry no in-car monitor,
+# and their codes agree with their narratives.
+PAX_NO = "Subject Vehicle - No Passenger In Vehicle"
+PAX_BELTED = "Subject Vehicle - All Belted"
+# The repo's own code for a passenger the narrative states without saying
+# whether they were belted (NHTSA's list has no such value); crashla.js
+# PAX_PRESENT counts it as a passenger.
+PAX_BELT_UNSTATED = "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated"
+TESLA_PASSENGER_OVERRIDE = {
+    "13781-11375": (PAX_BELTED, PAX_NO),   # "a safety monitor present with no passengers"
+    "13781-11507": ("Unknown", PAX_NO),    # "no passengers were inside the vehicle"
+    "13781-11687": (PAX_BELTED, PAX_BELTED),  # "a safety monitor present with one passenger"
+    "13781-11784": ("Unknown", PAX_NO),    # "no passengers were inside the vehicle"
+    "13781-11786": (PAX_BELTED, PAX_NO),   # "no passengers were inside the vehicle"
+    "13781-11787": (PAX_BELTED, PAX_NO),   # "no passengers were inside the vehicle"
+    "13781-11986": (PAX_BELTED, PAX_NO),   # "no passengers were inside the vehicle"
+    "13781-13237": ("Unknown", PAX_BELT_UNSTATED),  # "Safety monitor and passenger were present"
+    "13781-13644": ("Unknown", PAX_BELT_UNSTATED),  # "Safety monitor and one passenger were present"
+    "13781-13645": (PAX_BELTED, PAX_NO),   # "no passengers were inside the vehicle"
+    "13781-13646": (PAX_BELTED, PAX_NO),   # "no passengers were inside the vehicle"
+    "13781-13647": (PAX_BELTED, PAX_BELTED),  # "Safety monitor and a passenger were present"
+    "13781-13648": (PAX_BELTED, PAX_BELTED),  # "Safety monitor and two passengers were present"
+    "13781-14630": (PAX_BELTED, PAX_BELTED),  # "a safety monitor present ... with one passenger"
+    "13781-14631": (PAX_BELTED, PAX_NO),   # "a safety monitor present ... with no passengers"
+    "13781-15017": (PAX_BELTED, PAX_NO),   # "a safety monitor present ... with no passengers"
+    "13781-15342": (PAX_BELTED, PAX_BELTED),  # "had one passenger present"
+    "13781-15399": (PAX_NO, PAX_NO),       # "did not have any passenger present"
+    "13781-15400": (PAX_NO, PAX_NO),       # "did not have any passenger present"
+    "13781-15808": ("Unknown", PAX_NO),    # "There were no passengers."
+    "13781-15809": ("Unknown", PAX_NO),    # "There were no passengers."
+    "13781-16255": (PAX_BELTED, PAX_BELTED),  # "had two passengers present"
+    "13781-16256": (PAX_NO, PAX_NO),       # "had no passengers present"
 }
 
 
@@ -1244,6 +1319,31 @@ def check_teleop_classified(row):
          narrative=row["Narrative"][:300])
 
 
+def reviewed_belted(rid, filed):
+    """The passenger code to store for report <rid>, whose filing says
+    <filed>: its TESLA_PASSENGER_OVERRIDE entry if it has one, else <filed>."""
+    reviewed, applied = TESLA_PASSENGER_OVERRIDE.get(rid, (filed, filed))
+    must(reviewed == filed,
+         "TESLA_PASSENGER_OVERRIDE was reviewed against a different filed "
+         "passenger value (the report was re-filed; re-read its narrative)",
+         reportId=rid, reviewed=reviewed, filed=filed)
+    return applied
+
+
+def check_tesla_passengers_reviewed(incidents):
+    """Stop the run unless TESLA_PASSENGER_OVERRIDE covers exactly the
+    in-scope Tesla reports, so a new report's narrative gets read for whether
+    a passenger, and not only the safety monitor, was aboard."""
+    tesla = {r["reportId"] for r in incidents if r["helmer"] == "Tesla"}
+    reviewed = set(TESLA_PASSENGER_OVERRIDE)
+    must(tesla == reviewed,
+         "TESLA_PASSENGER_OVERRIDE must cover exactly the in-scope Tesla "
+         "reports (read each new report's narrative and add whether a "
+         "passenger, not just the safety monitor, was aboard; drop entries for "
+         "reports no longer in scope)",
+         unreviewed=sorted(tesla - reviewed), stale=sorted(reviewed - tesla))
+
+
 def report_rank(row):
     """Order two filings of one Same Incident ID: higher Report Version wins,
     then the later Report Submission Date. An exact tie between distinct
@@ -1465,6 +1565,7 @@ def main():
         nar = nar.removeprefix("Summary:").lstrip()
         for bad, good in NARRATIVE_TYPOS.items():
             nar = nar.replace(bad, good)
+        nar = NARRATIVE_UNCHANGED_PREAMBLE.sub("", nar, count=1)
         rec["narrative"] = nar.strip()
         # Compact contact area summaries from NHTSA boolean columns
         rec["svHit"] = _contact_areas(r, "SV Contact Area")
@@ -1483,9 +1584,20 @@ def main():
             rec["severity"] = SEVERITY_OVERRIDE[iid_short]
         if iid_short in AIRBAG_OVERRIDE:
             rec["airbagAny"] = AIRBAG_OVERRIDE[iid_short]
-        if iid_short in STATE_OVERRIDE:
-            rec["state"] = STATE_OVERRIDE[iid_short]
+        filed_loc = (rec["city"], rec["state"])
+        reviewed_loc, (rec["city"], rec["state"]) = LOCATION_OVERRIDE.get(
+            iid_short, (filed_loc, filed_loc))
+        must(reviewed_loc == filed_loc,
+             "LOCATION_OVERRIDE was reviewed against a different filed City / "
+             "State (the report was re-filed; re-read its narrative)",
+             incidentId=iid_short, reviewed=reviewed_loc, filed=filed_loc)
+        must(rec["city"] and rec["state"],
+             "incident has no city or state (read its narrative and add a "
+             "LOCATION_OVERRIDE entry with the place it names)",
+             reportId=rid, incidentId=iid_short, filed=filed_loc)
+        rec["belted"] = reviewed_belted(rid, rec["belted"])
         incidents.append(rec)
+    check_tesla_passengers_reviewed(incidents)
 
     # Sort by helmer then date (ISO month sorts lexicographically)
     incidents.sort(key=lambda r: (

@@ -97,11 +97,15 @@ Resultata: lo ok=${mpi[subset].lo >= mpi[parent].lo}, hi ok=${mpi[subset].hi >= 
   }
 }
 
-// The three severity-tail HumansUS bands are estimates (no published national
-// per-mile rate), so they must keep appropriately wide error bars — guard
-// against a later regression to false precision. (Sourced bands like injury
-// run a ~1.4x lo→hi spread; these estimated ones are deliberately wider.)
-for (const key of ["airbag", "hospitalization", "seriousInjury"]) {
+// The two log-interpolated severity-tail HumansUS bands are estimates (no
+// published national per-mile rate), so they must keep appropriately wide
+// error bars — guard against a later regression to false precision. (Sourced
+// bands like injury run a ~1.4x lo→hi spread; these estimated ones are
+// deliberately wider.) Hospitalization+ was the third until 2026-10-03, when
+// it moved to the CRSS-measured national transport rate (a sourced ~1.47x
+// band: police-reported to Blincoe-adjusted; human-benchmark-provenance.qual
+// pins it), so it leaves this list.
+for (const key of ["airbag", "seriousInjury"]) {
   const b = us[key];
   assert.ok(
     b.hi / b.lo >= 2.5,

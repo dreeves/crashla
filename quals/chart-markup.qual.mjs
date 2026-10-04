@@ -45,8 +45,17 @@ for (const literal of ["fill:#555", "font-weight:bold"]) {
 }
 assert.equal((js.match(/<text class="month-tick"[^>]*>\?<\/text>/g) || []).length, 1,
   "the '?' marker is one .month-tick text template");
-assert.ok(!js.includes('r="12" fill="none" data-tip') && js.includes('r="8" fill="none" data-tip'),
-  "MPI-chart dot hit circles are r=8 (r=12 discs stacked over neighbouring helmers' dots and stole their tooltips)");
+// Chart tooltip targets: one template, hitCircles', whose radius is half the
+// distance to the nearest other target (clamped; chart-targets.qual pins the
+// geometry). Until 2026-10-03 the MPI chart's hit circles had a fixed radius
+// -- r=12, then r=8 from 2026-09-26 -- and either one stacked over a
+// neighbouring dot it did not touch and took its tooltip (audit #63), while
+// the other charts' glyphs were their own small targets (audit #28).
+const tipCircles = js.match(/<circle[^>]*data-tip/g) || [];
+assert.ok(tipCircles.length === 1 && /r="\$\{r\.toFixed\(2\)\}" fill="none" data-tip/.test(tipCircles[0]),
+  `Replicata: grep crashla.js for <circle templates that carry data-tip.
+Expectata: exactly one, hitCircles' invisible circle with its computed radius.
+Resultata: ${JSON.stringify(tipCircles)}.`);
 for (const sel of [".month-err", ".month-axis"]) {
   const rule = parsed.find(r => r.sel === sel && r.context.length === 0);
   assert.ok(rule, `a ${sel} rule exists`);

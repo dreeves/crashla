@@ -27,6 +27,9 @@
 }</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
+<!-- Without JavaScript nothing loads, so the static "Loading…" under
+     Prediction Markets is hidden rather than left claiming to load. -->
+<noscript><style>.predmarket-loading { display: none; }</style></noscript>
 </head>
 <body>
 
@@ -36,10 +39,22 @@
      (e.g. Facebook's fbclid): crashla.js fills in the names and shows it,
      and the button dismisses it. -->
 <div id="url-banner" class="banner" role="alert" hidden>
+  <!-- One flowing message (the box's single text item), its sentences shown
+       or hidden by what the link carried. -->
+  <span>
   <span class="banner-text"></span>
+  <!-- The page's own parameters that the link left out or set to values the
+       page cannot read: crashla.js names them, and the page shows its
+       default view instead. -->
+  <span class="banner-rejected"></span>
+  </span>
   <!-- button label meaning "dismiss" -->
   <button id="url-banner-dismiss" type="button">Roger</button>
 </div>
+
+<noscript>
+  <p class="banner">JavaScript required for charts, tables</p>
+</noscript>
 
 <div class="abstract">
   Conclusions:
@@ -62,8 +77,11 @@
 </div>
 
 <div class="month-panel" id="month-panel">
+  <!-- Every section heading's text is a role="button" toggle in the Tab order
+       (Enter or Space collapses or opens the section); crashla.js
+       initCollapsibles wires it and keeps its aria-expanded current. -->
   <section class="collapsible" id="sec-controls">
-  <h2 class="sec-head">What and when to compare</h2>
+  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">What and when to compare</span></h2>
   <div class="sec-body">
     <div class="month-legend" id="month-legend-mpi-helmers"></div>
     <div class="month-legend" id="month-legend-mpi-lines"></div>
@@ -72,7 +90,7 @@
   </section>
 
   <section class="collapsible" id="sec-vmt">
-  <h2 class="sec-head">Vehicle Miles Traveled</h2>
+  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Vehicle Miles Traveled</span></h2>
   <div class="sec-body">
     <div class="month-legend" id="vmt-mode-toggle"></div>
     <div id="chart-helmer-series" class="month-helmer-grid"></div>
@@ -80,7 +98,7 @@
   </section>
 
   <section class="collapsible" id="sec-mpi">
-  <h2 class="sec-head" id="mpi-heading"></h2>
+  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0" id="mpi-heading"></span></h2>
   <div class="sec-body">
     <div class="month-legend" id="month-legend-ci-fan"></div>
     <div id="chart-mpi-all" class="month-chart"></div>
@@ -88,7 +106,7 @@
   </section>
 
   <section class="collapsible" id="sec-dist">
-  <h2 class="sec-head" id="dist-heading"></h2>
+  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0" id="dist-heading"></span></h2>
   <div class="sec-body">
     <div id="chart-distributions" class="month-chart"></div>
   </div>
@@ -96,7 +114,7 @@
 </div>
 
 <section class="collapsible" id="sec-browser">
-<h2 class="sec-head" id="incident-browser-heading">Incident browser</h2>
+<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0" id="incident-browser-heading">Incident browser</span></h2>
 <div class="sec-body">
 <div class="filters" id="filters"></div>
 <div class="incident-count" id="incident-count"></div>
@@ -121,7 +139,7 @@
 </section>
 
 <section class="collapsible" id="sec-markets">
-<h2 class="sec-head">Prediction Markets</h2>
+<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Prediction Markets</span></h2>
 <div class="sec-body">
 <div id="predmarket-panel" class="predmarket-panel">
   <p class="predmarket-loading">Loading&#x2026;</p>
@@ -130,21 +148,21 @@
 </section>
 
 <section class="collapsible" id="sec-summary">
-<h2 class="sec-head">Sources and raw numbers</h2>
+<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Sources and raw numbers</span></h2>
 <div class="sec-body">
 <div id="mpi-summary-cards"></div>
 </div>
 </section>
 
 <section class="collapsible" id="sec-sanity">
-<h2 class="sec-head">Sources, sanity checks, and sensitivity analysis</h2>
+<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Sources, sanity checks, and sensitivity analysis</span></h2>
 <div class="sec-body">
 <div id="sanity-checks"></div>
 </div>
 </section>
 
 <section class="collapsible" id="sec-fleet">
-<h2 class="sec-head">AV company growth and forecast for Jan 1, 2027</h2>
+<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">AV company growth and forecast for Jan 1, 2027</span></h2>
 <div class="sec-body">
 <div id="chart-fleet-timeseries" class="month-chart"></div>
 <div id="chart-fleet-forecast" class="month-chart"></div>

@@ -93,26 +93,30 @@ Resultata: tooltip was ${JSON.stringify(tipFixedObj.slice(-80))}.`,
   );
 }
 
-// Verify vmtTooltip helper produces expected format
+// Verify the VMT tooltip helpers produce the expected format. Since
+// 2026-10-03 a dot's tooltip also gives its range (audit #28: an end hidden
+// under its dot was unreadable) and an error-bar end says which end it is
+// (audit #59); the two were one helper, vmtTooltip, until then.
 const vmtTip = vm.runInContext(`
-  ({ dot: vmtTooltip("2026-05", 1234567, 1),
-     dot2: vmtTooltip("2026-05", 1234567, 2),
-     cap: vmtTooltip("2026-05", 1000000) })
+  ({ dot: vmtDotTooltip("2026-05", 1234567, 1000000, 1500000, 1),
+     dot2: vmtDotTooltip("2026-05", 1234567, 1000000, 1500000, 2),
+     cap: vmtEndTooltip("2026-05", 1000000, VMT_RANGE_EDGE.lo),
+     edge: VMT_RANGE_EDGE })
 `, ctx);
-assert.equal(vmtTip.dot, "2026-05\n1,234,567 miles\n1 incident",
-  `Replicata: call vmtTooltip for a dot (value + incident count).
-Expectata: "<month>\\n<miles> miles\\n1 incident" (splur singular).
+assert.equal(vmtTip.dot, "2026-05\n1,234,567 miles\nRange: 1,000,000 – 1,500,000\n1 incident",
+  `Replicata: call vmtDotTooltip for a dot (value, range, incident count).
+Expectata: "<month>\\n<miles> miles\\nRange: <lo> – <hi>\\n1 incident" (splur singular).
 Resultata: ${JSON.stringify(vmtTip.dot)}.`,
 );
-assert.equal(vmtTip.cap, "2026-05\n1,000,000 miles",
-  `Replicata: call vmtTooltip for an error-bar end (no count).
-Expectata: just "<month>\\n<miles> miles", no incident line.
+assert.equal(vmtTip.cap, `2026-05\n1,000,000 miles\n${vmtTip.edge.lo}`,
+  `Replicata: call vmtEndTooltip for an error-bar's low end (no count).
+Expectata: "<month>\\n<miles> miles\\n<the low end's label>", no incident line.
 Resultata: ${JSON.stringify(vmtTip.cap)}.`,
 );
 assert.ok(vmtTip.dot2.endsWith("2 incidents"),
-  `Replicata: call vmtTooltip with 2 incidents.
+  `Replicata: call vmtDotTooltip with 2 incidents.
 Expectata: splur pluralizes to "2 incidents".
 Resultata: ${JSON.stringify(vmtTip.dot2)}.`,
 );
 
-console.log("qual pass: contact areas in fault tooltip and vmtTooltip helper");
+console.log("qual pass: contact areas in fault tooltip and the VMT tooltip helpers");

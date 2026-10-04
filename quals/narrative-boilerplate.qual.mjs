@@ -17,6 +17,13 @@ print(json.dumps({
   "airbag_pattern": slurp.NARRATIVE_AIRBAG_CORRECTION.pattern,
   "mojibake_keys": list(slurp.NARRATIVE_MOJIBAKE.keys()),
   "typo_keys": list(slurp.NARRATIVE_TYPOS.keys()),
+  "preamble_pattern": slurp.NARRATIVE_UNCHANGED_PREAMBLE.pattern,
+  "preamble_probe": {
+    "dated": slurp.NARRATIVE_UNCHANGED_PREAMBLE.sub("", "The content of this report is unchanged from the initial report submitted on June 5, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \\nOn June [XXX], 2025 a Waymo AV", count=1),
+    "redacted_date": slurp.NARRATIVE_UNCHANGED_PREAMBLE.sub("", "The content of this report is unchanged from the initial report submitted on February[XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\\nOn February", count=1),
+    "with_facts": slurp.NARRATIVE_UNCHANGED_PREAMBLE.sub("", "Other than the updated Speed Limit field, the content of this report is unchanged from the initial report submitted on December 5, 2022 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION].  On December", count=1),
+    "mid_text": slurp.NARRATIVE_UNCHANGED_PREAMBLE.sub("", "On June 5 a Waymo AV stopped. The content of this report is unchanged from the initial report submitted on June 5, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION].", count=1),
+  },
   "source": inspect.getsource(slurp),
 }))
 `;
@@ -125,7 +132,38 @@ Resultata: found ${residual} occurrence(s).`,
   );
 }
 
-console.log("qual pass: Tesla redacted-update boilerplate is stripped from narratives");
+// Waymo's no-fact filing preamble (2026-10-03, audit finding #91): 62
+// narratives opened "The content of this report is unchanged from the initial
+// report submitted on <date> [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS
+// INFORMATION]." so the one-line preview showed only that. slurp strips that
+// exact preamble with an anchored pattern (NARRATIVE_UNCHANGED_PREAMBLE);
+// preambles that carry facts ("Other than the updated Speed Limit field, ...")
+// and later sentences are left as filed.
+assert.deepEqual(out.preamble_probe, {
+  dated: "On June [XXX], 2025 a Waymo AV",
+  redacted_date: "On February",
+  with_facts: "Other than the updated Speed Limit field, the content of this report is unchanged from the initial report submitted on December 5, 2022 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION].  On December",
+  mid_text: "On June 5 a Waymo AV stopped. The content of this report is unchanged from the initial report submitted on June 5, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION].",
+}, `Replicata: apply slurp.py's NARRATIVE_UNCHANGED_PREAMBLE to four probe narratives.
+Expectata: it removes the exact no-fact preamble (and the whitespace after it) only at the start of a narrative, with a dated or redacted date, and leaves fact-carrying preambles and mid-text sentences alone.
+Resultata: ${JSON.stringify(out.preamble_probe)}.`);
+assert.ok(out.preamble_pattern.startsWith("^") && out.source.includes("NARRATIVE_UNCHANGED_PREAMBLE.sub("),
+  `Replicata: inspect data/slurp.py's NARRATIVE_UNCHANGED_PREAMBLE and its use.
+Expectata: the pattern is anchored at the start (^) and applied during record building.
+Resultata: pattern ${JSON.stringify(out.preamble_pattern.slice(0, 40))}, applied: ${out.source.includes("NARRATIVE_UNCHANGED_PREAMBLE.sub(")}.`);
+{
+  const vm = await import("node:vm");
+  const ctx = vm.createContext({});
+  vm.runInContext(incidentsJs, ctx);
+  const narratives = JSON.parse(vm.runInContext("JSON.stringify(INCIDENT_DATA.map(r => [r.reportId, r.narrative]))", ctx));
+  const opening = narratives.filter(([, n]) => /^The content of this report is unchanged from the initial report submitted on [^\n]*?\[REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION\]/.test(n)).map(([id]) => id);
+  assert.deepEqual(opening, [],
+    `Replicata: list data/incidents.js narratives that open with Waymo's "The content of this report is unchanged from the initial report submitted on <date> [REDACTED, ...]" preamble.
+Expectata: none (slurp strips it at ingestion; the committed artifact must match).
+Resultata: ${opening.length} narratives: ${JSON.stringify(opening.slice(0, 10))}${opening.length > 10 ? " ..." : ""}.`);
+}
+
+console.log("qual pass: Tesla redacted-update boilerplate and Waymo's no-fact filing preamble are stripped from narratives");
 
 // --- No narrative in incidents.js starts or ends with whitespace -----------
 // slurp's "Summary:" strip ran before the mojibake pass, so a narrative that

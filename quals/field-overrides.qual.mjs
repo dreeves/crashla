@@ -29,6 +29,11 @@ const SEVERITY_PINS = {
   // Sep-24-2026 hub release notes quote a police General Offense Report:
   // "treated at a hospital for injuries described as life threatening"
   "30270-13817": "Serious W/ Hospitalization",
+  // Field "Property Damage. No Injured Reported"; narrative: the passenger
+  // "reported feeling \"dazed\" and \"kind of woozy\" and requested emergency
+  // services", no transport stated (2026-10-03, audit finding #44; Zoox coded
+  // the comparable 30610-15062 "whiplash", treatment declined, Minor W/O)
+  "30610-15722": "Minor W/O Hospitalization",
 };
 for (const [rid, want] of Object.entries(SEVERITY_PINS)) {
   const rec = byId.get(rid);
@@ -48,15 +53,24 @@ cannot record it — AIRBAG_OVERRIDE in slurp.py).
 Resultata: ${rec === undefined ? "row missing" : JSON.stringify(rec.airbagAny)}.`);
 }
 
-// State patch: NHTSA's row for 30270-7054 says Phoenix, CA; the narrative
-// says Phoenix, Arizona (STATE_OVERRIDE in slurp.py kills the phantom city).
-{
-  const rec = byId.get("30270-7054");
-  assert.ok(rec !== undefined && rec.state === "AZ" && rec.city === "Phoenix",
-    `Replicata: read 30270-7054's location from data/incidents.js.
-Expectata: Phoenix, AZ (upstream data-entry error patched via STATE_OVERRIDE).
+// Location patches (LOCATION_OVERRIDE in slurp.py): NHTSA's row for 30270-7054
+// says Phoenix, CA while the narrative says Phoenix, Arizona (kills a phantom
+// city); 30270-11302 (Waymo, JUL-2025) arrived with blank city, state and
+// address, and its narrative says "operating in Los Angeles, California"
+// (2026-10-03, audit finding #52; it rendered as a bare ", ").
+for (const [rid, city, state] of [["30270-7054", "Phoenix", "AZ"], ["30270-11302", "Los Angeles", "CA"]]) {
+  const rec = byId.get(rid);
+  assert.ok(rec !== undefined && rec.state === state && rec.city === city,
+    `Replicata: read ${rid}'s location from data/incidents.js.
+Expectata: ${city}, ${state} (the narrative's location, applied via LOCATION_OVERRIDE).
 Resultata: ${rec === undefined ? "row missing" : JSON.stringify(rec.city + ", " + rec.state)}.`);
 }
+// JSON round-trip: arrays built in the vm realm fail deepStrictEqual against [].
+const blankLocation = JSON.parse(JSON.stringify(incidents.filter(r => !r.city || !r.state).map(r => r.reportId)));
+assert.deepEqual(blankLocation, [],
+  `Replicata: list data/incidents.js records with an empty city or state.
+Expectata: none (slurp.py stops on a blank location until a LOCATION_OVERRIDE entry gives the narrative's place).
+Resultata: ${JSON.stringify(blankLocation)}.`);
 
 // Scope patch: 30270-14625 (Waymo, Washington DC, MAR-2026) is coded Driver /
 // Operator Type "None", but its narrative says "a test driver was present (in
@@ -69,4 +83,4 @@ assert.ok(!byId.has("30270-14625"),
 Expectata: absent (test driver present per the narrative; OPERATOR_TYPE_OVERRIDE in slurp.py).
 Resultata: present.`);
 
-console.log("qual pass: narrative-contradiction severity, airbag, location, and operator-scope overrides flow into incidents.js");
+console.log("qual pass: narrative-contradiction severity, airbag, location, and operator-scope overrides flow into incidents.js; no record lacks a location");

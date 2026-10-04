@@ -47,6 +47,14 @@ class ElementStub {
   querySelector() {
     return new ElementStub("td");
   }
+
+  setAttribute(name, value) {
+    this._attributes = { ...this._attributes, [name]: String(value) };
+  }
+
+  getAttribute(name) {
+    return (this._attributes || {})[name] ?? null;
+  }
 }
 
 const nodeById = new Map();
@@ -54,6 +62,9 @@ const getNode = id => nodeById.get(id) || (nodeById.set(id, new ElementStub("div
 const documentStub = {
   getElementById: getNode,
   createElement: tag => new ElementStub(tag),
+  // Nothing is focused in this harness: the page's focus hand-off after a
+  // re-render (rerenderKeepingFocus) finds no control to restore.
+  activeElement: new ElementStub("body"),
 };
 
 
@@ -95,4 +106,33 @@ Expectata: button count remains ${expectedCount}.
 Resultata: counts were ${before}, ${afterOneClick}, ${afterTwoClicks}.`,
 );
 
-console.log("qual pass: filter buttons stay non-duplicated across clicks");
+// The active filter is announced, not only drawn inverted (audit #92): each
+// button's aria-pressed comes from the same comparison as its class.
+const pressed = getNode("filters").children.map(b => [b.textContent.split(" (")[0], b.getAttribute("aria-pressed"), b.className]);
+assert.deepEqual(
+  pressed,
+  [["All", "false", ""], ["Tesla", "false", ""], ["Waymo", "true", "active"], ["Zoox", "false", ""]],
+  `Replicata: click the Tesla filter button, then the Waymo one, and read every button's aria-pressed and class.
+Expectata: Waymo alone is pressed ("true", class active); the others read "false".
+Resultata: ${JSON.stringify(pressed)}.`,
+);
+
+// A button's count is formatted like every other count on the page (audit
+// #54: the buttons read "All (1228) | Waymo (1164)" directly above the count
+// line's "1,228 incidents").
+vm.runInContext(`
+incidents = Array.from({length: 1234}, () => ({ helmer: "Waymo", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }))
+  .concat([{ helmer: "Tesla", date: "JUN-2025", city: "X", state: "CA", crashWith: "Car", speed: null, severity: "", narrativeCbi: "N", narrative: "" }]);
+activeFilter = "All";
+buildBrowser();
+`, ctx);
+const thousandLabels = getNode("filters").children.map(b => b.textContent);
+assert.deepEqual(
+  thousandLabels,
+  ["All (1,235)", "Tesla (1)", "Waymo (1,234)", "Zoox (0)"],
+  `Replicata: build the incident browser over 1,234 Waymo incidents and 1 Tesla incident and read the filter buttons.
+Expectata: counts grouped as on the count line ("All (1,235)", "Waymo (1,234)").
+Resultata: ${JSON.stringify(thousandLabels)}.`,
+);
+
+console.log("qual pass: filter buttons stay non-duplicated across clicks, announce which one is active, and group their counts");

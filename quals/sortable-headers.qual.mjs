@@ -90,12 +90,15 @@ const ctx = vm.createContext({
     getElementById: getNode,
     createElement: tag => new ElementStub(tag),
     body: new ElementStub("body"),
+    // Nothing is focused in this harness: the page's focus hand-off after a
+    // re-render (rerenderKeepingFocus) finds no control to restore.
+    activeElement: new ElementStub("body"),
     addEventListener() {},
   },
   window: {
     innerWidth: 1024,
     innerHeight: 768,
-    location: {search: "", pathname: "/crashla"},
+    location: {search: "", pathname: "/crashla", hash: ""},
     history: {replaceState() {}},
   },
 });

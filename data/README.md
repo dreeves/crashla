@@ -73,9 +73,17 @@ The slurp pipeline is:
    newest incident month and newest submission month must both equal it)
    and restrict to the app's VMT analysis window
 9. Apply narrative-verified field overrides from `slurp.py` (severity, airbag,
-   state — see `quals/field-overrides.qual.mjs` for the pins; vehicles-involved
-   — see `quals/fatality-guard.qual.mjs`; the dict comments carry each row's
-   justification) and join in the fault fractions
+   city and state — see `quals/field-overrides.qual.mjs` for the pins;
+   vehicles-involved — see `quals/fatality-guard.qual.mjs`; Tesla passenger
+   presence, which Tesla's filings conflate with its in-car safety monitor —
+   see `quals/passenger-classification.qual.mjs`; the dict comments carry each
+   row's justification), strip the narratives' fact-free filing boilerplate
+   (`quals/narrative-boilerplate.qual.mjs`), and join in the fault fractions.
+   A filed city, state or Tesla passenger value that no longer matches the
+   one its override was reviewed against, an incident left with no city or
+   state, or an in-scope Tesla report with no reviewed passenger entry stops
+   the run (the severity, airbag and vehicles-involved overrides carry no
+   such check)
 10. Apply the data-through month's receipt coverage (`coverage`,
     `coverage_min`, `coverage_max`) and the pooled Monthly-track incident
     coverage (`incident_coverage`, `_min`, `_max`) — the generated CSV in
@@ -109,7 +117,12 @@ Editing rules:
   column must equal the running sum of `vmt` (asserted downstream)
 - Numbers are plain integers (no thousands separators: slurp.py would
   accept a quoted "2,501,777", but the quals' parsers would not)
-- `rationale` is free text explaining the estimate's source and uncertainty
+- `rationale` is free text explaining the estimate's source and uncertainty.
+  The page shows it verbatim (sanity section, "VMT sources"), so it cites
+  documents by file and section ("data/README.md, Waymo anchors";
+  "IGNOREME.md, Waymo VMT Methodology"), avoids this file's column names and
+  other repo shorthand, and states the anchors its rows carry
+  (`quals/vmt-rationale-text.qual.mjs`)
 
 To change VMT data: edit `data/vmt.csv`, run `python3 data/slurp.py`, and
 commit the master together with the regenerated artifacts.
@@ -168,6 +181,24 @@ unbenchmarked-county crashes of Jan-Jun 2026 at the young-market rate
 the 4.5-9.5 per M range and Poisson noise folded in. The Sep 24, 2026 update
 added no metro; the next (data through Sep 2026) is expected ~mid/late Dec
 2026.
+
+### Zoox anchors
+
+Zoox's letter to NHTSA of Jan 28, 2026 (docket NHTSA-2025-0523-0004 p.22)
+gives "approximately 1.3 million driverless autonomous miles on public roads"
+as of Dec 31, 2025. The series starts in May 2024 (Zoox's first in-scope SGO
+crash), so the driverless miles before it come off: California DMV Feb
+2023-Apr 2024 (permit AVDT004) 20,174, measured, plus a Las Vegas analog of
+19,906 (equal to California's Jun 2023-Apr 2024) at the early rows' 0.5x-2x
+Las Vegas band, 30,127-59,987, central 40,080. The Dec-2025 cumulative is
+1,300,000 - 40,080 = 1,259,920, and its band (the knot, added 2026-10-03) is
+the rounding interval of "approximately 1.3 million", 1.25M-1.35M, less that
+offset band: 1,190,013-1,319,873. Later months' bands chain forward from the
+knot and Oct-Nov 2025's are narrowed back from it, so the band is the
+disclosure's own uncertainty rather than the running sum of the monthly
+bands. The ~2M (late Mar 2026) and >3M (Aug 5, 2026) milestones are checked,
+not knotted: their scope wording varies ("autonomous miles", "miles on public
+roads"). `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
 
 ## Fault CSV synchronization
 

@@ -26,7 +26,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
-    "belted": "Unknown",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -57,7 +57,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -119,7 +119,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "",
     "fault": {
@@ -150,7 +150,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "front left",
     "cpHit": "",
     "fault": {
@@ -181,7 +181,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
-    "belted": "Unknown",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "rear right",
     "fault": {
@@ -212,7 +212,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "front right",
     "fault": {
@@ -243,7 +243,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
-    "belted": "Unknown",
+    "belted": "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated",
     "svHit": "rear left + rear right",
     "cpHit": "front right",
     "fault": {
@@ -305,7 +305,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "bottom",
     "cpHit": "",
     "fault": {
@@ -367,7 +367,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
-    "belted": "Unknown",
+    "belted": "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated",
     "svHit": "left",
     "cpHit": "rear",
     "fault": {
@@ -398,7 +398,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "",
     "fault": {
@@ -429,7 +429,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -491,7 +491,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear right",
     "cpHit": "front right",
     "fault": {
@@ -527,7 +527,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 1.0,
-      "reasoning": "Drove into chain across lot entrance (precedent 13781-11687)"
+      "reasoning": "Tesla drove into chain across lot entrance"
     },
     "vehiclesInvolved": 2
   },
@@ -615,7 +615,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "Y",
     "wxPartlyCloudy": "",
-    "belted": "Unknown",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "rear left",
     "cpHit": "front",
     "fault": {
@@ -646,7 +646,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
-    "belted": "Unknown",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
     "svHit": "right",
     "cpHit": "rear right",
     "fault": {
@@ -744,7 +744,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.0,
-      "reasoning": "stationary AV waiting for pickup; car reversed out of spot into its side"
+      "reasoning": "Stationary AV waiting for pickup; car reversed out of spot into its side"
     },
     "vehiclesInvolved": 2
   },
@@ -775,7 +775,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.0,
-      "reasoning": "stopped AV; SUV reversed out of driveway into its trunk"
+      "reasoning": "Stopped AV; SUV reversed out of driveway into its trunk"
     },
     "vehiclesInvolved": 2
   },
@@ -806,7 +806,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear left + rear + rear right",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "car cut into AV lane at yellow then braked; AV rear-ended despite max braking"
+      "reasoning": "Car cut into AV lane at yellow then braked; AV rear-ended despite max braking"
     },
     "vehiclesInvolved": 2
   },
@@ -837,7 +837,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear left",
     "fault": {
       "faultfrac": 0.0,
-      "reasoning": "stopped AV dropping off; parked pickup reversed into rear quarter panel"
+      "reasoning": "Stopped AV dropping off; parked pickup reversed into rear quarter panel"
     },
     "vehiclesInvolved": 2
   },
@@ -930,7 +930,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.9,
-      "reasoning": "Waymo slowed for parking lot barrier arm then drove into it; aligned to bar/bollard/curb tier 0.9 as 11467 (2026-09-04)"
+      "reasoning": "Waymo slowed for parking lot barrier arm then drove into it"
     },
     "vehiclesInvolved": 2
   },
@@ -1085,7 +1085,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.4,
-      "reasoning": "Waymo struck cardboard debris in intersection; visibility ambiguous; sizable-visible-object band tops at 0.4 (2026-09-04)"
+      "reasoning": "Waymo struck cardboard debris in intersection; visibility ambiguous"
     },
     "vehiclesInvolved": 2
   },
@@ -1166,7 +1166,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": null,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Other, see Narrative",
-    "narrative": "The content of this report is unchanged from the initial report submitted on March 21, 2023 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn March [XXX], 2023 at approximately 8:04 PM PST a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a pothole on [XXX] near [XXX]. \nThe Waymo AV was traveling in the second lane on a four-lane section of northbound [XXX] when the passenger side rear tire made contact with a pothole. The tire began to deflate and the Waymo AV pulled over on a side street. At the time of impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On March [XXX], 2023 at approximately 8:04 PM PST a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a pothole on [XXX] near [XXX]. \nThe Waymo AV was traveling in the second lane on a four-lane section of northbound [XXX] when the passenger side rear tire made contact with a pothole. The tire began to deflate and the Waymo AV pulled over on a side street. At the time of impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -1228,7 +1228,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on [XXX], 2023 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn April [XXX], 2023 at 10:48 AM PST a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX]. \nThe Waymo AV was proceeding northwest on [XXX] near the intersection with [XXX] when it came to a stop to yield to a heavy truck traveling southeast on [XXX]. As the heavy truck drove past the Waymo AV, the drivers side section of the heavy truck made contact with the rear drivers side sensor of the Waymo AV. The heavy truck then left the scene. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On April [XXX], 2023 at 10:48 AM PST a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX]. \nThe Waymo AV was proceeding northwest on [XXX] near the intersection with [XXX] when it came to a stop to yield to a heavy truck traveling southeast on [XXX]. As the heavy truck drove past the Waymo AV, the drivers side section of the heavy truck made contact with the rear drivers side sensor of the Waymo AV. The heavy truck then left the scene. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -1488,7 +1488,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "Waymo undercarriage struck parking lot speed bump; aligned to pothole-or-speedbump tier 0.5 (2026-09-04)"
+      "reasoning": "Waymo undercarriage struck parking lot speed bump"
     },
     "vehiclesInvolved": 2
   },
@@ -1519,7 +1519,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "Waymo undercarriage struck parking lot speed bump; aligned to pothole-or-speedbump tier 0.5 (2026-09-04)"
+      "reasoning": "Waymo undercarriage struck parking lot speed bump"
     },
     "vehiclesInvolved": 2
   },
@@ -2015,7 +2015,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "Waymo merged into turn lane ahead of hesitating pickup as light went green; pickup proceeded into it; aligned to 11759 merge-at-green tier 0.2 (2026-09-04)"
+      "reasoning": "Waymo merged into turn lane ahead of hesitating pickup as light went green; pickup proceeded into it"
     },
     "vehiclesInvolved": 2
   },
@@ -2127,7 +2127,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on August 18, 2023 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn August [XXX], 2023 at 9:37 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Tempe, Arizona was in a collision involving a passenger vehicle on [XXX] near [XXX].\nThe Waymo AV was stopped in traffic at a red light for a pedestrian crosswalk, facing westbound on [XXX]. A passenger vehicle behind the Waymo AV approached and made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On August [XXX], 2023 at 9:37 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Tempe, Arizona was in a collision involving a passenger vehicle on [XXX] near [XXX].\nThe Waymo AV was stopped in traffic at a red light for a pedestrian crosswalk, facing westbound on [XXX]. A passenger vehicle behind the Waymo AV approached and made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": true,
     "wxClear": "Y",
@@ -3100,7 +3100,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear left",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Angle-parked pickup was stopped when Waymo committed to pass at 2mph; reverse began after; Rule B stopped-then-reverses 0.15 (2026-09-04)"
+      "reasoning": "Angle-parked pickup was stopped when Waymo committed to pass at 2mph; it began reversing only after"
     },
     "vehiclesInvolved": 2
   },
@@ -3472,7 +3472,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front left",
     "fault": {
       "faultfrac": 0.0,
-      "reasoning": "Waymo braked to a lawful stop when protected-left arrow went yellow; rear-ended by van; aligned to rear-end anchor 0 (2026-09-04)"
+      "reasoning": "Waymo braked to a lawful stop when protected-left arrow went yellow; rear-ended by van"
     },
     "vehiclesInvolved": 2
   },
@@ -4080,7 +4080,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 1,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February 20, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nOn February [XXX], 2024 at 1:35 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcyclist on [XXX] at [XXX].\nThe Waymo AV was traveling northbound on [XXX] and was stopped at a red traffic light at [XXX], with a motorcyclist stopped behind the Waymo AV. When the light turned green, the Waymo AV proceeded into the intersection with the motorcyclist traveling close behind. In the intersection, the Waymo AV braked, and the motorcyclist then made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage, and the motorcyclist left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2024 at 1:35 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcyclist on [XXX] at [XXX].\nThe Waymo AV was traveling northbound on [XXX] and was stopped at a red traffic light at [XXX], with a motorcyclist stopped behind the Waymo AV. When the light turned green, the Waymo AV proceeded into the intersection with the motorcyclist traveling close behind. In the intersection, the Waymo AV braked, and the motorcyclist then made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage, and the motorcyclist left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -4173,7 +4173,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Making Right Turn",
     "cpMovement": "Making Right Turn",
-    "narrative": "The content of this report is unchanged from the initial report submitted on March 15, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nA previous version of this 10-Day update incorrectly listed the initial report's submission date as February 20, 2024.\nOn February [XXX], 2024 at 4:58 MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving a passenger car on [XXX] and [XXX]. \nThe Waymo AV was turning right from eastbound [XXX] onto southbound  [XXX] during a green light with the passenger car traveling close behind. The Waymo AV yielded for a pedestrian about to enter the crosswalk facing a \"walk\" signal, and the passenger car made contact with the rear of the Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01.",
+    "narrative": "A previous version of this 10-Day update incorrectly listed the initial report's submission date as February 20, 2024.\nOn February [XXX], 2024 at 4:58 MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving a passenger car on [XXX] and [XXX]. \nThe Waymo AV was turning right from eastbound [XXX] onto southbound  [XXX] during a green light with the passenger car traveling close behind. The Waymo AV yielded for a pedestrian about to enter the crosswalk facing a \"walk\" signal, and the passenger car made contact with the rear of the Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -4247,7 +4247,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Waymo struck small (<12in) white object in lane; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "Waymo struck small (<12in) white object in lane"
     },
     "vehiclesInvolved": 2
   },
@@ -4960,7 +4960,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "Waymo swerved left avoiding SUV lane change; struck median curb; aligned to emergency-maneuver anchor 0.5 as 7515 (2026-09-04)"
+      "reasoning": "Waymo swerved left avoiding SUV lane change; struck median curb"
     },
     "vehiclesInvolved": 2
   },
@@ -5723,7 +5723,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Backing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 15, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn May [XXX], 2024 at 12:47 PM MT a Waymo Autonomous Vehicle (Waymo AV) operating in Scottsdale, Arizona was in a collision involving a passenger car in a parking lot at [XXX]. \nThe Waymo AV was navigating through a parking lot en route to drop off passengers when it stopped to yield for a pedestrian walking in the parking lot. A passenger car then backed out of a parking spot and made contact with the driver side rear passenger door of the Waymo AV.  At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On May [XXX], 2024 at 12:47 PM MT a Waymo Autonomous Vehicle (Waymo AV) operating in Scottsdale, Arizona was in a collision involving a passenger car in a parking lot at [XXX]. \nThe Waymo AV was navigating through a parking lot en route to drop off passengers when it stopped to yield for a pedestrian walking in the parking lot. A passenger car then backed out of a parking spot and made contact with the driver side rear passenger door of the Waymo AV.  At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -5785,7 +5785,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 2,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Backing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 24, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn May [XXX], 2024 at 2:13 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a utility vehicle in a parking lot at City College of San Francisco located just west of [XXX].  \nThe Waymo AV was navigating through a parking lot when it began to slow to yield for pedestrians ahead. A utility vehicle then backed out of a parking spot to the right of the Waymo AV and made contact with the passenger side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On May [XXX], 2024 at 2:13 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a utility vehicle in a parking lot at City College of San Francisco located just west of [XXX].  \nThe Waymo AV was navigating through a parking lot when it began to slow to yield for pedestrians ahead. A utility vehicle then backed out of a parking spot to the right of the Waymo AV and made contact with the passenger side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -5909,7 +5909,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 8, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn May [XXX], 2024 at 4:12 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was stopped in traffic in the leftmost lane on eastbound [XXX] approaching the intersection with [XXX]. A motorcyclist then approached from behind the stopped Waymo AV, lane splitting between the Waymo AVs lane and the rightmost lane. As the motorcyclist passed, the motorcycle made contact with the rear passenger side corner of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage and the motorcyclist left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On May [XXX], 2024 at 4:12 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was stopped in traffic in the leftmost lane on eastbound [XXX] approaching the intersection with [XXX]. A motorcyclist then approached from behind the stopped Waymo AV, lane splitting between the Waymo AVs lane and the rightmost lane. As the motorcyclist passed, the motorcycle made contact with the rear passenger side corner of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage and the motorcyclist left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -6405,7 +6405,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on June 10, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nOn June [XXX], 2024 at 1:21 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] near [XXX]. \nThe Waymo AV was traveling east on [XXX] and pulled partially into a curbside parking space to conduct a rider pickup. The riders boarded, and the Waymo AV remained stopped to yield to several pedestrians walking in front of the Waymo AV. While the Waymo AV was still stopped partially in the curbside parking space and partially in the eastbound travel lane, a passenger car traveling east on [XXX] passed to the left of the Waymo AV and the passenger side mirror made contact with the driver side rear corner of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On June [XXX], 2024 at 1:21 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] near [XXX]. \nThe Waymo AV was traveling east on [XXX] and pulled partially into a curbside parking space to conduct a rider pickup. The riders boarded, and the Waymo AV remained stopped to yield to several pedestrians walking in front of the Waymo AV. While the Waymo AV was still stopped partially in the curbside parking space and partially in the eastbound travel lane, a passenger car traveling east on [XXX] passed to the left of the Waymo AV and the passenger side mirror made contact with the driver side rear corner of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -6479,7 +6479,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Waymo struck unspecified road debris at 36mph; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "Waymo struck unspecified road debris at 36mph"
     },
     "vehiclesInvolved": 2
   },
@@ -6715,7 +6715,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 22,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on June 9, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nOn June [XXX], 2024 at 12:58 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Scottsdale, AZ was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling north in the center through lane on [XXX] at the intersection with [XXX]. While the Waymo AV was driving straight through the intersection with a green light, a motorcycle traveling at a high rate of speed on eastbound [XXX] did not stop for a red light and made contact with the rear driver side corner of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode and the passenger was not wearing a seat belt. Both vehicles sustained damage, and Waymo has not received notice of any reported injuries.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On June [XXX], 2024 at 12:58 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Scottsdale, AZ was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling north in the center through lane on [XXX] at the intersection with [XXX]. While the Waymo AV was driving straight through the intersection with a green light, a motorcycle traveling at a high rate of speed on eastbound [XXX] did not stop for a red light and made contact with the rear driver side corner of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode and the passenger was not wearing a seat belt. Both vehicles sustained damage, and Waymo has not received notice of any reported injuries.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -7037,7 +7037,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Waymo's tire struck small rectangular object in lane; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "Waymo's tire struck small rectangular object in lane"
     },
     "vehiclesInvolved": 2
   },
@@ -7118,7 +7118,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Backing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on July 2, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn June [XXX], 2024 at 9:24 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in [XXX], California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling southeast on [XXX] in the leftmost lane when it approached the intersection with [XXX]. As the Waymo AV approached the intersection and prepared to make an unprotected left turn onto northbound [XXX], it slowed to yield to a passenger car proceeding straight on northwest [XXX]. As soon as the passenger car had passed the Waymo AV, the Waymo AV began to make the unprotected left turn onto northbound [XXX], turning behind the passenger car. The Waymo AV then slowed to a stop to yield for pedestrians entering the crosswalk ahead. The passenger car then stopped and immediately began to reverse toward the Waymo AV and the rear of the passenger car made contact with the front driver side of the Waymo AV as it yielded for the pedestrians. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On June [XXX], 2024 at 9:24 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in [XXX], California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling southeast on [XXX] in the leftmost lane when it approached the intersection with [XXX]. As the Waymo AV approached the intersection and prepared to make an unprotected left turn onto northbound [XXX], it slowed to yield to a passenger car proceeding straight on northwest [XXX]. As soon as the passenger car had passed the Waymo AV, the Waymo AV began to make the unprotected left turn onto northbound [XXX], turning behind the passenger car. The Waymo AV then slowed to a stop to yield for pedestrians entering the crosswalk ahead. The passenger car then stopped and immediately began to reverse toward the Waymo AV and the rear of the passenger car made contact with the front driver side of the Waymo AV as it yielded for the pedestrians. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -7192,7 +7192,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Waymo struck small round road debris at 44mph; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "Waymo struck small round road debris at 44mph"
     },
     "vehiclesInvolved": 2
   },
@@ -7366,7 +7366,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 44,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on July 29, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn July [XXX], 2024 at 3:07 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Scottsdale, Arizona was in a collision involving a passenger car on [XXX] near [XXX]. \nThe Waymo AV was traveling westbound straight in the left lane of [XXX] at constant speed when a passenger car approached from directly behind the Waymo AV at a high rate of speed and made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment, both vehicles involved were towed away, and airbag deployment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On July [XXX], 2024 at 3:07 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Scottsdale, Arizona was in a collision involving a passenger car on [XXX] near [XXX]. \nThe Waymo AV was traveling westbound straight in the left lane of [XXX] at constant speed when a passenger car approached from directly behind the Waymo AV at a high rate of speed and made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment, both vehicles involved were towed away, and airbag deployment. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": true,
     "wxClear": "Y",
@@ -7738,7 +7738,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on July 18, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn July [XXX], 2024 at 3:49 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling northbound on [XXX] and stopped at a four-way stop sign at [XXX]. The Waymo AV then slowly proceeded forward to prepare to make a left turn from northbound [XXX] onto westbound [XXX], when it slowed to yield to a pedestrian crossing [XXX]. While continuing to yield, the Waymo AV crossed through the intersection and began making the left turn at a low rate of speed. As the Waymo AV continued to yield, a motorcycle traveling eastbound on [XXX] crossed through the intersection behind the pedestrian without first stopping. The Waymo AV slowed to a stop as it yielded to both the pedestrian and the motorcycle when the front of the motorcycle made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage, and the motorcyclist left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On July [XXX], 2024 at 3:49 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling northbound on [XXX] and stopped at a four-way stop sign at [XXX]. The Waymo AV then slowly proceeded forward to prepare to make a left turn from northbound [XXX] onto westbound [XXX], when it slowed to yield to a pedestrian crossing [XXX]. While continuing to yield, the Waymo AV crossed through the intersection and began making the left turn at a low rate of speed. As the Waymo AV continued to yield, a motorcycle traveling eastbound on [XXX] crossed through the intersection behind the pedestrian without first stopping. The Waymo AV slowed to a stop as it yielded to both the pedestrian and the motorcycle when the front of the motorcycle made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage, and the motorcyclist left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -7924,7 +7924,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on July 19, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn Julu [XXX], 2024 at 5:41 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving an SUV on [XXX] at [XXX]. \nThe Waymo AV was stopped facing a green traffic light on southeastbound [XXX] at the intersection with [XXX] to yield to a traffic control officer who was directing traffic in the crosswalk. While the Waymo AV remained stopped and the traffic light turned yellow, an SUV that had been stopped behind the Waymo AV approached the Waymo AV and made contact with the rear of the Waymo AV. When the traffic light ahead of the Waymo AV turned green and the Waymo AV remained stopped, the SUV reversed briefly and then changed lanes into the left adjacent lane to maneuver around the Waymo AV, making contact with the rear driver side corner of the Waymo AV. At the time of the impacts, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage, and the SUV left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Although the Waymo AV was towed, that happened for a reason unrelated to the crash so it was not covered by Request 1. D, which applies where \"the crash results in a vehicle tow-away.\" Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On Julu [XXX], 2024 at 5:41 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving an SUV on [XXX] at [XXX]. \nThe Waymo AV was stopped facing a green traffic light on southeastbound [XXX] at the intersection with [XXX] to yield to a traffic control officer who was directing traffic in the crosswalk. While the Waymo AV remained stopped and the traffic light turned yellow, an SUV that had been stopped behind the Waymo AV approached the Waymo AV and made contact with the rear of the Waymo AV. When the traffic light ahead of the Waymo AV turned green and the Waymo AV remained stopped, the SUV reversed briefly and then changed lanes into the left adjacent lane to maneuver around the Waymo AV, making contact with the rear driver side corner of the Waymo AV. At the time of the impacts, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage, and the SUV left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Although the Waymo AV was towed, that happened for a reason unrelated to the crash so it was not covered by Request 1. D, which applies where \"the crash results in a vehicle tow-away.\" Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -8110,7 +8110,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on July 13, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nOn July [XXX], 2024 at 8:48 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in [XXX], California was in a collision involving a SUV on [XXX] at [XXX]. \nThe Waymo AV was traveling north on [XXX] in the far right lane and came to a stop to yield to pedestrians walking in the crosswalk of [XXX] as it prepared to make a right turn onto [XXX]. A SUV that was traveling in the same lane behind the Waymo AV then made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage and the SUV left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On July [XXX], 2024 at 8:48 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in [XXX], California was in a collision involving a SUV on [XXX] at [XXX]. \nThe Waymo AV was traveling north on [XXX] in the far right lane and came to a stop to yield to pedestrians walking in the crosswalk of [XXX] as it prepared to make a right turn onto [XXX]. A SUV that was traveling in the same lane behind the Waymo AV then made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage and the SUV left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -8680,7 +8680,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Waymo's tire struck piece of wood debris at 44mph; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "Waymo's tire struck piece of wood debris at 44mph"
     },
     "vehiclesInvolved": 2
   },
@@ -8978,7 +8978,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on August [XXX], 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION].\nOn August [XXX], 2024 at 4:45 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was stopped at a red light in a one-way, one-lane section of northbound [XXX] at the intersection with [XXX] and was preparing to make a right turn onto eastbound [XXX]. While the Waymo AV remained stopped, yielding to pedestrians crossing [XXX], a passenger car that had been stopped behind the Waymo AV passed the Waymo AV on the left. As the passenger car was passing the stopped Waymo AV, the passenger side of the passenger car made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage and the passenger car left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On August [XXX], 2024 at 4:45 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was stopped at a red light in a one-way, one-lane section of northbound [XXX] at the intersection with [XXX] and was preparing to make a right turn onto eastbound [XXX]. While the Waymo AV remained stopped, yielding to pedestrians crossing [XXX], a passenger car that had been stopped behind the Waymo AV passed the Waymo AV on the left. As the passenger car was passing the stopped Waymo AV, the passenger side of the passenger car made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage and the passenger car left the scene.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -9102,7 +9102,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Changing Lanes",
-    "narrative": "The content of this report is unchanged from the initial report submitted on August [XXX], 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION].\nOn August [XXX], 2024 at 5:49 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] at [XXX].\nThe Waymo AV was traveling south-westbound on [XXX] approaching the intersection with [XXX]. As the Waymo AV came to a stop for a traffic stack ahead of the Waymo AV, partially oriented into the dedicated left turn lane at the location where that lane begins, a cyclist merged out of the bike lane and into the general purpose travel lane, and while the cyclist was looking backwards, the front of the bicycle made contact with the rear passenger side of the stopped Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The cyclist remained upright throughout the interaction and alleged that they had sustained an injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On August [XXX], 2024 at 5:49 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] at [XXX].\nThe Waymo AV was traveling south-westbound on [XXX] approaching the intersection with [XXX]. As the Waymo AV came to a stop for a traffic stack ahead of the Waymo AV, partially oriented into the dedicated left turn lane at the location where that lane begins, a cyclist merged out of the bike lane and into the general purpose travel lane, and while the cyclist was looking backwards, the front of the bicycle made contact with the rear passenger side of the stopped Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The cyclist remained upright throughout the interaction and alleged that they had sustained an injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -9145,7 +9145,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.6,
-      "reasoning": "Gate already closing when AV committed to pass; map closing-gate 0.6 holds"
+      "reasoning": "Gate was already closing when AV committed to pass; it struck AV's front right sensor"
     },
     "vehiclesInvolved": 2
   },
@@ -10063,7 +10063,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 9,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Other, see Narrative",
-    "narrative": "The content of this report is unchanged from the initial report submitted on September 9, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn September [XXX], 2024 at 11:08 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a shopping cart on [XXX] at [XXX].\nThe Waymo AV was traveling eastbound in the left lane on [XXX] and began to slow while yielding to a pedestrian pulling a shopping cart while crossing [XXX] from the south side of the street outside of a crosswalk. As the Waymo AV approached, the pedestrian came to a stop in the center of [XXX] at the double yellow dividing line with the shopping cart still behind him in the left eastbound lane of travel. The Waymo AV continued slowing while yielding to the pedestrian and the cart and began to maneuver into the right lane of eastbound Venice Boulevard, behind a passing SUV, when the pedestrian pushed the shopping cart towards the Waymo AV and the shopping cart made contact with the driver side of the Waymo AV. The Waymo AV came to a stop in the roadway, still yielding to the pedestrian to the left of the vehicle, and the pedestrian inflicted further damage to the Waymo AV after the collision with the cart had occurred. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On September [XXX], 2024 at 11:08 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a shopping cart on [XXX] at [XXX].\nThe Waymo AV was traveling eastbound in the left lane on [XXX] and began to slow while yielding to a pedestrian pulling a shopping cart while crossing [XXX] from the south side of the street outside of a crosswalk. As the Waymo AV approached, the pedestrian came to a stop in the center of [XXX] at the double yellow dividing line with the shopping cart still behind him in the left eastbound lane of travel. The Waymo AV continued slowing while yielding to the pedestrian and the cart and began to maneuver into the right lane of eastbound Venice Boulevard, behind a passing SUV, when the pedestrian pushed the shopping cart towards the Waymo AV and the shopping cart made contact with the driver side of the Waymo AV. The Waymo AV came to a stop in the roadway, still yielding to the pedestrian to the left of the vehicle, and the pedestrian inflicted further damage to the Waymo AV after the collision with the cart had occurred. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -10683,7 +10683,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on September 6, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nOn September [XXX], 2024 at 8:45 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] at [XXX]. \nThe AV was stopped at a red traffic light in the right turn lane of [XXX] at the intersection with [XXX] at a location where right turns on red are not permitted. A cyclist approached the Waymo AV from behind and began to pass the Waymo AV on the left, in between the dedicated right turn lane and the rightmost through lane (which was also occupied by two vehicles waiting at the red light), when the right side of the bicycle handlebar made contact with the rear left sensor of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On September [XXX], 2024 at 8:45 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] at [XXX]. \nThe AV was stopped at a red traffic light in the right turn lane of [XXX] at the intersection with [XXX] at a location where right turns on red are not permitted. A cyclist approached the Waymo AV from behind and began to pass the Waymo AV on the left, in between the dedicated right turn lane and the rightmost through lane (which was also occupied by two vehicles waiting at the red light), when the right side of the bicycle handlebar made contact with the rear left sensor of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -10745,7 +10745,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Parked",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on September 24, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn September [XXX], 2024 at 9:14 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] near [XXX].\nThe Waymo AV was traveling northeastbound on [XXX] and came to a stop for a passenger drop off. A rider in the Waymo AV opened the rear passenger side door as a cyclist was approaching from the rear in the bicycle lane to the right side of the Waymo AV. The cyclist made contact with the Waymo AV's rear passenger side door. The passengers in the vehicle were not belted at the time of impact, likely because the vehicle was at a dropoff location and they were preparing to exit. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo received notice that the cyclist independently sought medical assistance at an urgent care facility.  \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On September [XXX], 2024 at 9:14 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] near [XXX].\nThe Waymo AV was traveling northeastbound on [XXX] and came to a stop for a passenger drop off. A rider in the Waymo AV opened the rear passenger side door as a cyclist was approaching from the rear in the bicycle lane to the right side of the Waymo AV. The cyclist made contact with the Waymo AV's rear passenger side door. The passengers in the vehicle were not belted at the time of impact, likely because the vehicle was at a dropoff location and they were preparing to exit. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo received notice that the cyclist independently sought medical assistance at an urgent care facility.  \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -10881,7 +10881,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "faultfrac": 0.25,
-      "reasoning": "Rule A: forklift crosswise in active loading op at commit; AV threaded past"
+      "reasoning": "Forklift was crosswise in an active loading operation when AV threaded past; it reversed into AV"
     },
     "vehiclesInvolved": 2
   },
@@ -10974,7 +10974,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "left",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV stuck stopped in oncoming lane after passing; oncoming SUV hit it; aligned to pass-in-oncoming-lane tier 0.2 as 10757/10334/10714 (2026-09-04)"
+      "reasoning": "AV stuck stopped in oncoming lane after passing; oncoming SUV hit it"
     },
     "vehiclesInvolved": 2
   },
@@ -11272,7 +11272,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Stopped",
-    "narrative": "The content of this report is unchanged from the initial report submitted on October 29, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn October [XXX], 2024 at 8:52 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a SUV on [XXX] at [XXX]. \nThe Waymo AV came to a stop in a queue of traffic for a red traffic light in the rightmost lane of the two eastbound lanes on [XXX] at the intersection with [XXX].  A passenger car traveling west on [XXX] crossed the double yellow line and made contact with an SUV that was alongside the Waymo AV in the left lane of eastbound [XXX].  The impact caused the passenger side of the SUV to make contact with the driver side of the Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode.  All three vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On October [XXX], 2024 at 8:52 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a SUV on [XXX] at [XXX]. \nThe Waymo AV came to a stop in a queue of traffic for a red traffic light in the rightmost lane of the two eastbound lanes on [XXX] at the intersection with [XXX].  A passenger car traveling west on [XXX] crossed the double yellow line and made contact with an SUV that was alongside the Waymo AV in the left lane of eastbound [XXX].  The impact caused the passenger side of the SUV to make contact with the driver side of the Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode.  All three vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -11334,7 +11334,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Changing Lanes",
-    "narrative": "The content of this report is unchanged from the initial report submitted on October 31, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn October [XXX], 2024 at 9:04 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling in the rightmost lane of two northbound lanes on [XXX] near the intersection with [XXX] when it encountered the scene of a prior collision between a passenger car and an SUV. The two vehicles were stopped in the rightmost lane. The Waymo AV came to a stop behind the passenger car and a queue of traffic in the left lane began passing the scene. While the Waymo AV was stopped, occupants of the SUV and the passenger car exited their vehicles, apparently to inspect damage and/or exchange information. The Waymo AV detected these pedestrians and began yielding to them while attempting to plan a passing maneuver to clear the scene. Shortly after the pedestrians exited their vehicles, an SUV that had been stopped behind the Waymo AV passed the Waymo AV on the left followed by a passenger car that had been stopped behind the SUV. As the passenger car initiated its passing maneuver, a heavy truck passing the scene in the left lane made contact with the drive side of the passenger car. The impact between the heavy truck and the passenger car caused the passenger side of the passenger car to make contact with the rear left corner of the stopped Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. All three vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On October [XXX], 2024 at 9:04 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling in the rightmost lane of two northbound lanes on [XXX] near the intersection with [XXX] when it encountered the scene of a prior collision between a passenger car and an SUV. The two vehicles were stopped in the rightmost lane. The Waymo AV came to a stop behind the passenger car and a queue of traffic in the left lane began passing the scene. While the Waymo AV was stopped, occupants of the SUV and the passenger car exited their vehicles, apparently to inspect damage and/or exchange information. The Waymo AV detected these pedestrians and began yielding to them while attempting to plan a passing maneuver to clear the scene. Shortly after the pedestrians exited their vehicles, an SUV that had been stopped behind the Waymo AV passed the Waymo AV on the left followed by a passenger car that had been stopped behind the SUV. As the passenger car initiated its passing maneuver, a heavy truck passing the scene in the left lane made contact with the drive side of the passenger car. The impact between the heavy truck and the passenger car caused the passenger side of the passenger car to make contact with the rear left corner of the stopped Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. All three vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -12016,7 +12016,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on October 22, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn October [XXX], 2024 at 3:58 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling south in the left lane on [XXX] and came to a stop in a queue of traffic for the red traffic light at the intersection with [XXX]. As the Waymo AV approached the intersection and came to a stop, a passenger car which was following behind the Waymo AV at a low rate of speed approached the Waymo AV from behind and partially crossed into the right-hand travel lane. The passenger car continued proceeding slowly forward until the front of the passenger car made contact with the rear of the Waymo AV. After contact occurred, the passenger car remained in contact with the rear of the Waymo AV, and several bystanders approached the passenger car, attempting to communicate with the driver. Once the traffic light turned green, the Waymo AV proceeded through the intersection and pulled over at the curb on the south side of the intersection to avoid obstructing other traffic. While the Waymo AV proceeded through the intersection, the passenger car continued to roll forward into the intersection, and was stopped by several bystanders. Law enforcement communicated to Waymo that the driver of the passenger car was experiencing a medical emergency and was transported from the scene in an ambulance. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On October [XXX], 2024 at 3:58 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling south in the left lane on [XXX] and came to a stop in a queue of traffic for the red traffic light at the intersection with [XXX]. As the Waymo AV approached the intersection and came to a stop, a passenger car which was following behind the Waymo AV at a low rate of speed approached the Waymo AV from behind and partially crossed into the right-hand travel lane. The passenger car continued proceeding slowly forward until the front of the passenger car made contact with the rear of the Waymo AV. After contact occurred, the passenger car remained in contact with the rear of the Waymo AV, and several bystanders approached the passenger car, attempting to communicate with the driver. Once the traffic light turned green, the Waymo AV proceeded through the intersection and pulled over at the curb on the south side of the intersection to avoid obstructing other traffic. While the Waymo AV proceeded through the intersection, the passenger car continued to roll forward into the intersection, and was stopped by several bystanders. Law enforcement communicated to Waymo that the driver of the passenger car was experiencing a medical emergency and was transported from the scene in an ambulance. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -12698,7 +12698,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on November 4, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn November [XXX], 2024 at 12:02 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Los Angeles, California was in a collision involving a cyclist on [XXX] near [XXX].  \nThe Waymo AV was traveling west on [XXX] when it came to a stop for a passenger drop off. A rider in the Waymo AV opened the rear passenger side door as a cyclist was approaching from the rear to the right side of the Waymo AV. The cyclist made contact with the Waymo AVs opened rear passenger side door. One of the two passengers in the Waymo AV was not belted at the time of impact, likely because the vehicle was at a dropoff location and they were preparing to exit. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The cyclist reported a minor injury. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On November [XXX], 2024 at 12:02 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Los Angeles, California was in a collision involving a cyclist on [XXX] near [XXX].  \nThe Waymo AV was traveling west on [XXX] when it came to a stop for a passenger drop off. A rider in the Waymo AV opened the rear passenger side door as a cyclist was approaching from the rear to the right side of the Waymo AV. The cyclist made contact with the Waymo AVs opened rear passenger side door. One of the two passengers in the Waymo AV was not belted at the time of impact, likely because the vehicle was at a dropoff location and they were preparing to exit. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The cyclist reported a minor injury. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -12834,7 +12834,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "AV at 35mph hit debris already in lane at night; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "AV at 35mph hit debris already in lane at night"
     },
     "vehiclesInvolved": 2
   },
@@ -13163,7 +13163,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 4,
     "svMovement": "Other, see Narrative",
     "cpMovement": "Other, see Narrative",
-    "narrative": "The content of this report is unchanged from the initial report submitted on November 25, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn November [XXX], 2024 Waymo received notice of an allegation that a Waymo Autonomous Vehicle (Waymo AV) operating in Los Angeles, California may have been in a low-speed collision with a non-motorist (pedestrian) on [XXX] near [XXX]. \nOn November [XXX], 2024 at 4:04 AM PT a Waymo AV operating in Los Angeles, California was traveling northwest on [XXX] when it began to slow to yield to a pedestrian crossing the street ahead from right to left. After the pedestrian had crossed the path of the Waymo AV, the Waymo AV began to accelerate slightly then immediately began to slow again as the pedestrian turned around and approached the Waymo AV. As the Waymo AV was slowing, the pedestrian may have made contact with the driver side of the Waymo AV. \nAt the time of the possible impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The pedestrian later claimed to have a minor injury.  The Waymo AV did not sustain any damage. \nEven though this event may involve intentional contact by the pedestrian and the occurrence of actual contact between the Waymo AV and the pedestrian is not clear, Waymo is reporting this event as a crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user (pedestrian) influenced the driving task of a vehicle involved and reportedly sustained a minor injury as a result of the event. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On November [XXX], 2024 Waymo received notice of an allegation that a Waymo Autonomous Vehicle (Waymo AV) operating in Los Angeles, California may have been in a low-speed collision with a non-motorist (pedestrian) on [XXX] near [XXX]. \nOn November [XXX], 2024 at 4:04 AM PT a Waymo AV operating in Los Angeles, California was traveling northwest on [XXX] when it began to slow to yield to a pedestrian crossing the street ahead from right to left. After the pedestrian had crossed the path of the Waymo AV, the Waymo AV began to accelerate slightly then immediately began to slow again as the pedestrian turned around and approached the Waymo AV. As the Waymo AV was slowing, the pedestrian may have made contact with the driver side of the Waymo AV. \nAt the time of the possible impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The pedestrian later claimed to have a minor injury.  The Waymo AV did not sustain any damage. \nEven though this event may involve intentional contact by the pedestrian and the occurrence of actual contact between the Waymo AV and the pedestrian is not clear, Waymo is reporting this event as a crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user (pedestrian) influenced the driving task of a vehicle involved and reportedly sustained a minor injury as a result of the event. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -13380,7 +13380,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Changing Lanes",
-    "narrative": "The content of this report is unchanged from the initial report submitted on November 7, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn November [XXX], 2024 at 9:00 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a pickup truck on [XXX] at [XXX].\nThe Waymo AV was traveling northeast in the rightmost lane of [XXX] when it slowed to a stop at the intersection with [XXX] (just as the traffic light changed from yellow to red) to yield to a traffic control officer who was directing traffic in the crosswalk. While the traffic light remained red, the Waymo AV reversed approximately one car length at a low rate of speed then slowed to a stop. When the traffic light ahead of the Waymo AV turned green and the Waymo AV remained stopped, a pickup truck that had pulled up behind the Waymo AV changed lanes into the left adjacent lane to maneuver around the Waymo AV, making contact with the rear driver side corner of the Waymo AV. The pickup truck then reversed briefly before proceeding through the intersection. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On November [XXX], 2024 at 9:00 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a pickup truck on [XXX] at [XXX].\nThe Waymo AV was traveling northeast in the rightmost lane of [XXX] when it slowed to a stop at the intersection with [XXX] (just as the traffic light changed from yellow to red) to yield to a traffic control officer who was directing traffic in the crosswalk. While the traffic light remained red, the Waymo AV reversed approximately one car length at a low rate of speed then slowed to a stop. When the traffic light ahead of the Waymo AV turned green and the Waymo AV remained stopped, a pickup truck that had pulled up behind the Waymo AV changed lanes into the left adjacent lane to maneuver around the Waymo AV, making contact with the rear driver side corner of the Waymo AV. The pickup truck then reversed briefly before proceeding through the intersection. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -13535,7 +13535,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Backing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on November 8, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn November [XXX], 2024 at 11:17 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Los Angeles, California was in a collision involving a Skid-Steer Loader (Bobcat S570) on [XXX] near [XXX]. \nThe Waymo AV was traveling west on [XXX] when it slowed to a stop to yield to a road construction worker holding a hand held stop sign. While the Waymo AV remained stopped, a Skid-Steer Loader in the work zone to the right of the Waymo AV began to reverse. The rear of the Skid-Steer Loader made contact with the passenger side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On November [XXX], 2024 at 11:17 AM PT a Waymo Autonomous Vehicle (Waymo AV) operating in Los Angeles, California was in a collision involving a Skid-Steer Loader (Bobcat S570) on [XXX] near [XXX]. \nThe Waymo AV was traveling west on [XXX] when it slowed to a stop to yield to a road construction worker holding a hand held stop sign. While the Waymo AV remained stopped, a Skid-Steer Loader in the work zone to the right of the Waymo AV began to reverse. The rear of the Skid-Steer Loader made contact with the passenger side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -14477,7 +14477,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "AV hit small metallic debris in middle of turn lane; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "AV hit small metallic debris in middle of turn lane"
     },
     "vehiclesInvolved": 2
   },
@@ -14930,7 +14930,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on January 2, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn Monday, December [XXX], 2024 at 7:24 AM PST, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX].\nThe Waymo AV turned left from eastbound [XXX] onto northbound [XXX] and began entering the rightmost of two northbound lanes on [XXX] when it encountered a second Waymo AV which was stopped partially on the shoulder and partially in the rightmost lane for a passenger pickup. The Waymo AV that had just made its turn passed the stationary Waymo AV partially in the leftmost northbound lane of [XXX] when a pedestrian stepped into the roadway from between parked cars on the east side of [XXX]he Waymo AV came to a stop to yield to the pedestrian. After the Waymo AV came to a stop, a passenger car traveling behind the Waymo AV passed the Waymo AV on the left side and the rear passenger door of the passenger car made contact with the rear left sensor of the Waymo AV.\nAt the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo received notice of damage to the passenger car based on additional data which was not available until Wednesday, January 1, 2025.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On Monday, December [XXX], 2024 at 7:24 AM PST, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX].\nThe Waymo AV turned left from eastbound [XXX] onto northbound [XXX] and began entering the rightmost of two northbound lanes on [XXX] when it encountered a second Waymo AV which was stopped partially on the shoulder and partially in the rightmost lane for a passenger pickup. The Waymo AV that had just made its turn passed the stationary Waymo AV partially in the leftmost northbound lane of [XXX] when a pedestrian stepped into the roadway from between parked cars on the east side of [XXX]he Waymo AV came to a stop to yield to the pedestrian. After the Waymo AV came to a stop, a passenger car traveling behind the Waymo AV passed the Waymo AV on the left side and the rear passenger door of the passenger car made contact with the rear left sensor of the Waymo AV.\nAt the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo received notice of damage to the passenger car based on additional data which was not available until Wednesday, January 1, 2025.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -15302,7 +15302,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 12,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Other, see Narrative",
-    "narrative": "The content of this report is unchanged from the initial report submitted on December 19, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn December [XXX], 2024 at 10:28 AM PT, a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a Non-Motorist (scooterist) on [XXX] at [XXX].\nThe Waymo AV was traveling west on [XXX] when it approached the intersection with [XXX]. A building was located at the intersection, just to the right of the Waymo AV. While the traffic light was green and as the Waymo AV approached the intersection with [XXX], a scooterist who was traveling south on the sidewalk of [XXX] and was previously occluded by the building became visible and entered the intersection against a red light. As the Waymo AV braked for the scooterist, the scooterist made contact with the passenger side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage and the scooterist reported a minor injury. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On December [XXX], 2024 at 10:28 AM PT, a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, California was in a collision involving a Non-Motorist (scooterist) on [XXX] at [XXX].\nThe Waymo AV was traveling west on [XXX] when it approached the intersection with [XXX]. A building was located at the intersection, just to the right of the Waymo AV. While the traffic light was green and as the Waymo AV approached the intersection with [XXX], a scooterist who was traveling south on the sidewalk of [XXX] and was previously occluded by the building became visible and entered the intersection against a red light. As the Waymo AV braked for the scooterist, the scooterist made contact with the passenger side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage and the scooterist reported a minor injury. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -15333,7 +15333,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Backing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on December 6, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn December [XXX], 2024 at 10:29 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving an asphalt roller vehicle on [XXX] near [XXX].\nThis section of [XXX], between [XXX] and [XXX] was an active, open construction zone without lane markings where the roadway was being repaved. The Waymo AV had picked up a passenger on this section of road and was continuing northbound on [XXX] when it came to a stop before the construction personnel that were working within the roadway. While the Waymo AV remained stationary, an asphalt roller vehicle passed the Waymo AV multiple times. On one such pass while the asphalt roller was reversing, the rear driver side of the asphalt roller vehicle made contact with the rear passenger side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On December [XXX], 2024 at 10:29 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving an asphalt roller vehicle on [XXX] near [XXX].\nThis section of [XXX], between [XXX] and [XXX] was an active, open construction zone without lane markings where the roadway was being repaved. The Waymo AV had picked up a passenger on this section of road and was continuing northbound on [XXX] when it came to a stop before the construction personnel that were working within the roadway. While the Waymo AV remained stationary, an asphalt roller vehicle passed the Waymo AV multiple times. On one such pass while the asphalt roller was reversing, the rear driver side of the asphalt roller vehicle made contact with the rear passenger side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -15457,7 +15457,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 5,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Changing Lanes",
-    "narrative": "The content of this report is unchanged from the initial report submitted on December 11, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nOn Tuesday, December [XXX], 2024 at 11:35 AM PST, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a van on [XXX] at [XXX]. \nThe Waymo AV was traveling west on [XXX] in the leftmost of two westbound travel lanes. In the rightmost westbound lane ahead of the Waymo AV, a passenger car was double parked in the travel lane.  As the Waymo AV approached the double parked car, it slowed for a pedestrian walking north across [XXX] between a queue of stopped vehicles in the eastbound lane, headed towards the westbound lanes. A minivan traveling behind the Waymo AV in the rightmost westbound lane then began merging into the left westbound lane and the front driver side corner of the minivan made contact with the rear passenger side corner of the Waymo AV. The pedestrian then continued crossing in front of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved and a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On Tuesday, December [XXX], 2024 at 11:35 AM PST, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a van on [XXX] at [XXX]. \nThe Waymo AV was traveling west on [XXX] in the leftmost of two westbound travel lanes. In the rightmost westbound lane ahead of the Waymo AV, a passenger car was double parked in the travel lane.  As the Waymo AV approached the double parked car, it slowed for a pedestrian walking north across [XXX] between a queue of stopped vehicles in the eastbound lane, headed towards the westbound lanes. A minivan traveling behind the Waymo AV in the rightmost westbound lane then began merging into the left westbound lane and the front driver side corner of the minivan made contact with the rear passenger side corner of the Waymo AV. The pedestrian then continued crossing in front of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved and a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -15891,7 +15891,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Making Left Turn",
-    "narrative": "The content of this report is unchanged from the initial report submitted on December 12th, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]\nOn Wednesday, December [XXX], 2024 at 2:21 PM PST, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX]  at [XXX].\nThe Waymo AV was traveling east on [ passing the intersection with [XXX] when a passenger car proceeded partially into the intersection from southbound [XXX]. Both vehicles came to a stop within the intersection before the Waymo AV began proceeding  east on [XXX]. At the same time, a pedestrian was standing in the roadway beside th`e driver's door of a mail truck stopped on eastbound [XXX] just east of the intersection with [XXX]. The pedestrian turned from the mail truck and began to cross east [XXX]. The Waymo AV braked and came to a stop to yield to the pedestrian, while the passenger car entering the intersection from [XXX] began a left turn onto eastbound [XXX]. The front driver side of the passenger car then made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On Wednesday, December [XXX], 2024 at 2:21 PM PST, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX]  at [XXX].\nThe Waymo AV was traveling east on [ passing the intersection with [XXX] when a passenger car proceeded partially into the intersection from southbound [XXX]. Both vehicles came to a stop within the intersection before the Waymo AV began proceeding  east on [XXX]. At the same time, a pedestrian was standing in the roadway beside th`e driver's door of a mail truck stopped on eastbound [XXX] just east of the intersection with [XXX]. The pedestrian turned from the mail truck and began to cross east [XXX]. The Waymo AV braked and came to a stop to yield to the pedestrian, while the passenger car entering the intersection from [XXX] began a left turn onto eastbound [XXX]. The front driver side of the passenger car then made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -16232,7 +16232,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 1,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on December 6, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn December [XXX], 2024 at 5:00 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Chandler, Arizona was in a collision involving an ATV on [XXX] at [XXX].\nThe Waymo AV was traveling north west on [XXX] with an ATV following behind. While the Waymo AV slowed as it approached a stop sign at the intersection with [XXX], the front of the trailing ATV made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On December [XXX], 2024 at 5:00 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Chandler, Arizona was in a collision involving an ATV on [XXX] at [XXX].\nThe Waymo AV was traveling north west on [XXX] with an ATV following behind. While the Waymo AV slowed as it approached a stop sign at the intersection with [XXX], the front of the trailing ATV made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -16263,7 +16263,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on December 10, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn December [XXX], 2024 at 5:14 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a scooter on [XXX] at [XXX]. \nThe Waymo AV was traveling southbound on [XXX] in a queue of traffic and slowed to a stop at the intersection with [XXX], which had a green light but did not have sufficient space for the Waymo AV to fully traverse and clear the intersection. A scooterist following behind the Waymo AV began to pass the Waymo AV on the left, and the front of the scooter made contact with the rear driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The scooterist immediately left the scene.  The Waymo AV was discovered to have sustained damage from the contact during a subsequent inspection of the vehicle on December 9, 2024.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On December [XXX], 2024 at 5:14 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a scooter on [XXX] at [XXX]. \nThe Waymo AV was traveling southbound on [XXX] in a queue of traffic and slowed to a stop at the intersection with [XXX], which had a green light but did not have sufficient space for the Waymo AV to fully traverse and clear the intersection. A scooterist following behind the Waymo AV began to pass the Waymo AV on the left, and the front of the scooter made contact with the rear driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The scooterist immediately left the scene.  The Waymo AV was discovered to have sustained damage from the contact during a subsequent inspection of the vehicle on December 9, 2024.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -16461,7 +16461,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "AV hit debris in lane; lodged in wheel well and ignited; aligned to tire-debris tier 0.1 (2026-09-04)"
+      "reasoning": "AV hit debris in lane; lodged in wheel well and ignited"
     },
     "vehiclesInvolved": 2
   },
@@ -16635,7 +16635,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on December 15, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn Saturday, December [XXX] 2024 at 9:32 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, CA was in a collision involving a passenger car on [XXX] between [XXX] and [XXX]. \nThe Waymo AV was traveling east on [XXX] on the left lane when it encountered a double-parked vehicle displaying hazard lights in its lane.  A second vehicle was stopped in front of the double-parked vehicle in the same lane.  The Waymo AV proceeded into the dedicated bus / taxi lane on the right to pass both vehicles. As the Waymo AV passed the second stopped vehicle, a pedestrian began crossing the street from the right side of the Waymo AV. The Waymo AV applied braking, turned left and came to a stop to yield to the pedestrian. Simultaneously, the second stopped vehicle, now behind the Waymo AV, began to pull out, crossing into the dedicated bus / taxi lane on the right and making contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On Saturday, December [XXX] 2024 at 9:32 PM PT a Waymo Autonomous Vehicle (Waymo AV) operating in San Francisco, CA was in a collision involving a passenger car on [XXX] between [XXX] and [XXX]. \nThe Waymo AV was traveling east on [XXX] on the left lane when it encountered a double-parked vehicle displaying hazard lights in its lane.  A second vehicle was stopped in front of the double-parked vehicle in the same lane.  The Waymo AV proceeded into the dedicated bus / taxi lane on the right to pass both vehicles. As the Waymo AV passed the second stopped vehicle, a pedestrian began crossing the street from the right side of the Waymo AV. The Waymo AV applied braking, turned left and came to a stop to yield to the pedestrian. Simultaneously, the second stopped vehicle, now behind the Waymo AV, began to pull out, crossing into the dedicated bus / taxi lane on the right and making contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -17844,7 +17844,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Other, see Narrative",
-    "narrative": "The content of this report is unchanged from the initial report submitted on January[XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn January [XXX], 2025 at 2:02 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Mesa, Arizona was in a collision involving a motorcycle on [XXX].\nThe Waymo AV was stopped facing [XXX] at the intersection with [XXX]at a red light. A motorcycle was stopped behind the Waymo AV, and a pickup truck was stopped behind the motorcycle. A passenger car approached the queue of stopped traffic from behind and made contact with the stopped pickup truck, which was pushed into the motorcycle. The motorcycle then made contact with the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The motorcyclist was treated at the scene for an apparent injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On January [XXX], 2025 at 2:02 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Mesa, Arizona was in a collision involving a motorcycle on [XXX].\nThe Waymo AV was stopped facing [XXX] at the intersection with [XXX]at a red light. A motorcycle was stopped behind the Waymo AV, and a pickup truck was stopped behind the motorcycle. A passenger car approached the queue of stopped traffic from behind and made contact with the stopped pickup truck, which was pushed into the motorcycle. The motorcycle then made contact with the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The motorcyclist was treated at the scene for an apparent injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -17906,7 +17906,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 15,
     "svMovement": "Other, see Narrative",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on January 10, 2024 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn January [XXX], 2025 at 2:55 PM MT a Waymo Autonomous Vehicle (Waymo AV) operating in Phoenix, Arizona was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling north on [XXX] when it approached the intersection with [XXX]. As the Waymo AV approached the intersection, it slowed to yield to a pedestrian who was traveling south on the sidewalk of [XXX] and had just entered the intersection to cross [XXX]. As the Waymo AV continued to slow, a passenger car traveling directly behind the Waymo AV approached the Waymo AV from behind. The front of the passenger car made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV reported a minor injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved and because vehicles involved were towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On January [XXX], 2025 at 2:55 PM MT a Waymo Autonomous Vehicle (Waymo AV) operating in Phoenix, Arizona was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling north on [XXX] when it approached the intersection with [XXX]. As the Waymo AV approached the intersection, it slowed to yield to a pedestrian who was traveling south on the sidewalk of [XXX] and had just entered the intersection to cross [XXX]. As the Waymo AV continued to slow, a passenger car traveling directly behind the Waymo AV approached the Waymo AV from behind. The front of the passenger car made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AVs Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV reported a minor injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved and because vehicles involved were towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -18011,7 +18011,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV stopped mid-right-turn straddling center lane; through-SUV hit it; aligned to straddling tier 0.2 (2026-09-04)"
+      "reasoning": "AV stopped mid-right-turn straddling center lane; through-SUV hit it"
     },
     "vehiclesInvolved": 2
   },
@@ -18030,7 +18030,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Traveling Wrong Way",
-    "narrative": "The content of this report is unchanged from the initial report submitted on January 14, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn January [XXX], 2025 at 3:32 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] at [XXX].\nThe Waymo AV was traveling northbound on [XXX] in the rightmost lane, and came to a stop for a red light at the intersection with [XXX]. While the Waymo AV remained stopped at the intersection, a cyclist traveling southbound against traffic proceeded through the intersection, passing the Waymo AV on the left, and the cyclist made contact with the driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On January [XXX], 2025 at 3:32 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist on [XXX] at [XXX].\nThe Waymo AV was traveling northbound on [XXX] in the rightmost lane, and came to a stop for a red light at the intersection with [XXX]. While the Waymo AV remained stopped at the intersection, a cyclist traveling southbound against traffic proceeded through the intersection, passing the Waymo AV on the left, and the cyclist made contact with the driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -18073,7 +18073,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.3,
-      "reasoning": "Blind daylight hit on thin fallen line across road; band default"
+      "reasoning": "AV drove into thin fallen line across road in daylight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -18960,7 +18960,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 44,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Lane / Road Departure",
-    "narrative": "The content of this report is unchanged from the initial report submitted on March [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February [XXX], 2025 at 3:39 AM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Chandler, Arizona was in a collision involving an SUV on [XXX]. \nThe Waymo AV was traveling northbound on [XXX] in the left lane towards the intersection of [XXX]. An SUV traveling northbound in the right lane passed the Waymo AV on the right and continued into the dedicated right turn lane as it approached [XXX] Street. The SUV crossed into the intersection with W. Flint Street from the dedicated right turn lane and continued traveling straight onto the far-side sidewalk. The SUV then departed the roadway, striking a fire hydrant and a utility bollard before making contact with a street light. The impact with the street light resulted in the SUV coming to a stop and re-entering the roadway on [XXX] in the Waymo AV's path of travel. The rear side of the SUV made contact with the front passenger side corner of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The driver of the SUV was transported to a local hospital for treatment. One of the two passengers in the Waymo AV reported minor injuries but refused medical treatment. Both passengers, who had been seated in the rear of the Waymo AV, were not belted at the time of the collision, having had buckled their belts behind them.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment and a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 3:39 AM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Chandler, Arizona was in a collision involving an SUV on [XXX]. \nThe Waymo AV was traveling northbound on [XXX] in the left lane towards the intersection of [XXX]. An SUV traveling northbound in the right lane passed the Waymo AV on the right and continued into the dedicated right turn lane as it approached [XXX] Street. The SUV crossed into the intersection with W. Flint Street from the dedicated right turn lane and continued traveling straight onto the far-side sidewalk. The SUV then departed the roadway, striking a fire hydrant and a utility bollard before making contact with a street light. The impact with the street light resulted in the SUV coming to a stop and re-entering the roadway on [XXX] in the Waymo AV's path of travel. The rear side of the SUV made contact with the front passenger side corner of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The driver of the SUV was transported to a local hospital for treatment. One of the two passengers in the Waymo AV reported minor injuries but refused medical treatment. Both passengers, who had been seated in the rear of the Waymo AV, were not belted at the time of the collision, having had buckled their belts behind them.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment and a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": true,
     "wxClear": "Y",
@@ -19177,7 +19177,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 4,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Other, see Narrative",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February [XXX], 2025 at 8:02 AM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving a landscaping string trimmer in a parking lot at [XXX]. \nThe Waymo AV stopped for a rider drop-off facing north in a parking lot at [XXX]. As the Waymo AV began to travel north to exit the parking lot, the Waymo AV slowed to yield to landscapers working in the area. The Waymo AV was proceeding slowly past the pedestrians to exit the parking lot when the front driver side tire of the Waymo AV made contact with a landscaping string trimmer that was left unattended in the roadway. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The string trimmer sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 8:02 AM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving a landscaping string trimmer in a parking lot at [XXX]. \nThe Waymo AV stopped for a rider drop-off facing north in a parking lot at [XXX]. As the Waymo AV began to travel north to exit the parking lot, the Waymo AV slowed to yield to landscapers working in the area. The Waymo AV was proceeding slowly past the pedestrians to exit the parking lot when the front driver side tire of the Waymo AV made contact with a landscaping string trimmer that was left unattended in the roadway. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The string trimmer sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -19208,7 +19208,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Other, see Narrative",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February [XXX], 2025 at 8:12 AM PT a Waymo Autonomous Vehicle operating in Culver City, California was in a collision involving a shopping cart.  \nThe Waymo AV was stopped at a red traffic light heading [XXX]. A pedestrian pushing a shopping cart approached the Waymo AV from behind and made contact with the left rear drivers side of the stationary Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode.  The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 8:12 AM PT a Waymo Autonomous Vehicle operating in Culver City, California was in a collision involving a shopping cart.  \nThe Waymo AV was stopped at a red traffic light heading [XXX]. A pedestrian pushing a shopping cart approached the Waymo AV from behind and made contact with the left rear drivers side of the stationary Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode.  The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -19301,7 +19301,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Making Left Turn",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION].\nOn February [XXX], 2025 at 8:55 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX]. \nThe Waymo AV was travelling north on [XXX] in the left lane and making a left turn at a green traffic light at the intersection with [XXX]. As the Waymo AV began its left turn onto [XXX], a pedestrian began crossing [XXX] from the southern sidewalk outside of the marked crosswalk to the west of the intersection with [XXX]. The Waymo AV came to a stop to yield to the pedestrian, and a passenger vehicle making a left turn directly behind the Waymo AV continued forward. The front driver side of the passenger vehicle made contact with the rear passenger side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The passenger car sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 8:55 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX]. \nThe Waymo AV was travelling north on [XXX] in the left lane and making a left turn at a green traffic light at the intersection with [XXX]. As the Waymo AV began its left turn onto [XXX], a pedestrian began crossing [XXX] from the southern sidewalk outside of the marked crosswalk to the west of the intersection with [XXX]. The Waymo AV came to a stop to yield to the pedestrian, and a passenger vehicle making a left turn directly behind the Waymo AV continued forward. The front driver side of the passenger vehicle made contact with the rear passenger side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The passenger car sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -19332,7 +19332,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February [XXX], 2025 at 9:06 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist near the [XXX]. \nThe Waymo AV was stopped at the curb facing north on [XXX] after a passenger drop-off when a cyclist traveling north passed between the Waymo AV and a passenger car that was stopped next to the driver side of the Waymo AV.  As the cyclist passed the stationary Waymo AV, the cyclist made contact with the driver side mirror of the Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo identified damage to the Waymo AV on February [XXX], 2025 and identified that the damage resulted from contact with a vulnerable road user on February [XXX], 2025.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 9:06 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a cyclist near the [XXX]. \nThe Waymo AV was stopped at the curb facing north on [XXX] after a passenger drop-off when a cyclist traveling north passed between the Waymo AV and a passenger car that was stopped next to the driver side of the Waymo AV.  As the cyclist passed the stationary Waymo AV, the cyclist made contact with the driver side mirror of the Waymo AV.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo identified damage to the Waymo AV on February [XXX], 2025 and identified that the damage resulted from contact with a vulnerable road user on February [XXX], 2025.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -19704,7 +19704,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 22,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Making Left Turn",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February[XXX], 2025 at 1:25 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on S[XXX]. \nThe Waymo AV was traveling southbound in the leftmost lane of [XXX]approaching the intersection with [XXX]. A passenger car ahead of the Waymo AV was traveling southbound in the second from the leftmost lane of [XXX] approaching the intersection with [XXX]. As the vehicles neared the intersection, the passenger car turned left across the Waymo AV's lane of travel. The Waymo AV braked and steered to the left, but contact occurred between the driver side of the passenger car and the front passenger side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV reported minor injuries.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February[XXX], 2025 at 1:25 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on S[XXX]. \nThe Waymo AV was traveling southbound in the leftmost lane of [XXX]approaching the intersection with [XXX]. A passenger car ahead of the Waymo AV was traveling southbound in the second from the leftmost lane of [XXX] approaching the intersection with [XXX]. As the vehicles neared the intersection, the passenger car turned left across the Waymo AV's lane of travel. The Waymo AV braked and steered to the left, but contact occurred between the driver side of the passenger car and the front passenger side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV reported minor injuries.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": true,
     "wxClear": "",
@@ -19735,7 +19735,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Making Left Turn",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February [XXX], 2025 at 1:39 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling eastbound on [XXX] in the dedicated left turn lane preparing to make an unprotected left turn onto [XXX] when it came to a stop behind a passenger car also waiting to make an unprotected left turn. While the Waymo AV remained stopped, the passenger car proceeded to make an unprotected left turn onto [XXX], crossing in front of an oncoming SUV traveling west on [XXX]. The passenger car was struck on its passenger side by the oncoming SUV, causing the passenger car to rotate counter-clockwise. After impact, the passenger car then continued turning left, circling back towards the Waymo AV. The front passenger side of the passenger car then made contact with the front driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. A passenger in the Waymo AV and the driver of the passenger car were transported to the hospital from the scene in an ambulance.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 1:39 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling eastbound on [XXX] in the dedicated left turn lane preparing to make an unprotected left turn onto [XXX] when it came to a stop behind a passenger car also waiting to make an unprotected left turn. While the Waymo AV remained stopped, the passenger car proceeded to make an unprotected left turn onto [XXX], crossing in front of an oncoming SUV traveling west on [XXX]. The passenger car was struck on its passenger side by the oncoming SUV, causing the passenger car to rotate counter-clockwise. After impact, the passenger car then continued turning left, circling back towards the Waymo AV. The front passenger side of the passenger car then made contact with the front driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. A passenger in the Waymo AV and the driver of the passenger car were transported to the hospital from the scene in an ambulance.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": true,
     "wxClear": "",
@@ -19778,7 +19778,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.3,
-      "reasoning": "Blind daylight hit on fallen line across both lanes; band default"
+      "reasoning": "AV drove into fallen line across both lanes in daylight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -19859,7 +19859,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 1,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February[XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February [XXX], 2025 at 2:00 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving an SUV on [XXX].\nThe Waymo AV was stopped in the center lane on [XXX] at a red traffic light at the intersection with [XXX]. When the light turned green, the Waymo AV began to proceed forward slowly, yielding to a pedestrian that was crossing the intersection outside of the crosswalk. While the Waymo AV was yielding, an SUV traveling directly behind the Waymo AV began to proceed forward, and the front of the SUV made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Neither vehicle sustained damage. On February 12, 2025, Waymo received an allegation of a minor injury from the passenger of the Waymo AV.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 2:00 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving an SUV on [XXX].\nThe Waymo AV was stopped in the center lane on [XXX] at a red traffic light at the intersection with [XXX]. When the light turned green, the Waymo AV began to proceed forward slowly, yielding to a pedestrian that was crossing the intersection outside of the crosswalk. While the Waymo AV was yielding, an SUV traveling directly behind the Waymo AV began to proceed forward, and the front of the SUV made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Neither vehicle sustained damage. On February 12, 2025, Waymo received an allegation of a minor injury from the passenger of the Waymo AV.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -20696,7 +20696,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 7,
     "svMovement": "Making Right Turn",
     "cpMovement": "Making Left Turn",
-    "narrative": "The content of this report is unchanged from the initial report submitted on February [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn February [XXX], 2025 at 10:49 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving an SUV at the intersection of [XXX]. \nThe Waymo AV was traveling northeast-bound on [XXX] and came to a stop at the stop sign for its intersection with [XXX]. The Waymo AV began to proceed from the stop sign intending to turn right onto southeast-bound [XXX], and was yielding to a pedestrian crossing [XXX]. At the same time, an SUV was traveling northwest-bound on [XXX] approaching its intersection with [XXX]. As the pedestrian was finishing crossing [XXX] and the ADV was proceeding with its right turn, the SUV proceeded into the intersection without stopping at the stop sign at [XXX], crossed into the lane for southeast-bound traffic on [XXX], and the front driver side of the SUV made contact with the front driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On February [XXX], 2025 at 10:49 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving an SUV at the intersection of [XXX]. \nThe Waymo AV was traveling northeast-bound on [XXX] and came to a stop at the stop sign for its intersection with [XXX]. The Waymo AV began to proceed from the stop sign intending to turn right onto southeast-bound [XXX], and was yielding to a pedestrian crossing [XXX]. At the same time, an SUV was traveling northwest-bound on [XXX] approaching its intersection with [XXX]. As the pedestrian was finishing crossing [XXX] and the ADV was proceeding with its right turn, the SUV proceeded into the intersection without stopping at the stop sign at [XXX], crossed into the lane for southeast-bound traffic on [XXX], and the front driver side of the SUV made contact with the front driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -20832,7 +20832,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV stopped straddling lanes to yield; passing car clipped its rear; aligned to straddling tier 0.2 (2026-09-04)"
+      "reasoning": "AV stopped straddling lanes to yield; passing car clipped its rear"
     },
     "vehiclesInvolved": 2
   },
@@ -21421,7 +21421,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "left",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV stopped with rear corner protruding into adjacent lane; truck hit it; aligned to straddling tier 0.2 (2026-09-04)"
+      "reasoning": "AV stopped with rear corner protruding into adjacent lane; truck hit it"
     },
     "vehiclesInvolved": 2
   },
@@ -21905,7 +21905,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Backing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on March 30, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn March [XXX], 2025 at 1:35 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving an SUV on [XXX] near [XXX]. \nThe Waymo AV was traveling southbound on a narrow portion of [XXX] with vehicles parked at the curb in both directions, and came to a stop to yield to a passenger car traveling northbound on [XXX] to leave sufficient room for the passenger car to proceed. While the Waymo AV was stopped, two pedestrians began crossing the street in front of the Waymo AV. While the Waymo AV was stopped yielding to the pedestrians, an SUV traveling northbound on Naylor Ave came to a stop behind the Waymo AV and began to reverse. The Waymo AV remained stopped and the SUV continued to reverse and the rear passenger side of the SUV made contact with the rear passenger side to the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The SUV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On March [XXX], 2025 at 1:35 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving an SUV on [XXX] near [XXX]. \nThe Waymo AV was traveling southbound on a narrow portion of [XXX] with vehicles parked at the curb in both directions, and came to a stop to yield to a passenger car traveling northbound on [XXX] to leave sufficient room for the passenger car to proceed. While the Waymo AV was stopped, two pedestrians began crossing the street in front of the Waymo AV. While the Waymo AV was stopped yielding to the pedestrians, an SUV traveling northbound on Naylor Ave came to a stop behind the Waymo AV and began to reverse. The Waymo AV remained stopped and the SUV continued to reverse and the rear passenger side of the SUV made contact with the rear passenger side to the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The SUV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -21936,7 +21936,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Making Right Turn",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on March [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn March 6, 2025 at 1:47 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a SUV on [XXX]\nThe Waymo AV was traveling westbound in the right lane on [XXX] when it slowed to make a right turn onto [XXX]. As the Waymo AV was proceeding into the right turn, the Waymo AV slowed to a stop for a crossing guard holding a hand-held stop sign in the marked crosswalk. A SUV traveling westbound in the right lane on Broadway behind the Waymo AV approached the Waymo AV from behind, and the front passenger side of the SUV made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On March 6, 2025 at 1:47 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a SUV on [XXX]\nThe Waymo AV was traveling westbound in the right lane on [XXX] when it slowed to make a right turn onto [XXX]. As the Waymo AV was proceeding into the right turn, the Waymo AV slowed to a stop for a crossing guard holding a hand-held stop sign in the marked crosswalk. A SUV traveling westbound in the right lane on Broadway behind the Waymo AV approached the Waymo AV from behind, and the front passenger side of the SUV made contact with the rear driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -21998,7 +21998,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on March 28, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn March [XXX], 2025 at 2:48 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling westbound on [XXX] and came to a stop at the stop sign at the intersection with [XXX]. A motorcycle traveling westbound on [XXX] approached the Waymo AV from behind, and the left side of the motorcycle made contact with the rear passenger side of the stationary Waymo AV. The rider and motorcycle fell to the ground to the right of the Waymo AV, and then returned to a standing position. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The motorcycle sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On March [XXX], 2025 at 2:48 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling westbound on [XXX] and came to a stop at the stop sign at the intersection with [XXX]. A motorcycle traveling westbound on [XXX] approached the Waymo AV from behind, and the left side of the motorcycle made contact with the rear passenger side of the stationary Waymo AV. The rider and motorcycle fell to the ground to the right of the Waymo AV, and then returned to a standing position. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The motorcycle sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -23052,7 +23052,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on March [XXX], 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn March [XXX], 2025 at 11:52 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Tempe, Arizona was in a collision involving a passenger car in a parking lot at [XXX].\nThe Waymo AV was exiting a parking lot at [XXX] when it slowed to a stop to yield for pedestrians entering the crosswalk ahead. As the Waymo AV remained stopped, a passenger car directly behind the Waymo AV approached the Waymo AV from behind, and the front of the passenger car made contact with the rear of the Waymo AV. The passenger car continued to proceed straight, nudging the Waymo AV forward as the front of the passenger car continued to make contact with the rear of the Waymo AV. The passenger car then passed the Waymo AV on the left and proceeded to exit the parking lot just after the pedestrians had finished crossing. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On March [XXX], 2025 at 11:52 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Tempe, Arizona was in a collision involving a passenger car in a parking lot at [XXX].\nThe Waymo AV was exiting a parking lot at [XXX] when it slowed to a stop to yield for pedestrians entering the crosswalk ahead. As the Waymo AV remained stopped, a passenger car directly behind the Waymo AV approached the Waymo AV from behind, and the front of the passenger car made contact with the rear of the Waymo AV. The passenger car continued to proceed straight, nudging the Waymo AV forward as the front of the passenger car continued to make contact with the rear of the Waymo AV. The passenger car then passed the Waymo AV on the left and proceeded to exit the parking lot just after the pedestrians had finished crossing. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -23114,7 +23114,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 1,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on April 22, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn April [XXX], 2025 at 12:23 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Vinice, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling southwest on [XXX] when it began slowing for a red traffic light at the intersection with [XXX]. A motorcycle travelling southwest on [XXX] approached the Waymo AV from behind and the front of the motorcycle made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo received notice of damage to the motorcycle on April 21, 2025.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On April [XXX], 2025 at 12:23 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Vinice, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was traveling southwest on [XXX] when it began slowing for a red traffic light at the intersection with [XXX]. A motorcycle travelling southwest on [XXX] approached the Waymo AV from behind and the front of the motorcycle made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Waymo received notice of damage to the motorcycle on April 21, 2025.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -23312,7 +23312,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "Blind 1:29 AM hit on cord draped across road; unlit cord = band floor"
+      "reasoning": "AV drove into unlit cord draped across road at 1:29 AM; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -23455,7 +23455,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on April 9, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn April [XXX], 2025 at 2:11 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Scottsdale, Arizona was in a collision involving an SUV in an alley behind [XXX]. \nThe Waymo AV was stopped facing south in a narrow alley behind [XXX] following a passenger pick-up. While attempting to reverse to exit the alley, the Waymo AV yielded to multiple pedestrians in front and behind the Waymo AV. An SUV traveling northbound down the alley then began to maneuver past the Waymo AV on the right. As the SUV passed by the stationary Waymo AV, the passenger side of the SUV made contact with the rear passenger side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. One of the passengers in the Waymo AV was not belted.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because on 4/9/2025 it was determined that a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On April [XXX], 2025 at 2:11 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Scottsdale, Arizona was in a collision involving an SUV in an alley behind [XXX]. \nThe Waymo AV was stopped facing south in a narrow alley behind [XXX] following a passenger pick-up. While attempting to reverse to exit the alley, the Waymo AV yielded to multiple pedestrians in front and behind the Waymo AV. An SUV traveling northbound down the alley then began to maneuver past the Waymo AV on the right. As the SUV passed by the stationary Waymo AV, the passenger side of the SUV made contact with the rear passenger side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. One of the passengers in the Waymo AV was not belted.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because on 4/9/2025 it was determined that a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -23579,7 +23579,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on April 28, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn April [XXX], 2025 at 2:43 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving an SUV in a parking lot at [XXX]. \nThe Waymo AV was stopped facing east in a parking lot at [XXX] after a stop for a passenger pick-up. While the Waymo AV remained stopped, an SUV began to pass the Waymo AV on the left and the passenger side of the SUV made contact with the rear driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The SUV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On April [XXX], 2025 at 2:43 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was in a collision involving an SUV in a parking lot at [XXX]. \nThe Waymo AV was stopped facing east in a parking lot at [XXX] after a stop for a passenger pick-up. While the Waymo AV remained stopped, an SUV began to pass the Waymo AV on the left and the passenger side of the SUV made contact with the rear driver side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The SUV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -24230,7 +24230,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on April 4, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn April [XXX], 2025 at 11:38 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcycle on [XXX] near [XXX]. \nThe Waymo AV was stopped facing east in a queue of traffic in the center lane on [XXX]. A motorcycle traveling between lanes approached the Waymo AV from behind, and began passing the Waymo AV on the right side, maneuvering between the Waymo AV and a vehicle stopped in the right lane. While the motorcycle was passing, the driver side of the motorcycle made contact with the rear passenger side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On April [XXX], 2025 at 11:38 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcycle on [XXX] near [XXX]. \nThe Waymo AV was stopped facing east in a queue of traffic in the center lane on [XXX]. A motorcycle traveling between lanes approached the Waymo AV from behind, and began passing the Waymo AV on the right side, maneuvering between the Waymo AV and a vehicle stopped in the right lane. While the motorcycle was passing, the driver side of the motorcycle made contact with the rear passenger side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -24695,7 +24695,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Passing",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 2, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn April [XXX], 2025 at 2:48 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was stopped facing southwest in the third to the right lane on [XXX] in a queue of traffic for a red light at the intersection with [XXX]. A motorcycle traveling southwest on [XXX] proceeded to pass the Waymo AV on the left, maneuvering between the Waymo AV and a vehicle in the adjacent lane. As the motorcycle passed the Waymo AV, the motorcycle made contact with the driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo identified damage to the Waymo AV on April 30, 2025, and identified that the damage was caused by contact from a vulnerable road user on May 1, 2025. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On April [XXX], 2025 at 2:48 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a motorcycle on [XXX] at [XXX]. \nThe Waymo AV was stopped facing southwest in the third to the right lane on [XXX] in a queue of traffic for a red light at the intersection with [XXX]. A motorcycle traveling southwest on [XXX] proceeded to pass the Waymo AV on the left, maneuvering between the Waymo AV and a vehicle in the adjacent lane. As the motorcycle passed the Waymo AV, the motorcycle made contact with the driver side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo identified damage to the Waymo AV on April 30, 2025, and identified that the damage was caused by contact from a vulnerable road user on May 1, 2025. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -26164,7 +26164,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "AV stopped alongside truck's pole trailer; truck proceeded and clipped its front; aligned to stopped-beside-truck tier 0.1 as 8929/11905 (2026-09-04)"
+      "reasoning": "AV stopped alongside truck's pole trailer; truck proceeded and clipped its front"
     },
     "vehiclesInvolved": 2
   },
@@ -26648,7 +26648,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 23, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn May [XXX], 2025 at 11:04 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Santa Monica, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling northeast in the rightmost lane on [XXX] and stopped in a queue of traffic for a red light at the intersection with [XXX]. While the Waymo AV remained stopped, a passenger car traveling northeast approached the Waymo AV from behind and the front passenger side of the passenger car made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On May [XXX], 2025 at 11:04 AM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Santa Monica, California was in a collision involving a passenger car on [XXX] at [XXX]. \nThe Waymo AV was traveling northeast in the rightmost lane on [XXX] and stopped in a queue of traffic for a red light at the intersection with [XXX]. While the Waymo AV remained stopped, a passenger car traveling northeast approached the Waymo AV from behind and the front passenger side of the passenger car made contact with the rear of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -26846,7 +26846,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.3,
-      "reasoning": "Blind daylight hit on fallen line in lane at 6 mph; band default"
+      "reasoning": "AV drove into fallen line in its lane at 6 mph in daylight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -28043,7 +28043,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 3,
     "svMovement": "Making Left Turn",
     "cpMovement": "NM Crossing Roadway",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 13, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn May [XXX], 2025 at 8:00 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a cyclist on [XXX] at [XXX]. \nThe Waymo AV came to a stop facing westbound on [XXX] at a stop sign at the intersection at [XXX] in a location where vegetation to the left of the AV created occlusion of the approaching near-side sidewalk. After coming to a stop at the stop line, the Waymo AV began moving forward into the intersection at [XXX] when a cyclist that had been traveling northwest on the near-side sidewalk along [XXX] entered the crosswalk and the front tire of the bike made contact with the front driver side of the Waymo AV. The cyclist fell to the ground.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The cyclist later informed Waymo of a minor injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On May [XXX], 2025 at 8:00 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a cyclist on [XXX] at [XXX]. \nThe Waymo AV came to a stop facing westbound on [XXX] at a stop sign at the intersection at [XXX] in a location where vegetation to the left of the AV created occlusion of the approaching near-side sidewalk. After coming to a stop at the stop line, the Waymo AV began moving forward into the intersection at [XXX] when a cyclist that had been traveling northwest on the near-side sidewalk along [XXX] entered the crosswalk and the front tire of the bike made contact with the front driver side of the Waymo AV. The cyclist fell to the ground.  At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The cyclist later informed Waymo of a minor injury.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -28179,7 +28179,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule B: car stopped at commit; reversed only after AV committed to pass"
+      "reasoning": "Car was stopped when AV committed to pass behind it; it reversed into AV only after"
     },
     "vehiclesInvolved": 2
   },
@@ -28198,7 +28198,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 22, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn May [XXX], 2025 at 9:08 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Daly City, California was in a collision involving a passenger car on [XXX] and [XXX]. \nThe Waymo AV was traveling westbound in the right turn lane on [XXX] and began to yield to a stop for a pedestrian crossing [XXX] from the south side of the street in the marked crosswalk. A passenger car traveling directly behind the Waymo AV approached the stationary Waymo AV and the front side of the passenger car made contact with the rear side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On May [XXX], 2025 at 9:08 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Daly City, California was in a collision involving a passenger car on [XXX] and [XXX]. \nThe Waymo AV was traveling westbound in the right turn lane on [XXX] and began to yield to a stop for a pedestrian crossing [XXX] from the south side of the street in the marked crosswalk. A passenger car traveling directly behind the Waymo AV approached the stationary Waymo AV and the front side of the passenger car made contact with the rear side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -28353,7 +28353,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 6,
     "svMovement": "Proceeding Straight",
     "cpMovement": "Making Left Turn",
-    "narrative": "The content of this report is unchanged from the initial report submitted on May 18, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn May [XXX], 2025 at 9:49 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was involved in a collision involving a vulnerable road user on a scooter (\"scooterist\") at the intersection of [XXX] and [XXX].\nThe Waymo AV was in autonomous mode traveling northbound on [XXX] in the left of two lanes headed straight. As the Waymo AV entered the intersection with [XXX] facing a green light, a scooterist traveling west on [XXX] entered the intersection against the red light and turned left into the path of the Waymo AV. The Waymo AV braked but the scooterist continued forward and made contact with the front bumper of the Waymo AV. After contact, the scooterist left the scene with no reported or apparent injuries. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On May [XXX], 2025 at 9:49 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Phoenix, Arizona was involved in a collision involving a vulnerable road user on a scooter (\"scooterist\") at the intersection of [XXX] and [XXX].\nThe Waymo AV was in autonomous mode traveling northbound on [XXX] in the left of two lanes headed straight. As the Waymo AV entered the intersection with [XXX] facing a green light, a scooterist traveling west on [XXX] entered the intersection against the red light and turned left into the path of the Waymo AV. The Waymo AV braked but the scooterist continued forward and made contact with the front bumper of the Waymo AV. After contact, the scooterist left the scene with no reported or apparent injuries. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. \nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "Y",
@@ -29531,7 +29531,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 18,
     "svMovement": "Proceeding Straight",
     "cpMovement": "NM Crossing Roadway",
-    "narrative": "The content of this report is unchanged from the initial report submitted on June 2, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn June [XXX], 2025 at 2:12 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a scooterist on [XXX] near [XXX]. \nThe Waymo AV was traveling northwestbound on [XXX] in the leftmost lane. A stopped or very slow moving SUV was facing southeast in an adjacent oncoming lane at the intersection at [XXX]. As the Waymo AV proceeded past the SUV, a scooterist emerged from behind the SUV, appeared to make contact with the left rear corner of the SUV, crossed the center yellow line, and the scooterist made contact with the rear driver side of the Waymo AV, remained upright, and then departed the scene. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On June [XXX], 2025 at 2:12 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a scooterist on [XXX] near [XXX]. \nThe Waymo AV was traveling northwestbound on [XXX] in the leftmost lane. A stopped or very slow moving SUV was facing southeast in an adjacent oncoming lane at the intersection at [XXX]. As the Waymo AV proceeded past the SUV, a scooterist emerged from behind the SUV, appeared to make contact with the left rear corner of the SUV, crossed the center yellow line, and the scooterist made contact with the rear driver side of the Waymo AV, remained upright, and then departed the scene. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user influenced the driving task of a vehicle involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -29791,7 +29791,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule B: pickup stopped mid-turn at commit; reversed only during AV pass"
+      "reasoning": "Pickup was stopped mid-turn when AV committed to pass; it reversed into AV only during the pass"
     },
     "vehiclesInvolved": 2
   },
@@ -30039,7 +30039,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.3,
-      "reasoning": "Blind daylight hit on fallen line across roadway; band default"
+      "reasoning": "AV drove into fallen line across roadway in daylight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -30151,7 +30151,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "NM in Roadway - Other",
-    "narrative": "The content of this report is unchanged from the initial report submitted on June 5, 2025 [REDACTED, MAY CONTAIN CONFIDENTIAL BUSINESS INFORMATION]. \nOn June [XXX], 2025 at 7:00 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a scooterist on [XXX] near [XXX]. \nThe Waymo AV was traveling northbound on [XXX] and came to a stop in-lane with its hazard lights activated for a passenger pick-up. A scooterist traveling behind the Waymo AV maneuvered to the left of the stationary Waymo AV and the scooterist made contact with the rear driver side of the stationary Waymo AV. After contact, the scooterist left the scene by foot on the sidewalk. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrative": "On June [XXX], 2025 at 7:00 PM PT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a scooterist on [XXX] near [XXX]. \nThe Waymo AV was traveling northbound on [XXX] and came to a stop in-lane with its hazard lights activated for a passenger pick-up. A scooterist traveling behind the Waymo AV maneuvered to the left of the stationary Waymo AV and the scooterist made contact with the rear driver side of the stationary Waymo AV. After contact, the scooterist left the scene by foot on the sidewalk. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vulnerable road user was involved. Waymo may supplement or correct its reporting with additional information as it may become available.",
     "narrativeCbi": "",
     "airbagAny": false,
     "wxClear": "",
@@ -31445,8 +31445,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "JUL-2025",
     "time": "13:15",
     "incidentId": "fe1703e2c778a2a",
-    "city": "",
-    "state": "",
+    "city": "Los Angeles",
+    "state": "CA",
     "road": "Intersection",
     "crashWith": "Passenger Car",
     "severity": "Property Damage. No Injured Reported",
@@ -32209,7 +32209,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "left",
     "fault": {
       "faultfrac": 0.0,
-      "reasoning": "Turning car crossed center line into AV's lane; AV stationary at impact; aligned to braked-to-stop-vs-crosser 0 as 15468/14627/14492 (2026-09-04)"
+      "reasoning": "Turning car crossed center line into AV's lane; AV stationary at impact"
     },
     "vehiclesInvolved": 2
   },
@@ -33480,7 +33480,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "Blind hit on fallen line at 29 mph after dark; wire in headlights = floor"
+      "reasoning": "AV drove into fallen line at 29 mph after dark; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -33728,7 +33728,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "AV's front tire struck a pothole in its lane at night; NHTSA contact field records bottom (undercarriage) contact; aligned to undercarriage-grounding pothole tier 0.5 as 14490/14942 (2026-09-04)"
+      "reasoning": "AV's front tire struck a pothole in its lane at night; the report lists undercarriage contact"
     },
     "vehiclesInvolved": 2
   },
@@ -37603,7 +37603,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "AV's undercarriage grounded on a standard speed bump; aligned to pothole-or-speedbump tier 0.5 (2026-09-04)"
+      "reasoning": "AV's undercarriage grounded on a standard speed bump"
     },
     "vehiclesInvolved": 2
   },
@@ -38688,7 +38688,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear left",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule B: pickup stopped part-in driveway; reversed only after AV committed"
+      "reasoning": "Pickup stopped partly in a driveway; it reversed into AV only after AV committed to pass"
     },
     "vehiclesInvolved": 2
   },
@@ -38812,7 +38812,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule B: lot car stopped post-turn at commit; reversed only during AV pass"
+      "reasoning": "Lot car had stopped after turning when AV committed to pass; it reversed into AV only during the pass"
     },
     "vehiclesInvolved": 2
   },
@@ -40641,7 +40641,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule B: SUV stopped in-lane at commit; reversed only after AV committed"
+      "reasoning": "SUV was stopped in AV's lane when AV committed to pass; it reversed into AV only after"
     },
     "vehiclesInvolved": 2
   },
@@ -40858,7 +40858,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule B: red-runner stopped in-lane; reversed only after AV committed to pass"
+      "reasoning": "Red-light runner stopped in AV's lane; it reversed into AV only after AV committed to pass"
     },
     "vehiclesInvolved": 2
   },
@@ -41416,7 +41416,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "Blind 4 AM hit on fallen line at 18 mph; unlit wire = band floor"
+      "reasoning": "AV drove into unlit fallen line at 18 mph at 4 AM; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -41509,7 +41509,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "right",
     "fault": {
       "faultfrac": 0.0,
-      "reasoning": "Truck turned right from left lane across AV's path; AV had stopped; aligned to 11525 stationary-AV 0 (2026-09-04)"
+      "reasoning": "Truck turned right from left lane across AV's path; AV had stopped"
     },
     "vehiclesInvolved": 2
   },
@@ -41757,7 +41757,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.3,
-      "reasoning": "Blind daylight hit on fallen line at 25 mph; band default"
+      "reasoning": "AV drove into fallen line at 25 mph in daylight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -43741,7 +43741,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "AV's undercarriage grounded on speed bump entering lot driveway; aligned to pothole-or-speedbump tier 0.5 (2026-09-04)"
+      "reasoning": "AV's undercarriage grounded on speed bump entering lot driveway"
     },
     "vehiclesInvolved": 2
   },
@@ -44206,7 +44206,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "AV's underside grounded on a speed bump across the road; aligned to pothole-or-speedbump tier 0.5 (2026-09-04)"
+      "reasoning": "AV's underside grounded on a speed bump across the road"
     },
     "vehiclesInvolved": 2
   },
@@ -50375,7 +50375,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear left",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule B: SUV stopped before AV passed; reverse began only after commit"
+      "reasoning": "SUV had stopped before AV began to pass; it began reversing only after AV committed"
     },
     "vehiclesInvolved": 2
   },
@@ -54808,7 +54808,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "faultfrac": 0.25,
-      "reasoning": "Rule A: car already visibly reversing toward AV when AV proceeded forward"
+      "reasoning": "Car was already visibly reversing toward AV when AV proceeded forward"
     },
     "vehiclesInvolved": 2
   },
@@ -55552,7 +55552,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "Blind midnight hit on downed line at 32 mph; unlit wire = band floor"
+      "reasoning": "AV drove into unlit downed line at 32 mph near midnight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -57939,7 +57939,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "Waymo front tire dropped into pothole and deflated; no undercarriage contact in narrative; aligned to tire-only-pothole 0.2 as 5114 (2026-09-04)"
+      "reasoning": "Waymo front tire dropped into pothole and deflated; no undercarriage contact in narrative"
     },
     "vehiclesInvolved": 2
   },
@@ -62310,7 +62310,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Rule b: SUV stopped in driveway, reversed out only after AV committed"
+      "reasoning": "SUV stopped in a driveway; it reversed out into AV only after AV committed to pass"
     },
     "vehiclesInvolved": 2
   },
@@ -65596,7 +65596,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Car turned right from lot into 25 mph Zoox; matches Waymo lot-exit 0.1"
+      "reasoning": "Car turned right out of a parking lot into the 25 mph Zoox's path"
     },
     "vehiclesInvolved": 2
   },
@@ -65937,7 +65937,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Car turned right from lot into 21 mph Zoox; matches Waymo lot-exit 0.1"
+      "reasoning": "Car turned right out of a parking lot into the 21 mph Zoox's path"
     },
     "vehiclesInvolved": 2
   },
@@ -65999,7 +65999,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front + front right",
     "fault": {
       "faultfrac": 0.1,
-      "reasoning": "Pickup turned left across Zoox green; matches Waymo unprotected-left 0.1"
+      "reasoning": "Pickup turned left across Zoox's path while Zoox had a green light"
     },
     "vehiclesInvolved": 2
   },
@@ -66200,7 +66200,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "state": "TX",
     "road": "Street",
     "crashWith": "Passenger Car",
-    "severity": "Property Damage. No Injured Reported",
+    "severity": "Minor W/O Hospitalization",
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",

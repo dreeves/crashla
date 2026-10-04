@@ -420,7 +420,9 @@ const jeffreysZero = vm.runInContext(`
     const html = renderAllHelmersMpiChart(series);
     selectedMetricKey = savedMetric;
     monthHelmerEnabled = savedEnabled;
-    return {zeroMonths, zeroDotTips: (html.match(/\\(0 incidents\\)/g) || []).length};
+    // Count tooltips (data-tip), not text: each tip is also the mark's
+    // aria-label (2026-10-03, audit #4).
+    return {zeroMonths, zeroDotTips: (html.match(/data-tip="[^"]*\\(0 incidents\\)/g) || []).length};
   })()
 `, ctx);
 assert.ok(

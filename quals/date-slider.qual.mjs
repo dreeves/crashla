@@ -87,7 +87,7 @@ const ctx = vm.createContext({
   window: {
     innerWidth: 1024,
     innerHeight: 768,
-    location: {search: "", pathname: "/crashla"},
+    location: {search: "", pathname: "/crashla", hash: ""},
     history: {replaceState() {}},
   },
 });
@@ -138,4 +138,35 @@ Expectata: both range inputs carry an aria-label for screen readers.
 Resultata: found ${ariaLabels.length} aria-label attributes (${JSON.stringify(ariaLabels)}).`,
 );
 
-console.log("qual pass: date range slider labels its endpoints and its inputs");
+// The sliders announce months, not series indices (audit #33): aria-valuetext
+// is the month each thumb stands for, at render and as it moves.
+const valueTexts = [...plain.sliderHtml.matchAll(/aria-valuetext="([^"]*)"/g)].map(m => m[1]);
+const defaultStart = vm.runInContext("DEFAULT_START_MONTH", ctx);
+assert.deepEqual(
+  valueTexts,
+  [defaultStart, plain.lastMonth],
+  `Replicata: build the monthly views and read the two range inputs' aria-valuetext.
+Expectata: the months of the default window's ends (${defaultStart}, ${plain.lastMonth}), not their indices.
+Resultata: ${JSON.stringify(valueTexts)}.`,
+);
+const moved = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const months = fullMonthSeries.months;
+  const min = document.getElementById("date-range-min");
+  const max = document.getElementById("date-range-max");
+  min.value = String(months.indexOf(${JSON.stringify(defaultStart)}) - 1);
+  max.value = String(months.length - 2);
+  for (const fn of min.listeners.input) fn();
+  return { want: [months[Number(min.value)], months[Number(max.value)]],
+    got: [min.getAttribute("aria-valuetext"), max.getAttribute("aria-valuetext")] };
+})()
+`, ctx)));
+assert.deepEqual(
+  moved.got,
+  moved.want,
+  `Replicata: move the start thumb one month earlier and the end thumb one month back, then fire the input event.
+Expectata: each input's aria-valuetext follows its own month (${JSON.stringify(moved.want)}).
+Resultata: ${JSON.stringify(moved.got)}.`,
+);
+
+console.log("qual pass: date range slider labels its endpoints and its inputs, and its inputs announce months");

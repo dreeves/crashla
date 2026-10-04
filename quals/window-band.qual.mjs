@@ -13,7 +13,8 @@ import { appScript, dataScript } from "./load-app.mjs";
 // bands over the fully received months, then adds the data-through month's
 // own thinned band (receipt coverage; plus the Monthly-track factor for
 // non-five-day metrics). This qual recomputes that from the CSV for the
-// default window and pins that the anchors actually bite for Waymo and Tesla.
+// default window and pins that the anchors actually bite for Waymo, Tesla and
+// Zoox.
 
 const ctx = vm.createContext({
   console, Math, Number,
@@ -77,9 +78,10 @@ Resultata: [${r.fatality.min}, ${r.fatality.max}].`);
   assert.equal(JSON.stringify([...r.partialMonths]), JSON.stringify([dataThroughMonth]),
     `Replicata: list ${helmer}'s partially received months in the default window. Expectata: only the NHTSA data-through month ${dataThroughMonth}. Resultata: ${JSON.stringify(r.partialMonths)}.`);
 }
-// The anchors bite: Waymo's hub-pinned cumulative and Tesla's deck-pinned
-// cumulative both tighten the window band on BOTH edges vs the plain sum.
-for (const helmer of ["Waymo", "Tesla"]) {
+// The anchors bite: Waymo's hub-pinned cumulative, Tesla's deck-pinned
+// cumulative and (since 2026-10-03) Zoox's Dec-2025 knot on its official 1.3M
+// disclosure all tighten the window band on BOTH edges vs the plain sum.
+for (const helmer of ["Waymo", "Tesla", "Zoox"]) {
   const r = out[helmer];
   assert.ok(r.row.min > r.expMonthly.sumMin && r.row.max < r.expMonthly.sumMax,
     `Replicata: compare ${helmer}'s window band to the plain sum of its month bands.
@@ -89,8 +91,45 @@ Resultata: [${r.row.min}, ${r.row.max}].`);
 // Waymo: the summed bands ran 0.76x-1.28x of best; the anchors imply ~0.93x-1.12x.
 assert.ok(out.Waymo.row.max / out.Waymo.row.min < 1.3,
   `Replicata: Waymo default-window band ratio hi/lo. Expectata: < 1.3 (was 1.68 with summed month bands). Resultata: ${(out.Waymo.row.max / out.Waymo.row.min).toFixed(3)}.`);
-// Zoox's kyoom band IS its running sum (no anchor tightens it), so the two
-// bounds coincide and the band equals the plain sum.
-assert.ok(near(out.Zoox.row.min, out.Zoox.expMonthly.sumMin) && near(out.Zoox.row.max, out.Zoox.expMonthly.sumMax),
-  `Replicata: compare Zoox's window band to its summed month bands. Expectata: equal (its kyoom band is the running sum). Resultata: [${out.Zoox.row.min}, ${out.Zoox.row.max}] vs [${out.Zoox.expMonthly.sumMin}, ${out.Zoox.expMonthly.sumMax}].`);
 console.log(`qual pass: window VMT band = summed month bands ∩ kyoom difference (+ the data-through month's thinned band); Waymo default window ${(out.Waymo.row.min / 1e6).toFixed(1)}-${(out.Waymo.row.max / 1e6).toFixed(1)}M`);
+
+// --- One month, one posterior (2026-10-03, audit #15) -----------------------
+// A one-month window's cards and distribution chart take that month's band
+// through the window rule above, which intersects the authored month band
+// with the single-month kyoom difference; the MPI-over-time chart drew the
+// same month from the authored band alone. Where the kyoom knots are tighter
+// than the month band (Tesla 2025-09; Waymo 2025-09..12 and 2026-03 since the
+// 2026-09-04 re-anchoring) the page showed two posteriors for one month, e.g.
+// Waymo 2025-12 all incidents: card 189,004 (149,304 - 241,728), chart 183.2K
+// (124.0K - 262.1K). Every chart point must be its one-month window's card.
+const oneMonth = vm.runInContext(`
+(() => {
+  const full = monthSeriesData();
+  const diffs = [];
+  let compared = 0;
+  const rel = (a, b) => Math.abs(a - b) / Math.max(Math.abs(b), 1e-300);
+  full.months.forEach((month, i) => {
+    const rows = monthlySummaryRows(sliceSeries(full, i, i));
+    for (const helmer of ADS_HELMERS) {
+      const entry = full.points[i].helmers[helmer];
+      if (entry === null) continue;
+      const row = rows.find(r => r.helmer === helmer);
+      for (const m of METRIC_DEFS) {
+        const chart = entry.mpiByMetric[m.key];
+        if (chart === null) continue;
+        const card = row.mpiEstimates[m.key];
+        const ci = chart.bands[chart.bands.length - 1];
+        compared++;
+        const gap = Math.max(rel(chart.mpiMedian, card.postMedian), rel(ci.lo, card.lo), rel(ci.hi, card.hi));
+        if (gap > 1e-9) diffs.push({helmer, month, metric: m.key,
+          chart: [chart.mpiMedian, ci.lo, ci.hi].map(Math.round), card: [card.postMedian, card.lo, card.hi].map(Math.round)});
+      }
+    }
+  });
+  return {compared, diffs};
+})()`, ctx);
+assert.ok(oneMonth.compared > 1000 && oneMonth.diffs.length === 0,
+  `Replicata: for every helmer, month and metric, compare the MPI-over-time chart's posterior (median and 95% CI) with the summary card of a one-month window on that month.
+Expectata: identical (one posterior per month on the page); ${oneMonth.compared} pairs compared.
+Resultata: ${oneMonth.diffs.length} differ, e.g. ${JSON.stringify(oneMonth.diffs.slice(0, 4))}.`);
+console.log(`qual pass: every one of ${oneMonth.compared} per-month chart posteriors equals its one-month window's card`);

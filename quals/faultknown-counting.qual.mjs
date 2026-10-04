@@ -88,7 +88,7 @@ const ctx = vm.createContext({
   window: {
     innerWidth: 1024,
     innerHeight: 768,
-    location: {search: "", pathname: "/crashla"},
+    location: {search: "", pathname: "/crashla", hash: ""},
     history: {replaceState() {}},
   },
 });

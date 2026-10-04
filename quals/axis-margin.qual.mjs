@@ -7,8 +7,12 @@ import { appScript, dataScript } from "./load-app.mjs";
 // band, the widest label, and the gap to the axis line. It used to be a
 // literal (68) copied into every chart, which fit the label column only by
 // coincidence -- the 2026-09-07 face change widened "136.9K" into the title.
-// Tick labels are digits in tabular figures (style.css .month-svg), so one
-// per-glyph bound stands in for measuring text the browser has not laid out.
+// Tick labels are digits in tabular figures (style.css .month-svg), so a
+// per-glyph bound stands in for measuring text the browser has not laid out:
+// 8 units per character, and half a glyph more per unit letter (K, M, B, T),
+// which is wider than a digit. Until 2026-10-03 every K/M label carried a "."
+// that paid for its letter; whole values dropped their ".0" that day ("159M",
+// audit #58), and the plain glyph count put its 35.6 units at 32.
 
 const js = fs.readFileSync("crashla.js", "utf8");
 
@@ -39,12 +43,14 @@ vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 const margins = JSON.parse(vm.runInContext(`JSON.stringify({
   vmt: axisLeftMargin(["0", "136.9K"]),
   mpi: axisLeftMargin(["0", "1.7M"]),
+  whole: axisLeftMargin(["0", "159M"]),
+  digits: axisLeftMargin(["0", "1,000,000"]),
 })`, ctx));
 assert.deepEqual(
   margins,
-  { vmt: 80, mpi: 64 },
-  `Replicata: call axisLeftMargin with a VMT chart's labels and an MPI chart's.
-Expectata: 24 (title band) + 8 per glyph of the widest label + 8 (gap): 80 and 64.
+  { vmt: 84, mpi: 68, whole: 68, digits: 104 },
+  `Replicata: call axisLeftMargin with a VMT chart's labels, an MPI chart's, a whole-value label and a long digit label.
+Expectata: 24 (title band) + the widest label's bound (8 per glyph, plus 4 per unit letter) + 8 (gap): 84, 68, 68 and 104.
 Resultata: ${JSON.stringify(margins)}.`,
 );
 
@@ -72,12 +78,12 @@ assert.ok(ticks.length > 0, "the growth trajectory chart draws y tick labels");
 const axisX = Number((html.match(/<line class="month-axis" x1="([\d.]+)" y1="[\d.]+" x2="\1"/) || [])[1]);
 for (const tick of ticks) {
   assert.equal(tick.x, axisX - 8, `tick ${JSON.stringify(tick.label)} sits one gap left of the axis line at ${axisX}`);
-  const leftEdge = tick.x - 8 * tick.label.length;
+  const leftEdge = tick.x - 8 * (tick.label.length + 0.5 * tick.label.replace(/[^KMBT]/g, "").length);
   assert.ok(
     leftEdge >= 24,
     `Replicata: render the growth trajectory chart and read its y tick labels.
-Expectata: each label's modelled left edge (x minus 8 units per glyph) stays
-right of the rotated title's band, which ends at x = 24.
+Expectata: each label's modelled left edge (x minus 8 units per glyph and 4
+more per unit letter) stays right of the rotated title's band, which ends at x = 24.
 Resultata: ${JSON.stringify(tick.label)} at x=${tick.x} reaches ${leftEdge}.`,
   );
 }

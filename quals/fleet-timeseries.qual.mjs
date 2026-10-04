@@ -82,9 +82,11 @@ const endpoints = JSON.parse(JSON.stringify(vm.runInContext(`
   key: c.key, mainline: c.mainline, median: c.median })))()
 `, ctx)));
 
+// Forecasts print at three significant figures in both growth charts since
+// 2026-10-03 (audit #57); growth-charts.qual pins the two charts' texts equal.
 const fmtWhole = vm.runInContext("fmtWhole", ctx);
 for (const e of endpoints) {
-  const tip = `Median: ${fmtWhole(e.median)}`;
+  const tip = `Median: ${fmtWhole(Number(e.median.toPrecision(3)))}`;
   assert.ok(html.includes(tip),
     `Replicata: look for the ${e.key} forecast-endpoint median in the fleet trajectory chart.
 Expectata: the chart reports "${tip}" (same value as the distribution chart, incl. the HW4 fork).
@@ -117,7 +119,7 @@ const toggle = JSON.parse(JSON.stringify(vm.runInContext(`
       radios: (html.match(/name="growth-metric"/g) || []).length,
       checkedKey: (html.match(/value="([a-z]+)" checked/) || [])[1],
       dashes: (html.match(/stroke-dasharray/g) || []).length,
-      distMarkers: (dist.match(/<circle/g) || []).length,
+      distMarkers: (dist.match(/<circle[^>]*class="month-dot"/g) || []).length,
       distHasXLabel: dist.includes(spec.yLabel),
       monotone,
     };

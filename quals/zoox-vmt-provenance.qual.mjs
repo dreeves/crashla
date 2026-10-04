@@ -47,4 +47,25 @@ Expectata: within 15% (the milestones are "~" figures and the series is anchored
 Resultata: ratio ${ratio.toFixed(3)}.`);
 }
 
-console.log(`qual pass: zoox cumulative VMT tracks all three published mileage milestones (1.3M Dec 2025, ~2M late Mar 2026, >3M by end-Jul 2026 per the Aug-5 statement)`);
+// The Dec-2025 knot (2026-10-03). The 1.3M is an official count ("approximately
+// 1.3 million driverless autonomous miles on public roads" as of Dec 31, 2025),
+// so at that month the cumulative band is the disclosure's own uncertainty, as
+// Waymo's hub anchors and Tesla's deck months are, not the running sum of the
+// monthly bands (which spanned -33%/+40% there). "Approximately 1.3 million"
+// is read as its rounding interval [1.25M, 1.35M]. The series starts 2024-05,
+// so the driverless miles before it come off: California DMV Feb 2023-Apr
+// 2024 (permit AVDT004) 20,174.2, measured, plus a Las Vegas analog of
+// 19,906.2 (equal to California's Jun 2023-Apr 2024) carried at the early
+// rows' 0.5x-2x Las Vegas band. Bounds rounded outward to whole miles.
+{
+  const PUB_LO = 1250000, PUB_HI = 1350000, CA_PRE = 20174.2, LV_PRE = 19906.2;
+  const knotLo = Math.floor(PUB_LO - (CA_PRE + 2 * LV_PRE));
+  const knotHi = Math.ceil(PUB_HI - (CA_PRE + 0.5 * LV_PRE));
+  const dec = rows.find(x => x.month === "2025-12");
+  assert.ok(dec.kmin === knotLo && dec.kmax === knotHi,
+    `Replicata: read zoox 2025-12's kyoom band in data/vmt.csv.
+Expectata: the Dec-2025 knot [${knotLo}, ${knotHi}] = [1.25M - (20,174 + 2 x 19,906), 1.35M - (20,174 + 0.5 x 19,906)] (official ~1.3M, rounding interval, less the pre-series driverless miles at their own band).
+Resultata: [${dec.kmin}, ${dec.kmax}].`);
+}
+
+console.log(`qual pass: zoox cumulative VMT tracks all three published mileage milestones (1.3M Dec 2025, ~2M late Mar 2026, >3M by end-Jul 2026 per the Aug-5 statement), and its Dec-2025 band is the 1.3M disclosure's own uncertainty`);

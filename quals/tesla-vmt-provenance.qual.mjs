@@ -35,7 +35,7 @@ import fs from "node:fs";
 const rows = fs.readFileSync("data/vmt.csv", "utf8").trim().split("\n").slice(1)
   .map(l => l.split(",", 8))
   .filter(p => p[0] === "tesla")
-  .map(p => ({month: p[1], cume: Number(p[3]), kmin: Number(p[4]), kmax: Number(p[5])}));
+  .map(p => ({month: p[1], cume: Number(p[3]), kmin: Number(p[4]), kmax: Number(p[5]), vmax: Number(p[7])}));
 const byMonth = Object.fromEntries(rows.map(r => [r.month, r]));
 
 // [month, chart value (miles), lo bound, hi bound, hard (band must contain)]
@@ -86,6 +86,22 @@ assert.ok(jun.kmin >= 2300000,
   `Replicata: read tesla 2026-06 kyoom_min against the 2,440k disclosed floor (Q2-2026 deck).
 Expectata: kyoom_min >= 2,300,000 (chart value minus read noise; paid miles are a subset of total scope).
 Resultata: ${jun.kmin}.`);
+
+// The Sep-3-2026 statement (Elluswamy: "we have achieved 1 million miles of
+// unsupervised Robotaxi operation", up from "more than 380,000" on the Jul-22
+// Q2 call) puts at least ~600k service miles in Jul 22 -> Sep 3 (unsupervised
+// miles are a subset of the service scope; the tesla 2026-07 rationale gives
+// 600-720k). So the cumulative through Aug 31 is at least the end-June floor
+// plus 600k, less at most three September days at September's band top, even
+// with zero miles Jul 1-21 (added 2026-10-03; the chained floor had sat 18k
+// under this).
+const aug = byMonth["2026-08"];
+const sepFloorDays = 3 * byMonth["2026-09"].vmax / 30;
+const augFloor = jun.kmin + 600000 - sepFloorDays;
+assert.ok(aug.kmin >= augFloor,
+  `Replicata: compare tesla 2026-08 kyoom_min with the floor the Sep-3 "1 million unsupervised miles" statement implies.
+Expectata: kyoom_min >= ${jun.kmin} (2026-06 floor) + 600,000 (Jul 22 -> Sep 3) - ${sepFloorDays} (Sep 1-3 at September's vmt_max) = ${augFloor}.
+Resultata: ${aug.kmin}.`);
 
 // "Paid Robotaxi miles nearly doubled sequentially" (Q1-2026 deck): the
 // quarterly deltas must keep that ratio in the neighborhood of 2.

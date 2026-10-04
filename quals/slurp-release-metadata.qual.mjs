@@ -182,8 +182,24 @@ else:
 # (5) each release must add the receipt observation for the month that just
 # became final (its second normal release), or list it as excluded with a
 # reason: a cutoff one month past the table's last observation must stop.
+# The probe is derived from the table, not a literal (2026-10-03, audit finding
+# #46: the literal '2026-09-15' became the correct cutoff on the Oct-15
+# release day and turned this red): the last observed or excluded month + 2
+# months (an exclusion settles its month exactly as an observation does), at
+# the 15th rolled forward past weekends and MLK/Presidents' Day, NHTSA's
+# cutoff rule (quals/nhtsa-cutoff-date.qual.mjs).
+last_obs = max({*slurp.FIVE_DAY_RECEIPT_OBSERVATIONS, *slurp.RECEIPT_MONTHS_EXCLUDED})
+probe_y, probe_m = divmod(int(last_obs[:4]) * 12 + int(last_obs[5:]) - 1 + 2, 12)
+probe_m += 1
+def third_monday(y, m):
+    first = datetime.date(y, m, 1)
+    return first + datetime.timedelta(days=(7 - first.weekday()) % 7 + 14)
+holidays = {third_monday(probe_y, 1), third_monday(probe_y, 2)}
+probe = datetime.date(probe_y, probe_m, 15)
+while probe.weekday() >= 5 or probe in holidays:
+    probe += datetime.timedelta(days=1)
 try:
-    slurp.release_month_coverage('2026-09-15', '2026-09')
+    slurp.release_month_coverage(probe.isoformat(), probe.isoformat()[:7])
 except AssertionError as exc:
     assert 'receipt' in str(exc).lower(), exc
 else:

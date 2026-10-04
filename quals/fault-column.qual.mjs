@@ -43,6 +43,14 @@ class ElementStub {
   querySelector() {
     return new ElementStub("td");
   }
+
+  setAttribute(name, value) {
+    this._attributes = { ...this._attributes, [name]: String(value) };
+  }
+
+  getAttribute(name) {
+    return (this._attributes || {})[name] ?? null;
+  }
 }
 
 const nodeById = new Map();

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { parseCsv } from "./csv-parse.mjs";
 
 // The VMT master (data/vmt.csv) is a per-helmer monthly ledger: each helmer's
 // months are contiguous from its first row to its last, and
@@ -16,34 +17,22 @@ const FRESH_THROUGH = "2026-09";
 // anchors — external anchors live in the *-vmt-provenance quals). A silent
 // edit or a running-sum slip on the newest rows trips these.
 const CUME_PINS = {
-  "waymo|2026-09": 339595163, // 2026-09-29: hub thru-Jun-2026 chain, Atlanta D withdrawn (Waymo's CSV4 v2)
+  // 2026-09-29: hub thru-Jun-2026 chain, Atlanta D withdrawn (Waymo's CSV4 v2);
+  // 2026-10-03: 339,595,163 -> 339,495,163, September's Maricopa term less
+  // ~0.1M for the measured Phoenix weather pauses (Sep 16-18 and Sep 29)
+  "waymo|2026-09": 339495163,
   "tesla|2026-09": 3630000,
-  "zoox|2026-09": 3571000,
+  // 2026-10-03: 3,571,000 -> 3,530,920, the CA DMV rebuild of the early rows
+  // (approved 2026-09-29): the series now excludes 40,080 pre-series
+  // driverless miles from the official ~1.3M as of Dec 31, 2025
+  "zoox|2026-09": 3530920,
 };
 
-// Quote-aware CSV parse: a naive comma split can't tell a column boundary
-// from a comma inside an unquoted rationale, and slurp.py's row[8] read would
-// silently truncate such a rationale at its first comma. Parsing properly and
-// demanding exactly 9 fields per row makes that corruption loud.
-function parseCsv(text) {
-  const rows = [];
-  let field = "";
-  let row = [];
-  let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (inQuotes) {
-      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
-      else if (ch === '"') inQuotes = false;
-      else field += ch;
-    } else if (ch === '"') inQuotes = true;
-    else if (ch === ",") { row.push(field); field = ""; }
-    else if (ch === "\n") { row.push(field); rows.push(row); field = ""; row = []; }
-    else if (ch !== "\r") field += ch;
-  }
-  if (field !== "" || row.length > 0) { row.push(field); rows.push(row); }
-  return rows.filter(r => r.length > 1 || r[0].trim() !== "");
-}
+// Quote-aware CSV parse (quals/csv-parse.mjs): a naive comma split can't tell
+// a column boundary from a comma inside an unquoted rationale, and slurp.py's
+// row[8] read would silently truncate such a rationale at its first comma.
+// Parsing properly and demanding exactly 9 fields per row makes that
+// corruption loud.
 
 const parsed = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const rows = parsed.slice(1).map(p => {

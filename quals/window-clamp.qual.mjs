@@ -88,7 +88,7 @@ const ctx = vm.createContext({
   window: {
     innerWidth: 1024,
     innerHeight: 768,
-    location: {search: "", pathname: "/crashla"},
+    location: {search: "", pathname: "/crashla", hash: ""},
     history: {replaceState() {}},
   },
 });
@@ -153,10 +153,13 @@ Expectata: Tesla stays at zero there because it has no VMT or incidents in that 
 Resultata: Tesla summary was vmtBest=${plain.teslaVmt}, incTotal=${plain.teslaInc}.`,
 );
 
+// d= names the window's months since 2026-10-03 (it held series indices,
+// d=0-5, until then; audit #45).
+const firstSix = `d=${plain.requestedMonths[0]}.${plain.requestedMonths[5]}`;
 assert.ok(
-  plain.query.includes("d=0-5"),
+  plain.query.includes(firstSix),
   `Replicata: sync URL state after selecting the first six months of the series.
-Expectata: encoded query preserves the explicit pre-window date range as d=0-5.
+Expectata: encoded query preserves the explicit pre-window date range as ${firstSix}.
 Resultata: query was ${plain.query}.`,
 );
 

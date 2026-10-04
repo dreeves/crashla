@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { parseCsv } from "./csv-parse.mjs";
 
 // Waymo's cumulative-rides history must respect Waymo's published ride-count
-// milestones (Tesla's lane anchors to its deck-disclosed cumulative miles and
-// Zoox's to published rider milestones; all three are pinned here):
+// milestones (Tesla's lane derives from the VMT master's cumulative miles,
+// deck-disclosed through 2026-06, and Zoox's from published rider milestones;
+// all three are pinned here):
 //   10M cumulative paid trips announced May 20 2025 (CNBC / Google I/O), so
 //     every later month's cumulative -- even its LOW bound -- must clear 10M.
 //   ~20M lifetime trips by end of 2025 (Waymo 2025 year-in-review blog:
@@ -33,6 +36,20 @@ assert.ok(decRow !== undefined && decRow.lo <= 20000000 && 20000000 <= decRow.hi
 Expectata: band contains 20M and best in [18.5M, 22M].
 Resultata: ${JSON.stringify(decRow)}.`);
 
+// "Over half a million trips each week" (Waymo, Sep 14 2026; the floor it has
+// stated since late March; data/vmt.csv's 2026-07..09 Waymo rationales):
+// from the end-May row through Sep 30, 17.4 weeks at no less than 500k a week
+// (audit #87: the history stopped at 2026-05 until 2026-10-03).
+{
+  const may = byMonth["2026-05"], sep = byMonth["2026-09"];
+  const weeks = (Date.UTC(2026, 8, 30) - Date.UTC(2026, 4, 31)) / (7 * 86400000);
+  const floor = r => Math.round(r + weeks * 500000);
+  assert.ok(may !== undefined && sep !== undefined && sep.lo >= floor(may.lo) && sep.best >= floor(may.best),
+    `Replicata: read RIDES_HISTORY.Waymo's 2026-05 and 2026-09 rows against Waymo's Sep-14 "over half a million trips each week".
+Expectata: a 2026-09 row whose low edge is at least May's low edge plus ${weeks.toFixed(1)} weeks at 500k (${floor(may.lo)}) and whose best is at least May's best plus the same (${floor(may.best)}).
+Resultata: May ${JSON.stringify(may)}, September ${JSON.stringify(sep)}.`);
+}
+
 vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 
 // Tesla's rides derive from its (deck-anchored) cumulative miles at the
@@ -44,17 +61,48 @@ vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 // human-approved, from [7, 14]: that corridor reconciled the miles with a
 // "~700k paid miles by late Apr 2026" figure that was actually mid-February
 // vintage — Tesla's Q1-2026 deck puts end-Mar cumulative paid at ~1.717M.)
+// The rows are checked against the VMT MASTER, data/vmt.csv, which holds
+// months data/vmt.js does not draw until their NHTSA release (until
+// 2026-10-03 this read vmt.js and skipped any row past its last month, so a
+// September row derived from the master's 2026-09 miles went unchecked).
 const teslaHist = JSON.parse(hist).Tesla;
-const teslaCume = JSON.parse(vm.runInContext(
-  `JSON.stringify(Object.fromEntries(vmtRows.filter(r => r.helmer === "Tesla").map(r => [r.month, r.vmtCume])))`, ctx));
+const master = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
+  .filter(p => p[0] === "tesla")
+  .map(p => ({ month: p[1], cume: Number(p[3]), kyoomMin: Number(p[4]), kyoomMax: Number(p[5]) }));
+const teslaCume = Object.fromEntries(master.map(r => [r.month, r.cume]));
+const corridor = JSON.parse(vm.runInContext("JSON.stringify(TESLA_MILES_PER_RIDE)", ctx));
 for (const row of teslaHist) {
   const cume = teslaCume[row.month];
-  if (cume === undefined) continue; // rows past the VMT master's last month
+  assert.ok(cume !== undefined,
+    `Replicata: look up Tesla's ${row.month} rides row in data/vmt.csv.
+Expectata: the master has Tesla miles for that month (the row derives from them).
+Resultata: no Tesla row for ${row.month}.`);
   const implied = cume / row.best;
   assert.ok(implied >= 4.5 && implied <= 8.5,
     `Replicata: divide Tesla's cumulative VMT at ${row.month} (${cume}) by the rides row's best (${row.best}).
 Expectata: implied miles-per-ride in [4.5, 8.5] (author-set ~4-5 mi paid-ride length / on-trip share of service miles; receipt-corroborated).
 Resultata: ${implied.toFixed(1)}.`);
+  // The band is at least the corridor applied to the month's miles: the
+  // deck-chart months' miles are near-exact, so their bands are the
+  // corridor's (cume / 8.3 .. cume / 4.7); a month whose miles are an
+  // estimate divides its kyoom band by the corridor, which is wider.
+  assert.ok(row.lo <= cume / corridor.hi * 1.005 && row.hi >= cume / corridor.lo * 0.995,
+    `Replicata: compare Tesla's ${row.month} rides band [${row.lo}, ${row.hi}] with the month's cumulative miles ${cume} over the [${corridor.lo}, ${corridor.best}, ${corridor.hi}] miles-per-ride corridor.
+Expectata: lo <= ${Math.round(cume / corridor.hi)} and hi >= ${Math.round(cume / corridor.lo)}.
+Resultata: [${row.lo}, ${row.hi}].`);
+}
+// The rides history runs as far as the master's miles (audit #87): to the
+// last quarter-end month data/vmt.csv holds for Tesla, the rows' cadence.
+// Until 2026-10-03 it stopped at 2026-06 while the master held 2026-09, so
+// the all-HW4 fork left from 2026-06 under Rides but 2026-08 under Fleet and
+// Miles.
+{
+  const quarterEnds = master.map(r => r.month).filter(m => ["03", "06", "09", "12"].includes(m.slice(5)));
+  const want = quarterEnds.at(-1);
+  assert.equal(teslaHist.at(-1).month, want,
+    `Replicata: compare the last month of RIDES_HISTORY.Tesla with the last quarter-end month of data/vmt.csv's Tesla rows.
+Expectata: ${want} (add the row as cumulative miles over the [${corridor.lo}, ${corridor.best}, ${corridor.hi}] miles-per-ride corridor).
+Resultata: ${teslaHist.at(-1).month}.`);
 }
 
 // Zoox's rides anchor to its published cumulative RIDER counts (>300k riders
@@ -109,4 +157,4 @@ assert.ok(waymoEnd.best >= 40000000,
 Expectata: median >= 40,000,000.
 Resultata: ${JSON.stringify(waymoEnd)}.`);
 
-console.log("qual pass: Waymo cumulative rides track the published 10M/20M milestones; all rides lanes monotone");
+console.log("qual pass: Waymo cumulative rides track the published 10M/20M milestones and the Sep-14 weekly floor; Tesla's rows follow data/vmt.csv through its last quarter end; all rides lanes monotone");

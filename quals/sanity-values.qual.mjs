@@ -102,7 +102,9 @@ const html = getNode("sanity-checks").innerHTML;
 // The total column must equal withPax + noPax + unk
 const paxSection = html.split("<h3>Passenger presence</h3>")[1]
   .split("<h3>")[0];
-const paxTrMatches = [...paxSection.matchAll(/<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>/g)];
+// Counts are grouped "1,164" (fmtCount; audit #54), so cells parse as [\d,]+.
+const count = s => Number(s.replace(/,/g, ""));
+const paxTrMatches = [...paxSection.matchAll(/<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)<\/td>\s*<td>([\d,]+)<\/td>\s*<td>([\d,]+)<\/td>\s*<td>([\d,]+)<\/td>/g)];
 assert.ok(
   paxTrMatches.length >= 3,
   `Replicata: passenger presence table has helmer rows.
@@ -110,7 +112,7 @@ Expectata: at least 3 helmer rows (Tesla, Waymo, Zoox).
 Resultata: found ${paxTrMatches.length} rows.`);
 
 for (const m of paxTrMatches) {
-  const [withPax, noPax, unk, total] = [m[1], m[2], m[3], m[4]].map(Number);
+  const [withPax, noPax, unk, total] = [m[1], m[2], m[3], m[4]].map(count);
   assert.strictEqual(
     withPax + noPax + unk, total,
     `Replicata: passenger count arithmetic.
@@ -131,7 +133,7 @@ assert.ok(
 Expectata: present (Unknown-severity incidents are not property-damage-only).
 Resultata: headers were ${JSON.stringify([...sevSection.matchAll(/<th>([^<]*)<\/th>/g)].map(m => m[1]))}.`);
 // Each row: helmer, propDmg (%), injOnly (%), hosp (%), fatal (%), unknown (%), total
-const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
+const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)<\/td>/g;
 const sevMatches = [...sevSection.matchAll(sevPattern)];
 assert.ok(
   sevMatches.length >= 3,
@@ -141,13 +143,22 @@ Resultata: found ${sevMatches.length}.`);
 
 for (const m of sevMatches) {
   const [propDmg, injOnly, hosp, fatal, unknown, total] =
-    [m[1], m[2], m[3], m[4], m[5], m[6]].map(Number);
+    [m[1], m[2], m[3], m[4], m[5], m[6]].map(count);
   assert.strictEqual(
     propDmg + injOnly + hosp + fatal + unknown, total,
     `Replicata: severity count arithmetic.
 Expectata: ${propDmg}+${injOnly}+${hosp}+${fatal}+${unknown} = ${total}.
 Resultata: sum is ${propDmg + injOnly + hosp + fatal + unknown}.`);
 }
+
+// A nonzero count never shows a 0% share (audit #58: Waymo's fatalities read
+// "2 (0%)", 2 of 1,164 = 0.17%); fmtShare writes "<1%" for it.
+const zeroShares = [...sevSection.matchAll(/<td>([\d,]+) \(([^)]*)\)<\/td>/g)]
+  .filter(m => Number(m[1].replace(/,/g, "")) > 0 && m[2] === "0%").map(m => m[0]);
+assert.deepEqual(zeroShares, [],
+  `Replicata: read every "count (share)" cell of the sanity section's Severity breakdown (full history).
+Expectata: no cell pairs a nonzero count with "0%".
+Resultata: ${JSON.stringify(zeroShares)}.`);
 
 // --- Narrative redaction counts add up ---
 // Commented out 2026-06-11 with the app's Narrative redaction table: all
@@ -215,7 +226,7 @@ Resultata: got ${idx}.`);
 // --- Reporting threshold: speed=0 count <= total for each helmer ---
 const rptSection = html.split("<h3>Reporting threshold disparities</h3>")[1]
   .split("<h3>")[0];
-const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)[^<]*<\/td>\s*<td>(\d+)<\/td>/g;
+const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)<\/td>/g;
 const rptMatches = [...rptSection.matchAll(rptPattern)];
 assert.ok(rptMatches.length >= 3,
   `Replicata: reporting threshold table has helmer rows.
@@ -223,7 +234,7 @@ Expectata: at least 3.
 Resultata: found ${rptMatches.length}.`);
 
 for (const m of rptMatches) {
-  const [zero, stopped, propDmg, total] = [m[1], m[2], m[3], m[4]].map(Number);
+  const [zero, stopped, propDmg, total] = [m[1], m[2], m[3], m[4]].map(count);
   assert.ok(zero <= total && stopped <= total && propDmg <= total,
     `Replicata: reporting threshold subcounts <= total.
 Expectata: each metric <= ${total}.
@@ -267,7 +278,7 @@ const extractTotals = (section, colIndex) => {
     const tds = [...block.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(m => m[1]);
     if (tds.length >= colIndex + 1) {
       const helmer = tds[0].trim();
-      const val = parseInt(tds[colIndex], 10);
+      const val = parseInt(tds[colIndex].replace(/,/g, ""), 10);
       if (!isNaN(val)) totals[helmer] = val;
     }
   }
