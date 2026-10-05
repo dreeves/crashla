@@ -595,9 +595,18 @@ PAX_BELTED = "Subject Vehicle - All Belted"
 # whether they were belted (NHTSA's list has no such value); crashla.js
 # PAX_PRESENT counts it as a passenger.
 PAX_BELT_UNSTATED = "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated"
-# How crashla.js reads a passenger code (PAX_NONE / PAX_UNKNOWN; any other
-# value is PAX_PRESENT): both no-passenger encodings are no passenger.
+# How crashla.js classifies a passenger code: its PAX_NONE, PAX_PRESENT and
+# PAX_UNKNOWN sets, mirrored exactly (quals/passenger-classification.qual.mjs
+# pins the mirror). Both no-passenger encodings are no passenger. A code in
+# none of them stops the run (check_occupancy_classified reads every in-scope
+# incident's code through this map), since crashla.js would count it in the
+# Unknown remainder, and a default to "with passenger" is the bug class that
+# once miscounted 485 no-passenger incidents.
 PAX_CLASS = {PAX_NO: "none", "No Passengers in Vehicle": "none",
+             PAX_BELTED: "present",
+             "Subject Vehicle - Not Belted - see Narrative": "present",
+             "Yes": "present", "No, see Narrative": "present",
+             PAX_BELT_UNSTATED: "present",
              "Unknown": "unknown", "": "unknown"}
 PASSENGER_OVERRIDE = {
     # Zoox, JUN-2026 San Francisco, filed no passenger: "An occupied Zoox
@@ -638,8 +647,9 @@ PASSENGER_OVERRIDE = {
 # code contradicts), and Waymo says it once, "The Waymo AV, which had no
 # occupants" (both versions of 30270-9724, agreeing). Waymo's "occupied"
 # describes lanes and parking stalls ("the lane occupied by the Waymo AV"),
-# and its usual "the passenger in the Waymo AV" is left out: of the 221
-# reports that use it, 2 describe a rider who got out before the crash
+# and its usual passenger wording ("the passenger in the Waymo AV", "one of
+# the passengers in the vehicle", ...) is left out: of the 221 reports that
+# use it, 2 describe a rider who got out before the crash
 # (30270-8877, 30270-13578, both coded no passenger), so it does not say who
 # was aboard at impact. Tesla's wording is read report by report (every Tesla
 # report has a PASSENGER_OVERRIDE entry).
@@ -1536,8 +1546,9 @@ must(not set(TELEOP_DRIVEN_REPORTS) & set(REMOTE_LANGUAGE_ADS_DRIVEN),
      "a report is classified both teleoperator-driven and ADS-driven")
 must(not set(PASSENGER_OVERRIDE) & set(OCCUPANCY_LANGUAGE_REVIEWED),
      "a report's passenger code is both re-coded and kept as filed")
-must(all(len(v) == 2 for v in PASSENGER_OVERRIDE.values()),
-     "PASSENGER_OVERRIDE entries must be (reviewed filed value, value to store)")
+must(all(len(v) == 2 and v[1] in PAX_CLASS for v in PASSENGER_OVERRIDE.values()),
+     "PASSENGER_OVERRIDE entries must be (reviewed filed value, value to "
+     "store), the stored value a code PAX_CLASS classifies")
 
 
 def operator_in_scope(row):
@@ -1650,8 +1661,12 @@ def check_occupancy_classified(row):
     rid = row["Report ID"]
     stated = {m.lastgroup for m in OCCUPANCY_PATTERN.finditer(row["Narrative"])}
     filed = row["Were All Passengers Belted?"].strip()
+    must(filed in PAX_CLASS,
+         "unexpected passenger code (classify it in PAX_CLASS and in "
+         "crashla.js's PAX_NONE, PAX_PRESENT or PAX_UNKNOWN)",
+         reportId=rid, filed=filed)
     flagged = (operator_in_scope(row) and len(stated) > 0
-               and stated != {PAX_CLASS.get(filed, "present")})
+               and stated != {PAX_CLASS[filed]})
     must(not flagged or rid in PASSENGER_OVERRIDE
          or rid in OCCUPANCY_LANGUAGE_REVIEWED,
          "the narrative says who was aboard and the filed passenger code "
@@ -1980,8 +1995,7 @@ def main():
         n = len(co_incidents)
         # Same three classes as crashla.js PAX_NONE / PAX_UNKNOWN / PAX_PRESENT
         # (PAX_CLASS; both no-passenger encodings count as no passenger).
-        classes = Counter(PAX_CLASS.get(r["belted"], "present")
-                          for r in co_incidents)
+        classes = Counter(PAX_CLASS[r["belted"]] for r in co_incidents)
         with_pax, no_pax = classes["present"], classes["none"]
         unk = n - with_pax - no_pax
         pct = f"{100*with_pax/n:.0f}%" if n else "n/a"

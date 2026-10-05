@@ -369,7 +369,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-8833,3,"Other, see Narrative",rear left,rear right,No Injuries Reported,0.25,Forklift sat crosswise across from a parked truck and trailer when AV threaded between them; it reversed into AV
 30270-8851,0,Passenger Car,rear left,right,No Injuries Reported,0,AV stopped w/ hazards in restricted zone; car passing clipped rear
 30270-9173,0,Passenger Car,rear,front,No Injuries Reported,0,AV stopped at red; rear-ended
-30270-9111,0,SUV,left,left,No Injuries Reported,0.2,AV stopped in oncoming lane while going around a car stopped for a pickup and could not re-enter; oncoming SUV hit it
+30270-9111,0,SUV,left,left,No Injuries Reported,0.2,AV stopped in oncoming lane while going around a car stopped for a passenger pickup and could not re-enter; oncoming SUV hit it
 30270-8769,0,Heavy Truck,front left,rear right,No Injuries Reported,0,AV stopped at stop sign; truck's wide right turn swung into front
 30270-9116,0,SUV,rear,front,No Injuries Reported,0,AV stopped at red; rear-ended
 30270-9107,0,Pickup Truck,rear left,left,No Injuries Reported,0,AV stopped in parking lot; pickup going around clipped rear corner

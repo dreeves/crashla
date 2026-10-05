@@ -187,7 +187,7 @@ assert.equal(run.status, 0, `Replicata: load data/slurp.py and exercise its pass
 Expectata: PASSENGER_OVERRIDE, reviewed_belted(), check_passengers_reviewed() and check_occupancy_classified() exist and run.
 Resultata: exit ${run.status}; ${run.stderr.slice(-800)}`);
 const g = JSON.parse(run.stdout.trim().split("\n").at(-1));
-const {trips, passes, unclassified, flagged, listedNotFlagged, reviewedKept, main, template, ...guards} = g;
+const {trips, passes, unclassified, flagged, listedNotFlagged, reviewedKept, main, template, paxClass, novelCode, ...guards} = g;
 assert.deepEqual(guards, {
   mapCoversTesla: true, exactPasses: true, missingTrips: true, staleTrips: true, staleZooxTrips: true,
   monitorOnly: "Subject Vehicle - No Passenger In Vehicle", refiledTrips: true,
@@ -216,6 +216,20 @@ assert.match(main, /says who was aboard/,
   `Replicata: run slurp.main() offline on the snapshots plus one unlisted in-scope Zoox row (a 2025 copy of ${template}, "An unoccupied Zoox ... vehicle") filed "Subject Vehicle - All Belted".
 Expectata: main() stops with the occupancy tripwire's message (the guard is wired in, not just defined).
 Resultata: ${JSON.stringify(main.slice(0, 300))}.`);
+// slurp.py's PAX_CLASS classifies a passenger code exactly as crashla.js's
+// PAX_NONE / PAX_PRESENT / PAX_UNKNOWN do, and a code in none of them stops
+// the run instead of defaulting to "with passenger", the 485-incident bug
+// class this qual guards (second audit's review of #33, 2026-10-04).
+const appClass = Object.fromEntries([
+  ...[...none].map(v => [v, "none"]), ...[...present].map(v => [v, "present"]), ...[...unknown].map(v => [v, "unknown"])]);
+assert.deepEqual(paxClass, appClass,
+  `Replicata: compare data/slurp.py's PAX_CLASS with crashla.js's PAX_NONE, PAX_PRESENT and PAX_UNKNOWN.
+Expectata: the same codes, each in the same class.
+Resultata: slurp ${JSON.stringify(paxClass)}; app ${JSON.stringify(appClass)}.`);
+assert.match(novelCode, /^AssertionError: unexpected passenger code/,
+  `Replicata: call check_occupancy_classified on an in-scope report filed with a passenger code crashla.js does not classify ("Subject Vehicle - Novel Code").
+Expectata: it stops the run naming the code (crashla.js would count it in the Unknown remainder).
+Resultata: ${novelCode === "" ? "accepted" : JSON.stringify(novelCode.slice(0, 300))}.`);
 
 // --- WAYMO AND ZOOX: THE NARRATIVE'S OCCUPANCY (second audit, 2026-10-04, #33)
 // Zoox opens nearly every narrative with "An occupied Zoox autonomous vehicle"

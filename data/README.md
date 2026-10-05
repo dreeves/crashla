@@ -104,9 +104,11 @@ The slurp pipeline is:
    A filed city, state or passenger value that no longer matches the one its
    override was reviewed against, an incident left with no city or state, an
    in-scope Tesla report with no reviewed passenger entry, a passenger entry
-   for a report no longer in scope, or a narrative that says who was aboard
-   the AV ("An occupied Zoox autonomous vehicle", "unoccupied", "had no
-   occupants") against its filed passenger code, unreviewed, stops the run
+   for a report no longer in scope, a filed passenger code that crashla.js's
+   three passenger classes do not list (`PAX_CLASS`), or a narrative that
+   says who was aboard the AV ("An occupied Zoox autonomous vehicle",
+   "unoccupied", "had no occupants") against its filed passenger code,
+   unreviewed, stops the run
    (the severity, airbag and vehicles-involved overrides carry no such check)
 10. Apply the data-through month's receipt coverage (`coverage`,
     `coverage_min`, `coverage_max`) and the pooled Monthly-track incident
@@ -130,7 +132,7 @@ The slurp pipeline is:
    lo (or raise hi) to cover it, as the 2026-07 observation (12 of 58, 0.21)
    lowered lo from 0.25 to 0.20; a new low is likely, since August 2026's
    numerator is 10 and every final 2026 denominator but February's has been
-   58-72.
+   57-72.
 3. The Monthly-report arrival table, re-measured alongside the receipt
    observations: each company's `MONTHLY_ARRIVAL_OBSERVATIONS` row for the
    month whose third release this is (data-through month - 2); a check that
