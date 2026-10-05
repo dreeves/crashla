@@ -416,7 +416,7 @@ const allOpen = () => {
 // --- 6. Rule 6: the labels and the status tooltip are the human's English --
 // pinned to the character (committed 2026-10-04 in b068a10; until then they
 // were agent Latin, "decisa:", "clausa", "irrita" and a four-sentence tip,
-// and this block checked for the TODO recap above each). Section 3 checks the
+// and this block checked for the to-do recap above each). Section 3 checks the
 // cards' state labels against these labels; this section checks the footer's
 // tooltip as rendered after the refresh (section 4 ties the status's
 // accessible name to it). The tip ends in a space, as the human wrote it.

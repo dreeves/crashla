@@ -597,12 +597,15 @@ tbody tr:hover { background: var(--accent-wash); }
   }
   /* The incident box, until the incident browser is first built (the build
      fills the filter buttons above it, which no later build empties): the
-     80vh it takes with more than about twenty rows, on screen as off. Empty,
-     it was ~41px on screen and 80vh off it (its placeholder, .table-scroll),
-     so a scroll that brought it on screen, or the table's build, moved all
-     below it by ~680px: a #sec-... link in Firefox, and a #:~:text= link to
-     a heading below the box in Firefox and WebKit, landed off it (until the
-     review of 2026-10-05; fragment-landing.qual). */
+     80vh it takes with more than about twenty rows, on screen as off.
+     Firefox scrolls to a #sec-... link's section once the bare page is laid
+     out, before the script runs, and again just before DOMContentLoaded.
+     Empty, the box was 80vh off screen (its placeholder, .table-scroll) and
+     ~41px once that first scroll brought it on screen, so the page shrank
+     ~680px under the scroll, Firefox kept the clamped position and did not
+     scroll to the section again, and the link landed short of it: #sec-sanity
+     by ~4,360px on a desktop (until the review of 2026-10-05;
+     fragment-landing.qual). */
   #filters:empty ~ .table-scroll {
     min-height: 80vh;
   }

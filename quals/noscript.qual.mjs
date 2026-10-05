@@ -7,7 +7,7 @@ import fs from "node:fs";
 // Spec: one <noscript> notice in the body, ahead of the abstract, whose text
 // is the human's English, "JavaScript required for charts, tables", to the
 // character (AGENTS.md rule 6; until the human wrote it, committed 2026-10-04
-// in b068a10, the notice was Latin and this qual checked for its TODO recap);
+// in b068a10, the notice was Latin and this qual checked for its to-do recap);
 // and a <noscript><style> in the head that hides the static "Loading…", so
 // the markup's own text stays as written.
 

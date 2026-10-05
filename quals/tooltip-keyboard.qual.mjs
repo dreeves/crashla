@@ -27,14 +27,17 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 
-// The narrative toggle's short name is new copy, so it is Latin with its TODO
-// recap directly above (AGENTS.md rule 7).
+// The narrative toggle's short name is the human's English, pinned to the
+// character (committed 2026-10-05 in a3c39bb; until then it was agent Latin,
+// "Narratio relationis <report id>", and this qual checked for the to-do
+// recap above it; AGENTS.md rule 6).
 const js = fs.readFileSync(new URL("../crashla.js", import.meta.url), "utf8");
 const nameAt = js.indexOf("function narrativeToggleName(");
-assert.ok(nameAt > 0 && /\/\/ TODO[^\n]*\n(?:\/\/[^\n]*\n)*$/.test(js.slice(0, nameAt)),
-  `Replicata: read crashla.js above function narrativeToggleName.
-Expectata: the narrative toggle's short name, a Latin string, has a comment block starting "// TODO" directly above it.
-Resultata: ${nameAt < 0 ? "no narrativeToggleName" : JSON.stringify(js.slice(Math.max(0, nameAt - 300), nameAt))}.`);
+const nameDef = nameAt < 0 ? "" : js.slice(nameAt, js.indexOf("\n}", nameAt) + 2);
+assert.ok(/^function narrativeToggleName\(reportId\) \{\s*return `Narrative of report \$\{reportId\}`;\s*\}$/.test(nameDef),
+  `Replicata: read function narrativeToggleName in crashla.js.
+Expectata: it returns the human's English, \`Narrative of report \${reportId}\`, to the character.
+Resultata: ${nameAt < 0 ? "no narrativeToggleName" : JSON.stringify(nameDef)}.`);
 
 const server = await serveRepo();
 const DEFAULT_QUERY = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";

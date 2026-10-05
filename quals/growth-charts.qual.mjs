@@ -119,7 +119,7 @@ for (const [key, c] of Object.entries(charts)) {
   // ...and the shares are explained: a note under the legend names both Tesla
   // scenario groups with the shares the legend chips carry, in the human's
   // English to the character (committed 2026-10-04 in b068a10; until then the
-  // note was agent Latin and this qual checked for the TODO recap above
+  // note was agent Latin and this qual checked for the to-do recap above
   // growthScenarioNote).
   const shares = c.curves.filter(curve => /\(~\d+%\)$/.test(curve.label)).map(curve => /\(~(\d+)%\)$/.exec(curve.label)[1]);
   const notes = [...c.trajectory.matchAll(/<p class="month-note">([^<]*)<\/p>/g)].map(m => decode(m[1]));

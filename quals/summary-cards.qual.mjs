@@ -185,7 +185,7 @@ if (!graying) problems.unchecked.push("style.css: no .mpi-card.unchecked rule wi
 
 // Rule 6: the label is the human's English, to the character (committed
 // 2026-10-04 in b068a10; until then it was agent Latin, "Omnes casus:", and
-// this block checked for the TODO recap above it). The stress lines above
+// this block checked for the to-do recap above it). The stress lines above
 // start with CARD_STRESS_LABEL, so this pins the text the cards show.
 const CARD_STRESS_ENGLISH = "All incidents:";
 if (CARD_STRESS_LABEL !== CARD_STRESS_ENGLISH) problems.label.push(`crashla.js: CARD_STRESS_LABEL is ${JSON.stringify(CARD_STRESS_LABEL)}; want the human's English ${JSON.stringify(CARD_STRESS_ENGLISH)}`);
