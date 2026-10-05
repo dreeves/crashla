@@ -2418,7 +2418,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front right",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "Bus occluded cross traffic; Waymo proceeded too soon into oncoming car's path"
+      "reasoning": "Bus occluded cross traffic; Waymo proceeded too soon into crossing car's path"
     },
     "vehiclesInvolved": 2
   },
@@ -3100,7 +3100,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear left",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "Angle-parked pickup was stopped when Waymo committed to pass at 2mph; it began reversing only after"
+      "reasoning": "Waymo stopped behind an angle-parked pickup; as Waymo began to proceed at 2 mph, the pickup began reversing into it"
     },
     "vehiclesInvolved": 2
   },
@@ -10881,7 +10881,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear right",
     "fault": {
       "faultfrac": 0.25,
-      "reasoning": "Forklift was crosswise in an active loading operation when AV threaded past; it reversed into AV"
+      "reasoning": "Forklift sat crosswise across from a parked truck and trailer when AV threaded between them; it reversed into AV"
     },
     "vehiclesInvolved": 2
   },
@@ -10974,7 +10974,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "left",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV stuck stopped in oncoming lane after passing; oncoming SUV hit it"
+      "reasoning": "AV stopped in oncoming lane while going around a car stopped for a pickup and could not re-enter; oncoming SUV hit it"
     },
     "vehiclesInvolved": 2
   },
@@ -12121,7 +12121,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "front left + front",
     "fault": {
       "faultfrac": 0.05,
-      "reasoning": "AV stopped at stop sign; oncoming pickup veered into side, fled"
+      "reasoning": "AV stopped at stop sign; crossing pickup veered into side, fled"
     },
     "vehiclesInvolved": 2
   },
@@ -18073,7 +18073,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.3,
-      "reasoning": "AV drove into thin fallen line across road in daylight; no sign AV reacted to it"
+      "reasoning": "AV drove into fallen line hanging across road in daylight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -18735,7 +18735,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "JAN-2025",
     "time": "22:48",
     "incidentId": "4d12ce78f9cceeb",
-    "city": "Los Angeles",
+    "city": "West Hollywood",
     "state": "CA",
     "road": "Parking Lot",
     "crashWith": "Other, see Narrative",
@@ -18952,7 +18952,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "FEB-2025",
     "time": "03:39",
     "incidentId": "ee8bc049ffeaa52",
-    "city": "Phoenix",
+    "city": "Chandler",
     "state": "AZ",
     "road": "Street",
     "crashWith": "Passenger Car",
@@ -20657,7 +20657,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "FEB-2025",
     "time": "22:28",
     "incidentId": "2892d7d255db2c7",
-    "city": "Phoenix",
+    "city": "Tempe",
     "state": "AZ",
     "road": "Parking Lot",
     "crashWith": "SUV",
@@ -23312,7 +23312,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV drove into unlit cord draped across road at 1:29 AM; no sign AV reacted to it"
+      "reasoning": "AV drove into cord draped across road from a plastic chair at 1:29 AM; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -37603,7 +37603,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.5,
-      "reasoning": "AV's undercarriage grounded on a standard speed bump"
+      "reasoning": "AV's undercarriage grounded on a speed bump at low speed"
     },
     "vehiclesInvolved": 2
   },
@@ -41416,7 +41416,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV drove into unlit fallen line at 18 mph at 4 AM; no sign AV reacted to it"
+      "reasoning": "AV drove into fallen line hanging in its lane at 18 mph at 4 AM; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -45519,7 +45519,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "JAN-2026",
     "time": "16:59",
     "incidentId": "f61aff9459b4d5a",
-    "city": "San Francisco",
+    "city": "Daly City",
     "state": "CA",
     "road": "Street",
     "crashWith": "SUV",
@@ -50375,7 +50375,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "rear left",
     "fault": {
       "faultfrac": 0.15,
-      "reasoning": "SUV had stopped before AV began to pass; it began reversing only after AV committed"
+      "reasoning": "SUV came to a stop as AV began to pass on the right; it began reversing only after AV committed"
     },
     "vehiclesInvolved": 2
   },
@@ -55552,7 +55552,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "unknown",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV drove into unlit downed line at 32 mph near midnight; no sign AV reacted to it"
+      "reasoning": "AV drove into downed line hanging across road at 32 mph near midnight; no sign AV reacted to it"
     },
     "vehiclesInvolved": 2
   },
@@ -61484,7 +61484,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "JUN-2026",
     "time": "22:31",
     "incidentId": "55c115acd2ea4d3",
-    "city": "Miami",
+    "city": "North Miami",
     "state": "FL",
     "road": "Street",
     "crashWith": "Passenger Car",
@@ -66180,7 +66180,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "belted": "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated",
     "svHit": "front + front right",
     "cpHit": "front left + front right",
     "fault": {

@@ -98,6 +98,17 @@ const FACTS = [
   [r => /x1\.0688/.test(r.rationale), "gives x1.0688 as the prior bridge factor"],
   // #80: Waymo's corrected CSV4 v2 is not yet linked from the hub
   [r => /CSV4 v2/.test(r.rationale) && !/not yet linked/.test(r.rationale), "cites CSV4 v2 without saying it is not yet linked"],
+  // Second audit (2026-10-04) #38: Waymo's Sep 14, 2026 Las Vegas post gives
+  // no weekly figure; its Sep 15, 2026 Allianz Partners post says "serving
+  // more than half a million paid trips weekly"
+  [r => r.helmer === "waymo" && /half a million/.test(r.rationale)
+    && !/'more than half a million paid trips weekly' \(Waymo, Sep 15, 2026/.test(r.rationale),
+    "quotes Waymo's weekly-trips floor other than as its Sep 15, 2026 words, 'more than half a million paid trips weekly'"],
+  // Second audit #39: LVRJ (Jan 28, 2026) credits the Jan 22 start of Zoox's
+  // Las Vegas outage to an X user's posts; the NTA spokeswoman gave the cause
+  // and the Jan 27 restart
+  [r => r.helmer === "zoox" && /Jan 22-27/.test(r.rationale) && !/X user/.test(r.rationale),
+    "credits the Jan 22 start of Zoox's Las Vegas outage to someone other than the X user LVRJ cites"],
 ];
 const factErrors = [];
 for (const r of rows) for (const [bad, what] of FACTS) if (bad(r)) factErrors.push(`${r.helmer} ${r.month}: ${what}`);

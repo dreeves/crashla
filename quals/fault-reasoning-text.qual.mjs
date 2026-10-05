@@ -38,4 +38,29 @@ assert.deepEqual(bad, [],
 Expectata: plain crash facts in sentence case: no rule labels, tier/band/anchor/map names, calibration notes, precedent IDs or revision dates.
 Resultata: ${bad.length} problems: ${JSON.stringify(bad, null, 1)}.`);
 
+// Facts a reasoning stated that its narrative lacks (second audit,
+// 2026-10-04, #44 and #45; values unchanged): the old calibration label
+// "unlit cord/wire = band floor" had become the stated fact "unlit" (no
+// narrative mentions lighting; the 0.2 is for a crash at night), the forklift
+// was not described as loading, the AV in 9111 never finished passing, the
+// SUV in 14227 came to a stop as the AV began to pass, the AV in 6907 only
+// "began to proceed", "thin" and "standard" are not in their narratives, and
+// the vehicles in 8919 and 6405 came from the cross street, not the
+// opposite direction.
+const STATED_NOT_IN_NARRATIVE = {
+  "30270-10602": /\bunlit\b/i, "30270-13509": /\bunlit\b/i, "30270-14943": /\bunlit\b/i,
+  "30270-8833": /\bloading\b/i, "30270-9111": /\bafter passing\b/i,
+  "30270-14227": /\bhad stopped before\b/i, "30270-6907": /\bcommitted to pass\b/i,
+  "30270-9873": /\bthin\b/i, "30270-12035": /\bstandard\b/i,
+  "30270-8919": /\boncoming\b/i, "30270-6405": /\boncoming\b/i,
+};
+const byId = Object.fromEntries(rows.map(r => [r[iId], r[iReason]]));
+const stated = Object.entries(STATED_NOT_IN_NARRATIVE)
+  .filter(([rid, re]) => byId[rid] === undefined || re.test(byId[rid]))
+  .map(([rid]) => `${rid}: ${JSON.stringify(byId[rid])}`);
+assert.deepEqual(stated, [],
+  `Replicata: read the Fault tooltips of 30270-10602, -13509, -14943, -8833, -9111, -14227, -6907, -9873, -12035, -8919 and -6405 beside their narratives.
+Expectata: each restates the narrative's facts (no "unlit", "loading", "after passing", "had stopped before", "committed to pass", "thin", "standard", or "oncoming" for cross traffic).
+Resultata: ${JSON.stringify(stated, null, 1)}.`);
+
 console.log(`qual pass: all ${rows.length} fault reasonings are plain sentence-case crash facts`);

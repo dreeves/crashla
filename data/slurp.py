@@ -525,9 +525,24 @@ SEVERITY_OVERRIDE = {
 # STATE_OVERRIDE into this one mechanism). main() must()s that each filed
 # location still equals the reviewed one (a re-filing stops the run for a
 # re-read) and that every incident ends with a non-empty city and state.
+# Five Waymo rows filed a neighbouring city's name where the narrative and
+# Waymo's own crash list (Safety Impact hub CSV2, data through Jun 2026, its
+# "Location Address / Description" and county) both name another (added
+# 2026-10-04, second audit #46): 30270-13811 "operating in Daly City", hub
+# "John Daly Boulevard near Lake Merced Boulevard", San Mateo County (its hub
+# zip, 94105, is San Francisco's); 30270-15662 "North Miami", "NE 123rd Street
+# at Sans Souci Boulevard", 33181; 30270-10112 "Chandler", "N Dobson Rd and W
+# Flint Street", 85224; 30270-10141 "Tempe", "Parking lot near 1810 E Apache
+# Boulevard", 85281; 30270-9763 "West Hollywood", "Parking lot near 8280 Santa
+# Monica Boulevard", 90046.
 LOCATION_OVERRIDE = {
     "f4e66fc9d21a5b9": (("Phoenix", "CA"), ("Phoenix", "AZ")),   # 30270-7054
     "fe1703e2c778a2a": (("", ""), ("Los Angeles", "CA")),        # 30270-11302
+    "f61aff9459b4d5a": (("San Francisco", "CA"), ("Daly City", "CA")),     # 30270-13811
+    "55c115acd2ea4d3": (("Miami", "FL"), ("North Miami", "FL")),           # 30270-15662
+    "ee8bc049ffeaa52": (("Phoenix", "AZ"), ("Chandler", "AZ")),            # 30270-10112
+    "2892d7d255db2c7": (("Phoenix", "AZ"), ("Tempe", "AZ")),               # 30270-10141
+    "4d12ce78f9cceeb": (("Los Angeles", "CA"), ("West Hollywood", "CA")),  # 30270-9763
 }
 
 # Airbag deployments the SGO structured columns cannot record, keyed by Same
@@ -552,26 +567,43 @@ AIRBAG_OVERRIDE = {
     "2e94dccbdb96501": True,
 }
 
+# Reviewed passenger codes, keyed by Report ID: (the filed "Were All
+# Passengers Belted?" value the review read, the value to store), for reports
+# whose filed code disagrees with their own narrative about whether anyone was
+# aboard (the sanity section's Passenger presence table counts riders, as
+# against deadhead). reviewed_belted() must()s that the filed value is
+# unchanged (a re-filing stops the run for a re-read), and
+# check_passengers_reviewed() that every entry is an in-scope report.
+#
 # Tesla files its in-car safety monitor as a passenger: a ride with only the
-# monitor aboard carries "Subject Vehicle - All Belted" (or "Unknown"), so
-# "Were All Passengers Belted?" cannot tell a rider from the monitor, and the
-# sanity section's Passenger presence table (which counts riders, as against
-# deadhead) read 61-87% for Tesla where the narratives give 8 of 23. Every
-# Tesla narrative says whether a passenger was aboard, so each in-scope Tesla
-# report carries a reviewed entry (added 2026-10-03, audit finding #10), keyed
-# by Report ID: (the filed value the review read, the value to store).
-# reviewed_belted() must()s that the filed value is unchanged (a re-filing
-# stops the run for a re-read) and check_tesla_passengers_reviewed() must()s
-# that the map covers exactly the in-scope Tesla reports (a new one stops the
-# run until its narrative is read). Waymo and Zoox carry no in-car monitor,
-# and their codes agree with their narratives.
+# monitor aboard carries "Subject Vehicle - All Belted" (or "Unknown"), so the
+# field cannot tell a rider from the monitor, and Passenger presence read
+# 61-87% for Tesla where the narratives give 8 of 23. Every Tesla narrative
+# says whether a passenger was aboard, so EVERY in-scope Tesla report carries
+# an entry (added 2026-10-03, audit finding #10), and
+# check_passengers_reviewed() stops the run on a Tesla report without one
+# until its narrative is read.
+#
+# Waymo and Zoox carry no in-car monitor, and their codes agree with their
+# narratives except where an entry below says otherwise; the occupancy
+# tripwire (OCCUPANCY_PATTERN, check_occupancy_classified()) stops the run on
+# a new disagreement. Generalized from TESLA_PASSENGER_OVERRIDE 2026-10-04
+# (second audit, #33) for the first such report, Zoox 30610-15826.
 PAX_NO = "Subject Vehicle - No Passenger In Vehicle"
 PAX_BELTED = "Subject Vehicle - All Belted"
 # The repo's own code for a passenger the narrative states without saying
 # whether they were belted (NHTSA's list has no such value); crashla.js
 # PAX_PRESENT counts it as a passenger.
 PAX_BELT_UNSTATED = "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated"
-TESLA_PASSENGER_OVERRIDE = {
+# How crashla.js reads a passenger code (PAX_NONE / PAX_UNKNOWN; any other
+# value is PAX_PRESENT): both no-passenger encodings are no passenger.
+PAX_CLASS = {PAX_NO: "none", "No Passengers in Vehicle": "none",
+             "Unknown": "unknown", "": "unknown"}
+PASSENGER_OVERRIDE = {
+    # Zoox, JUN-2026 San Francisco, filed no passenger: "An occupied Zoox
+    # autonomous vehicle was stopped at a traffic light"; belt use not stated
+    "30610-15826": (PAX_NO, PAX_BELT_UNSTATED),
+    # Tesla: every in-scope report (the monitor is not a passenger)
     "13781-11375": (PAX_BELTED, PAX_NO),   # "a safety monitor present with no passengers"
     "13781-11507": ("Unknown", PAX_NO),    # "no passengers were inside the vehicle"
     "13781-11687": (PAX_BELTED, PAX_BELTED),  # "a safety monitor present with one passenger"
@@ -596,6 +628,28 @@ TESLA_PASSENGER_OVERRIDE = {
     "13781-16255": (PAX_BELTED, PAX_BELTED),  # "had two passengers present"
     "13781-16256": (PAX_NO, PAX_NO),       # "had no passengers present"
 }
+
+# Narrative wording that says whether anyone was aboard the AV itself, named by
+# what it says ("none" or "present"; second audit, 2026-10-04, #33).
+# Calibrated on every in-scope Waymo and Zoox narrative, all versions, of the
+# Sep-15-2026 file (2,192 Waymo and 52 Zoox rows): Zoox opens nearly every
+# narrative with "An occupied Zoox autonomous vehicle" or "An unoccupied Zoox
+# (autonomous) vehicle" (47 rows of 43 reports, 30610-15826 the only one its
+# code contradicts), and Waymo says it once, "The Waymo AV, which had no
+# occupants" (both versions of 30270-9724, agreeing). Waymo's "occupied"
+# describes lanes and parking stalls ("the lane occupied by the Waymo AV"),
+# and its usual "the passenger in the Waymo AV" is left out: of the 221
+# reports that use it, 2 describe a rider who got out before the crash
+# (30270-8877, 30270-13578, both coded no passenger), so it does not say who
+# was aboard at impact. Tesla's wording is read report by report (every Tesla
+# report has a PASSENGER_OVERRIDE entry).
+OCCUPANCY_PATTERN = re.compile(
+    r"\b(?P<none>unoccupied\s+(?:Zoox|Waymo)|had\s+no\s+occupants)\b|"
+    r"\b(?P<present>occupied\s+(?:Zoox|Waymo))\b", re.I)
+# In-scope reports whose narrative trips OCCUPANCY_PATTERN against their filed
+# code but whose filed code stands, keyed by Report ID with the narrative's
+# words that show why (none so far).
+OCCUPANCY_LANGUAGE_REVIEWED = {}
 
 
 def must(cond, msg, **ctx):
@@ -753,6 +807,13 @@ def release_month_coverage(data_through_date, last_month):
     return best, lo, hi
 
 
+# Fault values sit on a 0.05 grid (0, 0.05, ..., 1): crashla.js faultSum sums
+# them in twentieths and refuses an off-grid value during init, which leaves
+# the page blank, so parse_fault_csv() stops on one here instead (second
+# audit, 2026-10-04, #6; quals/fault-grid.qual.mjs).
+FAULT_GRID = 20
+
+
 def parse_fault_csv(path):
     rows = read_fault_csv_rows(path)
     must(len(rows) > 0, "fault csv has no rows", path=path)
@@ -763,6 +824,9 @@ def parse_fault_csv(path):
         faultfrac = float(row["faultfrac"])
         must(math.isfinite(faultfrac), "faultfrac not finite", path=path, reportId=rid, faultfrac=row["faultfrac"])
         must(0.0 <= faultfrac <= 1.0, "faultfrac out of range", path=path, reportId=rid, faultfrac=faultfrac)
+        must(abs(faultfrac * FAULT_GRID - round(faultfrac * FAULT_GRID)) < 1e-9,
+             "faultfrac off the 0.05 grid (the page refuses it)", path=path,
+             reportId=rid, faultfrac=faultfrac)
         reasoning = row["reasoning"].strip()
         item = {"faultfrac": faultfrac, "reasoning": reasoning}
         if rid in data:
@@ -1470,6 +1534,10 @@ TELEOP_PATTERN = re.compile(
     r"took\s+over\s+(the\s+)?(vehicle\s+)?control", re.I)
 must(not set(TELEOP_DRIVEN_REPORTS) & set(REMOTE_LANGUAGE_ADS_DRIVEN),
      "a report is classified both teleoperator-driven and ADS-driven")
+must(not set(PASSENGER_OVERRIDE) & set(OCCUPANCY_LANGUAGE_REVIEWED),
+     "a report's passenger code is both re-coded and kept as filed")
+must(all(len(v) == 2 for v in PASSENGER_OVERRIDE.values()),
+     "PASSENGER_OVERRIDE entries must be (reviewed filed value, value to store)")
 
 
 def operator_in_scope(row):
@@ -1546,27 +1614,52 @@ def check_teleop_classified(row):
 
 def reviewed_belted(rid, filed):
     """The passenger code to store for report <rid>, whose filing says
-    <filed>: its TESLA_PASSENGER_OVERRIDE entry if it has one, else <filed>."""
-    reviewed, applied = TESLA_PASSENGER_OVERRIDE.get(rid, (filed, filed))
+    <filed>: its PASSENGER_OVERRIDE entry if it has one, else <filed>."""
+    reviewed, applied = PASSENGER_OVERRIDE.get(rid, (filed, filed))
     must(reviewed == filed,
-         "TESLA_PASSENGER_OVERRIDE was reviewed against a different filed "
+         "PASSENGER_OVERRIDE was reviewed against a different filed "
          "passenger value (the report was re-filed; re-read its narrative)",
          reportId=rid, reviewed=reviewed, filed=filed)
     return applied
 
 
-def check_tesla_passengers_reviewed(incidents):
-    """Stop the run unless TESLA_PASSENGER_OVERRIDE covers exactly the
-    in-scope Tesla reports, so a new report's narrative gets read for whether
-    a passenger, and not only the safety monitor, was aboard."""
+def check_passengers_reviewed(incidents):
+    """Stop the run unless every in-scope Tesla report has a
+    PASSENGER_OVERRIDE entry, so a new Tesla report's narrative gets read for
+    whether a passenger, and not only the safety monitor, was aboard, and
+    unless every entry is an in-scope report (an entry whose report left
+    scope is stale)."""
+    stored = {r["reportId"] for r in incidents}
     tesla = {r["reportId"] for r in incidents if r["helmer"] == "Tesla"}
-    reviewed = set(TESLA_PASSENGER_OVERRIDE)
-    must(tesla == reviewed,
-         "TESLA_PASSENGER_OVERRIDE must cover exactly the in-scope Tesla "
-         "reports (read each new report's narrative and add whether a "
-         "passenger, not just the safety monitor, was aboard; drop entries for "
-         "reports no longer in scope)",
-         unreviewed=sorted(tesla - reviewed), stale=sorted(reviewed - tesla))
+    reviewed = set(PASSENGER_OVERRIDE)
+    must(tesla <= reviewed and reviewed <= stored,
+         "PASSENGER_OVERRIDE must cover every in-scope Tesla report and list "
+         "only in-scope reports (read each new Tesla report's narrative and "
+         "add whether a passenger, not just the safety monitor, was aboard; "
+         "drop entries for reports no longer in scope)",
+         unreviewed=sorted(tesla - reviewed), stale=sorted(reviewed - stored))
+
+
+def check_occupancy_classified(row):
+    """Stop the run on an in-scope report whose narrative says whether anyone
+    was aboard the AV (OCCUPANCY_PATTERN) where its filed passenger code says
+    otherwise, until a human classifies it: a PASSENGER_OVERRIDE entry storing
+    the narrative's answer, or OCCUPANCY_LANGUAGE_REVIEWED with the words that
+    show the filed code stands. <row> is the report's surviving (latest)
+    filing."""
+    rid = row["Report ID"]
+    stated = {m.lastgroup for m in OCCUPANCY_PATTERN.finditer(row["Narrative"])}
+    filed = row["Were All Passengers Belted?"].strip()
+    flagged = (operator_in_scope(row) and len(stated) > 0
+               and stated != {PAX_CLASS.get(filed, "present")})
+    must(not flagged or rid in PASSENGER_OVERRIDE
+         or rid in OCCUPANCY_LANGUAGE_REVIEWED,
+         "the narrative says who was aboard and the filed passenger code "
+         "disagrees (read the narrative; add a PASSENGER_OVERRIDE entry with "
+         "the code it supports, else list the report in "
+         "OCCUPANCY_LANGUAGE_REVIEWED with the words that show the filed code "
+         "stands)", reportId=rid, filed=filed, stated=sorted(stated),
+         narrative=row["Narrative"][:300])
 
 
 def report_rank(row):
@@ -1802,9 +1895,10 @@ def main():
              "incident has no city or state (read its narrative and add a "
              "LOCATION_OVERRIDE entry with the place it names)",
              reportId=rid, incidentId=iid_short, filed=filed_loc)
+        check_occupancy_classified(r)
         rec["belted"] = reviewed_belted(rid, rec["belted"])
         incidents.append(rec)
-    check_tesla_passengers_reviewed(incidents)
+    check_passengers_reviewed(incidents)
 
     # Sort by helmer then date (ISO month sorts lexicographically)
     incidents.sort(key=lambda r: (
@@ -1885,13 +1979,10 @@ def main():
         co_incidents = [r for r in incidents if r["helmer"] == helmer]
         n = len(co_incidents)
         # Same three classes as crashla.js PAX_NONE / PAX_UNKNOWN / PAX_PRESENT
-        # (both no-passenger encodings count as no passenger).
-        pax_none = {"Subject Vehicle - No Passenger In Vehicle",
-                    "No Passengers in Vehicle"}
-        pax_unknown = {"Unknown", ""}
-        with_pax = sum(1 for r in co_incidents
-                       if r["belted"] not in pax_none | pax_unknown)
-        no_pax = sum(1 for r in co_incidents if r["belted"] in pax_none)
+        # (PAX_CLASS; both no-passenger encodings count as no passenger).
+        classes = Counter(PAX_CLASS.get(r["belted"], "present")
+                          for r in co_incidents)
+        with_pax, no_pax = classes["present"], classes["none"]
         unk = n - with_pax - no_pax
         pct = f"{100*with_pax/n:.0f}%" if n else "n/a"
         print(f"  {helmer}: {with_pax}/{n} with passenger ({pct})"

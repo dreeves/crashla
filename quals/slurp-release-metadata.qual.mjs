@@ -14,7 +14,7 @@ import { spawnSync } from "node:child_process";
 // reproduce the committed payloads byte for byte.
 
 const py = String.raw`
-import csv, glob, importlib.util, pathlib, tempfile
+import collections, csv, glob, importlib.util, pathlib, tempfile
 from email.utils import format_datetime
 import datetime
 
@@ -161,7 +161,41 @@ last_iso = slurp.NHTSA_DATA_THROUGH_DATE[:7]
 last_date = datetime.date.fromisoformat(slurp.NHTSA_DATA_THROUGH_DATE)
 last_label = last_date.strftime('%b-%Y').upper()
 next_label = (last_date.replace(day=1) + datetime.timedelta(days=32)).strftime('%b-%Y').upper()
-template = next(r for r in rows if r['Reporting Entity'] == 'Waymo LLC' and r['Report Type'].strip() == '5-Day' and r['Incident Date'].strip() == last_label)
+# The clones below copy a template row under new IDs, so the template must be
+# a row slurp counts on its own: a driverless ("None") Waymo 5-Day filing of
+# the data-through month that needs no reviewed entry (none keyed by its
+# Report ID or Same Incident ID, a filed city and state, and no narrative
+# tripwire firing once its Report ID is new), filed once (its Report ID has
+# one version and its Same Incident ID one report, so the tie clone meets it).
+# The smallest such Report ID, so NHTSA's row order cannot pick a template
+# whose clone stops the run for another reason (until 2026-10-04 the first
+# listed row was used: second audit, #58).
+filed_rows = slurp.filed_incident_rows(rows)
+versions = collections.Counter(r['Report ID'] for r in filed_rows)
+reports = collections.Counter(r['Same Incident ID'] for r in filed_rows)
+reviewed_rids = (set(slurp.OPERATOR_TYPE_OVERRIDE) | set(slurp.TELEOP_DRIVEN_REPORTS)
+                 | set(slurp.REMOTE_LANGUAGE_ADS_DRIVEN) | set(slurp.SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN)
+                 | set(slurp.PASSENGER_OVERRIDE) | set(slurp.OCCUPANCY_LANGUAGE_REVIEWED)
+                 | slurp.SPLIT_SAME_INCIDENT_REPORTS)
+reviewed_iids = (set(slurp.LOCATION_OVERRIDE) | set(slurp.SEVERITY_OVERRIDE)
+                 | set(slurp.AIRBAG_OVERRIDE) | set(slurp.VEHICLES_INVOLVED))
+def trips_unlisted(r):
+    probe = dict(r, **{'Report ID': 'synthetic-probe'})
+    for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified,
+                  slurp.check_occupancy_classified):
+        try: check(probe)
+        except AssertionError: return True
+    return False
+eligible = [r for r in filed_rows
+            if r['Reporting Entity'] == 'Waymo LLC' and r['Report Type'].strip() == '5-Day'
+            and r['Incident Date'].strip() == last_label
+            and r['Driver / Operator Type'].strip() == 'None' and slurp.is_public_service_incident(r)
+            and r['City'].strip() and r['State'].strip()
+            and versions[r['Report ID']] == 1 and reports[r['Same Incident ID']] == 1
+            and r['Report ID'] not in reviewed_rids and r['Same Incident ID'] not in reviewed_iids
+            and not trips_unlisted(r)]
+assert eligible, 'no Waymo 5-Day filing of the data-through month can serve as a clone template'
+template = min(eligible, key=lambda r: r['Report ID'])
 early_monthly = dict(template)
 early_monthly['Report ID'] = 'synthetic-early-monthly'
 early_monthly['Same Incident ID'] = 'synthetic-early-monthly'

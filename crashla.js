@@ -528,7 +528,9 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // an airbag deployment, or (ADS) a tow-away. Everything else rides the
 // Monthly track (Request No. 2) and gets the incident-coverage thinning for
 // the structurally incomplete data-through month, on top of the receipt-
-// coverage scaling every metric gets there (see monthSeriesData). Only metrics
+// coverage scaling every metric gets there, and for the months inside a
+// helmer's extra Monthly-report lag (slurp.py MONTHLY_ARRIVAL_LAG; see
+// monthSeriesData). Only metrics
 // whose counting predicate GUARANTEES a Request No. 1.D trigger get the flag
 // (fatality, hospitalization, airbag, and since 2026-09-04 seriousInjury:
 // every SSI+ severity the whitelist admits — "Serious", "Serious W/
@@ -607,6 +609,9 @@ const METRIC_DEFS = [
       // (Blincoe 2023, 813403) of injury crashes unreported) roughly doubles
       // that -> ~7.1 per M mi.
       HumansUS: {lo: 140000, hi: 300000,
+        // TODO (audit 2026-10-04 #41): the "~7.1 IPMM" below is 1-3% low: its
+        // stated inputs give 7.20-7.34, depending on which Blincoe unreported
+        // shares are used. The 140K edge holds at two figures.
         src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
@@ -894,6 +899,10 @@ const METRIC_DEFS = [
         // both routes, 1M/2.46 (SF Bay Area, injury route) to 1M/0.727
         // (Phoenix, injury route); mileage-blended: 1M/1.40 (injury route),
         // 1M/1.06 (airbag route).
+        // TODO (audit 2026-10-04 #40): "Waymo's per-area ... rates" below are
+        // the hub's human-benchmark rates (SF Bay 4.54 to Phoenix 1.34 IPMM),
+        // not Waymo's own ADS rates (0.52-0.86); fine only if "Waymo's" is
+        // read as "published by Waymo".
         src: "CRSS-measured ratio of crashes with hospital transport or serious/fatal injury to injury crashes and to airbag crashes applied to Waymo's per-area police-reported any-injury rates, not underreporting-adjusted",
         srcLinks: [
           'https://waymo.com/safety/impact/',
@@ -1086,6 +1095,13 @@ for (const m of METRIC_DEFS) {
       // makes these modeled-proxy bands render dashed (see derivedBandDash),
       // unlike the sourced fatality band above.
       derived: true,
+      // TODO (audit 2026-10-04 #7): "no rideshare-specific non-fatal rate
+      // published" below: papers these rows link cite some (arXiv 2312.12675:
+      // Flannagan et al. 2023, 64.9 crashes per M mi, SF, any contact; Chen &
+      // Shladover 2024, 15.5 injury crashes per M mi; arXiv 2505.01515: 36.2
+      // and 50.5). Each is less safe than the matching derived band's
+      // least-safe edge (all incidents: 86K MPI); the 1.2x/1.5x lean stays
+      // as settled.
       src: 'Computed from the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction; no rideshare-specific non-fatal rate published',
       srcLinks: h.HumansAV.srcLinks,
     };
@@ -1114,6 +1130,11 @@ const STRESS_VERDICT_META = {
   worse: {label: "robustly worse", className: "worse"},
   ambiguous: {label: "ambiguous", className: "ambiguous"},
 };
+// TODO (audit 2026-10-04 #42): "based solely on priors" below: a k = 0
+// posterior, Gamma(0.5, VMT), also uses the zero incidents over the window's
+// miles. Tesla airbag (0 in 2.81M mi vs 3.6-8.0 expected) stays "safer" even
+// under a flat prior; Tesla at-fault injury turns ambiguous, so the warning
+// fits there.
 const PRIOR_ONLY_TIP = "Zero incidents of this type observed in the window so this verdict is based solely on priors, i.e., be skeptical! This mirrors the chart's hollow dot convention for k=0.";
 // The prior-only marking of an estimate resting on zero incidents (k = 0):
 // the class "prior-only" (faded, italic) and PRIOR_ONLY_TIP, whose target is a
@@ -2377,8 +2398,10 @@ function renderAllHelmersMpiChart(series) {
       // five-day-track metrics, whose denominator is the receipt-scaled raw
       // triple — the same metric-data selection mpiByMetric makes. Drives dot
       // opacity so incomplete months are visually demoted without a separate
-      // code path. covBest is the pooled best estimate (incident_coverage),
-      // shown in the tooltip to match the sanity table's "best" column. Read
+      // code path. covBest is the best estimate (incident_coverage: pooled in
+      // the data-through month, the helmer's 5-Day share in its Monthly-lag
+      // months), shown in the tooltip to match the sanity table's "best"
+      // column. Read
       // from the coverage columns directly: until 2026-09-26 it was the ratio
       // of two differently composed VMT edges, (receipt best / receipt min) x
       // incCovMin, i.e. 24% where the sanity table said 17.3%.
@@ -3434,6 +3457,10 @@ function growthScenarioNote(lanes) {
     assert(lane !== undefined, "growthScenarioNote: no lane for the scenario", {key});
     return scenarioPct(lane.share);
   };
+  // TODO (audit 2026-10-04 #11): "splits into two scenarios" below: the
+  // model has three (A slow robotaxi ramp 0.71, B aggressive scale-up 0.24,
+  // C eyes-off FSD on all HW4 cars 0.05). The robotaxi curve mixes A and B,
+  // and B is its unexplained second hump near 9,000 vehicles.
   return `Tesla forecast splits into two scenarios: the robotaxi (~${pct("robotaxi")}%) ` +
     `and unsupervised FSD in all HW4 cars (~${pct("hw4")}%). ` +
     "These numbers are the scenarios' probabilities.";
@@ -4648,10 +4675,12 @@ const PAX_PRESENT = new Set([
   "Subject Vehicle - Not Belted - see Narrative",
   "Yes",
   "No, see Narrative",
-  // Not an NHTSA value: data/slurp.py's TESLA_PASSENGER_OVERRIDE stores it for
-  // a Tesla report whose narrative states a passenger without saying whether
-  // they were belted (Tesla files its in-car safety monitor as a passenger, so
-  // its own "belted" value cannot tell a rider from the monitor).
+  // Not an NHTSA value: data/slurp.py's PASSENGER_OVERRIDE stores it for a
+  // report whose narrative states a passenger without saying whether they were
+  // belted: two Tesla reports (Tesla files its in-car safety monitor as a
+  // passenger, so its own "belted" value cannot tell a rider from the monitor)
+  // and Zoox 30610-15826, filed with no passenger though its narrative says
+  // "An occupied Zoox autonomous vehicle".
   "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated",
 ]);
 const PAX_UNKNOWN = new Set(["Unknown", ""]);
@@ -5064,12 +5093,15 @@ Maybe that affects AVs too?
       <td class="ai-text">${ratStr}</td>
     </tr>`);
   }
+  // Tesla's Jul-Aug 2026 rows (710k of 3.15M raw
+  // window miles), its Aug floor and the hidden Sep row rest on Elluswamy's
+  // Sep 3 Cybercab keynote. The Q3 deck (Oct 21) should re-pin Jul-Sep.
   sections.push(`
 <h3>VMT sources</h3>
 <p>
 Where the Vehicle Miles Traveled (VMT) estimates come from for each company.
 These are the denominators in every miles per incident (MPI) calculation, so any errors here matter a lot.
-In general we don't trust anything Tesla says <i>except</i> numbers in their official reports to investors which seem to be reliable and would be a big deal (e.g., securities fraud) if they weren't.
+In general we mistrust anything Tesla says except numbers in their official reports to investors which seem to be reliable and would be a big deal (e.g., securities fraud) if they weren't.
 </p>
     <div class="table-wrap"><table>
       <thead><tr>
@@ -5164,6 +5196,11 @@ Claude notes:
   // (Facts: hub CSV2 v1 "Is Suspected Serious Injury+"; Sep-24-2026 release
   // notes p. 2 on 30270-13817, p. 8 on relying on the police crash report.
   // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
+  // TODO (audit 2026-10-04 #5): the note below puts the whole 3.3x on coding.
+  // Through Jun 2026, where Waymo's data end, the page has 7 SSI+ in 277.83M
+  // mi = 2.28x, and 0.98x with Waymo's police coding. The rest, about half
+  // the 3.3x on a log scale, is four Jul-Aug 2026 crashes Waymo's rate does
+  // not cover yet: 30270-15830, -15896, -16028 and the Dallas fatality -16196.
   const waySsiNote = `The serious-injury+ ratio is far from 1 because the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious by the police reports, and one (30270-13817) still awaits a police crash report.`;
   sections.push(`
 <h3>Waymo cross-check</h3>

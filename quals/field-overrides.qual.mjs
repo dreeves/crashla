@@ -57,8 +57,20 @@ Resultata: ${rec === undefined ? "row missing" : JSON.stringify(rec.airbagAny)}.
 // says Phoenix, CA while the narrative says Phoenix, Arizona (kills a phantom
 // city); 30270-11302 (Waymo, JUL-2025) arrived with blank city, state and
 // address, and its narrative says "operating in Los Angeles, California"
-// (2026-10-03, audit finding #52; it rendered as a bare ", ").
-for (const [rid, city, state] of [["30270-7054", "Phoenix", "AZ"], ["30270-11302", "Los Angeles", "CA"]]) {
+// (2026-10-03, audit finding #52; it rendered as a bare ", "). Five more
+// (second audit, 2026-10-04, #46) carried a neighbouring city's name in the
+// SGO City field where the narrative and Waymo's hub CSV2 crash address both
+// name another: 30270-13811 filed San Francisco, narrative "operating in Daly
+// City", hub "John Daly Boulevard near Lake Merced Boulevard", San Mateo
+// County; 30270-15662 filed Miami, narrative "North Miami", hub "NE 123rd
+// Street at Sans Souci Boulevard", 33181; 30270-10112 filed Phoenix,
+// narrative "Chandler", hub "N Dobson Rd and W Flint Street", 85224;
+// 30270-10141 filed Phoenix, narrative "Tempe", hub "Parking lot near 1810 E
+// Apache Boulevard", 85281; 30270-9763 filed Los Angeles, narrative "West
+// Hollywood", hub "Parking lot near 8280 Santa Monica Boulevard", 90046.
+for (const [rid, city, state] of [["30270-7054", "Phoenix", "AZ"], ["30270-11302", "Los Angeles", "CA"],
+  ["30270-13811", "Daly City", "CA"], ["30270-15662", "North Miami", "FL"], ["30270-10112", "Chandler", "AZ"],
+  ["30270-10141", "Tempe", "AZ"], ["30270-9763", "West Hollywood", "CA"]]) {
   const rec = byId.get(rid);
   assert.ok(rec !== undefined && rec.state === state && rec.city === city,
     `Replicata: read ${rid}'s location from data/incidents.js.

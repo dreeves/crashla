@@ -22,7 +22,7 @@ The live URLs are defined in `data/slurp.py` as:
 - `NHTSA_ADS_CSV_URL`
 - `NHTSA_ADS_ARCHIVE_URL`
 
-NHTSA's canonical SGO page labels each release "through <date>": reports
+NHTSA's canonical SGO page labels each release "through `<date>`": reports
 received through that date, which is the 15th of the month before the
 release, rolled forward to the next business day when the 15th falls on a
 weekend or federal holiday (e.g. "through August 17, 2026" for the Sep 15,
@@ -94,16 +94,20 @@ The slurp pipeline is:
    restrict to the app's VMT analysis window
 9. Apply narrative-verified field overrides from `slurp.py` (severity, airbag,
    city and state — see `quals/field-overrides.qual.mjs` for the pins;
-   vehicles-involved — see `quals/fatality-guard.qual.mjs`; Tesla passenger
-   presence, which Tesla's filings conflate with its in-car safety monitor —
-   see `quals/passenger-classification.qual.mjs`; the dict comments carry each
+   vehicles-involved — see `quals/fatality-guard.qual.mjs`; passenger
+   presence (`PASSENGER_OVERRIDE`): every Tesla report, since Tesla's filings
+   conflate a rider with its in-car safety monitor, and any Waymo or Zoox
+   report whose narrative contradicts its filed code — see
+   `quals/passenger-classification.qual.mjs`; the dict comments carry each
    row's justification), strip the narratives' fact-free filing boilerplate
    (`quals/narrative-boilerplate.qual.mjs`), and join in the fault fractions.
-   A filed city, state or Tesla passenger value that no longer matches the
-   one its override was reviewed against, an incident left with no city or
-   state, or an in-scope Tesla report with no reviewed passenger entry stops
-   the run (the severity, airbag and vehicles-involved overrides carry no
-   such check)
+   A filed city, state or passenger value that no longer matches the one its
+   override was reviewed against, an incident left with no city or state, an
+   in-scope Tesla report with no reviewed passenger entry, a passenger entry
+   for a report no longer in scope, or a narrative that says who was aboard
+   the AV ("An occupied Zoox autonomous vehicle", "unoccupied", "had no
+   occupants") against its filed passenger code, unreviewed, stops the run
+   (the severity, airbag and vehicles-involved overrides carry no such check)
 10. Apply the data-through month's receipt coverage (`coverage`,
     `coverage_min`, `coverage_max`) and the pooled Monthly-track incident
     coverage (`incident_coverage`, `_min`, `_max`), plus the Monthly-track
@@ -119,7 +123,14 @@ The slurp pipeline is:
 
 1. `NHTSA_DATA_THROUGH_DATE`: the new release's cutoff.
 2. `FIVE_DAY_RECEIPT_OBSERVATIONS`: the month that just became final (the
-   one before the new data-through month).
+   one before the new data-through month). Then `FIVE_DAY_RECEIPT_COVERAGE`
+   = (best, lo, hi) must still agree with the observations: best within 0.02
+   of their median, lo at or below the lowest observed fraction and hi at or
+   above the highest. When the new observation falls outside the band, lower
+   lo (or raise hi) to cover it, as the 2026-07 observation (12 of 58, 0.21)
+   lowered lo from 0.25 to 0.20; a new low is likely, since August 2026's
+   numerator is 10 and every final 2026 denominator but February's has been
+   58-72.
 3. The Monthly-report arrival table, re-measured alongside the receipt
    observations: each company's `MONTHLY_ARRIVAL_OBSERVATIONS` row for the
    month whose third release this is (data-through month - 2); a check that
@@ -130,8 +141,20 @@ The slurp pipeline is:
    lagged month: record that month's on-time count as its observation and
    set the lag.
 
+These are the constants every release needs. The run also stops on what a
+release brings: an incident month newer than the newest month in
+`data/vmt.csv` (step 6), a value outside a whitelist or an unclassified
+operator mode (step 3), a fault value off the 0.05 grid (step 7), and the
+override re-reads and narrative checks of step 9; and
+`quals/fault-coverage.qual.mjs` needs a `data/faultfrac.csv` row for every
+new incident.
+
 Then re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
-comments say.
+comments say, and, when a new in-scope Tesla report has a passenger aboard
+(its `PASSENGER_OVERRIDE` entry stores one), add it to the list of Tesla
+reports with a rider that `quals/passenger-classification.qual.mjs` pins
+exactly (8 of 23 as of the Sep 15, 2026 file); the qual goes red on any new
+one until then.
 
 ## VMT master
 
@@ -255,6 +278,10 @@ The rule is:
 
 - The first six columns come from the latest deduplicated NHTSA master data
 - The last two columns (`faultfrac`, `reasoning`) are the judgment columns
+- `faultfrac` is on a 0.05 grid (0, 0.05, 0.1, ..., 1): the page sums fault
+  values in twentieths and refuses any other value, rendering nothing, so
+  `data/slurp.py` stops on a value off the grid or outside 0-1
+  (`quals/fault-grid.qual.mjs`)
 
 When `data/slurp.py` runs, it synchronizes the first six columns of
 `faultfrac.csv` from the live NHTSA master rows before loading the fault

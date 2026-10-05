@@ -106,11 +106,15 @@ Expectata: the authored cumulative band [kyoom_min, kyoom_max] contains [${figur
 Resultata: [${row.kmin}, ${row.kmax}].`);
 }
 
-// At the hub anchors from Sep-2025 on, the kyoom band IS the anchor band:
+// At every hub anchor the kyoom band IS the anchor band:
 // [figure + E_lo, figure + E_hi] - PRE_SERIES_MILES exactly (the
 // 2025-10..12 rationales say so; Sep-2025 sat 0.85M looser below and 0.45M
-// above until 2026-09-26). Earlier anchors keep their looser authored bands.
-const EXACT_KNOTS = new Set(["2025-09", "2025-12", "2026-03", "2026-06"]);
+// above until 2026-09-26). Mar-2025 and Jun-2025 kept looser authored bands
+// (±4%, ±2.5%) until 2026-10-04 (second audit, #49); Mar-2025's E is exact
+// (Atlanta and Mountain View listed in the hub's own file), so its band is
+// the single value figure + E - PRE_SERIES_MILES, and the Feb-May 2025 bands
+// are re-chained from the two knots (kyoom-band.qual's local invariants).
+const EXACT_KNOTS = new Set(["2025-03", "2025-06", "2025-09", "2025-12", "2026-03", "2026-06"]);
 for (const [month, figure, [eLo, , eHi]] of PINS.filter(p => EXACT_KNOTS.has(p[0]))) {
   const row = byMonth[month];
   const wantMin = figure + eLo - PRE_SERIES_MILES, wantMax = figure + eHi - PRE_SERIES_MILES;
