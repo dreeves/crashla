@@ -424,11 +424,22 @@ const shown = JSON.parse(vm.runInContext(`(() => {
 })()`, ctx6));
 assert.ok(!shown.fiveDay && shown.ads.includes("Zoox"),
   `Replicata: select All incidents and switch Zoox on. Expectata: a Monthly-track metric, Zoox shown. Resultata: ${shown.metric}, ${JSON.stringify(shown.ads)}.`);
-const qOpacity = [...shown.html.matchAll(/<text class="month-tick"[^>]*style="opacity:([\d.]+);pointer-events:none">\?<\/text>/g)].map(m => m[1]);
-assert.deepEqual(qOpacity, shown.expected.map(o => o.toFixed(3)),
+// A run of adjacent incomplete months shares one "?" (audit 2026-10-04 #36:
+// on a phone the lagged month's and the data-through month's glyphs sat 3.6
+// units apart and read "??"), centred on the run at its largest
+// incompleteness; every complete month keeps its own at opacity 0.
+const qmarks = [...shown.html.matchAll(/<text class="month-tick" x="([\d.]+)"[^>]*style="opacity:([\d.]+);pointer-events:none">\?<\/text>/g)]
+  .map(m => ({ x: Number(m[1]), opacity: m[2] }));
+const monthX = [...new Set([...shown.html.matchAll(/<circle class="month-dot" cx="([\d.]+)"/g)].map(m => Number(m[1])))].sort((a, b) => a - b);
+const groups = [];
+shown.expected.forEach((o, i) => { if (o > 0 && i > 0 && shown.expected[i - 1] > 0) groups[groups.length - 1].push(i); else groups.push([i]); });
+const wantQ = groups.map(g => ({ months: g.map(i => shown.months[i]).join("+"),
+  x: (monthX[g[0]] + monthX[g[g.length - 1]]) / 2, opacity: Math.max(...g.map(i => shown.expected[i])).toFixed(3) }));
+assert.ok(monthX.length === shown.months.length && qmarks.length === wantQ.length &&
+  qmarks.every((q, i) => q.opacity === wantQ[i].opacity && Math.abs(q.x - wantQ[i].x) <= 0.01),
   `Replicata: the "?" markers of the default-window MPI chart with Zoox shown (metric ${shown.metric}).
-Expectata: one per month at opacity max(1 - incident_coverage_min) over the shown ADS helmers: ${JSON.stringify(shown.months.map((m, i) => m + " " + shown.expected[i].toFixed(3)).filter(x => !x.endsWith(" 0.000")))} visible, the rest 0.
-Resultata: ${JSON.stringify(shown.months.map((m, i) => m + " " + qOpacity[i]).filter(x => !x.endsWith(" 0.000")))}.`);
+Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest 1 - incident_coverage_min over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
+Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) => ({ ...q, at: wantQ[i] && wantQ[i].months })).filter(q => q.opacity !== "0.000"))}.`);
 const tipsOf = month => [...shown.html.matchAll(/data-tip="([^"]*)"/g)]
   .map(m => m[1].replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"))
   .filter(t => t.startsWith(month + "\n") && /incident/.test(t));

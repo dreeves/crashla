@@ -1657,7 +1657,7 @@ def check_occupancy_classified(row):
     otherwise, until a human classifies it: a PASSENGER_OVERRIDE entry storing
     the narrative's answer, or OCCUPANCY_LANGUAGE_REVIEWED with the words that
     show the filed code stands. <row> is the report's surviving (latest)
-    filing."""
+    filing. It also stops on a filed passenger code PAX_CLASS does not list."""
     rid = row["Report ID"]
     stated = {m.lastgroup for m in OCCUPANCY_PATTERN.finditer(row["Narrative"])}
     filed = row["Were All Passengers Belted?"].strip()

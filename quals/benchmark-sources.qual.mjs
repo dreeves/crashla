@@ -168,4 +168,30 @@ assert.deepEqual(notes, ["https://storage.googleapis.com/waymo-uploads/files/doc
 Expectata: the Sep 24, 2026 edition the hub links (data through Jun 2026), not the superseded Jun 24 one.
 Resultata: ${JSON.stringify(notes)}.`);
 
+// --- audit 2026-10-04 #34: the US-average rows link the inputs they name ---
+// The all-crash and injury bands state CRSS crashed-vehicle rates (3.3 and
+// 0.92 per M mi) but linked only NHTSA's 2024 crash overview (813791), which
+// has crash counts and VMT and no vehicle counts; the at-fault bands are
+// built on those two; and the airbag and SSI+ bands, log-interpolated
+// between the national injury and fatality anchors by the AV-cities
+// severity ladder, linked 813791 alone though they use the hub's AV-cities
+// centres, the IIHS urban fatality centre and the US injury band's CRSS and
+// Blincoe inputs.
+{
+  const CRSS = "https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/";
+  const IIHS = "https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison";
+  const N813791 = "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791";
+  const want = {
+    all: [CRSS], atfault: [CRSS], injury: [CRSS], atfaultInjury: [CRSS],
+    airbag: [CRSS, HUB, IIHS, B2015, B2023, N813791],
+    seriousInjury: [CRSS, HUB, IIHS, B2015, B2023, N813791],
+  };
+  const missing = Object.entries(want).flatMap(([metric, urls]) =>
+    urls.filter(u => !linksOf(metric, "HumansUS").includes(u)).map(u => `${metric}: ${S[u] || u}`));
+  assert.deepEqual(missing, [],
+    `Replicata: read the US-average (HumansUS) srcLinks of the all-crash, at-fault, injury, at-fault injury, airbag and serious-injury+ bands.
+Expectata: each links the sources of the rates its derivation names: NHTSA CRSS 2024 for the crashed-vehicle rates (all six); also the Waymo hub, IIHS, both Blincoe editions and NHTSA 813791 for the airbag and SSI+ log-interpolations.
+Resultata: missing ${JSON.stringify(missing)}.`);
+}
+
 console.log(`qual pass: ${Object.keys(S).length} benchmark sources, one label each; human cards list each once; derivations cite the sources they use`);

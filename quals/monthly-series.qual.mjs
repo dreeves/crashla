@@ -658,14 +658,21 @@ assert.ok(cardOf(firstMonthCards, "Humans (AV cities)").includes("Benchmarks:"),
 // helmer; the months inside a helmer's Monthly-report lag (since 2026-10-04,
 // data/slurp.py MONTHLY_ARRIVAL_LAG) are its own, so they count only while
 // that helmer is shown (Zoox, off by default).
-const incompleteMonths = vm.runInContext(`
-  new Set(parseVmtCsv(VMT_CSV_TEXT).filter(r => monthHelmerEnabled[r.helmer] && (r.coverage < 1 || r.incCov < 1)).map(r => r.month)).size`, ctx);
+// Since 2026-10-04 (audit #36) a run of adjacent incomplete months shares one
+// "?" (on a phone, Zoox's lagged 2026-07 and the data-through 2026-08 drew two
+// glyphs 3.6 units apart, read as "??"): one per complete month at opacity 0,
+// plus one per run of adjacent incomplete months.
+const windowMonthList = vm.runInContext(`(() => { const s = monthSeriesData(); return s.months.slice(s.months.indexOf(DEFAULT_START_MONTH)); })()`, ctx);
+const incompleteSet = new Set(vm.runInContext(`
+  [...new Set(parseVmtCsv(VMT_CSV_TEXT).filter(r => monthHelmerEnabled[r.helmer] && (r.coverage < 1 || r.incCov < 1)).map(r => r.month))]`, ctx));
+const incompleteMonths = windowMonthList.filter(m => incompleteSet.has(m)).length;
+const incompleteRuns = windowMonthList.filter((m, i) => incompleteSet.has(m) && !(i > 0 && incompleteSet.has(windowMonthList[i - 1]))).length;
 const qmarkOpacities = [...plain.chartMpiAll.matchAll(/<text class="month-tick"[^>]*style="opacity:([\d.]+);pointer-events:none">\?<\/text>/g)].map(m => Number(m[1]));
 const visibleQmarks = qmarkOpacities.filter(o => o > 0).length;
-const windowMonths = vm.runInContext(`(() => { const s = monthSeriesData(); return s.months.length - s.months.indexOf(DEFAULT_START_MONTH); })()`, ctx);
-assert.ok(qmarkOpacities.every(o => o >= 0 && o <= 1) && qmarkOpacities.length === windowMonths && visibleQmarks === incompleteMonths,
+const windowMonths = windowMonthList.length;
+assert.ok(qmarkOpacities.every(o => o >= 0 && o <= 1) && qmarkOpacities.length === windowMonths - incompleteMonths + incompleteRuns && visibleQmarks === incompleteRuns,
   `Replicata: count "?" marker texts on the default-window MPI-over-time chart and how many are visible (opacity > 0).
-Expectata: one per month in the window (${windowMonths}; complete months carry it at opacity 0, grayed out rather than suppressed), each with a finite opacity in [0, 1], of which ${incompleteMonths} visible.
+Expectata: one per complete month (${windowMonths - incompleteMonths}, at opacity 0, grayed out rather than suppressed) and one per run of adjacent incomplete months (${incompleteRuns}, visible), each with a finite opacity in [0, 1].
 Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
 // (d) The MPI-over-time tooltip's "worst case" coverage IS incident_coverage_min.
 // Until 2026-09-26 the chart derived it as vmtMin / vmtRawMin, i.e. (receipt

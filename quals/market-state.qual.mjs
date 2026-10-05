@@ -76,10 +76,14 @@ class El {
 const nodes = new Map();
 const errors = [];
 let fetchImpl = () => { throw new Error("no fetch scripted"); };
+// Each fetch's timeout signal (AbortSignal.timeout, audit 2026-10-04 #31):
+// the qual records the timeouts asked for and fires them when it chooses.
+const timeouts = [], timeoutControllers = [];
 const ctx = vm.createContext({
   console: { log: console.log, warn: console.warn, error: (...a) => errors.push(a.map(String).join(" ")) },
   setInterval: () => 1, clearInterval: () => {},
-  fetch: url => fetchImpl(url),
+  AbortSignal: { timeout: ms => { timeouts.push(ms); const c = new AbortController(); timeoutControllers.push(c); return c.signal; } },
+  fetch: (url, options) => fetchImpl(url, options),
   document: {
     getElementById: id => { if (!nodes.has(id)) nodes.set(id, new El("div")); return nodes.get(id); },
     createElement: tag => new El(tag),
@@ -116,6 +120,7 @@ function readPanel() {
       sub: card.classes.has("pm-subcard"),
       faded: card.classes.has("pm-faded"),
       state: decode((/<span class="pm-card-state">([^<]*)<\/span>/.exec(card.innerHTML) || [, null])[1] ?? "(no state span)"),
+      odds: (/<span class="pm-card-odds (\w+)">([^<]*)<\/span>/.exec(card.innerHTML) || []).slice(1).reverse().join(" "),
     })),
     footer: panel.children[1],
   };
@@ -214,6 +219,13 @@ if (L !== null) {
 }
 if (!errors.some(e => e.includes(FAILING))) problems.push(`the failed fetch of ${FAILING} was not reported on the console (got ${JSON.stringify(errors)})`);
 
+// The snapshot's first paint, which the scenarios below start from: since
+// 2026-10-04 (audit #53) a failed fetch keeps the entry the panel drew, so
+// each scenario that checks a failure against the snapshot's state repaints
+// the snapshot first.
+const paintSnapshot = () => vm.runInContext(
+  "renderPredmarketsPanel(snapshotMarkets(POLYMARKET_SNAPSHOT), snapshotMarkets(MANIFOLD_SNAPSHOT), PREDMARKET_SNAPSHOT_DATE)", ctx);
+
 // --- 3b. A resolution the cards cannot name fails that market's fetch ------
 // (an unknown Manifold code, a 50-50 Polymarket resolution with no outcome
 // priced 1, an MKT resolution without the probability it settled at, which
@@ -222,6 +234,7 @@ if (!errors.some(e => e.includes(FAILING))) problems.push(`the failed fetch of $
 // console, rather than the render throwing and leaving the panel
 // mid-refresh.
 {
+  paintSnapshot();
   const { resolutionProbability: _settled, ...mktUnsettled } = manifoldReply[MKT_M.slug];
   const odd = { ...manifoldReply, [YES_M.slug]: { ...manifoldReply[YES_M.slug], resolution: "PARTIAL" }, [MKT_M.slug]: mktUnsettled };
   const fiftyFifty = JSON.parse(JSON.stringify(polymarketReply));
@@ -246,6 +259,7 @@ if (!errors.some(e => e.includes(FAILING))) problems.push(`the failed fetch of $
 // (its outcomes list shorter than its prices), which would read
 // "<RESOLVED_LABEL> undefined" (reviewer, 2026-10-03).
 {
+  paintSnapshot();
   const nameless = JSON.parse(JSON.stringify(polymarketReply));
   for (const mk of nameless[0].markets) { mk.outcomes = "[\"Yes\"]"; mk.outcomePrices = "[\"0\", \"1\"]"; }
   fetchImpl = url => url.includes("gamma-api.polymarket.com") ? reply(nameless) : reply(manifoldReply[decodeURIComponent(url.split("/v0/slug/")[1])]);
@@ -255,6 +269,119 @@ if (!errors.some(e => e.includes(FAILING))) problems.push(`the failed fetch of $
   const c = readPanel().cards.find(card => card.text === polyTitle);
   if (!c || !c.faded || c.state !== "") problems.push(`a nameless Polymarket resolution: ${JSON.stringify(polyTitle)} reads ${JSON.stringify(c)}; want grayed with no state label`);
   if (!errors.some(e => e.includes(POLY.slug))) problems.push(`a nameless Polymarket resolution of ${POLY.slug} was not reported on the console`);
+}
+
+// --- 3d. A resolved Manifold card shows what it settled at (audit 2026-10-04 #52)
+// Until 2026-10-04 it kept its last trade beside the resolution ("resolved:
+// YES" beside a 94%, "resolved: 46%" beside 34%), coloured by that trade,
+// while a resolved Polymarket card shows its settlement (100% for the
+// outcome priced 1). Now YES shows 100%, NO 0%, MKT the probability it
+// settled at, each coloured by the value shown; CANCEL (voided, no
+// settlement) keeps its last trade.
+if (L !== null) {
+  const odds = text => (after.cards.find(c => c.text === text) || {}).odds;
+  const want = [[YES_M.question, "100% high"], [MKT_M.question, "46% mid"], [CANCEL_M.question, "6% low"],
+    [POLY.markets.length === 1 ? POLY.title : POLY.markets[0].question, "100% high"]];
+  for (const [text, w] of want) {
+    if (odds(text) !== w) problems.push(`#52: after the refresh, the resolved card ${JSON.stringify(text)} shows ${JSON.stringify(odds(text))}; want ${JSON.stringify(w)} (its settled value, coloured by it)`);
+  }
+}
+
+const flush = () => new Promise(resolve => setImmediate(resolve));
+const snapOdds = Object.fromEntries([...snap.m.filter(m => !m.answers).map(m => [m.question, `${Math.round(m.probability * 100)}%`])]);
+const busyNow = () => nodes.get("predmarket-panel").querySelector(".pm-refresh").getAttribute("aria-disabled") === "true";
+const allOpen = () => {
+  const m = Object.fromEntries(snap.m.map(e => [e.slug, { ...open(e), closeTime: NOW + 90 * DAY }]));
+  const p = [{ ...polymarketReply[0], closed: false, markets: polymarketReply[0].markets.map(mk => Object.fromEntries(Object.entries({ ...mk,
+    closed: false, outcomePrices: "[\"0.37\", \"0.63\"]", endDate: new Date(NOW + 90 * DAY).toISOString() }).filter(([k]) => k !== "umaResolutionStatus"))) }];
+  return { m, p };
+};
+
+// --- 3e. Odds that are not prices fail only their market's fetch (#30) ---
+// One Polymarket sub-market's outcomePrices "[]", a binary Manifold market
+// with no probability, and a multi-answer one whose first answer has none.
+// Until 2026-10-04 nothing checked a fetched price: the Polymarket reply
+// threw at render and left all cards grayed and the button busy for good, and
+// the Manifold one drew "NaN%" as a live price.
+{
+  paintSnapshot();
+  const { m, p } = allOpen();
+  const BINARY = binaries[1], MULTI = MULTI_M;
+  p[0].markets[0].outcomePrices = "[]";
+  delete m[BINARY.slug].probability;
+  delete m[MULTI.slug].answers[0].probability;
+  fetchImpl = url => url.includes("gamma-api.polymarket.com") ? reply(p) : reply(m[decodeURIComponent(url.split("/v0/slug/")[1])]);
+  errors.length = 0;
+  let threw = null;
+  try { await vm.runInContext("refreshPredmarkets()", ctx); } catch (err) { threw = err.message; }
+  const panel = readPanel();
+  const polyText = POLY.markets.length === 1 ? POLY.title : POLY.markets[0].question;
+  const failing = new Set([polyText, BINARY.question, MULTI.question, ...MULTI.answers.map(a => a.label)]);
+  const live = panel.cards.filter(c => !failing.has(c.text) && !c.header);
+  const binaryCard = panel.cards.find(c => c.text === BINARY.question);
+  if (threw !== null || busyNow()) problems.push(`#30: malformed odds broke the refresh: threw ${JSON.stringify(threw)}, button busy ${busyNow()}`);
+  for (const c of panel.cards.filter(c => failing.has(c.text))) if (!c.faded) problems.push(`#30: ${JSON.stringify(c.text)}, whose fetch carried no price, is not grayed (${JSON.stringify(c)})`);
+  if (!binaryCard || binaryCard.odds !== `${snapOdds[BINARY.question]} ${binaryCard.odds.split(" ")[1]}`) problems.push(`#30: the market fetched with no probability shows ${JSON.stringify(binaryCard && binaryCard.odds)}; want the odds it showed before the refresh (${snapOdds[BINARY.question]}), grayed`);
+  if (live.some(c => c.faded) || live.length === 0) problems.push(`#30: the other markets did not all go live: ${JSON.stringify(live.filter(c => c.faded).map(c => c.text))}`);
+  if (panel.cards.some(c => /NaN/.test(c.odds))) problems.push(`#30: a card shows NaN odds: ${JSON.stringify(panel.cards.filter(c => /NaN/.test(c.odds)))}`);
+  for (const slug of [POLY.slug, BINARY.slug, MULTI.slug]) if (!errors.some(e => e.includes(slug))) problems.push(`#30: the failed fetch of ${slug} was not reported on the console`);
+}
+
+// --- 3f. Each card goes live as its own fetch lands; a fetch times out (#31)
+// Polymarket never answers. Until 2026-10-04 the panel drew once, after every
+// fetch had settled, and a fetch had no timeout, so all cards stayed grayed
+// and the button busy while the Manifold replies sat ready.
+{
+  paintSnapshot();
+  const { m } = allOpen();
+  timeouts.length = 0; timeoutControllers.length = 0;
+  fetchImpl = (url, options) => url.includes("gamma-api.polymarket.com")
+    ? new Promise((_, reject) => options && options.signal && options.signal.addEventListener("abort", () => reject(new Error("timed out"))))
+    : reply(m[decodeURIComponent(url.split("/v0/slug/")[1])]);
+  errors.length = 0;
+  const done = vm.runInContext("refreshPredmarkets()", ctx);
+  for (let i = 0; i < 20; i++) await flush();
+  const mid = readPanel();
+  const polyText = POLY.markets.length === 1 ? POLY.title : POLY.markets[0].question;
+  const manifoldCards = mid.cards.filter(c => !c.header && c.text !== polyText && !POLY.markets.some(mk => mk.question === c.text));
+  if (manifoldCards.length === 0 || manifoldCards.some(c => c.faded)) problems.push(`#31: with Polymarket pending, ${manifoldCards.filter(c => c.faded).length} of ${manifoldCards.length} Manifold cards are still grayed; want every one live as its reply lands`);
+  if (!busyNow()) problems.push("#31: the refresh button is not busy while a fetch is pending");
+  let timeoutMs = null;
+  try { timeoutMs = vm.runInContext("PREDMARKET_FETCH_TIMEOUT_MS", ctx); } catch (err) { problems.push(`#31: crashla.js defines no PREDMARKET_FETCH_TIMEOUT_MS (${err.message})`); }
+  if (timeouts.length !== total || timeouts.some(ms => ms !== timeoutMs) || !(timeoutMs > 0)) problems.push(`#31: the fetches asked for timeouts ${JSON.stringify(timeouts)}; want one of PREDMARKET_FETCH_TIMEOUT_MS (${timeoutMs}) for each of the ${total} fetches`);
+  for (const c of timeoutControllers) c.abort();
+  await Promise.race([done, new Promise(resolve => setTimeout(resolve, 2000))]);
+  for (let i = 0; i < 5; i++) await flush();
+  const end = readPanel();
+  const polyCard = end.cards.find(c => c.text === polyText);
+  if (busyNow() || !polyCard || !polyCard.faded) problems.push(`#31: after the timeout, button busy ${busyNow()}, the Polymarket card ${JSON.stringify(polyCard)}; want the button free and the card grayed`);
+  if (!errors.some(e => e.includes(POLY.slug))) problems.push(`#31: the timed-out fetch of ${POLY.slug} was not reported on the console`);
+}
+
+// --- 3g. A failed refresh keeps the odds the panel drew, and their age (#53)
+// Until 2026-10-04 a failed fetch fell back to the snapshot's entry and the
+// age to the snapshot's date, so odds fetched minutes earlier silently
+// reverted to the older snapshot's.
+{
+  paintSnapshot();
+  const { m, p } = allOpen();
+  for (const e of Object.values(m)) { if (e.answers) e.answers.forEach(a => { a.probability = 0.31; }); else e.probability = 0.42; }
+  fetchImpl = url => url.includes("gamma-api.polymarket.com") ? reply(p) : reply(m[decodeURIComponent(url.split("/v0/slug/")[1])]);
+  await vm.runInContext("refreshPredmarkets()", ctx);
+  const first = readPanel();
+  const age = () => { const st = nodes.get("predmarket-panel").children[1].children.find(c => c.classes.has("pm-status")); return st && st.children.find(c => c.classes.has("pm-age")).textContent; };
+  const firstAge = age();
+  vm.runInContext(`Date.now = () => ${NOW + 2 * 3600000};`, ctx);
+  fetchImpl = () => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) });
+  errors.length = 0;
+  await vm.runInContext("refreshPredmarkets()", ctx);
+  const second = readPanel();
+  const secondAge = age();
+  vm.runInContext(`Date.now = () => ${NOW};`, ctx);
+  const changed = second.cards.filter((c, i) => !c.header && (c.odds !== first.cards[i].odds || !c.faded));
+  if (firstAge !== "<1m" || first.cards.some(c => c.faded)) problems.push(`#53: the first refresh did not go live: age ${JSON.stringify(firstAge)}, ${first.cards.filter(c => c.faded).length} cards grayed`);
+  if (changed.length > 0) problems.push(`#53: after a failed refresh, ${changed.length} cards changed odds or stayed live, e.g. ${JSON.stringify(changed.slice(0, 2))}; want every card grayed on the odds the first refresh fetched`);
+  if (secondAge !== "2h") problems.push(`#53: two hours after the first refresh, a failed one leaves the age ${JSON.stringify(secondAge)}; want "2h", the drawn odds' own age, not the snapshot's`);
 }
 
 // --- 4. The footer's dot and age carry a tooltip naming the snapshot date ---
@@ -382,6 +509,28 @@ globalThis.fetch = async url => ({ ok: true, status: 200, json: async () =>
     stoppedName = /outcome name/.test(String(err.stderr));
   }
   if (!stoppedName || fs.readFileSync(path.join(dir, "data/predmarkets.js"), "utf8") !== before) problems.push(`refresh script: a Polymarket resolution with no outcome name at the price of 1 did not stop it before writing (stopped ${stoppedName})`);
+  // ...and odds that are not prices (audit 2026-10-04 #30): until then the
+  // script wrote outcomePrices "[]" and a missing probability with exit 0,
+  // and the page's first paint then threw ("Loading..." for good) or drew
+  // "NaN%".
+  for (const [what, spoil, pattern] of [
+    ["a Polymarket sub-market's outcomePrices \"[]\"", fx => { for (const mk of fx.polymarket[0].markets) Object.assign(mk, { umaResolutionStatus: null, outcomes: "[\"Yes\", \"No\"]", outcomePrices: "[]" }); }, /price/],
+    ["a binary Manifold market with no probability", fx => { delete fx.manifold[binaries[1].slug].probability; }, /probability/],
+    ["a Manifold answer with no probability", fx => { delete fx.manifold[MULTI_M.slug].answers[1].probability; }, /probability/],
+  ]) {
+    const fx = JSON.parse(JSON.stringify(fixtures));
+    for (const mk of fx.polymarket[0].markets) Object.assign(mk, { umaResolutionStatus: null, outcomes: "[\"Yes\", \"No\"]", outcomePrices: "[\"0.032\", \"0.968\"]" });
+    spoil(fx);
+    fs.writeFileSync(path.join(dir, "fixtures.json"), JSON.stringify(fx));
+    let stoppedBad = false, stderr = "";
+    try {
+      execFileSync(process.execPath, ["--import", pathToFileURL(path.join(dir, "stub.mjs")).href, path.join(dir, "data/refresh-predmarkets.mjs")], { encoding: "utf8", stdio: "pipe" });
+    } catch (err) {
+      stderr = String(err.stderr);
+      stoppedBad = pattern.test(stderr);
+    }
+    if (!stoppedBad || fs.readFileSync(path.join(dir, "data/predmarkets.js"), "utf8") !== before) problems.push(`refresh script: ${what} did not stop it before writing (stopped ${stoppedBad}; ${JSON.stringify(stderr.split("\n").find(l => /Error/.test(l)) || "")})`);
+  }
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
@@ -442,7 +591,7 @@ globalThis.fetch = async url => ({ ok: true, status: 200, json: async () =>
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: load data/predmarkets.js and crashla.js in a vm on 2026-10-05, paint the snapshot, then refresh with scripted API replies (Polymarket's event resolved Yes; Manifold's Portland market resolved YES at 0.9373, one market past its closeTime, one CANCELled, one MKT at 46%, one answer of the vision-only market resolved NO, one fetch failing with HTTP 500); read the cards and the footer; compare the fetchers' output with the snapshot; run data/refresh-predmarkets.mjs offline on fixtures.
-Expectata: (#21) the snapshot and both fetchers carry closeTime / resolution / resolutionProbability (Manifold) and closed / endDate / umaResolutionStatus (Polymarket) in one shape; a resolved card is grayed (pm-faded) and reads RESOLVED_LABEL and its outcome (Polymarket's outcome name, YES / NO, MKT's settled percentage, CANCEL as CANCELLED_LABEL), a closed one CLOSED_LABEL, the rest of a market's answers keep trading; a resolution the cards cannot name (an unknown Manifold code, a 50-50 Polymarket resolution, an MKT one without its settled probability) fails only that market's fetch, which stays grayed with the failure on the console; the refresh script writes the page fetchers' shape, warns about a passed closeTime and a resolved answer and about nothing else, and stops before writing on an unnameable resolution (an unknown code, an MKT one without its settled probability); (#85) every snapshot card is grayed until its fetch lands and stays grayed if the fetch fails, all ${total} fetches start at once, and the footer's dot and age sit in one Tab stop whose tooltip (also visually hidden text) names the snapshot date; the labels read the human's English exactly ("resolved:", "closed", "canceled"), and so does the footer's tooltip ("The age is the time since the market odds were fetched or, if fetching failed, since the last snapshot we have (<snapshot date>). ", with its final space); an empty state label takes no room (no card changes height without it, 320-400 px, three engines).
+Expectata: (#21) the snapshot and both fetchers carry closeTime / resolution / resolutionProbability (Manifold) and closed / endDate / umaResolutionStatus (Polymarket) in one shape; a resolved card is grayed (pm-faded) and reads RESOLVED_LABEL and its outcome (Polymarket's outcome name, YES / NO, MKT's settled percentage, CANCEL as CANCELLED_LABEL), a closed one CLOSED_LABEL, the rest of a market's answers keep trading; a resolution the cards cannot name (an unknown Manifold code, a 50-50 Polymarket resolution, an MKT one without its settled probability) fails only that market's fetch, which stays grayed with the failure on the console; the refresh script writes the page fetchers' shape, warns about a passed closeTime and a resolved answer and about nothing else, and stops before writing on an unnameable resolution (an unknown code, an MKT one without its settled probability); (#85) every snapshot card is grayed until its fetch lands and stays grayed if the fetch fails, all ${total} fetches start at once, and the footer's dot and age sit in one Tab stop whose tooltip (also visually hidden text) names the snapshot date; the labels read the human's English exactly ("resolved:", "closed", "canceled"), and so does the footer's tooltip ("The age is the time since the market odds were fetched or, if fetching failed, since the last snapshot we have (<snapshot date>). ", with its final space); an empty state label takes no room (no card changes height without it, 320-400 px, three engines); (audit 2026-10-04) #52 a resolved Manifold card shows what it settled at (YES 100%, NO 0%, MKT its settled probability; CANCEL its last trade), coloured by it; #30 odds that are not prices (outcomePrices "[]", a missing probability) fail only their market's fetch, never "NaN%" or a broken refresh, and stop the refresh script before it writes; #31 each card goes live as its fetch lands, every fetch has a timeout (PREDMARKET_FETCH_TIMEOUT_MS) that counts as a failure, and the button stays busy until the last fetch settles; #53 a failed refresh keeps the odds the panel drew, grayed, and their age.
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 14).join("\n")}`);
-console.log("qual pass: market cards gray when not live, mark resolved and closed markets in the human's English, the footer's dot and age carry the human's tooltip, and the refresh script carries and warns on market state");
+console.log("qual pass: market cards gray when not live, mark resolved and closed markets in the human's English and show what they settled at, go live fetch by fetch with a timeout, keep the drawn odds on a failed refresh, reject odds that are not prices; the footer's dot and age carry the human's tooltip, and the refresh script carries and warns on market state");

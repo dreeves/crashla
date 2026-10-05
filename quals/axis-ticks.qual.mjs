@@ -289,3 +289,126 @@ Resultata: ${clear.toFixed(1)} units (labels ${(ticks[i].x - ticks[i - 1].x).toF
   }
 }
 console.log(`qual pass: monthly axes keep >= ${GAP} units between month labels on every window length 1..${months} (tightest ${widest.clear.toFixed(1)} at ${widest.len} months)`);
+
+// --- 5b. ... evenly spaced, counted back from the always-drawn last label ----
+// The stride used to count from the first month and drop any stepped label
+// within a stride of the last one, so the gap before the last label ran
+// longer than the rest: on a phone the default window's VMT charts read
+// 2025-06, 2025-11, 2026-08 (5 months, then 9; audit 2026-10-04 #37), the
+// MPI chart 4, 4, 6. Counted back from the last month, every gap is one
+// stride. Checked on the MPI, VMT and growth charts at the desktop width and
+// at a phone's (a 390 px viewport leaves the charts 366 units).
+const monthIndex = (labels, order) => labels.map(l => order.indexOf(l));
+const uneven = [];
+for (const viewW of [900, 366]) {
+  run(`chartViewW = ${viewW}`);
+  for (let len = 1; len <= months; len++) {
+    const sliced = `sliceSeries(activeSeries, ${months - len}, ${months - 1})`;
+    const order = JSON.parse(run(`JSON.stringify(${sliced}.months)`));
+    for (const [what, svg] of [
+      ["MPI chart", run(`renderAllHelmersMpiChart(${sliced})`)],
+      ["Waymo VMT chart", run(`renderHelmerMonthlyChart(${sliced}, "Waymo")`)],
+    ]) {
+      const idx = monthIndex(monthTicks(svg).map(t => t.label), order);
+      const steps = idx.slice(1).map((v, i) => v - idx[i]);
+      if (idx.at(-1) !== order.length - 1 || new Set(steps).size > 1) uneven.push(`${viewW} units, ${len}-month window, ${what}: labels ${JSON.stringify(monthTicks(svg).map(t => t.label))}`);
+    }
+  }
+  const growthMonths = JSON.parse(run(`JSON.stringify(Array.from({length: fleetMonthIndex(FLEET_TS_END_MONTH) + 1}, (_, i) => fleetMonthIso(i)))`));
+  for (const key of ["fleet", "rides", "miles"]) {
+    const svg = run(`selectedGrowthMetric = ${JSON.stringify(key)}; renderFleetTimeSeriesChart()`);
+    const idx = monthIndex(monthTicks(svg).map(t => t.label), growthMonths);
+    const steps = idx.slice(1).map((v, i) => v - idx[i]);
+    if (idx.at(-1) !== growthMonths.length - 1 || new Set(steps).size > 1) uneven.push(`${viewW} units, growth chart (${key}): labels ${JSON.stringify(monthTicks(svg).map(t => t.label))}`);
+  }
+}
+run(`chartViewW = CHART_MAX_W; selectedGrowthMetric = "fleet"`);
+assert.deepEqual(uneven, [],
+  `Replicata: render the MPI-over-time chart and the Waymo VMT chart on every window length 1..${months} ending at the last month, and the growth chart for each metric, at ${900} and 366 chart units (desktop; a 390 px phone), and read their month labels.
+Expectata: the last month labelled, and every gap between neighbouring labels the same number of months.
+Resultata: ${uneven.length} uneven axes, e.g.:
+${uneven.slice(0, 8).join("\n")}`);
+console.log(`qual pass: monthly axes label evenly, counting back from the last month, on the MPI, VMT and growth charts at 900 and 366 units`);
+
+// --- 5c. A one-month window's single column sits at the plot's midpoint -----
+// scaleLinear mapped the zero span of a one-month series to its range's
+// start, so every dot and bar drew at the left inset with ~90% of the plot
+// empty to its right (audit 2026-10-04 #70). The month columns span the
+// horizontal axis less an inset at each end, so the midpoint of the columns
+// is the axis line's.
+const offCentre = [];
+run(`for (const h of ALL_HELMERS) monthHelmerEnabled[h] = true; selectedMetricKey = "all";`);
+for (const viewW of [900, 366]) {
+  run(`chartViewW = ${viewW}`);
+  for (const [what, svg] of [
+    ["MPI chart", run(`renderAllHelmersMpiChart(sliceSeries(activeSeries, ${months - 1}, ${months - 1}))`)],
+    ...["Tesla", "Waymo", "Zoox"].map(h => [`${h} VMT chart`, run(`renderHelmerMonthlyChart(sliceSeries(activeSeries, ${months - 1}, ${months - 1}), ${JSON.stringify(h)})`)]),
+  ]) {
+    const axis = [...svg.matchAll(/<line class="month-axis" x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)">/g)]
+      .map(m => m.slice(1).map(Number)).find(([, y1, , y2]) => y1 === y2);
+    const mid = (axis[0] + axis[2]) / 2;
+    const dots = [...svg.matchAll(/<circle class="month-dot" cx="([\d.]+)"/g)].map(m => Number(m[1]));
+    const labels = monthTicks(svg).map(t => t.x);
+    if (dots.length === 0 || [...dots, ...labels].some(x => Math.abs(x - mid) > 0.01)) offCentre.push(`${viewW} units, ${what}: axis ${axis[0]}-${axis[2]} (midpoint ${mid}), dots at ${JSON.stringify([...new Set(dots)])}, month label at ${JSON.stringify(labels)}`);
+  }
+}
+run(`chartViewW = CHART_MAX_W; for (const h of ALL_HELMERS) monthHelmerEnabled[h] = ["HumansAV", "Tesla", "Waymo"].includes(h);`);
+assert.deepEqual(offCentre, [],
+  `Replicata: render the MPI-over-time chart (all six helmers, All incidents) and the three VMT charts on the one-month window ${run("activeSeries.months.at(-1)")}, at 900 and 366 units.
+Expectata: every dot and the month label at the horizontal axis's midpoint.
+Resultata: ${offCentre.join("\n")}`);
+console.log("qual pass: a one-month window's column sits at the middle of the MPI and VMT charts");
+
+// --- 6. Linear y axes tick on the 1-2-5 ladder ------------------------------
+// linearTicks put five ticks at quarters of the window maximum, so the labels
+// were unround and mixed: Tesla's cumulative VMT read 0 / 946.5K / 1.9M /
+// 2.8M / 3.8M, Waymo's monthly 0 / 6.4M / 12.8M / 19.2M / 25.7M (audit
+// 2026-10-04 #71). The ticks are now the multiples of the 1-2-5 step nearest
+// a quarter of the maximum in log terms (rung 1, 2 or 5 below the geometric
+// means sqrt 2, sqrt 10, sqrt 50 of neighbouring rungs, as d3's tick
+// increment chooses), up to the first one at or above the maximum, and the
+// axis tops out at that tick.
+const ticksOf = (max, count) => JSON.parse(run(`JSON.stringify(linearTicks(0, ${max}, ${count}))`));
+const tickTable = [
+  [3786000, [0, 1e6, 2e6, 3e6, 4e6]],                  // Tesla cumulative VMT (1M step)
+  [25.7e6, [0, 5e6, 10e6, 15e6, 20e6, 25e6, 30e6]],     // Waymo monthly VMT (5M step)
+  [4e6, [0, 1e6, 2e6, 3e6, 4e6]],                       // a maximum on a rung tops out there
+  [1.3e6, [0, 500e3, 1e6, 1.5e6]],                     // a quarter (325K) is nearer 500K than 200K in log terms
+  [1e6, [0, 200e3, 400e3, 600e3, 800e3, 1e6]],          // a quarter (250K) is nearest the 2 rung
+  [0, [0]],                                             // no data: the floor alone
+];
+for (const [max, want] of tickTable) {
+  const got = ticksOf(max, 4);
+  assert.deepEqual(got, want,
+    `Replicata: linearTicks(0, ${max}, 4).
+Expectata: ${JSON.stringify(want)} (multiples of the 1-2-5 step nearest ${max / 4} in log terms, up to the first at or above ${max}).
+Resultata: ${JSON.stringify(got)}.`);
+}
+const UNIT = { "": 1, K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
+const valueOf = label => { const m = /^([\d,.]+)([KMBT]?)$/.exec(label); return m ? Number(m[1].replace(/,/g, "")) * UNIT[m[2]] : NaN; };
+const yLabels = svg => [...svg.matchAll(/<text class="month-tick" x="[\d.]+" y="([\d.]+)" text-anchor="end">([^<]+)<\/text>/g)]
+  .map(m => ({ y: Number(m[1]), value: valueOf(m[2]), label: m[2] }));
+const unround = [];
+for (const [what, setup, render] of [
+  ["Tesla cumulative VMT, full history", "vmtCumulative = true", `renderHelmerMonthlyChart(activeSeries, "Tesla")`],
+  ["Waymo monthly VMT, full history", "vmtCumulative = false", `renderHelmerMonthlyChart(activeSeries, "Waymo")`],
+  ["Waymo cumulative VMT, full history", "vmtCumulative = true", `renderHelmerMonthlyChart(activeSeries, "Waymo")`],
+  ["Zoox monthly VMT, default window", "vmtCumulative = false", `renderHelmerMonthlyChart(sliceSeries(activeSeries, ${defaultStart}, ${months - 1}), "Zoox")`],
+  ["MPI chart, default window", `vmtCumulative = false; selectedMetricKey = "atfault"`, `renderAllHelmersMpiChart(sliceSeries(activeSeries, ${defaultStart}, ${months - 1}))`],
+  ["MPI chart, full history", `selectedMetricKey = "all"`, `renderAllHelmersMpiChart(activeSeries)`],
+]) {
+  run(setup);
+  const ys = yLabels(run(render));
+  const step = ys[1].value - ys[0].value;
+  const rung = step / Math.pow(10, Math.floor(Math.log10(step)));
+  const evenly = ys.every((t, i) => Math.abs(t.value - i * step) <= 1e-9 * step);
+  const top = ys.at(-1);
+  if (ys[0].value !== 0 || ![1, 2, 5].some(r => Math.abs(rung - r) < 1e-9) || !evenly || top.y !== 14 + 4)
+    unround.push(`${what}: y labels ${JSON.stringify(ys.map(t => t.label))}, top label at y=${top.y} (the plot's top edge is 14, a label sits 4 below its tick)`);
+}
+run(`vmtCumulative = false; selectedMetricKey = "all"`);
+assert.deepEqual(unround, [],
+  `Replicata: render the VMT charts (monthly and cumulative) and the MPI-over-time chart and read their y labels.
+Expectata: 0 and evenly spaced multiples of a 1-2-5 step (1, 2 or 5 times a power of ten), the last at the plot's top edge.
+Resultata: ${unround.join("\n")}`);
+console.log(`qual pass: linear y axes tick on the 1-2-5 ladder up to the first rung at or above their maximum (${tickTable.length} cases, ${6} charts)`);

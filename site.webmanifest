@@ -1,6 +1,8 @@
 {
   "name": "Teslapologetics",
   "short_name": "Teslapologetics",
+  "start_url": "./",
+  "id": "./",
   "icons": [
     {
       "src": "android-chrome-192x192.png",

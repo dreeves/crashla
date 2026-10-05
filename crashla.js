@@ -615,6 +615,7 @@ const METRIC_DEFS = [
         src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
           'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf',
@@ -753,6 +754,7 @@ const METRIC_DEFS = [
         src: 'lo: US-average all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity); hi: US-average all-crash hi / 50% police-reported-universe share',
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
         ]},
@@ -787,6 +789,7 @@ const METRIC_DEFS = [
         // midpoint of 2015's 24% and 2023's 32% (audit #42).
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
         ]},
@@ -835,6 +838,7 @@ const METRIC_DEFS = [
         // missing until 2026-10-03).
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115',
@@ -975,8 +979,17 @@ const METRIC_DEFS = [
         ]},
       HumansUS: {lo: 900000, hi: 2600000,
         src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
+        // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
+        // centres (the hub's injury and this band's, IIHS's fatality), the
+        // national injury centre (CRSS 2024, both Blincoe editions) and the
+        // national fatality centre (FARS 2024, NHTSA 813791).
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://waymo.com/safety/impact/',
+          'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison',
         ]},
     },
   },
@@ -1003,8 +1016,17 @@ const METRIC_DEFS = [
         ]},
       HumansUS: {lo: 4000000, hi: 19000000,
         src: 'No clean national SSI+ (KABCO A+K) per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
+        // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
+        // centres (the hub's injury and this band's, IIHS's fatality), the
+        // national injury centre (CRSS 2024, both Blincoe editions) and the
+        // national fatality centre (FARS 2024, NHTSA 813791).
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
+          'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
+          'https://waymo.com/safety/impact/',
+          'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison',
         ]},
     },
   },
@@ -1269,6 +1291,17 @@ function scaleLinear(v, d0, d1, r0, r1) {
   return r0 + (v - d0) * (r1 - r0) / span;
 }
 
+// The x of month i among a chart's n month columns: centred between left and
+// right, a pitch apart that spans the two when there are at least two. A
+// one-month window's lone column sits at the middle; until 2026-10-04 the
+// zero span put it at the left inset, ~90% of the plot empty to its right
+// (audit #70).
+function monthColumnX(n, left, right) {
+  const pitch = (right - left) / Math.max(1, n - 1);
+  const first = (left + right - pitch * (n - 1)) / 2;
+  return i => first + pitch * i;
+}
+
 // The locale of every number the page prints: its English copy and its "."
 // decimals (toFixed) are en-US, so the grouping must be too. A locale-less
 // toLocaleString() follows the browser: in a de-DE browser "1.164 incidents"
@@ -1476,17 +1509,27 @@ const UNKNOWN_SEVERITIES = severitiesWhere("unk");
 const SEVERITY_RANK =
   Object.fromEntries(Object.entries(SEVERITY_INFO).map(([s, i]) => [s, i.rank]));
 
-// count + 1 evenly spaced ticks from min to max. A range with no width (a
-// chart with no data, whose max stays at its floor) has one tick, the floor:
-// a placeholder 0..1 scale rounded to "0, 0, 1, 1, 1" on empty charts until
-// 2026-10-03 (audit #51).
+// A linear axis's ticks from min: the multiples of a 1-2-5 step (a rung of
+// LOG_LADDER times a power of ten) up to the first one at or above max, so
+// the labels are round and the axis tops out at a labelled value; callers
+// scale the axis to the last tick. The step is the rung nearest, in log
+// terms, to (max - min) / count: below the geometric mean of two
+// neighbouring rungs (sqrt 2, sqrt 10, sqrt 50) the lower one, as d3's tick
+// increment chooses. Until 2026-10-04 the ticks sat at count-ths of max,
+// unround and mixed (Tesla's cumulative VMT read 0 / 946.5K / 1.9M / 2.8M /
+// 3.8M; audit #71). A range with no width (a chart with no data, whose max
+// stays at its floor) has one tick, the floor: a placeholder 0..1 scale
+// rounded to "0, 0, 1, 1, 1" on empty charts until 2026-10-03 (audit #51).
 function linearTicks(min, max, count) {
   assert(Number.isFinite(min) && max >= min && count >= 1, "linearTicks: invalid range", {min, max, count});
-  const out = [min];
-  for (let i = 1; i <= count && max > min; i++) {
-    out.push(min + (max - min) * i / count);
-  }
-  return out;
+  if (max === min) return [min];
+  const rough = (max - min) / count;
+  const decade = Math.pow(10, Math.floor(Math.log10(rough)));
+  const mantissa = rough / decade;
+  const rung = mantissa < Math.SQRT2 ? 1 : mantissa < Math.sqrt(10) ? 2 : mantissa < Math.sqrt(50) ? 5 : 10;
+  const step = rung * decade;
+  // (The 1e-9 absorbs float error, so a max on a rung tops out there.)
+  return Array.from({length: Math.ceil((max - min) / step - 1e-9) + 1}, (_, i) => min + i * step);
 }
 
 // Fault values sit on a 0.05 grid (data/faultfrac.csv: 0, 0.05, ..., 1), so
@@ -2281,14 +2324,18 @@ function drawSingleMonthAxes(
   // label is 7 glyphs wide and neighbours keep TICK_GAP clear. (A 1/2/3
   // ladder capped the stride at 3, so windows of 37+ months overlapped;
   // 2026-09-26.) A one-month series has pitch 0, so the stride is Infinity
-  // and only the always-drawn last label appears.
+  // and only the always-drawn last label appears. The stride counts back
+  // from the last month, so every gap is one stride; counted from the first
+  // month (until 2026-10-04), the labels within a stride of the last were
+  // dropped and the final gap ran up to twice the others (a phone's VMT
+  // charts read 2025-06, 2025-11, 2026-08; audit #37).
   const pitch = (mapX(months.length - 1) - mapX(0)) / Math.max(1, months.length - 1);
   const labelStep = Math.max(1, Math.ceil((TICK_GLYPH * 7 + TICK_GAP) / pitch));
   // Ticks, axes and the axis title are hidden from assistive technology: the
   // chart's own name says what it shows, and its marks carry the values.
   return `<g aria-hidden="true">
     ${months.map((month, i) => `
-      ${i === months.length - 1 || (i % labelStep === 0 && months.length - 1 - i >= labelStep) ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
+      ${(months.length - 1 - i) % labelStep === 0 ? `<text class="month-tick" x="${mapX(i)}" y="${svgH - 16}" text-anchor="middle">${month}</text>` : ""}
     `).join("")}
     ${yTicks.map(y => `
       <text class="month-tick" x="${mLeft - TICK_GAP}" y="${mapY(y) + 4}" text-anchor="end">${yFmt(y)}</text>
@@ -2322,14 +2369,26 @@ function helmerChipLegend(helmers, emptyHelmers = new Set()) {
 // draws fewer labels. Init measures the column and re-measures on resize
 // (outside the module the quals load, which keeps CHART_MAX_W).
 const CHART_MAX_W = 900;
+// The narrowest viewBox every chart lays out in: a narrower column draws the
+// charts this wide, scaled down to fit. (A sweep of 1,800 chart states laid
+// out from 125 units up; at 98-120 the forecast chart's log axis had no
+// width, and a 130 CSS px window, a 98 px column, threw at init until
+// 2026-10-04; audit #32.)
+const CHART_MIN_W = 240;
 let chartViewW = CHART_MAX_W;
-// The charts' column, in CSS px, capped at CHART_MAX_W: #month-panel is a
-// plain block in the body's content box, laid out even when its sections are
-// collapsed.
+// The charts' column, in CSS px, kept within [CHART_MIN_W, CHART_MAX_W]:
+// #month-panel is a plain block in the body's content box, laid out even
+// when its sections are collapsed. A page narrower than CHART_MIN_W may have
+// no column at all (a hidden or zero-width iframe has a 0-wide viewport, and
+// a 20 px one only the body's padding); its charts draw at CHART_MIN_W, and
+// the resize that gives it width redraws them. Until 2026-10-04 init threw
+// here and left such a page blank (audit #32). A column with no width in a
+// viewport at least CHART_MIN_W wide is a layout bug.
 function chartColumnWidth() {
   const w = byId("month-panel").clientWidth;
-  assert(w > 0, "the charts' column has no width", {w});
-  return Math.min(CHART_MAX_W, Math.round(w));
+  const viewport = document.documentElement.clientWidth;
+  assert(w > 0 || viewport < CHART_MIN_W, "the charts' column has no width", {w, viewport});
+  return Math.min(CHART_MAX_W, Math.max(CHART_MIN_W, Math.round(w)));
 }
 
 // Every chart's tooltip targets: one invisible circle per mark, drawn after
@@ -2445,10 +2504,9 @@ function renderAllHelmersMpiChart(series) {
   const mLeft = axisLeftMargin(yTicks.map(fmtMiles));
   const pW = svgW - mLeft - mRight;
   const xPad = 28;
-  const mapX = idx => scaleLinear(
-    idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad,
-  );
-  const mapY = y => scaleLinear(y, 0, yMax, mTop + pH, mTop);
+  const mapX = monthColumnX(series.months.length, mLeft + xPad, mLeft + pW - xPad);
+  // The axis tops out at its last tick (linearTicks), at or above yMax.
+  const mapY = y => scaleLinear(y, 0, yTicks[yTicks.length - 1], mTop + pH, mTop);
   const clampY = v => Math.max(mTop, Math.min(mTop + pH, mapY(v)));
 
   const lines = seriesRows.map(row => {
@@ -2513,10 +2571,22 @@ function renderAllHelmersMpiChart(series) {
   // that month. The receipt and pooled Monthly-track factors are the same
   // for every helmer (a helmer's Monthly-lag months add its own), so until
   // 2026-09-26, when a "?" sat beside every helmer's dot, helmers whose dots
-  // were close overprinted each other's glyph.
-  const qmarks = series.months.map((_month, i) => {
-    const incomplete = Math.max(0, ...seriesRows.map(r => r.vals[i]).filter(v => v !== null).map(v => 1 - v.covRatio));
-    return `<text class="month-tick" x="${mapX(i).toFixed(2)}" y="${(mTop + 12).toFixed(2)}" text-anchor="middle" style="opacity:${incomplete.toFixed(3)};pointer-events:none">?</text>`;
+  // were close overprinted each other's glyph. A run of adjacent incomplete
+  // months shares one "?", centred on the run at its largest incompleteness:
+  // on a phone a month is ~4 units wide and the glyph ~7, so with Zoox shown
+  // its lagged 2026-07 and the data-through 2026-08 read "??" until
+  // 2026-10-04 (audit #36).
+  const incomplete = series.months.map((_month, i) =>
+    Math.max(0, ...seriesRows.map(r => r.vals[i]).filter(v => v !== null).map(v => 1 - v.covRatio)));
+  const qmarkRuns = [];
+  incomplete.forEach((share, i) => {
+    if (share > 0 && i > 0 && incomplete[i - 1] > 0) qmarkRuns[qmarkRuns.length - 1].push(i);
+    else qmarkRuns.push([i]);
+  });
+  const qmarks = qmarkRuns.map(run => {
+    const x = (mapX(run[0]) + mapX(run[run.length - 1])) / 2;
+    const opacity = Math.max(...run.map(i => incomplete[i]));
+    return `<text class="month-tick" x="${x.toFixed(2)}" y="${(mTop + 12).toFixed(2)}" text-anchor="middle" style="opacity:${opacity.toFixed(3)};pointer-events:none">?</text>`;
   }).join("");
 
   // Fan chart: nested CI bands at 50%, 80%, 95% with decreasing opacity.
@@ -2662,13 +2732,18 @@ function renderDistributionChart(series) {
   // dense grid of its own across its extent (clipped to the frame): on the
   // shared grid alone, a band as narrow as Humans (US average) on fatality
   // (sigma 0.020 in ln x) got 3-9 samples whenever ADS curves widened the
-  // frame, and drew as a jagged spike (audit #26). The peak is found on the
-  // curve's own grid, which is uniform in ln x, and refined by the parabola
-  // through the three samples around it, fit to ln(density): exact for a
-  // log-normal, whose mode is then its median to the last digit (a parabola
-  // on the density itself read a human band's Peak 87.5M against its Median
-  // 87.4M; audit #89). An interior maximum has a concave triple
-  // (denominator < 0); an edge maximum keeps the node.
+  // frame, and drew as a jagged spike (audit #26). The peak is the curve's
+  // own maximum to the figures its tooltip prints: a golden-section search of
+  // the curve's density between the grid neighbours of its largest sample (a
+  // unimodal curve's maximum lies between them), run until both ends of the
+  // bracket print alike. Until 2026-10-04 it was one parabola step through
+  // the samples around the largest, off by up to 1.6e-3 (Tesla's at-fault
+  // Peak read 323.0K for a maximum at 322,924) and dependent on the frame,
+  // i.e. on which helmers were checked (Zoox 935.0K with four, 935.1K with
+  // six; audit #50). The search finds a log-normal's mode, its median, as the
+  // ln(density) parabola before it did (a parabola on the density itself read
+  // a human band's Peak 87.5M against its Median 87.4M; audit #89).
+  const GOLDEN = (Math.sqrt(5) - 1) / 2;
   const frameGrid = logUniformGrid(logMin, logMax, DIST_FRAME_POINTS);
   let yMax = 0;
   for (const c of curves) {
@@ -2676,12 +2751,18 @@ function renderDistributionChart(series) {
     const own = logUniformGrid(ownLo, ownHi, DIST_CURVE_POINTS);
     const ownYs = own.map(u => c.densityFn(Math.exp(u)));
     const i = ownYs.reduce((best, y, j) => y > ownYs[best] ? j : best, 0);
-    const interior = i > 0 && i < own.length - 1;
-    const [l0, l1, l2] = [ownYs[Math.max(i - 1, 0)], ownYs[i], ownYs[Math.min(i + 1, own.length - 1)]].map(Math.log);
-    const denom = l0 - 2 * l1 + l2;
-    const shift = interior && denom < 0 ? 0.5 * (l0 - l2) / denom : 0;
-    c.peakX = Math.exp(ownLo + (ownHi - ownLo) / (own.length - 1) * (i + shift));
-    assert(Number.isFinite(c.peakX), "distribution chart: peak refinement failed", {helmer: c.helmer, i, l0, l1, l2});
+    const at = u => c.densityFn(Math.exp(u));
+    let a = own[Math.max(i - 1, 0)], b = own[Math.min(i + 1, own.length - 1)];
+    let u1 = b - GOLDEN * (b - a), u2 = a + GOLDEN * (b - a), f1 = at(u1), f2 = at(u2);
+    // (A bracket narrower than 1e-12 in ln x whose ends still print apart
+    // holds a peak on a rounding boundary; either print is then right.)
+    for (let step = 0; fmtMiles(Math.exp(a)) !== fmtMiles(Math.exp(b)) && b - a > 1e-12; step++) {
+      assert(step < 200, "distribution chart: the peak search did not converge", {helmer: c.helmer, a, b});
+      if (f1 > f2) { b = u2; u2 = u1; f2 = f1; u1 = b - GOLDEN * (b - a); f1 = at(u1); }
+      else { a = u1; u1 = u2; f1 = f2; u2 = a + GOLDEN * (b - a); f2 = at(u2); }
+    }
+    c.peakX = Math.exp((a + b) / 2);
+    assert(Number.isFinite(c.peakX), "distribution chart: peak search failed", {helmer: c.helmer, i, a, b});
     c.points = [...frameGrid.map(u => [u, c.densityFn(Math.exp(u))]), ...own.map((u, j) => [u, ownYs[j]])]
       .sort((p, q) => p[0] - q[0]);
     // The y scale covers every drawn sample and both markers (the refined
@@ -2815,13 +2896,16 @@ function logUniformGrid(lo, hi, n) {
 //       ADS-operating personal cars, not just robotaxis. So A+B (scope "robotaxi")
 //       and C (scope "hw4") are drawn as two SEPARATE Tesla curves, not one.
 //
-// Tesla weights are fit to the prediction markets already on the page rather than
-// picked by hand: C = 0.05 matches the Manifold "Millions of Teslas at level 3 in
-// 2026" market (~4-5%); B = 0.24 is then set so the model's implied P(Tesla fleet >
-// Waymo fleet) lands near the Manifold "Tesla > Waymo AVs by Jan 2 2027" market
-// (~23% at the 2026-06-30 fit; the page's snapshot has since drifted to ~10%
-// and the weights are deliberately NOT re-fit on every refresh — the model
-// still implies ~22%); A = 0.71 is the remainder. That fit counts ALL of C's mass toward the
+// Tesla weights were fit on 2026-06-30 to the prediction markets already on the
+// page rather than picked by hand: C = 0.05 matches the Manifold "Millions of
+// Teslas at level 3 in 2026" market (~4-5%); B = 0.24 was then set so the
+// model's implied P(Tesla fleet > Waymo fleet) landed near the Manifold "Will
+// Tesla have more autonomous vehicles providing ridehailing than Waymo on Jan
+// 2nd 2027" market, then ~23%. The weights are deliberately NOT re-fit on every
+// refresh: that market traded at ~6% (0.0636) in the 2026-10-04 snapshot while
+// the model still implies ~22% (0.219), so B no longer matches it (this
+// parenthetical said "~10%" until 2026-10-04; audit #56); A = 0.71 is the
+// remainder. That fit counts ALL of C's mass toward the
 // market even though the market asks about vehicles "providing ridehailing" and
 // C's personal HW4 cars are not robotaxis (see the scope note above) — the
 // assumption is that any world where Tesla flips eyes-off across millions of HW4s
@@ -3371,19 +3455,25 @@ function milesHistory(helmer) {
 }
 
 // The toggle-able metrics. Each provides a `lanes()` list of drawable series plus
-// its own y-axis framing and number format. Every metric forks Tesla into its
-// two scopes (robotaxi mainline + conditional HW4 branch).
+// its own y-axis framing and number formats: `fmt` for its axis ticks, and
+// `tipFmt` for the values in its tooltips (history points, and forecasts
+// once forecastQuantilesText has rounded them): the fleet, an observed
+// count, exactly; rides and miles at FORECAST_SIG_FIGS significant figures,
+// miles before their unit suffix (MILES_AT_SIG_FIGS). Every metric forks
+// Tesla into its two scopes (robotaxi mainline + conditional HW4 branch).
 function growthMetricSpec(key) {
   const specs = {
-    fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole,
+    fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipFmt: fmtWhole,
       yMin: 6, yMax: 4000000, yTicks: [10, 100, 1000, 10000, 100000, 1000000],
       note: "",
       lanes: () => trajectoryLanes(fleetForecastCurves(), h => FLEET_HISTORY[h], FLEET_TS_END_MONTH)},
     rides: {label: "Rides (cumulative)", yLabel: "Cumulative rides", valueLabel: "Rides", fmt: fmtWhole,
+      tipFmt: v => fmtWhole(Number(v.toPrecision(FORECAST_SIG_FIGS))),
       yMin: 3000, yMax: 400000000, yTicks: [10000, 100000, 1000000, 10000000, 100000000],
       note: "Waymo's estimates based on published ride milestones; Zoox's on published rider counts; Tesla's on published miles with assumed ride length",
       lanes: () => trajectoryLanes(bandForecastCurves(RIDES_FORECAST), h => RIDES_HISTORY[h], CUMULATIVE_END_MONTH)},
     miles: {label: "Miles (cumulative)", yLabel: "Cumulative miles", valueLabel: "Miles", fmt: fmtMiles,
+      tipFmt: v => MILES_AT_SIG_FIGS.format(v),
       // yMin 500 keeps Tesla's first cumulative points (683 / 7k / 20k mi) and
       // Zoox's early lower band on-plot (yMin 100000 clipped them until 2026-09-04)
       yMin: 500, yMax: 4000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000],
@@ -3412,9 +3502,17 @@ const GROWTH_FORECAST_DATE = "2027-01-01";
 // eight digits in both; audit #57).
 const FORECAST_SIG_FIGS = 3;
 function forecastQuantilesText(spec, median, lo, hi) {
-  const f = v => spec.fmt(Number(v.toPrecision(FORECAST_SIG_FIGS)));
+  const f = v => spec.tipFmt(Number(v.toPrecision(FORECAST_SIG_FIGS)));
   return `Median: ${f(median)}\n90% CI: ${f(lo)} – ${f(hi)}`;
 }
+// Miles at FORECAST_SIG_FIGS significant figures before the unit suffix
+// ("6.27M", "99.0M", "1.50B"), the growth charts' tooltip figures. Until
+// 2026-10-04 a forecast rounded to three figures was then printed by
+// fmtMiles, which keeps one decimal of the unit (6.3M, 99M, 1.5B), and a
+// history point by fmtMiles alone, so Tesla's 2026-03 read "1.7M / Range:
+// 1.7M – 2.0M" (audit #51).
+const MILES_AT_SIG_FIGS = new Intl.NumberFormat(NUMBER_LOCALE,
+  {notation: "compact", minimumSignificantDigits: FORECAST_SIG_FIGS, maximumSignificantDigits: FORECAST_SIG_FIGS});
 
 // A lane's point list: history + the Jan-1-2027 forecast endpoint at
 // endMonth, asserting lo <= best <= hi on every point.
@@ -3479,7 +3577,7 @@ function renderFleetTimeSeriesChart() {
   const pW = svgW - mLeft - mRight, pH = svgH - mTop - mBot;
   const xPad = 28;
   const {yMin, yMax} = spec; // log scale framed per metric (vehicles / miles / rides)
-  const mapX = idx => scaleLinear(idx, 0, months.length - 1, mLeft + xPad, mLeft + pW - xPad);
+  const mapX = monthColumnX(months.length, mLeft + xPad, mLeft + pW - xPad);
   const mapY = v => mTop + pH * (1 - (Math.log(v) - Math.log(yMin)) / (Math.log(yMax) - Math.log(yMin)));
 
   // The marks, then (hitCircles) every mark's tooltip target over them, in
@@ -3510,7 +3608,7 @@ function renderFleetTimeSeriesChart() {
         // belongs to the forecast marker only. They are labelled by their
         // helmer: a scenario share is a forecast's (until 2026-10-03 every
         // Tesla point read "Tesla robotaxi (~95%) · ..."; audit #83).
-        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${spec.fmt(p.best)}\nRange: ${spec.fmt(p.lo)} – ${spec.fmt(p.hi)}`;
+        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${spec.tipFmt(p.best)}\nRange: ${spec.tipFmt(p.lo)} – ${spec.tipFmt(p.hi)}`;
         marks.push(`<circle cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}"></circle>`);
         targets.push({x: X(p), y: mapY(p.best), tip});
       }
@@ -3613,8 +3711,9 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const mLeft = axisLeftMargin(yTicks.map(fmtMiles));
   const pW = svgW - mLeft - mRight;
   const xPad = 28; // match the cross-helmer MPI chart's edge inset
-  const mapX = idx => scaleLinear(idx, 0, series.months.length - 1, mLeft + xPad, mLeft + pW - xPad);
-  const mapVmtY = y => scaleLinear(y, 0, vmtMax, mTop + pH, mTop);
+  const mapX = monthColumnX(series.months.length, mLeft + xPad, mLeft + pW - xPad);
+  // The axis tops out at its last tick (linearTicks), at or above vmtMax.
+  const mapVmtY = y => scaleLinear(y, 0, yTicks[yTicks.length - 1], mTop + pH, mTop);
   const vmtColor = HELMER_COLORS[helmer];
 
   const errs = [];
@@ -3977,6 +4076,23 @@ function renderDateRangeControls() {
   let rangeRafPending = false;
   const rangeRaf = typeof requestAnimationFrame === "function"
     ? requestAnimationFrame : (fn) => fn();
+  // The window the two thumbs set: the start thumb's month to the end
+  // thumb's, which the input handlers below keep in that order.
+  function thumbWindow() {
+    const a = Number(minInput.value), b = Number(maxInput.value);
+    assert(a <= b, "date slider: the start thumb is past the end thumb", {a, b});
+    return [a, b];
+  }
+  // While the two thumbs share a month, the one drawn on top is the one a
+  // pointer grabs, and it must be one that can still move outward: the start
+  // thumb in the slider's right half (it can move left), the end thumb in the
+  // left half (style.css: start z-index 2, end 3). With crossing gone (below),
+  // the end thumb on top of a window collapsed onto the last month could move
+  // neither way, and nothing else on the slider reaches the start thumb.
+  function stackThumbs() {
+    minInput.style.zIndex = Number(minInput.value) > maxIdx / 2 ? "4" : "2";
+  }
+  stackThumbs();
   // Live drag: update the slider visuals immediately and re-render the
   // window-dependent charts on the next frame (coalescing rapid input events).
   // The slider DOM, incident table, sanity checks, and URL are left untouched
@@ -3986,27 +4102,42 @@ function renderDateRangeControls() {
   function updateLive() {
     minInput.setAttribute("aria-valuetext", months[Number(minInput.value)]);
     maxInput.setAttribute("aria-valuetext", months[Number(maxInput.value)]);
-    const a = Math.min(Number(minInput.value), Number(maxInput.value));
-    const b = Math.max(Number(minInput.value), Number(maxInput.value));
+    const [a, b] = thumbWindow();
     monthRangeStart = a;
     monthRangeEnd = b;
     fill.style.left = sliderAt(frac(a));
     fill.style.width = sliderSpan(frac(b) - frac(a));
     label.textContent = a === b ? months[a] : `${months[a]} \u2014 ${months[b]}`;
+    stackThumbs();
     if (!rangeRafPending) {
       rangeRafPending = true;
       rangeRaf(() => { rangeRafPending = false; renderWindowedViews(); });
     }
   }
-  minInput.addEventListener("input", updateLive);
-  maxInput.addEventListener("input", updateLive);
+  // The thumbs cannot cross (the WAI-ARIA multi-thumb slider): a moved thumb
+  // stops at the other, so "Start month" always holds the window's first
+  // month and "End month" its last. Until 2026-10-04 they crossed, and after
+  // a crossing "End month" announced the window's start and its arrow keys
+  // moved it (audit #14).
+  minInput.addEventListener("input", () => {
+    minInput.value = String(Math.min(Number(minInput.value), Number(maxInput.value)));
+    updateLive();
+  });
+  maxInput.addEventListener("input", () => {
+    maxInput.value = String(Math.max(Number(maxInput.value), Number(minInput.value)));
+    updateLive();
+  });
+  // The address bar is written once per commit, after every view: WebKit
+  // allows 100 history.replaceState calls in 10 s, and until 2026-10-04 a
+  // commit wrote it twice, the first time before the sanity checks and the
+  // incident browser were rebuilt, so on a held arrow key the 101st write
+  // threw and left both on an older window (audit #10).
   function commitRange() {
-    monthRangeStart = Math.min(Number(minInput.value), Number(maxInput.value));
-    monthRangeEnd = Math.max(Number(minInput.value), Number(maxInput.value));
+    [monthRangeStart, monthRangeEnd] = thumbWindow();
     renderWindowedViews();
-    syncUrlState();
     buildSanityChecks();
     buildBrowser();
+    syncUrlState();
   }
   minInput.addEventListener("change", commitRange);
   maxInput.addEventListener("change", commitRange);
@@ -4018,8 +4149,7 @@ function renderDateRangeControls() {
   fill.addEventListener("pointerdown", (e) => {
     if (maxIdx <= 0) return;
     dragX = e.clientX;
-    dragA = Math.min(Number(minInput.value), Number(maxInput.value));
-    dragB = Math.max(Number(minInput.value), Number(maxInput.value));
+    [dragA, dragB] = thumbWindow();
     fill.setPointerCapture(e.pointerId);
     fill.style.cursor = "grabbing";
     e.preventDefault();
@@ -4049,6 +4179,15 @@ function renderDateRangeControls() {
 // already-computed fullMonthSeries without rebuilding the slider, incident
 // table, or URL (so an in-progress drag isn't interrupted).
 function renderWindowedViews() {
+  setDateWindow();
+  drawWindowedViews();
+}
+
+// The selected date window as state: activeSeries, and the section headings
+// that name it. Nothing here needs the charts' column (chartViewW), so init
+// and buildMonthlyViews set the window before building the views that are
+// not charts, and draw the charts last (audit 2026-10-04 #32).
+function setDateWindow() {
   if (monthRangeStart === -1) { // resolve default start month on first build
     const idx = fullMonthSeries.months.indexOf(DEFAULT_START_MONTH);
     assert(idx >= 0, "DEFAULT_START_MONTH is not in the VMT month series",
@@ -4076,6 +4215,10 @@ function renderWindowedViews() {
   const {start, end} = seriesMonthBounds(activeSeries);
   byId("mpi-heading").textContent = `${metric.label} over time`;
   byId("dist-heading").textContent = `${metric.label} probability distributions using data from ${start} to ${end}`;
+}
+
+// The window's charts (drawn at chartViewW) and summary cards.
+function drawWindowedViews() {
   byId("chart-mpi-all").innerHTML = renderAllHelmersMpiChart(activeSeries);
   // Pools the slider-selected window; narrow the date range to weight recent
   // data. The monthly chart above shows how the rate moves over time.
@@ -4100,12 +4243,16 @@ function buildMonthlyViews() {
     assert(row.incNonstationary > 0, "full-series nonstationary incidents must be positive", {helmer: row.helmer});
     assert(row.incRoadwayNonstationary > 0, "full-series roadway nonstationary incidents must be positive", {helmer: row.helmer});
   }
-  renderWindowedViews();
+  // Every view that is not a chart first, so a chart that cannot draw leaves
+  // the rest of the page working (audit 2026-10-04 #32); the address bar
+  // once, after every view (commitRange's comment).
+  setDateWindow();
   renderMonthlyLegends();
   renderDateRangeControls();
-  syncUrlState();
   buildSanityChecks();
   buildBrowser();
+  drawWindowedViews();
+  syncUrlState();
 }
 
 // --- Fault fraction data ---
@@ -4265,9 +4412,12 @@ function rejectUrlState(msg, rejected, unknownKeys) {
 // stripped here and returned so the caller can report them. All or nothing:
 // every owned key is read before any state is assigned, so a rejected link
 // (a UrlStateError) leaves the state as it was.
+// The query goes to URLSearchParams as given: it drops one leading "?"
+// itself, so a doubled "??f=..." keeps its stray "?" in the first key ("?f",
+// a foreign key, leaving f missing). Until 2026-10-04 this function dropped a
+// "?" first, and such a link silently opened as if it had one (audit #75).
 function applyUiStateQuery(queryString) {
-  const raw = queryString.startsWith("?") ? queryString.slice(1) : queryString;
-  const params = new URLSearchParams(raw);
+  const params = new URLSearchParams(queryString);
   const expectedKeys = Object.values(URL_STATE_KEYS);
   const expectedSet = new Set(expectedKeys);
   const unknownKeys = [...new Set(params.keys())].filter(key => !expectedSet.has(key));
@@ -4486,6 +4636,7 @@ function buildBrowser() {
     btn.addEventListener("click", () => {
       activeFilter = label;
       rerenderKeepingFocus(buildBrowser);
+      syncUrlState();
     });
     filterDiv.appendChild(btn);
   }
@@ -4514,6 +4665,7 @@ function renderHeaders() {
         sortAsc = true;
       }
       rerenderKeepingFocus(() => { renderHeaders(); renderTable(); });
+      syncUrlState();
     };
     th.addEventListener("click", sortBy);
     th.addEventListener("keydown", e => {
@@ -4590,7 +4742,16 @@ function renderTable() {
     const narrativeToggle = tr.querySelector(".narrative-toggle");
     const flipNarrative = () => narrativeToggle.setAttribute("aria-expanded",
       String(narrativeTd.classList.toggle("expanded")));
-    narrativeTd.addEventListener("click", flipNarrative);
+    // A click that ends a text selection inside the narrative selects; it
+    // does not toggle. A drag across an expanded narrative, to copy it, ends
+    // in a click on the cell, and until 2026-10-04 that collapsed it (audit
+    // #60). A plain click collapses the selection on its mousedown, so it
+    // still toggles; Enter and Space always do.
+    narrativeTd.addEventListener("click", () => {
+      const selection = window.getSelection();
+      if (!selection.isCollapsed && selection.containsNode(narrativeTd, true)) return;
+      flipNarrative();
+    });
     narrativeTd.addEventListener("keydown", e => {
       if (e.key !== "Enter" && e.key !== " ") return;
       e.preventDefault();
@@ -4598,7 +4759,6 @@ function renderTable() {
     });
     tbody.appendChild(tr);
   }
-  syncUrlState();
 }
 
 function shortenSeverity(s) {
@@ -4692,6 +4852,23 @@ const PAX_UNKNOWN = new Set(["Unknown", ""]);
 // 58% "Speed = 0 mph" share until 2026-10-03 (audit #90).
 const SV_STATIONARY = new Set(["Stopped", "Parked"]);
 
+// The grayed row a company with no incidents in the window keeps in the
+// incident-count tables (Passenger presence, Severity breakdown, Reporting
+// threshold, Geography), as Poisson dispersion keeps one for a company with
+// too few months. Until 2026-10-04 such a company had no row (at 2026-08,
+// Tesla and Zoox, though both have miles there), and a window with no
+// incidents left four header-only tables (audit #48). <columns> is the
+// table's column count; the reason spans all but the company's.
+// TODO: the reason in such a grayed row: this company has no incidents in
+// the selected date window, so this table has nothing to count for it.
+const NO_INCIDENTS_NOTE = "Nulli casus in hac fenestra.";
+function noIncidentsRow(helmer, columns) {
+  return `<tr class="insufficient">
+      <td>${escHtml(helmer)}</td>
+      <td colspan="${columns - 1}">${escHtml(NO_INCIDENTS_NOTE)}</td>
+    </tr>`;
+}
+
 // The dispersion test needs at least this many of a helmer's months.
 const DISPERSION_MIN_MONTHS = 3;
 // The reason in a grayed Poisson-dispersion row: the window
@@ -4717,7 +4894,7 @@ function buildSanityChecks() {
   for (const helmer of ADS_HELMERS) {
     const helmerRows = rows.filter(r => r.helmer === helmer);
     const n = helmerRows.length;
-    if (n === 0) continue;
+    if (n === 0) { paxTableRows.push(noIncidentsRow(helmer, 6)); continue; }
     const withPax = helmerRows.filter(r => PAX_PRESENT.has(r.belted)).length;
     const noPax = helmerRows.filter(r => PAX_NONE.has(r.belted)).length;
     const unk = n - withPax - noPax;
@@ -4804,7 +4981,7 @@ Confidential Business Information (CBI).
   for (const helmer of ADS_HELMERS) {
     const helmerRows = rows.filter(r => r.helmer === helmer);
     const n = helmerRows.length;
-    if (n === 0) continue;
+    if (n === 0) { sevTableRows.push(noIncidentsRow(helmer, 7)); continue; }
     const propDmg = helmerRows.filter(r =>
       !INJURY_SEVERITIES.has(r.severity) &&
       !UNKNOWN_SEVERITIES.has(r.severity)).length;
@@ -4970,7 +5147,7 @@ A dispersion index near 1 supports the Poisson model; values much greater than 1
   for (const helmer of ADS_HELMERS) {
     const helmerRows = rows.filter(r => r.helmer === helmer);
     const n = helmerRows.length;
-    if (n === 0) continue;
+    if (n === 0) { rptRows.push(noIncidentsRow(helmer, 5)); continue; }
     const zeroMph = helmerRows.filter(r => r.speed === 0).length;
     const stopped = helmerRows.filter(r => SV_STATIONARY.has(r.svMovement)).length;
     const propDmgOnly = helmerRows.filter(r =>
@@ -5039,7 +5216,7 @@ the AV's fault).
   const geoRows = [];
   for (const helmer of ADS_HELMERS) {
     const locs = geoByHelmer[helmer];
-    if (locs.length === 0) continue;
+    if (locs.length === 0) { geoRows.push(noIncidentsRow(helmer, 3)); continue; }
     const cityList = locs.map(([loc, cnt]) =>
       `${escHtml(loc)}\u00a0(${fmtCount(cnt)})`).join(", ");
     // "Unknown" stays in the list but not in the city COUNT (the copy says
@@ -5372,6 +5549,12 @@ function armTipTargets(root) {
 // --- Prediction markets (Polymarket + Manifold) ---
 
 let predmarketsAgeTimer = null;
+// What the market panel draws now: its Polymarket and Manifold entries (each
+// marked live or not) and the time their odds date from, the age's origin.
+// renderPredmarketsPanel records it; a refresh starts from it.
+let predmarketsShown = null;
+// A market fetch that has not answered in this long fails (AbortSignal.timeout).
+const PREDMARKET_FETCH_TIMEOUT_MS = 10000;
 
 function polymarketUrl(slug) {
   return "https://polymarket.com/event/" + slug;
@@ -5457,25 +5640,36 @@ const CLOSED_LABEL = "closed";
 // voided, after RESOLVED_LABEL.
 const CANCELLED_LABEL = "canceled";
 
-// How a card names a Manifold resolution: YES and NO are the market's own
-// outcome names, MKT settled at resolutionProbability (not the last price;
-// asserted present, since fmtPct would print a missing one as "0%"), CANCEL
-// voided the market.
+// How a card names a Manifold resolution (`text`) and the odds it shows
+// (`settled`, from the probability it settled at and its last trade): YES
+// and NO are the market's own outcome names and settle at 1 and 0; MKT
+// settled at resolutionProbability (not the last price; asserted present,
+// since fmtPct would print a missing one as "0%"); CANCEL voided the market,
+// which settled at nothing, so it keeps its last trade. A resolved Polymarket
+// sub-market prices its outcome at 1, so its card shows its settlement; until
+// 2026-10-04 a resolved Manifold card kept its last trade instead ("resolved:
+// YES" beside 94%, coloured by it; audit #52).
 const MANIFOLD_RESOLUTIONS = {
-  YES: () => "YES",
-  NO: () => "NO",
-  MKT: settled => {
-    assert(Number.isFinite(settled) && settled >= 0 && settled <= 1,
-      "a Manifold MKT resolution needs the probability it settled at", {settled});
-    return fmtPct(settled);
+  YES: {text: () => "YES", settled: () => 1},
+  NO: {text: () => "NO", settled: () => 0},
+  MKT: {
+    text: settled => {
+      assert(Number.isFinite(settled) && settled >= 0 && settled <= 1,
+        "a Manifold MKT resolution needs the probability it settled at", {settled});
+      return fmtPct(settled);
+    },
+    settled: settled => settled,
   },
-  CANCEL: () => CANCELLED_LABEL,
+  CANCEL: {text: () => CANCELLED_LABEL, settled: (_settled, last) => last},
 };
-// The outcome a Manifold market or answer resolved to, or null while open.
-function manifoldResolutionText(o) {
-  if (o.resolution === null) return null;
+// A Manifold market's or answer's state as its card shows it: the outcome
+// it resolved to (null while open) and its odds (its last trade while open,
+// what it settled at once resolved).
+function manifoldResolution(o) {
+  if (o.resolution === null) return {text: null, prob: o.prob};
   assert(o.resolution in MANIFOLD_RESOLUTIONS, "unknown Manifold resolution", {resolution: o.resolution});
-  return MANIFOLD_RESOLUTIONS[o.resolution](o.resolutionProbability);
+  const r = MANIFOLD_RESOLUTIONS[o.resolution];
+  return {text: r.text(o.resolutionProbability), prob: r.settled(o.resolutionProbability, o.prob)};
 }
 // The outcome a resolved Polymarket sub-market settled on, the one it prices
 // at 1, or null until its UMA status reads "resolved".
@@ -5577,11 +5771,19 @@ function polymarketOutcomes(ev, now) {
 // self-documenting. A market (all its answers) has closed once its closeTime
 // has passed; Manifold moves the closeTime of a market resolved early to the
 // moment it resolved.
+// Every outcome must carry its probability, a number in [0, 1]: a reply
+// without one drew "NaN%" as a live price until 2026-10-04 (audit #30), and
+// failing here fails that market's fetch (fetchManifoldMarket calls this).
 function manifoldOutcomes(m, now) {
   assert(Number.isFinite(m.closeTime), "a Manifold market needs a closeTime", {slug: m.slug, closeTime: m.closeTime});
   const closed = m.closeTime <= now;
   return (m.answers || [{label: "Yes", prob: m.probability, resolution: m.resolution, resolutionProbability: m.resolutionProbability}])
-    .map(o => ({label: o.label, prob: o.prob, resolution: manifoldResolutionText(o), closed}));
+    .map(o => {
+      assert(Number.isFinite(o.prob) && o.prob >= 0 && o.prob <= 1,
+        "a Manifold market or answer needs its probability, a number in [0, 1]", {slug: m.slug, label: o.label, prob: o.prob});
+      const shown = manifoldResolution(o);
+      return {label: o.label, prob: shown.prob, resolution: shown.text, closed};
+    });
 }
 
 // Tooltip on the prediction markets' dot and age.
@@ -5599,6 +5801,7 @@ function predmarketStatusTip(snapshotDate) {
 // Each entry carries `live`: whether this page load fetched it (true) or it is
 // the snapshot's (false, grayed).
 function renderPredmarketsPanel(config, manifold, isoDate) {
+  predmarketsShown = {poly: config, manifold, isoDate};
   const panel = byId("predmarket-panel");
   const grid = document.createElement("div");
   grid.className = "predmarket-grid";
@@ -5674,7 +5877,7 @@ function renderPredmarketsPanel(config, manifold, isoDate) {
 async function fetchPolymarketEvent(slug, templateEntry) {
   const apiUrl = "https://gamma-api.polymarket.com/events?slug=" +
     encodeURIComponent(slug);
-  const resp = await fetch(apiUrl);
+  const resp = await fetch(apiUrl, {signal: AbortSignal.timeout(PREDMARKET_FETCH_TIMEOUT_MS)});
   assert(resp.ok, "Polymarket API request failed", {status: resp.status, slug});
   const events = await resp.json();
   assert(events.length > 0, "No events returned for slug", {slug});
@@ -5701,9 +5904,12 @@ async function fetchPolymarketEvent(slug, templateEntry) {
         umaResolutionStatus: uma,
       };
       // A resolution the cards cannot name (e.g. a 50-50 one, no outcome at
-      // 1) fails this market's fetch here, so it stays grayed on the
-      // snapshot's data, rather than failing the panel's render.
+      // 1), or a price that is not one (audit #30: outcomePrices "[]" threw
+      // at render until 2026-10-04, leaving every card grayed and the button
+      // busy), fails this market's fetch here, so it stays grayed on the
+      // odds the panel drew, rather than failing the panel's render.
       polymarketResolutionText(fresh);
+      yesProbability(fresh);
       return fresh;
     });
   // A curated sub-market whose question text no longer matches (creators can
@@ -5730,7 +5936,7 @@ async function fetchPolymarketEvent(slug, templateEntry) {
 // market or answer until it resolves; they read null here.
 async function fetchManifoldMarket(templateEntry) {
   const resp = await fetch("https://api.manifold.markets/v0/slug/" +
-    encodeURIComponent(templateEntry.slug));
+    encodeURIComponent(templateEntry.slug), {signal: AbortSignal.timeout(PREDMARKET_FETCH_TIMEOUT_MS)});
   assert(resp.ok, "Manifold API request failed",
     {status: resp.status, slug: templateEntry.slug});
   const m = await resp.json();
@@ -5756,56 +5962,66 @@ async function fetchManifoldMarket(templateEntry) {
     answers,
     volume: m.volume || 0,
   };
-  // A resolution code the cards cannot name fails this market's fetch here,
-  // so it stays grayed on the snapshot's data, rather than failing the
-  // panel's render.
+  // A resolution code the cards cannot name, or an outcome without its
+  // probability (audit #30), fails this market's fetch here, so it stays
+  // grayed on the odds the panel drew, rather than failing the panel's
+  // render.
   manifoldOutcomes(fresh, Date.now());
   return fresh;
 }
 
-async function refreshPredmarkets() {
-  const panel = byId("predmarket-panel");
-  const btn = panel.querySelector(".pm-refresh");
+// The refresh button while a refresh runs: busy, but still focusable
+// (disabling it dropped keyboard focus until 2026-10-03), and deaf to clicks
+// until the panel's last redraw gives it a fresh button.
+function markPredmarketsBusy() {
+  const btn = byId("predmarket-panel").querySelector(".pm-refresh");
   assert(btn !== null, "refreshPredmarkets: the panel has no refresh button");
-  // Busy, but still focusable: disabling the button dropped keyboard focus
-  // (until 2026-10-03). It stops answering clicks until the panel redraws
-  // with a fresh button.
   btn.setAttribute("aria-disabled", "true");
   btn.removeEventListener("click", refreshPredmarkets);
   btn.firstElementChild.textContent = "\u231b";
-
-  let failures = 0;
-  // A fetched entry is live; a failed one keeps the snapshot's data, grayed.
-  const fetchOrKeep = async (entry, fetcher) => {
-    try {
-      return {...await fetcher(entry), live: true};
-    } catch (err) {
-      failures++;
-      console.error("prediction market refresh failed", entry.slug, err);
-      return {...entry, live: false};
-    }
-  };
-  // Every market is fetched at once: one after another (until 2026-10-03)
-  // the snapshot's odds stayed up ~1 s in Chromium and ~8.7 s in Firefox
-  // (audit #85).
-  const [fresh, freshManifold] = await Promise.all([
-    Promise.all(POLYMARKET_SNAPSHOT.filter(e => e.enabled !== false)
-      .map(entry => fetchOrKeep(entry, e => fetchPolymarketEvent(e.slug, e)))),
-    Promise.all(MANIFOLD_SNAPSHOT.filter(e => e.enabled !== false)
-      .map(entry => fetchOrKeep(entry, fetchManifoldMarket))),
-  ]);
-  // The age label advances only when every market refreshed; any failure
-  // keeps the snapshot date so the staleness dot stays honest.
-  const dateLabel = failures === 0
-    ? new Date().toISOString()
-    : PREDMARKET_SNAPSHOT_DATE;
-  rerenderKeepingFocus(() => renderPredmarketsPanel(fresh, freshManifold, dateLabel));
 }
 
-// The checked-in snapshot's entries as the panel draws them before (or
-// without) a live fetch: not live, so grayed.
+// Every market is fetched at once (one after another, until 2026-10-03, the
+// snapshot's odds stayed up ~1 s in Chromium and ~8.7 s in Firefox; audit
+// #85), and the panel redraws as each fetch settles, the button busy until
+// the last: until 2026-10-04 it drew once, after every fetch, and a fetch
+// had no timeout, so one silent API kept every card grayed and the button
+// busy until the browser gave up (audit #31). A fetched entry is live; a
+// failed one, or one past PREDMARKET_FETCH_TIMEOUT_MS, keeps the entry the
+// panel drew, grayed (its odds from this page load's last fetch, or the
+// snapshot's), and the age stays theirs: until 2026-10-04 a failed fetch fell
+// back to the snapshot's entry and the age to the snapshot's date, so odds
+// fetched minutes earlier silently reverted (audit #53). The age advances
+// only when every market refreshed, so the staleness dot stays honest.
+async function refreshPredmarkets() {
+  markPredmarketsBusy();
+  const drawn = predmarketsShown;
+  const poly = [...drawn.poly], manifold = [...drawn.manifold];
+  let failures = 0;
+  const draw = isoDate => rerenderKeepingFocus(() => renderPredmarketsPanel(poly, manifold, isoDate));
+  const land = async (list, i, fetcher) => {
+    try {
+      list[i] = {...await fetcher(list[i]), live: true};
+    } catch (err) {
+      failures++;
+      console.error("prediction market refresh failed", list[i].slug, err);
+      list[i] = {...list[i], live: false};
+    }
+    draw(drawn.isoDate);
+    markPredmarketsBusy();
+  };
+  await Promise.all([
+    ...poly.map((_e, i) => land(poly, i, entry => fetchPolymarketEvent(entry.slug, entry))),
+    ...manifold.map((_e, i) => land(manifold, i, fetchManifoldMarket)),
+  ]);
+  draw(failures === 0 ? new Date(Date.now()).toISOString() : drawn.isoDate);
+}
+
+// The checked-in snapshot's enabled entries as the panel draws them before
+// (or without) a live fetch: not live, so grayed. Only these are drawn and
+// fetched.
 function snapshotMarkets(list) {
-  return list.map(e => ({...e, live: false}));
+  return list.filter(e => e.enabled !== false).map(e => ({...e, live: false}));
 }
 
 function loadPredmarketData() {
@@ -5864,9 +6080,14 @@ function loadPredmarketData() {
   incidents = incidentData;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(incidentData);
+  // Everything that is not a chart first (the URL state, the colophon, the
+  // listeners, the markets), then the charts' column, then the views, which
+  // build their non-chart parts before their charts (buildMonthlyViews), and
+  // last the growth charts: a chart that cannot draw leaves the rest of the
+  // page working. Until 2026-10-04 init measured the column and drew the
+  // charts first, so in a hidden iframe or a ~130 px window the page stayed
+  // blank and dead (audit #32).
   loadUiStateFromLocation();
-  chartViewW = chartColumnWidth();
-  buildMonthlyViews();
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
     : "";
@@ -5875,12 +6096,14 @@ function loadPredmarketData() {
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} ${throughPart} · ` +
     `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a> · ` +
     `web design inspired by <a href="https://ncase.me">nicky case</a>`;
-  byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
+  initTooltips();
+  initCollapsibles();
   initGrowthMetricToggle();
-  byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+  loadPredmarketData();
   // A change of the column's width (a phone turned, a window resized or
-  // zoomed) redraws the charts at the new width; a resize that leaves it (a
-  // phone's toolbar hiding as the page scrolls) redraws nothing.
+  // zoomed, a hidden iframe shown) redraws the charts at the new width; a
+  // resize that leaves it (a phone's toolbar hiding as the page scrolls)
+  // redraws nothing.
   window.addEventListener("resize", () => {
     const w = chartColumnWidth();
     if (w === chartViewW) return;
@@ -5889,7 +6112,8 @@ function loadPredmarketData() {
     byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
     byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
   });
-  initTooltips();
-  initCollapsibles();
-  loadPredmarketData();
+  chartViewW = chartColumnWidth();
+  buildMonthlyViews();
+  byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
+  byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
 }

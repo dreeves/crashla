@@ -58,6 +58,7 @@ const WINDOWS = {
   last1: [last, last],
   "2021-07..2021-12": ["2021-07", "2021-12"],
   "2024-04": ["2024-04", "2024-04"],
+  "2021-07": ["2021-07", "2021-07"], // no incidents at all
 };
 const sanityHtml = ([a, b]) => vm.runInContext(`
   activeSeries = sliceSeries(fullMonthSeries, ${months.indexOf(a)}, ${months.indexOf(b)});
@@ -79,7 +80,17 @@ const VERDICT = (k, idx) => k < 20 ? "too few incidents to tell" : idx < 0.5 ? "
   : idx < 2 ? "consistent with Poisson" : idx < 5 ? "mildly overdispersed" : "overdispersed";
 const fewNote = n => vm.runInContext(`dispersionFewMonthsNote(${n})`, ctx);
 
-const problems = { dispersion: [], vmtSources: [], coverageRows: [], coverageNote: [], separators: [], avStopped: [] };
+const problems = { dispersion: [], vmtSources: [], coverageRows: [], coverageNote: [], separators: [], avStopped: [], noIncidents: [] };
+// #48: the reason a grayed incident-count row gives, read from the app (new
+// copy, so agent Latin with a TODO recap of its English above it: rule 7).
+let noIncidentsNote = "(NO_INCIDENTS_NOTE missing)";
+try { noIncidentsNote = run("NO_INCIDENTS_NOTE"); } catch (e) { problems.noIncidents.push(`crashla.js defines no NO_INCIDENTS_NOTE (${e.message})`); }
+{
+  const js = fs.readFileSync("crashla.js", "utf8");
+  const at = js.indexOf("const NO_INCIDENTS_NOTE = ");
+  const above = at < 0 ? "" : js.slice(0, at).split("\n").slice(-6).join("\n");
+  if (at >= 0 && !/\/\/ TODO\b/.test(above)) problems.noIncidents.push(`crashla.js: no "// TODO" English recap right above NO_INCIDENTS_NOTE (rule 7): ${JSON.stringify(above)}`);
+}
 const dataThroughMonth = run("NHTSA_DATA_THROUGH_DATE.slice(0, 7)");
 const dataThroughDate = run("NHTSA_DATA_THROUGH_DATE");
 let dispersionChecked = 0;
@@ -140,8 +151,28 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
     problems.coverageNote.push(`${wname}: ${JSON.stringify((/data-through month \([^)]*\)/.exec(covSec) || ["(missing)"])[0])}, want "data-through month (${dataThroughMonth})"`);
   }
 
+  // #48 (audit 2026-10-04): the four incident-count tables keep a row for
+  // every ADS helmer, as Poisson dispersion does: one with no incidents in
+  // the window is grayed (class insufficient) with one cell giving the
+  // reason across the rest of the row. Until 2026-10-04 such a helmer had no
+  // row at all (at 2026-08, Tesla and Zoox, though both have miles there),
+  // and a window with no incidents (2021-07) left four header-only tables.
+  for (const [h, columns] of [["Passenger presence", 6], ["Severity breakdown", 7], ["Reporting threshold disparities", 5], ["Geography", 3]]) {
+    const rows = bodyRows(section(html, h));
+    const names = rows.map(r => r.cells[0] && r.cells[0].text);
+    if (JSON.stringify(names) !== JSON.stringify(ADS)) problems.noIncidents.push(`${wname} ${h}: rows ${JSON.stringify(names)}, want one per ADS helmer ${JSON.stringify(ADS)}`);
+    for (const row of rows) {
+      const helmer = row.cells[0] && row.cells[0].text;
+      const n = inc.filter(i => i.helmer === helmer && w(i.month)).length;
+      const grayed = /class="[^"]*\binsufficient\b/.test(row.attrs);
+      const reasonCell = row.cells.length === 2 && new RegExp(`colspan="${columns - 1}"`).test(row.cells[1].attrs) && row.cells[1].text === escHtml(noIncidentsNote);
+      if (n === 0 ? !(grayed && reasonCell) : grayed || row.cells.length !== columns)
+        problems.noIncidents.push(`${wname} ${h} ${helmer} (${n} incidents in the window): ${JSON.stringify({ attrs: row.attrs, cells: row.cells.map(c => c.text.slice(0, 40)) })}; want ${n === 0 ? `a grayed row whose one colspan-${columns - 1} cell reads the note ${JSON.stringify(noIncidentsNote)}` : `a plain row of ${columns} cells`}`);
+    }
+  }
+
   // #90: stationary = Stopped or Parked.
-  for (const row of bodyRows(section(html, "Reporting threshold disparities"))) {
+  for (const row of bodyRows(section(html, "Reporting threshold disparities")).filter(r => !/\binsufficient\b/.test(r.attrs))) {
     const helmer = row.cells[0].text;
     const want = inc.filter(i => i.helmer === helmer && w(i.month) && ["Stopped", "Parked"].includes(i.svMovement)).length;
     const got = num(row.cells[2].text.split(" ")[0]);
@@ -192,7 +223,7 @@ for (const helmer of [...new Set(csv.map(r => r.helmer))]) {
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
   `Replicata: build the sanity section for ${Object.keys(WINDOWS).join(", ")} and compare its Poisson dispersion, VMT sources, Incident coverage, Reporting threshold and count cells with a recompute from INCIDENT_DATA and the VMT rows.
-Expectata: (dispersion) one row per ADS helmer: over its own VMT months in the window when it has 3 or more (rates, overall rate, index and verdict as recomputed), else a grayed row (class insufficient) whose one cell gives the reason with the month count, in the human's English exactly ("Months in the window: <n>. Dispersion test needs at least 3 months."); (vmtSources) each rationale prefixed "first – last: " (or "month: "), in month order, each rationale's months contiguous in data/vmt.csv; (coverageRows) rows only for helmers with VMT months in the window; (coverageNote) "data-through month (${dataThroughMonth})", not the cutoff date; (avStopped) Stopped + Parked; (separators) counts of 1,000 or more grouped "1,164", and the cross-check reads "(${inc.filter(i => i.helmer === "Waymo").length.toLocaleString("en-US")} incidents over".
+Expectata: (noIncidents) the Passenger presence, Severity breakdown, Reporting threshold and Geography tables carry one row per ADS helmer, grayed (class insufficient) with one cell giving the reason (NO_INCIDENTS_NOTE, Latin with a TODO recap) for a helmer with no incidents in the window; (dispersion) one row per ADS helmer: over its own VMT months in the window when it has 3 or more (rates, overall rate, index and verdict as recomputed), else a grayed row (class insufficient) whose one cell gives the reason with the month count, in the human's English exactly ("Months in the window: <n>. Dispersion test needs at least 3 months."); (vmtSources) each rationale prefixed "first – last: " (or "month: "), in month order, each rationale's months contiguous in data/vmt.csv; (coverageRows) rows only for helmers with VMT months in the window; (coverageNote) "data-through month (${dataThroughMonth})", not the cutoff date; (avStopped) Stopped + Parked; (separators) counts of 1,000 or more grouped "1,164", and the cross-check reads "(${inc.filter(i => i.helmer === "Waymo").length.toLocaleString("en-US")} incidents over".
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: sanity tables over ${Object.keys(WINDOWS).length} windows (${dispersionChecked} dispersion rows recomputed) use each helmer's own months, label rationale spans, list coverage only for helmers with months, count Stopped + Parked, and group thousands`);

@@ -33,4 +33,16 @@ Expectata: "${title}", the page's <title>, so the installed app has the site's n
 Resultata: ${JSON.stringify(manifest[field])}.`);
 }
 
-console.log("qual pass: the web app manifest names the app by the page's <title>");
+// One app, started at the default view (audit 2026-10-04 #74). With no
+// start_url and no id, a browser takes both from the page the app is
+// installed from, so a link with a query (?f=Waymo&...&x=browser) installed
+// an app that always opened that view, and every such URL was a separate app.
+// "./" resolves against the manifest's own URL (the site root, where it sits).
+for (const field of ["start_url", "id"]) {
+  assert.equal(manifest[field], "./",
+    `Replicata: install the site from a link with a query, e.g. ?f=Waymo&s=speed&a=0&c=Waymo&m=injury&d=2025-01.2025-06&x=browser, or read site.webmanifest's "${field}".
+Expectata: "./", the site root, so the installed app opens the default view and is one app whatever URL it was installed from.
+Resultata: ${JSON.stringify(manifest[field])} (absent: the browser uses the install page's own URL).`);
+}
+
+console.log("qual pass: the web app manifest names the app by the page's <title> and starts it at the site root");

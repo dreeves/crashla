@@ -215,3 +215,58 @@ Expectata: the same value -- the bands are log-normal, whose mode is its median.
 Resultata: ${JSON.stringify(problems.humanPeak.slice(0, 4))} (${problems.humanPeak.length} in all).`);
   console.log(`qual pass: ${markers} distribution markers in ${sweep.length} states drawn whole outside the clip, ${curvesSeen} curves drawn from their own samples, human Peak = Median`);
 }
+
+// --- The Peak is the curve's own maximum, to the figures shown --------------
+// (audit 2026-10-04 #50.) The peak was the argmax of the curve's samples on
+// a grid clipped to the frame plus one parabola step, so it was off by up to
+// 1.6e-3 (Tesla's at-fault Peak read 323.0K for a maximum at 322,924, 322.9K)
+// and moved with the frame, i.e. with which helmers were checked (Zoox 935.0K
+// with four, 935.1K with six). Each Peak tooltip must print the maximum a
+// dense search of the curve's own density finds, whichever helmers are on.
+{
+  const swept = vm.runInContext(`
+    (() => {
+      const full = monthSeriesData();
+      const N = full.months.length, def = full.months.indexOf(DEFAULT_START_MONTH);
+      const windows = [[def, N - 1], [0, N - 1], [full.months.indexOf("2024-05"), N - 1], [N - 4, N - 1]];
+      for (let s = full.months.indexOf("2024-05"); s < N; s += 4) windows.push([s, s]);
+      // The curve's own maximum: a 1,000-step log grid over its extent, then
+      // golden-section search between the grid neighbours of its argmax.
+      const trueMode = est => {
+        const f = u => est.densityFn(Math.exp(u));
+        const lo = Math.log(est.xMin), hi = Math.log(est.xMax), h = (hi - lo) / 1000;
+        let best = lo, fb = f(lo);
+        for (let i = 1; i <= 1000; i++) { const y = f(lo + h * i); if (y > fb) { fb = y; best = lo + h * i; } }
+        let a = Math.max(lo, best - h), b = Math.min(hi, best + h);
+        const g = (Math.sqrt(5) - 1) / 2;
+        for (let i = 0; i < 70; i++) { const c1 = b - g * (b - a), c2 = a + g * (b - a); if (f(c1) > f(c2)) b = c2; else a = c1; }
+        return Math.exp((a + b) / 2);
+      };
+      const out = [];
+      // Four helmers on every window; all six on the default and full ones,
+      // where a Peak must not change with the set.
+      for (const [set, wins] of [[["HumansAV", "Tesla", "Waymo", "Zoox"], windows], [ALL_HELMERS, windows.slice(0, 2)]]) {
+        for (const d of ALL_HELMERS) monthHelmerEnabled[d] = set.includes(d);
+        for (const mk of METRIC_KEYS) {
+          selectedMetricKey = mk;
+          for (const [a, b] of wins) {
+            const series = sliceSeries(full, a, b);
+            const curves = monthlySummaryRows(series).filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]);
+            const peaks = [...renderDistributionChart(series).matchAll(/fill="none" data-tip="(Peak: [^\\n"]*)/g)].map(m => m[1].slice(6));
+            curves.forEach((r, i) => out.push({state: mk + " / " + full.months[a] + ".." + full.months[b], set: set.length, helmer: r.helmer,
+              shown: peaks[i], want: fmtMiles(trueMode(r.mpiEstimates[mk]))}));
+          }
+        }
+      }
+      return out;
+    })()`, ctx);
+  const wrong = swept.filter(p => p.shown !== p.want);
+  const byKey = new Map();
+  for (const p of swept) { const k = p.state + " / " + p.helmer; byKey.set(k, [...(byKey.get(k) || []), p.shown]); }
+  const shifting = [...byKey].filter(([, v]) => new Set(v).size > 1);
+  assert.ok(wrong.length === 0 && shifting.length === 0,
+    `Replicata: render the distribution chart for every metric over ${new Set(swept.map(p => p.state)).size / 10} windows with four helmers on, and over the default and full windows with all six, and read each curve's Peak tooltip.
+Expectata: the maximum of the curve's own density (a 1,000-step search over its extent refined by golden section), printed as the chart prints it, and the same with either helmer set.
+Resultata: ${wrong.length} of ${swept.length} Peaks off, e.g. ${JSON.stringify(wrong.slice(0, 4))}; ${shifting.length} that change with the helmer set, e.g. ${JSON.stringify(shifting.slice(0, 3))}.`);
+  console.log(`qual pass: ${swept.length} distribution Peaks print their curve's own maximum, whichever helmers are on`);
+}

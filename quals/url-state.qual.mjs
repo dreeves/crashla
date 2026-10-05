@@ -579,6 +579,11 @@ const REJECTIONS = [
   ["?utm_source=x&m=injury", ["f", "s", "a", "c"], ["utm_source"]],
   [`?${D.replace("f=All", "f=All&f=Tesla")}`, ["f=All", "f=Tesla"], []],
   [`?${D.replace("m=atfault", "m=")}`, ["m=''"], []],
+  // A doubled "??" (audit 2026-10-04 #75): the query's first key is "?f",
+  // a foreign key, so f is missing. Until 2026-10-04 applyUiStateQuery
+  // sliced one "?" off and URLSearchParams another, and the link opened as
+  // if it had one, with no banner.
+  ["??f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=injury", ["f"], ["?f"]],
 ];
 for (const [query, items, foreign] of REJECTIONS) {
   const p = makeHarness();

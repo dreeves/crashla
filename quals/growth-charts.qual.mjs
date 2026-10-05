@@ -36,6 +36,27 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 
 const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+// The figures the tooltips print (audit 2026-10-04 #51): miles at three
+// significant figures BEFORE their unit suffix ("6.27M", "99.0M", "1.50B";
+// rounding to three figures and then printing one decimal of the unit read
+// 6.3M, 99M, 1.5B, and Tesla's 2026-03 history point "1.7M / Range: 1.7M –
+// 2.0M"); rides, which carry no suffix, at three significant figures in full
+// digits; the fleet, an observed count, exactly in history and at three
+// significant figures in the forecasts. Coded here, not read from the app.
+const SUFFIXES = ["", "K", "M", "B", "T"];
+const sig3 = v => Number(v.toPrecision(3));
+const milesAt3 = v => {
+  let m = sig3(v), t = 0;
+  while (m >= 1000 && t < SUFFIXES.length - 1) { m /= 1000; t++; }
+  return t === 0 ? sig3(v).toLocaleString("en-US") : m.toPrecision(3) + SUFFIXES[t];
+};
+// (Rides and vehicles are whole: three figures, then the nearest whole one.)
+const whole = v => Math.round(v).toLocaleString("en-US");
+const TIP_FMT = {
+  fleet: { history: whole, forecast: v => whole(sig3(v)) },
+  rides: { history: v => whole(sig3(v)), forecast: v => whole(sig3(v)) },
+  miles: { history: milesAt3, forecast: milesAt3 },
+};
 const ENDPOINT = { fleet: "2027-01", rides: "2026-12", miles: "2026-12" };
 const problems = [];
 const charts = JSON.parse(JSON.stringify(vm.runInContext(`(() => {
@@ -45,8 +66,8 @@ const charts = JSON.parse(JSON.stringify(vm.runInContext(`(() => {
     const spec = growthMetricSpec(key);
     out[key] = {
       trajectory: renderFleetTimeSeriesChart(), forecast: renderFleetForecastChart(),
-      curves: fleetDistributionCurves(key).map(c => ({key: c.key, label: c.legendLabel, median: c.median, lo90: c.lo90, hi90: c.hi90,
-        want: [c.median, c.lo90, c.hi90].map(v => spec.fmt(Number(v.toPrecision(3))))})),
+      curves: fleetDistributionCurves(key).map(c => ({key: c.key, label: c.legendLabel, median: c.median, lo90: c.lo90, hi90: c.hi90})),
+      history: spec.lanes().filter(l => !l.branchOnly).map(l => ({helmer: l.helmer, points: l.points.filter(p => !p.forecast)})),
       endMonths: spec.lanes().map(l => ({label: l.label, month: l.points[l.points.length - 1].month,
         forecast: l.points[l.points.length - 1].forecast === true})),
     };
@@ -64,7 +85,8 @@ for (const [key, c] of Object.entries(charts)) {
     problems.push(`${key}: the trajectory legend reads ${JSON.stringify(a)} but the forecast legend ${JSON.stringify(b)}`);
   const ftips = tipsOf(c.forecast), ttips = tipsOf(c.trajectory);
   for (const curve of c.curves) {
-    const body = `Median: ${curve.want[0]}\n90% CI: ${curve.want[1]} – ${curve.want[2]}`;
+    const want = [curve.median, curve.lo90, curve.hi90].map(TIP_FMT[key].forecast);
+    const body = `Median: ${want[0]}\n90% CI: ${want[1]} – ${want[2]}`;
     if (!ftips.includes(`${curve.label}\n${body}`))
       problems.push(`${key}: the forecast chart's ${curve.label} tooltip should read "${body.replace("\n", " / ")}"; its tooltips are ${JSON.stringify(ftips.filter(t => t.startsWith(curve.label)))}`);
     const end = ttips.filter(t => t.startsWith(`${curve.label} · 2027-01-01 (forecast)\n`));
@@ -74,6 +96,16 @@ for (const [key, c] of Object.entries(charts)) {
   for (const e of c.endMonths) {
     if (e.month !== ENDPOINT[key] || !e.forecast)
       problems.push(`${key}: the ${e.label} lane's Jan-1 endpoint is at the ${e.month} step (forecast: ${e.forecast}); want ${ENDPOINT[key]}`);
+  }
+  // History points print the metric's figures (#51): miles and rides at
+  // three significant figures, the fleet exactly.
+  const VALUE = { fleet: "Fleet size", rides: "Rides", miles: "Miles" };
+  for (const lane of c.history) {
+    for (const p of lane.points) {
+      const f = TIP_FMT[key].history;
+      const want = `${lane.helmer} · ${p.month}\n${VALUE[key]}: ${f(p.best)}\nRange: ${f(p.lo)} – ${f(p.hi)}`;
+      if (!ttips.includes(want)) problems.push(`${key}: no history tooltip reads ${JSON.stringify(want)}; found ${JSON.stringify(ttips.filter(t => t.startsWith(`${lane.helmer} · ${p.month}\n`)))}`);
+    }
   }
   // Scenario shares belong to forecasts (audit #83): an observed history
   // point is labelled by its helmer alone. Until 2026-10-03 all 24 Tesla
@@ -105,7 +137,7 @@ for (const [key, c] of Object.entries(charts)) {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render both growth charts for fleet, rides and miles in vm and read their legends, forecast tooltips and lane endpoints.
-Expectata: one legend order in both charts; each forecast printed with the metric's formatter at three significant figures, the same in both charts; the endpoint at 2026-12 for the cumulative metrics and 2027-01 for the fleet, its tooltip dated 2027-01-01; every history point labelled "<helmer> · <month>", without a scenario share; a note giving Tesla's two scenario shares, as the legend chips carry them, in the human's English exactly: "Tesla forecast splits into two scenarios: the robotaxi (~<robotaxi share>%) and unsupervised FSD in all HW4 cars (~<HW4 share>%). These numbers are the scenarios' probabilities."
+Expectata: one legend order in both charts; each forecast printed at three significant figures (miles before the unit suffix, "6.27M"; rides and the fleet in full digits), the same in both charts; each history point's value and range at three significant figures for miles and rides, exactly for the fleet; the endpoint at 2026-12 for the cumulative metrics and 2027-01 for the fleet, its tooltip dated 2027-01-01; every history point labelled "<helmer> · <month>", without a scenario share; a note giving Tesla's two scenario shares, as the legend chips carry them, in the human's English exactly: "Tesla forecast splits into two scenarios: the robotaxi (~<robotaxi share>%) and unsupervised FSD in all HW4 cars (~<HW4 share>%). These numbers are the scenarios' probabilities."
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 8).join("\n")}`);
 console.log("qual pass: the growth charts share one legend order, print forecasts alike at three significant figures, date the Jan-1 endpoint by its own time convention, label history points by helmer and explain the scenario shares");

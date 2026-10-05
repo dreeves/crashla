@@ -7,7 +7,11 @@
 // CLOSED (their closeTime / endDate passed, or Polymarket closed them),
 // RESOLVED, or resolved one of their answers are not dropped automatically —
 // the script warns so a human can disable or replace them (curation is a
-// human call); until then the page grays them and says so.
+// human call); until then the page grays them and says so. It stops before
+// writing anything on a reply the page could not draw: odds that are not
+// prices (a Polymarket outcome without a price in [0, 1], a Manifold market
+// or answer without a probability in [0, 1]; audit 2026-10-04 #30) or a
+// resolution the page cannot name.
 //
 // Usage: node data/refresh-predmarkets.mjs
 
@@ -67,6 +71,10 @@ async function freshPolymarket(entry) {
   });
   must(markets.length === entry.markets.length,
     `polymarket ${entry.slug}: the curated sub-market questions no longer match`);
+  for (const m of markets) {
+    must(typeof m.outcomePrices === "string" && typeof m.outcomes === "string",
+      `polymarket ${entry.slug}: ${JSON.stringify(m.question)} has no outcomePrices / outcomes`);
+  }
   // The page names a resolved market's outcome by the one it prices at 1; a
   // resolution it cannot name (e.g. 50-50) must not reach the snapshot.
   for (const m of markets) {
@@ -76,6 +84,15 @@ async function freshPolymarket(entry) {
     const name = JSON.parse(m.outcomes)[prices.indexOf(1)];
     must(m.umaResolutionStatus !== "resolved" || (typeof name === "string" && name !== ""),
       `polymarket ${entry.slug}: resolved, but no outcome name sits at the price of 1 (${m.outcomes}); the page cannot name its outcome`);
+  }
+  // Every price is a number in [0, 1], one per outcome (until 2026-10-04 the
+  // script wrote outcomePrices "[]" with exit 0, and the page's first paint
+  // then threw; audit #30).
+  for (const m of markets) {
+    const prices = JSON.parse(m.outcomePrices).map(Number), outcomes = JSON.parse(m.outcomes);
+    must(Array.isArray(outcomes) && prices.length === outcomes.length && prices.length > 0 &&
+      prices.every(p => Number.isFinite(p) && p >= 0 && p <= 1),
+      `polymarket ${entry.slug}: ${JSON.stringify(m.question)} has outcomePrices ${m.outcomePrices} for outcomes ${m.outcomes}, not one price in [0, 1] per outcome`);
   }
   for (const m of markets) {
     if (m.umaResolutionStatus === "resolved") warnings.push(`RESOLVED: polymarket ${entry.slug} (${m.question}) — disable or replace it`);
@@ -107,9 +124,14 @@ async function freshManifold(entry) {
     .slice().sort((a, b) => a.index - b.index)
     .map(a => ({ label: a.text, prob: a.probability, resolution: a.resolution ?? null, resolutionProbability: a.resolutionProbability ?? null }));
   out.volume = m.volume || 0;
-  // The page names the resolutions YES, NO, MKT (by the probability it
+  // Every outcome carries its probability, a number in [0, 1] (until
+  // 2026-10-04 a missing one was written as nothing and drawn "NaN%"; audit
+  // #30). The page names the resolutions YES, NO, MKT (by the probability it
   // settled at, so that must be present) and CANCEL.
-  for (const o of out.answers || [out]) {
+  const outcomes = binary ? [["the market", out, out.probability]] : out.answers.map(a => [`answer ${JSON.stringify(a.label)}`, a, a.prob]);
+  for (const [what, o, prob] of outcomes) {
+    must(Number.isFinite(prob) && prob >= 0 && prob <= 1,
+      `manifold ${entry.slug}: ${what} has probability ${JSON.stringify(prob)}, not a number in [0, 1]`);
     must(o.resolution === null || ["YES", "NO", "MKT", "CANCEL"].includes(o.resolution),
       `manifold ${entry.slug}: resolution ${JSON.stringify(o.resolution)} is one the page cannot name`);
     must(o.resolution !== "MKT" || (Number.isFinite(o.resolutionProbability) && o.resolutionProbability >= 0 && o.resolutionProbability <= 1),

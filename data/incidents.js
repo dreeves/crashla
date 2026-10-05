@@ -10974,7 +10974,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "cpHit": "left",
     "fault": {
       "faultfrac": 0.2,
-      "reasoning": "AV stopped in oncoming lane while going around a car stopped for a pickup and could not re-enter; oncoming SUV hit it"
+      "reasoning": "AV stopped in oncoming lane while going around a car stopped for a passenger pickup and could not re-enter; oncoming SUV hit it"
     },
     "vehiclesInvolved": 2
   },
