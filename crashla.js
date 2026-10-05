@@ -609,10 +609,7 @@ const METRIC_DEFS = [
       // (Blincoe 2023, 813403) of injury crashes unreported) roughly doubles
       // that -> ~7.1 per M mi.
       HumansUS: {lo: 140000, hi: 300000,
-        // TODO (audit 2026-10-04 #41): the "~7.1 IPMM" below is 1-3% low: its
-        // stated inputs give 7.20-7.34, depending on which Blincoe unreported
-        // shares are used. The 140K edge holds at two figures.
-        src: 'lo: ~7.1 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3.3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
+        src: 'lo: ~7 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
           'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
@@ -903,11 +900,7 @@ const METRIC_DEFS = [
         // both routes, 1M/2.46 (SF Bay Area, injury route) to 1M/0.727
         // (Phoenix, injury route); mileage-blended: 1M/1.40 (injury route),
         // 1M/1.06 (airbag route).
-        // TODO (audit 2026-10-04 #40): "Waymo's per-area ... rates" below are
-        // the hub's human-benchmark rates (SF Bay 4.54 to Phoenix 1.34 IPMM),
-        // not Waymo's own ADS rates (0.52-0.86); fine only if "Waymo's" is
-        // read as "published by Waymo".
-        src: "CRSS-measured ratio of crashes with hospital transport or serious/fatal injury to injury crashes and to airbag crashes applied to Waymo's per-area police-reported any-injury rates, not underreporting-adjusted",
+        src: "CRSS-measured ratio of crashes with hospital transport or serious/fatal injury to injury crashes and to airbag crashes applied to Waymo's published per-area police-reported any-injury rates, not underreporting-adjusted",
         srcLinks: [
           'https://waymo.com/safety/impact/',
           'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
@@ -1117,14 +1110,13 @@ for (const m of METRIC_DEFS) {
       // makes these modeled-proxy bands render dashed (see derivedBandDash),
       // unlike the sourced fatality band above.
       derived: true,
-      // TODO (audit 2026-10-04 #7): "no rideshare-specific non-fatal rate
-      // published" below: papers these rows link cite some (arXiv 2312.12675:
+      // Papers these rows link cite some safety numbers (arXiv 2312.12675:
       // Flannagan et al. 2023, 64.9 crashes per M mi, SF, any contact; Chen &
       // Shladover 2024, 15.5 injury crashes per M mi; arXiv 2505.01515: 36.2
       // and 50.5). Each is less safe than the matching derived band's
       // least-safe edge (all incidents: 86K MPI); the 1.2x/1.5x lean stays
       // as settled.
-      src: 'Computed from the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction; no rideshare-specific non-fatal rate published',
+      src: 'Computed from the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction',
       srcLinks: h.HumansAV.srcLinks,
     };
   }
@@ -1152,27 +1144,22 @@ const STRESS_VERDICT_META = {
   worse: {label: "robustly worse", className: "worse"},
   ambiguous: {label: "ambiguous", className: "ambiguous"},
 };
-// TODO (audit 2026-10-04 #42): "based solely on priors" below: a k = 0
-// posterior, Gamma(0.5, VMT), also uses the zero incidents over the window's
-// miles. Tesla airbag (0 in 2.81M mi vs 3.6-8.0 expected) stays "safer" even
-// under a flat prior; Tesla at-fault injury turns ambiguous, so the warning
-// fits there.
-const PRIOR_ONLY_TIP = "Zero incidents of this type observed in the window so this verdict is based solely on priors, i.e., be skeptical! This mirrors the chart's hollow dot convention for k=0.";
+const PRIOR_ONLY_TIP = "Zero incidents of this type observed in the window so this verdict is based on priors, i.e., be skeptical! This mirrors the chart's hollow dot convention for k=0.";
 // The prior-only marking of an estimate resting on zero incidents (k = 0):
 // the class "prior-only" (faded, italic) and PRIOR_ONLY_TIP, whose target is a
-// Tab stop carrying the tip as visually hidden text (tipText). The stress
-// badges and the summary cards' multipliers share it; until 2026-10-03 only
-// the badges had it, so Tesla's k = 0 fatality multiplier was a solid red
+// Tab stop named by what it shows (`shown`) and the tip (htmlTipAttrs). The
+// stress badges and the summary cards' multipliers share it; until 2026-10-03
+// only the badges had it, so Tesla's k = 0 fatality multiplier was a solid red
 // "0.1x" beside a faded "ambiguous" badge (audit #16).
-function priorOnlyMarks(k) {
+function priorOnlyMarks(k, shown) {
   return k === 0
-    ? {cls: " prior-only", attrs: ` data-tip="${escAttr(PRIOR_ONLY_TIP)}" tabindex="0"`, body: tipText(PRIOR_ONLY_TIP)}
-    : {cls: "", attrs: "", body: ""};
+    ? {cls: " prior-only", attrs: htmlTipAttrs(`${shown} ${PRIOR_ONLY_TIP}`, PRIOR_ONLY_TIP)}
+    : {cls: "", attrs: ""};
 }
 // Verdict badge; k = 0 gets the prior-only marking.
 function stressBadge(meta, k) {
-  const marks = priorOnlyMarks(k);
-  return `<span class="stress-badge ${meta.className}${marks.cls}"${marks.attrs}>${meta.label}${marks.body}</span>`;
+  const marks = priorOnlyMarks(k, meta.label);
+  return `<span class="stress-badge ${meta.className}${marks.cls}"${marks.attrs}>${meta.label}</span>`;
 }
 // This label heads the summary
 // card's stress line, which is the verdict on the All incidents metric alone
@@ -1785,6 +1772,21 @@ function monthlySummaryRows(series) {
   });
 }
 
+// A window's summary rows (monthlySummaryRows), computed once per month
+// series and shared by every view that reads them: the summary cards, the
+// distribution chart, the VMT-uncertainty table and the stress table. Until
+// 2026-10-05 each computed its own, six times per slider step (audit #23). A
+// series is not changed after monthSeriesData or sliceSeries builds it, and
+// monthlySummaryRows reads nothing else but vmtRows, which init sets once;
+// the assert catches rows kept past a change of vmtRows.
+const SUMMARY_ROWS = new WeakMap();
+function windowSummaryRows(series) {
+  if (!SUMMARY_ROWS.has(series)) SUMMARY_ROWS.set(series, {rows: monthlySummaryRows(series), vmtRows});
+  const kept = SUMMARY_ROWS.get(series);
+  assert(kept.vmtRows === vmtRows, "window summary rows kept past a change of vmtRows");
+  return kept.rows;
+}
+
 function estimateMpiWindow(k, fracs, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS_DEFAULT_PCT / 100) {
   const comps = mixtureComponents(k, fracs);
   const quant = makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax);
@@ -1828,7 +1830,9 @@ const FLIP_CDF_TOLERANCE = 1e-4;
 // would have to be to change the stress verdict. Returns the verdict the
 // search starts from (base, the displayed one), the smallest multiplier
 // s > 1 on the judged mass at which the verdict (vs the AV-cities band)
-// changes, and the verdict it changes to; null when k = 0 (scaling zero mass
+// changes, to the precision the table prints it (narrowToPrinted: a value
+// that prints as the flip point does and flips), and the verdict it changes
+// to; null when k = 0 (scaling zero mass
 // changes nothing); mult Infinity when no s <= 10^4 flips it.
 // nIncidents: the metric universe's incident count (e.g. incTotal for
 // at-fault). Fault fractions are probabilities, so the true at-fault mass
@@ -1884,15 +1888,34 @@ function faultFlipMultiplier(est, human, nIncidents) {
     if (s === sMax) break; // every incident at fault and still no flip
   }
   if (hi === null) return {base, mult: Infinity, flipped: null};
-  for (let i = 0; i < 40; i++) {
-    const mid = Math.sqrt(lo * hi);
-    if (verdictAt(mid) === base) lo = mid; else hi = mid;
-  }
-  const flipped = verdictAt(hi);
+  const mult = narrowToPrinted(lo, hi, s => verdictAt(s) !== base);
+  const flipped = verdictAt(mult);
   assert(STRESS_VERDICT_ORDER.indexOf(flipped) > STRESS_VERDICT_ORDER.indexOf(base),
     "faultFlipMultiplier: more at-fault mass flipped the verdict away from worse",
-    {base, flipped, mult: hi});
-  return {base, mult: hi, flipped};
+    {base, flipped, mult});
+  return {base, mult, flipped};
+}
+
+// The bisection of the fault-flip search: a bracket [lo, hi] with no flip at
+// lo and a flip at hi (flips(s): whether multiplier s flips the verdict),
+// narrowed until every value in it prints alike (fmtRatio). fmtRatio rounds
+// monotonically, so then the flip point, which lies in the bracket, prints as
+// hi does, and narrowing further cannot change what the table prints. Until
+// 2026-10-05 the search halved the bracket 40 times, past twelve significant
+// figures, each halving a full marginal CDF: 61 ms of the sanity section's
+// ~80 ms per slider step (audit #23). The stop follows fmtRatio, so a change
+// of its precision carries over. A bracket whose ends still print apart once
+// it is narrower than 1e-12 in ln holds a flip point on a print boundary
+// (1.05 between "1.0" and "1.1"), which no narrowing separates; hi, which
+// flips, then prints as the flip point does (as the distribution chart's peak
+// search stops).
+function narrowToPrinted(lo, hi, flips) {
+  for (let step = 0; fmtRatio(lo) !== fmtRatio(hi) && Math.log(hi / lo) > 1e-12; step++) {
+    assert(step < 200, "fault-flip search: the bracket did not narrow", {lo, hi});
+    const mid = Math.sqrt(lo * hi);
+    if (flips(mid)) hi = mid; else lo = mid;
+  }
+  return hi;
 }
 
 // The one format of an AV-vs-human multiplier or ratio (the summary cards'
@@ -2391,6 +2414,16 @@ function chartColumnWidth() {
   return Math.min(CHART_MAX_W, Math.max(CHART_MIN_W, Math.round(w)));
 }
 
+// The accessible name of a mark on a chart several companies share (the MPI
+// and distribution charts): its company's label, " · " and its tip, as the
+// growth chart's tips read ("Tesla · 2025-06 ..."). The tip a sighted reader
+// sees leaves the company out, the dot's colour and the legend saying it
+// (2026-06-19); a screen reader has neither, and until 2026-10-04 heard 15
+// identical names for the Humans (AV cities) marks (audit #15).
+function seriesMarkName(helmer, tip) {
+  return `${helmerLabel(helmer)} · ${tip}`;
+}
+
 // Every chart's tooltip targets: one invisible circle per mark, drawn after
 // all of the chart's glyphs, so a glyph never covers a target. Its radius is
 // half the distance to the nearest other target more than HIT_R_MIN away, at
@@ -2406,11 +2439,14 @@ function chartColumnWidth() {
 // distribution markers on a phone (each Peak beside its Median) to 8 CSS px
 // targets with no other mark near. Targets are given in Tab order; their
 // centres are rounded before the radii are taken, so the radii follow from
-// the drawn positions.
+// the drawn positions. Each target carries its accessible name (`name`): its
+// tip, or on a chart several companies share its company's label, " · " and
+// its tip (seriesMarkName).
 const HIT_R_MIN = 4;
 const HIT_R_MAX = 12;
 function hitCircles(targets) {
-  const at = targets.map(t => ({x: Number(t.x.toFixed(2)), y: Number(t.y.toFixed(2)), tip: t.tip}));
+  for (const t of targets) assert(typeof t.name === "string" && t.name.endsWith(t.tip), "a chart target's name must end with its tip", {name: t.name, tip: t.tip});
+  const at = targets.map(t => ({x: Number(t.x.toFixed(2)), y: Number(t.y.toFixed(2)), tip: t.tip, name: t.name}));
   // Each target's nearest neighbour more than HIT_R_MIN away, every pair
   // measured once.
   const near = at.map(() => Infinity);
@@ -2424,7 +2460,7 @@ function hitCircles(targets) {
   }
   return at.map((t, i) => {
     const r = Math.max(HIT_R_MIN, Math.min(HIT_R_MAX, near[i] / 2));
-    return `<circle cx="${t.x}" cy="${t.y}" r="${r.toFixed(2)}" fill="none" data-tip="${escAttr(t.tip)}"${svgTipAttrs(t.tip)}></circle>`;
+    return `<circle cx="${t.x}" cy="${t.y}" r="${r.toFixed(2)}" fill="none" data-tip="${escAttr(t.tip)}"${tipTargetAttrs(t.name)}></circle>`;
   }).join("");
 }
 
@@ -2560,7 +2596,7 @@ function renderAllHelmersMpiChart(series) {
       const yc = clampY(mpi.mpiMedian);
       const dotOpacity = (0.35 + 0.65 * mpi.covRatio).toFixed(3);
       glyphs.push(`<g opacity="${dotOpacity}">${renderDot(x, yc, color, 1, k === 0)}</g>`);
-      targets.push({x, y: yc, tip});
+      targets.push({x, y: yc, tip, name: seriesMarkName(row.helmer, tip)});
     });
   }
   const marks = glyphs.join("") + hitCircles(targets);
@@ -2698,7 +2734,7 @@ function distributionExtent(curves) {
 function renderDistributionChart(series) {
   const metric = selectedMonthMetric();
   const {start, end} = seriesMonthBounds(series);
-  const summaryRows = monthlySummaryRows(series);
+  const summaryRows = windowSummaryRows(series);
   const curves = [];
   for (const row of summaryRows) {
     if (!monthHelmerEnabled[row.helmer]) continue;
@@ -2833,7 +2869,7 @@ function renderDistributionChart(series) {
       const tip = `${label}: ${fmtMiles(mx)}${c.est.k !== null ? `\n${other}${tail}` : ""}\n${ciLine}`;
       const x = mapX(mx), y = mapY(c.densityFn(mx));
       glyphs.push(`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.5" class="month-dot" style="${dotStyle}"></circle>`);
-      targets.push({x, y, tip});
+      targets.push({x, y, tip, name: seriesMarkName(c.helmer, tip)});
     }
   }
   const markers = glyphs.join("") + hitCircles(targets);
@@ -3209,8 +3245,8 @@ function renderFleetForecastChart() {
   // The markers, then (hitCircles) their tooltip targets over them.
   const marks = curves.map(c => {
     assert(c.median >= xMin && c.median <= xMax, "fleet forecast marker outside the frame", {label: c.legendLabel, median: c.median, xMin, xMax});
-    return {x: mapX(c.median), y: mapY(c.densityFn(c.median)), color: c.color,
-      tip: `${c.legendLabel}\n${forecastQuantilesText(spec, c.median, c.lo90, c.hi90)}`};
+    const tip = `${c.legendLabel}\n${forecastQuantilesText(spec, c.median, c.lo90, c.hi90)}`;
+    return {x: mapX(c.median), y: mapY(c.densityFn(c.median)), color: c.color, tip, name: tip};
   });
   const markers = marks.map(m => `<circle cx="${m.x.toFixed(2)}" cy="${m.y.toFixed(2)}" r="3.5" class="month-dot" style="fill:${m.color}"></circle>`).join("")
     + hitCircles(marks);
@@ -3555,7 +3591,7 @@ function growthScenarioNote(lanes) {
     assert(lane !== undefined, "growthScenarioNote: no lane for the scenario", {key});
     return scenarioPct(lane.share);
   };
-  // TODO (audit 2026-10-04 #11): "splits into two scenarios" below: the
+  // Notes on "splits into two scenarios" below: the
   // model has three (A slow robotaxi ramp 0.71, B aggressive scale-up 0.24,
   // C eyes-off FSD on all HW4 cars 0.05). The robotaxi curve mixes A and B,
   // and B is its unexplained second hump near 9,000 vehicles.
@@ -3581,7 +3617,11 @@ function renderFleetTimeSeriesChart() {
   const mapY = v => mTop + pH * (1 - (Math.log(v) - Math.log(yMin)) / (Math.log(yMax) - Math.log(yMin)));
 
   // The marks, then (hitCircles) every mark's tooltip target over them, in
-  // lane order (history points, then the forecast endpoint).
+  // lane order (history points, then the forecast endpoint). The targets draw
+  // last, outside the plot's clip-path group, which clips only the visible
+  // marks: inside it, Tesla's 2025-06 Miles target, whose circle reaches below
+  // the x axis, had its focus ring cut flat and missed a pointer under the
+  // dot (until 2026-10-04, audit #64).
   const bands = [], lines = [], marks = [], targets = [];
   for (const lane of lanes) {
     const color = lane.color;
@@ -3610,7 +3650,7 @@ function renderFleetTimeSeriesChart() {
         // Tesla point read "Tesla robotaxi (~95%) · ..."; audit #83).
         const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${spec.tipFmt(p.best)}\nRange: ${spec.tipFmt(p.lo)} – ${spec.tipFmt(p.hi)}`;
         marks.push(`<circle cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}"></circle>`);
-        targets.push({x: X(p), y: mapY(p.best), tip});
+        targets.push({x: X(p), y: mapY(p.best), tip, name: tip});
       }
     }
     lines.push(`<path d="M ${X(last).toFixed(2)} ${mapY(last.best).toFixed(2)} L ${X(fc).toFixed(2)} ${mapY(fc.best).toFixed(2)}" style="${dashedStroke}"></path>`);
@@ -3618,8 +3658,8 @@ function renderFleetTimeSeriesChart() {
     marks.push(`
       <line class="month-err" x1="${fx.toFixed(2)}" y1="${mapY(fc.lo).toFixed(2)}" x2="${fx.toFixed(2)}" y2="${mapY(fc.hi).toFixed(2)}" style="stroke:${color}"></line>
       <circle cx="${fx.toFixed(2)}" cy="${mapY(fc.best).toFixed(2)}" r="4" class="month-dot" style="fill:var(--card);stroke:${color}"></circle>`);
-    targets.push({x: fx, y: mapY(fc.best),
-      tip: `${lane.label} · ${GROWTH_FORECAST_DATE} (forecast)\n${forecastQuantilesText(spec, fc.best, fc.lo, fc.hi)}`});
+    const forecastTip = `${lane.label} · ${GROWTH_FORECAST_DATE} (forecast)\n${forecastQuantilesText(spec, fc.best, fc.lo, fc.hi)}`;
+    targets.push({x: fx, y: mapY(fc.best), tip: forecastTip, name: forecastTip});
   }
 
   return `
@@ -3633,9 +3673,9 @@ function renderFleetTimeSeriesChart() {
       ${bands.join("")}
       ${lines.join("")}
       ${marks.join("")}
-      ${hitCircles(targets)}
       </g>
       ${drawSingleMonthAxes(months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapY, spec.fmt, spec.yLabel)}
+      ${hitCircles(targets)}
     </svg>
   `;
 }
@@ -3754,10 +3794,14 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
     // months', are partial (both factors are 1 elsewhere).
     const worst = row.coverage * row.incCovMin;
     const note = worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
+    // One company's chart (its figure says whose), so a mark's name is its tip.
+    const low = vmtEndTooltip(month, lo(row), VMT_RANGE_EDGE.lo);
+    const high = vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi);
+    const dot = vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + note;
     targets.push(
-      {x, y: mapVmtY(lo(row)), tip: vmtEndTooltip(month, lo(row), VMT_RANGE_EDGE.lo)},
-      {x, y: mapVmtY(hi(row)), tip: vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi)},
-      {x, y, tip: vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + note},
+      {x, y: mapVmtY(lo(row)), tip: low, name: low},
+      {x, y: mapVmtY(hi(row)), tip: high, name: high},
+      {x, y, tip: dot, name: dot},
     );
   });
   const vmtMarks = dots.join("") + hitCircles(targets);
@@ -3775,8 +3819,17 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   `;
 }
 
+// A summary card's multiplier against the human benchmark: "2.4x" in the
+// one ratio format (fmtRatio), coloured by the value printed (ratioShown), or
+// at k = 0 given the prior-only marking instead of a colour.
+function cardMultSpan(mult, k) {
+  const text = `${fmtRatio(mult)}x`;
+  const marks = priorOnlyMarks(k, text);
+  return `<span class="mpi-card-mult${marks.cls || (ratioShown(mult) >= 1 ? " safer" : " worse")}"${marks.attrs}>${text}</span>`;
+}
+
 function renderMpiSummaryCards(series) {
-  const rows = monthlySummaryRows(series);
+  const rows = windowSummaryRows(series);
   return rows.map(row => {
     const fiveDayLabels = METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ");
     const fiveDayLine = est => `Claude: Five-day-tracked VMT denominator (${fiveDayLabels}: raw VMT times the data-through month's receipt coverage): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
@@ -3785,7 +3838,8 @@ function renderMpiSummaryCards(series) {
     // the tooltip 7,000-8,700px tall).
     const effectiveVmtLine = () => {
       const tip = `Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}`;
-      return `<div class="mpi-card-vmt" data-tip="${escAttr(tip)}" tabindex="0">Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}${tipText(tip)}</div>`;
+      const shown = `Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}`;
+      return `<div class="mpi-card-vmt"${htmlTipAttrs(`${shown} ${tip}`, tip)}>${shown}</div>`;
     };
     const noMilesLine = `<div class="mpi-card-vmt">No miles in this window</div>`;
     // Each source once, by URL (one label per URL: BENCHMARK_SOURCES).
@@ -3820,17 +3874,17 @@ function renderMpiSummaryCards(series) {
           // a multiplier resting on zero incidents gets the prior-only marking
           // instead of a colour, like its stress badge (audit #16, #55).
           const mult = (humanGeo && est.k !== null) ? est.postMedian / humanGeo : null;
-          const marks = priorOnlyMarks(est.k);
-          const multStr = mult !== null
-            ? ` <span class="mpi-card-mult${marks.cls || (ratioShown(mult) >= 1 ? " safer" : " worse")}"${marks.attrs}>${fmtRatio(mult)}x${marks.body}</span>`
-            : "";
+          const multStr = mult !== null ? ` ${cardMultSpan(mult, est.k)}` : "";
           const kLine = est.k !== null ? `${splur(est.k, "incident")} \u2192 ` : "";
           const ciLabel = est.k !== null ? "95% CI" : "Range";
           const srcLine = (est.k === null && humanBench)
             ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)}</div>`
             : "";
+          // The "[?]" only marks the hint, so the hint is named by its
+          // derivation alone and the glyph is hidden from assistive technology
+          // (until 2026-10-04 it read "[?]" glued to the derivation; audit #63).
           const srcHint = (est.k === null && humanBench && humanBench.src)
-            ? ` <span class="mpi-card-src" data-tip="${escAttr(humanBench.src)}" tabindex="0">[?]${tipText(humanBench.src)}</span>`
+            ? ` <span class="mpi-card-src"${htmlTipAttrs(humanBench.src, humanBench.src)}><span aria-hidden="true">[?]</span></span>`
             : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
@@ -3845,7 +3899,7 @@ function renderMpiSummaryCards(series) {
 }
 
 function renderStressTestTable(series) {
-  const rows = monthlySummaryRows(series).filter(r => r.vmtBest > 0);
+  const rows = windowSummaryRows(series).filter(r => r.vmtBest > 0);
   const body = rows.flatMap(row =>
     METRIC_KEYS.filter(metricKey => row.mpiEstimates[metricKey] !== null).map(metricKey => {
       const stress = helmerHumanStress(row, metricKey);
@@ -3910,7 +3964,7 @@ function renderHumanBenchmarkTable() {
       const derivation = `${escHtml(h.src)} (${h.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)})`;
       // srcNote: an AI-authored precision note on the derivation (green).
       const note = h.srcNote === undefined ? "" : ` <span class="ai-text">${escHtml(h.srcNote)}</span>`;
-      return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td class="num">${fmtMiles(h.lo)}</td><td class="num">${fmtMiles(h.hi)}</td><td>${derivation}${note}</td></tr>`;
+      return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td class="num">${fmtMiles(h.lo)}</td><td class="num">${fmtMiles(h.hi)}</td><td class="derivation">${derivation}${note}</td></tr>`;
     })).join("");
   return `
     <h3>Specific human benchmark derivations</h3>
@@ -3928,17 +3982,65 @@ The all-incidents comparison is broader than Waymo's surface-street, injury-focu
 // A re-render replaces the controls it draws, so the control a keyboard user
 // had just operated was detached and focus fell to <body>: the next Tab
 // started the group over, and a second Enter on a sort header or a second
-// arrow key in a radio group did nothing (until 2026-10-03). Every control a
-// re-render replaces carries data-focus-key, a name the re-render gives its
-// replacement too; this hands focus from the one to the other. Focus outside
-// the re-rendered controls is left where it is.
+// arrow key in a radio group did nothing (until 2026-10-03). A control a
+// re-render replaces carries data-focus-key, a name unique on the page that
+// the re-render gives its replacement too; this hands focus from the one to
+// the other. Keyed are the helmer checkboxes, the metric select, the date
+// sliders, the incident filters, sort headers and narrative toggles, the
+// growth radios, and the market links, status and refresh button. Until
+// 2026-10-04 the sliders, the narratives and the market links had no key, so
+// focus on a market link fell to <body> whenever a market refresh landed
+// (audit #17). Focus on an element with no key (a chart mark, a card's
+// tooltip target) still falls to <body> when its re-render replaces it; focus
+// on an element the render does not replace stays where it is.
+//
+// A helmer checkbox, a sort header's button or an incident filter that a
+// click operates takes focus before the page redraws around it, as Chromium
+// and Firefox give a clicked button or labelled checkbox focus themselves.
+// WebKit gives a clicked control no focus and drops the focus it had to
+// <body> on the mousedown, before any redraw, so in WebKit a click on a
+// helmer label, a sort header or a filter lost the focus a slider or a
+// narrative held (audit #17); and a filter that hid the focused narrative's
+// row would leave nothing to hand focus to.
+//
+// The replacement shows a focus ring exactly when the reader's last input was
+// a key press (lastInputWasKey), as :focus-visible does for focus a reader
+// gives. Left to each engine's own guess for a script's focus(), WebKit drew a
+// ring on a helmer checkbox whose label a mouse clicked or a finger tapped,
+// and Chromium and Firefox drew none (found in review, 2026-10-05). Nor can
+// the replaced control's own :focus-visible be passed on: WebKit does not set
+// it on a radio an arrow key moves to, and the growth radios lost their ring.
 function rerenderKeepingFocus(render) {
   const key = document.activeElement.getAttribute("data-focus-key");
   render();
   if (key === null) return;
-  const replacement = document.querySelector(`[data-focus-key="${key}"]`);
-  assert(replacement !== null, "a re-render dropped the control that had focus", {key});
-  replacement.focus({preventScroll: true});
+  const matches = document.querySelectorAll(`[data-focus-key="${key}"]`);
+  assert(matches.length === 1, "a re-render must leave exactly one control with the focused control's key", {key, found: matches.length});
+  matches[0].focus({preventScroll: true, focusVisible: lastInputWasKey});
+}
+
+// Whether the reader's last input was a key press (true) or a pointer's
+// press (false: a mouse button, a finger or a pen), recorded before the
+// page's own handlers see it (capture phase). rerenderKeepingFocus gives a
+// focus ring by it.
+let lastInputWasKey = false;
+function initInputModality() {
+  document.addEventListener("keydown", () => { lastInputWasKey = true; }, true);
+  document.addEventListener("pointerdown", () => { lastInputWasKey = false; }, true);
+}
+
+// What the checked helmers and the selected metric decide: the legends (the
+// CI fan's stripes are the checked helmers'), the charts, the cards and the
+// headings, and the URL. The month series, the date slider, the sanity
+// section and the incident browser depend on neither (selection-redraw.qual
+// rebuilds them under every helmer and metric), so a checkbox or the metric
+// select leaves them as they are. Until 2026-10-05 either change rebuilt
+// them all (buildMonthlyViews): 0.5-0.8 s a click, ~2.3 s on a phone-class
+// CPU, and every expanded narrative collapsed (audit #24).
+function redrawSelection() {
+  renderMonthlyLegends();
+  renderWindowedViews();
+  syncUrlState();
 }
 
 function renderMonthlyLegends() {
@@ -3951,8 +4053,9 @@ function renderMonthlyLegends() {
   for (const helmer of ALL_HELMERS) {
     const input = byId(monthHelmerToggleId(helmer));
     input.addEventListener("change", () => {
+      input.focus({preventScroll: true}); // the operated control takes focus (see rerenderKeepingFocus)
       monthHelmerEnabled[helmer] = input.checked;
-      rerenderKeepingFocus(buildMonthlyViews);
+      rerenderKeepingFocus(redrawSelection);
     });
   }
 
@@ -3965,7 +4068,7 @@ function renderMonthlyLegends() {
   `;
   byId("month-metric-select").addEventListener("change", e => {
     selectedMetricKey = e.target.value;
-    rerenderKeepingFocus(buildMonthlyViews);
+    rerenderKeepingFocus(redrawSelection);
   });
 
   // CI fan legend: multi-stripe swatches showing each helmer's color at the
@@ -4017,19 +4120,20 @@ function renderMonthlyLegends() {
   byId("vmt-mode-cumulative").addEventListener("change", () => { vmtCumulative = true; renderWindowedViews(); syncUrlState(); });
 }
 
-// A range thumb is SLIDER_THUMB_PX wide (style.css), so its centre travels
-// from half that to the slider's width less half that; sliderAt maps a
-// fraction of the series into that inset span, and sliderSpan a fraction's
-// length. The default-start tick and the fill share them, so the fill runs
-// from thumb centre to thumb centre (until 2026-10-03 the fill ran on raw
-// percentages and stuck 4px out past the thumb in a one-month window at
-// either end of the series; audit #66).
-const SLIDER_THUMB_PX = 18;
+// A range thumb is var(--thumb) wide (style.css: 18px, 26px under a coarse
+// pointer), so its centre travels from half that to the slider's width less
+// half that; sliderAt maps a fraction of the series into that inset span, and
+// sliderSpan a fraction's length. The default-start tick and the fill share
+// them, so the fill runs from thumb centre to thumb centre (until 2026-10-03
+// the fill ran on raw percentages and stuck 4px out past the thumb in a
+// one-month window at either end of the series; audit #66). The width is the
+// stylesheet's, read by the browser, so a thumb resized there moves the fill
+// with it (until 2026-10-05 this file held its own 18, audit #67).
 function sliderAt(frac) {
-  return `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${frac.toFixed(4)})`;
+  return `calc(var(--thumb) / 2 + (100% - var(--thumb)) * ${frac.toFixed(4)})`;
 }
 function sliderSpan(frac) {
-  return `calc((100% - ${SLIDER_THUMB_PX}px) * ${frac.toFixed(4)})`;
+  return `calc((100% - var(--thumb)) * ${frac.toFixed(4)})`;
 }
 
 function renderDateRangeControls() {
@@ -4061,10 +4165,10 @@ function renderDateRangeControls() {
       </div>` : ""}
       <span class="date-range-end-label min">${months[0]}</span>
       <span class="date-range-end-label max">${months[maxIdx]}</span>
-      <input type="range" class="date-range-input date-range-input-min" id="date-range-min"
+      <input type="range" class="date-range-input date-range-input-min" id="date-range-min" data-focus-key="range-min"
              min="0" max="${maxIdx}" value="${startIdx}" step="1"
              aria-label="Start month" aria-valuetext="${months[startIdx]}">
-      <input type="range" class="date-range-input date-range-input-max" id="date-range-max"
+      <input type="range" class="date-range-input date-range-input-max" id="date-range-max" data-focus-key="range-max"
              min="0" max="${maxIdx}" value="${endIdx}" step="1"
              aria-label="End month" aria-valuetext="${months[endIdx]}">
     </div>
@@ -4073,9 +4177,6 @@ function renderDateRangeControls() {
   const maxInput = byId("date-range-max");
   const fill = byId("date-range-fill");
   const label = container.querySelector(".date-range-label");
-  let rangeRafPending = false;
-  const rangeRaf = typeof requestAnimationFrame === "function"
-    ? requestAnimationFrame : (fn) => fn();
   // The window the two thumbs set: the start thumb's month to the end
   // thumb's, which the input handlers below keep in that order.
   function thumbWindow() {
@@ -4093,26 +4194,77 @@ function renderDateRangeControls() {
     minInput.style.zIndex = Number(minInput.value) > maxIdx / 2 ? "4" : "2";
   }
   stackThumbs();
-  // Live drag: update the slider visuals immediately and re-render the
-  // window-dependent charts on the next frame (coalescing rapid input events).
-  // The slider DOM, incident table, sanity checks, and URL are left untouched
-  // so the drag isn't interrupted; those commit on release (the change event).
-  // A slider's value is an index into the month series; screen readers
+  // The slider's views follow its thumbs in the next animation frame
+  // (drawFrame): the charts and cards (renderWindowedViews) as the thumbs
+  // move, and, on a release or a key press, the incident browser, the sanity
+  // section and the URL (the commit), which a drag in progress must not
+  // interrupt. A frame draws a window the charts do not already show and
+  // commits one the commit's views do not, and however many input events
+  // arrive between two frames, the next one does each at most once, for the
+  // window the thumbs then hold. Until 2026-10-05 the input event drew on the
+  // next frame and the change event committed at once, drawing again: a key
+  // press drew the charts twice with identical markup and computed the
+  // window's summary rows six times, a drag's release redrew the window its
+  // last frame had drawn, and a held key's ~30 presses a second queued a
+  // ~0.45 s commit each (~1.9 s at 4x CPU throttling), so the page went on
+  // working ~13 s after the key came up (audit #23). Without
+  // requestAnimationFrame (the quals' DOM stubs) a frame runs at once.
+  // The address bar is written once per commit, after every view: WebKit
+  // allows 100 history.replaceState calls in 10 s, and until 2026-10-04 a
+  // commit wrote it twice, the first time before the sanity checks and the
+  // incident browser were rebuilt, so on a held arrow key the 101st write
+  // threw and left both on an older window (audit #10).
+  let shownWindow = `${startIdx}.${endIdx}`;   // the charts' and cards' window
+  let committedWindow = shownWindow;           // the incident browser's, the sanity section's and the URL's
+  let commitWanted = false;
+  let framePending = false;
+  const nextFrame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : fn => fn();
+  // A frame takes up both requests before its work, so a throw in that work
+  // (WebKit's SecurityError past 100 history.replaceState calls in 10 s,
+  // audit #10) leaves neither pending: until 2026-10-05 (review) a commit
+  // asked for before such a throw stayed asked for, and in WebKit past the
+  // limit every frame of a later drag rebuilt the incident browser and the
+  // sanity section.
+  function drawFrame() {
+    framePending = false;
+    const [a, b] = thumbWindow();
+    const thumbs = `${a}.${b}`;
+    const commit = commitWanted && thumbs !== committedWindow;
+    commitWanted = false;
+    if (thumbs !== shownWindow) {
+      shownWindow = thumbs;
+      [monthRangeStart, monthRangeEnd] = [a, b];
+      renderWindowedViews();
+    }
+    if (commit) {
+      committedWindow = thumbs;
+      buildSanityChecks();
+      buildBrowser();
+      syncUrlState();
+    }
+  }
+  function requestFrame() {
+    if (framePending) return;
+    framePending = true;
+    nextFrame(drawFrame);
+  }
+  // A release or a key press: commit in the next frame.
+  function requestCommit() {
+    commitWanted = true;
+    requestFrame();
+  }
+  // A thumb moved: the slider itself follows at once, its views in the next
+  // frame. A slider's value is an index into the month series; screen readers
   // announce the month instead (they read "47" until 2026-10-03).
   function updateLive() {
     minInput.setAttribute("aria-valuetext", months[Number(minInput.value)]);
     maxInput.setAttribute("aria-valuetext", months[Number(maxInput.value)]);
     const [a, b] = thumbWindow();
-    monthRangeStart = a;
-    monthRangeEnd = b;
     fill.style.left = sliderAt(frac(a));
     fill.style.width = sliderSpan(frac(b) - frac(a));
     label.textContent = a === b ? months[a] : `${months[a]} \u2014 ${months[b]}`;
     stackThumbs();
-    if (!rangeRafPending) {
-      rangeRafPending = true;
-      rangeRaf(() => { rangeRafPending = false; renderWindowedViews(); });
-    }
+    requestFrame();
   }
   // The thumbs cannot cross (the WAI-ARIA multi-thumb slider): a moved thumb
   // stops at the other, so "Start month" always holds the window's first
@@ -4127,20 +4279,19 @@ function renderDateRangeControls() {
     maxInput.value = String(Math.max(Number(maxInput.value), Number(minInput.value)));
     updateLive();
   });
-  // The address bar is written once per commit, after every view: WebKit
-  // allows 100 history.replaceState calls in 10 s, and until 2026-10-04 a
-  // commit wrote it twice, the first time before the sanity checks and the
-  // incident browser were rebuilt, so on a held arrow key the 101st write
-  // threw and left both on an older window (audit #10).
-  function commitRange() {
-    [monthRangeStart, monthRangeEnd] = thumbWindow();
-    renderWindowedViews();
-    buildSanityChecks();
-    buildBrowser();
-    syncUrlState();
+  // A release commits on its pointerup as well as on the change event:
+  // WebKit fires no change event for a drag that ends where the clamp above
+  // stopped the thumb (it measures a change from the value a script last
+  // assigned, here the clamp's), and until 2026-10-04 (reviewer) such a
+  // release left the incident browser, the sanity section and the URL on the
+  // old window while the slider and the charts showed the new one. Chromium
+  // and Firefox fire both events, so a frame commits only a window the
+  // commit's views do not already show (committedWindow: this render's, or
+  // the last commit's).
+  for (const input of [minInput, maxInput]) {
+    input.addEventListener("change", requestCommit);
+    input.addEventListener("pointerup", requestCommit);
   }
-  minInput.addEventListener("change", commitRange);
-  maxInput.addEventListener("change", commitRange);
 
   // Drag the filled middle to slide the whole window at fixed width. The
   // endpoint thumbs (above, z-index 2/3) still drag independently.
@@ -4168,7 +4319,7 @@ function renderDateRangeControls() {
     if (dragX === null) return;
     dragX = null;
     fill.style.cursor = "grab";
-    commitRange();
+    requestCommit();
   };
   fill.addEventListener("pointerup", endDrag);
   fill.addEventListener("pointercancel", endDrag);
@@ -4236,7 +4387,7 @@ function drawWindowedViews() {
 
 function buildMonthlyViews() {
   fullMonthSeries = monthSeriesData();
-  const fullSummary = monthlySummaryRows(fullMonthSeries);
+  const fullSummary = windowSummaryRows(fullMonthSeries);
   for (const row of fullSummary) {
     if (row.vmtBest === 0) continue; // helmer has no data in incident window
     assert(row.incTotal > 0, "full-series total incidents must be positive", {helmer: row.helmer});
@@ -4245,12 +4396,12 @@ function buildMonthlyViews() {
   }
   // Every view that is not a chart first, so a chart that cannot draw leaves
   // the rest of the page working (audit 2026-10-04 #32); the address bar
-  // once, after every view (commitRange's comment).
+  // once, after every view (renderDateRangeControls' comment on drawFrame).
   setDateWindow();
   renderMonthlyLegends();
   renderDateRangeControls();
-  buildSanityChecks();
   buildBrowser();
+  buildSanityChecks();
   drawWindowedViews();
   syncUrlState();
 }
@@ -4591,10 +4742,15 @@ function initCollapsibles() {
       syncUrlState();
     };
     head.addEventListener("click", toggle);
-    // The heading's text is a role="button" span in the Tab order
-    // (index.html), so Enter and Space toggle it as a click does: the
-    // sortable-th pattern. Until 2026-10-03 a collapsed section could not be
-    // opened without a pointer.
+    // The heading's text span becomes a role="button" in the Tab order here,
+    // where it is wired, so without JavaScript the headings are plain (until
+    // 2026-10-04 index.html made the spans nine inert "buttons" there, two
+    // of them empty; audit #66). Enter and Space toggle it as a click does.
+    // Until 2026-10-03 a collapsed section could not be opened without a
+    // pointer.
+    const label = head.querySelector(".sec-toggle");
+    label.setAttribute("role", "button");
+    label.tabIndex = 0;
     head.addEventListener("keydown", e => {
       if (e.key !== "Enter" && e.key !== " ") return;
       e.preventDefault();
@@ -4614,6 +4770,9 @@ assert(HEADER_LABELS.length === SORT_COLUMNS.length,
 // judgment (the judged fault fraction, the reasoning behind it, and the
 // contact areas) shown under an expanded incident narrative.
 const NARRATIVE_FAULT_LABEL = "Fault fraction:";
+function narrativeToggleName(reportId) {
+  return `Narrative of report ${reportId}`;
+}
 
 function buildBrowser() {
   const {start, end} = seriesMonthBounds(activeSeries);
@@ -4633,7 +4792,11 @@ function buildBrowser() {
     // The active filter is announced, not only drawn inverted.
     btn.setAttribute("aria-pressed", String(isActive));
     btn.setAttribute("data-focus-key", "filter-" + label);
+    // The filter a click operates takes focus first (see rerenderKeepingFocus):
+    // a filter can hide the row whose narrative holds focus, which would leave
+    // no replacement to hand that focus to.
     btn.addEventListener("click", () => {
+      btn.focus({preventScroll: true});
       activeFilter = label;
       rerenderKeepingFocus(buildBrowser);
       syncUrlState();
@@ -4644,20 +4807,28 @@ function buildBrowser() {
   renderTable();
 }
 
+// A sortable header's text is a <button type="button"> in its th (the ARIA
+// sortable-table pattern): a screen reader says it is a button, and the
+// button turns Enter and Space into a click by itself. Until 2026-10-04 the
+// th was the Tab stop, a column header with no control role (audit #19).
+// aria-sort stays on the th, and so does the click listener, so a click
+// anywhere in the cell sorts, as before.
 function renderHeaders() {
   const thead = byId("incidents-head");
   const tr = document.createElement("tr");
   for (let i = 0; i < HEADER_LABELS.length; i++) {
     const th = document.createElement("th");
     const col = SORT_COLUMNS[i];
-    let label = HEADER_LABELS[i];
-    th.textContent = label;
-    th.tabIndex = 0;
-    th.setAttribute("data-focus-key", "sort-" + col.key);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = HEADER_LABELS[i];
+    button.setAttribute("data-focus-key", "sort-" + col.key);
+    th.appendChild(button);
     if (sortCol === col.key) {
       th.setAttribute("aria-sort", sortAsc ? "ascending" : "descending");
     }
     const sortBy = () => {
+      button.focus({preventScroll: true}); // the operated control takes focus (see rerenderKeepingFocus)
       if (sortCol === col.key) {
         sortAsc = !sortAsc;
       } else {
@@ -4668,11 +4839,6 @@ function renderHeaders() {
       syncUrlState();
     };
     th.addEventListener("click", sortBy);
-    th.addEventListener("keydown", e => {
-      if (e.key !== "Enter" && e.key !== " ") return;
-      e.preventDefault();
-      sortBy();
-    });
     tr.appendChild(th);
   }
   thead.replaceChildren(tr);
@@ -4719,22 +4885,30 @@ function renderTable() {
       : "—";
     const faultTip = faultTooltip(r);
 
-    // The fault cell's tip is also visually hidden text in the cell, before
-    // the number, so a screen reader reads the reasoning with the value; the
-    // fault cells are not Tab stops. The narrative is the row's disclosure
-    // button, inside its cell (role="button" on the <td> itself would take the
-    // cell out of the table's structure): opening it shows the whole narrative
-    // and, under it, the fault reasoning, which until 2026-10-03 only a
-    // pointer could reach (the cell's tooltip).
+    // The narrative is the row's disclosure button, inside its cell
+    // (role="button" on the <td> itself would take the cell out of the table's
+    // structure): opening it shows the whole narrative and, under it, the
+    // fault reasoning, which until 2026-10-03 only a pointer could reach (the
+    // cell's tooltip). The button has a short name of its own and the
+    // narrative as its description; named by the whole narrative (median 948
+    // characters), every Tab read one out as a label (until 2026-10-04,
+    // audit #62). The fault cell, not a Tab stop, is described by the same
+    // "Fault fraction:" line (hidden until the narrative opens; a description
+    // may point at hidden text): until 2026-10-04 it held a visually hidden
+    // second copy of its tip, which every rebuild of the table laid out
+    // (14-27% of a sort's or a filter's time; audit #26). A row's ids and its
+    // focus key come from its report id, unique among the incidents
+    // (buildFaultDataFromIncidents asserts it).
+    const rid = escAttr(r.reportId);
     tr.innerHTML = `
       <td>${escHtml(r.helmer)}</td>
       <td class="date-cell">${escHtml(r.date)}</td>
       <td>${escHtml(incidentLocation(r))}</td>
       <td>${escHtml(r.crashWith)}</td>
       <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
-      <td class="fault-cell" data-tip="${escAttr(faultTip)}">${tipText(faultTip)}${faultHtml}</td>
+      <td class="fault-cell" data-tip="${escAttr(faultTip)}" aria-describedby="narr-fault-${rid}">${faultHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
-      <td class="${narrativeClass}"><span class="narrative-toggle" role="button" tabindex="0" aria-expanded="false">${escHtml(narrativeText)}</span><span class="narrative-fault">${NARRATIVE_FAULT_LABEL} ${escHtml(faultTip)}</span></td>
+      <td class="${narrativeClass}"><span class="narrative-toggle" role="button" tabindex="0" aria-expanded="false" aria-label="${escAttr(narrativeToggleName(r.reportId))}" aria-describedby="narr-text-${rid}" data-focus-key="narrative-${rid}"><span id="narr-text-${rid}">${escHtml(narrativeText)}</span></span><span class="narrative-fault" id="narr-fault-${rid}">${NARRATIVE_FAULT_LABEL} ${escHtml(faultTip)}</span></td>
     `;
     // Click, Enter or Space expands/collapses the narrative.
     const narrativeTd = tr.querySelector(".narrative-cell");
@@ -4793,17 +4967,27 @@ function escAttr(s) {
 
 // What a tooltip says must reach readers without a pointer (until 2026-10-03
 // only hover and tap showed it). Every [data-tip] element is a Tab stop whose
-// tooltip shows on focus as on hover (initTooltips), and carries its tip for
-// assistive technology: an SVG mark has no text of its own, so the tip is its
-// accessible name (svgTipAttrs, written right after its data-tip); an HTML
-// target keeps its visible text and holds the tip as visually hidden text
-// (tipText). The incident table's fault cells are the exception to the Tab
-// stops: their tips also show in the row's expandable narrative.
-function svgTipAttrs(tip) {
-  return ` tabindex="0" aria-label="${escAttr(tip)}"`;
+// tooltip shows on focus as on hover (initTooltips), and gives its tip to
+// assistive technology in its accessible name (tipTargetAttrs, written right
+// after its data-tip): an SVG mark has no text of its own, so its name is its
+// tip (on a chart several companies share, after its company's label:
+// seriesMarkName); an HTML target is an image named by the text it shows and
+// its tip (htmlTipAttrs), its decoration (the cards' "[?]") aria-hidden. The
+// incident table's fault cells are not Tab stops: each is described by its
+// row's "Fault fraction:" line, which the opened narrative shows. Until
+// 2026-10-04 an HTML target held its tip as visually hidden text instead: a
+// generic element with no name to a screen reader (audit #63), copied along
+// with the text (#61), and in the 1,228 fault cells laid out on every rebuild
+// of the table (#26).
+function tipTargetAttrs(name) {
+  return ` tabindex="0" aria-label="${escAttr(name)}"`;
 }
-function tipText(tip) {
-  return `<span class="visually-hidden">${escHtml(tip)}</span>`;
+// An HTML tooltip target's attributes: its tip, its Tab stop, and the image
+// role, which lets it carry a name (a generic span or div may not). `name` is
+// the text it shows followed by its tip, or the tip alone where all it shows
+// is decoration.
+function htmlTipAttrs(name, tip) {
+  return ` data-tip="${escAttr(tip)}" role="img"${tipTargetAttrs(name)}`;
 }
 
 // --- Sanity Checks ---
@@ -4859,9 +5043,9 @@ const SV_STATIONARY = new Set(["Stopped", "Parked"]);
 // Tesla and Zoox, though both have miles there), and a window with no
 // incidents left four header-only tables (audit #48). <columns> is the
 // table's column count; the reason spans all but the company's.
-// TODO: the reason in such a grayed row: this company has no incidents in
+// The reason in such a grayed row: this company has no incidents in
 // the selected date window, so this table has nothing to count for it.
-const NO_INCIDENTS_NOTE = "Nulli casus in hac fenestra.";
+const NO_INCIDENTS_NOTE = "No incidents in this window.";
 function noIncidentsRow(helmer, columns) {
   return `<tr class="insufficient">
       <td>${escHtml(helmer)}</td>
@@ -5025,7 +5209,7 @@ Confidential Business Information (CBI).
   // month's thinned band). Until 2026-09-26 this table re-summed each month's
   // receipt-scaled 95% edges -- the perfectly-correlated band abandoned on
   // 2026-09-04 -- and so contradicted the cards beside it.
-  const vmtUncRows = monthlySummaryRows(series)
+  const vmtUncRows = windowSummaryRows(series)
     .filter(r => ADS_HELMERS.includes(r.helmer) && r.vmtBest > 0)
     .map(r => `<tr>
       <td>${escHtml(r.helmer)}</td>
@@ -5280,7 +5464,7 @@ Where the Vehicle Miles Traveled (VMT) estimates come from for each company.
 These are the denominators in every miles per incident (MPI) calculation, so any errors here matter a lot.
 In general we mistrust anything Tesla says except numbers in their official reports to investors which seem to be reliable and would be a big deal (e.g., securities fraud) if they weren't.
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table class="vmt-sources">
       <thead><tr>
         <th>Company</th>
         <th>Source and methodology (<span class="ai-text">green text = AI-generated</span>)</th>
@@ -5373,12 +5557,7 @@ Claude notes:
   // (Facts: hub CSV2 v1 "Is Suspected Serious Injury+"; Sep-24-2026 release
   // notes p. 2 on 30270-13817, p. 8 on relying on the police crash report.
   // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
-  // TODO (audit 2026-10-04 #5): the note below puts the whole 3.3x on coding.
-  // Through Jun 2026, where Waymo's data end, the page has 7 SSI+ in 277.83M
-  // mi = 2.28x, and 0.98x with Waymo's police coding. The rest, about half
-  // the 3.3x on a log scale, is four Jul-Aug 2026 crashes Waymo's rate does
-  // not cover yet: 30270-15830, -15896, -16028 and the Dallas fatality -16196.
-  const waySsiNote = `The serious-injury+ ratio is far from 1 because the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious by the police reports, and one (30270-13817) still awaits a police crash report.`;
+  const waySsiNote = `The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious per the police reports, and one (30270-13817) still awaits a police crash report.`;
   sections.push(`
 <h3>Waymo cross-check</h3>
 <p>
@@ -5415,10 +5594,19 @@ function initTooltips() {
 
   let pinned = false; // true when user tapped/clicked to pin the tooltip
   let pinnedTarget = null; // the element the pinned tooltip belongs to
+  // The target whose tip keyboard focus showed (null once a pointer shows a
+  // tip, or focus leaves it): while focus is still on it, that tip follows it
+  // when the page or a box scrolls (below). A redraw that removes the focused
+  // target (a chart mark a width change redraws) drops focus to <body> with
+  // no focusout in Firefox and WebKit, so the follow checks the focus itself:
+  // until 2026-10-05 (reviewer) the next scroll moved the tip to the removed
+  // target's corner, which reads (0, 0), the viewport's top-left corner.
+  let focusTipTarget = null;
 
   function show(el, evt) {
     const text = el.getAttribute("data-tip");
     if (!text) return;
+    focusTipTarget = null;
     tip.textContent = text;
     tip.style.display = "block";
     position(evt);
@@ -5429,6 +5617,12 @@ function initTooltips() {
     const x = evt.clientX || (evt.touches && evt.touches[0].clientX) || 0;
     const y = evt.clientY || (evt.touches && evt.touches[0].clientY) || 0;
     const pad = 12;
+    // The tip's size is measured at the viewport's corner: where it stood,
+    // near the right edge, the room left narrowed it, and the flip below
+    // used that narrower width, so a flipped tip widened over its own target
+    // once moved (found 2026-10-04 with audit #18).
+    tip.style.left = "0px";
+    tip.style.top = "0px";
     const rect = tip.getBoundingClientRect();
     let left = x + pad;
     let top = y + pad;
@@ -5480,18 +5674,36 @@ function initTooltips() {
   // 2026-10-03 only pointer events opened a tooltip. Focus that a press of
   // the pointer gives a target (:focus-visible does not match it) is left to
   // the pointer's own handlers, or the tip would jump to the target's corner
-  // between mousedown and click.
+  // between mousedown and click. The corner is read again in the next frame:
+  // WebKit fires focusin before it scrolls the target into view (Chromium and
+  // Firefox after), so the first tip shown in each region of the page sat
+  // where its target had been before the scroll, off-screen (until
+  // 2026-10-04, audit #18). And WebKit may scroll the target into view only
+  // after that frame: the tip then stayed where the target had been, which
+  // happened for 0-1 of 210 targets in about half the WebKit runs of
+  // tooltip-focus-position.qual, and for 3-6 in every run once the incident
+  // box was laid out only near the screen (style.css .table-scroll, 2026-10-05,
+  // audit #25), which gives WebKit more frames to schedule around the scroll.
+  // So the tip also follows its target on every scroll while focus keeps it.
+  const corner = el => { const r = el.getBoundingClientRect(); return {clientX: r.right, clientY: r.bottom}; };
   document.addEventListener("focusin", (evt) => {
     const target = findTipTarget(evt.target);
     if (!target || !target.matches(":focus-visible")) return;
     pinned = false;
     pinnedTarget = null;
-    const r = target.getBoundingClientRect();
-    show(target, {clientX: r.right, clientY: r.bottom});
+    show(target, corner(target));
+    focusTipTarget = target;
+    requestAnimationFrame(() => position(corner(target)));
   });
+  document.addEventListener("scroll", () => {
+    if (focusTipTarget === document.activeElement) position(corner(focusTipTarget));
+  }, {capture: true, passive: true});
 
   document.addEventListener("focusout", (evt) => {
-    if (findTipTarget(evt.target)) hide();
+    if (findTipTarget(evt.target)) {
+      focusTipTarget = null;
+      hide();
+    }
   });
 
   // Escape dismisses the tooltip, whether hovered, focused or pinned, without
@@ -5500,6 +5712,7 @@ function initTooltips() {
     if (evt.key !== "Escape") return;
     pinned = false;
     pinnedTarget = null;
+    focusTipTarget = null;
     tip.style.display = "none";
   });
 
@@ -5512,6 +5725,7 @@ function initTooltips() {
         // data-tip element re-pins on it (one tap per bar on mobile).
         pinned = false;
         pinnedTarget = null;
+        focusTipTarget = null;
         tip.style.display = "none";
       } else {
         pinned = true;
@@ -5521,6 +5735,7 @@ function initTooltips() {
     } else {
       // Clicked elsewhere — dismiss pinned tooltip
       pinned = false;
+      focusTipTarget = null;
       tip.style.display = "none";
     }
   }, true);
@@ -5698,15 +5913,17 @@ function marketRowFaded(state, live) {
 // One market row: the question (or an outcome's label) linked to its market,
 // its state label ("" while it trades; empty, the span takes no room), odds and
 // volume. A state label holds API text (a Polymarket outcome name), so it is
-// escaped like the question.
-function renderMarketCard(question, url, prob, volText, state, faded) {
-  assert(typeof state === "string" && typeof faded === "boolean",
-    "renderMarketCard: state must be a string, faded a boolean", {question, state, faded});
+// escaped like the question. The link carries `focusKey`, so keyboard focus on
+// it survives the redraw each fetch's landing makes (rerenderKeepingFocus;
+// until 2026-10-04 it fell to <body>, audit #17).
+function renderMarketCard(question, url, prob, volText, state, faded, focusKey) {
+  assert(typeof state === "string" && typeof faded === "boolean" && typeof focusKey === "string" && focusKey !== "",
+    "renderMarketCard: state must be a string, faded a boolean, focusKey a name", {question, state, faded, focusKey});
   const card = document.createElement("div");
   card.className = "pm-card";
   card.classList.toggle("pm-faded", faded);
   card.innerHTML =
-    `<span class="pm-card-question"><a href="${escAttr(url)}" ` +
+    `<span class="pm-card-question"><a href="${escAttr(url)}" data-focus-key="${escAttr(focusKey)}" ` +
     `target="_blank" rel="noopener">${escHtml(question)}</a><span class="pm-card-state">${escHtml(state)}</span></span>` +
     `<span class="pm-card-odds ${oddsClass(prob)}">${fmtPct(prob)}</span>` +
     `<span class="pm-card-vol">${volText}</span>`;
@@ -5721,15 +5938,17 @@ function renderMarketCard(question, url, prob, volText, state, faded) {
 // `outcomes` list [{label, prob, volText?, resolution, closed}]; volText is the
 // per-outcome volume (Polymarket sub-markets have their own; Manifold answers
 // share the market's). The header carries the market's closed state (every
-// outcome closed); each outcome row its own resolution.
-function appendMarketGroup(grid, title, url, volText, outcomes, live) {
+// outcome closed); each outcome row its own resolution. `key` names the
+// market's links for rerenderKeepingFocus: the market's own link (its single
+// row's or its header's) is `key`, outcome i's is `key-i`.
+function appendMarketGroup(grid, title, url, volText, outcomes, live, key) {
   assert(outcomes.length > 0, "market group needs at least one outcome", {title});
-  const row = (label, o, vol) => {
+  const row = (label, o, vol, focusKey) => {
     const state = marketStateLabel(o.resolution, o.closed);
-    return renderMarketCard(label, url, o.prob, vol, state, marketRowFaded(state, live));
+    return renderMarketCard(label, url, o.prob, vol, state, marketRowFaded(state, live), focusKey);
   };
   if (outcomes.length === 1) {
-    grid.appendChild(row(title, outcomes[0], volText));
+    grid.appendChild(row(title, outcomes[0], volText, key));
     return;
   }
   const headerState = marketStateLabel(null, outcomes.every(o => o.closed));
@@ -5737,15 +5956,15 @@ function appendMarketGroup(grid, title, url, volText, outcomes, live) {
   header.className = "pm-card";
   header.classList.toggle("pm-faded", marketRowFaded(headerState, live));
   header.innerHTML =
-    `<span class="pm-card-question"><a href="${escAttr(url)}" ` +
+    `<span class="pm-card-question"><a href="${escAttr(url)}" data-focus-key="${escAttr(key)}" ` +
     `target="_blank" rel="noopener"><b>${escHtml(title)}</b></a><span class="pm-card-state">${escHtml(headerState)}</span></span>` +
     `<span class="pm-card-vol">${volText}</span>`;
   grid.appendChild(header);
-  for (const o of outcomes) {
-    const card = row(o.label, o, o.volText || "");
+  outcomes.forEach((o, i) => {
+    const card = row(o.label, o, o.volText || "", `${key}-${i}`);
     card.classList.add("pm-subcard");
     grid.appendChild(card);
-  }
+  });
 }
 
 // A Polymarket sub-market has closed once Polymarket says so or its end date
@@ -5801,25 +6020,26 @@ function predmarketStatusTip(snapshotDate) {
 // Each entry carries `live`: whether this page load fetched it (true) or it is
 // the snapshot's (false, grayed).
 function renderPredmarketsPanel(config, manifold, isoDate) {
-  predmarketsShown = {poly: config, manifold, isoDate};
   const panel = byId("predmarket-panel");
   const grid = document.createElement("div");
   grid.className = "predmarket-grid";
   const now = Date.now();
+  // Disabled entries never get here: snapshotMarkets drops them, and a
+  // refresh fetches only what the panel drew (since 2026-10-04, audit #53;
+  // until then this function skipped them itself).
   for (const e of [...config, ...manifold]) {
     assert(typeof e.live === "boolean", "a market entry must say whether it is live", {slug: e.slug, live: e.live});
+    assert(e.enabled !== false, "a disabled market entry reached the market panel", {slug: e.slug});
   }
 
   for (const ev of config) {
-    if (ev.enabled === false) continue; // skip disabled events
     if (!(ev.markets || []).length) continue;
     appendMarketGroup(grid, ev.title, polymarketUrl(ev.slug),
-      fmtVol(parseFloat(ev.volume) || 0), polymarketOutcomes(ev, now), ev.live);
+      fmtVol(parseFloat(ev.volume) || 0), polymarketOutcomes(ev, now), ev.live, `pm-${ev.slug}`);
   }
 
   for (const m of manifold) {
-    if (m.enabled === false) continue; // skip disabled markets
-    appendMarketGroup(grid, m.question, m.url, fmtMana(m.volume), manifoldOutcomes(m, now), m.live);
+    appendMarketGroup(grid, m.question, m.url, fmtMana(m.volume), manifoldOutcomes(m, now), m.live, `pm-${m.slug}`);
   }
 
   panel.textContent = "";
@@ -5828,28 +6048,27 @@ function renderPredmarketsPanel(config, manifold, isoDate) {
   const footer = document.createElement("div");
   footer.className = "pm-footer";
 
-  // The dot and the age are one tooltip target, a Tab stop that carries its
-  // tip as visually hidden text (svgTipAttrs / tipText's convention for HTML
-  // targets); until 2026-10-03 nothing on the page said what they meant. The
-  // refresh's re-render replaces it, so it carries a data-focus-key, as the
-  // refresh button does (rerenderKeepingFocus).
+  // The dot and the age are one tooltip target, a Tab stop named, as every
+  // HTML target is (htmlTipAttrs), by what it shows (the age, kept current as
+  // it ticks) and its tip; until 2026-10-03 nothing on the page said what they
+  // meant. The refresh's re-render replaces it, so it carries a
+  // data-focus-key, as the refresh button does (rerenderKeepingFocus).
   const tip = predmarketStatusTip(PREDMARKET_SNAPSHOT_DATE);
   const status = document.createElement("span");
   status.className = "pm-status";
   status.setAttribute("data-tip", tip);
   status.setAttribute("tabindex", "0");
+  status.setAttribute("role", "img");
   status.setAttribute("data-focus-key", "pm-status");
   const dot = document.createElement("span");
   dot.className = "pm-dot";
   const ageSpan = document.createElement("span");
   ageSpan.className = "pm-age";
-  const hidden = document.createElement("span");
-  hidden.className = "visually-hidden";
-  hidden.textContent = tip;
-  status.append(dot, ageSpan, hidden);
+  status.append(dot, ageSpan);
   function tickAge() {
     const {text, cls} = fmtAge(isoDate);
     ageSpan.textContent = text;
+    status.setAttribute("aria-label", `${text} ${tip}`);
     dot.className = "pm-dot " + cls;
   }
   tickAge();
@@ -5867,6 +6086,9 @@ function renderPredmarketsPanel(config, manifold, isoDate) {
 
   footer.append(status, refreshBtn);
   panel.appendChild(footer);
+  // Recorded once drawn, so a render that throws (an entry the cards
+  // cannot draw) leaves what the panel still shows (reviewer, 2026-10-04).
+  predmarketsShown = {poly: config, manifold, isoDate};
 }
 
 // Fetch fresh data for a single slug, returning the event object with the
@@ -6048,6 +6270,12 @@ function loadPredmarketData() {
       "inline incident data has unknown helmer", {helmer: inc.helmer});
     assert(typeof inc.reportId === "string" && inc.reportId.length > 0,
       "incident missing reportId", {helmer: inc.helmer});
+    // The incident browser builds a row's ids, the IDREFs pointing at them and
+    // its narrative's data-focus-key from the report id (renderTable), so it
+    // can hold no whitespace (an IDREF separator) and no quote or backslash
+    // (rerenderKeepingFocus's attribute selector).
+    assert(/^[^\s"'\\]+$/.test(inc.reportId),
+      "incident reportId must hold no whitespace, quote or backslash", {reportId: inc.reportId});
     assert(typeof inc.date === "string" && DATE_RE.test(inc.date),
       "incident date must match MMM-YYYY format", {reportId: inc.reportId, date: inc.date});
     assert(inc.speed === null || (typeof inc.speed === "number" && Number.isFinite(inc.speed) && inc.speed >= 0),
@@ -6096,6 +6324,7 @@ function loadPredmarketData() {
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} ${throughPart} · ` +
     `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a> · ` +
     `web design inspired by <a href="https://ncase.me">nicky case</a>`;
+  initInputModality();
   initTooltips();
   initCollapsibles();
   initGrowthMetricToggle();
@@ -6103,16 +6332,34 @@ function loadPredmarketData() {
   // A change of the column's width (a phone turned, a window resized or
   // zoomed, a hidden iframe shown) redraws the charts at the new width; a
   // resize that leaves it (a phone's toolbar hiding as the page scrolls)
-  // redraws nothing.
+  // redraws nothing. The redraw keeps focus on the growth radios it replaces
+  // (until 2026-10-04 it dropped it to <body>; audit #65).
   window.addEventListener("resize", () => {
     const w = chartColumnWidth();
     if (w === chartViewW) return;
     chartViewW = w;
-    renderWindowedViews();
-    byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
-    byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+    rerenderKeepingFocus(() => {
+      renderWindowedViews();
+      byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
+      byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+    });
   });
   chartViewW = chartColumnWidth();
+  // Every view is built in this task, on every load: the browser puts the
+  // reader in place while the page loads (Firefox once the bare page is laid
+  // out and again before DOMContentLoaded, WebKit at the load event) on a
+  // #sec-... fragment's section, a text fragment's (#:~:text=) words, or, on
+  // a reload or a return through the history, where the reader was, so the
+  // page has to be whole by then (load-order.qual, fragment-landing.qual,
+  // scroll-restore.qual). On 2026-10-05 init built the incident browser, the
+  // sanity section and the growth charts in tasks after the first frame
+  // (audit #25), which painted the first chart ~0.07 s sooner on a desktop
+  // and ~0.2 s sooner at 4x CPU throttling; in Firefox and WebKit the page
+  // then grew under the browser's scroll and the reader landed up to ~29,000
+  // px off, and no script there can see a text fragment to build that load
+  // at once. Until 2026-10-05 the views took ~0.3 s on a desktop and ~1.3 s at
+  // 4x (audit #25; the slider's commits since share their summary rows and
+  // stop the fault-flip search at printed precision, audit #23).
   buildMonthlyViews();
   byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
   byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();

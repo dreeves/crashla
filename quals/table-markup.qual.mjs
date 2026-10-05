@@ -61,11 +61,16 @@ Expectata: none -- the arrows are outside the web font's ranges and rendered
 from whatever the OS fell back to; the indicator is a CSS triangle keyed on
 aria-sort, like the section chevron.
 Resultata: a triangle glyph is still emitted.`);
-const asc = rule("th[aria-sort]::after");
-const desc = rule('th[aria-sort="descending"]::after');
-assert.ok(asc && desc, "th[aria-sort]::after and th[aria-sort=\"descending\"]::after rules exist");
-assert.match(onlyDecl(asc.body, "border-bottom", "th[aria-sort]::after"), /currentColor$/);
-assert.match(onlyDecl(desc.body, "border-top", 'th[aria-sort="descending"]::after'), /currentColor$/);
+// Since 2026-10-04 a sortable header's text is a button in its th (audit
+// #19), and the triangle is drawn inside the button, after its text: drawn
+// after the button (an atomic inline box), it took a line of its own wherever
+// the header's text wrapped ("Speed (mph)" at 1200 px).
+const ASC = "th[aria-sort] > button::after", DESC = 'th[aria-sort="descending"] > button::after';
+const asc = rule(ASC);
+const desc = rule(DESC);
+assert.ok(asc && desc, `${ASC} and ${DESC} rules exist`);
+assert.match(onlyDecl(asc.body, "border-bottom", ASC), /currentColor$/);
+assert.match(onlyDecl(desc.body, "border-top", DESC), /currentColor$/);
 assert.equal(decls(asc.body, "content").length, 1);
 
 console.log("qual pass: generated tables are wrapped, numeric cells are named, sort direction is drawn");

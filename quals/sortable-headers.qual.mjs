@@ -50,6 +50,11 @@ class ElementStub {
     this.dispatch("click");
   }
 
+  // Counts the page's focus() calls on this element.
+  focus() {
+    this.focusCalls = (this.focusCalls || 0) + 1;
+  }
+
   setAttribute(name, value) {
     this._attributes[name] = value;
   }
@@ -114,56 +119,61 @@ vm.runInContext(`
 `, ctx);
 
 const headerRow = () => getNode("incidents-head").children[0].children;
+const LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
 
+// Since 2026-10-04 a header's text is a <button type="button"> in its th
+// (the ARIA sortable-table pattern; audit #19): the button is the Tab stop and
+// turns Enter and Space into a click by itself, so the th has no tabIndex and
+// no keydown handler. The click listener stays on the th, so a click anywhere
+// in the cell sorts. quals/keyboard-focus.qual.mjs presses the keys in real
+// browsers.
 const before = headerRow();
+const shape = before.map(th => ({
+  tabIndex: th.tabIndex, keydown: (th.listeners.keydown || []).length,
+  kids: th.children.map(c => ({ tag: c.tagName, type: c.type, text: c.textContent, key: c.getAttribute("data-focus-key") })),
+}));
 assert.ok(
-  before.length > 0 && before.every(th => th.tabIndex === 0),
+  shape.length === LABELS.length && shape.every((h, i) => h.tabIndex === undefined && h.keydown === 0 &&
+    h.kids.length === 1 && h.kids[0].tag === "button" && h.kids[0].type === "button" && h.kids[0].text === LABELS[i] &&
+    h.kids[0].key === `sort-${vm.runInContext("SORT_COLUMNS", ctx)[i].key}`),
   `Replicata: build the incident browser and inspect the column header cells.
-Expectata: every header cell is keyboard-focusable (tabIndex 0).
-Resultata: tabIndex values were ${JSON.stringify(before.map(th => th.tabIndex))}.`,
+Expectata: each th holds one <button type="button"> with the header's text and a data-focus-key "sort-<column>";
+the th itself has no tabIndex and no keydown handler.
+Resultata: ${JSON.stringify(shape)}.`,
 );
 
-// Keydown with a non-activation key must not sort
-let prevented = false;
-before[0].dispatch("keydown", { key: "x", preventDefault: () => { prevented = true; } });
+// A click on the first header sorts ascending and marks its th
+before[0].dispatch("click");
+// The header a click operates takes focus first, as Chromium and Firefox give
+// a clicked button focus and WebKit does not (audit 2026-10-04 #17).
 assert.equal(
-  vm.runInContext("sortCol", ctx),
-  null,
-  `Replicata: press a non-activation key ("x") on the first column header.
-Expectata: the sort state stays untouched (sortCol null).
-Resultata: sortCol became "${vm.runInContext("sortCol", ctx)}".`,
+  before[0].children[0].focusCalls,
+  1,
+  `Replicata: click the first column header.
+Expectata: its button is given focus once, before the table redraws.
+Resultata: focus() was called ${before[0].children[0].focusCalls ?? 0} times.`,
 );
-assert.equal(
-  prevented,
-  false,
-  `Replicata: press a non-activation key ("x") on the first column header.
-Expectata: the keydown handler does not call preventDefault for keys it ignores.
-Resultata: preventDefault was called.`,
-);
-
-// Enter sorts ascending, marks the header, and matches click behavior
-before[0].dispatch("keydown", { key: "Enter", preventDefault() {} });
 assert.equal(
   vm.runInContext("sortCol", ctx),
   "helmer",
-  `Replicata: press Enter on the first column header.
-Expectata: the table sorts by that column (sortCol "helmer"), same as clicking it.
+  `Replicata: click the first column header.
+Expectata: the table sorts by that column (sortCol "helmer").
 Resultata: sortCol was "${vm.runInContext("sortCol", ctx)}".`,
 );
 assert.equal(
   headerRow()[0].getAttribute("aria-sort"),
   "ascending",
-  `Replicata: press Enter on the first column header.
-Expectata: the rebuilt header announces aria-sort="ascending".
+  `Replicata: click the first column header.
+Expectata: the rebuilt header cell (the th, not its button) announces aria-sort="ascending".
 Resultata: aria-sort was ${JSON.stringify(headerRow()[0].getAttribute("aria-sort"))}.`,
 );
 
-// Space on the already-sorted column flips the direction
-headerRow()[0].dispatch("keydown", { key: " ", preventDefault() {} });
+// A second click on the sorted column flips the direction
+headerRow()[0].dispatch("click");
 assert.equal(
   headerRow()[0].getAttribute("aria-sort"),
   "descending",
-  `Replicata: press Space on the column already sorted ascending.
+  `Replicata: click the column already sorted ascending.
 Expectata: the sort direction flips and the header announces aria-sort="descending".
 Resultata: aria-sort was ${JSON.stringify(headerRow()[0].getAttribute("aria-sort"))}.`,
 );
@@ -177,4 +187,4 @@ Expectata: columns that are not the active sort carry no aria-sort attribute.
 Resultata: aria-sort was ${JSON.stringify(headerRow()[1].getAttribute("aria-sort"))}.`,
 );
 
-console.log("qual pass: incident table headers sort via keyboard and expose aria-sort");
+console.log("qual pass: incident table headers are buttons in their th, sort on click and expose aria-sort");

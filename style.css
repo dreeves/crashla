@@ -84,6 +84,17 @@
 
   --shadow: 0 3px 0 rgba(51, 51, 51, 0.13);
   --shadow-tip: 0 3px 10px rgba(51, 51, 51, 0.35);
+
+  /* The date slider's thumbs, across and tall. crashla.js places the fill and
+     the default-start tick by it too (sliderAt), so the fill runs from thumb
+     centre to thumb centre at any size. */
+  --thumb: 18px;
+}
+/* A finger needs a larger thumb than a mouse: 18px thumbs left a phone's
+   reader ~5px of precision on a slider where a month is 4.6-6.1px of travel
+   (until 2026-10-05, audit #67). */
+@media (pointer: coarse) {
+  :root { --thumb: 26px; }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 /* Form controls do not inherit typography from the page in any browser. One
@@ -238,9 +249,9 @@ h3 { font-size: var(--fs-lg); margin: 1rem 0 0.5rem; }
 .filters button:active { transform: translateY(1px) scale(0.98); }
 .filters button.active { background: var(--ink); color: var(--paper); }
 /* One focus ring for every custom-styled control with room around it. Inside
-   the incident table's scroll box the sticky headers draw theirs inset (below);
-   a narrative's ring fits in its cell's padding. */
-.filters button:focus-visible, #month-metric-select:focus-visible, .pm-refresh:focus-visible, .sec-toggle:focus-visible, .narrative-toggle:focus-visible {
+   the incident table's scroll box a header's button and a narrative fit
+   theirs in their cell's padding. */
+.filters button:focus-visible, #month-metric-select:focus-visible, .pm-refresh:focus-visible, .sec-toggle:focus-visible, .narrative-toggle:focus-visible, .table-scroll th > button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -257,8 +268,11 @@ th {
   top: 0;
 }
 /* Sort direction drawn like the section triangle, keyed on the aria-sort the
-   renderer already sets, so it never depends on a glyph the face lacks. */
-th[aria-sort]::after {
+   renderer already sets, so it never depends on a glyph the face lacks. It is
+   drawn inside the header's button, after its text, so it wraps with the
+   text: after the button, an atomic inline box, it took a line of its own
+   wherever the text wrapped ("Speed (mph)" at 1200px). */
+th[aria-sort] > button::after {
   content: "";
   display: inline-block;
   width: 0;
@@ -269,7 +283,7 @@ th[aria-sort]::after {
   margin-left: 0.35em;
   vertical-align: middle;
 }
-th[aria-sort="descending"]::after {
+th[aria-sort="descending"] > button::after {
   border-bottom: none;
   border-top: 0.38em solid currentColor;
 }
@@ -282,8 +296,40 @@ td.num, th.num { text-align: right; white-space: nowrap; }
 td.num.pair { white-space: normal; }
 td.num.pair > span { white-space: nowrap; }
 /* Scroll container so the sticky header actually sticks (and hundreds of
-   incident rows don't make the page itself miles long) */
-.table-scroll { overflow: auto; max-height: 80vh; overscroll-behavior-x: contain; }
+   incident rows don't make the page itself miles long).
+   Its scroll padding keeps keyboard focus out from under the sticky header
+   row: a browser scrolls a focused narrative into the box's view, and with
+   no padding a row still inside the box but under the header counted as in
+   view, so Shift+Tab left some wholly hidden there (until 2026-10-04, audit
+   #13). The padding is the header row at its tallest, three lines of its
+   text (a two-word label over two lines and, sorted, the sort triangle on a
+   third), with its cell padding, its 2px rule, a 4px focus ring and 2px for
+   the engines' rounding of the row's height.
+   The box is laid out only while it is on or near the screen
+   (content-visibility): its 1,000-odd rows were laid out again on every
+   slider commit wherever the page was scrolled, ~0.2 s of a key press's
+   ~0.3 s on a desktop (until 2026-10-05, audit #23, #25). Off screen it keeps
+   the height it last had, or 80vh (its height with more than about twenty
+   rows) before it has been drawn; it scrolls its own rows, so nothing it
+   holds draws outside it. Until its table is first built it holds that 80vh
+   on screen too (the reservations under @media (scripting: enabled)).
+   So a box its rows do not fill (fewer than about twenty) is 80vh until it is
+   first drawn, which a reader is allowed to see: after a reload or a return
+   through the history a place below it can come back off by the room its
+   rows leave (up to ~550px at 1200x900, in WebKit and on a Pixel 7;
+   scroll-restore.qual), and what is below it moves up by as much as the box
+   first comes on screen. Laying such a box out always (2026-10-05) switched
+   the layout skipping on and off under a filter click, which made the click
+   from 23 rows to all 1,228 ~70% slower in Firefox and ~20% in Chromium and
+   WebKit. */
+.table-scroll {
+  overflow: auto;
+  max-height: 80vh;
+  overscroll-behavior-x: contain;
+  scroll-padding-top: calc(3 * var(--fs-sm) * var(--lh-body) + 0.7rem + 8px);
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 80vh;
+}
 .table-scroll th {
   cursor: pointer;
   /* border-collapse drops sticky-header borders while stuck; box-shadow stands in */
@@ -291,11 +337,30 @@ td.num.pair > span { white-space: nowrap; }
   box-shadow: 0 2px 0 var(--line);
 }
 .table-scroll th:hover { background: var(--wash-deep); }
-.table-scroll th:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* A sortable header's text is a button (crashla.js renderHeaders) drawn as
+   the header text it holds: every inherited property (face, size, weight,
+   leading, figures, colour, alignment, cursor) the th's, and no box,
+   appearance or ring of its own (its focus ring is the shared one above). */
+.table-scroll th > button { all: unset; }
 :where(.table-scroll) tbody tr:nth-child(even) { background: var(--wash); }
 tbody tr:hover { background: var(--accent-wash); }
 /* Wide generated tables pan inside their own box instead of widening the page. */
 .table-wrap { overflow-x: auto; }
+/* "VMT sources": a methodology line may break inside a long token (a URL), so
+   one 342px "x.com/.../status/..." no longer sets the table's minimum width,
+   which on phones made it wider than its box and cut every line off at the
+   right edge in Chromium and WebKit; and each company's name heads its row,
+   not halfway down one up to ~4,600px tall (until 2026-10-05, audit #20,
+   #69). */
+.vmt-sources td {
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+/* "Specific human benchmark derivations": the Derivation column keeps a
+   readable line on a phone, the table panning in its box; squeezed to its
+   longest word it was ~130px, about 14 characters a line (until 2026-10-05,
+   audit #21). */
+.source-table td.derivation { min-width: 18em; }
 /* An incident date ("JUL-2025") stays on one line: Chromium and WebKit broke
    every one at its hyphen (Firefox did not). The width the whole date needs
    comes out of the narrative preview, the one column that truncates rather
@@ -312,11 +377,16 @@ tbody tr:hover { background: var(--accent-wash); }
   cursor: pointer;
 }
 .narrative-cell.expanded { white-space: normal; }
-/* The narrative is the cell's disclosure button: a block box, so it carries
-   its own ellipsis and its focus ring is not clipped by the cell. The fault
-   reasoning under it shows only while the narrative is open. */
+/* The narrative is the cell's disclosure button: an inline-block box no
+   wider than the cell, so it carries its own ellipsis, its focus ring fits
+   the cell's padding, and a copied row stays on one line (as a block box it
+   put a line break before the narrative in Chromium and WebKit until
+   2026-10-04; audit #61). The fault reasoning under it shows only while the
+   narrative is open. */
 .narrative-toggle {
-  display: block;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -415,16 +485,22 @@ tbody tr:hover { background: var(--accent-wash); }
   background: transparent;
   border: none;
 }
+/* A thumb is var(--thumb) across in every engine, its border inside that
+   (a pseudo-element is not matched by the universal box-sizing rule above,
+   so Firefox drew 18px plus its border, 23px, and its fill ran 1-2px off the
+   thumb centres). It sits on the 5px track as the 18px one always did,
+   half a pixel above centre. */
 .date-range-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   pointer-events: auto;
-  width: 18px;
-  height: 18px;
+  box-sizing: border-box;
+  width: var(--thumb);
+  height: var(--thumb);
   border-radius: 50%;
   background: var(--card);
   border: 2.5px solid var(--ink);
   cursor: grab;
-  margin-top: -7px;
+  margin-top: calc((4px - var(--thumb)) / 2);
 }
 .date-range-input::-moz-range-track {
   height: 5px;
@@ -433,8 +509,9 @@ tbody tr:hover { background: var(--accent-wash); }
 }
 .date-range-input::-moz-range-thumb {
   pointer-events: auto;
-  width: 18px;
-  height: 18px;
+  box-sizing: border-box;
+  width: var(--thumb);
+  height: var(--thumb);
   border-radius: 50%;
   background: var(--card);
   border: 2.5px solid var(--ink);
@@ -448,9 +525,10 @@ tbody tr:hover { background: var(--accent-wash); }
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent);
 }
+/* Under the thumbs at any size: 20px down with the 18px thumb, as before. */
 .date-range-end-label {
   position: absolute;
-  top: 20px;
+  top: calc(50% + var(--thumb) / 2 - 1px);
   font-size: var(--fs-xs);
   color: var(--ink-soft);
   white-space: nowrap;
@@ -475,12 +553,59 @@ tbody tr:hover { background: var(--accent-wash); }
   font-size: var(--fs-xs);
   color: var(--ink-soft);
   text-align: center;
-  margin-top: 1px;
+  margin-top: calc(var(--thumb) / 2 - 8px);
   white-space: nowrap;
 }
 
 .month-chart {
   margin-bottom: 0.8rem;
+}
+/* Until init draws the date slider (its first build, which draws the
+   legends before it and the charts after it), the views at the top of the
+   page hold the room they take in the default view (two companies, a date
+   window narrower than the series, legends on one line), so the frame drawn
+   before the script runs, the headings over empty sections, does not jump
+   when the controls and charts arrive: on a desktop every section below the
+   controls moved down, a layout shift of 0.208 (until 2026-10-05, audit
+   #25). Keyed on the slider, which no later render empties, rather than on
+   each view being empty: with no company checked the company charts' box is
+   empty again and takes no room. The charts are reserved at their viewBox
+   height, which a column up to 900px wide draws them at. Only with
+   scripting: without it the sections stay empty. */
+@media (scripting: enabled) {
+  /* the window's label in its pill (a line, its padding and border), the
+     gap under it, the slider */
+  #date-range-controls:empty {
+    min-height: calc(var(--fs-base) * var(--lh-body) + 0.1rem + 4px + 0.2rem + 24px);
+  }
+  #month-panel:has(#date-range-controls:empty) #month-legend-mpi-helmers,
+  #month-panel:has(#date-range-controls:empty) #month-legend-mpi-lines,
+  #month-panel:has(#date-range-controls:empty) #vmt-mode-toggle,
+  #month-panel:has(#date-range-controls:empty) #month-legend-ci-fan {
+    min-height: calc(var(--fs-base) * var(--lh-body));
+  }
+  /* a heading and a 250-unit chart for each of two companies */
+  #month-panel:has(#date-range-controls:empty) #chart-helmer-series {
+    min-height: calc(2 * (var(--fs-lg) * var(--lh-tight) + 0.35rem + 250px + 0.8rem) + 0.9rem);
+  }
+  /* a legend line over a 520- and a 280-unit chart */
+  #month-panel:has(#date-range-controls:empty) #chart-mpi-all {
+    min-height: calc(var(--fs-base) * var(--lh-body) + 520px);
+  }
+  #month-panel:has(#date-range-controls:empty) #chart-distributions {
+    min-height: calc(var(--fs-base) * var(--lh-body) + 280px);
+  }
+  /* The incident box, until the incident browser is first built (the build
+     fills the filter buttons above it, which no later build empties): the
+     80vh it takes with more than about twenty rows, on screen as off. Empty,
+     it was ~41px on screen and 80vh off it (its placeholder, .table-scroll),
+     so a scroll that brought it on screen, or the table's build, moved all
+     below it by ~680px: a #sec-... link in Firefox, and a #:~:text= link to
+     a heading below the box in Firefox and WebKit, landed off it (until the
+     review of 2026-10-05; fragment-landing.qual). */
+  #filters:empty ~ .table-scroll {
+    min-height: 80vh;
+  }
 }
 .month-chart h3 {
   margin: 0 0 0.35rem;
@@ -512,7 +637,12 @@ tbody tr:hover { background: var(--accent-wash); }
    wide as its longest option) never outgrows the column: on one line the
    control was 381-393px wide, so a phone under ~393px scrolled sideways
    (2026-10-03, audit #24). */
-.metric-select { cursor: pointer; flex-wrap: wrap; }
+/* Nor does the label outgrow the column: a wrapping flex column's line is as
+   wide as its widest item, and the label was the select's own width
+   (265-269px), so below ~290 CSS px the page scrolled sideways once the
+   summary cards fitted (2026-10-05, audit #68). Kept to the column, the label
+   lets the select shrink to it, clipping its longest option. */
+.metric-select { cursor: pointer; flex-wrap: wrap; max-width: 100%; }
 #month-metric-select {
   background: var(--card);
   border: 2px solid var(--line);
@@ -604,9 +734,12 @@ tbody tr:hover { background: var(--accent-wash); }
 }
 /* Three cards per row pairs the layout with the data: one row of human
    cohorts, one row of AV companies. */
+/* A column narrower than 280px takes one card its own width: the 280px
+   minimum made the page scroll sideways from 270 to 290 CSS px (until
+   2026-10-05, audit #68). */
 .mpi-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 0.9rem;
   margin: 0.8rem 0;
 }
@@ -694,6 +827,16 @@ tbody tr:hover { background: var(--accent-wash); }
 .stress-badge.prior-only, .mpi-card-mult.prior-only {
   opacity: 0.55;
   font-style: italic;
+}
+/* A grayed element un-grays while it, or something in it, holds keyboard
+   focus: a focus ring is painted at its element's opacity, and inside the
+   grayed cards, prior-only marks, market rows and the busy refresh button it
+   fell to 1.0-2.6:1 against the page, where Chromium and Firefox draw the
+   same ring ungrayed at 4.0-6.0:1 (until 2026-10-04, audit #16). */
+.mpi-card.unchecked:has(:focus-visible), .pm-card.pm-faded:has(:focus-visible),
+.stress-badge.prior-only:focus-visible, .mpi-card-mult.prior-only:focus-visible,
+.pm-refresh[aria-disabled="true"]:focus-visible {
+  opacity: 1;
 }
 /* A sanity-table row whose test cannot run in the window (too few months):
    kept, faded like a prior-only verdict, with its reason in the row. */
@@ -816,9 +959,9 @@ tr.insufficient {
   margin-top: 0.45rem;
   justify-content: flex-end;
 }
-/* The dot and the age: one tooltip target (crashla.js predmarketStatusTip).
-   The age's margin, not a flex gap, spaces them, so the visually hidden tip
-   text adds no room. */
+/* The dot and the age: one tooltip target (crashla.js predmarketStatusTip),
+   spaced by the age's margin. (A flex gap would also have spaced the visually
+   hidden copy of the tip the target held until 2026-10-04.) */
 .pm-status {
   display: inline-flex;
   align-items: center;
@@ -897,27 +1040,11 @@ circle[fill="none"][data-tip] { stroke-width: 0; }
    alike. */
 circle[fill="none"][data-tip]:focus-visible { outline: none; stroke: var(--accent); stroke-width: 2; }
 
-/* Text for assistive technology only: a tooltip target's tip, read with the
-   target (crashla.js tipText). An in-flow 1px box, clipped, whose negative
-   margin cancels its width, rather than the usual absolutely positioned one:
-   inside the tables' scroll boxes absolute text escaped their clipping and
-   widened a phone page to 955px, and making the boxes its containing blocks
-   changed how Chromium rasterizes the charts. */
-.visually-hidden {
-  display: inline-block;
-  width: 1px;
-  height: 1px;
-  margin-right: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /* Forced colours (Windows contrast themes) repaint backgrounds and borders in
    theme colours but leave the SVG series alone, so the legend chips and CI
    swatches went blank while the curves kept their colours, and the chevrons'
    transparent sides turned them into bars. Marks whose colour is data keep it. */
-.month-chip, .ci-fan-swatch, .errbar-key, .fault-bar, .pm-dot, .sec-head::before, th[aria-sort]::after {
+.month-chip, .ci-fan-swatch, .errbar-key, .fault-bar, .pm-dot, .sec-head::before, th[aria-sort] > button::after {
   forced-color-adjust: none;
 }
 /* The sort arrow is drawn in currentColor, so besides its transparent sides it
@@ -926,7 +1053,22 @@ circle[fill="none"][data-tip]:focus-visible { outline: none; stroke: var(--accen
    preserve-parent-color keeps the sides and passes that colour through.
    Firefox does not know the value, drops this line and keeps "none" above,
    under which it already passes the colour through. */
-th[aria-sort]::after { forced-color-adjust: preserve-parent-color; }
+th[aria-sort] > button::after { forced-color-adjust: preserve-parent-color; }
+/* What colour alone said, and the charts' inks, in a forced palette. The
+   theme repaints the filters and the cards' lines alike, so the pressed
+   incident filter takes the theme's Highlight and each card's line for the
+   selected metric an outline; and the browser leaves SVG strokes and fills in
+   the page's inks, so on a dark theme's black canvas the axes (#333) fell to
+   1.66:1 and the ticks and axis titles to 3.9:1 while the gridlines became the
+   brightest lines (until 2026-10-04, audit #27, #28). Series colours, which
+   are data, stay. */
+@media (forced-colors: active) {
+  .filters button.active { background: Highlight; color: HighlightText; }
+  .mpi-card-metric.highlighted { outline: 2px solid Highlight; }
+  .month-axis { stroke: CanvasText; }
+  .month-tick, .month-label { fill: CanvasText; }
+  .month-grid { stroke: GrayText; }
+}
 
 /* Floating tooltip (replaces SVG <title> for mobile support) */
 .chart-tip {

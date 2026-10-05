@@ -23,7 +23,7 @@
 //    (it ran on raw percentages, 4px past the thumb in one-month windows at
 //    either end of the series).
 import assert from "node:assert/strict";
-import { ENGINES, devices, serveRepo } from "./browser.mjs";
+import { ENGINES, devices, serveRepo, drawnAll } from "./browser.mjs";
 
 const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 // openPage in browser.mjs waits for incident rows, which a window with no
@@ -38,6 +38,7 @@ async function open(browser, url, contextOptions) {
   await page.waitForFunction(() => document.getElementById("date-range-fill") !== null &&
     document.querySelector(".pm-refresh") !== null &&
     document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true");
+  await page.waitForFunction(drawnAll);
   return page;
 }
 
@@ -200,17 +201,27 @@ try {
     // #64 -- dates on one line; whole dates do not grow the table.
     for (const width of [1200, 400]) {
       const page = await open(browser, server.url + DEF, { viewport: { width, height: 900 } });
+      // The incident box is laid out only near the screen (content-visibility,
+      // since 2026-10-05), and WebKit answers layout queries inside it with
+      // empty boxes while it is not: measured off screen, every date "fitted".
+      await page.evaluate(async () => {
+        document.querySelector(".table-scroll").scrollIntoView();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      });
       const r = await page.evaluate(() => {
         const cells = [...document.querySelectorAll("#incidents-body tr")].map(tr => tr.children[1]);
         const wraps = td => { const range = document.createRange(); range.selectNodeContents(td); return new Set([...range.getClientRects()].map(q => Math.round(q.top))).size > 1; };
         const table = document.querySelector("#incidents-body").closest("table");
         const wrapped = cells.filter(wraps).length;
+        // A date with no box was not measured (the check would pass empty).
+        const unmeasured = cells.filter(td => { const range = document.createRange(); range.selectNodeContents(td); return range.getClientRects().length === 0; }).length;
         const whole = table.getBoundingClientRect().height;
         // The same table with the dates free to break at their hyphen.
         for (const td of cells) td.style.whiteSpace = "normal";
         const breakable = table.getBoundingClientRect().height;
-        return { cells: cells.length, wrapped, whole, breakable };
+        return { cells: cells.length, wrapped, unmeasured, whole, breakable };
       });
+      if (r.unmeasured > 0) problems.push(`${engineName} ${width}px: ${r.unmeasured} of ${r.cells} incident dates have no box to measure`);
       if (r.wrapped > 0) problems.push(`${engineName} ${width}px: ${r.wrapped} of ${r.cells} incident dates break across lines`);
       if (r.whole > r.breakable * 1.005) problems.push(`${engineName} ${width}px: whole dates make the incident table ${((r.whole / r.breakable - 1) * 100).toFixed(1)}% taller (${Math.round(r.breakable)} -> ${Math.round(r.whole)}px)`);
       await closePage(page);

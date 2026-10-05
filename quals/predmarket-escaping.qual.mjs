@@ -42,8 +42,10 @@ const XSS_URL = `https://x.test/" onmouseover="alert(1)`;
 // A state label (since 2026-10-03, audit #21) can carry a Polymarket
 // outcome name, which is API text too.
 const XSS_STATE = `<img src=y onerror=alert(2)>`;
+// (The last argument is the link's focus key, a name the renderer takes
+// since 2026-10-04 so keyboard focus survives a refresh; audit #17.)
 const html = vm.runInContext(
-  `renderMarketCard(${JSON.stringify(XSS_Q)}, ${JSON.stringify(XSS_URL)}, 0.5, "$1M", ${JSON.stringify(XSS_STATE)}, false).innerHTML`,
+  `renderMarketCard(${JSON.stringify(XSS_Q)}, ${JSON.stringify(XSS_URL)}, 0.5, "$1M", ${JSON.stringify(XSS_STATE)}, false, "pm-qual").innerHTML`,
   ctx);
 
 // 1. Hostile title and state label must be escaped as text, not parsed as

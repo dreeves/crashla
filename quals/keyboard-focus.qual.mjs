@@ -11,6 +11,10 @@
 // headings were mouse-only (#30); the date sliders announced series indices
 // such as "47" (#33); the active incident filter was shown by colour alone
 // (#92); and the refresh button's accessible name was the glyph "↻" (#93).
+// The sortable headers were focusable <th> cells with no control role, so a
+// screen reader did not say that Enter sorts (audit 2026-10-04 #19): each
+// header's text is now a <button type="button"> in its th, which keeps
+// aria-sort, and a click anywhere in the th still sorts.
 import assert from "node:assert/strict";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 
@@ -25,6 +29,7 @@ const active = page => page.evaluate(() => {
     text: el.textContent.trim().slice(0, 60), role: el.getAttribute("role"),
     cls: el.getAttribute("class"),
     ariaSort: el.getAttribute("aria-sort"), ariaPressed: el.getAttribute("aria-pressed"),
+    type: el.getAttribute("type"), thSort: el.closest("th") === null ? null : el.closest("th").getAttribute("aria-sort"),
     ariaDisabled: el.getAttribute("aria-disabled"), ariaExpanded: el.getAttribute("aria-expanded"),
     ring: el.matches(":focus-visible"),
   };
@@ -80,19 +85,49 @@ Resultata: ${JSON.stringify(pressed)}.`);
 Expectata: focus moves on to 'Zoox (n)'.
 Resultata: focus is on ${JSON.stringify(a)}.`);
 
-  await page.locator("#incidents-head th", { hasText: "Speed (mph)" }).focus();
+  const headerCells = await page.$$eval("#incidents-head th", ths => ths.map(th => ({
+    text: th.textContent, tabIndex: th.tabIndex,
+    buttons: [...th.children].map(c => [c.tagName, c.getAttribute("type"), c.textContent]),
+  })));
+  const plainHeaders = headerCells.filter(h => h.tabIndex !== -1 || h.buttons.length !== 1 ||
+    h.buttons[0][0] !== "BUTTON" || h.buttons[0][1] !== "button" || h.buttons[0][2] !== h.text);
+  assert.ok(headerCells.length === 8 && plainHeaders.length === 0,
+    `[${engine}] Replicata: read the incident table's eight column headers (#19).
+Expectata: each th holds one <button type="button"> with the header's text, and the th itself is not a Tab stop.
+Resultata: ${JSON.stringify(plainHeaders.length > 0 ? plainHeaders : headerCells)}.`);
+  await page.locator("#incidents-head th button", { hasText: "Speed (mph)" }).focus();
   await page.keyboard.press("Enter");
   a = await active(page);
-  assert.ok(a.tag === "TH" && a.text === "Speed (mph)" && a.ariaSort === "ascending" && a.ring,
-    `[${engine}] Replicata: focus the 'Speed (mph)' column header and press Enter.
-Expectata: the table sorts ascending by speed and focus stays on that header, its ring showing.
+  assert.ok(a.tag === "BUTTON" && a.type === "button" && a.text === "Speed (mph)" && a.thSort === "ascending" && a.ring,
+    `[${engine}] Replicata: focus the 'Speed (mph)' column header's button and press Enter.
+Expectata: the table sorts ascending by speed (its th reads aria-sort="ascending") and focus stays on that button, its ring showing.
 Resultata: focus is on ${JSON.stringify(a)}.`);
   await page.keyboard.press("Enter");
   a = await active(page);
-  assert.ok(a.text === "Speed (mph)" && a.ariaSort === "descending",
+  assert.ok(a.text === "Speed (mph)" && a.thSort === "descending",
     `[${engine}] Replicata: sort by 'Speed (mph)' with Enter, then press Enter again.
-Expectata: the sort reverses (aria-sort descending) with focus still on the header.
+Expectata: the sort reverses (aria-sort descending) with focus still on the header's button.
 Resultata: focus is on ${JSON.stringify(a)}.`);
+  // Space sorts as Enter does (quals/sortable-headers.qual.mjs pressed it on
+  // the th until the header became a button, 2026-10-04; reviewer).
+  await page.keyboard.press("Space");
+  a = await active(page);
+  assert.ok(a.tag === "BUTTON" && a.text === "Speed (mph)" && a.thSort === "ascending" && a.ring,
+    `[${engine}] Replicata: sort by 'Speed (mph)' descending with Enter twice, then press Space.
+Expectata: the sort reverses again (aria-sort ascending) with focus still on the header's button, its ring showing.
+Resultata: focus is on ${JSON.stringify(a)}.`);
+  // A click in the header cell's padding, outside its button, sorts as a
+  // click on the text does.
+  const company = await page.$eval("#incidents-head th:first-child", th => {
+    const r = th.getBoundingClientRect(), b = th.querySelector("button").getBoundingClientRect();
+    return { x: r.left + 2, y: r.top + r.height / 2, outside: r.left + 2 < b.left };
+  });
+  await page.mouse.click(company.x, company.y);
+  const companySort = await page.$eval("#incidents-head th:first-child", th => th.getAttribute("aria-sort"));
+  assert.ok(company.outside && companySort === "ascending",
+    `[${engine}] Replicata: click the 'Company' header cell 2px inside its left edge, outside its button.
+Expectata: the table sorts by company (aria-sort ascending), as a click on the header's text does.
+Resultata: ${JSON.stringify({ ...company, companySort })}.`);
 
   await page.focus('#chart-fleet-timeseries input[value="fleet"]');
   await page.keyboard.press("ArrowRight");

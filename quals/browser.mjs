@@ -60,10 +60,20 @@ export async function openPage(browser, url, contextOptions = {}, offlineDelayMs
   page.errors = [];
   page.on("pageerror", err => page.errors.push(err.message));
   await page.goto(url, { waitUntil: "load" });
-  // The page draws everything synchronously at load; the market refresh then
+  // The page draws every view at load (drawnAll); the market refresh then
   // settles once its (refused) requests come back.
   await page.waitForFunction(() => document.querySelectorAll("#incidents-body tr").length > 0 &&
+    document.querySelector("#sanity-checks h3") !== null &&
+    document.querySelector("#chart-fleet-forecast svg") !== null &&
     document.querySelector(".pm-refresh") !== null &&
     document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true");
   return page;
 }
+
+// Whether the page has drawn the views below its charts (the incident
+// browser's heading names the window once it is built, also in a window with
+// no incidents): for quals that open pages themselves. The page builds them
+// at load; on 2026-10-05 it built them in tasks after its first frame.
+export const drawnAll = () => document.getElementById("incident-browser-heading").textContent.includes(" using data from ") &&
+  document.querySelector("#sanity-checks h3") !== null &&
+  document.querySelector("#chart-fleet-forecast svg") !== null;

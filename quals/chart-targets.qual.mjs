@@ -133,6 +133,18 @@ for (const { what, svg } of charts) {
   });
   if (badR.length > 0) fail(`${what}: ${badR.length} of ${hits.length} hit radii are not clamp(nearest/2, ${HIT_R_MIN}, ${HIT_R_MAX}) over the targets more than ${HIT_R_MIN} away, e.g. ${badR.slice(0, 2).join("; ")}`);
   if (stolen.length > 0) fail(`${what}: ${stolen.length} targets' centres land on another target, e.g. ${stolen.slice(0, 2).join("; ")}`);
+  // A hit circle is never inside a clip-path group: the clip cut the growth
+  // chart's Tesla 2025-06 Miles target flat at the x axis, its focus ring
+  // with it, and a pointer below the dot's centre missed it (audit
+  // 2026-10-04 #64). The visible marks stay clipped.
+  const clipped = [];
+  const stack = [];
+  for (const m of svg.matchAll(/<g\b([^>]*)>|<\/g>|<circle\b([^>]*)>/g)) {
+    if (m[0].startsWith("</g")) stack.pop();
+    else if (m[0].startsWith("<g")) stack.push(/clip-path=/.test(m[1]));
+    else if (/data-tip=/.test(m[2]) && stack.includes(true)) clipped.push(m.index);
+  }
+  if (clipped.length > 0) fail(`${what}: ${clipped.length} hit circles sit inside a clip-path group`);
 }
 
 // --- 2. VMT chart tooltips --------------------------------------------------
@@ -215,7 +227,7 @@ for (const [what, labels] of [["the MPI chart with no helmer checked", empty.mpi
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render the MPI, distribution, VMT and growth charts in vm (${charts.length} charts, ${targetsSeen} tooltip targets) and read their hit circles and tooltips; render the MPI chart with no helmer and Tesla's VMT chart before its series.
-Expectata: every target an invisible hit circle drawn after the glyphs, its radius clamp(nearest/2, ${HIT_R_MIN}, ${HIT_R_MAX}) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the partially received months' counts (the data-through month, and the months inside a helmer's Monthly-report lag) marked partial; empty charts labelled "0" only.
+Expectata: every target an invisible hit circle drawn after the glyphs and outside any clip-path group, its radius clamp(nearest/2, ${HIT_R_MIN}, ${HIT_R_MAX}) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the partially received months' counts (the data-through month, and the months inside a helmer's Monthly-report lag) marked partial; empty charts labelled "0" only.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 10).join("\n")}`);
 console.log(`qual pass: ${targetsSeen} chart tooltip targets are capped invisible hit circles over the glyphs; VMT tooltips give ranges, edges, running counts and the partial-month note; empty axes read "0"`);

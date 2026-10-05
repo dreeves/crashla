@@ -15,7 +15,7 @@
 // the column assert stays for a viewport at least CHART_MIN_W wide whose
 // column has no width.
 import assert from "node:assert/strict";
-import { ENGINES, serveRepo } from "./browser.mjs";
+import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
 
 // What a document drew.
 const SUMMARY = () => {
@@ -62,6 +62,8 @@ try {
           document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true", null, { timeout: 30000 }).catch(() => {});
         await page.evaluate(() => { const f = document.getElementById("f"); f.style.display = "block"; f.style.width = "900px"; });
         await frame.waitForFunction(() => typeof chartViewW === "number" && chartViewW > 500, null, { timeout: 10000 }).catch(() => {});
+        // The views below the charts (built at load).
+        await frame.waitForFunction(drawnAll, null, { timeout: 10000 }).catch(() => {});
         const shown = await frame.evaluate(SUMMARY);
         const toggles = await frame.evaluate(TOGGLES);
         if (!drewAll(shown) || !toggles || shown.chartViewW < 500) problems.push(`${engineName}, iframe ${what} at load then shown 900 px wide: ${JSON.stringify({ shown, toggles })}; want every chart, card, row, market and the sanity section drawn, the charts at the shown width, and the section toggles working`);
@@ -78,6 +80,7 @@ try {
         await page.goto(server.url, { waitUntil: "load" });
         await page.waitForFunction(() => document.querySelector(".pm-refresh") !== null &&
           document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true", null, { timeout: 30000 }).catch(() => {});
+        await page.waitForFunction(drawnAll, null, { timeout: 10000 }).catch(() => {});
         const narrow = await page.evaluate(SUMMARY);
         await page.setViewportSize({ width: 1200, height: 800 });
         await page.waitForFunction(() => typeof chartViewW === "number" && chartViewW === 900, null, { timeout: 10000 }).catch(() => {});

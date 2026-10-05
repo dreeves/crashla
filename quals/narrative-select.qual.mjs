@@ -23,6 +23,14 @@ try {
         ariaExpanded: td.querySelector(".narrative-toggle").getAttribute("aria-expanded"),
         selection: String(getSelection()).length,
       }));
+      // The incident box is laid out only near the screen (content-visibility,
+      // since 2026-10-05), and WebKit gives its rows empty boxes until it is,
+      // which Playwright reads as "not visible" and never scrolls to: the DOM
+      // scrolls the row in, and a frame lays it out.
+      await cell.evaluate(async td => {
+        td.scrollIntoView({ block: "center" });
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      });
       await cell.click();
       const opened = await state();
       // Drag across the expanded narrative's text, as a reader copying it.

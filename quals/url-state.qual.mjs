@@ -633,8 +633,8 @@ Resultata: ${JSON.stringify({hidden: p.banner.hidden, text: p.bannerText.textCon
 // #sec-... link lost its fragment, and Chromium and WebKit, which scroll to
 // the fragment the URL carries when the page finishes loading, stayed at the
 // top. With the fragment kept, all three engines land on the section on
-// their own (checked in the browser, 2026-10-03); the page adds no scrolling
-// of its own.
+// their own (checked in the browser, 2026-10-03; fragment-landing.qual since
+// 2026-10-05); the page adds no scrolling of its own.
 {
   const p = makeHarness();
   p.location.search = `?${D}`;

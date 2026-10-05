@@ -15,6 +15,12 @@
 // the "clicked elsewhere" dismissal never ran (audit #31, 2026-10-03). Since
 // then document.body carries the same no-op listener. The last check taps
 // through it in WebKit with the iPhone 14 descriptor.
+//
+// The plot tap must land on empty plot, away from every tooltip target. It was
+// the centre of the first CI band's box, which on simulated Oct-15 data lay on
+// the edge of a dot's hit circle, and WebKit's tap targeting delivered the tap
+// to the dot, re-pinning its tooltip (audit 2026-10-04 #59). The tap point is
+// now chosen on a CI band, at least TAP_CLEARANCE px from every target.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
@@ -75,18 +81,43 @@ const tapOn = async (selector, label, nth = 0) => {
   assert.ok(point !== null, `no tappable ${label} (${selector}, #${nth}) on the iPhone layout`);
   await page.touchscreen.tap(point.x, point.y);
 };
+// A point of the MPI chart's plot on a CI band (the topmost element there is
+// a band's <path>) and at least TAP_CLEARANCE px from every tooltip target's
+// box, with the chart brought to the middle of the screen. Taps it.
+const TAP_CLEARANCE = 20;
+const tapEmptyPlot = async () => {
+  const point = await page.evaluate(clearance => {
+    const svg = document.querySelector("#chart-mpi-all svg");
+    svg.scrollIntoView({ block: "center" });
+    const boxes = [...document.querySelectorAll("[data-tip]")].map(e => e.getBoundingClientRect()).filter(r => r.width > 0);
+    const gap = (x, y) => Math.min(...boxes.map(r => Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom))));
+    const s = svg.getBoundingClientRect();
+    let best = null;
+    for (let y = Math.max(s.top, 0) + 4; y < Math.min(s.bottom, innerHeight) - 4; y += 4) {
+      for (let x = s.left + 4; x < s.right - 4; x += 4) {
+        const hit = document.elementFromPoint(x, y);
+        if (hit === null || hit.tagName !== "path" || hit.parentNode !== svg) continue;
+        const g = gap(x, y);
+        if (g >= clearance && (best === null || g > best.g)) best = { x, y, g };
+      }
+    }
+    return best;
+  }, TAP_CLEARANCE);
+  assert.ok(point !== null, `no point of the MPI chart's CI bands lies ${TAP_CLEARANCE}px from every tooltip target on the iPhone layout`);
+  await page.touchscreen.tap(point.x, point.y);
+};
 const steps = [];
 const DOT = "#chart-mpi-all circle[data-tip]";
 // A different dot each time: a tap on a new target re-pins even if the last
 // tooltip was left stuck, so each step tests its own dismissal.
-for (const [i, [selector, label]] of [
-  ["#sanity-checks > p", "a paragraph in the sanity-check section"],
-  ["#incidents-body td:nth-child(3)", "a Location cell in the incident table"],
-  ["#chart-mpi-all svg > path", "the MPI chart's plot (a CI band)"],
+for (const [i, [label, tapElsewhere]] of [
+  ["a paragraph in the sanity-check section", () => tapOn("#sanity-checks > p", "a paragraph in the sanity-check section")],
+  ["a Location cell in the incident table", () => tapOn("#incidents-body td:nth-child(3)", "a Location cell in the incident table")],
+  ["the MPI chart's plot (a CI band)", tapEmptyPlot],
 ].entries()) {
   await tapOn(DOT, "MPI-chart dot", i);
   const pinned = await shown();
-  await tapOn(selector, label);
+  await tapElsewhere();
   steps.push({ label, pinned, afterTap: await shown() });
 }
 const stuck = steps.filter(s => !s.pinned || s.afterTap);

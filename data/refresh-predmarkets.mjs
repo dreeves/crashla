@@ -87,9 +87,11 @@ async function freshPolymarket(entry) {
   }
   // Every price is a number in [0, 1], one per outcome (until 2026-10-04 the
   // script wrote outcomePrices "[]" with exit 0, and the page's first paint
-  // then threw; audit #30).
+  // then threw; audit #30), read as the page's yesProbability reads it, with
+  // parseFloat: Number() reads "", " " and null as 0, so the first version of
+  // this check passed prices the page cannot read (reviewer, 2026-10-04).
   for (const m of markets) {
-    const prices = JSON.parse(m.outcomePrices).map(Number), outcomes = JSON.parse(m.outcomes);
+    const prices = JSON.parse(m.outcomePrices).map(parseFloat), outcomes = JSON.parse(m.outcomes);
     must(Array.isArray(outcomes) && prices.length === outcomes.length && prices.length > 0 &&
       prices.every(p => Number.isFinite(p) && p >= 0 && p <= 1),
       `polymarket ${entry.slug}: ${JSON.stringify(m.question)} has outcomePrices ${m.outcomePrices} for outcomes ${m.outcomes}, not one price in [0, 1] per outcome`);

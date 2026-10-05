@@ -165,6 +165,33 @@ Expectata: one header per multi-outcome market and none for single-outcome marke
 Resultata: ${panelStats.headerCards} headers, expected ${panelStats.expectedHeaders}.`,
 );
 
+// --- 3a. A disabled market is neither drawn nor fetched ---
+// (enabled: false, data/predmarkets.js's curation switch.) Since 2026-10-04
+// (audit #53) a refresh starts from the entries the panel drew, so
+// snapshotMarkets drops disabled entries and the panel asserts it never
+// receives one (it used to skip them itself), and the entries a refresh
+// starts from (predmarketsShown) are recorded only once drawn, so a render
+// that throws leaves the ones the panel still shows (reviewer, 2026-10-04).
+const disabled = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const off = MANIFOLD_SNAPSHOT[0].slug;
+  const curated = MANIFOLD_SNAPSHOT.map(m => m.slug === off ? {...m, enabled: false} : m);
+  renderPredmarketsPanel(snapshotMarkets(POLYMARKET_SNAPSHOT), snapshotMarkets(curated), PREDMARKET_SNAPSHOT_DATE);
+  const drawn = document.getElementById("predmarket-panel").children[0].children.map(c => c.innerHTML);
+  const shown = predmarketsShown.manifold.map(m => m.slug);
+  let threw = null;
+  try {
+    renderPredmarketsPanel(snapshotMarkets(POLYMARKET_SNAPSHOT), curated.map(m => ({...m, live: false})), PREDMARKET_SNAPSHOT_DATE);
+  } catch (err) { threw = err.message; }
+  return { off, drawnHasOff: drawn.some(h => h.includes(off)), shownHasOff: shown.includes(off),
+    shownKept: JSON.stringify(predmarketsShown.manifold.map(m => m.slug)) === JSON.stringify(shown), threw };
+})()
+`, ctx)));
+assert.ok(!disabled.drawnHasOff && !disabled.shownHasOff && disabled.shownKept && /disabled market entry/.test(String(disabled.threw)),
+  `Replicata: disable the Manifold market ${disabled.off} (enabled: false), paint the panel from snapshotMarkets, then hand renderPredmarketsPanel the disabled entry directly.
+Expectata: the disabled market has no card and is not among the entries a refresh would fetch (predmarketsShown); handed to the panel directly it fails loudly ("a disabled market entry reached the market panel") and predmarketsShown keeps the entries the panel still shows.
+Resultata: card drawn ${disabled.drawnHasOff}; in predmarketsShown ${disabled.shownHasOff}; predmarketsShown kept after the failed render ${disabled.shownKept}; direct hand-off threw ${JSON.stringify(disabled.threw)}.`);
+
 // --- 3b. The refresh button is named by its purpose, not its glyph (audit #93) ---
 
 const refresh = JSON.parse(JSON.stringify(vm.runInContext(`

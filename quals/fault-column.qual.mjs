@@ -90,7 +90,8 @@ activeSeries = { months: ["2025-06"] };
 buildBrowser();
 `, ctx);
 
-const headers = getNode("incidents-head").children[0].children.map(node => node.textContent);
+// A header's text sits in its th's button since 2026-10-04 (audit #19).
+const headers = getNode("incidents-head").children[0].children.map(th => th.children.map(c => c.textContent).join(""));
 assert.equal(
   headers.includes("Fault"),
   true,

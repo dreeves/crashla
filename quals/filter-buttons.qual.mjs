@@ -35,6 +35,11 @@ class ElementStub {
     for (const fn of this.listeners.click || []) fn();
   }
 
+  // Counts the page's focus() calls on this element.
+  focus() {
+    this.focusCalls = (this.focusCalls || 0) + 1;
+  }
+
   set innerHTML(v) {
     this._innerHTML = v;
     this.children = [];
@@ -93,7 +98,15 @@ buildBrowser();
 const expectedCount = vm.runInContext("ADS_HELMERS.length + 1", ctx);
 const filterRoot = getNode("filters");
 const before = filterRoot.children.length;
+const clicked = filterRoot.children[1];
 filterRoot.children[1].click();
+// The filter a click operates takes focus first: in WebKit, which gives a
+// clicked button none, focus on a narrative the filter then hid had no
+// replacement to go to (audit 2026-10-04 #17).
+assert.equal(clicked.focusCalls, 1,
+  `Replicata: click the Tesla filter button.
+Expectata: the button is given focus once, before the incident browser redraws.
+Resultata: focus() was called ${clicked.focusCalls ?? 0} times.`);
 const afterOneClick = getNode("filters").children.length;
 getNode("filters").children[2].click();
 const afterTwoClicks = getNode("filters").children.length;

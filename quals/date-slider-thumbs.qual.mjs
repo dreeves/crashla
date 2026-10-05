@@ -13,9 +13,12 @@
 //    on top, it moves left), at its first month the end thumb (it moves
 //    right). With the end thumb always on top, a window collapsed onto the
 //    last month could not be widened by pointer once the thumbs stopped
-//    crossing.
+//    crossing;
+//  - a drag that the clamp stops commits on release (the incident browser,
+//    the sanity section and the URL follow), which WebKit's change event
+//    alone did not do (reviewer, 2026-10-04).
 import assert from "node:assert/strict";
-import { ENGINES, serveRepo } from "./browser.mjs";
+import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
 
 const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 // browser.mjs's openPage waits for incident rows, which a window with none
@@ -30,6 +33,7 @@ async function open(browser, url) {
   await page.waitForFunction(() => document.getElementById("date-range-fill") !== null &&
     document.querySelector(".pm-refresh") !== null &&
     document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true");
+  await page.waitForFunction(drawnAll);
   return page;
 }
 const read = page => page.evaluate(() => ({
@@ -88,6 +92,37 @@ try {
         if (p.errors.length > 0) problems.push(`${engineName} d=${d}: page errors ${JSON.stringify(p.errors)}`);
         await p.context().close();
       }
+
+      // Pointer: a drag that ends where the clamp stopped the thumb commits
+      // (reviewer, 2026-10-04): WebKit measures its change event from the
+      // last value a script assigned, which is the clamp's, so such a release
+      // fired none, and the incident browser, the sanity section and the URL
+      // stayed on the old window while the slider and the charts showed the
+      // new one. On 2025-06..2026-03, the end thumb dragged 20 months left
+      // stops at 2025-06, the start thumb dragged 20 months right at 2026-03.
+      for (const [id, dMonths, want] of [["date-range-max", -20, "2025-06"], ["date-range-min", 20, "2026-03"]]) {
+        const p = await open(browser, server.url + DEF + "&d=2025-06.2026-03");
+        const at = await p.evaluate(id => {
+          const input = document.getElementById(id);
+          const box = input.getBoundingClientRect();
+          return { x: box.left + 9 + (box.width - 18) * Number(input.value) / Number(input.max),
+            y: box.top + box.height / 2, perMonth: (box.width - 18) / Number(input.max) };
+        }, id);
+        await p.mouse.move(at.x, at.y);
+        await p.mouse.down();
+        await p.mouse.move(at.x + dMonths * at.perMonth, at.y, { steps: 20 });
+        await p.mouse.up();
+        await p.waitForTimeout(300);
+        const after = await p.evaluate(() => ({
+          label: document.querySelector(".date-range-label").textContent,
+          heading: document.getElementById("incident-browser-heading").textContent,
+          d: (/[?&]d=([^&]*)/.exec(location.search) || [, "(none)"])[1],
+        }));
+        const wantAfter = { label: want, heading: `Incident browser using data from ${want} to ${want}`, d: `${want}.${want}` };
+        if (JSON.stringify(after) !== JSON.stringify(wantAfter)) problems.push(`${engineName}: on 2025-06..2026-03, ${id === "date-range-max" ? "the end thumb dragged 20 months left" : "the start thumb dragged 20 months right"} (stopped by the other) gives ${JSON.stringify(after)}; want ${JSON.stringify(wantAfter)} (the release commits the window)`);
+        if (p.errors.length > 0) problems.push(`${engineName} clamped drag ${id}: page errors ${JSON.stringify(p.errors)}`);
+        await p.context().close();
+      }
     } finally {
       await browser.close();
     }
@@ -98,8 +133,8 @@ try {
 
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, (a) on the default view press End on "Start month", then Home and ArrowRight on "End month"; (b) open d=<last month>.<last month> and drag the thumbs' spot 200 px left; (c) open d=2021-07.2021-07 and drag it 200 px right.
-Expectata: (a) a one-month window on the last month, both inputs announcing it ("Start month" and "End month" never swap roles); (b) the start thumb moves: the window widens leftward to end on the last month; (c) the end thumb moves: the window widens rightward from 2021-07.
+  `Replicata: in Chromium, Firefox and WebKit, (a) on the default view press End on "Start month", then Home and ArrowRight on "End month"; (b) open d=<last month>.<last month> and drag the thumbs' spot 200 px left; (c) open d=2021-07.2021-07 and drag it 200 px right; (d) open d=2025-06.2026-03 and drag the end thumb 20 months left, then (fresh page) the start thumb 20 months right, past the other.
+Expectata: (a) a one-month window on the last month, both inputs announcing it ("Start month" and "End month" never swap roles); (b) the start thumb moves: the window widens leftward to end on the last month; (c) the end thumb moves: the window widens rightward from 2021-07; (d) each moved thumb stops at the other and the release commits that one-month window: the slider label, the incident browser's heading and the URL's d= all name it.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
-console.log("qual pass: the date slider's thumbs cannot cross, and a window collapsed onto one month at either end opens again by pointer, in Chromium, Firefox and WebKit");
+console.log("qual pass: the date slider's thumbs cannot cross, a window collapsed onto one month at either end opens again by pointer, and a drag the clamp stops commits on release, in Chromium, Firefox and WebKit");

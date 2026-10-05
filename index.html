@@ -78,11 +78,12 @@
 </div>
 
 <div class="month-panel" id="month-panel">
-  <!-- Every section heading's text is a role="button" toggle in the Tab order
-       (Enter or Space collapses or opens the section); crashla.js
-       initCollapsibles wires it and keeps its aria-expanded current. -->
+  <!-- Every section heading's text span becomes a role="button" toggle in the
+       Tab order (Enter or Space collapses or opens the section) when
+       crashla.js initCollapsibles wires it and keeps its aria-expanded
+       current; without JavaScript the headings stay plain. -->
   <section class="collapsible" id="sec-controls">
-  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">What and when to compare</span></h2>
+  <h2 class="sec-head"><span class="sec-toggle">What and when to compare</span></h2>
   <div class="sec-body">
     <div class="month-legend" id="month-legend-mpi-helmers"></div>
     <div class="month-legend" id="month-legend-mpi-lines"></div>
@@ -91,7 +92,7 @@
   </section>
 
   <section class="collapsible" id="sec-vmt">
-  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Vehicle Miles Traveled</span></h2>
+  <h2 class="sec-head"><span class="sec-toggle">Vehicle Miles Traveled</span></h2>
   <div class="sec-body">
     <div class="month-legend" id="vmt-mode-toggle"></div>
     <div id="chart-helmer-series" class="month-helmer-grid"></div>
@@ -99,7 +100,7 @@
   </section>
 
   <section class="collapsible" id="sec-mpi">
-  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0" id="mpi-heading"></span></h2>
+  <h2 class="sec-head"><span class="sec-toggle" id="mpi-heading"></span></h2>
   <div class="sec-body">
     <div class="month-legend" id="month-legend-ci-fan"></div>
     <div id="chart-mpi-all" class="month-chart"></div>
@@ -107,7 +108,7 @@
   </section>
 
   <section class="collapsible" id="sec-dist">
-  <h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0" id="dist-heading"></span></h2>
+  <h2 class="sec-head"><span class="sec-toggle" id="dist-heading"></span></h2>
   <div class="sec-body">
     <div id="chart-distributions" class="month-chart"></div>
   </div>
@@ -115,7 +116,7 @@
 </div>
 
 <section class="collapsible" id="sec-browser">
-<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0" id="incident-browser-heading">Incident browser</span></h2>
+<h2 class="sec-head"><span class="sec-toggle" id="incident-browser-heading">Incident browser</span></h2>
 <div class="sec-body">
 <div class="filters" id="filters"></div>
 <div class="incident-count" id="incident-count"></div>
@@ -140,7 +141,7 @@
 </section>
 
 <section class="collapsible" id="sec-markets">
-<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Prediction Markets</span></h2>
+<h2 class="sec-head"><span class="sec-toggle">Prediction Markets</span></h2>
 <div class="sec-body">
 <div id="predmarket-panel" class="predmarket-panel">
   <p class="predmarket-loading">Loading&#x2026;</p>
@@ -149,21 +150,21 @@
 </section>
 
 <section class="collapsible" id="sec-summary">
-<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Sources and raw numbers</span></h2>
+<h2 class="sec-head"><span class="sec-toggle">Sources and raw numbers</span></h2>
 <div class="sec-body">
 <div id="mpi-summary-cards"></div>
 </div>
 </section>
 
 <section class="collapsible" id="sec-sanity">
-<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">Sources, sanity checks, and sensitivity analysis</span></h2>
+<h2 class="sec-head"><span class="sec-toggle">Sources, sanity checks, and sensitivity analysis</span></h2>
 <div class="sec-body">
 <div id="sanity-checks"></div>
 </div>
 </section>
 
 <section class="collapsible" id="sec-fleet">
-<h2 class="sec-head"><span class="sec-toggle" role="button" tabindex="0">AV company growth and forecast for Jan 1, 2027</span></h2>
+<h2 class="sec-head"><span class="sec-toggle">AV company growth and forecast for Jan 1, 2027</span></h2>
 <div class="sec-body">
 <div id="chart-fleet-timeseries" class="month-chart"></div>
 <div id="chart-fleet-forecast" class="month-chart"></div>

@@ -9,8 +9,32 @@
 // a tooltip could not be dismissed with Escape (#34), and the six charts had
 // no accessible name: screen readers announced their tick text and the
 // invisible "?" markers (#32).
+//
+// The second audit (2026-10-04) found the names short of what the page shows:
+// a mark on the MPI or distribution chart, which several companies share, did
+// not say whose it was (#15); the cards' "[?]" hints read as a literal "[?]"
+// glued to their derivation, and the 46 focusable HTML targets had role
+// generic and no name (#63); each fault cell held a second, visually hidden
+// copy of its tip, laid out on every rebuild of the 1,228-row table (#26);
+// and each narrative toggle was named by its whole narrative (median 948
+// characters, #62). Since then no target holds its tip as hidden text: an SVG
+// mark is named by its tip (on the shared charts, by its company's label, " · "
+// and its tip, as the growth chart's tips read), an HTML target is an image
+// named by what it shows and its tip, a fault cell is described by its row's
+// "Fault fraction:" line, and a narrative toggle has a short name and the
+// narrative as its description.
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
+
+// The narrative toggle's short name is new copy, so it is Latin with its TODO
+// recap directly above (AGENTS.md rule 7).
+const js = fs.readFileSync(new URL("../crashla.js", import.meta.url), "utf8");
+const nameAt = js.indexOf("function narrativeToggleName(");
+assert.ok(nameAt > 0 && /\/\/ TODO[^\n]*\n(?:\/\/[^\n]*\n)*$/.test(js.slice(0, nameAt)),
+  `Replicata: read crashla.js above function narrativeToggleName.
+Expectata: the narrative toggle's short name, a Latin string, has a comment block starting "// TODO" directly above it.
+Resultata: ${nameAt < 0 ? "no narrativeToggleName" : JSON.stringify(js.slice(Math.max(0, nameAt - 300), nameAt))}.`);
 
 const server = await serveRepo();
 const DEFAULT_QUERY = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
@@ -27,31 +51,101 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
   // --- #4: every tooltip target is reachable and readable -----------------
 
   const audit = await page.evaluate(() => {
-    const out = { targets: 0, notFocusable: [], svgUnnamed: [], htmlUnread: [], faultCells: 0 };
+    const out = { targets: 0, faultCells: 0, notFocusable: [], badSvg: [], badHtml: [], badFault: [], copies: [] };
+    // A company's label by its series colour.
+    const labelOf = {};
+    for (const h of ALL_HELMERS) labelOf[HELMER_COLORS[h].toLowerCase()] = helmerLabel(h);
+    // On the two charts several companies share, a mark's glyph (its colour)
+    // and its hit circle come in the same order.
+    const seriesLabel = new Map();
+    for (const host of ["#chart-mpi-all", "#chart-distributions"]) {
+      const svg = document.querySelector(host + " svg");
+      const glyphs = [...svg.querySelectorAll("circle.month-dot")];
+      const hits = [...svg.querySelectorAll("circle[data-tip]")];
+      hits.forEach((c, i) => {
+        const m = glyphs.length === hits.length ? /(?:fill|stroke):\s*(#[0-9a-f]{6})/i.exec(glyphs[i].getAttribute("style") || "") : null;
+        seriesLabel.set(c, m === null ? "<no glyph>" : (labelOf[m[1].toLowerCase()] || "<unknown colour " + m[1] + ">"));
+      });
+    }
+    // What an element shows, its decoration (aria-hidden) left out.
+    const shown = el => {
+      let s = "";
+      const walk = n => {
+        for (const c of n.childNodes) {
+          if (c.nodeType === 3) s += c.textContent;
+          else if (c.nodeType === 1 && c.getAttribute("aria-hidden") !== "true") walk(c);
+        }
+      };
+      walk(el);
+      return s.replace(/\s+/g, " ").trim();
+    };
     for (const el of document.querySelectorAll("[data-tip]")) {
       out.targets++;
       const text = el.getAttribute("data-tip");
+      const name = el.getAttribute("aria-label");
       const where = `${el.tagName}.${el.getAttribute("class")} ${text.slice(0, 40)}`;
       const isFaultCell = el.matches("td.fault-cell");
       out.faultCells += isFaultCell ? 1 : 0;
       if (!isFaultCell && el.tabIndex !== 0) out.notFocusable.push(where);
-      if (el instanceof SVGElement && el.getAttribute("aria-label") !== text) out.svgUnnamed.push(where);
-      if (!(el instanceof SVGElement)) {
-        const hidden = [...el.children].filter(c => c.matches(".visually-hidden")).map(c => c.textContent);
-        if (hidden.length !== 1 || hidden[0] !== text) out.htmlUnread.push(where);
+      // No target holds its tip as text of its own (a hidden second copy).
+      if (el.textContent.includes(text)) out.copies.push(where);
+      if (el instanceof SVGElement) {
+        const want = seriesLabel.has(el) ? `${seriesLabel.get(el)} · ${text}` : text;
+        if (name !== want) out.badSvg.push(`${where} named ${JSON.stringify(name)}, want ${JSON.stringify(want.slice(0, 60))}`);
+      } else if (isFaultCell) {
+        const ids = (el.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+        const described = ids.map(id => document.getElementById(id));
+        const rowFault = el.closest("tr").querySelector(".narrative-fault");
+        if (described.length !== 1 || described[0] !== rowFault || rowFault.textContent !== `${NARRATIVE_FAULT_LABEL} ${text}`) {
+          out.badFault.push(`${where} described by ${JSON.stringify(ids)}`);
+        }
+      } else {
+        const visible = shown(el);
+        const want = visible === "" ? text : `${visible} ${text}`;
+        if (el.getAttribute("role") !== "img" || name !== want) {
+          out.badHtml.push(`${where} role ${el.getAttribute("role")} named ${JSON.stringify(name && name.slice(0, 60))}, want ${JSON.stringify(want.slice(0, 60))}`);
+        }
       }
     }
     return out;
   });
-  assert.ok(audit.targets > 1000 && audit.faultCells > 1000 &&
-    audit.notFocusable.length === 0 && audit.svgUnnamed.length === 0 && audit.htmlUnread.length === 0,
+  assert.ok(audit.targets > 1000 && audit.faultCells > 1000 && audit.notFocusable.length === 0 &&
+    audit.badSvg.length === 0 && audit.badHtml.length === 0 && audit.badFault.length === 0 && audit.copies.length === 0,
     `[${engine}] Replicata: load the default view and inspect every [data-tip] tooltip target.
-Expectata: every target but the incident table's fault cells is a Tab stop; an SVG mark's aria-label is its tip;
-an HTML target carries its tip as visually hidden text.
+Expectata: every target but the incident table's fault cells is a Tab stop, and none holds its tip as text of its own;
+an SVG mark's aria-label is its tip, and on the MPI and distribution charts its company's label, " · " and its tip;
+an HTML target is role="img" named by what it shows (its aria-hidden decoration left out) and its tip;
+a fault cell's aria-describedby is its row's "${"Fault fraction:"}" line, which holds its tip.
 Resultata: ${audit.targets} targets (${audit.faultCells} fault cells); not focusable ${audit.notFocusable.length}
-(${JSON.stringify(audit.notFocusable.slice(0, 3))}); SVG unnamed ${audit.svgUnnamed.length}
-(${JSON.stringify(audit.svgUnnamed.slice(0, 3))}); HTML text not exposed ${audit.htmlUnread.length}
-(${JSON.stringify(audit.htmlUnread.slice(0, 3))}).`);
+(${JSON.stringify(audit.notFocusable.slice(0, 3))}); SVG misnamed ${audit.badSvg.length}
+(${JSON.stringify(audit.badSvg.slice(0, 3))}); HTML misnamed ${audit.badHtml.length}
+(${JSON.stringify(audit.badHtml.slice(0, 3))}); fault cells undescribed ${audit.badFault.length}
+(${JSON.stringify(audit.badFault.slice(0, 3))}); tip copied into the target's text ${audit.copies.length}
+(${JSON.stringify(audit.copies.slice(0, 3))}).`);
+
+  // Every narrative toggle has a short name of its own and the narrative as
+  // its description (#62).
+  const narr = await page.evaluate(() => {
+    const want = new Set(activeIncidents().map(r => narrativeToggleName(r.reportId)));
+    const names = [], bad = [];
+    for (const b of document.querySelectorAll("#incidents-body .narrative-cell [role=button]")) {
+      const name = b.getAttribute("aria-label");
+      names.push(name);
+      const ids = (b.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+      const described = ids.map(id => document.getElementById(id));
+      const ok = want.has(name) && described.length === 1 && described[0] !== null &&
+        b.contains(described[0]) && described[0].textContent === b.textContent && b.textContent.length > 0;
+      if (!ok) bad.push({ name, ids, text: b.textContent.slice(0, 40) });
+    }
+    return { toggles: names.length, unique: new Set(names).size, incidents: want.size,
+      longest: Math.max(...names.map(n => (n || "").length)), bad: bad.slice(0, 3), nBad: bad.length };
+  });
+  assert.ok(narr.toggles > 1000 && narr.toggles === narr.incidents && narr.unique === narr.toggles &&
+    narr.nBad === 0 && narr.longest <= 40,
+    `[${engine}] Replicata: read every incident narrative toggle's accessible name and description on the default view.
+Expectata: each is named by narrativeToggleName(its report id), at most 40 characters, one name per incident, and
+described (aria-describedby) by the narrative text inside it.
+Resultata: ${JSON.stringify(narr)}.`);
 
   // Tab from the Cumulative-VMT radio lands on the first VMT chart mark, and
   // its tooltip shows beside it; the next Tab moves the tooltip on.
@@ -187,6 +281,28 @@ Resultata: tooltip ${JSON.stringify(t)}.`);
 Expectata: the tooltip shows on focus and Escape dismisses it.
 Resultata: on focus ${JSON.stringify(t)}; after Escape ${JSON.stringify(afterEsc)}.`);
 
+  // --- 2026-10-04 #64: no chart clips a tooltip target -----------------------
+
+  // Tesla's first Miles point sits just above the growth chart's x axis; its
+  // 12-unit hit circle reaches below it. A point near the circle's bottom edge
+  // must still be on the circle (the plot's clip-path cut it off there).
+  const growthPage = await openPage(browser, server.url + DEFAULT_QUERY + "&g=miles", { viewport: { width: 1200, height: 900 } });
+  const low = await growthPage.evaluate(() => {
+    const c = [...document.querySelectorAll("#chart-fleet-timeseries circle[data-tip]")]
+      .find(e => e.getAttribute("data-tip").startsWith("Tesla · 2025-06\n"));
+    c.scrollIntoView({ block: "center" });
+    const r = c.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height * 0.9;
+    const hit = document.elementFromPoint(x, y);
+    return { found: true, hitIsTarget: hit === c, hit: hit === null ? null : hit.tagName, r: c.getAttribute("r"), cy: c.getAttribute("cy") };
+  });
+  assert.ok(low.hitIsTarget,
+    `[${engine}] Replicata: open the growth chart on Miles (g=miles) and probe the point 90% of the way down Tesla's 2025-06 hit circle.
+Expectata: the point is on that hit circle (the whole target counts, below the x axis too).
+Resultata: ${JSON.stringify(low)}.`);
+  assert.deepEqual(growthPage.errors, [], `[${engine}] uncaught page errors on g=miles: ${JSON.stringify(growthPage.errors)}`);
+  await growthPage.context().close();
+
   // --- #32: charts have names; their decorative text is hidden -------------
 
   const charts = await page.evaluate(() => [...document.querySelectorAll("svg.month-svg")].map(svg => {
@@ -224,12 +340,55 @@ Resultata: ${JSON.stringify(mpiName)}.`);
       `[chromium] Replicata: read the accessibility tree of the default view.
 Expectata: six named figures, every chart mark (graphics-symbol) named, and no node named "?".
 Resultata: figures ${JSON.stringify(figures)}; ${marks.length} marks, ${unnamedMarks} unnamed; ${questionMarks} nodes named "?".`);
+    // #63: the "[?]" glyph is decoration, and no Tab stop is a nameless
+    // generic: the card hints, Effective-VMT lines, prior-only multipliers and
+    // badges and the markets' status are images named by their text and tip.
+    const live = nodes.filter(n => !n.ignored);
+    const glyphs = live.filter(n => n.role && n.role.value === "StaticText" && n.name && n.name.value === "[?]").length;
+    const focusable = n => (n.properties || []).some(p => p.name === "focusable" && p.value && p.value.value === true);
+    const namelessStops = live.filter(n => focusable(n) && n.role && n.role.value === "generic" && (!n.name || n.name.value === ""))
+      .map(n => n.backendDOMNodeId);
+    const images = live.filter(n => focusable(n) && n.role && n.role.value === "image");
+    const unnamedImages = images.filter(n => !n.name || n.name.value === "").length;
+    assert.ok(glyphs === 0 && namelessStops.length === 0 && images.length >= 40 && unnamedImages === 0,
+      `[chromium] Replicata: read the accessibility tree of the default view.
+Expectata: no "[?]" text node (the glyph is aria-hidden), no focusable generic without a name, and the focusable
+HTML tooltip targets (40 and more) exposed as named images.
+Resultata: ${glyphs} "[?]" text nodes; ${namelessStops.length} nameless focusable generics; ${images.length} focusable images, ${unnamedImages} unnamed.`);
+    // #19: a sortable header is a button in its column header, named by the
+    // header's text.
+    // (The sanity tables' headers, plain text, share some of these names.)
+    const LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
+    const byId = new Map(nodes.map(n => [n.nodeId, n]));
+    const withButton = live.filter(h => {
+      if (!h.role || h.role.value !== "columnheader" || !h.name) return false;
+      const kids = (h.childIds || []).map(id => byId.get(id)).filter(k => k && !k.ignored);
+      return kids.length === 1 && kids[0].role.value === "button" && kids[0].name && kids[0].name.value === h.name.value;
+    }).map(h => h.name.value);
+    assert.deepEqual(withButton, LABELS,
+      `[chromium] Replicata: read the incident table's header row in the accessibility tree.
+Expectata: its eight column headers, each holding one button named by its text (the ARIA sortable-table pattern).
+Resultata: column headers holding such a button: ${JSON.stringify(withButton)}.`);
+    // #62 and #26: a narrative toggle is a button with a short name and the
+    // narrative as its description; a fault cell is described by its row's
+    // fault reasoning.
+    const wanted = new Set(await page.evaluate(() => activeIncidents().map(r => narrativeToggleName(r.reportId))));
+    const toggles = live.filter(n => n.role && n.role.value === "button" && n.name && wanted.has(n.name.value));
+    const undescribed = toggles.filter(n => !n.description || n.description.value.length < 20).length;
+    const faultLabel = await page.evaluate(() => NARRATIVE_FAULT_LABEL);
+    const faultCells = live.filter(n => n.description && n.description.value.startsWith(faultLabel + " ")).length;
+    assert.ok(toggles.length === wanted.size && toggles.length > 1000 && undescribed === 0 && faultCells === wanted.size,
+      `[chromium] Replicata: read the incident table's narrative toggles and fault cells in the accessibility tree.
+Expectata: one button per incident, named by its short name and described by its narrative; one fault cell per
+incident described by its "${faultLabel}" line.
+Resultata: ${toggles.length} of ${wanted.size} toggles found by name, ${undescribed} without a description;
+${faultCells} nodes described by a fault line.`);
   }
 
-  // The visually hidden tip text was first absolutely positioned, the usual
-  // recipe. Inside a scroll box that is not its containing block it escaped
-  // the box's clipping and widened a 400px phone page to 955px (Chromium,
-  // WebKit; found 2026-10-03), so .visually-hidden is an in-flow box.
+  // Visually hidden tip text, as first absolutely positioned (the usual
+  // recipe), escaped its scroll box's clipping and widened a 400px phone page
+  // to 955px (Chromium, WebKit; found 2026-10-03). Since 2026-10-04 no target
+  // holds hidden text; nothing on the page may widen it.
   const phone = await openPage(browser, server.url + DEFAULT_QUERY, { viewport: { width: 400, height: 860 } });
   const widths = await phone.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
   assert.equal(widths.scroll, widths.client,

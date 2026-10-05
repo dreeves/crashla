@@ -144,9 +144,12 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
       if (line.multText !== expectMultText(e.mult) + "x") problems.format.push(`${where}: ${JSON.stringify(line.multText)} for ${e.mult} (want ${JSON.stringify(expectMultText(e.mult) + "x")})`);
       if (e.k === 0) {
         // #16
+        // Since 2026-10-04 (audit #63) the multiplier is an image named by
+        // what it shows and the prior-only tip; it holds no hidden copy.
         if (line.multClass.trim() !== "prior-only" || !line.multAttrs.includes(`data-tip="${escAttr(PRIOR_ONLY_TIP)}"`) ||
-            !line.multAttrs.includes('tabindex="0"') || line.multHidden !== `<span class="visually-hidden">${escHtml(PRIOR_ONLY_TIP)}</span>`) {
-          problems.priorOnly.push(`${where} (k = 0): class ${JSON.stringify(line.multClass)}, attrs ${JSON.stringify(line.multAttrs.slice(0, 60))}`);
+            !line.multAttrs.includes('tabindex="0"') || !line.multAttrs.includes('role="img"') ||
+            !line.multAttrs.includes(`aria-label="${escAttr(`${line.multText} ${PRIOR_ONLY_TIP}`)}"`) || line.multHidden !== "") {
+          problems.priorOnly.push(`${where} (k = 0): class ${JSON.stringify(line.multClass)}, attrs ${JSON.stringify(line.multAttrs.slice(0, 90))}, hidden ${JSON.stringify(line.multHidden.slice(0, 40))}`);
         }
       } else {
         const want = shownMult(e.mult) >= 1 ? "safer" : "worse";
@@ -190,7 +193,7 @@ if (CARD_STRESS_LABEL !== CARD_STRESS_ENGLISH) problems.label.push(`crashla.js: 
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
   `Replicata: render the summary cards for the default window, full history, the last 3 months, the last month, 2025-06..2025-11, 2024-01..2025-12 and 2021-07..2025-05 (and the default window with the default, no and all helmers checked), and read each card's stress line, each metric line's incident count and multiplier, and each card's class.
-Expectata: (label) the stress line is headed CARD_STRESS_LABEL, which is the human's English "All incidents:" exactly (never "Overall:"), and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip and as visually hidden text, and is a Tab stop; (format) every multiplier reads two significant figures below 10 and a whole number from 10; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
+Expectata: (label) the stress line is headed CARD_STRESS_LABEL, which is the human's English "All incidents:" exactly (never "Overall:"), and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads two significant figures below 10 and a whole number from 10; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: summary cards over ${Object.keys(WINDOWS).length} windows name the All-incidents verdict, mark k = 0 multipliers prior-only, format multipliers to two significant figures below 10 and colour them by the value shown, show exact fault-mass counts, and gray unchecked helmers`);

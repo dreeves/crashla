@@ -385,15 +385,18 @@ const allOpen = () => {
 }
 
 // --- 4. The footer's dot and age carry a tooltip naming the snapshot date ---
+// Since 2026-10-04 (audit #63) the status is an image named by the age it
+// shows and its tip, kept current as the age ticks, not a nameless generic
+// holding the tip as visually hidden text.
 {
   const status = after.footer && after.footer.children.find(c => c.classes.has("pm-status"));
   const tip = status && status.getAttribute("data-tip");
   const kids = status ? status.children.map(c => c.className) : [];
   const has = cls => status.children.some(c => c.classes.has(cls));
-  const hidden = status ? status.children.filter(c => c.classes.has("visually-hidden")) : [];
-  if (!status || !tip || status.getAttribute("tabindex") !== "0" || !has("pm-dot") || !has("pm-age")
-    || hidden.length !== 1 || hidden[0].textContent !== tip || !tip.includes(snap.d.slice(0, 10)))
-    problems.push(`the footer's status: ${JSON.stringify({ found: Boolean(status), tip, tabindex: status && status.getAttribute("tabindex"), kids, hidden: hidden.map(h => h.textContent) })}; want a Tab stop (tabindex 0) holding the dot and the age, whose data-tip names the snapshot date ${snap.d.slice(0, 10)} and is also its one visually hidden child`);
+  const age = status ? (status.children.find(c => c.classes.has("pm-age")) || { textContent: null }).textContent : null;
+  if (!status || !tip || status.getAttribute("tabindex") !== "0" || !has("pm-dot") || !has("pm-age") || kids.length !== 2
+    || status.getAttribute("role") !== "img" || status.getAttribute("aria-label") !== `${age} ${tip}` || !tip.includes(snap.d.slice(0, 10)))
+    problems.push(`the footer's status: ${JSON.stringify({ found: Boolean(status), tip, tabindex: status && status.getAttribute("tabindex"), kids, role: status && status.getAttribute("role"), name: status && status.getAttribute("aria-label"), age })}; want a Tab stop (tabindex 0) holding only the dot and the age, role "img", named by the age and its data-tip, which names the snapshot date ${snap.d.slice(0, 10)}`);
 }
 
 // --- 5. The fetchers' output has the snapshot's shape -----------------------
@@ -415,8 +418,8 @@ const allOpen = () => {
 // were agent Latin, "decisa:", "clausa", "irrita" and a four-sentence tip,
 // and this block checked for the TODO recap above each). Section 3 checks the
 // cards' state labels against these labels; this section checks the footer's
-// tooltip as rendered after the refresh (section 4 ties its visually hidden
-// copy to it). The tip ends in a space, as the human wrote it.
+// tooltip as rendered after the refresh (section 4 ties the status's
+// accessible name to it). The tip ends in a space, as the human wrote it.
 {
   const LABELS = { resolved: "resolved:", closed: "closed", cancelled: "canceled" };
   if (JSON.stringify(L) !== JSON.stringify(LABELS)) problems.push(`crashla.js: the state labels are ${JSON.stringify(L)}; want the human's English ${JSON.stringify(LABELS)}`);
@@ -512,9 +515,13 @@ globalThis.fetch = async url => ({ ok: true, status: 200, json: async () =>
   // ...and odds that are not prices (audit 2026-10-04 #30): until then the
   // script wrote outcomePrices "[]" and a missing probability with exit 0,
   // and the page's first paint then threw ("Loading..." for good) or drew
-  // "NaN%".
+  // "NaN%". A price must be one the page's yesProbability (parseFloat) reads:
+  // Number() reads "", " " and null as 0, so until the reviewer's fix of
+  // 2026-10-04 the script wrote such a price and the first paint threw.
   for (const [what, spoil, pattern] of [
     ["a Polymarket sub-market's outcomePrices \"[]\"", fx => { for (const mk of fx.polymarket[0].markets) Object.assign(mk, { umaResolutionStatus: null, outcomes: "[\"Yes\", \"No\"]", outcomePrices: "[]" }); }, /price/],
+    ["a Polymarket sub-market's Yes price \"\"", fx => { for (const mk of fx.polymarket[0].markets) Object.assign(mk, { umaResolutionStatus: null, outcomes: "[\"Yes\", \"No\"]", outcomePrices: "[\"\", \"1\"]" }); }, /price/],
+    ["a Polymarket sub-market's Yes price null", fx => { for (const mk of fx.polymarket[0].markets) Object.assign(mk, { umaResolutionStatus: null, outcomes: "[\"Yes\", \"No\"]", outcomePrices: "[null, \"1\"]" }); }, /price/],
     ["a binary Manifold market with no probability", fx => { delete fx.manifold[binaries[1].slug].probability; }, /probability/],
     ["a Manifold answer with no probability", fx => { delete fx.manifold[MULTI_M.slug].answers[1].probability; }, /probability/],
   ]) {
