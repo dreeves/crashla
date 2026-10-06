@@ -14,6 +14,12 @@
 // draws them at CHART_MIN_W, and the resize that gives it width redraws them;
 // the column assert stays for a viewport at least CHART_MIN_W wide whose
 // column has no width.
+// It also draws in a Firefox with Navigation Timing turned off
+// (dom.enable_performance_navigation_timing false), which lists no navigation
+// entry: on 2026-10-05 init read that entry, to tell a reload or a return
+// through the history from a fresh load, and asserted that it existed, so
+// there it drew nothing (until later that day, when init went back to building
+// every view at load on every load; load-order.qual).
 import assert from "node:assert/strict";
 import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
 
@@ -111,13 +117,36 @@ try {
       await browser.close();
     }
   }
+  // 4. Firefox with Navigation Timing off: no navigation entry.
+  {
+    const browser = await ENGINES.firefox.launch({ firefoxUserPrefs: { "dom.enable_performance_navigation_timing": false } });
+    try {
+      const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+      await context.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
+      const page = await context.newPage();
+      const errors = [];
+      page.on("pageerror", err => errors.push(err.message));
+      await page.goto(server.url, { waitUntil: "load" });
+      await page.waitForFunction(() => document.querySelector(".pm-refresh") !== null &&
+        document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true", null, { timeout: 30000 }).catch(() => {});
+      await page.waitForFunction(drawnAll, null, { timeout: 10000 }).catch(() => {});
+      const entries = await page.evaluate(() => performance.getEntriesByType("navigation").length);
+      const drawn = await page.evaluate(SUMMARY);
+      if (entries !== 0) problems.push(`firefox with dom.enable_performance_navigation_timing false lists ${entries} navigation entries, so this case tests nothing`);
+      if (!drewAll(drawn)) problems.push(`firefox with Navigation Timing off: ${JSON.stringify(drawn)}; want every chart, card, row, market and the sanity section drawn`);
+      if (errors.length > 0) problems.push(`firefox with Navigation Timing off: page errors ${JSON.stringify(errors)}`);
+      await context.close();
+    } finally {
+      await browser.close();
+    }
+  }
 } finally {
   await server.close();
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, load the page in an iframe styled display:none (then width:0), show it 900 px wide; load it in a 130 CSS px window, then widen it to 1200; and load it at 1200 px with style.css forcing #month-panel to zero width.
-Expectata: no page error; every chart, summary card, incident row, market card and the sanity section drawn; the charts at the shown width (900 units once the column allows); the section toggles working. And a 1200 px page whose stylesheet collapses the charts' column still fails loudly ("the charts' column has no width").
+  `Replicata: in Chromium, Firefox and WebKit, load the page in an iframe styled display:none (then width:0), show it 900 px wide; load it in a 130 CSS px window, then widen it to 1200; and load it at 1200 px with style.css forcing #month-panel to zero width. Then load it at 1200 px in a Firefox launched with dom.enable_performance_navigation_timing false.
+Expectata: no page error; every chart, summary card, incident row, market card and the sanity section drawn; the charts at the shown width (900 units once the column allows); the section toggles working. And a 1200 px page whose stylesheet collapses the charts' column still fails loudly ("the charts' column has no width"). The Firefox without Navigation Timing (no navigation entry) draws everything too, with no page error.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
-console.log("qual pass: the page draws in a hidden or zero-width iframe and in a 130 px window, and redraws its charts once it has width, in Chromium, Firefox and WebKit");
+console.log("qual pass: the page draws in a hidden or zero-width iframe and in a 130 px window, and redraws its charts once it has width, in Chromium, Firefox and WebKit, and draws in a Firefox that lists no navigation entry");

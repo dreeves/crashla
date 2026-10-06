@@ -6345,21 +6345,21 @@ function loadPredmarketData() {
     });
   });
   chartViewW = chartColumnWidth();
-  // Every view is built in this task, on every load: the browser puts the
-  // reader in place while the page loads (Firefox once the bare page is laid
-  // out and again before DOMContentLoaded, WebKit at the load event) on a
-  // #sec-... fragment's section, a text fragment's (#:~:text=) words, or, on
-  // a reload or a return through the history, where the reader was, so the
-  // page has to be whole by then (load-order.qual, fragment-landing.qual,
-  // scroll-restore.qual). On 2026-10-05 init built the incident browser, the
-  // sanity section and the growth charts in tasks after the first frame
-  // (audit #25), which painted the first chart ~0.07 s sooner on a desktop
-  // and ~0.2 s sooner at 4x CPU throttling; in Firefox and WebKit the page
-  // then grew under the browser's scroll and the reader landed up to ~29,000
-  // px off, and no script there can see a text fragment to build that load
-  // at once. Until 2026-10-05 the views took ~0.3 s on a desktop and ~1.3 s at
-  // 4x (audit #25; the slider's commits since share their summary rows and
-  // stop the fault-flip search at printed precision, audit #23).
+  // Every view is built in this task, on every load, so the page is whole
+  // when the browser puts the reader in place, which Firefox and WebKit do
+  // while the page loads and not after it: at a #sec-... fragment's section,
+  // at a text fragment's (#:~:text=) words, or, on a reload or a return
+  // through the history, where the reader was (load-order.qual,
+  // fragment-landing.qual, scroll-restore.qual). On 2026-10-05 init built the
+  // incident browser, the sanity section and the growth charts, about a third
+  // of its work, in tasks after the first frame (audit #25), which painted
+  // the first chart that much sooner; but in Firefox and WebKit the page then
+  // grew under the browser's scroll and the reader landed up to ~29,000 px
+  // off, and no script there can see a text fragment to build such a load at
+  // once. Until 2026-10-05 this task took ~0.3 s on a desktop and ~1.3 s at
+  // 4x CPU throttling (audit #25); it is ~15-20% shorter since the views
+  // compute their summary rows once and stop the fault-flip search at printed
+  // precision (audit #23).
   buildMonthlyViews();
   byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
   byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();

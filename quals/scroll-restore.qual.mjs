@@ -17,10 +17,12 @@
 //    its 80vh cap, which comes back exactly; a short table's box, drawn at
 //    its own height while the reader scrolled past it, comes back undrawn at
 //    80vh, so a section below it is allowed to come back off by the room its
-//    rows leave in the box (80vh minus its drawn height: 546 px at 1200x900
-//    for two rows, in WebKit; 475 px on a Pixel 7), and not otherwise
+//    rows leave in the box (80vh minus its drawn height; for two rows 546 px
+//    in WebKit at 1200x900, 475 px on a Pixel 7, 336 px on an iPhone 14, and
+//    none in Chromium at 1200x900 or in Firefox), and not otherwise
 //    (accepted by the human on 2026-10-05, over laying a short table's box
 //    out always, which made some filter clicks slower; load-order.qual).
+//    That offset is allowed, not required.
 // A fresh load starts at the top (or at its fragment: fragment-landing.qual)
 // and is not checked here. The reload is the page's own location.reload()
 // and the return history.back() from another page of the site: Playwright's

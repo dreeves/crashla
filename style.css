@@ -313,15 +313,16 @@ td.num.pair > span { white-space: nowrap; }
    rows) before it has been drawn; it scrolls its own rows, so nothing it
    holds draws outside it. Until its table is first built it holds that 80vh
    on screen too (the reservations under @media (scripting: enabled)).
-   So a box its rows do not fill (fewer than about twenty) is 80vh until it is
-   first drawn, which a reader is allowed to see: after a reload or a return
-   through the history a place below it can come back off by the room its
-   rows leave (up to ~550px at 1200x900, in WebKit and on a Pixel 7;
-   scroll-restore.qual), and what is below it moves up by as much as the box
-   first comes on screen. Laying such a box out always (2026-10-05) switched
-   the layout skipping on and off under a filter click, which made the click
-   from 23 rows to all 1,228 ~70% slower in Firefox and ~20% in Chromium and
-   WebKit. */
+   A box its rows do not fill (fewer than about twenty) is therefore 80vh
+   until it is first drawn and shorter after, so what is below it moves up by
+   the difference when it is first drawn, and a reload or a return through
+   the history can put a place below it that much off: 546px in WebKit at
+   1200x900, 475px on a Pixel 7 and 336px on an iPhone 14 for a two-row
+   table (accepted by the human on 2026-10-05; scroll-restore.qual). Laying
+   such a box out always instead (on 2026-10-05) switched the layout skipping
+   on under a filter click to more rows, which made the click from Tesla's 23
+   rows to all 1,228 ~70% slower in Firefox and ~20-25% in Chromium and
+   WebKit (load-order.qual). */
 .table-scroll {
   overflow: auto;
   max-height: 80vh;
