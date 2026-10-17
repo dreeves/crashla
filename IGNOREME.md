@@ -133,7 +133,7 @@ For the data-through month (reports received through the 15th of the prior month
    Two CSVs — a "current" one and an "archive" for 2021–2025 — are fetched and merged by `data/slurp.py`.
    Archival raw fetch snapshots live under `data/snapshots/`.
    The archive is needed because some June incidents were filed late and ended up in the archive rather than the current CSV.
-   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to the operator modes whose miles are in each company's denominator (Driver/Operator Type = "None" or "Remote (Commercial / Test)" for all three, plus "In-Vehicle (Commercial / Test)" for Tesla; a few "Other, see Narrative" reports classified from their narratives) and dropping the three Tesla crashes in which a remote human was driving, we get 2,136 incidents as of the 2026-09-15 release: 2,066 Waymo, 23 Tesla, 47 Zoox. These counts grow with each slurp run.
+   After deduplication (keeping highest Report Version per Same Incident ID) and filtering to the operator modes whose miles are in each company's denominator (Driver/Operator Type = "None" or "Remote (Commercial / Test)" for all three, plus "In-Vehicle (Commercial / Test)" for Tesla; a few "Other, see Narrative" reports classified from their narratives) and dropping the five Tesla crashes in which a remote human was driving, we get 2,214 incidents as of the 2026-10-15 release: 2,129 Waymo, 31 Tesla, 54 Zoox. These counts grow with each slurp run.
 
 2. **Vehicle Miles Traveled (VMT)** (the denominator).
    Maintained in `data/vmt.csv` (the in-repo master) and embedded in `data/vmt.js` by `data/slurp.py`.

@@ -1,14 +1,18 @@
 // Teleoperator-driven crashes are out of every metric (2026-09-26, human
 // decision: "the whole point is to assess the safety of the self-driving
 // software"). A crash counts only when the ADS was driving — the same line
-// that keeps Waymo/Zoox safety-driver crashes out. Three Tesla reports say a
+// that keeps Waymo/Zoox safety-driver crashes out. Five Tesla reports say a
 // remote human had taken over and was driving at impact:
 //   13781-11459 (JUL-2025 Austin, coded None): teleoperator drove up a curb
 //     into a fence;
 //   13781-14043 (JAN-2026 Austin, coded None): teleoperator drove into a
 //     construction barricade at ~9 mph;
 //   13781-15395 (MAY-2026 Houston, coded Remote): remote assistance operator
-//     recovering the car hit a hidden tree stump.
+//     recovering the car hit a hidden tree stump;
+//   13781-16678 (AUG-2026 Dallas, coded Remote): remote support operator took
+//     control and touched a parked SUV at ~0.4 mph;
+//   13781-16679 (AUG-2026 Austin, coded Remote): remote support operator, in
+//     control, touched a dumpster in an alley at ~1 mph.
 // Their miles stay in Tesla's denominator (Tesla does not split them out), but
 // they are walking-pace recoveries, so dropping the crash while keeping those
 // miles is nearly exact. The NHTSA operator code cannot find these (two are
@@ -20,7 +24,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { spawnSync } from "node:child_process";
 
-const TELEOP = ["13781-11459", "13781-14043", "13781-15395"];
+const TELEOP = ["13781-11459", "13781-14043", "13781-15395", "13781-16678", "13781-16679"];
 
 const py = String.raw`
 import csv, glob, importlib.util, json
@@ -61,6 +65,9 @@ out['branches'] = {w: trips(dict(base, Narrative=w)) for w in [
     'the vehicle was remotely driven onto the shoulder',
     'the safety monitor took over control of the vehicle',
     'A remote assistance advisor attempted to re-engage the AV and shifted the AV out of park',
+    'The remote support operator was in control of the vehicle',
+    'The operator remotely took control and moved forward',
+    'The teleoperator steered the vehicle onto the curb',
     'A remote operator  steered the vehicle',
     'A remote driver moved the vehicle',
 ]}
@@ -118,7 +125,7 @@ Expectata: each one classified as teleoperator-driven or ADS-driven.
 Resultata: unclassified ${JSON.stringify(S.remoteUnclassified)}.`);
 const failedBranches = Object.entries(S.branches).filter(([, tripped]) => !tripped).map(([w]) => w);
 assert.deepEqual(failedBranches, [],
-  `Replicata: call check_teleop_classified on one unlisted in-scope report per wording family (teleoperator, remote assistance operator/advisor, supported remotely, remotely driven, took over control, remote operator with odd spacing, remote driver).
+  `Replicata: call check_teleop_classified on one unlisted in-scope report per wording family (teleoperator, remote assistance operator/advisor, supported remotely, remotely driven, took over control, remote support operator, remotely took control, remote operator with odd spacing, remote driver).
 Expectata: every one stops the run.
 Resultata: passed silently: ${JSON.stringify(failedBranches)}.`);
 assert.ok(S.tripsOnUnlistedRemoteCode,
@@ -143,7 +150,7 @@ vm.runInContext(fs.readFileSync(new URL("../data/incidents.js", import.meta.url)
 const ids = new Set(vm.runInContext("INCIDENT_DATA", ctx).map(r => r.reportId));
 const present = TELEOP.filter(rid => ids.has(rid));
 assert.deepEqual(present, [],
-  `Replicata: look up the three teleoperator-driven Tesla crashes in data/incidents.js.
+  `Replicata: look up the five teleoperator-driven Tesla crashes in data/incidents.js.
 Expectata: none present — a remote human, not the ADS, was driving.
 Resultata: present ${JSON.stringify(present)}.`);
 

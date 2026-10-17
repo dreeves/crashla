@@ -42,27 +42,29 @@ from the company's notice, plus processing). `FIVE_DAY_RECEIPT_COVERAGE` =
 (best, lo, hi) is that fraction, measured from `data/snapshots` history as
 the share of a month's eventual five-day-track incidents present in the first
 release containing that month (`FIVE_DAY_RECEIPT_OBSERVATIONS`: Feb 0.50,
-Mar 0.35, May 0.28, Jun 0.28, Jul 0.21 of 2026; currently (0.28, 0.20, 0.52),
-best = the median). April 2026 is excluded because its first release, May 15,
+Mar 0.35, May 0.28, Jun 0.28, Jul 0.21, Aug 0.21 of 2026; currently (0.28,
+0.20, 0.52), best = the median). April 2026 is excluded because its first release, May 15,
 was truncated. A month's denominator is final at its second normal release,
 so one observation is added per release, one release in arrears.
 
 Monthly-track (SGO Request No. 2) reports for a month are due by the 15th of
 the next, so they normally reach the file at the month's second release, and
 the app treats the month as complete from then on. Some companies' arrive
-later: every in-scope Zoox Monthly-track report of 2026 so far arrived one
-release after that, so in the Sep 15, 2026 file Zoox's July held only its one
-5-Day report. `MONTHLY_ARRIVAL_LAG` in `slurp.py` is each company's extra lag in
-releases (Waymo 0, Tesla 0, Zoox 1), next to the observations it is measured
-from (`MONTHLY_ARRIVAL_OBSERVATIONS`: per company and incident month, the
+later: every in-scope Zoox Monthly-track report of January-July 2026 arrived
+one release after that, so in the Sep 15, 2026 file Zoox's July held only its
+one 5-Day report. `MONTHLY_ARRIVAL_LAG` in `slurp.py` is each company's extra
+lag in releases (all 0 since the Oct 15, 2026 file, which held every
+company's August reports, Zoox's included; Zoox's was 1 before), next to the
+observations it is measured from (`MONTHLY_ARRIVAL_OBSERVATIONS`: per company and incident month, the
 in-scope Monthly-track incidents by the release at which they first
 appeared). The months inside a company's lag get Monthly-track incident
 coverage = its in-scope 5-Day share instead of 1
-(`FIVE_DAY_SHARE_OBSERVATIONS`; Zoox Jan-Jun 2026: 17 of 27 = 0.63, band
-from the lowest month, February's 0.25, to 1.0); five-day-track metrics are
-unaffected. The run stops if a lagged company's lagged month already holds a
-Monthly-track report, if a table disagrees with the newest file, or if a
-month that has become measurable has no observation.
+(`FIVE_DAY_SHARE_OBSERVATIONS`; while Zoox was lagged, Jan-Jun 2026: 17 of 27
+= 0.63, band from the lowest month, February's 0.25, to 1.0); five-day-track
+metrics are unaffected. The run stops if a lagged company's lagged month
+already holds a Monthly-track report (checked before the share tables, since
+it means the lag itself is wrong), if a table disagrees with the newest file,
+or if a month that has become measurable has no observation.
 `quals/monthly-arrival-lag.qual.mjs` re-measures the tables from
 `data/snapshots` (its embedded script is the measurement recipe).
 
@@ -130,9 +132,9 @@ The slurp pipeline is:
    of their median, lo at or below the lowest observed fraction and hi at or
    above the highest. When the new observation falls outside the band, lower
    lo (or raise hi) to cover it, as the 2026-07 observation (12 of 58, 0.21)
-   lowered lo from 0.25 to 0.20; a new low is likely, since August 2026's
-   numerator is 10 and every final 2026 denominator but February's has been
-   57-72.
+   lowered lo from 0.25 to 0.20 (August 2026's, 10 of 48, stayed inside);
+   `quals/receipt-observations.qual.mjs` recounts every row from the
+   snapshots, an incident's track being its first filing's Report Type.
 3. The Monthly-report arrival table, re-measured alongside the receipt
    observations: each company's `MONTHLY_ARRIVAL_OBSERVATIONS` row for the
    month whose third release this is (data-through month - 2); a check that
@@ -140,8 +142,13 @@ The slurp pipeline is:
    and each lagged company's `FIVE_DAY_SHARE_OBSERVATIONS` row for the month
    that just became final for it (data-through month - 1 - lag). If a lagged
    company's Monthly reports start arriving on time, the run stops on its
-   lagged month: record that month's on-time count as its observation and
-   set the lag.
+   lagged month: record that month's on-time count as its observation (for
+   every company, since the rows cover the same months) and set the lag. On
+   the Oct 15, 2026 release Tesla's July tie (one report on time, one late)
+   read as a lag of 1, but its and Zoox's August reports had all arrived, so
+   2026-08 entered early and every lag went to 0. A row entered early holds
+   on-time counts only: re-measure it, late column included, at the month's
+   third release (for 2026-08, the Nov 2026 release).
 
 These are the constants every release needs. The run also stops on what a
 release brings: an incident month newer than the newest month in
@@ -155,7 +162,7 @@ Then re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
 comments say, and, when a new in-scope Tesla report has a passenger aboard
 (its `PASSENGER_OVERRIDE` entry stores one), add it to the list of Tesla
 reports with a rider that `quals/passenger-classification.qual.mjs` pins
-exactly (8 of 23 as of the Sep 15, 2026 file); the qual goes red on any new
+exactly (9 of 31 as of the Oct 15, 2026 file); the qual goes red on any new
 one until then.
 
 ## VMT master

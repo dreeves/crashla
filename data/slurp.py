@@ -44,13 +44,17 @@ NHTSA_ADS_ARCHIVE_URL = (
 # NHTSA's canonical SGO page labels each release "through <date>": reports
 # RECEIVED through that date, which is the 15th of the month before the
 # release rolled forward to the next business day when the 15th falls on a
-# weekend or federal holiday (NHTSA's data-dictionary change log: "9/15/2026
-# Data release of reports received through August 17, 2026"; likewise Nov 17
+# weekend or federal holiday (NHTSA's data-dictionary change log, Table 1 of
+# https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/SGO-2021-01_Data_Element_Definitions.pdf,
+# republished with each release and fetchable by script: "10/15/2026 Data
+# release of reports received through September 15, 2026"; "9/15/2026 Data
+# release of reports received through August 17, 2026"; likewise Nov 17
 # 2025, Feb 17 and Mar 16 2026; quals/nhtsa-cutoff-date pins the rule)
 # (verified from data/snapshots history:
 # each release's newest incident month holds almost only five-day-track
-# filings and grows ~6x in the next release; the second-newest month never
-# grows again).
+# filings and grows ~6x in the next release; the second-newest month's
+# five-day-track count never grows again, though a Monthly report can still
+# arrive a release late: MONTHLY_ARRIVAL_LAG).
 # https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting
 # That page 403s scripted fetches, so the reviewed cutoff is recorded here —
 # one edit per release — and guarded by content asserts in main(): the cutoff
@@ -59,7 +63,7 @@ NHTSA_ADS_ARCHIVE_URL = (
 # Date, so a stale cutoff trips there). Monthly filings submitted within the
 # incident month itself are rare but real (Tesla files early; the Feb-2026
 # release held four JAN-2026 ones) and are consistent with the cutoff.
-NHTSA_DATA_THROUGH_DATE = "2026-08-17"
+NHTSA_DATA_THROUGH_DATE = "2026-09-15"
 # Receipt coverage of the data-through month. Reports received through the
 # cutoff cover only crashes from roughly the first quarter to third of that
 # month: the
@@ -67,13 +71,17 @@ NHTSA_DATA_THROUGH_DATE = "2026-08-17"
 # measured, not assumed, from data/snapshots history: (five-day-type
 # public-service Waymo/Tesla/Zoox incidents of month M present in the first
 # release containing M) / (M's eventual five-day-type total), deduplicated by
-# Same Incident ID. Re-measure and re-review on each release.
+# Same Incident ID. An incident's type is its first filing's Report Type
+# (REPORT_TRACK), so a later Update leaves it in the count (2026-08's
+# 30270-16286, a 5-Day report whose v2 is an Update, first entered as 47).
+# Re-measure and re-review on each release; quals/receipt-observations.qual.mjs
+# recounts the table from data/snapshots.
 # Re-measured 2026-09-04 (the 2026-08-28 table read 18/38, 25/69, 16/57,
 # 17/60 — a transcription slip; every filter variant reproduces the counts
 # below, e.g. the Feb numerator includes Zoox 30610-14026).
 # A month's denominator is final at its second NORMAL release: verified across
-# every release snapshot (Feb 19->38 then flat x5; Apr 3->57 flat; May 16->58
-# flat; Jun 17->61 flat). The one exception proves the rule — Mar ran 25->53->72
+# every release snapshot (Feb 19->38 then flat x6; Apr 3->58 flat; May 16->58
+# flat; Jun 17->61 flat; Jul 12->58 flat). The one exception proves the rule — Mar ran 25->53->72
 # because its second release WAS the truncated May-15 one.
 FIVE_DAY_RECEIPT_OBSERVATIONS = {
     "2026-02": (19, 38),   # Mar-16-2026 release vs the Aug-17-2026 file
@@ -81,20 +89,22 @@ FIVE_DAY_RECEIPT_OBSERVATIONS = {
     "2026-05": (16, 58),   # Jun-15-2026 release
     "2026-06": (17, 61),   # Jul-15-2026 release
     "2026-07": (12, 58),   # Aug-17-2026 release vs the Sep-15-2026 file
+    "2026-08": (10, 48),   # Sep-15-2026 release vs the Oct-15-2026 file
     # 2026-04 excluded: the May-15-2026 release was cut early (3 April
     # incidents / 19 April submissions vs ~17 / ~90 in every other release).
 }
-# (best, lo, hi): best = median of the observed fractions (0.279); lo/hi pad
+# (best, lo, hi): best = median of the observed fractions (0.277); lo/hi pad
 # the observed range [0.21, 0.50]. release_month_coverage() asserts both.
 # Added 2026-07 on the 2026-09-15 release: 0.207 is a new low, so lo fell
-# 0.25 -> 0.20 and the median moved 0.313 -> 0.279.
+# 0.25 -> 0.20 and the median moved 0.313 -> 0.279. Added 2026-08 on the
+# 2026-10-15 release: 0.208, inside the band; the median moved to 0.277.
 FIVE_DAY_RECEIPT_COVERAGE = (0.28, 0.20, 0.52)
 # Months with no usable first-release observation, with the reason; every
 # other month from the first observation on must be measured (see
 # release_month_coverage).
 RECEIPT_MONTHS_EXCLUDED = {
     "2026-04": "its first release (May 15, 2026) was truncated: 3 April "
-               "incidents of an eventual 57, 19 April submissions",
+               "incidents of an eventual 58, 19 April submissions",
 }
 # Monthly-track report arrival, per helmer (modeled 2026-10-03, human
 # decision). SGO Request No. 2 (Monthly) reports for incident month M are due
@@ -102,7 +112,7 @@ RECEIPT_MONTHS_EXCLUDED = {
 # whose data-through month is M+1 (M's second release), and from then on the
 # app treats M as complete. A helmer whose Monthly reports land later leaves
 # months that look complete but are not: every in-scope Zoox Monthly-track
-# report of 2026 so far reached the file one release late, so the
+# report of January-July 2026 reached the file one release late, so the
 # Sep-15-2026 file held only Zoox's one July 5-Day report (30610-15722).
 # MONTHLY_ARRIVAL_LAG is each helmer's extra lag, in releases. The months
 # inside it (the ones just before the data-through month) get a Monthly-track
@@ -117,7 +127,12 @@ RECEIPT_MONTHS_EXCLUDED = {
 # release whose data-through month is M+1, one release later, ...). Measured
 # from data/snapshots history; a month enters at the release whose
 # data-through month is M+2, when an arrival one release late is visible
-# (monthly_lag_coverage() requires it then). The recipe and its independent
+# (monthly_lag_coverage() requires it then). A lagged helmer's lagged month
+# that already holds a Monthly-track report enters one release early, at M+1,
+# with its on-time count (monthly_lag_coverage() stops until it does), and is
+# re-measured at M+2 like any other month: 2026-08 entered so on the
+# Oct-15-2026 release, which already held Tesla's 7 and Zoox's 3 in-scope
+# August Monthly reports (and Waymo's 20). The recipe and its independent
 # recompute are in quals/monthly-arrival-lag.qual.mjs; re-measure on each
 # release with FIVE_DAY_RECEIPT_OBSERVATIONS. Measurable from Dec 2025 (the
 # oldest snapshot release holds data through Dec 2025), where Zoox's two
@@ -125,11 +140,14 @@ RECEIPT_MONTHS_EXCLUDED = {
 # holds for every 2026 month, and the table starts there.
 MONTHLY_ARRIVAL_OBSERVATIONS = {
     "Waymo": {"2026-01": (30, 0), "2026-02": (34, 1), "2026-04": (53, 1),
-              "2026-05": (42, 0), "2026-06": (46, 0)},
+              "2026-05": (42, 0), "2026-06": (46, 0), "2026-07": (31, 0),
+              "2026-08": (20,)},
     "Tesla": {"2026-01": (4, 0), "2026-02": (0, 0), "2026-04": (1, 0),
-              "2026-05": (2, 0), "2026-06": (2, 0)},
+              "2026-05": (2, 0), "2026-06": (2, 0), "2026-07": (1, 1),
+              "2026-08": (7,)},
     "Zoox": {"2026-01": (0, 0), "2026-02": (0, 3), "2026-04": (0, 3),
-             "2026-05": (0, 0), "2026-06": (0, 2)},
+             "2026-05": (0, 0), "2026-06": (0, 2), "2026-07": (0, 2),
+             "2026-08": (3,)},
 }
 # Months whose arrivals cannot be measured, with the reason; every other month
 # from the first observation on must be observed (monthly_lag_coverage()).
@@ -140,21 +158,24 @@ MONTHLY_ARRIVAL_MONTHS_EXCLUDED = {
 }
 # Each helmer's lag is the extra lag of the majority of its newest observed
 # month with any Monthly-track incident (ties count as late), which
-# monthly_lag_coverage() checks.
-MONTHLY_ARRIVAL_LAG = {"Waymo": 0, "Tesla": 0, "Zoox": 1}
+# monthly_lag_coverage() checks. Zoox's was 1 from 2026-10-03 until the
+# Oct-15-2026 release, where its August reports arrived on time; there
+# Tesla's July tie (13781-16255 on time; 13781-16294, submitted in August,
+# first in the Oct-15-2026 file) would have made Tesla's 1 too, but its August
+# reports had arrived on time as well.
+MONTHLY_ARRIVAL_LAG = {"Waymo": 0, "Tesla": 0, "Zoox": 0}
 # For each helmer with a lag: (in-scope 5-Day-track incidents, all in-scope
 # incidents) per incident month, deduplicated as main() does and counted in
 # the newest file (monthly_lag_coverage() checks them against it), from
 # 2026-01 through the newest month that is final for the helmer (data-through
 # month - 1 - lag). Its lagged months' Monthly-track incident coverage is
 # (pooled share, lowest monthly share, 1.0): Zoox Jan-Jun 2026 = 17/27 =
-# 0.6296, February's 1/4 = 0.25 the lowest. A month with share 0 would put the
-# band's low edge at 0, which the app cannot use: it stops the run for a
-# decision.
-FIVE_DAY_SHARE_OBSERVATIONS = {
-    "Zoox": {"2026-01": (2, 2), "2026-02": (1, 4), "2026-03": (6, 8),
-             "2026-04": (2, 5), "2026-05": (2, 2), "2026-06": (4, 6)},
-}
+# 0.6296, February's 1/4 = 0.25 the lowest (on the Sep-15-2026 release; its
+# rows, with July's (1, 3), left the table when its lag returned to 0). A
+# month with share 0 would put the band's low edge at 0, which the app cannot
+# use: it stops the run for a decision (most of Tesla's 2026 months have no
+# 5-Day-track incident, so a Tesla lag would stop there).
+FIVE_DAY_SHARE_OBSERVATIONS = {}
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
 # In-repo master for the VMT estimates (one row per helmer-month).
@@ -505,6 +526,11 @@ SEVERITY_OVERRIDE = {
     "4366476607eca89": "Minor W/ Hospitalization",
     # Speeding SUV clipped Waymo passing on left; driver "unknown injuries", no transport
     "eeafa92b2068aa7": "Minor W/O Hospitalization",
+    # Batch below added 2026-10-16 (Oct-15 NHTSA release), same convention.
+    # Waymo pulled from a cancelled dropoff into a passing car; its driver transported
+    "8c1e4cd053942b8": "Minor W/ Hospitalization",
+    # Zoox stopped for an emergency vehicle and was rear-ended; no injuries mentioned
+    "415a066954bea35": "Property Damage. No Injured Reported",
     # Added 2026-10-03 (audit finding #44), the 2026-08-22 convention for an
     # affirmative field the narrative contradicts: Zoox 30610-15722 (JUL-2026
     # Austin), field "Property Damage. No Injured Reported"; rear-ended while
@@ -636,6 +662,14 @@ PASSENGER_OVERRIDE = {
     "13781-15809": ("Unknown", PAX_NO),    # "There were no passengers."
     "13781-16255": (PAX_BELTED, PAX_BELTED),  # "had two passengers present"
     "13781-16256": (PAX_NO, PAX_NO),       # "had no passengers present"
+    "13781-16294": (PAX_NO, PAX_NO),       # "had no passengers present"
+    "13781-16671": (PAX_NO, PAX_NO),       # "had no passengers present"
+    "13781-16672": (PAX_BELTED, PAX_NO),   # "a safety monitor present in the vehicle with no passengers"
+    "13781-16673": (PAX_NO, PAX_NO),       # "had no passengers present"
+    "13781-16674": (PAX_NO, PAX_NO),       # "had no passengers present"
+    "13781-16675": (PAX_NO, PAX_NO),       # "had no passengers present"
+    "13781-16676": (PAX_BELTED, PAX_BELTED),  # "had three passengers in the vehicle"
+    "13781-16677": (PAX_NO, PAX_NO),       # "had no passengers present"
 }
 
 # Narrative wording that says whether anyone was aboard the AV itself, named by
@@ -1217,6 +1251,21 @@ def monthly_lag_coverage(counts, last_month):
                  "incidents in the newest file: re-measure)",
                  helmer=helmer, month=month, observed=arrived, release=release)
     lagged = {h for h, lag in MONTHLY_ARRIVAL_LAG.items() if lag > 0}
+    # A lagged month that already holds an in-scope Monthly-track report
+    # contradicts the lag itself, so this stop runs before the share tables'
+    # checks: on the Oct-15-2026 release the zero-share stop below fired first
+    # and asked for a coverage model when the lag was what had to change.
+    for helmer in sorted(lagged):
+        lag = MONTHLY_ARRIVAL_LAG[helmer]
+        for i in range(lag):
+            month = month_shift(last_month, i - lag)
+            must(counts[(helmer, month, "monthly")] == 0,
+                 "a lagged month already holds an in-scope Monthly-track "
+                 "report in the newest file, so this helmer's Monthly reports "
+                 "are no longer late (re-measure: record the month's on-time "
+                 "count in MONTHLY_ARRIVAL_OBSERVATIONS and set its "
+                 "MONTHLY_ARRIVAL_LAG)", helmer=helmer, month=month,
+                 monthly=counts[(helmer, month, "monthly")])
     must(set(FIVE_DAY_SHARE_OBSERVATIONS) == lagged,
          "FIVE_DAY_SHARE_OBSERVATIONS must cover exactly the lagged helmers",
          shares=sorted(FIVE_DAY_SHARE_OBSERVATIONS), lagged=sorted(lagged))
@@ -1252,13 +1301,6 @@ def monthly_lag_coverage(counts, last_month):
         lo = round(min(shares), 4)
         for i in range(lag):
             month = month_shift(last_month, i - lag)
-            must(counts[(helmer, month, "monthly")] == 0,
-                 "a lagged month already holds an in-scope Monthly-track "
-                 "report in the newest file, so this helmer's Monthly reports "
-                 "are no longer late (re-measure: record the month's on-time "
-                 "count in MONTHLY_ARRIVAL_OBSERVATIONS and set its "
-                 "MONTHLY_ARRIVAL_LAG)", helmer=helmer, month=month,
-                 monthly=counts[(helmer, month, "monthly")])
             result[(helmer, month)] = (best, lo, 1.0)
             print(f"  {month} {helmer} Monthly-track coverage (Monthly-report "
                   f"lag {lag}): best={best} lo={lo}")
@@ -1422,6 +1464,7 @@ EXPECTED_HELMERS = {
     "VinFast Auto, LLC",
     "Volkswagen Group of America, Inc.",
     "Volvo Car USA, LLC",
+    "Waabi",
     "Waymo LLC",
     "WeRide Corp",
     "Zoox, Inc.",
@@ -1433,10 +1476,11 @@ EXPECTED_HELMERS = {
 # carries an in-vehicle safety monitor, which NHTSA files as "In-Vehicle
 # (Commercial / Test)", so that mode counts as public service for Tesla too.
 # Tesla additionally files remote-assistance maneuvers as "Remote (Commercial
-# / Test)" (one report so far: 13781-15395, the Houston tree-stump recovery).
-# The code itself counts for Tesla -- a remote operator can be involved while
-# the ADS drives -- but crashes in which the remote human was DRIVING, that
-# report among them, leave every metric via TELEOP_DRIVEN_REPORTS below
+# / Test)" (three reports so far: 13781-15395, the Houston tree-stump
+# recovery, and 13781-16678 and -16679, AUG-2026 Dallas and Austin). The code
+# itself counts for Tesla -- a remote operator can be involved while the ADS
+# drives -- but crashes in which the remote human was DRIVING, all three among
+# them, leave every metric via TELEOP_DRIVEN_REPORTS below
 # (human decision 2026-09-26, reversing the 2026-08-19 inclusion).
 # Waymo and Zoox (made explicit 2026-09-25, human-approved): their VMT
 # denominators are driverless miles only (Waymo hub rider-only miles, Zoox
@@ -1518,6 +1562,8 @@ TELEOP_DRIVEN_REPORTS = {
     "13781-11459": "The teleoperator took over vehicle control and gradually increased vehicle speed",
     "13781-14043": "took over vehicle control when the ADS was stopped and proceeded straight on the street",
     "13781-15395": "As the remote assistance operator continued to recover the vehicle, they made contact with a hidden tree stump",
+    "13781-16678": "The remote support operator remotely took control and while moving forward",
+    "13781-16679": "The remote support operator was in control of the vehicle",
 }
 # In-scope reports that trip the tripwire below (remote-human language, or
 # the "Remote (Commercial / Test)" code itself) but in which the ADS was
@@ -1531,16 +1577,22 @@ REMOTE_LANGUAGE_ADS_DRIVEN = {
     "30610-11752": "ADS engaged; unoccupied AV slowing to a stop, rear-ended",
 }
 # Language saying a remote human may have been driving. Calibrated 2026-09-26
-# on every in-scope narrative (all versions): it matches exactly the three
-# TELEOP_DRIVEN_REPORTS and not "remote controlled" toys or a "fleet response
-# team" arriving on scene; widened the same day to cover wording seen
-# elsewhere in the SGO corpus (Cruise 30412-6179: "A remote assistance advisor
-# ... shifted the AV out of park"), "remote driver/pilot", and any whitespace
-# between words.
+# on every in-scope narrative (all versions), when it matched exactly the
+# three TELEOP_DRIVEN_REPORTS of the time and not "remote controlled" toys or
+# a "fleet response team" arriving on scene; widened the same day to cover
+# wording seen elsewhere in the SGO corpus (Cruise 30412-6179: "A remote
+# assistance advisor ... shifted the AV out of park"), "remote driver/pilot",
+# and any whitespace between words; widened on the Oct-15-2026 release for
+# Tesla's "remote support operator" and "remotely took control" (13781-16678,
+# -16679). Re-checked then on every in-scope narrative of the newest files:
+# it matches exactly the five TELEOP_DRIVEN_REPORTS. Neither
+# REMOTE_LANGUAGE_ADS_DRIVEN entry matches it; their "Remote (Commercial /
+# Test)" code is what makes them trip check_teleop_classified().
 TELEOP_PATTERN = re.compile(
-    r"tele-?operat|remote\s+assist\w*|remote\s+(operator|driver|pilot)|"
+    r"tele-?operat|remote\s+assist\w*|remote\s+(support\s+)?(operator|driver|pilot)|"
     r"supported\s+remotely|"
     r"remotely\s+(driven|operated|controlled|piloted|assisted|supported)|"
+    r"remotely\s+took\s+(over\s+)?(the\s+)?(vehicle\s+)?control|"
     r"took\s+over\s+(the\s+)?(vehicle\s+)?control", re.I)
 must(not set(TELEOP_DRIVEN_REPORTS) & set(REMOTE_LANGUAGE_ADS_DRIVEN),
      "a report is classified both teleoperator-driven and ADS-driven")

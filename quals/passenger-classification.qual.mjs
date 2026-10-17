@@ -81,9 +81,9 @@ assert.deepEqual(mismatch, [],
 Expectata: they agree: "no passengers" -> PAX_NONE, a stated passenger -> PAX_PRESENT (the safety monitor is not a passenger).
 Resultata: ${JSON.stringify(mismatch, null, 1)}.`);
 const riders = tesla.filter(r => present.has(r.belted)).map(r => r.id).sort();
-assert.deepEqual(riders, ["13781-11687", "13781-13237", "13781-13644", "13781-13647", "13781-13648", "13781-14630", "13781-15342", "13781-16255"],
+assert.deepEqual(riders, ["13781-11687", "13781-13237", "13781-13644", "13781-13647", "13781-13648", "13781-14630", "13781-15342", "13781-16255", "13781-16676"],
   `Replicata: list the Tesla incidents classified "with passenger".
-Expectata: the 8 whose narratives state a rider aboard (8 of 23, 35%; the other 15 say no passengers).
+Expectata: the 9 whose narratives state a rider aboard (9 of 31, 29%; the other 22 say no passengers).
 Resultata: ${JSON.stringify(riders)}.`);
 
 // slurp.py's guards on the map: an entry reviewed against a filed value that

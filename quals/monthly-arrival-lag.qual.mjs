@@ -4,40 +4,53 @@
 // are due by the 15th of M+1, so they normally reach NHTSA's public file at
 // the release whose data-through month is M+1 (M's second release), and the
 // app treats M as complete from then on. Every in-scope Zoox Monthly-track
-// report of 2026 so far reached the file one release later, so the Sep-15-2026
-// file held only Zoox's one July 5-Day report while the app called July final.
+// report of January-July 2026 reached the file one release later, so the
+// Sep-15-2026 file held only Zoox's one July 5-Day report while the app called
+// July final.
 //
-// data/slurp.py now carries the measured lags (MONTHLY_ARRIVAL_LAG) with
-// their observations (MONTHLY_ARRIVAL_OBSERVATIONS), and every month inside a
+// data/slurp.py carries the measured lags (MONTHLY_ARRIVAL_LAG) with their
+// observations (MONTHLY_ARRIVAL_OBSERVATIONS), and every month inside a
 // helmer's extra lag gets a Monthly-track incident coverage equal to that
-// helmer's in-scope 5-Day share (FIVE_DAY_SHARE_OBSERVATIONS: Zoox Jan-Jun
-// 2026 17/27 = 0.6296), band [its lowest monthly share, 0.25; 1.0], instead
-// of 1. Five-day-track metrics are unaffected (Zoox's 5-Day reports arrive on
-// the normal schedule).
+// helmer's in-scope 5-Day share (FIVE_DAY_SHARE_OBSERVATIONS), band [its
+// lowest monthly share; 1.0], instead of 1. Five-day-track metrics are
+// unaffected (the 5-Day reports arrive on the normal schedule).
+//
+// On the Oct-15-2026 release every helmer's in-scope August Monthly reports
+// had arrived on time, Zoox's three included, so every lag is 0 and no live
+// month is lagged. The lag machinery's checks therefore run on a synthetic
+// world with one lagged helmer (section 3b) and on a synthetic lagged month in
+// the app (sections 5 and 6), so they keep their teeth whoever is lagged.
 //
 // This qual pins:
 //   1. the tables reproduce from data/snapshots history (an independent
-//      recompute), and slurp's own track counts agree with that recompute;
+//      recompute), slurp's own track counts agree with that recompute, and
+//      the lags are the measured ones;
 //   2. data/vmt.js carries, for every helmer-month, the pooled triple in the
-//      data-through month, the lag triple in the helmer's lagged months and
-//      (1, 1, 1) elsewhere, with receipt coverage untouched there -- on the
-//      Sep-15-2026 release that is Zoox 2026-07 = (0.6296, 0.25, 1.0) and
-//      Waymo/Tesla 2026-07 = (1, 1, 1); derived from the reviewed cutoff, so
-//      no re-pin is needed when a release advances it;
-//   3. slurp stops (anti-Postel) on: a lag table missing a helmer, a lag that
-//      disagrees with its observations, a month that became measurable
-//      without an observation, observations that disagree with the newest
-//      file, and a lagged helmer whose lagged month already holds a
-//      Monthly-track report in the newest file; and (3b, called directly) on a
-//      fractional lag, arrival tables covering different months, a month both
-//      observed and excluded, an observation for the data-through month, a
-//      share table missing the month just final for its helmer, and a lowest
-//      monthly share of 0;
+//      data-through month, the lag triple in a lagged helmer's lagged months
+//      and (1, 1, 1) elsewhere, with receipt coverage untouched there;
+//      derived from the reviewed cutoff, so no re-pin is needed when a
+//      release advances it;
+//   3. slurp.main() stops (anti-Postel) on: a lag table missing a helmer, a
+//      lag that disagrees with its observations, a month that became
+//      measurable without an observation, observations that disagree with the
+//      newest file, and a share table for a helmer with no lag;
+//   3b. monthly_lag_coverage(), called directly on the synthetic world,
+//      returns the lag triple and stops on: a lagged month that already holds
+//      a Monthly-track report, and that stop comes BEFORE every share-table
+//      check (on the Oct-15-2026 release the zero-share stop fired first and
+//      asked for a coverage model when the lag was what had to change); a lag
+//      that disagrees with its observations; a share row that disagrees with
+//      the counts; a share table missing the month just final for its
+//      helmer; a lowest monthly share of 0; a share table for an unlagged
+//      helmer; a fractional lag; arrival tables covering different months; a
+//      month both observed and excluded; an observation for the data-through
+//      month; a measurable month without an observation; and an arrival row
+//      that disagrees with the counts;
 //   4. a lagged month is never the reference month of the pooled
 //      data-through-month coverage (its count is incomplete);
 //   5. the app accepts the extra partially received month(s) at the end of a
 //      window and still rejects a partial month followed by a full one;
-//   6. with the lagged helmer shown, the MPI chart's "?" and that helmer's dot
+//   6. with a lagged helmer shown, the MPI chart's "?" and that helmer's dot
 //      tooltip mark the lagged month.
 import assert from "node:assert/strict";
 import vm from "node:vm";
@@ -126,7 +139,7 @@ for h, table in slurp.FIVE_DAY_SHARE_OBSERVATIONS.items():
     for i in range(lag):
         expected_lag[h + '|' + mstr(mnum(D) - lag + i)] = triple
 out['expectedLag'] = expected_lag
-out['zooxShares'] = {m: list(c) for m, c in slurp.FIVE_DAY_SHARE_OBSERVATIONS.get('Zoox', {}).items()}
+out['shareStarts'] = {h: min(t) for h, t in slurp.FIVE_DAY_SHARE_OBSERVATIONS.items()}
 
 # --- 3. slurp stops on inconsistent inputs -----------------------------------
 inc_text = pathlib.Path('data/incidents.js').read_text()
@@ -159,44 +172,36 @@ def stop_message(all_rows, **patch):
     return 'accepted'
 out['regenOk'] = segment(regenerate(newest), '/* VMT_CSV_START */', '/* VMT_CSV_END */') == segment(vmt_text, '/* VMT_CSV_START */', '/* VMT_CSV_END */')
 stops = {}
-# (a) a lagged helmer's lagged month already holds an in-scope Monthly report:
-# a clone of an in-scope Zoox 5-Day row, moved to Zoox's lagged month (the one
-# before the data-through month), filed Monthly and submitted in the
-# data-through month (so the submission guard passes).
-label = lambda month: datetime.date.fromisoformat(month + '-01').strftime('%b-%Y').upper()
-template = next(r for r in newest if r['Reporting Entity'].strip() == 'Zoox, Inc.'
-                and r['Report Type'].strip() == '5-Day' and slurp.is_public_service_incident(r))
-clone = dict(template)
-clone.update({'Report ID': 'synthetic-zoox-monthly', 'Same Incident ID': 'synthetic-zoox-monthly',
-              'Report Type': 'Monthly', 'Report Version': '1',
-              'Incident Date': label(mstr(mnum(D) - 1)), 'Report Submission Date': label(D)})
-stops['tripwire'] = stop_message(newest + [clone])
+lags = slurp.MONTHLY_ARRIVAL_LAG
 # (b) the lag table misses a helmer
 stops['coverage'] = stop_message(newest, MONTHLY_ARRIVAL_LAG={'Waymo': 0, 'Tesla': 0})
-# (c) a lag that disagrees with its observations
-stops['zooxLag0'] = stop_message(newest, MONTHLY_ARRIVAL_LAG={**slurp.MONTHLY_ARRIVAL_LAG, 'Zoox': 0})
-stops['waymoLag1'] = stop_message(newest, MONTHLY_ARRIVAL_LAG={**slurp.MONTHLY_ARRIVAL_LAG, 'Waymo': 1})
+# (c) a lag that disagrees with its observations (one more release than the
+# majority of the helmer's newest observed month says)
+stops['zooxLag'] = stop_message(newest, MONTHLY_ARRIVAL_LAG={**lags, 'Zoox': lags['Zoox'] + 1})
+stops['waymoLag'] = stop_message(newest, MONTHLY_ARRIVAL_LAG={**lags, 'Waymo': lags['Waymo'] + 1})
 # (d) the month that is now measurable (data-through month - 2) has no observation
 due_month = mstr(mnum(D) - 2)
 stops['due'] = stop_message(newest, MONTHLY_ARRIVAL_OBSERVATIONS={
     h: {m: c for m, c in t.items() if m != due_month} for h, t in slurp.MONTHLY_ARRIVAL_OBSERVATIONS.items()})
-# (e) a share row and (f) an arrival row that disagree with the newest file
-zoox_shares = dict(slurp.FIVE_DAY_SHARE_OBSERVATIONS['Zoox'])
-first_share = min(zoox_shares)
-zoox_shares[first_share] = (zoox_shares[first_share][0] + 1, zoox_shares[first_share][1] + 1)
-stops['share'] = stop_message(newest, FIVE_DAY_SHARE_OBSERVATIONS={**slurp.FIVE_DAY_SHARE_OBSERVATIONS, 'Zoox': zoox_shares})
+# (f) an arrival row that disagrees with the newest file
 waymo_obs = dict(slurp.MONTHLY_ARRIVAL_OBSERVATIONS['Waymo'])
 first_obs = min(waymo_obs)
 waymo_obs[first_obs] = (waymo_obs[first_obs][0] + 1, *waymo_obs[first_obs][1:])
 stops['arrivalTotal'] = stop_message(newest, MONTHLY_ARRIVAL_OBSERVATIONS={**slurp.MONTHLY_ARRIVAL_OBSERVATIONS, 'Waymo': waymo_obs})
-# (g) a share table for a helmer with no lag (dead data) is rejected too
-stops['deadShare'] = stop_message(newest, FIVE_DAY_SHARE_OBSERVATIONS={**slurp.FIVE_DAY_SHARE_OBSERVATIONS, 'Tesla': {first_share: (0, 1)}})
+# (g) a share table for a helmer with no lag (dead data)
+unlagged = min(h for h, lag in lags.items() if lag == 0)
+stops['deadShare'] = stop_message(newest, FIVE_DAY_SHARE_OBSERVATIONS={
+    **slurp.FIVE_DAY_SHARE_OBSERVATIONS, unlagged: {first_obs: (0, 1)}})
 out['stops'] = stops
 
-# --- 3b. monthly_lag_coverage()'s other stops, called directly --------------
-# Section 3 shows main() reaches the function; these call it on this release's
-# own track counts with one inconsistent table each (reviewer, 2026-10-04: no
-# qual reached these must()s, so deleting any of them left the suite green).
+# --- 3b. monthly_lag_coverage() on a synthetic world, called directly -------
+# Section 3 shows main() reaches the function. Here it runs on made-up months
+# 2031-01..2031-06 (data-through month 2031-06) with one lagged helmer, Zoox
+# (lag 1, lagged month 2031-05), whose Monthly-track arrivals and 5-Day shares
+# agree with the made-up counts: pooled share 8/16 = 0.5, lowest 1/4 = 0.25.
+# Each case breaks one thing, so only the must() under test can object; the
+# order case breaks two at once (a zero share AND a Monthly report in the
+# lagged month), and the lag's own stop must win.
 counts = slurp.monthly_track_counts(newest)
 def direct_stop(counts=counts, **patch):
     saved = {k: getattr(slurp, k) for k in patch}
@@ -208,33 +213,67 @@ def direct_stop(counts=counts, **patch):
     finally:
         for k, v in saved.items(): setattr(slurp, k, v)
     return 'accepted'
-obs, shares, lags = slurp.MONTHLY_ARRIVAL_OBSERVATIONS, slurp.FIVE_DAY_SHARE_OBSERVATIONS, slurp.MONTHLY_ARRIVAL_LAG
 direct = {'baseline': direct_stop()}
-# (h) a lag that is not a whole number of releases
-direct['wholeLag'] = direct_stop(MONTHLY_ARRIVAL_LAG={**lags, 'Zoox': lags['Zoox'] + 0.5})
-# (i) a release's arrival row added for some helmers only (Zoox's newest dropped)
-direct['sameMonths'] = direct_stop(MONTHLY_ARRIVAL_OBSERVATIONS={
-    **obs, 'Zoox': {m: c for m, c in obs['Zoox'].items() if m != max(obs['Zoox'])}})
-# (j) an excluded month observed as well
-excluded = min(slurp.MONTHLY_ARRIVAL_MONTHS_EXCLUDED)
-direct['observedExcluded'] = direct_stop(MONTHLY_ARRIVAL_OBSERVATIONS={
-    h: {**t, excluded: (counts[(h, excluded, 'monthly')],)} for h, t in obs.items()})
-# (k) an observation for the data-through month, which no release can measure yet
-direct['future'] = direct_stop(MONTHLY_ARRIVAL_OBSERVATIONS={h: {**t, D: (0, 0)} for h, t in obs.items()})
-# (l) a lagged helmer's share table without the month that just became final for it
-direct['shareSpan'] = direct_stop(FIVE_DAY_SHARE_OBSERVATIONS={
-    **shares, 'Zoox': {m: c for m, c in shares['Zoox'].items() if m != max(shares['Zoox'])}})
-# (m) a month whose incidents were all Monthly-track: lowest share 0. The
-# counts, the arrival row and the share row move together, so only the
-# zero-share check can object.
-zero_month = min(shares['Zoox'])
-zc = collections.Counter(counts)
-total = zc[('Zoox', zero_month, 'five_day')] + zc[('Zoox', zero_month, 'monthly')]
-zc[('Zoox', zero_month, 'five_day')], zc[('Zoox', zero_month, 'monthly')] = 0, total
-direct['zeroShare'] = direct_stop(counts=zc,
-    MONTHLY_ARRIVAL_OBSERVATIONS={**obs, 'Zoox': {**obs['Zoox'], zero_month: (0, total)}},
-    FIVE_DAY_SHARE_OBSERVATIONS={**shares, 'Zoox': {**shares['Zoox'], zero_month: (0, total)}})
+W_D = '2031-06'
+W_OBS = {'Waymo': {'2031-01': (5, 0), '2031-02': (6, 0), '2031-03': (4, 1), '2031-04': (5, 0)},
+         'Tesla': {'2031-01': (1, 0), '2031-02': (2, 0), '2031-03': (0, 0), '2031-04': (1, 0)},
+         'Zoox': {'2031-01': (0, 2), '2031-02': (0, 1), '2031-03': (0, 3), '2031-04': (0, 2)}}
+W_LAG = {'Waymo': 0, 'Tesla': 0, 'Zoox': 1}
+W_SHARES = {'Zoox': {'2031-01': (2, 4), '2031-02': (3, 4), '2031-03': (1, 4), '2031-04': (2, 4)}}
+def w_counts(obs=W_OBS, shares=W_SHARES, lagged_monthly=0):
+    c = collections.Counter()
+    for h, t in obs.items():
+        for m, arrived in t.items(): c[(h, m, 'monthly')] = sum(arrived)
+    for h, t in shares.items():
+        for m, (five_day, _total) in t.items(): c[(h, m, 'five_day')] = five_day
+    c[('Zoox', '2031-05', 'five_day')] = 1
+    c[('Zoox', '2031-05', 'monthly')] = lagged_monthly
+    return c
+def w_call(counts=None, **patch):
+    tables = {'MONTHLY_ARRIVAL_OBSERVATIONS': W_OBS, 'MONTHLY_ARRIVAL_LAG': W_LAG,
+              'FIVE_DAY_SHARE_OBSERVATIONS': W_SHARES, 'MONTHLY_ARRIVAL_MONTHS_EXCLUDED': {}, **patch}
+    saved = {k: getattr(slurp, k) for k in tables}
+    for k, v in tables.items(): setattr(slurp, k, v)
+    try:
+        got = slurp.monthly_lag_coverage(w_counts() if counts is None else counts, W_D)
+        return {f'{h}|{m}': list(t) for (h, m), t in got.items()}
+    except AssertionError as exc:
+        return str(exc)[:300]
+    finally:
+        for k, v in saved.items(): setattr(slurp, k, v)
+synthetic = {'baseline': w_call()}
+# a lagged month that already holds a Monthly-track report
+synthetic['tripwire'] = w_call(counts=w_counts(lagged_monthly=1))
+# the same, plus a month whose incidents were all Monthly-track (share 0):
+# the arrival row, the share row and the counts move together
+zero_obs = {**W_OBS, 'Zoox': {**W_OBS['Zoox'], '2031-03': (0, 4)}}
+zero_shares = {'Zoox': {**W_SHARES['Zoox'], '2031-03': (0, 4)}}
+synthetic['order'] = w_call(counts=w_counts(zero_obs, zero_shares, lagged_monthly=1),
+                            MONTHLY_ARRIVAL_OBSERVATIONS=zero_obs, FIVE_DAY_SHARE_OBSERVATIONS=zero_shares)
+synthetic['zeroShare'] = w_call(counts=w_counts(zero_obs, zero_shares),
+                                MONTHLY_ARRIVAL_OBSERVATIONS=zero_obs, FIVE_DAY_SHARE_OBSERVATIONS=zero_shares)
+# a lag that disagrees with its observations
+synthetic['zooxLag0'] = w_call(MONTHLY_ARRIVAL_LAG={**W_LAG, 'Zoox': 0})
+# a lag that is not a whole number of releases
+synthetic['wholeLag'] = w_call(MONTHLY_ARRIVAL_LAG={**W_LAG, 'Zoox': 1.5})
+# a share row that disagrees with the counts
+synthetic['share'] = w_call(FIVE_DAY_SHARE_OBSERVATIONS={'Zoox': {**W_SHARES['Zoox'], '2031-01': (3, 5)}})
+# a share table without the month just final for its helmer (2031-04)
+synthetic['shareSpan'] = w_call(FIVE_DAY_SHARE_OBSERVATIONS={'Zoox': {m: c for m, c in W_SHARES['Zoox'].items() if m != '2031-04'}})
+# a share table for a helmer with no lag
+synthetic['deadShare'] = w_call(FIVE_DAY_SHARE_OBSERVATIONS={**W_SHARES, 'Tesla': {'2031-01': (0, 1)}})
+# a release's arrival row added for some helmers only
+synthetic['sameMonths'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={**W_OBS, 'Waymo': {m: c for m, c in W_OBS['Waymo'].items() if m != '2031-04'}})
+# a month both observed and excluded
+synthetic['observedExcluded'] = w_call(MONTHLY_ARRIVAL_MONTHS_EXCLUDED={'2031-02': 'synthetic'})
+# an observation for the data-through month, which no release can measure yet
+synthetic['future'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={h: {**t, W_D: (0,)} for h, t in W_OBS.items()})
+# the month that is now measurable (2031-04) has no observation
+synthetic['due'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={h: {m: c for m, c in t.items() if m != '2031-04'} for h, t in W_OBS.items()})
+# an arrival row that disagrees with the counts
+synthetic['arrivalTotal'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={**W_OBS, 'Waymo': {**W_OBS['Waymo'], '2031-01': (6, 0)}})
 out['direct'] = direct
+out['synthetic'] = synthetic
 
 # --- 4. a lagged month is never the pooled coverage's reference month --------
 def report(rid, month):
@@ -262,9 +301,10 @@ const r = JSON.parse(run.stdout.trim().split("\n").at(-1));
 // 1. The measured lags, and the tables reproduce from data/snapshots.
 // Re-pin the lags only when a release's measurement changes one (a human
 // decision: slurp's own must() ties each lag to its newest observed month).
-assert.deepEqual(r.lag, { Waymo: 0, Tesla: 0, Zoox: 1 },
+// Zoox's was 1 from 2026-10-03 until the Oct-15-2026 release.
+assert.deepEqual(r.lag, { Waymo: 0, Tesla: 0, Zoox: 0 },
   `Replicata: read MONTHLY_ARRIVAL_LAG from data/slurp.py.
-Expectata: {Waymo: 0, Tesla: 0, Zoox: 1} -- every in-scope Zoox Monthly-track report of 2026 reached the public file one release after the normal one; Waymo's and Tesla's at the normal one.
+Expectata: {Waymo: 0, Tesla: 0, Zoox: 0} -- on the Oct-15-2026 release every helmer's in-scope August 2026 Monthly-track reports reached the public file at the normal release (Zoox's had arrived one release late from January through July).
 Resultata: ${JSON.stringify(r.lag)}.`);
 assert.deepEqual(r.arrivalDiffs, [],
   `Replicata: recompute each helmer-month's Monthly-track arrivals from data/snapshots (in-scope incidents of the newest file, deduplicated as main() does; arrival = the first release whose data-through month is at least M+1 holding the surviving Report ID).
@@ -306,18 +346,15 @@ assert.deepEqual(wrong, [],
   `Replicata: compare every helmer-month's incident and receipt coverage in data/vmt.js with slurp.py's lag model.
 Expectata: in each helmer's lagged months (${JSON.stringify(r.expectedLag)}) incident coverage = (pooled 5-Day share, lowest monthly share, 1.0) and receipt coverage 1; every other month before the data-through month (1, 1, 1) for both.
 Resultata: ${JSON.stringify(wrong.slice(0, 6))}.`);
-// The window the 2026-10-03 decision named: Zoox Jan-Jun 2026, 17 of 27
-// in-scope incidents on the 5-Day track (0.63), lowest month February 1 of 4
-// (0.25). These rows are history and stay put; each release appends the month
-// that became final (slurp's must() enforces it), so the lagged month's
-// triple moves while this pin does not. On the Sep-15-2026 release the
-// derived check above is Zoox 2026-07 = (0.6296, 0.25, 1.0) and Waymo/Tesla
-// 2026-07 = (1, 1, 1).
-const JAN_JUN = { "2026-01": [2, 2], "2026-02": [1, 4], "2026-03": [6, 8], "2026-04": [2, 5], "2026-05": [2, 2], "2026-06": [4, 6] };
-assert.deepEqual(Object.fromEntries(Object.entries(r.zooxShares).filter(([m]) => m <= "2026-06")), JAN_JUN,
-  `Replicata: read Zoox's FIVE_DAY_SHARE_OBSERVATIONS rows through 2026-06 from data/slurp.py.
-Expectata: the approved window, starting 2026-01: ${JSON.stringify(JAN_JUN)} (17/27 = 0.63; February 0.25 the lowest).
-Resultata: ${JSON.stringify(r.zooxShares)}.`);
+// The window the 2026-10-03 decision named starts in 2026-01 (Zoox Jan-Jun
+// 2026, 17 of 27 in-scope incidents on the 5-Day track, February 1 of 4 the
+// lowest; its rows left FIVE_DAY_SHARE_OBSERVATIONS when its lag returned to
+// 0, and slurp.py's comment keeps them): a lagged helmer's share table starts
+// there.
+assert.ok(Object.values(r.shareStarts).every(m => m === "2026-01"),
+  `Replicata: read the first month of every FIVE_DAY_SHARE_OBSERVATIONS table in data/slurp.py.
+Expectata: 2026-01, the start of the approved window.
+Resultata: ${JSON.stringify(r.shareStarts)}.`);
 
 // 3. slurp stops on inconsistent inputs.
 assert.equal(r.regenOk, true,
@@ -325,12 +362,10 @@ assert.equal(r.regenOk, true,
 // Each pattern names its own must()'s message, so a removed check cannot pass
 // on a neighbour's.
 const expectStops = {
-  tripwire: /^a lagged month already holds an in-scope Monthly-track report/,
   coverage: /^MONTHLY_ARRIVAL_LAG and MONTHLY_ARRIVAL_OBSERVATIONS must cover every helmer/,
-  zooxLag0: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Zoox'/,
-  waymoLag1: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Waymo'/,
+  zooxLag: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Zoox'/,
+  waymoLag: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Waymo'/,
   due: /^no Monthly-report arrival observation for a month that is now measurable/,
-  share: /^FIVE_DAY_SHARE_OBSERVATIONS disagree with this release/,
   arrivalTotal: /^MONTHLY_ARRIVAL_OBSERVATIONS disagree with this release/,
   deadShare: /^FIVE_DAY_SHARE_OBSERVATIONS must cover exactly the lagged helmers/,
 };
@@ -340,24 +375,36 @@ for (const [name, re] of Object.entries(expectStops)) {
 Expectata: it stops with a message matching ${re}.
 Resultata: ${JSON.stringify(r.stops[name])}.`);
 }
-// 3b. The function's other stops, called directly on this release's counts.
+// 3b. The function itself, on this release's counts and on the synthetic world.
 assert.equal(r.direct.baseline, "accepted",
   `Replicata: call slurp.monthly_lag_coverage() directly on the newest snapshots' track counts with the real tables.
 Expectata: accepted.
 Resultata: ${JSON.stringify(r.direct.baseline)}.`);
-const expectDirect = {
+assert.deepEqual(r.synthetic.baseline, { "Zoox|2031-05": [0.5, 0.25, 1.0] },
+  `Replicata: call slurp.monthly_lag_coverage() on the synthetic world (Zoox lag 1; its 5-Day shares 2/4, 3/4, 1/4, 2/4; data-through month 2031-06).
+Expectata: only Zoox's lagged month 2031-05 gets a triple: (pooled share 8/16 = 0.5, lowest share 0.25, 1.0).
+Resultata: ${JSON.stringify(r.synthetic.baseline)}.`);
+const tripwire = /^a lagged month already holds an in-scope Monthly-track report/;
+const expectSynthetic = {
+  tripwire,
+  order: tripwire,
+  zeroShare: /^a lagged helmer's lowest monthly 5-Day share is 0/,
+  zooxLag0: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Zoox'/,
   wholeLag: /^MONTHLY_ARRIVAL_LAG values must be whole numbers of releases/,
+  share: /^FIVE_DAY_SHARE_OBSERVATIONS disagree with this release/,
+  shareSpan: /^a lagged helmer's FIVE_DAY_SHARE_OBSERVATIONS must hold every month from its first through the newest month final for it/,
+  deadShare: /^FIVE_DAY_SHARE_OBSERVATIONS must cover exactly the lagged helmers/,
   sameMonths: /^every helmer's MONTHLY_ARRIVAL_OBSERVATIONS must cover the same months/,
   observedExcluded: /^a month is both observed and excluded/,
   future: /^an arrival observation for the data-through month or later/,
-  shareSpan: /^a lagged helmer's FIVE_DAY_SHARE_OBSERVATIONS must hold every month from its first through the newest month final for it/,
-  zeroShare: /^a lagged helmer's lowest monthly 5-Day share is 0/,
+  due: /^no Monthly-report arrival observation for a month that is now measurable/,
+  arrivalTotal: /^MONTHLY_ARRIVAL_OBSERVATIONS disagree with this release/,
 };
-for (const [name, re] of Object.entries(expectDirect)) {
-  assert.match(r.direct[name], re,
-    `Replicata: call slurp.monthly_lag_coverage() directly with inconsistent input "${name}".
+for (const [name, re] of Object.entries(expectSynthetic)) {
+  assert.match(String(r.synthetic[name]), re,
+    `Replicata: call slurp.monthly_lag_coverage() on the synthetic world with inconsistent input "${name}"${name === "order" ? " (a month with 5-Day share 0 AND a Monthly-track report in Zoox's lagged month)" : ""}.
 Expectata: it stops with a message matching ${re}.
-Resultata: ${JSON.stringify(r.direct[name])}.`);
+Resultata: ${JSON.stringify(r.synthetic[name])}.`);
 }
 
 // 4. The reference month of the pooled data-through-month coverage skips a
@@ -369,9 +416,18 @@ assert.ok(Math.abs(r.refLagged - 0.3906) < 1e-4 && Math.abs(r.refUnlagged - 0.78
 Expectata: 0.3906 with lag 1 (June, complete, is the reference) and 0.7812 with lag 0 (July is).
 Resultata: ${r.refLagged} and ${r.refUnlagged}.`);
 
-// 5. The app: partially received months must be the window's newest.
+// 5. The app: partially received months must be the window's newest. Zoox's
+// month before the data-through month gets a synthetic lag triple (0.6, 0.25,
+// 1.0), so a window ends in two partially received months whatever the live
+// lags are.
+const lagMonth = (() => {
+  const [y, m] = dataThroughMonth.split("-").map(Number), n = y * 12 + m - 2;
+  return `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, "0")}`;
+})();
+const injectLag = `vmtRows = parseVmtCsv(VMT_CSV_TEXT).map(x => x.helmer === "Zoox" && x.month === ${JSON.stringify(lagMonth)}
+    ? {...x, incCov: 0.6, incCovMin: 0.25, incCovMax: 1} : x);`;
 const app = JSON.parse(vm.runInContext(`(() => {
-  incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  incidents = INCIDENT_DATA; ${injectLag}
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
   const zoox = monthSeriesData().points.map(p => p.helmers.Zoox).filter(Boolean).slice(-6);
   const sel = [r => r.vmtMin, r => r.vmtBest, r => r.vmtMax];
@@ -383,9 +439,9 @@ const app = JSON.parse(vm.runInContext(`(() => {
   try { windowVmtBand("Zoox", bad, ...sel); } catch (e) { middle = String(e.message); }
   return JSON.stringify({partial, trailing, middle});
 })()`, ctx));
-const lagMonths = Object.keys(r.expectedLag).filter(k => k.startsWith("Zoox|")).map(k => k.slice(5));
+const lagMonths = [...new Set([...Object.keys(r.expectedLag).filter(k => k.startsWith("Zoox|")).map(k => k.slice(5)), lagMonth])].sort();
 assert.deepEqual(app.partial, [...lagMonths, dataThroughMonth],
-  `Replicata: list Zoox's Monthly-track partially received months among its last six in the app.
+  `Replicata: give Zoox's ${lagMonth} a lag triple (0.6, 0.25, 1.0) and list Zoox's Monthly-track partially received months among its last six in the app.
 Expectata: its lagged months then the data-through month, ${JSON.stringify([...lagMonths, dataThroughMonth])}.
 Resultata: ${JSON.stringify(app.partial)}.`);
 assert.equal(app.trailing, "accepted",
@@ -398,6 +454,8 @@ assert.match(app.middle, /precedes/,
 // "?" fades in by the largest 1 - incident_coverage_min among the shown
 // helmers' dots on a Monthly-track metric, so a lagged month gets its own
 // "?", and the lagged helmer's dot tooltip carries that month's coverage note.
+// Zoox's month before the data-through month carries the synthetic lag
+// triple of section 5.
 // On All incidents, a Monthly-track metric that needs no fault ratings, so
 // every shown helmer-month with miles has a dot even before a release's
 // fault batch (on at-fault, an unrated month draws none).
@@ -407,13 +465,13 @@ const ctx6 = vm.createContext({ console, Math, Number,
 vm.runInContext(dataScript, ctx6, { filename: "data.js" });
 vm.runInContext(appScript, ctx6, { filename: "crashla.js" });
 const shown = JSON.parse(vm.runInContext(`(() => {
-  incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  incidents = INCIDENT_DATA; ${injectLag}
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
   monthHelmerEnabled.Zoox = true; selectedMetricKey = "all";
   const s = monthSeriesData(), start = s.months.indexOf(DEFAULT_START_MONTH);
   const metric = selectedMonthMetric();
   const ads = ADS_HELMERS.filter(h => monthHelmerEnabled[h]);
-  const csv = parseVmtCsv(VMT_CSV_TEXT);
+  const csv = vmtRows;
   const months = s.months.slice(start);
   return JSON.stringify({
     fiveDay: metric.fiveDay === true, metric: metric.key, ads,
@@ -443,7 +501,7 @@ Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) 
 const tipsOf = month => [...shown.html.matchAll(/data-tip="([^"]*)"/g)]
   .map(m => m[1].replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"))
   .filter(t => t.startsWith(month + "\n") && /incident/.test(t));
-for (const [key, [best, lo]] of Object.entries(r.expectedLag)) {
+for (const [key, [best, lo]] of Object.entries({ ...r.expectedLag, [`Zoox|${lagMonth}`]: [0.6, 0.25, 1] })) {
   const month = key.slice(key.indexOf("|") + 1);
   const note = `~${Math.round(best * 100)}% incident coverage (worst case ~${Math.round(lo * 100)}%)`;
   const tips = tipsOf(month);
@@ -454,4 +512,4 @@ Expectata: ${shown.ads.length} tooltips; the lagged helmer's (${key}) says "${no
 Resultata: ${JSON.stringify(tips)}.`);
 }
 
-console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (Zoox ${r.lag.Zoox} release late); lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js and on the MPI chart; slurp stops on 8 inconsistent inputs through main() and 6 more called directly`);
+console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart`);
