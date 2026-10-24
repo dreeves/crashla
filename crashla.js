@@ -3746,11 +3746,34 @@ function initGrowthMetricToggle() {
   });
 }
 
+// A company's own VMT chart: its one line, on its own linear axis.
 function renderHelmerMonthlyChart(globalSeries, helmer) {
-  // Filter to months where this helmer has VMT data
+  // One company's chart (its figure says whose), so a mark's name is its tip.
+  return renderVmtChart(globalSeries, [helmer], yLabel => `${helmerLabel(helmer)} ${yLabel}`, (h, tip) => tip);
+}
+
+// The combined VMT chart, last in its section (2026-10-24): every checked
+// line (ADS_SERIES: each company, and Tesla's no-monitor line) on one linear
+// axis, under their legend chips, a line with no months in the window grayed
+// (as on the MPI and distribution charts). Its figure names no one line, so
+// each mark is named for its line (seriesMarkName).
+function renderCombinedVmtChart(globalSeries) {
+  const lines = ADS_SERIES.filter(helmer => monthHelmerEnabled[helmer]);
+  return `
+    ${helmerChipLegend(lines,
+      new Set(lines.filter(helmer => globalSeries.points.every(point => point.helmers[helmer] === null))))}
+    ${renderVmtChart(globalSeries, lines, yLabel => yLabel, seriesMarkName)}`;
+}
+
+// A VMT chart: each of <helmers> (ADS_SERIES keys) as a line with its months'
+// ranges as error bars, on one linear axis from 0, over the window's months in
+// which any of them has VMT. <figureName> names the figure from its axis
+// title; <markName> names a mark from its line and its tip.
+function renderVmtChart(globalSeries, helmers, figureName, markName) {
+  // Filter to months where any of these lines has VMT data
   const presentIndices = [];
   for (let i = 0; i < globalSeries.points.length; i++) {
-    if (globalSeries.points[i].helmers[helmer] !== null) presentIndices.push(i);
+    if (helmers.some(helmer => globalSeries.points[i].helmers[helmer] !== null)) presentIndices.push(i);
   }
   // No months with data in range: fall back to the full window so the chart
   // still renders as empty axes instead of vanishing (Anti-Magic Principle).
@@ -3768,7 +3791,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const mTop = 14;
   const mBot = 48;
   const pH = svgH - mTop - mBot;
-  const rows = helmerMonthRows(series, helmer);
+  const rowsOf = helmers.map(helmer => helmerMonthRows(series, helmer));
   // Monthly vs cumulative VMT view (global toggle). Cumulative plots the kyoom
   // band, which is monotone, so its floors don't wiggle like the monthly bars.
   const best = row => vmtCumulative ? row.vmtCume : row.vmtMonthBest;
@@ -3776,7 +3799,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const hi = row => vmtCumulative ? row.kyoomMax : row.vmtMonthMax;
   const yLabel = vmtCumulative ? "Cumulative VMT" : "Vehicle Miles Traveled (VMT)";
   // 0 with no rows in the window: the empty axes are labelled "0" alone (linearTicks).
-  const vmtMax = Math.max(0, ...rows.map(row => row ? hi(row) : 0));
+  const vmtMax = Math.max(0, ...rowsOf.flat().map(row => row ? hi(row) : 0));
   const yTicks = linearTicks(0, vmtMax, 4);
   const mLeft = axisLeftMargin(yTicks.map(fmtMiles));
   const pW = svgW - mLeft - mRight;
@@ -3784,62 +3807,65 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const mapX = monthColumnX(series.months.length, mLeft + xPad, mLeft + pW - xPad);
   // The axis tops out at its last tick (linearTicks), at or above vmtMax.
   const mapVmtY = y => scaleLinear(y, 0, yTicks[yTicks.length - 1], mTop + pH, mTop);
-  const vmtColor = HELMER_COLORS[helmer];
+  // The incident count on the miles' basis: the month's, or (cumulative
+  // view) all through it, as vmtCume is.
+  const incidentsOf = row => vmtCumulative ? row.incidentsCume : row.incidents.total;
 
-  const errs = [];
-  for (let i = 0; i < series.points.length; i++) {
-    const row = rows[i];
-    if (!row) continue; // no data for this helmer this month (empty-range fallback)
-    const cx = mapX(i);
-    const yLo = mapVmtY(lo(row));
-    const yHi = mapVmtY(hi(row));
-    errs.push(`
+  // Each line's error bars, its path, then its dots and (hitCircles, over
+  // every line's) each month's targets: its range's low and high ends, then
+  // its dot, so the Tab order walks month by month and the dot wins where its
+  // ends lie under it.
+  const errs = [], vmtPaths = [], dots = [], targets = [];
+  helmers.forEach((helmer, h) => {
+    const rows = rowsOf[h];
+    const vmtColor = HELMER_COLORS[helmer];
+    for (let i = 0; i < series.points.length; i++) {
+      const row = rows[i];
+      if (!row) continue; // no data for this helmer this month (empty-range fallback)
+      const cx = mapX(i);
+      const yLo = mapVmtY(lo(row));
+      const yHi = mapVmtY(hi(row));
+      errs.push(`
       <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
       <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
     `);
-  }
+    }
 
-  let vmtPath = "";
-  for (let i = 0; i < series.points.length; i++) {
-    if (!rows[i]) continue;
-    const y = mapVmtY(best(rows[i]));
-    vmtPath += `${vmtPath ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
-  }
+    let vmtPath = "";
+    for (let i = 0; i < series.points.length; i++) {
+      if (!rows[i]) continue;
+      const y = mapVmtY(best(rows[i]));
+      vmtPath += `${vmtPath ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
+    }
+    vmtPaths.push(`<path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>`);
 
-  // The incident count on the miles' basis: the month's, or (cumulative
-  // view) all through it, as vmtCume is.
-  const incidentsOf = row => vmtCumulative ? row.incidentsCume : row.incidents.total;
-  // The dots, then (hitCircles) each month's targets over them: its range's
-  // low and high ends, then its dot, so the Tab order walks month by month
-  // and the dot wins where its ends lie under it.
-  const dots = [], targets = [];
-  rows.forEach((row, i) => {
-    if (!row) return;
-    const x = mapX(i);
-    const y = mapVmtY(best(row));
-    dots.push(`<circle class="month-dot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
-    const month = series.months[i];
-    // Only the data-through month's count, and a helmer's Monthly-lag
-    // months', are partial (both factors are 1 elsewhere).
-    const worst = row.coverage * row.incCovMin;
-    const note = worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
-    // One company's chart (its figure says whose), so a mark's name is its tip.
-    const low = vmtEndTooltip(month, lo(row), VMT_RANGE_EDGE.lo);
-    const high = vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi);
-    const dot = vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + note;
-    targets.push(
-      {x, y: mapVmtY(lo(row)), tip: low, name: low},
-      {x, y: mapVmtY(hi(row)), tip: high, name: high},
-      {x, y, tip: dot, name: dot},
-    );
+    rows.forEach((row, i) => {
+      if (!row) return;
+      const x = mapX(i);
+      const y = mapVmtY(best(row));
+      dots.push(`<circle class="month-dot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
+      const month = series.months[i];
+      // Only the data-through month's count, and a helmer's Monthly-lag
+      // months', are partial (both factors are 1 elsewhere).
+      const worst = row.coverage * row.incCovMin;
+      const note = worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
+      const low = vmtEndTooltip(month, lo(row), VMT_RANGE_EDGE.lo);
+      const high = vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi);
+      const dot = vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + note;
+      targets.push(
+        {x, y: mapVmtY(lo(row)), tip: low, name: markName(helmer, low)},
+        {x, y: mapVmtY(hi(row)), tip: high, name: markName(helmer, high)},
+        {x, y, tip: dot, name: markName(helmer, dot)},
+      );
+    });
   });
   const vmtMarks = dots.join("") + hitCircles(targets);
 
   return `
-    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(`${helmerLabel(helmer)} ${yLabel}`)}">
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(figureName(yLabel))}">
       ${errs.join("")}
-      <path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>
+      ${vmtPaths.join("")}
       ${vmtMarks}
       ${drawSingleMonthAxes(
         series.months, svgH, mLeft, mTop, pW, pH, mapX, yTicks, mapVmtY, fmtMiles,
@@ -4413,6 +4439,7 @@ function drawWindowedViews() {
       ${renderHelmerMonthlyChart(activeSeries, helmer)}
     </div>
   `).join("");
+  byId("chart-vmt-combined").innerHTML = renderCombinedVmtChart(activeSeries);
 }
 
 function buildMonthlyViews() {

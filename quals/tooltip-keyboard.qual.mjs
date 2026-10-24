@@ -58,15 +58,18 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     // A company's label by its series colour.
     const labelOf = {};
     for (const h of ALL_HELMERS) labelOf[HELMER_COLORS[h].toLowerCase()] = helmerLabel(h);
-    // On the two charts several companies share, a mark's glyph (its colour)
-    // and its hit circle come in the same order.
+    // On the charts several companies share, a mark's glyph (its colour)
+    // and its hit circles come in the same order: one hit circle per glyph on
+    // the MPI and distribution charts, three on the combined VMT chart (since
+    // 2026-10-24: its range's two ends, then its dot).
     const seriesLabel = new Map();
-    for (const host of ["#chart-mpi-all", "#chart-distributions"]) {
+    for (const host of ["#chart-mpi-all", "#chart-distributions", "#chart-vmt-combined"]) {
       const svg = document.querySelector(host + " svg");
       const glyphs = [...svg.querySelectorAll("circle.month-dot")];
       const hits = [...svg.querySelectorAll("circle[data-tip]")];
+      const per = glyphs.length > 0 && hits.length % glyphs.length === 0 ? hits.length / glyphs.length : 0;
       hits.forEach((c, i) => {
-        const m = glyphs.length === hits.length ? /(?:fill|stroke):\s*(#[0-9a-f]{6})/i.exec(glyphs[i].getAttribute("style") || "") : null;
+        const m = per > 0 ? /(?:fill|stroke):\s*(#[0-9a-f]{6})/i.exec(glyphs[Math.floor(i / per)].getAttribute("style") || "") : null;
         seriesLabel.set(c, m === null ? "<no glyph>" : (labelOf[m[1].toLowerCase()] || "<unknown colour " + m[1] + ">"));
       });
     }
@@ -116,7 +119,7 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     audit.badSvg.length === 0 && audit.badHtml.length === 0 && audit.badFault.length === 0 && audit.copies.length === 0,
     `[${engine}] Replicata: load the default view and inspect every [data-tip] tooltip target.
 Expectata: every target but the incident table's fault cells is a Tab stop, and none holds its tip as text of its own;
-an SVG mark's aria-label is its tip, and on the MPI and distribution charts its company's label, " · " and its tip;
+an SVG mark's aria-label is its tip, and on the MPI, distribution and combined VMT charts its company's label, " · " and its tip;
 an HTML target is role="img" named by what it shows (its aria-hidden decoration left out) and its tip;
 a fault cell's aria-describedby is its row's "${"Fault fraction:"}" line, which holds its tip.
 Resultata: ${audit.targets} targets (${audit.faultCells} fault cells); not focusable ${audit.notFocusable.length}

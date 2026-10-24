@@ -33,6 +33,7 @@ const views = page => page.evaluate(() => {
     sanity: el("sanity-checks").innerHTML,
     mpi: el("chart-mpi-all").innerHTML, dist: el("chart-distributions").innerHTML,
     cards: el("mpi-summary-cards").innerHTML, vmt: el("chart-helmer-series").innerHTML,
+    vmtCombined: el("chart-vmt-combined").innerHTML,
   };
 });
 // Two frames and a task after the last one: whatever the presses asked for is done.

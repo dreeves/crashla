@@ -593,6 +593,10 @@ tbody tr:hover { background: var(--accent-wash); }
   #month-panel:has(#date-range-controls:empty) #chart-helmer-series {
     min-height: calc(2 * (var(--fs-lg) * var(--lh-tight) + 0.35rem + 250px + 0.8rem) + 0.9rem);
   }
+  /* the combined VMT chart: a legend line over a 250-unit chart */
+  #month-panel:has(#date-range-controls:empty) #chart-vmt-combined {
+    min-height: calc(var(--fs-base) * var(--lh-body) + 250px);
+  }
   /* a legend line over a 520- and a 280-unit chart */
   #month-panel:has(#date-range-controls:empty) #chart-mpi-all {
     min-height: calc(var(--fs-base) * var(--lh-body) + 520px);

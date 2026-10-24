@@ -127,6 +127,7 @@ function makePage(withFrames) {
         dist: el("chart-distributions").innerHTML,
         cards: el("mpi-summary-cards").innerHTML,
         vmt: el("chart-helmer-series").innerHTML,
+        vmtCombined: el("chart-vmt-combined").innerHTML,
         headings: [el("mpi-heading").textContent, el("dist-heading").textContent],
       };
     })()`),
