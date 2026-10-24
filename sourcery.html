@@ -8533,14 +8533,24 @@ https://electrek.co/2026/10/15/tesla-remote-operators-crashing-robotaxis/</pre>
 <div class="diffstat">+147 −0 <span class="blocks" aria-hidden="true"><span class="add"></span><span class="add"></span><span class="add"></span><span class="add"></span><span class="add"></span></span></div></header>
 <pre class="prompt">no log scale for now. put the combined chart last. i realize that waymo is so far ahead that the others will just be a dusting of pixels on the x-axis. that's fine for now</pre>
 <details>
-<summary><a class="anchor" href="#p423"><time datetime="2026-10-24T10:12:48.171000+00:00">10:12</time></a> <span class="chip"></span> <span class="agent">Claude Code</span> <span class="model">claude-opus-5-5</span> <span class="effort">(max)</span> <span class="elapsed">thought for 8m40s · 9m29s wall-clock time</span></summary>
+<summary><a class="anchor" href="#p423"><time datetime="2026-10-24T10:12:48.171000+00:00">10:12</time></a> <span class="chip"></span> <span class="agent">Claude Code</span> <span class="model">claude-opus-5-5</span> <span class="effort">(max)</span> <span class="elapsed">thought for 10m3s · 22m8s wall-clock time</span></summary>
 <div class="reply machine"><p>Building it: linear scale, last in the Vehicle Miles Traveled section, per-company charts kept. Reading the current VMT chart code first so the combined chart reuses it rather than duplicating it.</p>
 <p>Three quals snapshot <code>#chart-helmer-series</code> when comparing views; they&#x27;ll get the combined chart too. Checking how chart targets are named in the markup, so the new qual can parse them:</p>
 <p>Adding the combined chart to the three quals that compare the windowed views between states:</p>
 <p>Now the implementation: markup, the generalized chart function, the render call and the pre-script placeholder.</p>
 <p>The new qual passes. Next, confirming the per-company charts are byte-identical to before the refactor: a scratch copy of crashla.js with the old function restored, run on the same data.</p>
 <p>Waiting for the full suite to finish.</p>
-<p>The combined chart is in and its new qual passes; the full suite is running (15 of 117 done so far). I&#x27;ll report once it finishes.</p></div>
+<p>The combined chart is in and its new qual passes; the full suite is running (15 of 117 done so far). I&#x27;ll report once it finishes.</p>
+<p>One failure: a second check in <code>tooltip-keyboard</code> counts the charts on the default view (&quot;six charts&quot;). Reading it:</p>
+<p>The default view now has seven charts (two company charts, combined, MPI, distribution, two growth charts), and the qual hard-codes six in two places. Restating it to seven:</p>
+<p>The combined VMT chart is done. It&#x27;s the last chart in the Vehicle Miles Traveled section, on a linear axis, showing every checked line, and all 117 quals pass with the current working tree.</p>
+<p><strong>Heads-up on your commit:</strong> 2127c29 went in before my last qual fix, so <code>tooltip-keyboard</code> fails at HEAD. Committing the two files still modified (<code>quals/tooltip-keyboard.qual.mjs</code> and the AGENTS.md ledger entry) brings HEAD back to green.</p>
+<p><strong>How it behaves</strong></p>
+<ul><li>It follows the date slider and the Monthly/Cumulative toggle.</li><li>Each checked company or Tesla line gets a legend chip. A checked line with no months in the window gets a grayed chip, as on the other shared charts.</li><li>With no company checked it still draws its empty axes.</li><li>As expected, Waymo sets the axis (30M a month, 400M cumulative) and the others lie along the bottom.</li></ul>
+<p><strong>How it&#x27;s built</strong></p>
+<ul><li>The per-company chart function now draws any list of lines on one axis. The per-company charts are unchanged: I compared 80 of them against the old code and every one was byte-identical.</li><li>The only differences between a company&#x27;s chart and the combined one are the legend and how screen readers name things. On the combined chart each marker is named &quot;line label · tooltip text&quot;, as on the other charts several companies share.</li><li><strong>One change from what I proposed:</strong> the combined chart uses the same error bars as the company charts instead of the faint bands I described, so there&#x27;s one drawing path rather than two.</li></ul>
+<p><strong>Quals, for you to vet (rule 5)</strong></p>
+<ul><li><strong>New:</strong> [vmt-combined](quals/vmt-combined.qual.mjs) checks the chart&#x27;s position, legend, lines, linear axis and naming in six states, and that each line&#x27;s markers match its own chart&#x27;s exactly.</li><li><strong>[tooltip-keyboard](quals/tooltip-keyboard.qual.mjs):</strong> the combined chart&#x27;s markers must carry the line label, and the default view&#x27;s chart count goes from six to seven.</li><li><strong>[selection-redraw](quals/selection-redraw.qual.mjs), [slider-frame](quals/slider-frame.qual.mjs) and [slider-held-key](quals/slider-held-key.qual.mjs):</strong> their before/after comparisons now include the combined chart.</li></ul></div>
 </details>
 </article>
 </main>

@@ -322,9 +322,12 @@ Resultata: ${JSON.stringify(low)}.`);
       visibleTexts: texts.filter(x => x.closest('[aria-hidden="true"]') === null).map(x => x.textContent) };
   }));
   const badCharts = charts.filter(c => c.role !== "figure" || c.name === "" || c.name.includes("<missing id>") || c.visibleTexts.length > 0);
-  assert.ok(charts.length === 6 && badCharts.length === 0,
+  // Seven since the combined VMT chart (2026-10-24): Tesla's and Waymo's VMT
+  // charts, the combined VMT chart, the MPI and distribution charts, and the
+  // two growth charts.
+  assert.ok(charts.length === 7 && badCharts.length === 0,
     `[${engine}] Replicata: inspect each chart <svg> on the default view.
-Expectata: six charts, each role="figure" with a non-empty accessible name from existing page text, and every
+Expectata: seven charts, each role="figure" with a non-empty accessible name from existing page text, and every
 <text> (ticks, axis titles, "?" markers) inside an aria-hidden group.
 Resultata: ${JSON.stringify(badCharts.length > 0 ? badCharts : charts).slice(0, 1500)}.`);
   const mpiName = charts.find(c => c.host === "chart-mpi-all").name;
@@ -342,9 +345,9 @@ Resultata: ${JSON.stringify(mpiName)}.`);
     const marks = nodes.filter(n => !n.ignored && n.role && n.role.value === "graphics-symbol");
     const unnamedMarks = marks.filter(n => !n.name || n.name.value === "").length;
     const questionMarks = nodes.filter(n => !n.ignored && n.name && n.name.value === "?").length;
-    assert.ok(figures.length === 6 && figures.every(n => n) && marks.length > 100 && unnamedMarks === 0 && questionMarks === 0,
+    assert.ok(figures.length === 7 && figures.every(n => n) && marks.length > 100 && unnamedMarks === 0 && questionMarks === 0,
       `[chromium] Replicata: read the accessibility tree of the default view.
-Expectata: six named figures, every chart mark (graphics-symbol) named, and no node named "?".
+Expectata: seven named figures, every chart mark (graphics-symbol) named, and no node named "?".
 Resultata: figures ${JSON.stringify(figures)}; ${marks.length} marks, ${unnamedMarks} unnamed; ${questionMarks} nodes named "?".`);
     // #63: the "[?]" glyph is decoration, and no Tab stop is a nameless
     // generic: the card hints, Effective-VMT lines, prior-only multipliers and
