@@ -44,13 +44,14 @@ for (const engine of ["chromium", "firefox"]) {
       document.querySelector("#incidents-head th").click();
       const th = document.querySelector("#incidents-head th[aria-sort] > button");
       const arrow = getComputedStyle(th, "::after");
-      return { forced: matchMedia("(forced-colors: active)").matches, chips, swatches,
+      // One legend chip per helmer, checked or not (ALL_HELMERS is the page's own list).
+      return { forced: matchMedia("(forced-colors: active)").matches, chips, helmers: ALL_HELMERS.length, swatches,
         chevronSides: [chevron.borderLeftColor, chevron.borderRightColor],
         sortArrow: { header: getComputedStyle(th).color, drawn: arrow.borderBottomColor, sides: [arrow.borderLeftColor, arrow.borderRightColor] } };
     });
     // Inline colours read back in rgb() notation, as computed colours do.
     const lostChips = seen.chips.filter(c => c.computed !== c.inline);
-    assert.ok(seen.forced && seen.chips.length === 6 && lostChips.length === 0 &&
+    assert.ok(seen.forced && seen.chips.length === seen.helmers && lostChips.length === 0 &&
       seen.swatches.every(s => s.startsWith("linear-gradient")) &&
       seen.chevronSides.every(TRANSPARENT),
       `[${engine}, ${colorScheme}] Replicata: open the default view with forced colours active (a Windows contrast theme).

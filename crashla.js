@@ -469,7 +469,7 @@ function estimateMpi(k, m, massFrac) {
 let incidents = [];
 let vmtRows = [];
 let faultData = {}; // reportId -> {faultfrac, reasoning}
-let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, Waymo: true, Zoox: false};
+let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, TeslaNoMonitor: false, Waymo: true, Zoox: false};
 // Collapsible page sections (each <section class="collapsible" id="sec-<id>">).
 // Collapsed set is shareable via the URL so a link can foreground one section.
 const SECTION_IDS = ["controls", "vmt", "mpi", "dist", "browser", "markets", "summary", "sanity", "fleet"];
@@ -1209,12 +1209,20 @@ const ADS_HELMERS = ["Tesla", "Waymo", "Zoox"];
 // Uber/Lyft). Same urban surface streets as the AVs; see the humanMPI proxy
 // derivation below the metric defs.
 const HUMAN_HELMERS = ["HumansAV", "HumansUS", "HumansRideshare"];
-const ALL_HELMERS = [...HUMAN_HELMERS, ...ADS_HELMERS];
+// The ADS lines the page plots: each company (ADS_HELMERS, the reporting
+// entities an incident belongs to) and, beside Tesla, Tesla's driving with no
+// safety monitor in the vehicle (2026-10-23): the in-scope Tesla reports on
+// Tesla's own no-monitor list (slurp.py TESLA_NO_MONITOR_REPORTS) over Tesla's
+// own no-monitor miles (data/vmt.csv "teslanomonitor" rows). An incident's
+// `series` names every line it counts toward.
+const ADS_SERIES = ["Tesla", "TeslaNoMonitor", "Waymo", "Zoox"];
+const ALL_HELMERS = [...HUMAN_HELMERS, ...ADS_SERIES];
 const HELMER_LABELS = {
   HumansAV: "Humans (AV cities)",
   HumansUS: "Humans (US average)",
   HumansRideshare: "Humans (Uber/Lyft)",
   Tesla: "Tesla",
+  TeslaNoMonitor: "Tesla (no safety monitor)",
   Waymo: "Waymo",
   Zoox: "Zoox",
 };
@@ -1233,6 +1241,10 @@ const HELMER_COLORS = {
   HumansUS: "#4b3b00",
   HumansRideshare: "#cc7a00",
   Tesla: "#d13b2d",
+  // Tesla's no-monitor line: a dark raspberry in Tesla's red family, >= 15.9
+  // CIEDE2000 from every other series under normal vision and the three
+  // deficiencies, 10:1 on the page (helmer-colors-cvd.qual).
+  TeslaNoMonitor: "#7a1050",
   Waymo: "#2060c0",
   Zoox: "#2a8f57",
 };
@@ -1345,7 +1357,7 @@ function parseVmtCsv(text) {
     const hit = re.exec(line);
     assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
     const helmerRaw = hit[1].trim();
-    const helmer = ADS_HELMERS.find(c => c.toLowerCase() === helmerRaw.toLowerCase());
+    const helmer = ADS_SERIES.find(c => c.toLowerCase() === helmerRaw.toLowerCase());
     assert(helmer !== undefined, "VMT sheet CSV has unknown helmer", {helmerRaw});
     const vmtBest = Number(hit[3]);
     const vmtCume = Number(hit[4]);
@@ -1989,55 +2001,57 @@ function monthSeriesData() {
     const month = monthKeyFromIncidentLabel(inc.date);
     assert(monthSet.has(month), "incident date outside VMT window",
       {reportId: inc.reportId, helmer: inc.helmer, date: inc.date, month});
-    const key = inc.helmer + "|" + month;
-    let rec = incidentsByKey[key];
-    if (rec === undefined) {
-      rec = {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
-             atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [],
-             injury: 0, hospitalization: 0, airbag: 0,
-             seriousInjury: 0, fatality: 0};
-      incidentsByKey[key] = rec;
+    for (const series of inc.series) {
+      const key = series + "|" + month;
+      let rec = incidentsByKey[key];
+      if (rec === undefined) {
+        rec = {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0,
+               atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [],
+               injury: 0, hospitalization: 0, airbag: 0,
+               seriousInjury: 0, fatality: 0};
+        incidentsByKey[key] = rec;
+      }
+      rec.total += 1;
+      const bin = speedBinForIncident(inc.speed);
+      rec.speeds[bin] += 1;
+      assert(typeof inc.road === "string", "incident road must be string", {reportId: inc.reportId, road: inc.road});
+      rec.roadwayNonstationary += Number(
+        bin !== "0" && inc.road !== "Parking Lot",
+      );
+      let atFaultFrac = null;
+      if (inc.fault !== null) {
+        assert(typeof inc.fault === "object",
+          "incident fault must be null or object", {reportId: inc.reportId});
+        atFaultFrac = Number(inc.fault.faultfrac);
+        assert(Number.isFinite(atFaultFrac) && atFaultFrac >= 0 && atFaultFrac <= 1,
+          "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
+      }
+      rec.faultKnown += Number(atFaultFrac !== null);
+      // Keep the individual nonzero fractions: the at-fault posteriors mix over
+      // the Poisson-binomial of the true count (mixtureComponents), and the
+      // month's fault mass is their exact sum on the 0.05 grid (faultSum, after
+      // this loop).
+      if (atFaultFrac) {
+        rec.atFaultFracs.push(atFaultFrac);
+        if (INJURY_SEVERITIES.has(inc.severity)) rec.atFaultInjuryFracs.push(atFaultFrac);
+      }
+      rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
+      rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
+      rec.airbag += Number(inc.airbagAny === true);
+      rec.seriousInjury += Number(SERIOUS_INJURY_SEVERITIES.has(inc.severity));
+      // Fractional-death attribution (Koopman's method, endorsed by Piper): a
+      // fatal crash counts as 1/(vehicles involved) on the AV's account. Summed
+      // over every vehicle on the road this counts each fatal CRASH exactly once
+      // (SGO severity flags at-least-one-death, not a death count), so the
+      // consistent human FLEET comparators are fatal crashes / total VMT and,
+      // under deaths≈fatal-crashes, deaths / total VMT — the two numerators the
+      // fatality humanMPI band below spans. Most fatal crashes are
+      // multi-vehicle, so counting each fatal-crash involvement as a whole death
+      // would overstate the AV against those fleet rates; the fraction makes
+      // them comparable (a 2-vehicle fatal crash = 0.5, a 3-vehicle = 0.33). See
+      // theargumentmag.com/p/we-absolutely-do-know-that-waymos.
+      rec.fatality += Number(inc.severity === "Fatality") / inc.vehiclesInvolved;
     }
-    rec.total += 1;
-    const bin = speedBinForIncident(inc.speed);
-    rec.speeds[bin] += 1;
-    assert(typeof inc.road === "string", "incident road must be string", {reportId: inc.reportId, road: inc.road});
-    rec.roadwayNonstationary += Number(
-      bin !== "0" && inc.road !== "Parking Lot",
-    );
-    let atFaultFrac = null;
-    if (inc.fault !== null) {
-      assert(typeof inc.fault === "object",
-        "incident fault must be null or object", {reportId: inc.reportId});
-      atFaultFrac = Number(inc.fault.faultfrac);
-      assert(Number.isFinite(atFaultFrac) && atFaultFrac >= 0 && atFaultFrac <= 1,
-        "monthly at-fault fraction out of range", {reportId: inc.reportId, atFaultFrac});
-    }
-    rec.faultKnown += Number(atFaultFrac !== null);
-    // Keep the individual nonzero fractions: the at-fault posteriors mix over
-    // the Poisson-binomial of the true count (mixtureComponents), and the
-    // month's fault mass is their exact sum on the 0.05 grid (faultSum, after
-    // this loop).
-    if (atFaultFrac) {
-      rec.atFaultFracs.push(atFaultFrac);
-      if (INJURY_SEVERITIES.has(inc.severity)) rec.atFaultInjuryFracs.push(atFaultFrac);
-    }
-    rec.injury += Number(INJURY_SEVERITIES.has(inc.severity));
-    rec.hospitalization += Number(HOSPITALIZATION_SEVERITIES.has(inc.severity));
-    rec.airbag += Number(inc.airbagAny === true);
-    rec.seriousInjury += Number(SERIOUS_INJURY_SEVERITIES.has(inc.severity));
-    // Fractional-death attribution (Koopman's method, endorsed by Piper): a
-    // fatal crash counts as 1/(vehicles involved) on the AV's account. Summed
-    // over every vehicle on the road this counts each fatal CRASH exactly once
-    // (SGO severity flags at-least-one-death, not a death count), so the
-    // consistent human FLEET comparators are fatal crashes / total VMT and,
-    // under deaths≈fatal-crashes, deaths / total VMT — the two numerators the
-    // fatality humanMPI band below spans. Most fatal crashes are
-    // multi-vehicle, so counting each fatal-crash involvement as a whole death
-    // would overstate the AV against those fleet rates; the fraction makes
-    // them comparable (a 2-vehicle fatal crash = 0.5, a 3-vehicle = 0.33). See
-    // theargumentmag.com/p/we-absolutely-do-know-that-waymos.
-    rec.fatality += Number(inc.severity === "Fatality") / inc.vehiclesInvolved;
   }
   for (const rec of Object.values(incidentsByKey)) {
     rec.atFault = faultSum(rec.atFaultFracs);
@@ -2096,10 +2110,10 @@ function monthSeriesData() {
   const points = [];
   // Each helmer's incidents through the month, all-time like vmtCume: the
   // count the VMT chart pairs with cumulative miles.
-  const incidentsToDate = Object.fromEntries(ADS_HELMERS.map(helmer => [helmer, 0]));
+  const incidentsToDate = Object.fromEntries(ADS_SERIES.map(helmer => [helmer, 0]));
   for (const month of months) {
     const helmers = {...humanEntries};
-    for (const helmer of ADS_HELMERS) {
+    for (const helmer of ADS_SERIES) {
       const key = helmer + "|" + month;
       const vmt = vmtByKey[key];
       if (vmt === undefined) {
@@ -3823,7 +3837,7 @@ function renderHelmerMonthlyChart(globalSeries, helmer) {
   const vmtMarks = dots.join("") + hitCircles(targets);
 
   return `
-    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(`${helmer} ${yLabel}`)}">
+    <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(`${helmerLabel(helmer)} ${yLabel}`)}">
       ${errs.join("")}
       <path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>
       ${vmtMarks}
@@ -3920,7 +3934,7 @@ function renderStressTestTable(series) {
     METRIC_KEYS.filter(metricKey => row.mpiEstimates[metricKey] !== null).map(metricKey => {
       const stress = helmerHumanStress(row, metricKey);
       return `<tr>
-        <td>${escHtml(row.helmer)}</td>
+        <td>${escHtml(helmerLabel(row.helmer))}</td>
         <td>${escHtml(stress.metric.cardLabel)}</td>
         <td class="num">${fmtCount(stress.av.k)}</td>
         <td class="num pair"><span>${fmtWhole(stress.av.postMedian)};</span> <span>${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</span></td>
@@ -3942,7 +3956,7 @@ function renderStressTestTable(series) {
       const flippedCell = flip === null || flip.flipped === null ? "—"
         : `<span class="stress-badge ${STRESS_VERDICT_META[flip.flipped].className}">${STRESS_VERDICT_META[flip.flipped].label}</span>`;
       return `<tr>
-        <td>${escHtml(row.helmer)}</td>
+        <td>${escHtml(helmerLabel(row.helmer))}</td>
         <td class="num">${fmtCount(stress.av.k)}</td>
         <td>${stressBadge(stress, stress.av.k)}</td>
         <td class="num">${multCell}</td>
@@ -4391,11 +4405,11 @@ function drawWindowedViews() {
   // data. The monthly chart above shows how the rate moves over time.
   byId("chart-distributions").innerHTML = renderDistributionChart(activeSeries);
   byId("mpi-summary-cards").innerHTML = `<div class="mpi-cards">${renderMpiSummaryCards(activeSeries)}</div>`;
-  byId("chart-helmer-series").innerHTML = ADS_HELMERS
+  byId("chart-helmer-series").innerHTML = ADS_SERIES
     .filter(helmer => monthHelmerEnabled[helmer])
     .map(helmer => `
     <div class="month-chart">
-      <h3>${helmer}</h3>
+      <h3>${helmerLabel(helmer)}</h3>
       ${renderHelmerMonthlyChart(activeSeries, helmer)}
     </div>
   `).join("");
@@ -5226,9 +5240,9 @@ Confidential Business Information (CBI).
   // receipt-scaled 95% edges -- the perfectly-correlated band abandoned on
   // 2026-09-04 -- and so contradicted the cards beside it.
   const vmtUncRows = windowSummaryRows(series)
-    .filter(r => ADS_HELMERS.includes(r.helmer) && r.vmtBest > 0)
+    .filter(r => ADS_SERIES.includes(r.helmer) && r.vmtBest > 0)
     .map(r => `<tr>
-      <td>${escHtml(r.helmer)}</td>
+      <td>${escHtml(helmerLabel(r.helmer))}</td>
       <td>${fmtMiles(r.vmtMin)}</td>
       <td>${fmtMiles(r.vmtBest)}</td>
       <td>${fmtMiles(r.vmtMax)}</td>
@@ -5261,14 +5275,15 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
   // three ADS helmers had VMT counted (2025-06 on, Tesla's first month), so a
   // long window showed the default window's result and an early or short one
   // an empty table (audit #9). A helmer with too few months keeps a grayed
-  // row that says so.
+  // row that says so. Every line with a card gets a row (ADS_SERIES: Tesla's
+  // no-monitor line too, counting the incidents whose series lists it).
   const dispRows = [];
-  for (const helmer of ADS_HELMERS) {
+  for (const helmer of ADS_SERIES) {
     const helmerVmt = vmt.filter(r => r.helmer === helmer);
     const monthData = [];
     for (const vmtRow of helmerVmt) {
       const count = rows.filter(r =>
-        r.helmer === helmer &&
+        r.series.includes(helmer) &&
         monthKeyFromIncidentLabel(r.date) === vmtRow.month).length;
       // Use effective VMT (calendar coverage * incident reporting completeness)
       // to match the MPI calculation's Poisson rate estimation
@@ -5276,7 +5291,7 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
     }
     if (monthData.length < DISPERSION_MIN_MONTHS) {
       dispRows.push(`<tr class="insufficient">
-      <td>${escHtml(helmer)}</td>
+      <td>${escHtml(helmerLabel(helmer))}</td>
       <td colspan="4">${escHtml(dispersionFewMonthsNote(monthData.length))}</td>
     </tr>`);
       continue;
@@ -5300,7 +5315,7 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
       : dispIdx < 5 ? "mildly overdispersed"
       : "overdispersed";
     dispRows.push(`<tr>
-      <td>${escHtml(helmer)}</td>
+      <td>${escHtml(helmerLabel(helmer))}</td>
       <td>${rates.join(", ")}</td>
       <td>${(lambdaHat * 1e6).toFixed(1)}</td>
       <td>${dispIdx.toFixed(2)}</td>
@@ -5446,7 +5461,7 @@ Maybe that affects AVs too?
 
   // --- 8. VMT sources ---
   const vmtSrcRows = [];
-  for (const helmer of ADS_HELMERS) {
+  for (const helmer of ADS_SERIES) {
     const helmerVmt = vmt.filter(r => r.helmer === helmer).sort((a, b) => a.month.localeCompare(b.month));
     if (helmerVmt.length === 0) continue;
     // One entry per distinct rationale (the eras of a helmer's VMT series each
@@ -5466,13 +5481,13 @@ Maybe that affects AVs too?
       return `${span}: ${escHtml(rationale)}`;
     }).join("<br>");
     vmtSrcRows.push(`<tr>
-      <td>${escHtml(helmer)}</td>
+      <td>${escHtml(helmerLabel(helmer))}</td>
       <td class="ai-text">${ratStr}</td>
     </tr>`);
   }
-  // Tesla's Jul-Aug 2026 rows (710k of 3.15M raw
-  // window miles), its Aug floor and the hidden Sep row rest on Elluswamy's
-  // Sep 3 Cybercab keynote. The Q3 deck (Oct 21) should re-pin Jul-Sep.
+  // Tesla's Jul-Sep 2026 rows rest on Tesla's own no-monitor miles (its
+  // robotaxi safety page and Q3-2026 deck) plus June's measured monitor-aboard
+  // remainder (2026-10-23); its no-monitor line's rows are those miles alone.
   sections.push(`
 <h3>VMT sources</h3>
 <p>
@@ -6284,6 +6299,10 @@ function loadPredmarketData() {
     assert(typeof inc.helmer === "string", "incident missing helmer");
     assert(ADS_HELMERS.includes(inc.helmer),
       "inline incident data has unknown helmer", {helmer: inc.helmer});
+    assert(Array.isArray(inc.series) && inc.series[0] === inc.helmer &&
+      new Set(inc.series).size === inc.series.length && inc.series.every(s => ADS_SERIES.includes(s)),
+      "incident series must start with its helmer and name distinct plotted lines",
+      {reportId: inc.reportId, series: inc.series});
     assert(typeof inc.reportId === "string" && inc.reportId.length > 0,
       "incident missing reportId", {helmer: inc.helmer});
     // The incident browser builds a row's ids, the IDREFs pointing at them and

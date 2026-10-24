@@ -10,7 +10,9 @@ import { parseCsv } from "./csv-parse.mjs";
 // month's rows BEFORE the ~mid-month data drop. The freshness pin below
 // advances with each cycle (2026-09-25 cycle: rows through 2026-09).
 
-const HELMERS = ["waymo", "tesla", "zoox"];
+// teslanomonitor (2026-10-23) is a second Tesla line, not a company: the miles
+// Tesla counts as driven with no safety monitor aboard (Jan 2026 on).
+const HELMERS = ["waymo", "tesla", "zoox", "teslanomonitor"];
 const FRESH_THROUGH = "2026-09";
 
 // Regression pins for the latest estimate rows (authored values, not external
@@ -29,6 +31,9 @@ const CUME_PINS = {
   // (approved 2026-09-29): the series now excludes 40,080 pre-series
   // driverless miles from the official ~1.3M as of Dec 31, 2025
   "zoox|2026-09": 3530920,
+  // 2026-10-23: Tesla's weekly no-monitor miles (tesla.com/robotaxi/safety)
+  // summed by month, Jan-Sep 2026
+  "teslanomonitor|2026-09": 1933209,
 };
 
 // Quote-aware CSV parse (quals/csv-parse.mjs): a naive comma split can't tell

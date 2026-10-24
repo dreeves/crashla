@@ -260,9 +260,10 @@ def _contact_areas(row, prefix):
 
 
 # NHTSA publishes the CURRENT file's SV and CP contact-area columns under
-# rotated labels (found 2026-10-23, AGENTS.md open question 17): the box a
-# reporter checked as front left sits in the column headed "Front", front in
-# "Front Right", front right in "Front Left", and the same within the rear row.
+# rotated labels (found 2026-10-23; AGENTS.md ledger, 2026-10-23 entries):
+# the box a reporter checked as front left sits in the column headed
+# "Front", front in "Front Right", front right in "Front Left", and the
+# same within the rear row.
 # Tesla's own SGO spreadsheet for its robotaxi (Robotaxi-SGO-Report_10_18_2026
 # .xlsx, linked from tesla.com/robotaxi/safety) agrees with every narrative
 # that names a side and, after this move, with all 17 reports it shares with
@@ -1075,16 +1076,17 @@ def _vmt_number(cell):
 
 
 def _canonical_helmer(helmer_raw):
-    """Map a VMT-master helmer label ("tesla") to the canonical short name.
+    """Map a VMT-master helmer label ("tesla", "teslanomonitor") to its line,
+    a SERIES_COMPANY key: a company's short name or a derived line.
 
-    Exact case-insensitive match against the short names only: a blank or
+    Exact case-insensitive match against those names only: a blank or
     abbreviated label used to prefix-match the first HELMER_SHORT key ("" ->
     Waymo) and silently key another helmer's VMT.
     """
     wanted = helmer_raw.strip().lower()
-    hits = [v for v in HELMER_SHORT.values() if v.lower() == wanted]
-    must(len(hits) == 1, "VMT master helmer label is not a canonical short name",
-         helmer=helmer_raw, allowed=sorted(set(HELMER_SHORT.values())))
+    hits = [v for v in SERIES_COMPANY if v.lower() == wanted]
+    must(len(hits) == 1, "VMT master helmer label is not a line SERIES_COMPANY names",
+         helmer=helmer_raw, allowed=sorted(SERIES_COMPANY))
     return hits[0]
 
 
@@ -1170,10 +1172,11 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
         for r in public_service_incidents(filed_incident_rows(nhtsa_rows)).values())
 
     import math
-    last_month_helmers = sorted({
-        helmer for (helmer, month), miles in vmt.items()
-        if month == last_month and miles > 0
-    })
+    # Companies only: a derived line (SERIES_COMPANY) is a subset of its
+    # company's miles and incidents and takes the company's coverage.
+    last_month_helmers = sorted(
+        helmer for helmer in set(HELMER_SHORT.values())
+        if vmt.get((helmer, last_month), 0) > 0)
     must(last_month_helmers,
          "pooled incident coverage requires positive cutoff-month VMT",
          last_month=last_month)
@@ -1437,7 +1440,7 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
         if month not in active_months:
             continue
         ic_best, ic_lo, ic_hi = inc_cov.get(
-            (_canonical_helmer(row[0].strip()), month), (1, 1, 1))
+            (SERIES_COMPANY[_canonical_helmer(row[0].strip())], month), (1, 1, 1))
         cov_best, cov_lo, cov_hi = coverage_by_month.get(month, (1, 1, 1))
         # Normalize the six numeric columns to plain integers: a
         # thousands-separated "22,000,000" entered in the master CSV becomes
@@ -1687,6 +1690,84 @@ must(not set(PASSENGER_OVERRIDE) & set(OCCUPANCY_LANGUAGE_REVIEWED),
 must(all(len(v) == 2 and v[1] in PAX_CLASS for v in PASSENGER_OVERRIDE.values()),
      "PASSENGER_OVERRIDE entries must be (reviewed filed value, value to "
      "store), the stored value a code PAX_CLASS classifies")
+
+
+# Tesla's no-monitor line (2026-10-23): beside Tesla's every-mode line the page
+# plots Tesla's driving with no safety monitor in the vehicle. Tesla's robotaxi
+# safety page (tesla.com/robotaxi/safety) lists, under "Download all SGO
+# reportable events" (Robotaxi-SGO-Report_10_18_2026.xlsx, Last-Modified Oct
+# 20, 2026), every collision Tesla reported to NHTSA "while Robotaxi is driving
+# autonomously with no safety monitor in the vehicle, including when a remote
+# operator is assisting or has taken control": these 32 reports, May 23 to Oct
+# 18, 2026, 15 of them newer than NHTSA's Oct-15 file. Its fields and
+# narratives match NHTSA's (2026-10-23 cross-check). Re-read the spreadsheet
+# at every release: an in-scope Tesla report from TESLA_NO_MONITOR_FROM on
+# stops the run (incident_series) until it is here or in
+# TESLA_MONITOR_ABOARD_REPORTS.
+TESLA_NO_MONITOR_REPORTS = frozenset({
+    "13781-15399", "13781-15400", "13781-15395", "13781-15342", "13781-15809",
+    "13781-15808", "13781-16255", "13781-16294", "13781-16256", "13781-16679",
+    "13781-16678", "13781-16677", "13781-16676", "13781-16675", "13781-16674",
+    "13781-16673", "13781-17193", "13781-16671", "13781-17191", "13781-17179",
+    "13781-17178", "13781-16941", "13781-16733", "13781-17015", "13781-17300",
+    "13781-17301", "13781-17302", "13781-17203", "13781-17303", "13781-17299",
+    "13781-17304", "13781-17305",
+})
+# In-scope Tesla reports from TESLA_NO_MONITOR_FROM on with a safety monitor
+# aboard: each narrative says so ("a safety monitor present in the vehicle",
+# "Safety monitor was present"), and none is on Tesla's list.
+TESLA_MONITOR_ABOARD_REPORTS = frozenset({
+    "13781-13644", "13781-13645", "13781-13646", "13781-13648", "13781-14630",
+    "13781-14631", "13781-15017", "13781-16672",
+})
+# Tesla's no-monitor service began Jan 22, 2026; its safety page counts miles
+# and crashes from that day, so no report before this month is on the line.
+TESLA_NO_MONITOR_FROM = "2026-01"
+# Each line the page plots and the company whose reports and coverage it uses:
+# each company is its own; TeslaNoMonitor is Tesla's subset. Its data/vmt.csv
+# rows ("teslanomonitor") carry Tesla's no-monitor miles; build_vmt_csv gives
+# them Tesla's coverage, and the pooled incident coverage counts companies only.
+SERIES_COMPANY = {"Waymo": "Waymo", "Tesla": "Tesla", "Zoox": "Zoox",
+                  "TeslaNoMonitor": "Tesla"}
+# A derived line's member reports: (company, reviewed Report IDs).
+DERIVED_SERIES_REPORTS = {"TeslaNoMonitor": ("Tesla", TESLA_NO_MONITOR_REPORTS)}
+must(not TESLA_NO_MONITOR_REPORTS & TESLA_MONITOR_ABOARD_REPORTS,
+     "a Tesla report cannot be both on Tesla's no-monitor list and monitor-aboard")
+must(set(SERIES_COMPANY.values()) == set(HELMER_SHORT.values()) and
+     set(HELMER_SHORT.values()) <= set(SERIES_COMPANY) and
+     set(DERIVED_SERIES_REPORTS) == set(SERIES_COMPANY) - set(HELMER_SHORT.values()),
+     "SERIES_COMPANY must map every company to itself and every derived line "
+     "(each with a DERIVED_SERIES_REPORTS entry) to a company")
+
+
+def check_series_have_vmt(incidents, vmt):
+    """Stop unless every line an incident counts toward (its `series`) has a
+    data/vmt.csv row for the incident's month: the page refuses an incident
+    with no denominator ("orphan incident(s)"), and the stale-VMT check above
+    looks only at the newest month across all lines."""
+    missing = sorted({(series, nhtsa_month_to_iso(rec["date"]))
+                      for rec in incidents for series in rec["series"]} - set(vmt))
+    must(not missing, "in-scope incidents on a line with no data/vmt.csv row "
+         "for their month: add those rows", missing=missing)
+
+
+def incident_series(helmer, rid, month):
+    """The lines an in-scope incident counts toward: its company, plus every
+    derived line (DERIVED_SERIES_REPORTS) of that company listing the report.
+    Stops on a Tesla report from TESLA_NO_MONITOR_FROM on that has no monitor
+    classification, and on a listed report dated before that month."""
+    must(rid not in TESLA_NO_MONITOR_REPORTS or month >= TESLA_NO_MONITOR_FROM,
+         "a report on Tesla's no-monitor list predates that service "
+         "(TESLA_NO_MONITOR_FROM)", reportId=rid, month=month)
+    must(helmer != "Tesla" or month < TESLA_NO_MONITOR_FROM or
+         rid in TESLA_NO_MONITOR_REPORTS or rid in TESLA_MONITOR_ABOARD_REPORTS,
+         "in-scope Tesla report with no monitor classification: add it to "
+         "TESLA_NO_MONITOR_REPORTS if Tesla's latest no-monitor list "
+         "(tesla.com/robotaxi/safety) has it, else to "
+         "TESLA_MONITOR_ABOARD_REPORTS once its narrative or Tesla puts a "
+         "monitor aboard", reportId=rid, month=month)
+    return [helmer] + [series for series, (company, rids) in DERIVED_SERIES_REPORTS.items()
+                       if company == helmer and rid in rids]
 
 
 def operator_in_scope(row):
@@ -2050,6 +2131,7 @@ def main():
              reportId=rid, incidentId=iid_short, filed=filed_loc)
         check_occupancy_classified(r)
         rec["belted"] = reviewed_belted(rid, rec["belted"])
+        rec["series"] = incident_series(rec["helmer"], rid, nhtsa_month_to_iso(rec["date"]))
         incidents.append(rec)
     check_passengers_reviewed(incidents)
 
@@ -2068,6 +2150,7 @@ def main():
         nhtsa_month_to_iso(r["Incident Date"].strip()) in vmt_months
     ]
     vmt_values = parse_vmt_values(vmt_raw)
+    check_series_have_vmt(incidents, vmt_values)
     inc_cov = incident_coverage(
         window_rows, last_month, last_month_coverage[0], vmt_values)
     must(not set(inc_cov) & set(lag_coverage),

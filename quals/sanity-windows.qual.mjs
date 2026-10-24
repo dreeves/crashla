@@ -13,6 +13,9 @@
 //   #61 the coverage note gives the data-through MONTH, not the cutoff date;
 //   #90 "AV stopped" counts both stationary SGO codes, Stopped and Parked
 //       (Parked is a code only Waymo files).
+// Since 2026-10-24 the dispersion test has a row for every line with a
+// summary card (ADS_SERIES: Tesla's no-monitor line too, under its label),
+// each counting the incidents whose series lists it.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
@@ -47,6 +50,8 @@ const run = expr => JSON.parse(JSON.stringify(vm.runInContext(expr, ctx)));
 
 const months = run("fullMonthSeries.months");
 const ADS = run("ADS_HELMERS");
+const LINES = run("ADS_SERIES");
+const LABEL = run("Object.fromEntries(ADS_SERIES.map(h => [h, helmerLabel(h)]))");
 const last = months[months.length - 1];
 const WINDOWS = {
   default: [run("DEFAULT_START_MONTH"), last],
@@ -72,7 +77,7 @@ const escHtml = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g
 
 // The data, read independently of the app's aggregation.
 const MON = { JAN: "01", FEB: "02", MAR: "03", APR: "04", MAY: "05", JUN: "06", JUL: "07", AUG: "08", SEP: "09", OCT: "10", NOV: "11", DEC: "12" };
-const inc = run("INCIDENT_DATA.map(r => ({helmer: r.helmer, date: r.date, svMovement: r.svMovement}))")
+const inc = run("INCIDENT_DATA.map(r => ({helmer: r.helmer, series: r.series, date: r.date, svMovement: r.svMovement}))")
   .map(r => ({ ...r, month: `${r.date.slice(4)}-${MON[r.date.slice(0, 3)]}` }));
 const vmt = run("vmtRows.map(r => ({helmer: r.helmer, month: r.month, eff: r.vmtBest * r.coverage * r.incCov, rationale: r.rationale}))");
 const inWin = ([a, b]) => m => m >= a && m <= b;
@@ -96,15 +101,17 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
   const html = sanityHtml(win);
   const w = inWin(win);
 
-  // #9: one row per ADS helmer, over its own months.
+  // #9: one row per ADS line (each company, and Tesla's no-monitor line),
+  // over its own months.
   const disp = bodyRows(section(html, "Poisson dispersion"));
   const dispHelmers = disp.map(r => r.cells[0] && r.cells[0].text);
-  if (JSON.stringify(dispHelmers) !== JSON.stringify(ADS)) problems.dispersion.push(`${wname}: rows ${JSON.stringify(dispHelmers)}, want one per ADS helmer ${JSON.stringify(ADS)}`);
-  for (const helmer of ADS) {
-    const row = disp.find(r => r.cells[0] && r.cells[0].text === helmer);
+  const wantLabels = LINES.map(h => escHtml(LABEL[h]));
+  if (JSON.stringify(dispHelmers) !== JSON.stringify(wantLabels)) problems.dispersion.push(`${wname}: rows ${JSON.stringify(dispHelmers)}, want one per ADS line ${JSON.stringify(wantLabels)}`);
+  for (const helmer of LINES) {
+    const row = disp.find(r => r.cells[0] && r.cells[0].text === escHtml(LABEL[helmer]));
     if (!row) continue;
     const data = vmt.filter(r => r.helmer === helmer && w(r.month)).sort((x, y) => x.month < y.month ? -1 : 1)
-      .map(r => ({ count: inc.filter(i => i.helmer === helmer && i.month === r.month).length, vmt: r.eff }));
+      .map(r => ({ count: inc.filter(i => i.series.includes(helmer) && i.month === r.month).length, vmt: r.eff }));
     const grayed = /class="[^"]*\binsufficient\b/.test(row.attrs);
     if (data.length < 3) {
       let note = null;
@@ -117,7 +124,7 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
     const K = data.reduce((s, d) => s + d.count, 0), M = data.reduce((s, d) => s + d.vmt, 0), lam = K / M;
     const chi = data.reduce((s, d) => s + (lam * d.vmt > 0 ? (d.count - lam * d.vmt) ** 2 / (lam * d.vmt) : 0), 0);
     const idx = chi / (data.length - 1);
-    const want = [helmer, data.map(d => (d.count / d.vmt * 1e6).toFixed(1)).join(", "), (lam * 1e6).toFixed(1), idx.toFixed(2), VERDICT(K, idx)];
+    const want = [escHtml(LABEL[helmer]), data.map(d => (d.count / d.vmt * 1e6).toFixed(1)).join(", "), (lam * 1e6).toFixed(1), idx.toFixed(2), VERDICT(K, idx)];
     const got = row.cells.map(c => c.text);
     dispersionChecked++;
     if (grayed || JSON.stringify(got) !== JSON.stringify(want)) problems.dispersion.push(`${wname} ${helmer} (${data.length} months, ${K} incidents): got ${JSON.stringify(got).slice(0, 160)}${grayed ? " grayed" : ""}, want ${JSON.stringify(want).slice(0, 160)}`);

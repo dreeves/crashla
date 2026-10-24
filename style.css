@@ -579,7 +579,11 @@ tbody tr:hover { background: var(--accent-wash); }
   #date-range-controls:empty {
     min-height: calc(var(--fs-base) * var(--lh-body) + 0.1rem + 4px + 0.2rem + 24px);
   }
-  #month-panel:has(#date-range-controls:empty) #month-legend-mpi-helmers,
+  /* the helmer legend: its seven chips take two lines at desktop width (since
+     Tesla's no-monitor line, 2026-10-24), and the gap between them */
+  #month-panel:has(#date-range-controls:empty) #month-legend-mpi-helmers {
+    min-height: calc(2 * var(--fs-base) * var(--lh-body) + 0.7rem);
+  }
   #month-panel:has(#date-range-controls:empty) #month-legend-mpi-lines,
   #month-panel:has(#date-range-controls:empty) #vmt-mode-toggle,
   #month-panel:has(#date-range-controls:empty) #month-legend-ci-fan {

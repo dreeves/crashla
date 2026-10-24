@@ -76,7 +76,11 @@ It also reads two local input files:
 The slurp pipeline is:
 
 1. Fetch current + archive NHTSA CSVs directly from NHTSA
-2. Normalize archive-only column-name differences
+2. Normalize archive-only column-name differences, and move the current
+   file's contact-area values from their rotated published labels to their
+   true ones (`CURRENT_FILE_CONTACT_LABEL`; the run stops if narratives that
+   name a contact area stop agreeing with the moved values —
+   `quals/contact-labels.qual.mjs`)
 3. Validate every row against the whitelists (report type, operator type,
    reporting entity, severity, date formats), the per-helmer operator scope
    (every helmer row must file a counted or an excluded type), and the
@@ -102,7 +106,10 @@ The slurp pipeline is:
    report whose narrative contradicts its filed code — see
    `quals/passenger-classification.qual.mjs`; the dict comments carry each
    row's justification), strip the narratives' fact-free filing boilerplate
-   (`quals/narrative-boilerplate.qual.mjs`), and join in the fault fractions.
+   (`quals/narrative-boilerplate.qual.mjs`), join in the fault fractions,
+   and list the lines each incident counts toward (`series`: its company, and
+   Tesla's no-monitor line for a report on Tesla's no-monitor list; see
+   "Tesla's no-monitor line" below).
    A filed city, state or passenger value that no longer matches the one its
    override was reviewed against, an incident left with no city or state, an
    in-scope Tesla report with no reviewed passenger entry, a passenger entry
@@ -111,13 +118,18 @@ The slurp pipeline is:
    says who was aboard the AV ("An occupied Zoox autonomous vehicle",
    "unoccupied", "had no occupants") against its filed passenger code,
    unreviewed, stops the run
-   (the severity, airbag and vehicles-involved overrides carry no such check)
+   (the severity, airbag and vehicles-involved overrides carry no such check),
+   as do an in-scope Tesla report from January 2026 on that is on neither of
+   the two reviewed monitor lists and an incident on a line with no
+   `data/vmt.csv` row for its month
 10. Apply the data-through month's receipt coverage (`coverage`,
     `coverage_min`, `coverage_max`) and the pooled Monthly-track incident
     coverage (`incident_coverage`, `_min`, `_max`), plus the Monthly-track
     incident coverage of the months inside each company's Monthly-report lag
     (`MONTHLY_ARRIVAL_LAG`) — the generated CSV in `data/vmt.js` carries these
-    six columns after `vmt_max`; every other month gets 1
+    six columns after `vmt_max`; every other month gets 1. Tesla's
+    no-monitor rows take Tesla's coverage, and the pooled incident coverage
+    counts the companies only
 11. Inject the resulting incident data into `data/incidents.js`
 12. Inject the resulting VMT CSV text into `data/vmt.js`
 
@@ -154,7 +166,9 @@ These are the constants every release needs. The run also stops on what a
 release brings: an incident month newer than the newest month in
 `data/vmt.csv` (step 6), a value outside a whitelist or an unclassified
 operator mode (step 3), a fault value off the 0.05 grid (step 7), and the
-override re-reads and narrative checks of step 9; and
+override re-reads and narrative checks of step 9, among them a new in-scope
+Tesla report from January 2026 on (re-read Tesla's latest no-monitor list,
+below) and a new month with no `teslanomonitor` row; and
 `quals/fault-coverage.qual.mjs` needs a `data/faultfrac.csv` row for every
 new incident.
 
@@ -163,7 +177,9 @@ comments say, and, when a new in-scope Tesla report has a passenger aboard
 (its `PASSENGER_OVERRIDE` entry stores one), add it to the list of Tesla
 reports with a rider that `quals/passenger-classification.qual.mjs` pins
 exactly (9 of 31 as of the Oct 15, 2026 file); the qual goes red on any new
-one until then.
+one until then. `quals/tesla-no-monitor.qual.mjs` pins Tesla's list, the
+monitor-aboard list, the line's crashes by month and its miles by month, and
+goes red on a new no-monitor crash or row until they are re-pinned.
 
 ## VMT master
 
@@ -178,7 +194,8 @@ helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,ratio
 ```
 
 ("Helmer" is this project's jargon for who or what is at the helm:
-tesla, waymo, or zoox in this file; the app adds human benchmark cohorts.
+tesla, waymo, or zoox in this file, plus teslanomonitor, a second Tesla line
+(see "Tesla's no-monitor line"); the app adds human benchmark cohorts.
 "Kyoom" is the cumulative series: `kyoom_min`/`kyoom_max` band
 `helmer_cumulative_vmt`, the all-time cumulative miles.)
 
@@ -272,6 +289,31 @@ disclosure's own uncertainty rather than the running sum of the monthly
 bands. The ~2M (late Mar 2026) and >3M (Aug 5, 2026) milestones are checked,
 not knotted: their scope wording varies ("autonomous miles", "miles on public
 roads"). `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
+
+### Tesla's no-monitor line
+
+Tesla's own publications since October 2026 (the robotaxi safety page,
+tesla.com/robotaxi/safety, live Oct 21, 2026, and the Q3-2026 deck) report
+miles and crashes only for driving with no safety monitor in the vehicle, so
+beside "Tesla" (every operator mode, monitor aboard or not) the page plots
+that subset as a line of its own, `TeslaNoMonitor` in the app.
+
+- Miles: the `teslanomonitor` rows of `data/vmt.csv`, January 2026 (the
+  service began Jan 22) on. The safety page gives weekly cumulative miles per
+  city; a month takes the city sums at its end, interpolated within that
+  week. The Q3-2026 deck's chart "Cumulative Unsupervised Robotaxi Miles" is
+  the second reading. Central: the page; band: the two readings widened 3%
+  each way, the lower edge at least half the page's figure.
+- Crashes: the in-scope Tesla reports on Tesla's own list of SGO reports
+  "while Robotaxi is driving autonomously with no safety monitor in the
+  vehicle" (the page's spreadsheet download; `TESLA_NO_MONITOR_REPORTS` in
+  `slurp.py`, 32 reports as of the Oct 18, 2026 spreadsheet, 15 of them newer
+  than NHTSA's Oct-15 file). Scope is the company line's: the crashes a
+  remote human drove (`TELEOP_DRIVEN_REPORTS`) count on neither line, though
+  Tesla's list includes them. `TESLA_MONITOR_ABOARD_REPORTS` holds the 2026
+  reports whose narratives put a monitor aboard.
+- Coverage: the same as Tesla's rows, since the line's reports are a subset
+  of Tesla's filings.
 
 ## Fault CSV synchronization
 

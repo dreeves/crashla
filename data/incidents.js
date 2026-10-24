@@ -33,7 +33,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at red light; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-11375",
@@ -64,7 +67,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla creeping forward in slip lane; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-11687",
@@ -95,7 +101,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla drove into metal chain at parking lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-11786",
@@ -126,7 +135,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at red light; pedicab clipped right mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-11787",
@@ -157,7 +169,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Dog darted into intersection at 27mph; Tesla braked and biased left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-11784",
@@ -188,7 +203,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car illegally reversed wrong-way in parking lot into Tesla"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-11986",
@@ -219,7 +237,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla mirror struck trailer gooseneck hitch protruding into street"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-13237",
@@ -250,7 +271,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at red light; scooter rider scraped rear and hopped curb"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-13647",
@@ -281,7 +305,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.75,
       "reasoning": "Tesla pulled over with sudden flat tire and clipped curb during emergency maneuver"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-13646",
@@ -312,7 +339,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Tesla backed into curb in parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-13648",
@@ -343,7 +373,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at red light; bus bike rack sideswiped during right turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-13644",
@@ -374,7 +407,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla mirror clipped parked tow truck in tight street"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-13645",
@@ -405,7 +441,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla backed into wooden electrical pole"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-14631",
@@ -436,7 +475,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped in left-turn lane on flashing yellow; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-14630",
@@ -467,7 +509,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at stop sign; rear-ended by pickup truck"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-15017",
@@ -498,7 +543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at red left-turn arrow; rear-ended by pickup truck"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-15399",
@@ -529,7 +577,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla drove into chain across lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-15400",
@@ -560,7 +612,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Construction truck stopped abruptly then reversed into stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-15342",
@@ -591,7 +647,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV ahead in lot stopped then reversed into stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-15809",
@@ -622,7 +682,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at red arrow; SUV behind lane-changed, hit a car, then clipped Tesla"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-15808",
@@ -653,7 +717,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla parked in alley; adjacent parked car reversed into its right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16294",
@@ -684,7 +752,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped for cross traffic in right-turn lane; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16255",
@@ -715,7 +787,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Tesla squeezed past stopped shuttle bus and struck a metal bollard"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16256",
@@ -746,7 +822,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla turned out of lot exit into a low-hanging chain"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16673",
@@ -777,7 +857,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Pickup left a stop sign into the Tesla's path; Tesla braked to 3 mph and steered"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16672",
@@ -808,7 +892,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Tesla drove into a large water-filled pothole in a parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla"
+    ]
   },
   {
     "reportId": "13781-16671",
@@ -839,7 +926,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla turned left into a lot entrance blocked by a low-hanging metal chain"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16676",
@@ -870,7 +961,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tesla stopped at a yield sign for crossing traffic; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16675",
@@ -901,7 +996,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Tesla turned left into alley between a bicycle and a guardrail; hit the rail"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16674",
@@ -932,7 +1031,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Tesla turned out of lot exit into a low-hanging chain with an octagonal sign"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "13781-16677",
@@ -963,7 +1066,11 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Tesla turning left in an alley struck a utility meter at under 1 mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Tesla",
+      "TeslaNoMonitor"
+    ]
   },
   {
     "reportId": "30270-1501",
@@ -994,7 +1101,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stationary AV waiting for pickup; car reversed out of spot into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-1730",
@@ -1025,7 +1135,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped AV; SUV reversed out of driveway into its trunk"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-1583",
@@ -1056,7 +1169,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car cut into AV lane at yellow then braked; AV rear-ended despite max braking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-3838",
@@ -1087,7 +1203,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped AV dropping off; parked pickup reversed into rear quarter panel"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-3842",
@@ -1118,7 +1237,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield at merge; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-4484",
@@ -1149,7 +1271,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; garbage truck squeezed past parked SUV and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-4363",
@@ -1180,7 +1305,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo slowed for parking lot barrier arm then drove into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-4768",
@@ -1211,7 +1339,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Riderless minibike tumbled into Waymo's lane; max brake, unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-4882",
@@ -1242,7 +1373,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign yielding; rear-ended by pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-4880",
@@ -1273,7 +1407,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot; tow truck reversed into rear sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5083",
@@ -1304,7 +1441,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo making left turn; cross vehicle struck left side and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5081",
@@ -1335,7 +1475,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Waymo struck cardboard debris in intersection; visibility ambiguous"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5085",
@@ -1366,7 +1509,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; passing truck's tire clipped rear sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5319",
@@ -1397,7 +1543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Truck reversing across road into driveway clipped stationary Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5114",
@@ -1428,7 +1577,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo's tire struck pothole and deflated"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5318",
@@ -1459,7 +1611,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo drove into chain barrier exiting parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5208",
@@ -1490,7 +1645,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; passing truck clipped rear sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5593",
@@ -1521,7 +1679,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; passing SUV struck rear driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5588",
@@ -1552,7 +1713,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car exited driveway into Waymo's right-turn lane; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5592",
@@ -1583,7 +1747,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind reversing SUV; SUV's parking maneuver clipped Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5591",
@@ -1614,7 +1781,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed for yellow light; van behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5760",
@@ -1645,7 +1815,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "U-Haul reversing into lot re-entered lane and struck stopped Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5756",
@@ -1676,7 +1849,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming car veered across centerline into Waymo; fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5456",
@@ -1707,7 +1883,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for wrong-way traffic; cyclist clipped front and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5612",
@@ -1738,7 +1917,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Waymo undercarriage struck parking lot speed bump"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5611",
@@ -1769,7 +1951,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Waymo undercarriage struck parking lot speed bump"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5758",
@@ -1800,7 +1985,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo's pullover maneuver struck parked car's rear bumper"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5961",
@@ -1831,7 +2019,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign for peds; rear-ended by pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5957",
@@ -1862,7 +2053,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot; van reversed out of adjacent parking spot into right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5958",
@@ -1893,7 +2087,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parallel-parked; car pulled up behind and contacted rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5959",
@@ -1924,7 +2121,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo started left turn from green; following car rear-ended and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5960",
@@ -1955,7 +2155,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parallel-parked; pickup behind reversed into rear during exit"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6133",
@@ -1986,7 +2189,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo backing during merge maneuver struck stopped SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5997",
@@ -2017,7 +2223,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braked for tree branch in lane; rear-ended by car"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-5896",
@@ -2048,7 +2257,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming car crossed into Waymo's lane and struck front; fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6131",
@@ -2079,7 +2291,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parallel-parked; car reversed from driveway across street into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6132",
@@ -2110,7 +2325,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red light; passing car's door clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6342",
@@ -2141,7 +2359,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV passing Waymo cut into its lane during right lane change; fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6337",
@@ -2172,7 +2393,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; pickup deliberately pushed into rear then left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6347",
@@ -2203,7 +2427,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed in roundabout for traffic; rear-ended by car behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6341",
@@ -2234,7 +2461,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo at red; fire engine maneuvered around and clipped third-party SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6150",
@@ -2265,7 +2495,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo merged into turn lane ahead of hesitating pickup as light went green; pickup proceeded into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6335",
@@ -2296,7 +2529,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; car in front reversed into front and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6338",
@@ -2327,7 +2563,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV ran two-way stop sign through Waymo's intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6198",
@@ -2358,7 +2597,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopping for red light; car behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6149",
@@ -2389,7 +2631,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red for crosswalk; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6346",
@@ -2420,7 +2665,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo backing to clear reversing truck's path; trailer clipped front corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6336",
@@ -2451,7 +2699,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped after starting from green; rear-ended by close SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6520",
@@ -2482,7 +2733,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot; car squeezing past clipped right rear sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6517",
@@ -2513,7 +2767,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; truck in front reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6521",
@@ -2544,7 +2801,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; pickup hauling trailer ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6516",
@@ -2575,7 +2835,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed for stopped traffic ahead; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6368",
@@ -2606,7 +2869,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pickup harassed and sideswiped Waymo; passengers threw items"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6352",
@@ -2637,7 +2903,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for pickup; passing car clipped rear driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6405",
@@ -2668,7 +2937,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Bus occluded cross traffic; Waymo proceeded too soon into crossing car's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6515",
@@ -2699,7 +2971,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked; car across street reversed into rear bumper"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6519",
@@ -2730,7 +3005,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pickup hauling food truck trailer reversed into stopped Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6518",
@@ -2761,7 +3039,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked; car reversed from across-street driveway into door"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6514",
@@ -2792,7 +3073,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; passing bus clipped rear sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6667",
@@ -2823,7 +3107,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding to crossing pedestrian; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6661",
@@ -2854,7 +3141,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for leaning stop sign at intersection; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6542",
@@ -2885,7 +3175,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braked for tree branches; two cars behind collided with each other"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6668",
@@ -2916,7 +3209,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed for red light; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6561",
@@ -2947,7 +3243,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Waymo exited parking lot as automatic gate was closing; clipped side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6663",
@@ -2978,7 +3277,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo passing perpendicularly-parked car; car began reversing into left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6666",
@@ -3009,7 +3311,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for drop-off; van passing clipped front tire"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6662",
@@ -3040,7 +3345,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind unloading van; passing car clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6385",
@@ -3071,7 +3379,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped during right turn for skateboarder; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6664",
@@ -3102,7 +3413,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot; passing shuttle van clipped rear left corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6548",
@@ -3133,7 +3447,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo entered construction zone lane; front wheel dropped off removed pavement"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6566",
@@ -3164,7 +3481,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo accelerated to mitigate fast-closing rear vehicle; still rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6838",
@@ -3195,7 +3515,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo struck hanging chain barrier in parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6855",
@@ -3226,7 +3549,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Waymo nudging left in stop-go traffic; adjacent van accelerated and clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6765",
@@ -3257,7 +3583,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped to clear intersection for emergency vehicle; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6854",
@@ -3288,7 +3617,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Waymo entered apartment lot as automatic gate was closing; clipped rear sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6579",
@@ -3319,7 +3651,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cross car ran red at Waymo's intersection and then struck pedestrians"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6907",
@@ -3350,7 +3685,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Waymo stopped behind an angle-parked pickup; as Waymo began to proceed at 2 mph, the pickup began reversing into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6906",
@@ -3381,7 +3719,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Cross car ran red, struck SUV ahead; spinning vehicle hit Waymo's front"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6879",
@@ -3412,7 +3753,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braked at intersection; car behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7013",
@@ -3443,7 +3787,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Waymo struck pickup being towed backwards at angle partially in lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6878",
@@ -3474,7 +3821,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Different Waymo struck same towed pickup at angle partially in lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7015",
@@ -3505,7 +3855,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Heavy truck reversed into stopped Waymo after both began left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7014",
@@ -3536,7 +3889,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked near garage exit; car turning out struck front and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7018",
@@ -3567,7 +3923,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; pickup reversed from across-street driveway into door"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7007",
@@ -3598,7 +3957,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Heavy truck repeatedly reversed; second reverse contacted stopped Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7006",
@@ -3629,7 +3991,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Lane-splitting motorcycle clipped Waymo's rear sensor and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6901",
@@ -3660,7 +4025,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding to initiate left turn; rear-ended by car behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7020",
@@ -3691,7 +4059,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for peds in lot; adjacent SUV reversed into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6883",
@@ -3722,7 +4093,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braked to a lawful stop when protected-left arrow went yellow; rear-ended by van"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7019",
@@ -3753,7 +4127,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braked for slowing lead vehicles; car changing lanes rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7012",
@@ -3784,7 +4161,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV's right lane change cascaded; adjacent car pushed into Waymo's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7017",
@@ -3815,7 +4195,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braking for red light; rear-ended by following car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7021",
@@ -3846,7 +4229,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for passenger pickup; oncoming SUV clipped rear driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7162",
@@ -3877,7 +4263,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped mid-left-turn; another vehicle's collision propelled into Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6932",
@@ -3908,7 +4297,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV with trailer ran red light at high speed through Waymo's green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7158",
@@ -3939,7 +4331,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV with flat tire crashed in adjacent lane; pushed SUV into stopped Waymo"
     },
-    "vehiclesInvolved": 4
+    "vehiclesInvolved": 4,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7058",
@@ -3970,7 +4365,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Waymo entered apartment lot as automatic gate was closing; clipped rear corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-6981",
@@ -4001,7 +4399,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Waymo started forward on red; moped braked and fell on wet road, no contact"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7157",
@@ -4032,7 +4433,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding in narrow street; oncoming SUV clipped rear and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7048",
@@ -4063,7 +4467,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo's multi-point turn drove over one-way parking lot spikes"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7160",
@@ -4094,7 +4501,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo making left turn; third-party collision with no Waymo contact"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7071",
@@ -4125,7 +4535,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind lead vehicle; car changing into turn lane clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7054",
@@ -4156,7 +4569,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo's tire struck rock in road and deflated"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7161",
@@ -4187,7 +4603,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; bus making narrow left turn clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7159",
@@ -4218,7 +4637,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic at red light; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7156",
@@ -4249,7 +4671,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind construction truck; truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7257",
@@ -4280,7 +4705,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue at red light; car behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7315",
@@ -4311,7 +4739,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo exiting parking space; truck ahead reversed into right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7190",
@@ -4342,7 +4773,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo proceeded from green then braked; close-following motorcycle rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7075",
@@ -4373,7 +4807,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Cyclist occluded by delivery truck cut sharp left without yielding at 4-way"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9169",
@@ -4404,7 +4841,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.7,
       "reasoning": "Waymo struck construction fence partially in lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7318",
@@ -4435,7 +4875,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding for pedestrian during right turn; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7311",
@@ -4466,7 +4909,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at light; rear-ended by car and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7312",
@@ -4497,7 +4943,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo struck small (<12in) white object in lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7309",
@@ -4528,7 +4977,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; rear-ended by SUV and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7316",
@@ -4559,7 +5011,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7308",
@@ -4590,7 +5045,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Waymo approached gate as it began closing; right side struck door"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7313",
@@ -4621,7 +5079,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Heavy truck reversing into driveway; trailer struck stopped Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7536",
@@ -4652,7 +5113,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for passenger pickup; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7423",
@@ -4683,7 +5147,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign yielding; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7530",
@@ -4714,7 +5181,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at railroad crossing; SUV changing lanes clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7306",
@@ -4745,7 +5215,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cross car turned right from wrong lane across Waymo's green path; fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7380",
@@ -4776,7 +5249,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car ran stop sign and twice rear-ended Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7540",
@@ -4807,7 +5283,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue after left turn; rear-ended and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7528",
@@ -4838,7 +5317,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7542",
@@ -4869,7 +5351,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic; car illegally in bus lane clipped right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7424",
@@ -4900,7 +5385,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Oncoming car appeared to yield then turned left across Waymo's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7531",
@@ -4931,7 +5419,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braked for lead vehicle slowing for left turn; rear-ended by pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7421",
@@ -4962,7 +5453,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming car cut across occluded by stopped SUV; ROW violation"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7538",
@@ -4993,7 +5487,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at curb; SUV ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7543",
@@ -5024,7 +5521,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed; two other cars collided without Waymo contact"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7522",
@@ -5055,7 +5555,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car doing multi-point turn reversed into stopped Waymo and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7529",
@@ -5086,7 +5589,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind loading SUV; rear-ended by trailing SUV and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7515",
@@ -5117,7 +5623,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Bus encroached into Waymo's lane; Waymo moved right and struck curb"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7525",
@@ -5148,7 +5657,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car reversed out of driveway across Waymo's path; clipped front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7532",
@@ -5179,7 +5691,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Construction object rolled into Waymo's lane; Waymo couldn't fully avoid"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7533",
@@ -5210,7 +5725,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Waymo swerved left avoiding SUV lane change; struck median curb"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7527",
@@ -5241,7 +5759,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7573",
@@ -5272,7 +5793,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wrong-way car ran red into Waymo's green path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7720",
@@ -5303,7 +5827,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pickup with trailer exiting gas station turned right and clipped stopped Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7425",
@@ -5334,7 +5861,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind heavy truck; truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7719",
@@ -5365,7 +5895,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding for unprotected left turn; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7728",
@@ -5396,7 +5929,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; SUV reversing from angled parking spot struck front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7722",
@@ -5427,7 +5963,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign for right turn; passing car clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7721",
@@ -5458,7 +5997,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding to exit shopping center driveway; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7727",
@@ -5489,7 +6031,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for stop sign; rear-ended and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9192",
@@ -5520,7 +6065,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Gate arm swung down as Waymo entered after SUV exited"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7726",
@@ -5551,7 +6099,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car behind Waymo proceeded with driver's door open and rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7724",
@@ -5582,7 +6133,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo stopped behind pickup after aborted lane change; pickup reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7729",
@@ -5613,7 +6167,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo struck hanging chain entering parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7953",
@@ -5644,7 +6201,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked Waymo struck by SUV that reversed 113m back into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7793",
@@ -5675,7 +6235,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo proceeded from green for left turn; cross car ran red at high speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7718",
@@ -5706,7 +6269,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed behind heavy truck; truck reversed into front and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7936",
@@ -5737,7 +6303,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo struck hanging chain entering parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7944",
@@ -5768,7 +6337,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car reversed from parking spot into Waymo's right side in lot; fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7647",
@@ -5799,7 +6371,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at right; passing heavy truck clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7943",
@@ -5830,7 +6405,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red light; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7941",
@@ -5861,7 +6439,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car reversed from parking spot into Waymo's right side in lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7733",
@@ -5892,7 +6473,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV overtook Waymo then cut across for illegal right turn; ROW violation"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7945",
@@ -5923,7 +6507,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed mid-left-turn as light turned red; rear-ended by close car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7794",
@@ -5954,7 +6541,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo struck utility pole in alley during parking maneuver"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7730",
@@ -5985,7 +6575,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding to ped in lot; car reversed from parking spot into door"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7950",
@@ -6016,7 +6609,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo lane-changing right; SUV ahead reversed to parallel park"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7795",
@@ -6047,7 +6643,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for peds in lot; utility vehicle backed into right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7946",
@@ -6078,7 +6677,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind heavy truck in lot; truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7637",
@@ -6109,7 +6711,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV passed traffic in bike lane and crossed into Waymo's left-turn path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7877",
@@ -6140,7 +6745,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Gate static partially open not closing; visible obstacle self-strike at 2 mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7639",
@@ -6171,7 +6779,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic; lane-splitting motorcycle clipped rear and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7938",
@@ -6202,7 +6813,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowed for oncoming fire engine; no contact, third-party allegation"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7934",
@@ -6233,7 +6847,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; SUV reversed out of driveway into door"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7631",
@@ -6264,7 +6881,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car stopped in crosswalk then reversed through intersection into Waymo's right turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7952",
@@ -6295,7 +6915,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind pickup at red; pickup reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7939",
@@ -6326,7 +6949,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; parallel-parked van pulled out around it and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7949",
@@ -6357,7 +6983,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car ahead reversed into front and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7947",
@@ -6388,7 +7017,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo struck hanging rope at parking lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7734",
@@ -6419,7 +7051,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding mid-right-turn for U-turning car; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7935",
@@ -6450,7 +7085,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped curbside for pickup; passing van clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7813",
@@ -6481,7 +7119,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo creeping forward from green in traffic; pickup behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7940",
@@ -6512,7 +7153,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV illegally turned right from through lane across Waymo's intersection path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7942",
@@ -6543,7 +7187,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pickup illegally changed lanes from dedicated left-turn lane into Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8156",
@@ -6574,7 +7221,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo's parking exit maneuver struck parked SUV ahead"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8027",
@@ -6605,7 +7255,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; high-speed car rear-ended and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7998",
@@ -6636,7 +7289,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped curbside for dropoff; passing SUV clipped driver mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7855",
@@ -6667,7 +7323,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped curbside yielding to peds; passing car's mirror clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8120",
@@ -6698,7 +7357,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cat darted into roadway at 35mph; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8634",
@@ -6729,7 +7391,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo struck unspecified road debris at 36mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8145",
@@ -6760,7 +7425,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo's left turn out of driveway struck gate reader box"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8124",
@@ -6791,7 +7459,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind heavy truck; truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8150",
@@ -6822,7 +7493,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped curbside for pickup; passing SUV clipped rear driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8158",
@@ -6853,7 +7527,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; rear-ended by car and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8139",
@@ -6884,7 +7561,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car passed Waymo on right then cut across left in front; ROW violation"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7882",
@@ -6915,7 +7595,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Heavy truck crossed centerline during left turn; struck stopped Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8131",
@@ -6946,7 +7629,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for pickup; car passed in oncoming lane and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7842",
@@ -6977,7 +7663,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Motorcycle ran red light at high speed into Waymo's green intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8127",
@@ -7008,7 +7697,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; car in front reversed into front driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8157",
@@ -7039,7 +7731,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot for dropoff; reversing car's mirror clipped door"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8130",
@@ -7070,7 +7765,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Waymo lane-changing into gap; trailing car accelerated and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8134",
@@ -7101,7 +7799,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for pickup; passing ambulance's padlock fell off and struck tire"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8151",
@@ -7132,7 +7833,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic queue; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8137",
@@ -7163,7 +7867,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic queue; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7883",
@@ -7194,7 +7901,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot; SUV doing multipoint turn clipped front driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8141",
@@ -7225,7 +7935,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped on narrow street yielding; passing pickup's fender clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7839",
@@ -7256,7 +7969,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; high-speed SUV changed lanes and rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7969",
@@ -7287,7 +8003,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo's tire struck small rectangular object in lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8152",
@@ -7318,7 +8037,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Waymo struck portable metal barrier then pushed it into multiple parked vehicles"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8144",
@@ -7349,7 +8071,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding to oncoming traffic for left turn; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8021",
@@ -7380,7 +8105,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo mid-left-turn yielding to peds; lead car reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8121",
@@ -7411,7 +8139,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo lane-changing left with signal; high-speed car passing clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8146",
@@ -7442,7 +8173,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo struck small round road debris at 44mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-7959",
@@ -7473,7 +8207,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo entering intersection from stop sign; rear-ended by close car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8128",
@@ -7504,7 +8241,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped partially in-lane after pickup; passing SUV clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8020",
@@ -7535,7 +8275,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lane due to technical issue; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8199",
@@ -7566,7 +8309,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for right turn into driveway; high-speed car rear-ended and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8180",
@@ -7597,7 +8343,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV ran red light through Waymo's green intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8243",
@@ -7628,7 +8377,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo cruising at speed; high-speed car rear-ended from directly behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8266",
@@ -7659,7 +8411,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped on one-way ramp yielding to wrong-way car; car clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8406",
@@ -7690,7 +8445,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; SUV ahead reversed to parallel park into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8383",
@@ -7721,7 +8479,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for traffic queue; car behind changing lanes clipped rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8392",
@@ -7752,7 +8513,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car exited driveway perpendicularly; Waymo's lane-change couldn't fully avoid"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8390",
@@ -7783,7 +8547,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; car ahead reversed to parallel park into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8405",
@@ -7814,7 +8581,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in parking lot; oncoming car clipped front driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8398",
@@ -7845,7 +8615,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot for pickup; car reversed from parking spot into right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8394",
@@ -7876,7 +8649,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo lane-changing around reversing truck; truck's driver side struck front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8387",
@@ -7907,7 +8683,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; car ahead reversed to parallel park into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8384",
@@ -7938,7 +8717,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding on narrow street; oncoming pickup clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8388",
@@ -7969,7 +8751,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in left-turn lane at red; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8182",
@@ -8000,7 +8785,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding for pedestrian mid-left-turn; motorcycle ran stop and struck rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8397",
@@ -8031,7 +8819,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Waymo's left turn into parking lot; underside struck raised pavement"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8393",
@@ -8062,7 +8853,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo passenger opened door into passing SUV during stop at light"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8386",
@@ -8093,7 +8887,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped before intersection due to traffic ahead; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8402",
@@ -8124,7 +8921,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped curbside for pickup; passing car clipped rear left and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8278",
@@ -8155,7 +8955,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo making left turn from stop; opposing car right-turned without stopping"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8200",
@@ -8186,7 +8989,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for traffic officer; SUV rear-ended then passed in adjacent lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8404",
@@ -8217,7 +9023,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; car illegally passed on right in curb zone"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8273",
@@ -8248,7 +9057,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red in turn lane; bus reversed and passed in oncoming lanes"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8385",
@@ -8279,7 +9091,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; parked car unparked, passed, clipped rear and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8378",
@@ -8310,7 +9125,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot for dropoff; car reversed and passed, clipping rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8061",
@@ -8341,7 +9159,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wrong-way car ran through intersection into Waymo's lane; couldn't fully avoid"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8088",
@@ -8372,7 +9193,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for peds before right turn; rear-ended and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8389",
@@ -8403,7 +9227,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV ahead rolled backwards into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8217",
@@ -8434,7 +9261,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming pickup crossed double yellow into Waymo's lane; brake/nudge insufficient"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8401",
@@ -8465,7 +9295,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV ahead at red began reversing; Waymo also reversed but contact unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8356",
@@ -8496,7 +9329,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.7,
       "reasoning": "Waymo entering parking lot; front-right sensor struck fence"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8625",
@@ -8527,7 +9363,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV straddling lanes rear-ended driver side corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8633",
@@ -8558,7 +9397,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo passenger opened door into passing car during dropoff"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8607",
@@ -8589,7 +9431,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; car ahead reversed to parallel park into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8417",
@@ -8620,7 +9465,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo entered intersection on green; cross car ran red at high speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8617",
@@ -8651,7 +9499,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding for fast oncoming traffic during unprotected left; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8619",
@@ -8682,7 +9533,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind heavy truck blocking lanes; truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8599",
@@ -8713,7 +9567,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; SUV used oncoming lanes to pass and clipped rear, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8618",
@@ -8744,7 +9601,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding on narrow street; oncoming SUV's driver side clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8605",
@@ -8775,7 +9635,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for pickup; SUV completing right turn approached and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8603",
@@ -8806,7 +9669,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo passenger opened door into reversing SUV during lot dropoff"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8624",
@@ -8837,7 +9703,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo struck garage stucco wall during cul-de-sac left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8601",
@@ -8868,7 +9737,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; car ahead reversed into front and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8629",
@@ -8899,7 +9771,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding to oncoming heavy truck; truck clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8344",
@@ -8930,7 +9805,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo's tire struck piece of wood debris at 44mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8630",
@@ -8961,7 +9839,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for passenger pickup; car behind passed left and clipped front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8615",
@@ -8992,7 +9873,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; car reversed from parking stall into rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8620",
@@ -9023,7 +9907,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; pickup rear-ended SUV which pushed SUV into Waymo"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8623",
@@ -9054,7 +9941,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for pickup; oncoming car maneuvered past and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8316",
@@ -9085,7 +9975,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo stuck mid-intersection; car crossed lanes toward pedestrian zone struck front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8614",
@@ -9116,7 +10009,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV in adjacent lane changed lanes while alongside Waymo; clipped front and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8317",
@@ -9147,7 +10043,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo passenger opened door into passing SUV in apartment lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8608",
@@ -9178,7 +10077,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot for pickup; SUV reversed from diagonal parking spot into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8622",
@@ -9209,7 +10111,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lot for pickup; passing SUV clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8469",
@@ -9240,7 +10145,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red yielding to peds; car passed left and clipped rear, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8610",
@@ -9271,7 +10179,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV reversing from wrong lane; Waymo reversed too but contact made"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8627",
@@ -9302,7 +10213,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; SUV passed left to reach turn lane and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8616",
@@ -9333,7 +10247,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for traffic; car reversed from driveway into rear right, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8444",
@@ -9364,7 +10281,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in lane; cyclist looking backward merged into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8357",
@@ -9395,7 +10315,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Gate was already closing when AV committed to pass; it struck AV's front right sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8483",
@@ -9426,7 +10349,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo drove over embedded metal road-sign base after curb pickup; flat tire"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8612",
@@ -9457,7 +10383,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Dog ran into Waymo's path at 20mph; heavy braking but rear-left hit dog"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8600",
@@ -9488,7 +10417,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind crash scene; SUV that caused crashes passed and clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8621",
@@ -9519,7 +10451,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stuck mid-intersection; heavy truck's wide left turn clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8602",
@@ -9550,7 +10485,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Waymo entered residential gate as it began closing; clipped passenger doors"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8632",
@@ -9581,7 +10519,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Small dog darted from between parked cars; heavy braking insufficient"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8631",
@@ -9612,7 +10553,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for right turn; oncoming car U-turned in crosswalk into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8471",
@@ -9643,7 +10587,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo reversed to create space from close-passing car; bumpers contacted"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8606",
@@ -9674,7 +10621,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic at red; car rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8884",
@@ -9705,7 +10655,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; bus maneuvered into adjacent lane and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8882",
@@ -9736,7 +10689,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic; previously-stopped SUV proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8673",
@@ -9767,7 +10723,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for right turn yielding to peds; car rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8869",
@@ -9798,7 +10757,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped with hazards for dropoff; passing car clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8512",
@@ -9829,7 +10791,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pickup reversed from driveway into Waymo's lane at speed; contact unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8581",
@@ -9860,7 +10825,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV fleeing approaching police squeezed past Waymo and ran red"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8826",
@@ -9891,7 +10859,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cross car ran stop sign through Waymo's intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8890",
@@ -9922,7 +10893,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in left-turn queue at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8858",
@@ -9953,7 +10927,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; oncoming SUV's driver side clipped rear driver-side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8832",
@@ -9984,7 +10961,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo yielding to truck's right turn; trailer's rear tires clipped front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8891",
@@ -10015,7 +10995,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic queue at red; heavy truck rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8661",
@@ -10046,7 +11029,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "Waymo drove over folded barricade which expanded and clipped passenger side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8856",
@@ -10077,7 +11063,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic at red; rear-ended by car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8871",
@@ -10108,7 +11097,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8887",
@@ -10139,7 +11131,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked at curb; pickup ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8687",
@@ -10170,7 +11165,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding on narrow street; passing garbage truck clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8878",
@@ -10201,7 +11199,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign yielding; SUV behind passed left and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8750",
@@ -10232,7 +11233,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV on through road; car from stop-controlled road slowly pulled into its lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8859",
@@ -10263,7 +11267,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV merged into pickup then swerved into Waymo"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8888",
@@ -10294,7 +11301,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red in turn lane; car maneuvered around in oncoming lane, clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8526",
@@ -10325,7 +11335,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pedestrian pushed shopping cart at Waymo and then damaged it further"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8844",
@@ -10356,7 +11369,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in right-turn lane at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8822",
@@ -10387,7 +11403,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic at red; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8541",
@@ -10418,7 +11437,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened rear door into passing car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8885",
@@ -10449,7 +11471,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped w/ hazards; SUV reversed to parallel park into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8513",
@@ -10480,7 +11505,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV at 20mph drove into shopping cart sitting in center of road, daytime"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8886",
@@ -10511,7 +11539,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "On green, car went straight from left-turn lane into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8873",
@@ -10542,7 +11573,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at blocked green; van passed on left and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8883",
@@ -10573,7 +11607,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; pickup passing in oncoming lane clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8870",
@@ -10604,7 +11641,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in traffic; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8877",
@@ -10635,7 +11675,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lane for passenger exit; SUV merged into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8857",
@@ -10666,7 +11709,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; SUV merging clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8876",
@@ -10697,7 +11743,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car exiting driveway turned into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8875",
@@ -10728,7 +11777,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; van maneuvering around clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8849",
@@ -10759,7 +11811,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup crept forward into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8827",
@@ -10790,7 +11845,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; van behind hit rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8892",
@@ -10821,7 +11879,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red w/ signal; SUV passed in oncoming lane, clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8868",
@@ -10852,7 +11913,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff w/ hazards; SUV passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8835",
@@ -10883,7 +11947,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Both turning; other car drifted from left lane into AV's center lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8842",
@@ -10914,7 +11981,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV pulled over for pickup; SUV reversed from garage into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8514",
@@ -10945,7 +12015,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; cyclist filtering on left struck rear sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8828",
@@ -10976,7 +12049,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; car squeezed past gap and hit front bumper"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8685",
@@ -11007,7 +12083,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV dropoff beside bike lane; passenger door opened into approaching cyclist"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8639",
@@ -11038,7 +12117,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at 4-way stop; car rear-ended it at high speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8809",
@@ -11069,7 +12151,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV at 1mph drove into temp lane-control sign in construction zone"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8881",
@@ -11100,7 +12185,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8833",
@@ -11131,7 +12219,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "Forklift sat crosswise across from a parked truck and trailer when AV threaded between them; it reversed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8851",
@@ -11162,7 +12253,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped w/ hazards in restricted zone; car passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9173",
@@ -11193,7 +12287,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9111",
@@ -11224,7 +12321,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped in oncoming lane while going around a car stopped for a passenger pickup and could not re-enter; oncoming SUV hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8769",
@@ -11255,7 +12355,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; truck's wide right turn swung into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9116",
@@ -11286,7 +12389,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9107",
@@ -11317,7 +12423,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in parking lot; pickup going around clipped rear corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8933",
@@ -11348,7 +12457,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in garage; van passing on left clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8781",
@@ -11379,7 +12491,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at flashing red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8947",
@@ -11410,7 +12525,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV cleared stop; trailing SUV passed in opposing lane, hit, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9181",
@@ -11441,7 +12559,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; car behind hit rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9184",
@@ -11472,7 +12593,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car behind crept forward into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9100",
@@ -11503,7 +12627,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV ahead reversed to park into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8968",
@@ -11534,7 +12661,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV pushed into it by car crossing double yellow"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9185",
@@ -11565,7 +12695,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV starting from green; trailing car hit rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8982",
@@ -11596,7 +12729,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind crash scene; car pushed into it by passing truck"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9187",
@@ -11627,7 +12763,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV proceeding into left; minivan passed on left across opposing lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9110",
@@ -11658,7 +12797,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red awaiting left; car drove around left into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8915",
@@ -11689,7 +12831,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing van drifted into driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9097",
@@ -11720,7 +12865,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV starting from queue; heavy truck behind hit rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9126",
@@ -11751,7 +12899,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Panel fell off RV directly ahead into road; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9180",
@@ -11782,7 +12933,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV proceeded through 4-way stop; SUV ran its stop sign into side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9140",
@@ -11813,7 +12967,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV proceeded through 4-way stop; SUV ran its stop sign into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8929",
@@ -11844,7 +13001,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped beside truck near lot exit; truck turned right into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9177",
@@ -11875,7 +13035,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV at 31mph hit small dog already lying in road, prev struck"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9175",
@@ -11906,7 +13069,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; pickup reversing to park hit front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9115",
@@ -11937,7 +13103,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot for pickup; parked pickup reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9013",
@@ -11968,7 +13137,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "AV clearing unprotected left; bus made wide right turn into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9098",
@@ -11999,7 +13171,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9112",
@@ -12030,7 +13205,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind double-parked car; SUV passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9141",
@@ -12061,7 +13239,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; SUV maneuvering around clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9179",
@@ -12092,7 +13273,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; SUV passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9178",
@@ -12123,7 +13307,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing car clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9099",
@@ -12154,7 +13341,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; erratic car made contact 7 times maneuvering"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8908",
@@ -12185,7 +13375,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow dead-end; U-Haul squeezing past hit sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8979",
@@ -12216,7 +13409,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after possible cyclist contact; car passed left, hit corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9182",
@@ -12247,7 +13443,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind crept forward into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8940",
@@ -12278,7 +13477,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car (medical emergency driver) slowly rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9125",
@@ -12309,7 +13511,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9188",
@@ -12340,7 +13545,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb for pickup; SUV passing on green clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8919",
@@ -12371,7 +13579,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV stopped at stop sign; crossing pickup veered into side, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9123",
@@ -12402,7 +13613,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; turning pickup clipped side while passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8927",
@@ -12433,7 +13647,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; pickup swerved across median into rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9171",
@@ -12464,7 +13681,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; SUV maneuvering around clipped rear corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9190",
@@ -12495,7 +13715,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV parked w/ doors open; minivan passing clipped open rear door"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9014",
@@ -12526,7 +13749,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV changed into left lane (signaled) where car behind accelerated"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9004",
@@ -12557,7 +13783,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV crossed solid white line unsignaled into AV's lane at gore"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8794",
@@ -12588,7 +13817,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car turned left across AV's path through traffic gap; AV braked"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9189",
@@ -12619,7 +13851,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; car from driveway turned around it into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9176",
@@ -12650,7 +13885,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Both left-turning; SUV drifted from left lane into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9127",
@@ -12681,7 +13919,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped/reversing for pickup backing from driveway; truck hit front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8941",
@@ -12712,7 +13953,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in traffic; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9191",
@@ -12743,7 +13987,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind queue; car ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9186",
@@ -12774,7 +14021,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield at red; SUV behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9172",
@@ -12805,7 +14055,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielded to wrong-way car; wrong-way car clipped rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9183",
@@ -12836,7 +14089,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped/yielding; car ahead reversed into it at speed, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8943",
@@ -12867,7 +14123,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Just after right turn, wrong-way car over double yellow hit AV, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-8966",
@@ -12898,7 +14157,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV unprotected left; car proceeded from stop sign into AV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9103",
@@ -12929,7 +14191,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car passed AV then merged into its lane, clipping passenger side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9015",
@@ -12960,7 +14225,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV dropoff; passenger door opened into approaching cyclist"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9417",
@@ -12991,7 +14259,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup on narrow road; oncoming van clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9231",
@@ -13022,7 +14293,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car ahead turned right into AV's lane over solid white line"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9374",
@@ -13053,7 +14327,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind reversing SUV; SUV continued back into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9355",
@@ -13084,7 +14361,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV at 35mph hit debris already in lane at night"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9684",
@@ -13115,7 +14395,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened rear door into passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9409",
@@ -13146,7 +14429,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-maneuver; car crossed double yellow to pass, clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9418",
@@ -13177,7 +14463,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended at low speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9363",
@@ -13208,7 +14497,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Speeding weaving car passed AV (which evaded right), hit rear, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9214",
@@ -13239,7 +14531,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; hit-and-run car struck rear, pushed it into car ahead"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9343",
@@ -13270,7 +14565,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind crept forward into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9429",
@@ -13301,7 +14599,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing car clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9156",
@@ -13332,7 +14633,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car doing donuts crossed double yellow into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9371",
@@ -13363,7 +14667,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in left-turn lane; car from adjacent lane drifted into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9347",
@@ -13394,7 +14701,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9234",
@@ -13425,7 +14735,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding to pedestrian; ped turned back and approached AV, possible contact"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9410",
@@ -13456,7 +14769,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV at 43mph hit broken sign lying flat across lane at night"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9212",
@@ -13487,7 +14803,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; passing truck dragging basketball hoop struck its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9229",
@@ -13518,7 +14837,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind failed to stop, rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9350",
@@ -13549,7 +14871,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV parallel-parking clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9230",
@@ -13580,7 +14905,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; truck alongside turned left, rear swung into side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9081",
@@ -13611,7 +14939,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red for U-turn; pickup at high speed rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9039",
@@ -13642,7 +14973,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for traffic officer; pickup passing around clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9401",
@@ -13673,7 +15007,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; car passing on left clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9435",
@@ -13704,7 +15041,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV reversed from driveway into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9376",
@@ -13735,7 +15075,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV moved within lane; passing SUV swerved and hit median curb"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9414",
@@ -13766,7 +15109,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; pickup parallel-parking hit rear twice"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9059",
@@ -13797,7 +15143,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for flagger; skid-steer in work zone reversed into side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9167",
@@ -13828,7 +15177,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; merging truck's trailer swung into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9341",
@@ -13859,7 +15211,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind SUV; SUV reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9203",
@@ -13890,7 +15245,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened door into passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9436",
@@ -13921,7 +15279,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; SUV passing clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9419",
@@ -13952,7 +15313,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV crossing on yellow; ambulance (no lights) turned right into its lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9372",
@@ -13983,7 +15347,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV drove over rock in center of lane after left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9408",
@@ -14014,7 +15381,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; car lane-changing right clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9431",
@@ -14045,7 +15415,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passing on right; pickup re-entered lane from center turn lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9420",
@@ -14076,7 +15449,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV passing parked car; its door opened suddenly into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9412",
@@ -14107,7 +15483,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding from green; car behind accelerated into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9434",
@@ -14138,7 +15517,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped exiting driveway; van passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9373",
@@ -14169,7 +15551,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; school bus right turn rear swung into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9437",
@@ -14200,7 +15585,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV passing parked SUV; its door opened suddenly into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9400",
@@ -14231,7 +15619,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; pickup passing to turn lane clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9430",
@@ -14262,7 +15653,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9407",
@@ -14293,7 +15687,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; bus made wide left turn into rear side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9427",
@@ -14324,7 +15721,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in traffic; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9413",
@@ -14355,7 +15755,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at blocked intersection; SUV maneuvering around clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9259",
@@ -14386,7 +15789,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV straight on yellow; oncoming car turned left across its path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9194",
@@ -14417,7 +15823,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV passed creeping car entering from lot; car then accelerated into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9433",
@@ -14448,7 +15857,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9269",
@@ -14479,7 +15891,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at 3-way stop; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9060",
@@ -14510,7 +15925,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car hit SUV behind, pushing it into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9404",
@@ -14541,7 +15959,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9411",
@@ -14572,7 +15993,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane at red; van failed to stop, rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9170",
@@ -14603,7 +16027,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9426",
@@ -14634,7 +16061,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "AV turning left on green; adjacent car went straight into its lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9061",
@@ -14665,7 +16095,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened door into passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9405",
@@ -14696,7 +16129,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot for pickup; SUV maneuvering hit driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9082",
@@ -14727,7 +16163,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV hit small metallic debris in middle of turn lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9406",
@@ -14758,7 +16197,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Rabbit darted into road from between parked cars; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9403",
@@ -14789,7 +16231,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; van passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9260",
@@ -14820,7 +16265,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV proper left on protected green; adjacent car veered wide into door, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9276",
@@ -14851,7 +16299,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened door into passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9402",
@@ -14882,7 +16333,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV proceeding from green; adjacent car departed lane into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9442",
@@ -14913,7 +16367,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "AV at 42mph braked but hit shopping cart in lane at night"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9567",
@@ -14944,7 +16401,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parallel-parking reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9594",
@@ -14975,7 +16435,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9566",
@@ -15006,7 +16469,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV at 24mph braked but ran tire over vacuum cleaner in lane at night"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9590",
@@ -15037,7 +16503,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9580",
@@ -15068,7 +16537,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV maneuvered around turning truck mid-intersection; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9589",
@@ -15099,7 +16571,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9604",
@@ -15130,7 +16605,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV at low speed drove into corner of solar panel in parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9586",
@@ -15161,7 +16639,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; truck's trailer clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9534",
@@ -15192,7 +16673,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pedestrian; car passing on left clipped sensor"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9508",
@@ -15223,7 +16707,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended (airbag, towed)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9388",
@@ -15254,7 +16741,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car behind accelerated into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9570",
@@ -15285,7 +16775,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV passing clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9583",
@@ -15316,7 +16809,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV braking to yield; car behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9540",
@@ -15347,7 +16843,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped partly blocking garage; car reversed out into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9584",
@@ -15378,7 +16877,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; oncoming pickup clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9555",
@@ -15409,7 +16911,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parallel-parking reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9595",
@@ -15440,7 +16945,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after dropoff; pickup turning in clipped rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9574",
@@ -15471,7 +16979,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV passing clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9575",
@@ -15502,7 +17013,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at dead light; truck passing in oncoming lane clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9556",
@@ -15533,7 +17047,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-right-turn to yield; SUV behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9459",
@@ -15564,7 +17081,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Occluded scooterist ran red from sidewalk into AV; AV braked"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9285",
@@ -15595,7 +17115,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in construction zone; asphalt roller reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9329",
@@ -15626,7 +17149,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended (towed)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9287",
@@ -15657,7 +17183,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV hit plastic crate in lane, knocked it into a scooterist"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9573",
@@ -15688,7 +17217,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; van passing clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9326",
@@ -15719,7 +17251,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for pedestrian; minivan merging clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9596",
@@ -15750,7 +17285,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot for pickup; car maneuvering around clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9601",
@@ -15781,7 +17319,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; passing car reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9579",
@@ -15812,7 +17353,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; bus changing lanes around it clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9563",
@@ -15843,7 +17387,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at light; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9603",
@@ -15874,7 +17421,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding from 3-way stop; car behind rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9559",
@@ -15905,7 +17455,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot for dropoff; pickup maneuvering around clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9598",
@@ -15936,7 +17489,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV hit aluminum tool box in middle of lane at underpass"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9486",
@@ -15967,7 +17523,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowed for queue; car behind rear-ended (towed)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9561",
@@ -15998,7 +17557,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV proceeded under gate arm which lowered onto its roof"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9585",
@@ -16029,7 +17591,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in lot; reversing truck backed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9582",
@@ -16060,7 +17625,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; heavy truck passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9564",
@@ -16091,7 +17659,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; SUV passing on left clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9600",
@@ -16122,7 +17693,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in traffic; SUV ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9334",
@@ -16153,7 +17727,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to pedestrian; turning car hit rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9295",
@@ -16184,7 +17761,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV pulling over for dropoff yielded; cyclist hit rear, left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9541",
@@ -16215,7 +17795,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV changing lanes clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9539",
@@ -16246,7 +17829,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Furniture dolly fell off truck ahead into road; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9592",
@@ -16277,7 +17863,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to oncoming; car passing on left clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9568",
@@ -16308,7 +17897,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; car reversed from driveway into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9507",
@@ -16339,7 +17931,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; erratic pickup made contact multiple times"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9546",
@@ -16370,7 +17965,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV beginning left turn; car behind passed on left into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9682",
@@ -16401,7 +17999,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at green yielding to pedestrian; car passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9588",
@@ -16432,7 +18033,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9553",
@@ -16463,7 +18067,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9286",
@@ -16494,7 +18101,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; trailing ATV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9312",
@@ -16525,7 +18135,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at blocked intersection; scooterist passing hit rear, left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9587",
@@ -16556,7 +18169,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup changing to turn lane clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9544",
@@ -16587,7 +18203,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV exiting driveway turned right into passing AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9545",
@@ -16618,7 +18237,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped in intersection, rear blocking onramp lane; turning car hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9602",
@@ -16649,7 +18271,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9560",
@@ -16680,7 +18305,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV right turn on green; struck delivery robot re-crossing in crosswalk"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9517",
@@ -16711,7 +18339,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV hit debris in lane; lodged in wheel well and ignited"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9330",
@@ -16742,7 +18373,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for unprotected left; oncoming car departed lane into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9572",
@@ -16773,7 +18407,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to reversing car; another car passed left, clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10004",
@@ -16804,7 +18441,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing car's mirror clipped AV mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9609",
@@ -16835,7 +18475,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Both nudging from lot to turn right; SUV turned across AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9389",
@@ -16866,7 +18509,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened door into passing car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9391",
@@ -16897,7 +18543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pedestrian in bus lane; stopped car pulled out into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9569",
@@ -16928,7 +18577,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV at 30mph hit dog lying motionless in lane at night"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9599",
@@ -16959,7 +18611,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot for pickup; pickup reversed into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9333",
@@ -16990,7 +18645,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after dropoff; mini coach bus wide right turn clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9571",
@@ -17021,7 +18679,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing car clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9557",
@@ -17052,7 +18713,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; oncoming pickup clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9591",
@@ -17083,7 +18747,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9554",
@@ -17114,7 +18781,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV ahead reversed to unpark into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9910",
@@ -17145,7 +18815,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened door into passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9851",
@@ -17176,7 +18849,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; wrong-way left-turning car hit front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9738",
@@ -17207,7 +18883,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car at high speed rear-ended (airbag, towed)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9843",
@@ -17238,7 +18917,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9855",
@@ -17269,7 +18951,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV passing SUV in dropoff lane; SUV door opened into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9764",
@@ -17300,7 +18985,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV passing double-parked SUV; its door opened suddenly into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9737",
@@ -17331,7 +19019,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after dropoff; car rear-ended (airbag, towed)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9735",
@@ -17362,7 +19053,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car ahead entered center turn lane then re-entered AV's lane, clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9905",
@@ -17393,7 +19087,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV pulled over; car ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9883",
@@ -17424,7 +19121,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passing stopped car on right; its passenger doors opened into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9878",
@@ -17455,7 +19155,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for pickup; pickup reversed from garage into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9565",
@@ -17486,7 +19189,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; garbage truck clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9635",
@@ -17517,7 +19223,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; car behind rear-ended (towed)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9872",
@@ -17548,7 +19257,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for dropoff; car ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9845",
@@ -17579,7 +19291,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9897",
@@ -17610,7 +19325,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind double-parked truck; car passing in transit lane clipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9606",
@@ -17641,7 +19359,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV nudged past truck whose loading ramp was lowering; ramp hit side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9791",
@@ -17672,7 +19393,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at green planning turn; car passing hit another car then AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9821",
@@ -17703,7 +19427,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; SUV passed with rear door open, hit front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9906",
@@ -17734,7 +19461,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passing wrong-facing car in garage; it reversed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9895",
@@ -17765,7 +19495,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; heavy truck passing clipped driver side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9885",
@@ -17796,7 +19529,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV straight on green; SUV from center lane turned right across it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9887",
@@ -17827,7 +19563,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; left-turning pickup clipped side passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9823",
@@ -17858,7 +19597,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV hit small RC toy car crossing the intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9909",
@@ -17889,7 +19631,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind car at stop sign; car reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9721",
@@ -17920,7 +19665,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to stop in crosswalk for red; trailing SUV rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9898",
@@ -17951,7 +19699,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; SUV reversed from driveway across center into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9867",
@@ -17982,7 +19733,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot lane; pickup passing on left clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9879",
@@ -18013,7 +19767,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car exiting driveway turned right into passing AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9868",
@@ -18044,7 +19801,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in right-turn lane; truck's wide right turn trailer hit front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9850",
@@ -18075,7 +19835,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane for dropoff; van passing clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9761",
@@ -18106,7 +19869,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; chain reaction pushed motorcycle into rear"
     },
-    "vehiclesInvolved": 4
+    "vehiclesInvolved": 4,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9807",
@@ -18137,7 +19903,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car behind rear-ended (towed)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9631",
@@ -18168,7 +19937,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to pedestrian; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9908",
@@ -18199,7 +19971,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in traffic queue; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9808",
@@ -18230,7 +20005,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV grounded undercarriage on raised crosswalk during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9875",
@@ -18261,7 +20039,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped mid-right-turn straddling center lane; through-SUV hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9654",
@@ -18292,7 +20073,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; wrong-way cyclist hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9873",
@@ -18323,7 +20107,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV drove into fallen line hanging across road in daylight; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9848",
@@ -18354,7 +20141,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Basketball rolled into road, struck AV's rear wheel; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9880",
@@ -18385,7 +20175,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup's right turn clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9634",
@@ -18416,7 +20209,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding then turning right; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9900",
@@ -18447,7 +20243,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV passing on left hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9822",
@@ -18478,7 +20277,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Animal darted from gap in stopped-traffic queue into AV path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9874",
@@ -18509,7 +20311,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV starting from queue on green; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9824",
@@ -18540,7 +20345,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane for pickup; SUV passing clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9884",
@@ -18571,7 +20379,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9852",
@@ -18602,7 +20413,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9724",
@@ -18633,7 +20447,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; speeding SUV caused multi-car chain collision"
     },
-    "vehiclesInvolved": 6
+    "vehiclesInvolved": 6,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9854",
@@ -18664,7 +20481,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb for dropoff; car reversed from driveway into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9881",
@@ -18695,7 +20515,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; pickup reversed from driveway into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9806",
@@ -18726,7 +20549,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's own rear wheel separated and rolled into parked car/motorcycle"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9765",
@@ -18757,7 +20583,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9894",
@@ -18788,7 +20617,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in loading zone; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9853",
@@ -18819,7 +20651,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb for pickup; passing car hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9907",
@@ -18850,7 +20685,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Loose tire rolled into AV's lane; front contacted it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9552",
@@ -18881,7 +20719,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car ahead reversed into stopped AV despite AV backing to avoid"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10089",
@@ -18912,7 +20753,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV made unsafe lane change into AV's lane at speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9904",
@@ -18943,7 +20787,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Passing car hit AV's open door during passenger exit at curb"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9736",
@@ -18974,7 +20821,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; passing car straddling lanes hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9763",
@@ -19005,7 +20855,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV grounded undercarriage on raised lot entrance during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9537",
@@ -19036,7 +20889,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing car clipped its mirror and fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9767",
@@ -19067,7 +20923,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it without slowing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9876",
@@ -19098,7 +20957,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10007",
@@ -19129,7 +20991,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; motor home ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9828",
@@ -19160,7 +21025,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Hand-truck dolly propelled across median into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9809",
@@ -19191,7 +21059,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to traffic; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10112",
@@ -19222,7 +21093,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Out-of-control SUV re-entered roadway into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10215",
@@ -19253,7 +21127,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; truck's wide right turn swung trailer into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10727",
@@ -19284,7 +21161,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV hit road debris and slowed; trailing cars rear-ended each other"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10077",
@@ -19315,7 +21195,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV mid-left-turn; oncoming SUV proceeded and hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10137",
@@ -19346,7 +21229,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parallel-parking ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10050",
@@ -19377,7 +21263,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parallel-parking reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10053",
@@ -19408,7 +21297,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing car sideswiped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10042",
@@ -19439,7 +21331,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV ran over string trimmer in lot path; landscapers working nearby"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10054",
@@ -19470,7 +21365,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pedestrian's shopping cart hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10142",
@@ -19501,7 +21399,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for ped beacon; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10136",
@@ -19532,7 +21433,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV parallel-parking reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9931",
@@ -19563,7 +21467,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-left-turn to yield to ped; car behind hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10075",
@@ -19594,7 +21501,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb; cyclist squeezed past and hit its mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10080",
@@ -19625,7 +21535,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed behind truck mid-3-point-turn; truck reversed into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10059",
@@ -19656,7 +21569,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red-light queue; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10140",
@@ -19687,7 +21603,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9912",
@@ -19718,7 +21637,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup turning then passing clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10139",
@@ -19749,7 +21671,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane for pickup; passing truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10067",
@@ -19780,7 +21705,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10274",
@@ -19811,7 +21739,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV clipped lowered trailer lift gate while squeezing past stopped truck"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10083",
@@ -19842,7 +21773,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10109",
@@ -19873,7 +21807,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in rideshare zone; SUV pulling out clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9987",
@@ -19904,7 +21841,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV passenger opened door into passing cyclist (dooring)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10143",
@@ -19935,7 +21875,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9789",
@@ -19966,7 +21909,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car in adjacent lane turned left across AV's path; AV braked/steered"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9992",
@@ -19997,7 +21943,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; car struck by SUV rotated back into stationary AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10076",
@@ -20028,7 +21977,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV drove into fallen line across both lanes in daylight; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10079",
@@ -20059,7 +22011,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; car changing lanes hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10049",
@@ -20090,7 +22045,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; truck ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9926",
@@ -20121,7 +22079,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding to jaywalker on green; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10078",
@@ -20152,7 +22113,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding from stop sign; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10129",
@@ -20183,7 +22147,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV passing via turn lane clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10135",
@@ -20214,7 +22181,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; passing van clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10052",
@@ -20245,7 +22215,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in right-turn lane; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9988",
@@ -20276,7 +22249,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car turned left across AV's path; AV braked/steered"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10130",
@@ -20307,7 +22283,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped (school-bus light detection); van behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10436",
@@ -20338,7 +22317,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10131",
@@ -20369,7 +22351,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot for dropoff; SUV reversing from spot hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10082",
@@ -20400,7 +22385,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10216",
@@ -20431,7 +22419,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane yielding; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10123",
@@ -20462,7 +22453,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10134",
@@ -20493,7 +22487,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot; pickup reversing from stall hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10081",
@@ -20524,7 +22521,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "In traffic circle, bus tracked wide from right lane into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10138",
@@ -20555,7 +22555,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding; car maneuvering around it clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10047",
@@ -20586,7 +22589,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10060",
@@ -20617,7 +22623,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10006",
@@ -20648,7 +22657,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's tire struck debris in roadway at speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10117",
@@ -20679,7 +22691,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red-light queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10046",
@@ -20710,7 +22725,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car behind failed to stop, rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10091",
@@ -20741,7 +22759,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; parked SUV reversed into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10085",
@@ -20772,7 +22793,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing in turn lane; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10086",
@@ -20803,7 +22827,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car changed lanes into AV's turn lane and hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9826",
@@ -20834,7 +22861,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind queue; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9860",
@@ -20865,7 +22895,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV moving into right-turn lane w/ signal; SUV behind rear-ended it, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10058",
@@ -20896,7 +22929,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car passing into opposing lane clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10141",
@@ -20927,7 +22963,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot for pickup; SUV reversing from stall hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-9978",
@@ -20958,7 +22997,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cross SUV ran stop sign and hit AV mid-right-turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10090",
@@ -20989,7 +23031,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10048",
@@ -21020,7 +23065,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10087",
@@ -21051,7 +23099,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV grounded undercarriage on raised lot driveway during right turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10057",
@@ -21082,7 +23133,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped straddling lanes to yield; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10276",
@@ -21113,7 +23167,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing car clipped its mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10324",
@@ -21144,7 +23201,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in cul-de-sac; passing van clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10421",
@@ -21175,7 +23235,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "RC toy robot darted into road from between parked bikes; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10450",
@@ -21206,7 +23269,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; passing van clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10452",
@@ -21237,7 +23303,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; passing SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10289",
@@ -21268,7 +23337,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10426",
@@ -21299,7 +23371,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10446",
@@ -21330,7 +23405,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; pickup parallel-parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10361",
@@ -21361,7 +23439,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming truck propelled plastic chair into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10381",
@@ -21392,7 +23473,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10362",
@@ -21423,7 +23507,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10435",
@@ -21454,7 +23541,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; car parallel-parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10343",
@@ -21485,7 +23575,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10318",
@@ -21516,7 +23609,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV cut across three lanes to turn right into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10344",
@@ -21547,7 +23643,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped partly blocking garage; car reversed out into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10330",
@@ -21578,7 +23677,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV crossed double-yellow to pass, clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10326",
@@ -21609,7 +23711,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in narrow road; garbage truck passing clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10563",
@@ -21640,7 +23745,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tree branch broke off overhead and fell onto AV; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10367",
@@ -21671,7 +23779,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped with rear corner protruding into adjacent lane; truck hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10332",
@@ -21702,7 +23813,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at green for blocked intersection; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10420",
@@ -21733,7 +23847,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Oncoming car turned left across AV's path on green; hit AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10443",
@@ -21764,7 +23881,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for temporary construction stop sign; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10425",
@@ -21795,7 +23915,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car stopped in bike lane pulled into roadway into passing AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10438",
@@ -21826,7 +23949,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane yielding; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10145",
@@ -21857,7 +23983,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in airport queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10174",
@@ -21888,7 +24017,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; chain reaction pushed SUV into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10196",
@@ -21919,7 +24051,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped before crosswalk mid-right-turn; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10127",
@@ -21950,7 +24085,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane for dropoff; car passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10451",
@@ -21981,7 +24119,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; SUV parallel-parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10320",
@@ -22012,7 +24153,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car passing in opposing lane sideswiped its left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10321",
@@ -22043,7 +24187,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV disabled in-lane w/ hazards; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10447",
@@ -22074,7 +24221,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV reversed from driveway into AV's open door during rider exit"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10335",
@@ -22105,7 +24255,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at green per ped director; SUV passing via turn lane clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10118",
@@ -22136,7 +24289,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding to truck's wide turn in narrow street; truck bed clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10364",
@@ -22167,7 +24323,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to peds; SUV behind reversed into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10182",
@@ -22198,7 +24357,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-right-turn for crossing guard; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10327",
@@ -22229,7 +24391,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for pickup; SUV passing clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10349",
@@ -22260,7 +24425,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; motorcycle behind hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10292",
@@ -22291,7 +24459,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10449",
@@ -22322,7 +24493,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; unmarked police car passing clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10455",
@@ -22353,7 +24527,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; SUV leaving spot behind clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10453",
@@ -22384,7 +24561,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; passing pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10340",
@@ -22415,7 +24595,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car squirted from lot through queue across AV's lane; hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10427",
@@ -22446,7 +24629,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind moved forward, rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10439",
@@ -22477,7 +24663,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10337",
@@ -22508,7 +24697,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV merging right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10328",
@@ -22539,7 +24731,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot for dropoff; car reversed from stall into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10347",
@@ -22570,7 +24765,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10487",
@@ -22601,7 +24799,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked on narrow road after dropoff; passing SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10448",
@@ -22632,7 +24833,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; oncoming truck's open swing-tailgate protruded into its lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10175",
@@ -22663,7 +24867,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; oncoming SUV turned left across into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10329",
@@ -22694,7 +24901,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in narrow road; SUV passing via opposing lane clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10317",
@@ -22725,7 +24935,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10359",
@@ -22756,7 +24969,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car reversed from parking spot into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10363",
@@ -22787,7 +25003,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot after pickup; car reversed from stall into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10319",
@@ -22818,7 +25037,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car changed lanes into AV without signal and hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10442",
@@ -22849,7 +25071,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding (car ahead yielding to ambulance); car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10338",
@@ -22880,7 +25105,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; bus crossed double-yellow to pass, clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10322",
@@ -22911,7 +25139,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10454",
@@ -22942,7 +25173,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10444",
@@ -22973,7 +25207,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Cross car ran its stop sign into AV's path; AV had right of way"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10334",
@@ -23004,7 +25241,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV bypassing queue into oncoming space; yielded but pickup clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10147",
@@ -23035,7 +25275,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing pickup's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10346",
@@ -23066,7 +25309,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped w/ hazards amid peds, rear-ended by pickup; AV brushed a pedestrian"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10488",
@@ -23097,7 +25343,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10323",
@@ -23128,7 +25377,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Animal darted from gap between parked cars into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10221",
@@ -23159,7 +25411,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for queue; speeding car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10380",
@@ -23190,7 +25445,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV hit pickup behind, pushing it into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10336",
@@ -23221,7 +25479,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing car's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10360",
@@ -23252,7 +25513,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV shoved car behind into AV's rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10428",
@@ -23283,7 +25547,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped (backed to give room); car kept reversing into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10184",
@@ -23314,7 +25581,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to peds exiting lot; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10601",
@@ -23345,7 +25615,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10571",
@@ -23376,7 +25649,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; motorcycle behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10713",
@@ -23407,7 +25683,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV reversed from driveway into AV's open door during passenger exit"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10599",
@@ -23438,7 +25717,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing van's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10570",
@@ -23469,7 +25751,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV exited carport into alley into passing AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10594",
@@ -23500,7 +25785,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10666",
@@ -23531,7 +25819,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked after dropoff; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10602",
@@ -23562,7 +25853,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV drove into cord draped across road from a plastic chair at 1:29 AM; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10756",
@@ -23593,7 +25887,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; oncoming SUV repeatedly drove into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10667",
@@ -23624,7 +25921,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in alley w/ hazards; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10615",
@@ -23655,7 +25955,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot for pickup; car reversed from stall into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10573",
@@ -23686,7 +25989,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV shoved car behind into AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10422",
@@ -23717,7 +26023,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to peds in alley; SUV passing on right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10595",
@@ -23748,7 +26057,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10800",
@@ -23779,7 +26091,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; car reversed into space ahead and into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10725",
@@ -23810,7 +26125,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in narrow lot w/ hazards; pickup passing on right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10589",
@@ -23841,7 +26159,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot after pickup; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10728",
@@ -23872,7 +26193,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane at red; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10672",
@@ -23903,7 +26227,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped (backed to give room); SUV kept reversing into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10750",
@@ -23934,7 +26261,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; car behind pulled out to merge and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11297",
@@ -23965,7 +26295,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV turned into lot and drove into chain across the entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10598",
@@ -23996,7 +26329,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV crept forward for visibility then stopped; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10613",
@@ -24027,7 +26363,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding to truck in narrow road; truck cab clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10683",
@@ -24058,7 +26397,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in workzone-narrowed road; passing pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10790",
@@ -24089,7 +26431,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb for dropoff; passing SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10743",
@@ -24120,7 +26465,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for unprotected left, yielding; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10678",
@@ -24151,7 +26499,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in loading zone w/ signal; SUV unparking clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10630",
@@ -24182,7 +26533,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to let car exit lot; car turned left and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10610",
@@ -24213,7 +26567,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10576",
@@ -24244,7 +26601,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding to flatbed in narrow road; flatbed clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10631",
@@ -24275,7 +26635,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV turned into lot and drove into metal chain across the entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10685",
@@ -24306,7 +26669,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10668",
@@ -24337,7 +26703,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; errant pickup clipped its rear after hitting parked car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10684",
@@ -24368,7 +26737,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding to pickup in narrow road; pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10497",
@@ -24399,7 +26771,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV proceeding straight drifted into curb and deflated its tire"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10559",
@@ -24430,7 +26805,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; SUV parallel-parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10528",
@@ -24461,7 +26839,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV rider opened street-side door into passing SUV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10396",
@@ -24492,7 +26873,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; lane-splitting motorcycle clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10757",
@@ -24523,7 +26907,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV edged into oncoming lane to pass box truck; oncoming SUV clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10792",
@@ -24554,7 +26941,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; van ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10472",
@@ -24585,7 +26975,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV entered stop-sign intersection first; later-arriving car hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10600",
@@ -24616,7 +27009,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV starting from queue on green; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10669",
@@ -24647,7 +27043,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot w/ hazards; car reversed from spot into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10758",
@@ -24678,7 +27077,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10640",
@@ -24709,7 +27111,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in lot; SUV reversed into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10557",
@@ -24740,7 +27145,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign yielding; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10418",
@@ -24771,7 +27179,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; bus in adjacent lane clipped its mirror passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10556",
@@ -24802,7 +27213,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in lot; truck reversed trailer into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10470",
@@ -24833,7 +27247,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped (backed to give room); car kept reversing into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10555",
@@ -24864,7 +27281,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb for pickup; tour bus passing clipped its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10690",
@@ -24895,7 +27315,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Towed pickup came loose and rolled back into stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10689",
@@ -24926,7 +27349,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; passing truck trailer clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10638",
@@ -24957,7 +27383,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; lane-splitting motorcycle clipped its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10752",
@@ -24988,7 +27417,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; SUV parallel-parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10742",
@@ -25019,7 +27451,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for car parallel-parking ahead; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10747",
@@ -25050,7 +27485,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane for pickup; SUV passing via opposing lane clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10384",
@@ -25081,7 +27519,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-intersection yielding on red; car behind clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10714",
@@ -25112,7 +27553,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV edged into opposing lane to pass; parallel-parking car reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10755",
@@ -25143,7 +27587,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in lot; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10715",
@@ -25174,7 +27621,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10760",
@@ -25205,7 +27655,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10753",
@@ -25236,7 +27689,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10748",
@@ -25267,7 +27723,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10408",
@@ -25298,7 +27757,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to oncoming bus; bus clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10759",
@@ -25329,7 +27791,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane yielding; pickup passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10679",
@@ -25360,7 +27825,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in loading zone w/ signal; passing SUV clipped its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10527",
@@ -25391,7 +27859,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; pickup ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10592",
@@ -25422,7 +27893,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing truck's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10761",
@@ -25453,7 +27927,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red for left; SUV passing on right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10419",
@@ -25484,7 +27961,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped partly in lane w/ hazards for pickup; car behind clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10793",
@@ -25515,7 +27995,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10749",
@@ -25546,7 +28029,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10648",
@@ -25577,7 +28063,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at yield sign; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10754",
@@ -25608,7 +28097,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; oncoming bus turning left crossed into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10649",
@@ -25639,7 +28131,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for dropoff on narrow road; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10560",
@@ -25670,7 +28165,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10718",
@@ -25701,7 +28199,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10670",
@@ -25732,7 +28233,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in narrow lot for dropoff; car passing on right clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10726",
@@ -25763,7 +28267,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for unprotected left; oncoming SUV maneuvered and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10671",
@@ -25794,7 +28301,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to stopped SUV ahead; SUV reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10471",
@@ -25825,7 +28335,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV struck debris in turn lane at speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10717",
@@ -25856,7 +28369,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent left-turning car crossed into AV's lane during turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10680",
@@ -25887,7 +28403,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at green for right turn yielding; SUV passing left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10561",
@@ -25918,7 +28437,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV proceeded through gate after lead car; gate arm lowered onto it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10618",
@@ -25949,7 +28471,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards for pickup; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11003",
@@ -25980,7 +28505,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's own front wheel separated; undercarriage hit pavement"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10967",
@@ -26011,7 +28539,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for pickup; car pulled forward from stall into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10900",
@@ -26042,7 +28573,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10775",
@@ -26073,7 +28607,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10833",
@@ -26104,7 +28641,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car shoved from behind into its rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10919",
@@ -26135,7 +28675,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11007",
@@ -26166,7 +28709,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV clipped curb reversing out of parking spot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10927",
@@ -26197,7 +28743,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed an actively-reversing truck; truck backed into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10972",
@@ -26228,7 +28777,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV changed lanes into AV's lane and hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11010",
@@ -26259,7 +28811,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV clipped base of portable basketball hoop lying in its lane at speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10664",
@@ -26290,7 +28845,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to garbage truck in narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10869",
@@ -26321,7 +28879,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV emerged from behind stopped truck into AV's path at intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10897",
@@ -26352,7 +28913,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV crossed from adjacent lane into AV's lane and hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10976",
@@ -26383,7 +28947,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped partly in-lane for pickup; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10663",
@@ -26414,7 +28981,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped alongside truck's pole trailer; truck proceeded and clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11066",
@@ -26445,7 +29015,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards for dropoff; SUV ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10946",
@@ -26476,7 +29049,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to garbage truck in narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10885",
@@ -26507,7 +29083,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane w/ hazards; oncoming pickup proceeded into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10858",
@@ -26538,7 +29117,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV turning right slowly; cross car hit parked car then clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10926",
@@ -26569,7 +29151,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; bus merging into bus lane clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10865",
@@ -26600,7 +29185,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV undercarriage hit curb exiting parking garage during turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10695",
@@ -26631,7 +29219,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV braked for darting cat then rear-ended by SUV behind"
     },
-    "vehiclesInvolved": 4
+    "vehiclesInvolved": 4,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10957",
@@ -26662,7 +29253,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Animal darted from in front of parked car into AV's side; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10863",
@@ -26693,7 +29287,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV undercarriage grounded on elevated gate track in lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10861",
@@ -26724,7 +29321,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to van in narrow road; van clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10973",
@@ -26755,7 +29355,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Ball rolled into road, struck AV's front wheel; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10673",
@@ -26786,7 +29389,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed truck mid-multipoint-turn; truck reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11063",
@@ -26817,7 +29423,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot; SUV reversed from stall into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10888",
@@ -26848,7 +29457,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards for pickup; passing car clipped its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11058",
@@ -26879,7 +29491,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV drove through standing water at speed and was damaged"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10892",
@@ -26910,7 +29525,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10963",
@@ -26941,7 +29559,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for dropoff; SUV reversed from stall into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10956",
@@ -26972,7 +29593,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to oncoming SUV in narrow road; SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10674",
@@ -27003,7 +29627,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wheel separated from another vehicle, rolled into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10921",
@@ -27034,7 +29661,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards for pickup; SUV reversed from driveway into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10675",
@@ -27065,7 +29695,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; multi-car chain reaction pushed car into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11001",
@@ -27096,7 +29729,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV drove into fallen line in its lane at 6 mph in daylight; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10917",
@@ -27127,7 +29763,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped (backed to give room); SUV kept reversing into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10886",
@@ -27158,7 +29797,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding for unprotected left; oncoming pickup passing clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10960",
@@ -27189,7 +29831,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10951",
@@ -27220,7 +29865,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car reversed from parking stall into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10970",
@@ -27251,7 +29899,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to truck turning left; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10974",
@@ -27282,7 +29933,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind parked car after pickup; passing SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10909",
@@ -27313,7 +29967,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV struck debris in roadway while turning"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10954",
@@ -27344,7 +30001,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10838",
@@ -27375,7 +30035,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red for left; truck passing around it to turn clipped its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10857",
@@ -27406,7 +30069,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car ahead crashed, rolled, and pivoted into AV's lane; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10969",
@@ -27437,7 +30103,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; van behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10952",
@@ -27468,7 +30137,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to queue for dropoff; passing van clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10955",
@@ -27499,7 +30171,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car poking into intersection proceeded across into passing AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10898",
@@ -27530,7 +30205,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Just-parked SUV's passenger opened door into AV proceeding on green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10854",
@@ -27561,7 +30239,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped partly in-lane for dropoff; passing SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10918",
@@ -27592,7 +30273,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked SUV's passenger opened door into passing AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10924",
@@ -27623,7 +30307,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards for pickup; SUV passing on left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10890",
@@ -27654,7 +30341,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at green yielding to queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10859",
@@ -27685,7 +30375,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped w/ hazards (passengers exiting); passing truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10928",
@@ -27716,7 +30409,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked car's passenger opened door into stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10894",
@@ -27747,7 +30443,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV maneuvered around front of SUV blocking its lane; SUV proceeded into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10912",
@@ -27778,7 +30477,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV swerved from pickup crossing centerline, struck parked truck"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11019",
@@ -27809,7 +30511,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partly in-lane for pickup; passing car clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11005",
@@ -27840,7 +30545,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb w/ hazards; SUV changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10746",
@@ -27871,7 +30579,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to pickup in narrow road; pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10962",
@@ -27902,7 +30613,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to van; another van passing clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10964",
@@ -27933,7 +30647,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; pickup passing along curb clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10961",
@@ -27964,7 +30681,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for pickup; car exiting driveway clipped its rear turning"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10975",
@@ -27995,7 +30715,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after dropoff; passing SUV clipped its mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10899",
@@ -28026,7 +30749,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Turning pickup hit parked pickup behind AV, pushing it into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10980",
@@ -28057,7 +30783,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped partly in-lane w/ hazards for dropoff; bus passing clipped its mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10968",
@@ -28088,7 +30817,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; parked van's multi-point left turn clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11062",
@@ -28119,7 +30851,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV struck trash can lying in middle of its lane at speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10915",
@@ -28150,7 +30885,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to oncoming SUV in narrow road; SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10884",
@@ -28181,7 +30919,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; oncoming SUV turning left clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10916",
@@ -28212,7 +30953,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car turned right across AV's lane from left lane; hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10860",
@@ -28243,7 +30987,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to maneuvering SUV; SUV clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10991",
@@ -28274,7 +31021,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Cross car ran stop sign into intersection; hit AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10768",
@@ -28305,7 +31055,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV crept from stop into vegetation-occluded crosswalk; cyclist rode into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10958",
@@ -28336,7 +31089,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to oncoming SUV in narrow road; SUV clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10925",
@@ -28367,7 +31123,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to pickup in narrow road; pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10866",
@@ -28398,7 +31157,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car made right turn across AV's lane from intersection; hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10893",
@@ -28429,7 +31191,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Car was stopped when AV committed to pass behind it; it reversed into AV only after"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10868",
@@ -28460,7 +31225,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pedestrian in crosswalk; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11067",
@@ -28491,7 +31259,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; oncoming car turning left clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11035",
@@ -28522,7 +31293,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped (backed to give room); car kept reversing into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10887",
@@ -28553,7 +31327,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10953",
@@ -28584,7 +31361,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car from lot turning right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10836",
@@ -28615,7 +31395,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Scooterist ran red light into AV's path on green; AV braked"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10966",
@@ -28646,7 +31429,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after dropoff; oncoming car proceeded into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10959",
@@ -28677,7 +31463,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent SUV crossed lane line during right turn into AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10852",
@@ -28708,7 +31497,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "AV turning around blind building corner in lot; collided with emerging SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10965",
@@ -28739,7 +31531,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV starting from green; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10776",
@@ -28770,7 +31565,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped as oncoming truck maneuvered into it; truck hit then sideswiped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10920",
@@ -28801,7 +31599,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into passing car in lot (dooring)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10751",
@@ -28832,7 +31633,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11002",
@@ -28863,7 +31667,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10891",
@@ -28894,7 +31701,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV turned into lot and drove into hanging chain"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10889",
@@ -28925,7 +31735,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at green yielding to queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11244",
@@ -28956,7 +31769,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming SUV turned left across centerline into AV's lane; hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10998",
@@ -28987,7 +31803,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partly in-lane w/ hazards for pickup; pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11239",
@@ -29018,7 +31837,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV turned into lot and drove into hanging chain"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11193",
@@ -29049,7 +31871,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV drove into chain separating section of parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11190",
@@ -29080,7 +31905,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11013",
@@ -29111,7 +31939,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign on off-ramp; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11161",
@@ -29142,7 +31973,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "AV reversed into parked trailer's hitch during multi-point turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11204",
@@ -29173,7 +32007,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Van jumped sidewalk into stationary AV, spinning it into a pole; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11196",
@@ -29204,7 +32041,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup entered from occluded alley into AV's lane; hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11016",
@@ -29235,7 +32075,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV passenger opened curb-side door into passing scooterist (dooring)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11085",
@@ -29266,7 +32109,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11171",
@@ -29297,7 +32143,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing van"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11174",
@@ -29328,7 +32177,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV undercarriage grounded on elevated gate track in lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11189",
@@ -29359,7 +32211,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to truck in narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11209",
@@ -29390,7 +32245,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV undercarriage grounded on elevated gate track in lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11291",
@@ -29421,7 +32279,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Truck turned right from left lane across into AV's lane; hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11170",
@@ -29452,7 +32313,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; car parallel-parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11213",
@@ -29483,7 +32347,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing bus"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11298",
@@ -29514,7 +32381,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to truck in narrow road; truck clipped its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11249",
@@ -29545,7 +32415,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped w/ hazards for hazard-light car ahead; pickup changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11219",
@@ -29576,7 +32449,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to truck in narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11087",
@@ -29607,7 +32483,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car shoved from behind into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11177",
@@ -29638,7 +32517,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11225",
@@ -29669,7 +32551,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car exited driveway from behind parked van into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11146",
@@ -29700,7 +32585,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Lead car struck road debris that moved into AV's path; AV hit it too"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11175",
@@ -29731,7 +32619,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to hazard-light car ahead; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11295",
@@ -29762,7 +32653,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV proceeded through barrier arm as it closed; arm hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-10977",
@@ -29793,7 +32687,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Scooterist crossed centerline from behind SUV into AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11192",
@@ -29824,7 +32721,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car from parking spot proceeded into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11046",
@@ -29855,7 +32755,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into passing car in alley (dooring)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11210",
@@ -29886,7 +32789,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11163",
@@ -29917,7 +32823,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partly in-lane for pickup; van completing right turn clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11167",
@@ -29948,7 +32857,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11088",
@@ -29979,7 +32891,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV undercarriage grounded on raised pavement at lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11194",
@@ -30010,7 +32925,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV maneuvering around left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11221",
@@ -30041,7 +32959,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Pickup was stopped mid-turn when AV committed to pass; it reversed into AV only during the pass"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11162",
@@ -30072,7 +32993,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to oncoming SUV; SUV passing reversed into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11216",
@@ -30103,7 +33027,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Passing car drove with door open; door hit parked AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11207",
@@ -30134,7 +33061,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing car (dooring)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11044",
@@ -30165,7 +33095,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowed/moved over for crossing cyclists; one rode into its rear corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11224",
@@ -30196,7 +33129,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "AV passenger opened door while passing; door hit stopped Waymo's mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11214",
@@ -30227,7 +33163,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11247",
@@ -30258,7 +33197,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to box truck in narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11195",
@@ -30289,7 +33231,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV drove into fallen line across roadway in daylight; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11218",
@@ -30320,7 +33265,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened street-side door into passing bus"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11245",
@@ -30351,7 +33299,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11246",
@@ -30382,7 +33333,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup crossed lane line from inner turn lane into AV during dual left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11014",
@@ -30413,7 +33367,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped w/ hazards for pickup; scooterist hit its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11172",
@@ -30444,7 +33401,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV crossed lane line making right turn into AV's path; hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11015",
@@ -30475,7 +33435,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards; pickup exiting lot drifted into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11208",
@@ -30506,7 +33469,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11173",
@@ -30537,7 +33503,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped w/ hazards for pickup; pickup rear-ended then reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11205",
@@ -30568,7 +33537,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV passenger opened curb-side door into filtering cyclist (dooring)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11212",
@@ -30599,7 +33571,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red light; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11250",
@@ -30630,7 +33605,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb w/ hazards for pickup; minivan clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11238",
@@ -30661,7 +33639,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car changing lanes hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11276",
@@ -30692,7 +33673,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV reversed out of driveway into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11206",
@@ -30723,7 +33707,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tires fell from trailer ahead and rolled into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11275",
@@ -30754,7 +33741,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV at 39mph hit bicycle lying in road at night; low dark object"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11220",
@@ -30785,7 +33775,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV hit bicycle lying in middle of road at night; low dark object"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11160",
@@ -30816,7 +33809,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11379",
@@ -30847,7 +33843,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV drove into lot over concrete chunk attached to chain at entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11327",
@@ -30878,7 +33877,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11381",
@@ -30909,7 +33911,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car made unprotected left across AV's path on green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11417",
@@ -30940,7 +33945,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Wrong-way car in AV's lane; AV braked+swerved repeatedly, contact unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11330",
@@ -30971,7 +33979,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; pickup clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11374",
@@ -31002,7 +34013,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car ran red crossing perpendicular; AV stopped to yield, car hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11372",
@@ -31033,7 +34047,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue at stop sign; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11467",
@@ -31064,7 +34081,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV stopped for closed barrier arm then drove forward into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11362",
@@ -31095,7 +34115,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at light; car ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11414",
@@ -31126,7 +34149,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to queue; car changing lanes hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11468",
@@ -31157,7 +34183,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11415",
@@ -31188,7 +34217,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11284",
@@ -31219,7 +34251,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV turned wide into center lane and clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11413",
@@ -31250,7 +34285,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards for construction; box truck rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11400",
@@ -31281,7 +34319,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11365",
@@ -31312,7 +34353,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped before crosswalk at HAWK beacon; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11328",
@@ -31343,7 +34387,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowed to stop to turn left; box truck behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11418",
@@ -31374,7 +34421,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to SUV; SUV reversed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11383",
@@ -31405,7 +34455,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car braked and merged into AV's lane, hitting AV front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11432",
@@ -31436,7 +34489,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Semi incorrectly positioned turned right into AV mid-turn from lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11384",
@@ -31467,7 +34523,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; SUV passed to left and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11358",
@@ -31498,7 +34557,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to fire truck; fire truck clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11451",
@@ -31529,7 +34591,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV proceeded past truck reversing into alley; truck moved into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11426",
@@ -31560,7 +34625,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV pulled forward into line of shopping carts being pushed from left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11333",
@@ -31591,7 +34659,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; bus turning left swung wide and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11404",
@@ -31622,7 +34693,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car turning from alley clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11371",
@@ -31653,7 +34727,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to pedestrian in crosswalk; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11402",
@@ -31684,7 +34761,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red left arrow; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11302",
@@ -31715,7 +34795,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV in protected left turn; following car also turning rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11424",
@@ -31746,7 +34829,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV pulled forward from stall into adjacent Waymo reversing out"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11455",
@@ -31777,7 +34863,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; SUV clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11282",
@@ -31808,7 +34897,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to pedestrians; bus clipped its side passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11323",
@@ -31839,7 +34931,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11420",
@@ -31870,7 +34965,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; bus's open storage door swung into AV mirror as bus advanced"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11421",
@@ -31901,7 +34999,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11273",
@@ -31932,7 +35033,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb for pickup; truck maneuvering to park hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11373",
@@ -31963,7 +35067,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; passing truck's bed clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11378",
@@ -31994,7 +35101,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for crosswalk; pickup chain-reaction rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11401",
@@ -32025,7 +35135,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11279",
@@ -32056,7 +35169,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to merging taxi; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11361",
@@ -32087,7 +35203,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Object detached from passing truck's axle rolled into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11430",
@@ -32118,7 +35237,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for left-turn queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11329",
@@ -32149,7 +35271,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; bus crossed center line to pass, clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11422",
@@ -32180,7 +35305,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's front tire struck a small dumbbell in its lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11360",
@@ -32211,7 +35339,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing while passing stopped bus; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11370",
@@ -32242,7 +35373,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing behind car in turn lane; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11280",
@@ -32273,7 +35407,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to emergency vehicle; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11344",
@@ -32304,7 +35441,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb w/ hazards; bus clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11452",
@@ -32335,7 +35475,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV passenger opened door into passing scooterist (dooring VRU)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11281",
@@ -32366,7 +35509,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into passing bus"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11428",
@@ -32397,7 +35543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to emergency vehicle; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11334",
@@ -32428,7 +35577,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV made U-turn at downed RR gate; undercarriage grounded on median"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11412",
@@ -32459,7 +35611,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Turning car crossed center line into AV's lane; AV stationary at impact"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11495",
@@ -32490,7 +35645,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into passing bus"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11544",
@@ -32521,7 +35679,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; car driving between lanes hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11561",
@@ -32552,7 +35713,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pedestrian pushed shopping cart into AV's lane; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11502",
@@ -32583,7 +35747,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in stall; car exiting another stall hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11522",
@@ -32614,7 +35781,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to scooterist; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11589",
@@ -32645,7 +35815,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11433",
@@ -32676,7 +35849,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV reversed to yield to truck, stopped; truck turned left into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11525",
@@ -32707,7 +35883,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Truck turned right from left lane across AV's path; AV had stopped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11475",
@@ -32738,7 +35917,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; minivan rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11450",
@@ -32769,7 +35951,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked; SUV crossed into oncoming lane at speed and hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11569",
@@ -32800,7 +35985,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped car's occupant opened door into AV as it passed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11516",
@@ -32831,7 +36019,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed behind a maneuvering truck; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11474",
@@ -32862,7 +36053,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11501",
@@ -32893,7 +36087,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked pickup's driver opened door into passing AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11469",
@@ -32924,7 +36121,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV pulled forward to front-left of stopped bus; bus turned left into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11547",
@@ -32955,7 +36155,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to garbage truck on narrow road; truck clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11564",
@@ -32986,7 +36189,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for police; car maneuvering around it clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11588",
@@ -33017,7 +36223,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11508",
@@ -33048,7 +36257,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; turning pickup+trailer clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11542",
@@ -33079,7 +36291,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; pickup+trailer clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11591",
@@ -33110,7 +36325,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's rear left wheel separated (mechanical)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11490",
@@ -33141,7 +36359,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards; chain reaction pushed car into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11548",
@@ -33172,7 +36393,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV brushed vegetation overhanging into narrow alley while passing car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11611",
@@ -33203,7 +36427,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV changed lanes into rightmost lane; stopped pickup proceeded into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11590",
@@ -33234,7 +36461,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; SUV crossed double yellow to pass, clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11498",
@@ -33265,7 +36495,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards; car reversed out of stall into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11500",
@@ -33296,7 +36529,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV followed pylon-marked path into removed-pavement drop in work zone"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11594",
@@ -33327,7 +36563,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Flagger device arm lowered onto AV; AV then proceeded into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11496",
@@ -33358,7 +36597,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; lane-splitting motorcycle hit a car door, fell into AV side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11673",
@@ -33389,7 +36631,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind car in turn lane; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11565",
@@ -33420,7 +36665,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; oncoming truck's trailer swung into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11456",
@@ -33451,7 +36699,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards; motorcycle changing lanes hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11488",
@@ -33482,7 +36733,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to scooterist/cyclist; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11545",
@@ -33513,7 +36767,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car ran red across intersection; AV hard-braked but hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11605",
@@ -33544,7 +36801,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11523",
@@ -33575,7 +36835,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; van clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11543",
@@ -33606,7 +36869,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partially in-lane w/ hazards; SUV clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11567",
@@ -33637,7 +36903,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partially in-lane w/ hazards; SUV turning right clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11573",
@@ -33668,7 +36937,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV reversed out of stall into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11607",
@@ -33699,7 +36971,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV pulled out of parking spot into gap; car behind hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11546",
@@ -33730,7 +37005,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV drove into fallen line at 29 mph after dark; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11596",
@@ -33761,7 +37039,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11621",
@@ -33792,7 +37073,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent car turned left into AV's lane on green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11622",
@@ -33823,7 +37107,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11476",
@@ -33854,7 +37141,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car hit AV rear then swerved off into sign post; AV victim"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11571",
@@ -33885,7 +37175,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV drove through standing water in its lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11671",
@@ -33916,7 +37209,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "AV pulled out of spot and clipped parked truck's low flatbed trailer"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11765",
@@ -33947,7 +37243,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11672",
@@ -33978,7 +37277,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "AV's front tire struck a pothole in its lane at night; the report lists undercarriage contact"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11753",
@@ -34009,7 +37311,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into SUV passing the stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11763",
@@ -34040,7 +37345,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; SUV from turn lane rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11795",
@@ -34071,7 +37379,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent car crossed lane line into AV in intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11713",
@@ -34102,7 +37413,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to turn right; motorcycle rear-ended it, then hit-and-run car killed rider"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11608",
@@ -34133,7 +37447,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.6,
       "reasoning": "AV pulled out of spot and clipped parked truck's low flatbed trailer"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11794",
@@ -34164,7 +37481,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car ran red, hit pickup which was shoved into AV; AV victim"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11698",
@@ -34195,7 +37515,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Animal darted out from between parked cars into AV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11821",
@@ -34226,7 +37549,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11739",
@@ -34257,7 +37583,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11702",
@@ -34288,7 +37617,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11792",
@@ -34319,7 +37651,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed a truck stuck mid-U-turn; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11716",
@@ -34350,7 +37685,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding after turn; pickup reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11850",
@@ -34381,7 +37719,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for detected siren; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11755",
@@ -34412,7 +37753,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; SUV pulled from curb and crossed center line into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11742",
@@ -34443,7 +37787,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV emerged from behind stopped train across AV's path; occluded"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11789",
@@ -34474,7 +37821,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV crossed double yellow into it after turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11851",
@@ -34505,7 +37855,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-maneuver around truck for forklift; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11805",
@@ -34536,7 +37889,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV drove into a hanging chain separating a parking lot section"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11771",
@@ -34567,7 +37923,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV maneuvered around parked truck and clipped its lowered loading ramp"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11715",
@@ -34598,7 +37957,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to truck blocking lot; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11718",
@@ -34629,7 +37991,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car ahead made sudden unsignaled right turn across AV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11762",
@@ -34660,7 +38025,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent car changed lanes into AV mid left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11853",
@@ -34691,7 +38059,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; truck trailer clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11768",
@@ -34722,7 +38093,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11618",
@@ -34753,7 +38127,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; truck turning right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11806",
@@ -34784,7 +38161,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Cyclist ran trail stop sign into road, hit AV's rear side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11852",
@@ -34815,7 +38195,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to tow truck; tow truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11802",
@@ -34846,7 +38229,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV drove through water across the roadway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11629",
@@ -34877,7 +38263,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.7,
       "reasoning": "AV drove wrong way through exit-only gate over traffic spikes"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11756",
@@ -34908,7 +38297,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to pedestrians; bus pulled alongside and hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11831",
@@ -34939,7 +38331,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11759",
@@ -34970,7 +38365,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV merged from curb into turn lane in front of stopped pickup; pickup moved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11790",
@@ -35001,7 +38399,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowed to yield to turning SUV; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11701",
@@ -35032,7 +38433,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to cross traffic; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11769",
@@ -35063,7 +38467,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV pulled out of driveway turning left into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11839",
@@ -35094,7 +38501,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign for pedestrians; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11623",
@@ -35125,7 +38535,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV changed lanes around stopped pickup; pickup proceeded into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11692",
@@ -35156,7 +38569,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV reversed to yield to reversing car; car kept backing into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11612",
@@ -35187,7 +38603,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV in turn-only lane went straight into AV's left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11637",
@@ -35218,7 +38637,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming SUV made unprotected left across AV on green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11761",
@@ -35249,7 +38671,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; bus reversed/changed lanes into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11609",
@@ -35280,7 +38705,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; bus changing lanes around it clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11627",
@@ -35311,7 +38739,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into van passing the parked AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11664",
@@ -35342,7 +38773,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV proceeded forward into adjacent SUV's open door protruding into lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11695",
@@ -35373,7 +38807,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind car at light; car reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11760",
@@ -35404,7 +38841,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent car changed lanes into AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11791",
@@ -35435,7 +38875,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; chain reaction pushed a car into its side"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11766",
@@ -35466,7 +38909,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on raised pavement at lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11625",
@@ -35497,7 +38943,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowed to yield; motorcycle rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11840",
@@ -35528,7 +38977,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cat darted out from behind parked car into AV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11724",
@@ -35559,7 +39011,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; oncoming pickup maneuvered into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11738",
@@ -35590,7 +39045,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Motorcycle changed lanes behind starting AV and hit its rear, then a barrier"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11717",
@@ -35621,7 +39079,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car made wide right turn into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11758",
@@ -35652,7 +39113,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stop-and-go in queue at red; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12008",
@@ -35683,7 +39147,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; car reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12052",
@@ -35714,7 +39181,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in alley w/ hazards; car turning in clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11996",
@@ -35745,7 +39215,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV drove through standing water in its lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11925",
@@ -35776,7 +39249,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; truck trailer clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11859",
@@ -35807,7 +39283,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent SUV turned left into AV's lane; AV braked and swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11882",
@@ -35838,7 +39317,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; SUV clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11855",
@@ -35869,7 +39351,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to ambulance; ambulance clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12012",
@@ -35900,7 +39385,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; straddling pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12000",
@@ -35931,7 +39419,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12053",
@@ -35962,7 +39453,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for debris in lane; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11863",
@@ -35993,7 +39487,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; flatbed reversed out of driveway into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11858",
@@ -36024,7 +39521,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to avoid blocking intersection; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11949",
@@ -36055,7 +39555,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to SUV ahead; SUV reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11958",
@@ -36086,7 +39589,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; bus ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11929",
@@ -36117,7 +39623,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for siren; chain reaction pushed car into its rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11926",
@@ -36148,7 +39657,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11962",
@@ -36179,7 +39691,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stop-and-go in queue; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11908",
@@ -36210,7 +39725,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent SUV maneuvered into AV's lane in intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12062",
@@ -36241,7 +39759,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing in-lane for pickup; car tried to pass and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11924",
@@ -36272,7 +39793,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards; truck maneuvered around and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11997",
@@ -36303,7 +39827,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped in no-shoulder freeway lane; merge-around crash followed (no AV contact)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11999",
@@ -36334,7 +39861,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Basketball rolled into lane and struck AV's rear tire; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12013",
@@ -36365,7 +39895,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped partially in-lane for pickup; truck trailer clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12059",
@@ -36396,7 +39929,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to tow truck on narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11838",
@@ -36427,7 +39963,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to animal in road; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11955",
@@ -36458,7 +39997,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; van clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11992",
@@ -36489,7 +40031,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Door held open by ex-passenger; SUV squeezed past and hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11841",
@@ -36520,7 +40065,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car failed to stop and rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11998",
@@ -36551,7 +40099,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for yellow/red light; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12011",
@@ -36582,7 +40133,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid right turn; car behind also turning rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11987",
@@ -36613,7 +40167,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12042",
@@ -36644,7 +40201,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield in intersection; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11932",
@@ -36675,7 +40235,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to SUV in lot; SUV reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11988",
@@ -36706,7 +40269,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; truck turning left crossed double yellow into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11888",
@@ -36737,7 +40303,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV drove over dividing curb during lot U-turn; undercarriage struck it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11994",
@@ -36768,7 +40337,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into SUV passing the parked AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11940",
@@ -36799,7 +40371,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup reversed out of parking stall into intersection; AV swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11933",
@@ -36830,7 +40405,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV maneuvered left into AV's lane without signal"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11953",
@@ -36861,7 +40439,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Parked car pulled out into AV's lane as AV completed left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11907",
@@ -36892,7 +40473,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV from lot exit pulled into AV's lane as AV passed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11861",
@@ -36923,7 +40507,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding straight; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12018",
@@ -36954,7 +40541,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to pickup ahead; pickup reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11956",
@@ -36985,7 +40575,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11892",
@@ -37016,7 +40609,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV exited lot into AV's lane; AV braked and swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11954",
@@ -37047,7 +40643,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane w/ hazards; bus changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11928",
@@ -37078,7 +40677,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12046",
@@ -37109,7 +40711,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV drove into a movable barrier blocking off a lot section"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13053",
@@ -37140,7 +40745,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to car in lot; car reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12044",
@@ -37171,7 +40779,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV proceeded as a gate swung out into roadway, into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11906",
@@ -37202,7 +40813,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid right turn; car behind also turning rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11865",
@@ -37233,7 +40847,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed a truck mid reversing maneuver in lot; truck backed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12007",
@@ -37264,7 +40881,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue after turn; oncoming truck turning left swung into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11874",
@@ -37295,7 +40915,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car maneuvering past clipped its rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12050",
@@ -37326,7 +40949,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV braking for traffic; cyclist following too close hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11836",
@@ -37357,7 +40983,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV squeezed around truck blocking lane and clipped its flatbed corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11860",
@@ -37388,7 +41017,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to vehicle ahead; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12063",
@@ -37419,7 +41051,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11931",
@@ -37450,7 +41085,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; motorhome clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11930",
@@ -37481,7 +41119,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12045",
@@ -37512,7 +41153,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car crossed double yellow into AV at stop sign"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11837",
@@ -37543,7 +41187,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped/reversed to yield on narrow road; SUV clipped it squeezing past"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11951",
@@ -37574,7 +41221,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on raised pavement entering lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11960",
@@ -37605,7 +41255,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into car passing the stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11957",
@@ -37636,7 +41289,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped straddling lanes mid-change; truck proceeded into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11883",
@@ -37667,7 +41323,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind bus; bus reversed to park into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12019",
@@ -37698,7 +41357,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; truck clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11842",
@@ -37729,7 +41391,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into SUV passing the parked AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11905",
@@ -37760,7 +41425,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped alongside stopped semi in lot; semi turned right into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13056",
@@ -37791,7 +41459,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to stage lane change; rear-end chain behind it (no AV contact)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11864",
@@ -37822,7 +41493,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV rear-ended it, later rammed it again"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12035",
@@ -37853,7 +41527,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "AV's undercarriage grounded on a speed bump at low speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11884",
@@ -37884,7 +41561,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding straight; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11936",
@@ -37915,7 +41595,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at dark/inoperative signal; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11849",
@@ -37946,7 +41629,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb w/ hazards; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13028",
@@ -37977,7 +41663,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV passing stopped car; car reversed into it, AV had stopped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11995",
@@ -38008,7 +41697,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup passed illegally via transit lane and turned right into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11904",
@@ -38039,7 +41731,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped mid lane-change partially in SUV's lane; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13025",
@@ -38070,7 +41765,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to skateboarder; straddling car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12070",
@@ -38101,7 +41799,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Cat sat visibly under AV during pickup, person reaching for it; AV departed and hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-11887",
@@ -38132,7 +41833,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Adjacent SUV's door opened into AV as AV moved off from light"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13161",
@@ -38163,7 +41867,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Passenger exited moving AV through door; AV slowed but tire stopped on foot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13197",
@@ -38194,7 +41901,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13236",
@@ -38225,7 +41935,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13164",
@@ -38256,7 +41969,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; car reversed out of stall into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13060",
@@ -38287,7 +42003,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane w/ hazards; wrong-way car hit it head-on"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13065",
@@ -38318,7 +42037,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; chain reaction pushed SUV into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13102",
@@ -38349,7 +42071,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; speeding car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13194",
@@ -38380,7 +42105,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car clipped its side passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13129",
@@ -38411,7 +42139,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13128",
@@ -38442,7 +42173,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12051",
@@ -38473,7 +42207,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming SUV crossed center line into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13204",
@@ -38504,7 +42241,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid right turn; SUV behind also turning rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13199",
@@ -38535,7 +42275,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup behind proceeded into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13130",
@@ -38566,7 +42309,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; chain reaction pushed car into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12047",
@@ -38597,7 +42343,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; straddling SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13099",
@@ -38628,7 +42377,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car merging hit van then AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13148",
@@ -38659,7 +42411,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13090",
@@ -38690,7 +42445,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV proceeded as a gate swung open into the roadway into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13079",
@@ -38721,7 +42479,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to red-running cyclist; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13201",
@@ -38752,7 +42513,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to police SUV; SUV reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13063",
@@ -38783,7 +42547,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to SUV that cut in; SUV reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13144",
@@ -38814,7 +42581,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13159",
@@ -38845,7 +42615,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind truck w/ hazards; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13126",
@@ -38876,7 +42649,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to turning truck; trailer clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12049",
@@ -38907,7 +42683,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to reversing truck; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13067",
@@ -38938,7 +42717,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Pickup stopped partly in a driveway; it reversed into AV only after AV committed to pass"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13206",
@@ -38969,7 +42751,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; truck clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13085",
@@ -39000,7 +42785,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car ran red making unprotected left into AV; AV braked and swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13246",
@@ -39031,7 +42819,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV reversed into a parking bollard during a multi-point maneuver"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13024",
@@ -39062,7 +42853,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Lot car had stopped after turning when AV committed to pass; it reversed into AV only during the pass"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13198",
@@ -39093,7 +42887,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13251",
@@ -39124,7 +42921,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to pedestrians; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13055",
@@ -39155,7 +42955,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming SUV turned left into AV's lane; AV swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13276",
@@ -39186,7 +42989,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for overhead branch; SUV maneuvering past clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12061",
@@ -39217,7 +43023,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to low-flying birds; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13023",
@@ -39248,7 +43057,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup from adjacent lane changed into AV in intersection"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13235",
@@ -39279,7 +43091,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; turning van rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13100",
@@ -39310,7 +43125,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped before right turn; mail truck rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13091",
@@ -39341,7 +43159,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tow truck lifting parked AV; AV drove forward off the wheel-lift arm"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13089",
@@ -39372,7 +43193,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; bus reversing to park clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13254",
@@ -39403,7 +43227,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for reversing bus; bus reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13096",
@@ -39434,7 +43261,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Ped visibly held wire aloft across all lanes yet AV drove into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12054",
@@ -39465,7 +43295,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to garbage truck on narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12048",
@@ -39496,7 +43329,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming SUV made unprotected left into AV on green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13269",
@@ -39527,7 +43363,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV turned left from wrong lane into turn lane occupied by pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13238",
@@ -39558,7 +43397,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to car ahead; car reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13373",
@@ -39589,7 +43431,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car pulled out of driveway into AV's side as AV passed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13190",
@@ -39620,7 +43465,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12055",
@@ -39651,7 +43499,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13162",
@@ -39682,7 +43533,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane for a business stop-sign sign; truck rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13274",
@@ -39713,7 +43567,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; SUV passed to left and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13312",
@@ -39744,7 +43601,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV squeezing past on right clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13054",
@@ -39775,7 +43635,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign then proceeded; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13256",
@@ -39806,7 +43669,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV detected line and slowed/maneuvered yet contacted; expert with info stops"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13062",
@@ -39837,7 +43703,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to reversing car; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13240",
@@ -39868,7 +43737,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent car entered AV's lane and hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13311",
@@ -39899,7 +43771,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot; SUV reversed out of stall into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13095",
@@ -39930,7 +43805,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tree branch knocked down by truck ahead fell into AV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13165",
@@ -39961,7 +43839,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to pedestrian; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13058",
@@ -39992,7 +43873,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup pulled from curb into lane as AV changed lanes"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13250",
@@ -40023,7 +43907,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to truck ahead; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13133",
@@ -40054,7 +43941,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for unprotected left; truck rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12056",
@@ -40085,7 +43975,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to pedestrian; motorcycle rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13066",
@@ -40116,7 +44009,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; bus in adjacent lane clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13241",
@@ -40147,7 +44043,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; bus in adjacent turn lane swung into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13082",
@@ -40178,7 +44077,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after pickup; adjacent bus proceeded into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13160",
@@ -40209,7 +44111,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on raised pavement entering lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13167",
@@ -40240,7 +44145,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV creeping at stop sign yielding; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13243",
@@ -40271,7 +44179,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb w/ hazards; bus clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13310",
@@ -40302,7 +44213,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Mail truck pulled from curb into AV's lane after AV's lane change"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13192",
@@ -40333,7 +44247,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; speeding car rear-ended it"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13068",
@@ -40364,7 +44281,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb w/ hazards; adjacent bus proceeded into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13163",
@@ -40395,7 +44315,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13242",
@@ -40426,7 +44349,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff; bus clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13247",
@@ -40457,7 +44383,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13080",
@@ -40488,7 +44417,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partially in-lane w/ hazards; bus clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13268",
@@ -40519,7 +44451,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car turned right across into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13064",
@@ -40550,7 +44485,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car made unprotected left into AV; AV braked and swerved"
     },
-    "vehiclesInvolved": 4
+    "vehiclesInvolved": 4,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13244",
@@ -40581,7 +44519,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13135",
@@ -40612,7 +44553,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to reversing truck in lot; trailer hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13088",
@@ -40643,7 +44587,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid right turn; SUV behind also turning rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13239",
@@ -40674,7 +44621,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding into left turn from stop; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13270",
@@ -40705,7 +44655,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV struck an animal in its lane at night; effectively unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13196",
@@ -40736,7 +44689,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car hit a stopped van then veered into AV's rear; AV victim"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13081",
@@ -40767,7 +44723,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car changed from center turn lane into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13137",
@@ -40798,7 +44757,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign for pedestrian; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13205",
@@ -40829,7 +44791,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door into SUV passing the parked AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13092",
@@ -40860,7 +44825,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; chain reaction pushed car into its rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13202",
@@ -40891,7 +44859,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "SUV was stopped in AV's lane when AV committed to pass; it reversed into AV only after"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13155",
@@ -40922,7 +44893,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; bus turning right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-12060",
@@ -40953,7 +44927,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13195",
@@ -40984,7 +44961,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; chain reaction pushed SUV into its rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13193",
@@ -41015,7 +44995,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "AV's undercarriage struck a fallen street sign lying in lane at night"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13127",
@@ -41046,7 +45029,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane w/ hazards in lot; truck clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13084",
@@ -41077,7 +45063,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV pulled from curb as SUV cut to curb into its path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13255",
@@ -41108,7 +45097,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Red-light runner stopped in AV's lane; it reversed into AV only after AV committed to pass"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13189",
@@ -41139,7 +45131,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13275",
@@ -41170,7 +45165,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb for pickup; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13515",
@@ -41201,7 +45199,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car ahead reversed into it despite AV horn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13331",
@@ -41232,7 +45233,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at flashing red; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13363",
@@ -41263,7 +45267,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Wrong-way car entered AV's lane head-on; AV braked and swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13301",
@@ -41294,7 +45301,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; car clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13538",
@@ -41325,7 +45335,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passenger opened door; car maneuvering around into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13399",
@@ -41356,7 +45369,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; chain reaction pushed car into its rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13370",
@@ -41387,7 +45403,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car turning right partially entered AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13495",
@@ -41418,7 +45437,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13410",
@@ -41449,7 +45471,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to parallel-parking pickup; pickup reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13384",
@@ -41480,7 +45505,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13309",
@@ -41511,7 +45539,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; car maneuvering around clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13323",
@@ -41542,7 +45573,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13302",
@@ -41573,7 +45607,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV moved to give room then stopped; turning fire truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13403",
@@ -41604,7 +45641,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent SUV crossed into AV's lane mid left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13542",
@@ -41635,7 +45675,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to reversing truck in lot; trailer hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13509",
@@ -41666,7 +45709,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV drove into fallen line hanging in its lane at 18 mph at 4 AM; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13506",
@@ -41697,7 +45743,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's tire struck debris in the roadway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13447",
@@ -41728,7 +45777,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Hand truck fell from truck ahead into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13507",
@@ -41759,7 +45811,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Truck turned right from left lane across AV's path; AV had stopped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13300",
@@ -41790,7 +45845,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to oversized truck partly in its lane; trailer clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13450",
@@ -41821,7 +45879,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked w/ hazards on narrow road; SUV clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13510",
@@ -41852,7 +45913,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car changed lanes into AV's lane as AV completed its lane change"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13407",
@@ -41883,7 +45947,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to box truck on narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13267",
@@ -41914,7 +45981,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV passed behind a golf cart in lot; cart reversed into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13395",
@@ -41945,7 +46015,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13371",
@@ -41976,7 +46049,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red within intersection; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13514",
@@ -42007,7 +46083,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV drove into fallen line at 25 mph in daylight; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13378",
@@ -42038,7 +46117,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in crosswalk yielding; cyclist ran red and rode into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13327",
@@ -42069,7 +46151,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; truck ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13443",
@@ -42100,7 +46185,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.7,
       "reasoning": "AV's undercarriage grounded on pavement while driving"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13277",
@@ -42131,7 +46219,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to street sweeper; sweeper reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13369",
@@ -42162,7 +46253,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car merging in stop-and-go hit an SUV then clipped AV's rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13416",
@@ -42193,7 +46287,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13278",
@@ -42224,7 +46321,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to truck that turned into lane; truck reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13513",
@@ -42255,7 +46355,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to reversing truck in lot; trailer hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13364",
@@ -42286,7 +46389,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to pedestrian before right turn; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13548",
@@ -42317,7 +46423,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Box truck turned right from adjacent lane across into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13388",
@@ -42348,7 +46457,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on narrow road; oncoming car hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13320",
@@ -42379,7 +46491,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to make right turn yielding; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13554",
@@ -42410,7 +46525,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; heavy truck rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13512",
@@ -42441,7 +46559,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to truck on narrow road; truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13405",
@@ -42472,7 +46593,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car went straight from a right-turn-only lane into turning AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13324",
@@ -42503,7 +46627,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; truck in adjacent lane clipped its side passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13448",
@@ -42534,7 +46661,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to wrong-way van; van reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13279",
@@ -42565,7 +46695,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13452",
@@ -42596,7 +46729,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to reversing truck in lot; trailer hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13372",
@@ -42627,7 +46763,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing to yield to dog in road; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13511",
@@ -42658,7 +46797,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; van passed to left and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13539",
@@ -42689,7 +46831,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to fire engine; engine turning left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13540",
@@ -42720,7 +46865,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after lot turn; pickup clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13489",
@@ -42751,7 +46899,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV reversed to yield to reversing truck in lot; truck backed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13467",
@@ -42782,7 +46933,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.7,
       "reasoning": "AV's undercarriage grounded on a pavement elevation change in lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13326",
@@ -42813,7 +46967,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane w/ hazards; pickup clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13564",
@@ -42844,7 +47001,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid right turn for pedestrians; scooterist rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13486",
@@ -42875,7 +47035,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after detecting bird-strike; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13485",
@@ -42906,7 +47069,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on pavement turning into lot driveway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13487",
@@ -42937,7 +47103,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on pavement turning into lot driveway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13365",
@@ -42968,7 +47137,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; van squeezing past clipped its mirror"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13451",
@@ -42999,7 +47171,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; pickup clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13408",
@@ -43030,7 +47205,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car changing lanes clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13409",
@@ -43061,7 +47239,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent SUV crossed into AV's lane mid left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13449",
@@ -43092,7 +47273,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to emergency vehicle; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13396",
@@ -43123,7 +47307,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV passed on left as AV began right turn from stop"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13444",
@@ -43154,7 +47341,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow road; car clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13453",
@@ -43185,7 +47375,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in turn lane; bus ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13361",
@@ -43216,7 +47409,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; truck turning right crossed double yellow into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13401",
@@ -43247,7 +47443,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind car at red; car reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13325",
@@ -43278,7 +47477,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded turning onto a sidewalk-level raised street"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13322",
@@ -43309,7 +47511,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to red-running cyclist; cyclist hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13287",
@@ -43340,7 +47545,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for detected emergency vehicle; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13557",
@@ -43371,7 +47579,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped/reversed to yield to reversing truck; truck backed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13549",
@@ -43402,7 +47613,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13454",
@@ -43433,7 +47647,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV shifted left into merge as cable car passed on adjacent track"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13484",
@@ -43464,7 +47681,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV ran stop sign making right turn into AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13445",
@@ -43495,7 +47715,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parallel parking ahead reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13303",
@@ -43526,7 +47749,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; chain reaction pushed SUV into its rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13541",
@@ -43557,7 +47783,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped straddling lanes mid-change; pickup proceeded into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13400",
@@ -43588,7 +47817,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane for pickup; oncoming car clipped its rear passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13321",
@@ -43619,7 +47851,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV passenger opened door into motorcycle passing on the right (VRU)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13307",
@@ -43650,7 +47885,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV turned right close to curb inside a pickup also turning right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13340",
@@ -43681,7 +47919,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb for dropoff; pickup reversed out of lot into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13402",
@@ -43712,7 +47953,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13491",
@@ -43743,7 +47987,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb w/ hazards; van rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13490",
@@ -43774,7 +48021,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for flashing red; SUV accelerated and rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13488",
@@ -43805,7 +48055,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car pulled out from stop into intersection into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13308",
@@ -43836,7 +48089,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup veered out then back into AV's lane while passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13442",
@@ -43867,7 +48123,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13328",
@@ -43898,7 +48157,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV making right turn; SUV passed on left and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13420",
@@ -43929,7 +48191,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding from stop sign; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13561",
@@ -43960,7 +48225,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing in-lane for pickup; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13559",
@@ -43991,7 +48259,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "AV's undercarriage grounded on speed bump entering lot driveway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13656",
@@ -44022,7 +48293,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car crossed double yellow into AV mid left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13587",
@@ -44053,7 +48327,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; SUV maneuvered around left into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13783",
@@ -44084,7 +48361,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent car went straight from turn lane into AV's left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13543",
@@ -44115,7 +48395,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; speeding car maneuvered right and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13586",
@@ -44146,7 +48429,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car ran stop sign into intersection; AV swerved but car hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13604",
@@ -44177,7 +48463,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; SUV maneuvering right clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13650",
@@ -44208,7 +48497,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Motorcycle made illegal left from behind stopped truck into AV; AV swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13765",
@@ -44239,7 +48531,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for yellow/red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13544",
@@ -44270,7 +48565,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in lot; SUV passed to left and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13547",
@@ -44301,7 +48599,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13607",
@@ -44332,7 +48633,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Passenger in passing truck threw a cone into AV's path; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13817",
@@ -44363,7 +48667,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; red-running car crashed and careened into it"
     },
-    "vehiclesInvolved": 4
+    "vehiclesInvolved": 4,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13545",
@@ -44394,7 +48701,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13807",
@@ -44425,7 +48735,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13552",
@@ -44456,7 +48769,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "AV's underside grounded on a speed bump across the road"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13786",
@@ -44487,7 +48803,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13657",
@@ -44518,7 +48837,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car made sweeping turn across lanes into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13841",
@@ -44549,7 +48871,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped w/ hazards before RR crossing; pickup clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14025",
@@ -44580,7 +48905,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to emergency vehicle; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13859",
@@ -44611,7 +48939,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; box truck ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13565",
@@ -44642,7 +48973,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Trash can deflected off another vehicle into AV's lane; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13810",
@@ -44673,7 +49007,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red light; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13762",
@@ -44704,7 +49041,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV passing stopped car; that car's passenger opened door into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13844",
@@ -44735,7 +49075,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at lot exit yielding; passing bus clipped its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13573",
@@ -44766,7 +49109,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13846",
@@ -44797,7 +49143,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent left-turn car drifted across lane line into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13850",
@@ -44828,7 +49177,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Ped emerged from behind stopped SUV into AV's path; AV hard-braked at 6mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13948",
@@ -44859,7 +49211,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; SUV behind clipped it changing lanes"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13682",
@@ -44890,7 +49245,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped/yielding in lot; reversing truck backed into its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13636",
@@ -44921,7 +49279,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's passenger opened door into passing bus's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13654",
@@ -44952,7 +49313,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; passing box truck clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13638",
@@ -44983,7 +49347,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent-lane SUV lost traction, slid across line into turning AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13623",
@@ -45014,7 +49381,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; pickup ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13927",
@@ -45045,7 +49415,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; passing truck's trailer clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13958",
@@ -45076,7 +49449,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing in lane; SUV crossed two lanes and clipped its rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13769",
@@ -45107,7 +49483,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car exited garage without stopping into AV's path; hit AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13845",
@@ -45138,7 +49517,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's passenger opened door into path of SUV maneuvering around"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13766",
@@ -45169,7 +49551,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; SUV reversed into its front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13610",
@@ -45200,7 +49585,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; van behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13606",
@@ -45231,7 +49619,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot; SUV reversed out of stall into its rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13794",
@@ -45262,7 +49653,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; passing tow truck clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13581",
@@ -45293,7 +49687,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; truck passing on left clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13903",
@@ -45324,7 +49721,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; car ahead reversed into its front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13852",
@@ -45355,7 +49755,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for crosswalk peds mid-right-turn; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13973",
@@ -45386,7 +49789,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Stopped car in right lane pulled left into straight-driving AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13820",
@@ -45417,7 +49823,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV exited parking lot into AV's alley path; AV swerved right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13925",
@@ -45448,7 +49857,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car crossed double-yellow avoiding another, hit AV front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13763",
@@ -45479,7 +49891,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for ped in crosswalk; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13578",
@@ -45510,7 +49925,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Mutual low-speed reversing shuffle; reversing pickup backed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13642",
@@ -45541,7 +49959,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at lot entrance; passing motorhome clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13847",
@@ -45572,7 +49993,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; passing bus clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13843",
@@ -45603,7 +50027,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "AV drove into a parking-lot pothole; undercarriage grounded"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13556",
@@ -45634,7 +50061,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red on narrow road; turning pickup clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13560",
@@ -45665,7 +50095,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-right-turn at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13954",
@@ -45696,7 +50129,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; pickup passing on left clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13605",
@@ -45727,7 +50163,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; speeding car triggered chain reaction into AV's rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13546",
@@ -45758,7 +50197,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Cross car turned right against red into AV's path; AV had green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13811",
@@ -45789,7 +50231,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13688",
@@ -45820,7 +50265,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot; car reversed out of stall into its rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13665",
@@ -45851,7 +50299,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Suitcase fell from SUV directly ahead into AV's lane; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13795",
@@ -45882,7 +50333,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13611",
@@ -45913,7 +50367,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's passenger opened door into passing SUV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13947",
@@ -45944,7 +50401,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car crossing to turn lane clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13785",
@@ -45975,7 +50435,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partially in lane; passing SUV clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13582",
@@ -46006,7 +50469,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Cross car ran stop sign into intersection; hit AV's rear (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13664",
@@ -46037,7 +50503,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for officer/yellow; SUV behind clipped its rear left going around"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13571",
@@ -46068,7 +50537,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for pickup; passing van clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13848",
@@ -46099,7 +50571,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; pickup ahead reversed into its front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13905",
@@ -46130,7 +50605,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV nosed past stopped bus on unprotected left into car it couldn't see"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13658",
@@ -46161,7 +50639,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent left-turn van crossed lane line into AV's rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13860",
@@ -46192,7 +50673,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV merging from curb; SUV pushed into it after hitting another vehicle"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13558",
@@ -46223,7 +50707,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV yielding on unprotected left after green; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13641",
@@ -46254,7 +50741,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in turn lane; passing bus clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13550",
@@ -46285,7 +50775,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; truck rear-ended SUV, pushing it into AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13877",
@@ -46316,7 +50809,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; speeding car hit car behind, pushing it into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13778",
@@ -46347,7 +50843,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on raised parking-lot driveway entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13575",
@@ -46378,7 +50877,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car oversteered turning left, slid across lanes into slowing AV's front"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13585",
@@ -46409,7 +50911,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; speeding SUV hit another, pushing it into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13809",
@@ -46440,7 +50945,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming SUV turned left across AV's path at green; AV braked, hit on left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13979",
@@ -46471,7 +50979,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield on unprotected left; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13840",
@@ -46502,7 +51013,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's passenger opened door into passing SUV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13583",
@@ -46533,7 +51047,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on raised pavement around utility cover"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13881",
@@ -46564,7 +51081,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for yellow light; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13914",
@@ -46595,7 +51115,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13770",
@@ -46626,7 +51149,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; speeding car clipped its rear left from behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13764",
@@ -46657,7 +51183,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13799",
@@ -46688,7 +51217,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb; passing box truck clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13653",
@@ -46719,7 +51251,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind clipped its rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13639",
@@ -46750,7 +51285,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car crossed lanes wrong-way into AV's path; AV swerved right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14048",
@@ -46781,7 +51319,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13949",
@@ -46812,7 +51353,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; pickup hit SUV behind, shoving it into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14243",
@@ -46843,7 +51387,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Pickup at stop sign proceeded into intersection, hit AV's rear (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13983",
@@ -46874,7 +51421,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red light; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13985",
@@ -46905,7 +51455,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV hit car behind, pushing it into AV's rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14012",
@@ -46936,7 +51489,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding mid-crossing; SUV passing on left clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14151",
@@ -46967,7 +51523,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Cross SUV ran stop sign into AV's right side; AV had ROW"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14075",
@@ -46998,7 +51557,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for pickup; car ran stop sign into its side & a passenger"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14146",
@@ -47029,7 +51591,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red light; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13982",
@@ -47060,7 +51625,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's tires struck a flat wooden object lying in its lane at speed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14225",
@@ -47091,7 +51659,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14008",
@@ -47122,7 +51693,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14198",
@@ -47153,7 +51727,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup behind hit its rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14002",
@@ -47184,7 +51761,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at light; bus behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13955",
@@ -47215,7 +51795,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Pileup shoved car into AV's lane; unavoidable, minor sign hit in recovery"
     },
-    "vehiclesInvolved": 5
+    "vehiclesInvolved": 5,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13978",
@@ -47246,7 +51829,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; car reversing from driveway backed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13976",
@@ -47277,7 +51863,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-right-turn for school bus; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13999",
@@ -47308,7 +51897,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV merged across in front of stopped truck; truck proceeded into its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14149",
@@ -47339,7 +51931,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in intersection at green; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14009",
@@ -47370,7 +51965,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Cross car at stop sign proceeded into AV's left-turn path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13977",
@@ -47401,7 +51999,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at railroad crossing; SUV behind rear-ended it as gates lifted"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14304",
@@ -47432,7 +52033,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; SUV ahead reversed into its front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14005",
@@ -47463,7 +52067,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on hill; SUV ahead rolled backwards into its front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13980",
@@ -47494,7 +52101,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing in stop-and-go; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14004",
@@ -47525,7 +52135,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for HAWK signal; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14073",
@@ -47556,7 +52169,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; turning truck's trailer clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13981",
@@ -47587,7 +52203,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parallel-parking reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14076",
@@ -47618,7 +52237,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for intersection; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14078",
@@ -47649,7 +52271,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming SUV swerved into AV's lane avoiding another; hit AV's front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14174",
@@ -47680,7 +52305,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; car behind clipped its rear left changing lanes around"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14171",
@@ -47711,7 +52339,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped mid-lane-change, front protruding; pickup proceeded into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14045",
@@ -47742,7 +52373,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding mid-right-turn; passing truck's trailer clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14099",
@@ -47773,7 +52407,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for crosswalk peds mid-right-turn; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14195",
@@ -47804,7 +52441,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; passing pickup clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14173",
@@ -47835,7 +52475,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car changed lanes into straight-driving AV from behind-left; clipped its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14199",
@@ -47866,7 +52509,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV making right turn; bus behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14201",
@@ -47897,7 +52543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14097",
@@ -47928,7 +52577,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14006",
@@ -47959,7 +52611,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb; passing garbage truck clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14080",
@@ -47990,7 +52645,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV made wide right turn across lane line into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13998",
@@ -48021,7 +52679,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming pickup crossed double-yellow into AV's lane; AV swerved right"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14118",
@@ -48052,7 +52713,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; emergency vehicle driving against traffic clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14169",
@@ -48083,7 +52747,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV changed lanes into SUV approaching in target lane; clipped AV's rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13957",
@@ -48114,7 +52781,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield mid-left-turn; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14029",
@@ -48145,7 +52815,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tree branch broke off and fell onto moving AV; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14077",
@@ -48176,7 +52849,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; SUV passing on left clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14044",
@@ -48207,7 +52883,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding at green; curbside SUV reversed into its right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13975",
@@ -48238,7 +52917,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV passed an actively-maneuvering pickup; pickup came left into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14098",
@@ -48269,7 +52951,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for crosswalk peds; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14027",
@@ -48300,7 +52985,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; SUV ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14024",
@@ -48331,7 +53019,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Roadside tree fell onto the top of the slowing AV; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14144",
@@ -48362,7 +53053,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14141",
@@ -48393,7 +53087,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14175",
@@ -48424,7 +53121,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-turn in garage; parked car reversed into its rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14047",
@@ -48455,7 +53155,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; passing motorhome clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14143",
@@ -48486,7 +53189,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car ahead rolled back into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14074",
@@ -48517,7 +53223,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for dropoff; passing car clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14000",
@@ -48548,7 +53257,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car behind clipped its rear left changing lanes"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14079",
@@ -48579,7 +53291,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car exited lot without stopping into AV's path; hit AV's rear (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14011",
@@ -48610,7 +53325,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Cross SUV ran stop sign; AV swerved, hit on rear right (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14168",
@@ -48641,7 +53359,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked partially in lane; van clipped its rear left maneuvering around"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-13956",
@@ -48672,7 +53393,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for unprotected left; SUV swerved avoiding a car, rear-ended AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14091",
@@ -48703,7 +53427,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14093",
@@ -48734,7 +53461,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; van behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14172",
@@ -48765,7 +53495,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV drove under low clearance bar in lot; roof sensor struck it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14001",
@@ -48796,7 +53529,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14096",
@@ -48827,7 +53563,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car left turn-lane to change into AV's lane; AV swerved, hit on left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14119",
@@ -48858,7 +53597,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV crossed two lanes into AV's lane; hit AV's left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14140",
@@ -48889,7 +53631,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV ran stop sign and drifted into its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14007",
@@ -48920,7 +53665,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for crosswalk ped; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14003",
@@ -48951,7 +53699,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; van accelerated from behind into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14081",
@@ -48982,7 +53733,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14493",
@@ -49013,7 +53767,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo stopped straddling two lanes at red; passing SUV struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14274",
@@ -49044,7 +53801,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; speeding SUV clipped its rear right from behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14492",
@@ -49075,7 +53835,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wrong-way car on off-ramp struck Waymo head-on; Waymo braking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14298",
@@ -49106,7 +53869,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV exited lot without stopping into AV's path; hit rear right (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14455",
@@ -49137,7 +53903,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo entering intersection from stop; speeding car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14506",
@@ -49168,7 +53937,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo proceeding for right turn from stop; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14244",
@@ -49199,7 +53971,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red on off-ramp; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14424",
@@ -49230,7 +54005,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo proceeding from green; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14333",
@@ -49261,7 +54039,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for peds; oncoming SUV clipped its left squeezing past (twice)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14344",
@@ -49292,7 +54073,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV maneuvering toward curb struck it with front tire; self-inflicted"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14512",
@@ -49323,7 +54107,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; oncoming pickup crossed double yellow into front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14383",
@@ -49354,7 +54141,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; errant car drifted into it after hitting another"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14246",
@@ -49385,7 +54175,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to turn left; van ran stop sign into its front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14271",
@@ -49416,7 +54209,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; pickup that ran red & hit another car crossed into AV's rear right"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14335",
@@ -49447,7 +54243,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV passing stopped SUV; SUV's passenger opened door into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14385",
@@ -49478,7 +54277,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV maneuvering around cone struck curb near lot exit; self-inflicted"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14289",
@@ -49509,7 +54311,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car exited lot without stopping into Waymo's path; clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14204",
@@ -49540,7 +54345,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car exited lot without stopping into AV's lane; AV braked/swerved, hit front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14439",
@@ -49571,7 +54379,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; garbage truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14478",
@@ -49602,7 +54413,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for stop sign; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14426",
@@ -49633,7 +54447,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo maneuvering around parked truck struck its raised liftgate"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14490",
@@ -49664,7 +54481,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Waymo passing tree in alley; front tire dropped into pothole"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14505",
@@ -49695,7 +54515,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV crossed multiple lanes into Waymo's lane; struck right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14420",
@@ -49726,7 +54549,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding in lot; reversing truck's cab hit its front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14440",
@@ -49757,7 +54583,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car cut into Waymo's lane and abruptly stopped; Waymo struck its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14384",
@@ -49788,7 +54617,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage grounded on parking-lot driveway entrance turning in"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14389",
@@ -49819,7 +54651,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV advancing slowly in queue; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14349",
@@ -49850,7 +54685,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV exited parking garage into Waymo's path; struck right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14290",
@@ -49881,7 +54719,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped straddling lanes mid-change; truck proceeded into its front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14237",
@@ -49912,7 +54753,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped straddling lanes mid-change; truck proceeded into its front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14450",
@@ -49943,7 +54787,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; pickup passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14233",
@@ -49974,7 +54821,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for pickup; car reversed out of stall into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14266",
@@ -50005,7 +54855,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for ped; passing car clipped its rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14239",
@@ -50036,7 +54889,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for scooterist; car behind clipped its rear right changing lanes"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14479",
@@ -50067,7 +54923,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo clipped a construction sign at roadside in work zone"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14345",
@@ -50098,7 +54957,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car doing multi-point turn reversed into AV's lane; hit rear left (mostly past)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14331",
@@ -50129,7 +54991,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car exited lot turning into AV's lane; hit rear right (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14334",
@@ -50160,7 +55025,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo exiting lot stall as SUV reversed; minor shared lot maneuver"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14313",
@@ -50191,7 +55059,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; car passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14438",
@@ -50222,7 +55093,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo in queue; van reversing out of garage struck rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14299",
@@ -50253,7 +55127,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; SUV crossed centerline to pass and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14268",
@@ -50284,7 +55161,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV behind clipped its rear right heading for slip lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14507",
@@ -50315,7 +55195,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; pickup behind proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14480",
@@ -50346,7 +55229,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo changed into right-turn lane; pickup behind drove into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14558",
@@ -50377,7 +55263,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped on narrow road; pickup passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14391",
@@ -50408,7 +55297,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV changing lanes into median clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14301",
@@ -50439,7 +55331,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo mid lane-change straddling lanes; SUV in lane struck front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14295",
@@ -50470,7 +55365,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid-lane-change on ramp; passing van clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14449",
@@ -50501,7 +55399,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Speeding SUV overtaking from behind changed lanes into rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14355",
@@ -50532,7 +55433,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo proceeding from stop; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14270",
@@ -50563,7 +55467,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's passenger opened door into passing car's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14343",
@@ -50594,7 +55501,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup; van changing lanes clipped its left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14227",
@@ -50625,7 +55535,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "SUV came to a stop as AV began to pass on the right; it began reversing only after AV committed"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14387",
@@ -50656,7 +55569,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to emergency vehicle; it clipped AV's rear left passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14352",
@@ -50687,7 +55603,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; bus crossed center to pass and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14310",
@@ -50718,7 +55637,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue; bus ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14300",
@@ -50749,7 +55671,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; bus passed on left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14330",
@@ -50780,7 +55705,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for skateboarder; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14482",
@@ -50811,7 +55739,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding past parked van; pickup passed and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14421",
@@ -50842,7 +55773,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; passing pickup clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14346",
@@ -50873,7 +55807,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed an operating skid-steer; its bucket swung into AV's front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14348",
@@ -50904,7 +55841,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car pulled out of alley into AV's lane; hit rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14514",
@@ -50935,7 +55875,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo maneuvered toward curb and struck it with front tire"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14240",
@@ -50966,7 +55909,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; passing pickup clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14272",
@@ -50997,7 +55943,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's passenger opened door into passing SUV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14269",
@@ -51028,7 +55977,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV in coned construction lane; car clipped its rear right from behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14510",
@@ -51059,7 +56011,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; heavy truck passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14294",
@@ -51090,7 +56045,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; passing SUV's trailer clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14491",
@@ -51121,7 +56079,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo passing driveway; SUV reversed out into right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14511",
@@ -51152,7 +56113,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue; car changing lanes clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14337",
@@ -51183,7 +56147,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at light; SUV crossed double yellow to pass and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14232",
@@ -51214,7 +56181,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo stopped at red; passenger opened door into passing cyclist"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14496",
@@ -51245,7 +56215,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing to yield on left turn; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14484",
@@ -51276,7 +56249,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; truck's wide right turn swung trailer into front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14477",
@@ -51307,7 +56283,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding to peds; turning bus clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14476",
@@ -51338,7 +56317,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car changing lanes clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14267",
@@ -51369,7 +56351,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; passing SUV clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14498",
@@ -51400,7 +56385,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "Waymo passed SUV mid multi-point turn; SUV reversed into left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14332",
@@ -51431,7 +56419,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for pickup parallel-parking; pickup reversed into its front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14494",
@@ -51462,7 +56453,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14220",
@@ -51493,7 +56487,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV exited lot without stopping into AV's lane; hit rear right (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14577",
@@ -51524,7 +56521,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo reversing for room as SUV behind proceeded; struck rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14329",
@@ -51555,7 +56555,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; pickup passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14481",
@@ -51586,7 +56589,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign yielding; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14485",
@@ -51617,7 +56623,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV exited lot across lanes into Waymo's path; struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14297",
@@ -51648,7 +56657,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo turning left; car behind also turning rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14454",
@@ -51679,7 +56691,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo mid lane-change straddling lanes; pickup in lane struck left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14483",
@@ -51710,7 +56725,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14234",
@@ -51741,7 +56759,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; speeding car clipped its rear left passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14456",
@@ -51772,7 +56793,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV behind proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14495",
@@ -51803,7 +56827,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car cut across lanes for right turn into lot; clipped Waymo rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14231",
@@ -51834,7 +56861,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV turned left from adjacent lane into AV; hit rear right (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14425",
@@ -51865,7 +56895,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for ambulance; it clipped AV's rear left passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14350",
@@ -51896,7 +56929,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; bus ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14287",
@@ -51927,7 +56963,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing/stopping for emergency siren; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14441",
@@ -51958,7 +56997,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tree branch broke off, fell into AV's lane; AV braked but struck it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14265",
@@ -51989,7 +57031,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; lane-changing car hit another then struck AV's rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14453",
@@ -52020,7 +57065,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at rail crossing; car behind rear-ended it twice"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14486",
@@ -52051,7 +57099,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14422",
@@ -52082,7 +57133,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV changed lanes into Waymo's lane; struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14566",
@@ -52113,7 +57167,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent left-turning car crossed line into Waymo's lane; struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14305",
@@ -52144,7 +57201,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for reversing car; car backed into left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14351",
@@ -52175,7 +57235,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo crossed centerline to pass stopped van; van pulled out into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14390",
@@ -52206,7 +57269,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14336",
@@ -52237,7 +57303,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; garbage truck clipped its rear left passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14423",
@@ -52268,7 +57337,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car turned left from right lane across into AV's path; AV braked, hit on right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14196",
@@ -52299,7 +57371,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Oncoming car crossed double-yellow to turn left; hit AV's rear (nearly clear)"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14296",
@@ -52330,7 +57405,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding; speeding SUV clipped its rear left changing lanes from behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14354",
@@ -52361,7 +57439,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14488",
@@ -52392,7 +57473,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo stopped for dropoff; passenger opened door into passing car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14706",
@@ -52423,7 +57507,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14937",
@@ -52454,7 +57541,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; SUV behind proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14833",
@@ -52485,7 +57575,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked in-lane; car rear-ended rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14934",
@@ -52516,7 +57609,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped as SUV ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14933",
@@ -52547,7 +57643,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo tire struck debris in roadway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14928",
@@ -52578,7 +57677,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wrong-way SUV reversing along curb struck stopped Waymo's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14626",
@@ -52609,7 +57711,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car passed in opposing lane then cut into Waymo's left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14832",
@@ -52640,7 +57745,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Speeding wrong-way car made wide turn into stopped Waymo's left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14891",
@@ -52671,7 +57779,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; pickup ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14738",
@@ -52702,7 +57813,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked in lot; SUV maneuvering struck rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14557",
@@ -52733,7 +57847,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car ran red into Waymo's left-turn path; Waymo braking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14704",
@@ -52764,7 +57881,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14644",
@@ -52795,7 +57915,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV exited lot without stopping into Waymo's path; struck right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14736",
@@ -52826,7 +57949,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Van turned right from adjacent lane across Waymo; struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14849",
@@ -52857,7 +57983,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; truck ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14896",
@@ -52888,7 +58017,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV ahead reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14826",
@@ -52919,7 +58051,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in work zone with hazards; pickup passed and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14705",
@@ -52950,7 +58085,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo tire struck debris in roadway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14850",
@@ -52981,7 +58119,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wrong-way truck reversed into Waymo's path; Waymo braking and reversing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14560",
@@ -53012,7 +58153,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped; garbage truck overlapping lane passed and clipped right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14901",
@@ -53043,7 +58187,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Waymo undercarriage struck temporary speed bump in roundabout"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14516",
@@ -53074,7 +58221,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in-lane; van rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14559",
@@ -53105,7 +58255,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing in queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14936",
@@ -53136,7 +58289,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at green; truck overlapping lane clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14565",
@@ -53167,7 +58323,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for traffic; car behind rear-ended rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14537",
@@ -53198,7 +58357,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Truck turned right from adjacent lane across Waymo; struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14575",
@@ -53229,7 +58391,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV behind proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14640",
@@ -53260,7 +58425,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV tried to pass merging Waymo on left; struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14905",
@@ -53291,7 +58459,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing in queue; SUV shoved into its rear by car behind"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14935",
@@ -53322,7 +58493,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car reversed out of driveway into passing Waymo's right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14627",
@@ -53353,7 +58527,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming SUV crossed double yellow into Waymo; Waymo braking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14714",
@@ -53384,7 +58561,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; heavy truck passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14846",
@@ -53415,7 +58595,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car passing on right changed lanes into Waymo; struck front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14711",
@@ -53446,7 +58629,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo stopped straddling lanes after wide right turn; SUV struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14661",
@@ -53477,7 +58663,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo proceeded over worker's tape measure still strung across lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14620",
@@ -53508,7 +58697,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind truck; truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15300",
@@ -53539,7 +58731,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped straddling lanes mid-change; truck in target lane clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14587",
@@ -53570,7 +58765,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; SUV changing lanes clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14586",
@@ -53601,7 +58799,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing in queue; car shoved into its rear by another crash"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14701",
@@ -53632,7 +58833,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming pickup turned left across Waymo's path; struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14710",
@@ -53663,7 +58867,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for dropoff; van passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14810",
@@ -53694,7 +58901,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for reversing car; car backed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14563",
@@ -53725,7 +58935,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red arrow; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14882",
@@ -53756,7 +58969,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14807",
@@ -53787,7 +59003,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo undercarriage grounded on raised lot driveway entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14585",
@@ -53818,7 +59037,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked with hazards; passing truck's trailer clipped rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14578",
@@ -53849,7 +59071,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow road; passing pickup clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14583",
@@ -53880,7 +59105,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Loose skateboard rolled across crosswalk into Waymo's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14828",
@@ -53911,7 +59139,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV detected line and slowed/maneuvered yet contacted; expert with info stops"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14827",
@@ -53942,7 +59173,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo mid lane-change straddling lanes; truck in lane struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14715",
@@ -53973,7 +59207,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo proceeding from green; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14811",
@@ -54004,7 +59241,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red arrow; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14666",
@@ -54035,7 +59275,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo undercarriage grounded on raised lot driveway entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14897",
@@ -54066,7 +59309,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped mid-turn for peds; car behind passed and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14619",
@@ -54097,7 +59343,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing in queue; car shoved into its rear by pickup behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14809",
@@ -54128,7 +59377,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo parked for dropoff; passenger opened door into passing bus"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14556",
@@ -54159,7 +59411,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo merging into gap; SUV in lane proceeded into rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14932",
@@ -54190,7 +59445,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car behind proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14847",
@@ -54221,7 +59479,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Cross pickup ran stop sign turning right; struck Waymo's rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14844",
@@ -54252,7 +59513,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; pickup ahead reversed into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14716",
@@ -54283,7 +59547,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo mid lane-change straddling lanes; SUV in lane struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14845",
@@ -54314,7 +59581,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14893",
@@ -54345,7 +59615,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped for HAWK beacon; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14903",
@@ -54376,7 +59649,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding; second SUV passed left and clipped left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14940",
@@ -54407,7 +59683,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; truck ahead reversed into front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14737",
@@ -54438,7 +59717,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in freeway queue; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14804",
@@ -54469,7 +59751,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Oncoming pickup turned left across Waymo; clipped rear then spun it into SUV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14582",
@@ -54500,7 +59785,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in slip-lane yielding; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14645",
@@ -54531,7 +59819,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV entered Waymo's lane at T-intersection without stopping; struck right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14907",
@@ -54562,7 +59853,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing; car crossed double yellow to pass and clipped left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14889",
@@ -54593,7 +59887,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14623",
@@ -54624,7 +59921,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for jaywalking ped; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14944",
@@ -54655,7 +59955,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo proceeding from stop; pickup shoved into its rear by car behind"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14576",
@@ -54686,7 +59989,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing to yield on left turn; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14733",
@@ -54717,7 +60023,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo undercarriage grounded on raised lot driveway entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14513",
@@ -54748,7 +60057,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo yielding to right-turning truck; trailer swung into right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14930",
@@ -54779,7 +60091,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo creeping to yield; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14667",
@@ -54810,7 +60125,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car behind proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14856",
@@ -54841,7 +60159,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding after left turn; passing truck clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14579",
@@ -54872,7 +60193,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped with hazards after debris; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14713",
@@ -54903,7 +60227,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car behind proceeded into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14629",
@@ -54934,7 +60261,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Airborne debris from opposite roadway landed in lane; Waymo struck it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14581",
@@ -54965,7 +60295,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car changed lanes into Waymo's lane; struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14712",
@@ -54996,7 +60329,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14848",
@@ -55027,7 +60363,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for pickup; bus passed left and struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14735",
@@ -55058,7 +60397,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "Car was already visibly reversing toward AV when AV proceeded forward"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14734",
@@ -55089,7 +60431,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; pickup rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14580",
@@ -55120,7 +60465,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo undercarriage struck raised pavement around utility cover in alley"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14805",
@@ -55151,7 +60499,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; motorcycle rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14931",
@@ -55182,7 +60533,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for dropoff; van passed left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14803",
@@ -55213,7 +60567,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for dropoff; car ahead reversed while unparking into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14888",
@@ -55244,7 +60601,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo turning left from stop; SUV behind drove into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14621",
@@ -55275,7 +60635,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo's unprotected left; oncoming car emerged from behind bus nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14618",
@@ -55306,7 +60669,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming SUV with no lights crossed into Waymo; pushed it into parked car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14834",
@@ -55337,7 +60703,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Lead car right-hooked into Waymo's lane toward garage; struck its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14806",
@@ -55368,7 +60737,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car rear-ended rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14887",
@@ -55399,7 +60771,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Waymo undercarriage grounded on pavement completing right turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14831",
@@ -55430,7 +60805,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Waymo tire struck debris and deflated"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14829",
@@ -55461,7 +60839,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for dropoff; turning SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14628",
@@ -55492,7 +60873,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for red; SUV behind rear-ended rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14773",
@@ -55523,7 +60907,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent left-turning car crossed line into Waymo's lane; struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14929",
@@ -55554,7 +60941,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Lead car right-turned from wrong lane into Waymo; struck left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14717",
@@ -55585,7 +60975,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding to queue; pickup rear-ended rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14617",
@@ -55616,7 +61009,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14709",
@@ -55647,7 +61043,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing to yield on left turn; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14708",
@@ -55678,7 +61077,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car shoved across intersection by red-runner into stopped Waymo"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14660",
@@ -55709,7 +61111,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo parked for dropoff; SUV with no lights rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14895",
@@ -55740,7 +61145,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo maneuvering past stopped car; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14520",
@@ -55771,7 +61179,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding on left turn; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14943",
@@ -55802,7 +61213,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV drove into downed line hanging across road at 32 mph near midnight; no sign AV reacted to it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14982",
@@ -55833,7 +61247,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; car squeezed back into lane, clipped front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15245",
@@ -55864,7 +61281,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15029",
@@ -55895,7 +61315,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Squeezed past construction a-frame sign and hit it; self-inflicted"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15255",
@@ -55926,7 +61349,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowed for left-turner crossing ahead; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15289",
@@ -55957,7 +61383,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Crashed car rolled backwards into stopped AV; AV had maneuvered away"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15249",
@@ -55988,7 +61417,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Deer ran into lane at 48 mph; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15250",
@@ -56019,7 +61451,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped right on narrow street; passing ambulance clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15193",
@@ -56050,7 +61485,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Proceeding straight; SUV straddling lanes rear-ended AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14894",
@@ -56081,7 +61519,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car passed right and clipped rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15252",
@@ -56112,7 +61553,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing for queue; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15068",
@@ -56143,7 +61587,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for dropoff in lot; passing pickup's rear clipped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15175",
@@ -56174,7 +61621,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked for pickup with hazards; passing SUV clipped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14980",
@@ -56205,7 +61655,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car straddling centerline rear-ended Waymo and flipped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15067",
@@ -56236,7 +61689,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red in turn lane; rear-ended by pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14987",
@@ -56267,7 +61723,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked; SUV reversed while unparking into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14992",
@@ -56298,7 +61757,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Proceeding slowly after ped cleared crosswalk; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15011",
@@ -56329,7 +61791,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; truck's wide right turn clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15102",
@@ -56360,7 +61825,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing behind blocked intersection; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15251",
@@ -56391,7 +61859,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; garage pull-out was hit and shoved into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14977",
@@ -56422,7 +61893,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Police-directed intersection; car waved through struck Waymo's front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15071",
@@ -56453,7 +61927,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV left loading zone into AV's lane; contact on AV rear, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15013",
@@ -56484,7 +61961,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo's left turn from stop across oncoming car with right of way; struck right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15244",
@@ -56515,7 +61995,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Ped with bike emerged from front of stopped SUV into braking AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14942",
@@ -56546,7 +62029,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "Waymo front tire dropped into pothole turning into lot driveway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15246",
@@ -56577,7 +62063,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at stop sign; stop-runner hit turning car, shoving it into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15021",
@@ -56608,7 +62097,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for dropoff; shuttle bus misjudged squeeze past fire truck"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15307",
@@ -56639,7 +62131,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped mid-right-turn from lot; follower drove into AV rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14984",
@@ -56670,7 +62165,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV went straight from right-turn-only lane into turning AV; flagrant"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14945",
@@ -56701,7 +62199,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in turn lane; truck squeezed past and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15291",
@@ -56732,7 +62233,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped on narrow street; passing car clipped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15262",
@@ -56763,7 +62267,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car ahead reversed into stopped AV at red"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15254",
@@ -56794,7 +62301,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on raised parking lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15298",
@@ -56825,7 +62335,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped mid-turn yielding; bus passed and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15195",
@@ -56856,7 +62369,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car left queued lane into AV's lane, hit AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15022",
@@ -56887,7 +62403,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing to turn right into lot; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15101",
@@ -56918,7 +62437,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on raised parking lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15002",
@@ -56949,7 +62471,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Animal ran into lane; AV slowed; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15253",
@@ -56980,7 +62505,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Creeping from stop sign, yielding; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15240",
@@ -57011,7 +62539,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Lane-changed into turn-lane gap, stopped straddling; pickup hit on green arrow"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15177",
@@ -57042,7 +62573,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing for traffic; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14978",
@@ -57073,7 +62607,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV turned left from stop across Waymo's path; struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15172",
@@ -57104,7 +62641,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked in parking lane; passing bus hit AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15261",
@@ -57135,7 +62675,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; driverless rolling car backed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14927",
@@ -57166,7 +62709,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing for queue; van behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15073",
@@ -57197,7 +62743,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped yielding; pickup reversed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15173",
@@ -57228,7 +62777,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for queue after green; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15069",
@@ -57259,7 +62811,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing for dropoff; e-bike rear-ended AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15263",
@@ -57290,7 +62845,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for crossing animal; lane-changing SUV clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15024",
@@ -57321,7 +62879,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Braked for intruding truck; car changing lanes hit AV rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14939",
@@ -57352,7 +62913,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming SUV crossed double yellow into Waymo; struck front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15178",
@@ -57383,7 +62947,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at stop sign yielding; rear-ended by pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15243",
@@ -57414,7 +62981,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup exited parking garage into alley path; AV braked/swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15257",
@@ -57445,7 +63015,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wind blew collapsed shade structure into lane just ahead; AV slowing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15095",
@@ -57476,7 +63049,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "Passed stopped pickup+trailer in slip lane; it merged, trailer clipped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15174",
@@ -57507,7 +63083,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Pickup ran red from turn lane into AV; flagrant, AV braked/swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15292",
@@ -57538,7 +63117,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Van reversed out of stall into slowing AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15098",
@@ -57569,7 +63151,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14989",
@@ -57600,7 +63185,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped yielding to stopped SUV; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15030",
@@ -57631,7 +63219,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for active fire truck; SUV passed and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15287",
@@ -57662,7 +63253,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Stopped straddling lanes mid-change ahead of truck; truck proceeded into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15176",
@@ -57693,7 +63287,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Van from stop sign cut across two lanes into AV's lane"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15179",
@@ -57724,7 +63321,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for ped in crosswalk; motorcycle passed and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15259",
@@ -57755,7 +63355,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped short of blocked intersection; SUV behind clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15194",
@@ -57786,7 +63389,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Detached camping trailer rolled downhill into stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15192",
@@ -57817,7 +63423,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cross-traffic crash rotated car into AV's rear; chain reaction"
     },
-    "vehiclesInvolved": 4
+    "vehiclesInvolved": 4,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15075",
@@ -57848,7 +63457,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; SUV changing lanes clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15020",
@@ -57879,7 +63491,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at red; car ahead rolled back into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15023",
@@ -57910,7 +63525,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in stop-and-go; SUV changing lanes clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15015",
@@ -57941,7 +63559,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; van passed and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15012",
@@ -57972,7 +63593,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Parked SUV pulled out of stall into Waymo's path in lot; struck right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15290",
@@ -58003,7 +63627,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Spare tire fell off motorhome ahead and bounced into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15190",
@@ -58034,7 +63661,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped right on narrow street; oncoming pickup clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15025",
@@ -58065,7 +63695,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for crossing cyclists; passing bus clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14986",
@@ -58096,7 +63729,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue; chain-reaction crash shoved car into its rear"
     },
-    "vehiclesInvolved": 5
+    "vehiclesInvolved": 5,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15248",
@@ -58127,7 +63763,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on raised parking lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15238",
@@ -58158,7 +63797,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked for pickup; car reversed out of stall into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14976",
@@ -58189,7 +63831,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo front tire dropped into pothole and deflated; no undercarriage contact in narrative"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15256",
@@ -58220,7 +63865,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Van ahead reversed into stopped AV after green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14908",
@@ -58251,7 +63899,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Own passenger's open door struck by passing SUV during pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14890",
@@ -58282,7 +63933,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo passing parked Waymo; the parked Waymo's door opened into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15191",
@@ -58313,7 +63967,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked; SUV ahead reversed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14981",
@@ -58344,7 +64001,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for red-light queue; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15285",
@@ -58375,7 +64035,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at curb; SUV reversed along curb into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15106",
@@ -58406,7 +64069,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for unprotected left; rear car shoved into AV by rear-ender"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15076",
@@ -58437,7 +64103,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Maneuvered around visible road debris but still clipped it at 20 mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15014",
@@ -58468,7 +64137,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing to yield to right-turner; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15104",
@@ -58499,7 +64171,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car turned left across AV's path at green; AV braked/swerved"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15009",
@@ -58530,7 +64205,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped at stop sign; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15105",
@@ -58561,7 +64239,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; rear-ended by pickup, shoved into SUV ahead"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15260",
@@ -58592,7 +64273,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked with hazards; illegal left-turner passed and clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15097",
@@ -58623,7 +64307,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV ahead reversed into stopped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-14988",
@@ -58654,7 +64341,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; turning truck's trailer clipped AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15096",
@@ -58685,7 +64375,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing for double-parked car; rear-ended by speeding SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15157",
@@ -58716,7 +64409,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Tire struck road debris at 45 mph; hard to see, no evasive window"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15159",
@@ -58747,7 +64443,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; car changing lanes clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15160",
@@ -58778,7 +64477,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked for pickup; SUV reversing from driveway hit AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15158",
@@ -58809,7 +64511,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped mid-lane-change; pickup passing on left clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15299",
@@ -58840,7 +64545,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped; truck reversing into lot swung into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15590",
@@ -58871,7 +64579,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; speeding car from right lane veered into AV's right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15639",
@@ -58902,7 +64613,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked in lane w/ hazards for pickup; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15674",
@@ -58933,7 +64647,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; car behind rear-ended AV; passenger alleged minor injury"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15353",
@@ -58964,7 +64681,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup crossed solid white into AV's turn lane to pass; hit AV side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15535",
@@ -58995,7 +64715,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in narrow street to yield; passing SUV clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15470",
@@ -59026,7 +64749,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15547",
@@ -59057,7 +64783,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red in turn lane; speeding SUV crossed lanes and hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15392",
@@ -59088,7 +64817,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked in parking lane; van crossed white line into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15482",
@@ -59119,7 +64851,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; SUV behind maneuvered left and hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15352",
@@ -59150,7 +64885,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; car behind proceeded into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15641",
@@ -59181,7 +64919,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Truck ahead-right turned left across AV's lane; AV steered left, hit on right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15633",
@@ -59212,7 +64953,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue at red in leftmost lane; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15425",
@@ -59243,7 +64987,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on raised parking lot entrance during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15536",
@@ -59274,7 +65021,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup ran stop sign into intersection; hit AV's front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15483",
@@ -59305,7 +65055,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV turning onto street hit its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15374",
@@ -59336,7 +65089,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in construction zone; passing truck clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15640",
@@ -59367,7 +65123,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on parking lot entrance during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15658",
@@ -59398,7 +65157,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped waiting behind garbage truck in lot; truck reversed into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15673",
@@ -59429,7 +65191,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car emerged from alley past parked van into AV's lane; hit AV's right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15576",
@@ -59460,7 +65225,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Merged into turn lane ahead of stopped truck on green arrow; hit rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15585",
@@ -59491,7 +65259,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped yielding for unprotected left; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15782",
@@ -59522,7 +65293,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue; car behind tried to pass on left, clipped AV's rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15500",
@@ -59553,7 +65327,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in narrow street to yield; passing bus clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15553",
@@ -59584,7 +65361,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Helmet fell from motorcycle directly ahead into lane; AV ran over it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15663",
@@ -59615,7 +65395,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red, reversed to give room; turning garbage truck clipped front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15398",
@@ -59646,7 +65429,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV ahead reversed into its front while unparking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15349",
@@ -59677,7 +65463,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked in lot after dropoff; passing SUV clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15473",
@@ -59708,7 +65497,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at lot exit yielding to traffic; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15396",
@@ -59739,7 +65531,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped after green awaiting turn-lane gap; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15502",
@@ -59770,7 +65565,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane w/ hazards for pickup; passing SUV clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15505",
@@ -59801,7 +65599,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV drove under carport in lot; roof sensor struck support beam"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15348",
@@ -59832,7 +65633,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at curb; truck completing left turn clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15637",
@@ -59863,7 +65667,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Lane-changed into turn-lane gap ahead of pickup; pickup hit left side on green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15350",
@@ -59894,7 +65701,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked SUV's driver opened door into passing AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15365",
@@ -59925,7 +65735,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in narrow street to yield; passing heavy truck clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15498",
@@ -59956,7 +65769,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Wrong-way SUV turned left alongside AV then crossed into its lane; hit front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15635",
@@ -59987,7 +65803,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Box on casters slid off pickup bed directly ahead into lane; AV hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15471",
@@ -60018,7 +65837,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in traffic queue; car behind proceeded into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15401",
@@ -60049,7 +65871,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red; scooterist behind ran into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15559",
@@ -60080,7 +65905,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue at flashing red; SUV behind passed left, clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15634",
@@ -60111,7 +65939,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue at red; SUV entering left-turn lane clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15503",
@@ -60142,7 +65973,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; pickup behind proceeded into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15661",
@@ -60173,7 +66007,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked at curb for pickup; trailer ahead reversed into AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15511",
@@ -60204,7 +66041,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed telehandler in work zone; it reversed and swung into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15584",
@@ -60235,7 +66075,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Merged right ahead of stopped truck on green, slowed for peds; truck hit rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15592",
@@ -60266,7 +66109,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing for queue; car behind veered left and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15301",
@@ -60297,7 +66143,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; SUV-motorcycle tangle shoved both into AV rear"
     },
-    "vehiclesInvolved": 4
+    "vehiclesInvolved": 4,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15550",
@@ -60328,7 +66177,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for HAWK flashing red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15347",
@@ -60359,7 +66211,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at stop sign; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15358",
@@ -60390,7 +66245,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup merged left into AV's lane, hit AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15362",
@@ -60421,7 +66279,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on raised parking lot entrance"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15545",
@@ -60452,7 +66313,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.7,
       "reasoning": "AV's undercarriage grounded on pavement while driving in parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15534",
@@ -60483,7 +66347,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Stopped SUV signaling left moved into AV's lane as AV passed; hit right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15474",
@@ -60514,7 +66381,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in narrow street to yield; passing heavy truck clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15344",
@@ -60545,7 +66415,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Truck swung wide right across AV's lane; AV slowing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15468",
@@ -60576,7 +66449,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Oncoming van crossed double yellow on curve; AV braked to a stop, still hit"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15582",
@@ -60607,7 +66483,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Adjacent truck swung wide right on red across AV's lane; AV crept then stopped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15664",
@@ -60638,7 +66517,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing in-lane for ped in lane; SUV passing on left clipped AV's rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15660",
@@ -60669,7 +66551,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped to enter cul-de-sac; SUV turning in from behind hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15356",
@@ -60700,7 +66585,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Oncoming SUV crossed yellow into AV's lane; contact on AV rear, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15360",
@@ -60731,7 +66619,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Own passenger's open door struck by passing car during dropoff"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15507",
@@ -60762,7 +66653,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; van ahead reversed into adjacent car then into AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15484",
@@ -60793,7 +66687,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Pickup cut across lanes into AV's turn lane; clipped AV rear, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15671",
@@ -60824,7 +66721,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Followed SUV through lot barrier arms; arms lowered onto AV as it proceeded"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15393",
@@ -60855,7 +66755,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car behind was rear-ended and shoved into AV"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15551",
@@ -60886,7 +66789,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped on narrow street to let mail truck pass; truck clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15631",
@@ -60917,7 +66823,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Parked in hotel loading zone; passenger opened door into passing car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15472",
@@ -60948,7 +66857,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for dropoff w/ hazards, partly in lane; passing van clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15296",
@@ -60979,7 +66891,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Turned out of lot into bus passing in front; expert waits for clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15653",
@@ -61010,7 +66925,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped behind SUV at parking gate; SUV reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15636",
@@ -61041,7 +66959,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Passenger exited moving AV through opened door; AV slowed but rear tire hit them"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15583",
@@ -61072,7 +66993,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped yielding for unprotected left; truck behind passed right, hit rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15546",
@@ -61103,7 +67027,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked in alley w/ hazards after dropoff; passing SUV clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15509",
@@ -61134,7 +67061,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in lot w/ hazards; car reversing from stall hit its left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15642",
@@ -61165,7 +67095,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Pickup exited garage turning left into AV's lane; hit rear left, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15710",
@@ -61196,7 +67129,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Drove under carport for dropoff; roof sensor struck support beam"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15508",
@@ -61227,7 +67163,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV merging from curb as SUV changed lanes into same lane; AV front hit SUV side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15397",
@@ -61258,7 +67197,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; car parallel parking ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15586",
@@ -61289,7 +67231,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15346",
@@ -61320,7 +67265,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Driverless rolling SUV backed into yielding AV twice"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15469",
@@ -61351,7 +67299,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind truck at stop sign; truck reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15552",
@@ -61382,7 +67333,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV reversing slowly; car ahead w/ hazards reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15593",
@@ -61413,7 +67367,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped behind car at stop sign; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15557",
@@ -61444,7 +67401,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at curb w/ hazards after dropoff; passing SUV clipped front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15672",
@@ -61475,7 +67435,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped short of intersection after light went green; car behind rear-ended AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15560",
@@ -61506,7 +67469,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked in-lane in lot after dropoff; passing pickup clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15675",
@@ -61537,7 +67503,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car pulled from alley into AV's lane as AV passed; hit AV's right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15629",
@@ -61568,7 +67537,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped on narrow street to let pickup pass; pickup clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15549",
@@ -61599,7 +67571,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car nosed into intersection proceeded into AV's lane; struck front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15780",
@@ -61630,7 +67605,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV changing lanes right; SUV cut left across two lanes into its right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15665",
@@ -61661,7 +67639,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped in queue at red with signal on; car behind rear-ended AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15494",
@@ -61692,7 +67673,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; speeding car swung wide on left turn into its front, twice"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15744",
@@ -61723,7 +67707,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car behind drifted across lanes into AV's rear right while overtaking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15662",
@@ -61754,7 +67741,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red; car behind proceeded into stationary AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15659",
@@ -61785,7 +67775,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped yielding for left turn; car behind hit third car, then AV's rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15580",
@@ -61816,7 +67809,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV cut into Waymo's lane from right and braked; Waymo struck its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15403",
@@ -61847,7 +67843,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Dog darted from between parked cars; AV slowed and swerved but dog ran into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15510",
@@ -61878,7 +67877,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Metal pipe entered AV's lane from opposing traffic at 34 mph; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15497",
@@ -61909,7 +67911,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for right turn; wrong-way SUV ran red, hit by bus, spun into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15668",
@@ -61940,7 +67945,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing for queue at red; car behind rear-ended AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15558",
@@ -61971,7 +67979,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV ran red from turn lane and veered at AV; flagrant, AV braked"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15670",
@@ -62002,7 +68013,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "Reversing into parking stall for dropoff; rear struck pole"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16166",
@@ -62033,7 +68047,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo changed lanes into middle lane occupied by overtaking pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15938",
@@ -62064,7 +68081,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped behind SUV in intersection; SUV reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16081",
@@ -62095,7 +68115,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in crosswalk yielding to debris; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16000",
@@ -62126,7 +68149,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to e-bikes; one u-turned into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15989",
@@ -62157,7 +68183,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV proceeding straight; speeding car rear-ended it at 40 mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15813",
@@ -62188,7 +68217,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped with hazards for pickup; passing car nudged its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15909",
@@ -62219,7 +68251,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV pulled from curb into AV's lane on green; hit AV's front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15669",
@@ -62250,7 +68285,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Speeding SUV straddling lanes overtook from behind; clipped AV's rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16205",
@@ -62281,7 +68319,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for red-light queue; car from behind struck its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15988",
@@ -62312,7 +68353,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped yielding to hazard-lit SUV; SUV drove into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15729",
@@ -62343,7 +68387,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowing in-lane with signal for pickup; SUV behind rear-ended AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16110",
@@ -62374,7 +68421,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; SUV behind repeatedly drove forward into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15728",
@@ -62405,7 +68455,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Speeding pickup cut in front of AV and stopped, then reversed into AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15785",
@@ -62436,7 +68489,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo slowing at T-intersection; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15933",
@@ -62467,7 +68523,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV held at green for passing emergency vehicle; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15725",
@@ -62498,7 +68557,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked at curb; wrong-way pickup along curb struck AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15829",
@@ -62529,7 +68591,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Pickup changed lanes into AV's lane; hit rear right, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16033",
@@ -62560,7 +68625,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "SUV stopped in a driveway; it reversed out into AV only after AV committed to pass"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15987",
@@ -62591,7 +68659,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at the curb; passing heavy truck clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15930",
@@ -62622,7 +68693,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV crossed into T-intersection; hit AV's rear as it nearly cleared"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15892",
@@ -62653,7 +68727,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield for unprotected left; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15812",
@@ -62684,7 +68761,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on raised parking lot entrance during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15894",
@@ -62715,7 +68795,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV creeping in queue; car deflected into its rear by adjacent crash"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15932",
@@ -62746,7 +68829,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to queue; bus changed lanes and clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16091",
@@ -62777,7 +68863,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind heavy truck; truck reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16168",
@@ -62808,7 +68897,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for a red-light queue; van behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15900",
@@ -62839,7 +68931,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped behind garbage truck; truck reversed into AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15896",
@@ -62870,7 +68965,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; SUV overtaking from behind clipped rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16035",
@@ -62901,7 +68999,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car ran the lot stop sign turning left into the turning AV's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15889",
@@ -62932,7 +69033,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield; SUV ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15984",
@@ -62963,7 +69067,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; turning truck squeezed past and clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16080",
@@ -62994,7 +69101,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for dropoff; car clipped a truck and was shoved into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15895",
@@ -63025,7 +69135,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red past the queue; truck overtaking on the right clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16165",
@@ -63056,7 +69169,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for a prior crash; sideswiped SUV shoved into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16025",
@@ -63087,7 +69203,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed a truck still actively reversing; trailer swung into front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16036",
@@ -63118,7 +69237,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in queue; car behind proceeded into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16164",
@@ -63149,7 +69271,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15994",
@@ -63180,7 +69305,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in traffic queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16023",
@@ -63211,7 +69339,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV merged in front of a stopped bus; bus moved off on green into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16084",
@@ -63242,7 +69373,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped with hazards for dropoff; car reversed from driveway into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15890",
@@ -63273,7 +69407,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue at red; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16032",
@@ -63304,7 +69441,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in the intersection; truck's wide left clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15993",
@@ -63335,7 +69475,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV drove through standing water in its lane at 29 mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16024",
@@ -63366,7 +69509,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV began passing a bus already mid left turn; bus's rear swung into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16039",
@@ -63397,7 +69543,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV passing a slow curb-hugging SUV; SUV pulled left into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15939",
@@ -63428,7 +69577,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for a queue of traffic; passenger car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16020",
@@ -63459,7 +69611,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked for dropoff; heavy truck ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15906",
@@ -63490,7 +69645,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV pulled from lot exit into AV's lane; hit AV's rear, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15718",
@@ -63521,7 +69679,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Stopped straddling lanes mid-merge from curb; van in next lane hit AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15901",
@@ -63552,7 +69713,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV changed lanes into AV's path on green; hit AV's rear left, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15709",
@@ -63583,7 +69747,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Lead car moved right and slowed; as AV passed left, car cut back into AV's front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16085",
@@ -63614,7 +69781,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Slow curb-hugging SUV moved left into the passing AV's front right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15934",
@@ -63645,7 +69815,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV made a slow left turn in a parking lot into a pole"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15893",
@@ -63676,7 +69849,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV stopped protruding at lot exit mid-turn; passing pickup clipped rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16034",
@@ -63707,7 +69883,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV squeezed past a straddling pickup; pickup moved right on green"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16050",
@@ -63738,7 +69917,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV ran stop and swung wide across lanes; AV slowed and passed left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15828",
@@ -63769,7 +69951,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; passenger opened rear door into passing car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15899",
@@ -63800,7 +69985,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped part-way into left turn; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15832",
@@ -63831,7 +70019,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; pickup shoved into its rear by a separate crash"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15992",
@@ -63862,7 +70053,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for yellow; bus changed lanes from behind into rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15726",
@@ -63893,7 +70087,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV exited garage turning left into AV's lane; hit AV's rear left, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15990",
@@ -63924,7 +70121,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at a red light; SUV behind crept forward into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15927",
@@ -63955,7 +70155,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Waymo edged left to pass slow SUV; SUV turned left across its path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15991",
@@ -63986,7 +70189,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in loading zone; bus passed too close and clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15786",
@@ -64017,7 +70223,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Slowing, moved right for truck's wide left turn; truck clipped AV's rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15985",
@@ -64048,7 +70257,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV braked to a stop in narrow street; oncoming SUV squeezed past rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16112",
@@ -64079,7 +70291,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Tree branch broke off above the roadway and fell onto the AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16167",
@@ -64110,7 +70325,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup in the adjacent lane changed lanes into the AV's rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16083",
@@ -64141,7 +70359,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV edged left past a stopped car; car moved left into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15986",
@@ -64172,7 +70393,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding on narrow street; passing bus clipped rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16022",
@@ -64203,7 +70427,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo easing forward from queue on green; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15836",
@@ -64234,7 +70461,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car passed AV then cut right for the on-ramp; hit AV's front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16001",
@@ -64265,7 +70495,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped behind stop-sign queue; car ahead reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16038",
@@ -64296,7 +70529,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 1.0,
       "reasoning": "AV threaded a self-chosen gap and drove into a visible parked car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15925",
@@ -64327,7 +70563,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV advancing from turn lane on green; car behind hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15996",
@@ -64358,7 +70597,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding for unprotected left; SUV rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15830",
@@ -64389,7 +70631,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped; car's u-turn knocked cyclist's bike into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15897",
@@ -64420,7 +70665,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to hazard-lit truck; truck reversed into front twice"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15723",
@@ -64451,7 +70699,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for dropoff; car passing SUV behind hit SUV, then AV's rear"
     },
-    "vehiclesInvolved": 3
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16090",
@@ -64482,7 +70733,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage grounded on sloped raised lot exit during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15831",
@@ -64513,7 +70767,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "Waymo pulled from stop sign into cross traffic; t-boned on left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15997",
@@ -64544,7 +70801,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for the intersection; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15898",
@@ -64575,7 +70835,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV left the adjacent lane into the slowing AV's rear left, nearly clear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15931",
@@ -64606,7 +70869,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked at curb; u-turning truck's flatbed trailer swept into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15788",
@@ -64637,7 +70903,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Parked AV's passenger opened door into a passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-15720",
@@ -64668,7 +70937,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped at red beside truck in turn lane; truck's trailer swung into AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16028",
@@ -64699,7 +70971,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Oncoming car struck a ped then crossed double yellow into moving AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16404",
@@ -64730,7 +71005,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car went airborne in intersection, then veered into AV's rear as AV moved off"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16202",
@@ -64761,7 +71039,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car ahead rolled back at a red; AV reversed, but car's open door hit its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16456",
@@ -64792,7 +71073,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped for dropoff; its passenger opened door into a passing SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16395",
@@ -64823,7 +71107,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo reversing at an angle in a lot struck a parking bollard"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16346",
@@ -64854,7 +71141,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding to pickup with hazards on; pickup reversed into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16209",
@@ -64885,7 +71175,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV pulling away from stop sign into intersection; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16082",
@@ -64916,7 +71209,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo braked to a stop in intersection; stop-sign-running SUV hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16124",
@@ -64947,7 +71243,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped to yield to a fire truck; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16348",
@@ -64978,7 +71277,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo reversing at an angle into a lot stall; rear left struck a dumpster"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16300",
@@ -65009,7 +71311,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in-lane; van hit second car behind it, pushing first car into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16287",
@@ -65040,7 +71345,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "AV's undercarriage struck raised pavement as it turned left into a lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16199",
@@ -65071,7 +71379,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV began moving on green; car straddling two lanes hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16262",
@@ -65102,7 +71413,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "AV drove over uneven, partially paved alley section; undercarriage hit debris"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16203",
@@ -65133,7 +71447,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.5,
       "reasoning": "AV's undercarriage struck a metal sheet covering placed on the roadway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16293",
@@ -65164,7 +71481,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "SUV exited a parking garage turning left into AV's lane; hit AV's rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16458",
@@ -65195,7 +71515,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped near curb to yield; passing truck turned right, its rear hit AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16123",
@@ -65226,7 +71549,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in right turn pocket; SUV passed via bus lane into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16299",
@@ -65257,7 +71583,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for a queue past the intersection; SUV behind hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16645",
@@ -65288,7 +71617,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup exiting a parking garage turned left into AV's lane; hit AV's right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16208",
@@ -65319,7 +71651,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV stopped mid right turn; lane-straddling truck swung wide into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16347",
@@ -65350,7 +71685,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo reversing at an angle in a lot struck a parking bollard"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16342",
@@ -65381,7 +71719,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage hit raised pavement as AV turned left into a parking lot"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16366",
@@ -65412,7 +71753,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "AV reversing for a multi-point turn in a lot backed into a dumpster"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16117",
@@ -65443,7 +71787,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV began a right turn from parking lane as heavy truck to its left turned right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16493",
@@ -65474,7 +71821,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped yielding; SUV behind hit a car while changing lanes, pushed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16498",
@@ -65505,7 +71855,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid multi-point turn to yield; car backing out of stall hit it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16399",
@@ -65536,7 +71889,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at stop sign in queue; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16396",
@@ -65567,7 +71923,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in left turn lane; SUV crossing from rightmost lane hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16360",
@@ -65598,7 +71957,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage hit raised pavement at lot entrance ramp during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16207",
@@ -65629,7 +71991,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's own passenger doored a second Waymo passing on the left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16174",
@@ -65660,7 +72025,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked Waymo's passenger doored the passing Waymo as it went by"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16461",
@@ -65691,7 +72059,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.8,
       "reasoning": "Undercarriage hit raised pavement at lot entrance during left turn"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16291",
@@ -65722,7 +72093,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped mid left turn to yield to car exiting lot; car behind hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16260",
@@ -65753,7 +72127,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "AV began lane change ahead of a stopped truck on green; truck hit its left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16452",
@@ -65784,7 +72161,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped for a pedestrian; car rear-ended the van behind it into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16172",
@@ -65815,7 +72195,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Waymo stopped in queue after green; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16276",
@@ -65846,7 +72229,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow street for fire truck; truck clipped it passing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16453",
@@ -65877,7 +72263,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car in rail trackway reversed at an angle into slowing AV's front left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16489",
@@ -65908,7 +72297,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped short of intersection after green arrow; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16398",
@@ -65939,7 +72331,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV ahead and to the left turned right into AV's lane; AV braked"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16271",
@@ -65970,7 +72365,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car queued in the right lane changed lanes left into AV's right side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16496",
@@ -66001,7 +72399,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped on narrow street to yield; passing pickup clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16132",
@@ -66032,7 +72433,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in a queue at a red light; van behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16171",
@@ -66063,7 +72467,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo reversing in lot struck a parking bollard; self-inflicted"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16448",
@@ -66094,7 +72501,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing in a queue approaching a green light; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16409",
@@ -66125,7 +72535,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV pulled up at stop sign right of a stopped truck; truck turned right into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16325",
@@ -66156,7 +72569,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; SUV hit by another SUV deflected into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16647",
@@ -66187,7 +72603,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for stop sign; SUV behind moved right and hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16358",
@@ -66218,7 +72637,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at curb mid right turn to yield; passing pickup hit its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16133",
@@ -66249,7 +72671,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped before entering T-intersection; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16373",
@@ -66280,7 +72705,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV turning left from a lot access road crossed a lane into AV's left side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16210",
@@ -66311,7 +72739,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV slowing for queue; car overtaking from behind clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16261",
@@ -66342,7 +72773,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue at red; car rear-ended it, pushing it into car ahead"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16258",
@@ -66373,7 +72807,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.25,
       "reasoning": "AV passed an SUV stopped mid parking maneuver; it reversed into the AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16454",
@@ -66404,7 +72841,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "AV's undercarriage and rear left tire struck debris in the roadway"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16410",
@@ -66435,7 +72875,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in crosswalk after dropoff; passing car clipped its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16464",
@@ -66466,7 +72909,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red; driver in altercation with AV's passengers reversed into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16374",
@@ -66497,7 +72943,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV parked in-lane for dropoff; bus finishing a right turn clipped its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16490",
@@ -66528,7 +72977,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV moving off from a queue on green; car behind moved left into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16093",
@@ -66559,7 +73011,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at a red light; passenger car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16278",
@@ -66590,7 +73045,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.3,
       "reasoning": "AV kept merging left from a curbside stop into a car passing on its left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16345",
@@ -66621,7 +73079,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped in queue; car behind hit another car and was pushed into AV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16356",
@@ -66652,7 +73113,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "AV crossed after cross traffic stopped; stopped SUV turned right into its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16286",
@@ -66683,7 +73147,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.9,
       "reasoning": "Waymo reversing at an angle in a lot struck a parking bollard"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16196",
@@ -66714,7 +73181,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "SUV struck ped into slowing Waymo's rear; secondary, unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16298",
@@ -66745,7 +73215,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV changed lanes, then stopped in lane in standing water; car rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16663",
@@ -66776,7 +73249,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Car ran red at high speed into AV's lane on green; AV slowed but hit its side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16554",
@@ -66807,7 +73283,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Car from behind in AV's lane changed lanes right; clipped AV's rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16497",
@@ -66838,7 +73317,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV pulled right and stopped to yield to SUV; SUV passing hit its rear left"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16577",
@@ -66869,7 +73351,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV pulled right and stopped to yield; passing pickup's utility bed hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16491",
@@ -66900,7 +73385,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Wrong-way SUV crossed into AV's lane; AV braked and moved right, still hit"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16551",
@@ -66931,7 +73419,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "AV stopped at red in turn lane; SUV drove straight out of a turn lane into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30270-16548",
@@ -66962,7 +73453,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Lane-straddling motorcycle came from behind, passed AV on right, hit AV's side"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30610-7819",
@@ -66993,7 +73487,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Parallel-parked car pulled out unsignaled; expert covers brake past parked cars"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-9963",
@@ -67024,7 +73521,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox double-parked with hazards; car doing U-turn clipped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-10246",
@@ -67055,7 +73555,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped at red light; rear-ended by inattentive SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-10399",
@@ -67086,7 +73589,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Cyclist ran red crosswalk signal and veered into Zoox path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-10473",
@@ -67117,7 +73623,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "Zoox steered right anticipating V2 left turn; V2 abruptly stopped in shoulder"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-10711",
@@ -67148,7 +73657,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped during right turn; e-scooterist struck rear right"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11096",
@@ -67179,7 +73691,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox braked for traffic cones; rear-ended by following SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11513",
@@ -67210,7 +73725,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped yielding to e-cyclist; cyclist veered into rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11563",
@@ -67241,7 +73759,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped at light; pickup illegally passed and struck left rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11587",
@@ -67272,7 +73793,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "Semi ran driveway stop sign; big slow visible truck gave window at 11 mph"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11497",
@@ -67303,7 +73827,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.2,
       "reasoning": "Passed SUV stopped beside open curb space; reverse-to-park was foreseeable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11902",
@@ -67334,7 +73861,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Box truck made unprotected left across Zoox's green; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11752",
@@ -67365,7 +73895,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Unoccupied Zoox slowing to a stop; rear-ended"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11856",
@@ -67396,7 +73929,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Truck reversed into stopped Zoox despite Zoox honking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-13123",
@@ -67427,7 +73963,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox slowing for right turn; rear-ended by inattentive pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-11847",
@@ -67458,7 +73997,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV ahead veered into lane clipping left rear at 30 mph; brief drift cue"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-13376",
@@ -67489,7 +74031,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped after starting from green; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-13660",
@@ -67520,7 +74065,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.05,
       "reasoning": "Cars cut across nose from behind at 1 mph launch; outside forward view"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-13661",
@@ -67551,7 +74099,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox braked for road debris; rear-ended by close-merging pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-13662",
@@ -67582,7 +74133,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Box truck reversed liftgate into stopped Zoox despite honking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-13818",
@@ -67613,7 +74167,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Parked car door rapidly opened into Zoox path on green; unavoidable"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14026",
@@ -67644,7 +74201,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "SUV mid-parallel-park pulled out; active maneuver cue warrants slow wide pass"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14339",
@@ -67675,7 +74235,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox yielding mid-turn for ped; cyclist entered crosswalk and struck"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14341",
@@ -67706,7 +74269,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV right-turned into path against AV green; intersection scan gives window"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14340",
@@ -67737,7 +74303,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped at red light; rear-ended by pickup before pulling off"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14263",
@@ -67768,7 +74337,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Truck cut illegal left from through lane at green launch; slow visible swing"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14342",
@@ -67799,7 +74371,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car turned right out of a parking lot into the 25 mph Zoox's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14388",
@@ -67830,7 +74405,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped mid-lane-change; inattentive car accelerated into it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14366",
@@ -67861,7 +74439,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.15,
       "reasoning": "SUV backed from stall into passing Zoox in lot; back-outs are anticipated"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14519",
@@ -67892,7 +74473,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped for cross-traffic ROW violation; rear-ended by SUV"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14664",
@@ -67923,7 +74507,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Zoox stopped for pickup; door opened into unparking car's bumper"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14419",
@@ -67954,7 +74541,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped with hazards for pickup; passing car sideswiped"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14662",
@@ -67985,7 +74575,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped at PUDO; SUV passed left and swiped rear corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15064",
@@ -68016,7 +74609,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Slowed to stop behind traffic; rear-ended despite honking"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15065",
@@ -68047,7 +74643,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped yielding at driveway exit; rear-ended by pickup"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14732",
@@ -68078,7 +74677,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox slowed for reversing tractor-trailer; trailer swung into its front"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15062",
@@ -68109,7 +74711,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Stopped for traffic after green; rear-ended by car behind"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-14656",
@@ -68140,7 +74745,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car turned right out of a parking lot into the 21 mph Zoox's path"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15295",
@@ -68171,7 +74779,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Braked hard for debris; rear-ended by tailing car"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15018",
@@ -68202,7 +74813,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Pickup turned left across Zoox's path while Zoox had a green light"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15822",
@@ -68233,7 +74847,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.4,
       "reasoning": "AV drove into smoke-obscured active fire scene; responder struck it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15707",
@@ -68264,7 +74881,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped for cyclist running stop sign; cyclist lost control, hit rear corner"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15541",
@@ -68295,7 +74915,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox hard-braked for emergency vehicle; distracted pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15628",
@@ -68326,7 +74949,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox slowing mid-turn for emergency vehicle; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15540",
@@ -68357,7 +74983,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Car in left-turn lane abruptly cut right into Zoox; swiped left side, fled"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15826",
@@ -68388,7 +75017,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "Zoox got underway on right-on-red as a car cut in from the cross street"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-15722",
@@ -68419,7 +75051,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped for ped and dog in crosswalk; car behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-16273",
@@ -68450,7 +75085,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped awaiting a lane-change gap; SUV behind passed and swiped it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-16275",
@@ -68481,7 +75119,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Dog ran from sidewalk into Zoox's path; rear wheel apparently hit it on resuming"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-16451",
@@ -68512,7 +75153,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox braked hard to a stop for emergency vehicle; SUV behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-16450",
@@ -68543,7 +75187,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.1,
       "reasoning": "SUV cut into Zoox's lane and stopped for a jaywalker; Zoox hit its rear"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-16701",
@@ -68574,7 +75221,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped to yield for a left turn; trailing car passed left, hit rear fender"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-16700",
@@ -68605,7 +75255,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox stopped behind box truck; truck reversed and swiped its front fender"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   },
   {
     "reportId": "30610-16699",
@@ -68636,7 +75289,10 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
       "faultfrac": 0.0,
       "reasoning": "Zoox began moving on green then slowed; pickup behind rear-ended it"
     },
-    "vehiclesInvolved": 2
+    "vehiclesInvolved": 2,
+    "series": [
+      "Zoox"
+    ]
   }
 ]
 /* INCIDENT_DATA_END */;

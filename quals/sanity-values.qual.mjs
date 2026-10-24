@@ -334,8 +334,8 @@ console.log("qual pass: sanity check computed values are arithmetically consiste
 // Waymo 165M-269M (1.6x) beside cards whose every CI used 198M-233M (1.2x).
 {
   const rows = JSON.parse(vm.runInContext(`
-    JSON.stringify(monthlySummaryRows(activeSeries).filter(r => ADS_HELMERS.includes(r.helmer) && r.vmtBest > 0)
-      .map(r => [r.helmer, fmtMiles(r.vmtMin), fmtMiles(r.vmtBest), fmtMiles(r.vmtMax), (r.vmtMax / r.vmtMin).toFixed(1) + "x"]))`, ctx));
+    JSON.stringify(monthlySummaryRows(activeSeries).filter(r => ADS_SERIES.includes(r.helmer) && r.vmtBest > 0)
+      .map(r => [helmerLabel(r.helmer), fmtMiles(r.vmtMin), fmtMiles(r.vmtBest), fmtMiles(r.vmtMax), (r.vmtMax / r.vmtMin).toFixed(1) + "x"]))`, ctx));
   const cells = [...vmtSection.matchAll(/<tr>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>/g)].map(m => m.slice(1, 6));
   assert.deepEqual(cells, rows,
     `Replicata: read the VMT uncertainty table and recompute it from monthlySummaryRows (the window band every card and CI uses).

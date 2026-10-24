@@ -97,13 +97,14 @@ incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
 monthRangeStart = 0;
 monthRangeEnd = Infinity;
-// Enable all ADS helmers so every master row is rendered for this fidelity check.
-for (const d of ADS_HELMERS) monthHelmerEnabled[d] = true;
+// Enable every ADS line (the companies and Tesla's no-monitor line) so every
+// master row is rendered for this fidelity check.
+for (const d of ADS_SERIES) monthHelmerEnabled[d] = true;
 buildMonthlyViews();
 // Tooltips no longer carry the helmer name, so render each helmer's chart
 // separately, in each view mode, to verify master values flow through.
 const perHelmer = {};
-for (const h of ADS_HELMERS) {
+for (const h of ADS_SERIES) {
   vmtCumulative = false;
   const monthly = renderHelmerMonthlyChart(fullMonthSeries, h);
   vmtCumulative = true;
@@ -194,15 +195,17 @@ Resultata: tooltips had ${JSON.stringify([...cumSet])}.`);
 const orphans = vm.runInContext(`
 (() => {
   const keys = new Set(parseVmtCsv(VMT_CSV_TEXT).map(r => r.helmer.toLowerCase() + "|" + r.month));
-  return INCIDENT_DATA
-    .filter(i => !keys.has(i.helmer.toLowerCase() + "|" + monthKeyFromIncidentLabel(i.date)))
-    .map(i => i.reportId + " (" + i.helmer + " " + i.date + ")");
+  // An incident counts on every line in its series list (its company's, and
+  // Tesla's no-monitor line for a report on Tesla's no-monitor list).
+  return INCIDENT_DATA.flatMap(i => i.series
+    .filter(s => !keys.has(s.toLowerCase() + "|" + monthKeyFromIncidentLabel(i.date)))
+    .map(s => i.reportId + " (" + s + " " + i.date + ")"));
 })()
 `, ctx);
 assert.equal(
   orphans.length, 0,
-  `Replicata: map every in-scope incident to its (helmer, month) and look it up in the VMT data.
-Expectata: every incident has a VMT row for its helmer-month (no orphan numerators).
+  `Replicata: map every in-scope incident to its (line, month) for each line in its series list and look it up in the VMT data.
+Expectata: every incident has a VMT row for each of its lines' months (no orphan numerators).
 Resultata: ${orphans.length} orphan(s): ${orphans.slice(0, 8).join(", ")}.`);
 
 // The runtime guard must actually fire: inject a Zoox incident in a Waymo-only
@@ -210,7 +213,7 @@ Resultata: ${orphans.length} orphan(s): ${orphans.slice(0, 8).join(", ")}.`);
 const guardThrows = vm.runInContext(`
 (() => {
   const saved = incidents;
-  incidents = [{ ...saved[0], helmer: "Zoox", date: "SEP-2021", reportId: "synthetic-orphan", fault: null }];
+  incidents = [{ ...saved[0], helmer: "Zoox", series: ["Zoox"], date: "SEP-2021", reportId: "synthetic-orphan", fault: null }];
   try { monthSeriesData(); return "no throw"; }
   catch (e) { return /orphan/.test(e.message) ? "orphan-throw" : "other: " + e.message; }
   finally { incidents = saved; }

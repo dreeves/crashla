@@ -88,6 +88,22 @@ assert.deepEqual(close, [],
 Expectata: CIEDE2000 >= ${TARGET} from each of them, under normal vision and under each deficiency.
 Resultata: too close: ${JSON.stringify(close)}.`);
 
+// Tesla's no-monitor line (2026-10-23) is drawn beside Tesla and every other
+// series, so it gets the same test against all of them, not only HumansUS.
+const nmTable = [];
+for (const kind of KINDS) {
+  const nm = lab(simulate(rgb(COLORS.TeslaNoMonitor ?? "#000000"), kind));
+  for (const [helmer, hex] of Object.entries(COLORS)) {
+    if (helmer === "TeslaNoMonitor") continue;
+    nmTable.push({ kind, helmer, dE: +de2000(nm, lab(simulate(rgb(hex), kind))).toFixed(1) });
+  }
+}
+const nmClose = nmTable.filter(r => r.dE < TARGET);
+assert.ok(COLORS.TeslaNoMonitor !== undefined && nmClose.length === 0,
+  `Replicata: simulate HELMER_COLORS.TeslaNoMonitor (${COLORS.TeslaNoMonitor}) under normal vision and three deficiencies against every other series.
+Expectata: a colour is set, CIEDE2000 >= ${TARGET} from each series under each.
+Resultata: ${COLORS.TeslaNoMonitor === undefined ? "no colour set" : `too close: ${JSON.stringify(nmClose)}`}.`);
+
 const luminance = c => c.map(toLinear).reduce((s, v, i) => s + [0.2126, 0.7152, 0.0722][i] * v, 0);
 const contrast = (x, y) => { const [hi, lo] = [luminance(x), luminance(y)].sort((a, b) => b - a); return (hi + 0.05) / (lo + 0.05); };
 const usContrast = contrast(rgb(COLORS.HumansUS), rgb(paper));

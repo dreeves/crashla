@@ -84,8 +84,10 @@ const metrics = vm.runInContext(`
 (() => {
   const series = monthSeriesData();
   const byMonth = Object.fromEntries(series.points.map(p => [p.month, p]));
+  // Every plotted line: the companies and Tesla's no-monitor line, which
+  // counts the incidents whose series list names it.
   const expectedTotalByHelmer = Object.fromEntries(
-    ADS_HELMERS.map(helmer => [
+    ADS_SERIES.map(helmer => [
       helmer,
       (() => {
         const helmerMonths = new Set(
@@ -94,12 +96,12 @@ const metrics = vm.runInContext(`
             .map(p => p.month),
         );
         return INCIDENT_DATA.filter(inc =>
-          inc.helmer === helmer && helmerMonths.has(monthKeyFromIncidentLabel(inc.date))).length;
+          inc.series.includes(helmer) && helmerMonths.has(monthKeyFromIncidentLabel(inc.date))).length;
       })(),
     ]),
   );
   const totalByHelmer = Object.fromEntries(
-    ADS_HELMERS.map(helmer => [
+    ADS_SERIES.map(helmer => [
       helmer,
       series.points.reduce((sum, p) => sum + (p.helmers[helmer] ? p.helmers[helmer].incidents.total : 0), 0),
     ]),
@@ -140,7 +142,7 @@ Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 assert.deepEqual(
   plain.totalByHelmer,
   plain.expectedTotalByHelmer,
-  `Replicata: sum monthly incident totals for each ADS helmer.
+  `Replicata: sum monthly incident totals for each ADS line (each company, and Tesla's no-monitor line).
 Expectata: month aggregation preserves totals from the raw incident data within the VMT window.
 Resultata: expected=${JSON.stringify(plain.expectedTotalByHelmer)} actual=${JSON.stringify(plain.totalByHelmer)}.`,
 );
@@ -410,7 +412,7 @@ const jeffreysZero = vm.runInContext(`
     const series = monthSeriesData();
     let zeroMonths = 0;
     for (const p of series.points) {
-      for (const h of ADS_HELMERS) {
+      for (const h of ADS_SERIES) {
         const e = p.helmers[h];
         if (e === null) continue;
         const mpi = e.mpiByMetric.atfault;
@@ -704,8 +706,10 @@ Resultata: ${JSON.stringify(fiveDayTips.slice(0, 2))}.`);
 // VMT rationales live in the sanity section's VMT-sources table (embedded
 // here they made the tooltip 7,000-8,700px tall, unreadable and unpinnable).
 const vmtTips = [...plain.summaryCardHtml.matchAll(/class="mpi-card-vmt" data-tip="([^"]*)"/g)].map(m => m[1]);
-assert.ok(vmtTips.length === 3 && vmtTips.every(t => t.length < 700 && !/US (rough )?est\.|deck|CPUC/.test(t)),
-  `Replicata: read the three ADS cards' Effective-VMT data-tips on the default window.
+// One card per ADS line, checked or not (unchecked lines' cards are grayed).
+const adsLines = vm.runInContext("ADS_SERIES.length", ctx);
+assert.ok(vmtTips.length === adsLines && vmtTips.every(t => t.length < 700 && !/US (rough )?est\.|deck|CPUC/.test(t)),
+  `Replicata: read the ${adsLines} ADS cards' Effective-VMT data-tips on the default window.
 Expectata: each under 700 characters and free of rationale prose.
 Resultata: lengths ${JSON.stringify(vmtTips.map(t => t.length))}.`);
 

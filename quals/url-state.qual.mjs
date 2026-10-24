@@ -138,7 +138,7 @@ Resultata: sortAsc was ${plain.sortAsc}.`,
 
 assert.deepEqual(
   plain.monthHelmerEnabled,
-  {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, Waymo: false, Zoox: true},
+  {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, TeslaNoMonitor: false, Waymo: false, Zoox: true},
   `Replicata: apply encoded query to reset helmer toggles.
 Expectata: helmer toggles restored (Tesla+Zoox on, Waymo off, rideshare off).
 Resultata: helmer toggles were ${JSON.stringify(plain.monthHelmerEnabled)}.`,

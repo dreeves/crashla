@@ -18,9 +18,9 @@ const defaults = JSON.parse(JSON.stringify(vm.runInContext(
 
 assert.deepEqual(
   defaults.monthHelmerEnabled,
-  {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, Waymo: true, Zoox: false},
+  {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, TeslaNoMonitor: false, Waymo: true, Zoox: false},
   `Replicata: load crashla.js fresh (no URL state) and read monthHelmerEnabled.
-Expectata: HumansAV, Tesla, and Waymo checked by default; HumansUS and Zoox unchecked.
+Expectata: HumansAV, Tesla, and Waymo checked by default; HumansUS, HumansRideshare, TeslaNoMonitor and Zoox unchecked.
 Resultata: helmer toggles were ${JSON.stringify(defaults.monthHelmerEnabled)}.`,
 );
 
