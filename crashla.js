@@ -2427,9 +2427,13 @@ function seriesMarkName(helmer, tip) {
 // Every chart's tooltip targets: one invisible circle per mark, drawn after
 // all of the chart's glyphs, so a glyph never covers a target. Its radius is
 // half the distance to the nearest other target more than HIT_R_MIN away, at
-// least HIT_R_MIN and at most HIT_R_MAX: a 24 CSS px target where there is
-// room (a chart unit is about a CSS px; chartViewW), and never so large that
-// it takes over a neighbour's centre. Until 2026-10-03 the MPI chart's fixed
+// most HIT_R_MAX, and at least HIT_R_MIN unless that would bring its edge
+// within HIT_R_MIN / 2 of that neighbour's centre: a 24 CSS px target where
+// there is room (a chart unit is about a CSS px; chartViewW), and never so
+// large that it takes over a neighbour's centre, even in WebKit, whose SVG
+// hit area runs ~0.15-0.2 CSS px past a circle's drawn edge (until
+// 2026-10-23 a HIT_R_MIN floor let a circle 4.15 units from a neighbour take
+// the neighbour's tooltip there). Until 2026-10-03 the MPI chart's fixed
 // r=8 circles took the tooltip of dots 6.4 units away that they did not
 // touch (audit #63), and the VMT, distribution and growth charts' marks were
 // their own 3.3-5 unit targets, 1.4-2.1 CSS px across on a phone (audit
@@ -2459,7 +2463,7 @@ function hitCircles(targets) {
     }
   }
   return at.map((t, i) => {
-    const r = Math.max(HIT_R_MIN, Math.min(HIT_R_MAX, near[i] / 2));
+    const r = Math.min(HIT_R_MAX, Math.max(near[i] / 2, Math.min(HIT_R_MIN, near[i] - HIT_R_MIN / 2)));
     return `<circle cx="${t.x}" cy="${t.y}" r="${r.toFixed(2)}" fill="none" data-tip="${escAttr(t.tip)}"${tipTargetAttrs(t.name)}></circle>`;
   }).join("");
 }
@@ -2985,9 +2989,13 @@ const FLEET_FORECAST = [
     // ~240, sigma 0.45 (90% ~[114, 503]). Re-checked 2026-10-03 (audit #84):
     // it still meets the floor rule (5th percentile 122 >= 90, median 292 >=
     // 150), but its premise has moved: by Oct 3 the registry lists 169
-    // Cybercabs (Model Y still 420). Whether the median should rise is a
-    // forecast call left to the human.
-    { weight: 0.71, median: 240,    sigma: 0.45, scope: "robotaxi" }, // A: slow robotaxi ramp continues
+    // Cybercabs (Model Y still 420). Re-based 2026-10-23 on Tesla's weekly
+    // mileage: the week to Oct 18 ran 79,669 miles a day, ~440 vehicles in
+    // service at the ~180 miles per vehicle-day of Q2 2026 (5-6k miles per
+    // vehicle-month; 320-660 across 120-250), against 589 registered in Texas
+    // by Oct 3; a slow ramp from there to Jan 1 -> median 560, sigma 0.40
+    // (90% ~[290, 1,080]).
+    { weight: 0.71, median: 560,    sigma: 0.40, scope: "robotaxi" }, // A: slow robotaxi ramp continues
     { weight: 0.24, median: 9000,   sigma: 0.70, scope: "robotaxi" }, // B: aggressive robotaxi/Cybercab scale-up
     { weight: 0.05, median: 600000, sigma: 0.95, scope: "hw4" },      // C: eyes-off FSD across the HW4 fleet
   ] },
@@ -3417,14 +3425,22 @@ const RIDES_HISTORY = {
 // "1 million unsupervised miles" statement (end-Aug cume ~3.15M
 // [2.89M, 3.79M], August ~470k/mo): floor 4.5M = 3.15M + 4 x ~340k (below
 // August's rate), central 5.5M = + 4 x ~590k, ceiling 7.8M = + 4 x ~1.16M
-// (the rate doubles again by Dec). B's Cybercab ramp to ~9k arrives
+// (the rate doubles again by Dec). Re-based 2026-10-23 on Tesla's weekly
+// no-monitor miles (tesla.com/robotaxi/safety): the cumulative reached ~5.42M
+// by Oct 18 (data/vmt.csv's end-September 4.24M plus 1.18M for Oct 1-18), the
+// week to Oct 18 ran 557,694 miles (79,669 a day), and weekly miles grew
+// 12-21% a week from June to September and ~30% a week in October. Over the
+// 74 days to Jan 1: central 13M = weekly miles growing ~5% a week, floor 9.5M
+// = shrinking ~7% a week, ceiling 19M = the June-September ~15% a week
+// continuing (held flat they give ~11.3M; quals/tesla-forecast-floor.qual.mjs).
+// B's Cybercab ramp to ~9k arrives
 // mostly in Q4 at ramping utilization (production started Jun 2026; the
 // earlier same-day x1.25 per-vehicle rescale is reverted — it didn't survive
 // the Q2 utilization data). C's miles are ADS miles on eyes-off personal
 // HW4 cars (~600k x ~1k mi/mo x the post-flip months, timing very uncertain).
 const MILES_FORECAST = [
   { helmer: "Tesla", components: [
-    { weight: 0.71, best: 5500000,   lo: 4500000,   hi: 7800000, scope: "robotaxi" },   // A: slow ramp continues (re-based 2026-09-04)
+    { weight: 0.71, best: 13000000,  lo: 9500000,   hi: 19000000, scope: "robotaxi" },  // A: slow ramp continues (re-based 2026-10-23)
     { weight: 0.24, best: 40000000,  lo: 15000000,  hi: 120000000, scope: "robotaxi" }, // B: aggressive scale-up
     { weight: 0.05, best: 400000000, lo: 100000000, hi: 1500000000, scope: "hw4" },     // C: HW4 fleet goes ADS
   ] },

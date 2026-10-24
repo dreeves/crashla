@@ -259,6 +259,41 @@ def _contact_areas(row, prefix):
     return " + ".join(parts)
 
 
+# NHTSA publishes the CURRENT file's SV and CP contact-area columns under
+# rotated labels (found 2026-10-23, AGENTS.md open question 17): the box a
+# reporter checked as front left sits in the column headed "Front", front in
+# "Front Right", front right in "Front Left", and the same within the rear row.
+# Tesla's own SGO spreadsheet for its robotaxi (Robotaxi-SGO-Report_10_18_2026
+# .xlsx, linked from tesla.com/robotaxi/safety) agrees with every narrative
+# that names a side and, after this move, with all 17 reports it shares with
+# NHTSA's file; Waymo, Zoox, Avride and Nuro narratives agree the same way.
+# Left, Right, Top, Bottom, Unknown and every archive-file column are labeled
+# right. _normalize_current_row moves each value under its true label, and
+# check_contact_area_labels stops the run if the narratives stop agreeing
+# (e.g., NHTSA fixes its export: then empty this map).
+CURRENT_FILE_CONTACT_LABEL = {   # published label -> true label
+    "Front": "Front Left", "Front Right": "Front", "Front Left": "Front Right",
+    "Rear": "Rear Left", "Rear Right": "Rear", "Rear Left": "Rear Right",
+}
+
+# Narratives that name one box of a vehicle, the contact columns that box
+# belongs to, and the true label most matching rows must carry. Calibrated on
+# the Oct-15-2026 current file (all reporters, all versions): after the move
+# 86-99% of matches agree (front right lowest, 47 of 55); read as published,
+# 0-6% do. The last test is the crash partner of a rear-ending: its front.
+_AV = r"(?:waymo|ads|av|zoox|tesla)"
+CONTACT_AREA_NARRATIVE_TESTS = (
+    (re.compile(rf"\brear (?:bumper )?of the {_AV}\b", re.I), "SV Contact Area", "Rear"),
+    (re.compile(rf"\b(?:rear left|left rear)(?: side| bumper| corner)? of the {_AV}\b", re.I), "SV Contact Area", "Rear Left"),
+    (re.compile(rf"\b(?:rear right|right rear)(?: side| bumper| corner)? of the {_AV}\b", re.I), "SV Contact Area", "Rear Right"),
+    (re.compile(rf"\b(?:front left|left front)(?: side| bumper| corner)? of the {_AV}\b", re.I), "SV Contact Area", "Front Left"),
+    (re.compile(rf"\b(?:front right|right front)(?: side| bumper| corner)? of the {_AV}\b", re.I), "SV Contact Area", "Front Right"),
+    (re.compile(rf"^(?!.*\b(?:revers|backed|backing))(?=.*\brear (?:bumper )?of the {_AV}\b)", re.I | re.S), "CP Contact Area", "Front"),
+)
+CONTACT_AREA_MIN_MATCHES = 20
+CONTACT_AREA_MIN_AGREEMENT = 0.75
+
+
 # Canonical short names for helmers (reporting entities). "Helmer" is our
 # jargon for who/what is at the helm: Tesla, Waymo, Zoox, or humans.
 HELMER_SHORT = {
@@ -739,6 +774,35 @@ def _normalize_archive_row(row):
     return row
 
 
+def _normalize_current_row(row):
+    """Move the current file's rotated contact-area values under their true labels."""
+    for prefix in ("SV Contact Area", "CP Contact Area"):
+        published = {label: row[f"{prefix} - {label}"]
+                     for label in CURRENT_FILE_CONTACT_LABEL}
+        for label, value in published.items():
+            row[f"{prefix} - {CURRENT_FILE_CONTACT_LABEL[label]}"] = value
+    return row
+
+
+must(sorted(CURRENT_FILE_CONTACT_LABEL) == sorted(CURRENT_FILE_CONTACT_LABEL.values()),
+     "CURRENT_FILE_CONTACT_LABEL must permute its labels (a value moved onto "
+     "a label must have left that label's own value somewhere)")
+
+
+def check_contact_area_labels(rows):
+    """Stop unless current-file contact areas, after the move, match narratives."""
+    for pattern, prefix, label in CONTACT_AREA_NARRATIVE_TESTS:
+        matches = [r for r in rows if pattern.search(r["Narrative"])]
+        agree = sum(1 for r in matches if r[f"{prefix} - {label}"].strip() == "Y")
+        must(len(matches) >= CONTACT_AREA_MIN_MATCHES and
+             agree >= CONTACT_AREA_MIN_AGREEMENT * len(matches),
+             "current-file contact areas no longer match the narratives after "
+             "CURRENT_FILE_CONTACT_LABEL moves them (has NHTSA fixed or changed "
+             "its column labels? re-measure, then update or empty the map)",
+             pattern=pattern.pattern, label=f"{prefix} - {label}",
+             matches=len(matches), agree=agree)
+
+
 def relpath(path):
     path = Path(path).resolve()
     try:
@@ -773,6 +837,36 @@ def snapshot_csv_if_changed(prefix, text, stamp):
     return path
 
 
+def current_csv_rows(text):
+    """Rows of NHTSA's current ADS CSV, contact areas under their true labels."""
+    rows = [_normalize_current_row(row) for row in csv.DictReader(io.StringIO(text))]
+    check_contact_area_labels(rows)
+    return rows
+
+
+def archive_csv_rows(text):
+    """Rows of NHTSA's archive ADS CSV, mapped onto the current schema."""
+    return [_normalize_archive_row(row) for row in csv.DictReader(io.StringIO(text))]
+
+
+# Each NHTSA file: its URL, its snapshot prefix, and its loader. A live fetch
+# (fetch_nhtsa_csv) and every offline regeneration (newest_snapshot_rows, used
+# by the quals) parse through these, so both see the same rows.
+NHTSA_SOURCES = (
+    (NHTSA_ADS_CSV_URL, "nhtsa-current", current_csv_rows),
+    (NHTSA_ADS_ARCHIVE_URL, "nhtsa-archive", archive_csv_rows),
+)
+
+
+def newest_snapshot_rows():
+    """Rows of the newest current and archive snapshots, parsed as a live fetch is."""
+    rows = []
+    for _url, prefix, parse in NHTSA_SOURCES:
+        with open(latest_snapshot_path(prefix), newline="", encoding="utf-8") as f:
+            rows += parse(f.read())
+    return rows
+
+
 def fetch_nhtsa_csv(stamp):
     """Fetch ADS incident reports from both current and archive CSVs.
 
@@ -781,11 +875,7 @@ def fetch_nhtsa_csv(stamp):
     """
     all_rows = []
     headers_by_url = {}
-    snapshot_prefix = {
-        NHTSA_ADS_CSV_URL: "nhtsa-current",
-        NHTSA_ADS_ARCHIVE_URL: "nhtsa-archive",
-    }
-    for url in [NHTSA_ADS_CSV_URL, NHTSA_ADS_ARCHIVE_URL]:
+    for url, prefix, parse in NHTSA_SOURCES:
         print(f"Fetching NHTSA ADS CSV from {url} ...")
         with urllib.request.urlopen(url, timeout=60) as resp:
             lm = resp.headers.get("Last-Modified")
@@ -793,12 +883,8 @@ def fetch_nhtsa_csv(stamp):
             payload = resp.read()
         headers_by_url[url] = (lm, etag)
         text = payload.decode("utf-8")
-        snapshot_csv_if_changed(snapshot_prefix[url], text, stamp)
-        is_archive = url == NHTSA_ADS_ARCHIVE_URL
-        for row in csv.DictReader(io.StringIO(text)):
-            if is_archive:
-                _normalize_archive_row(row)
-            all_rows.append(row)
+        snapshot_csv_if_changed(prefix, text, stamp)
+        all_rows += parse(text)
     return all_rows, headers_by_url
 
 

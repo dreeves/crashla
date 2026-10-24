@@ -21,7 +21,10 @@ const CUME_PINS = {
   // 2026-10-03: 339,595,163 -> 339,495,163, September's Maricopa term less
   // ~0.1M for the measured Phoenix weather pauses (Sep 16-18 and Sep 29)
   "waymo|2026-09": 339495163,
-  "tesla|2026-09": 3630000,
+  // 2026-10-23: 3,630,000 -> 4,241,000, Jul-Sep re-pinned on Tesla's own
+  // no-safety-monitor miles (robotaxi safety page + Q3-2026 deck) plus June's
+  // measured monitor-aboard remainder (approved 2026-10-23)
+  "tesla|2026-09": 4241000,
   // 2026-10-03: 3,571,000 -> 3,530,920, the CA DMV rebuild of the early rows
   // (approved 2026-09-29): the series now excludes 40,080 pre-series
   // driverless miles from the official ~1.3M as of Dec 31, 2025

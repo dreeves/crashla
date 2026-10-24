@@ -5,11 +5,15 @@
 //    VMT dots, distribution markers and fleet points were their own 2.7-3.3
 //    CSS px targets on a phone; the VMT chart had no hit circle for its dots).
 //  - A hit circle's radius is half the distance to the nearest other target
-//    more than 4 units away, at least 4 and at most 12 units: big enough for
-//    a finger where there is room (12 units is a 24 CSS px target at the
-//    charts' phone scale), and never so big that it takes over a neighbour's
-//    centre (#63: an r=8 circle drawn later stole the tooltip of a dot 6.4
-//    units away that it did not touch). So a pointer at a target's centre
+//    more than 4 units away, at most 12 units, and at least 4 units unless
+//    that would bring its edge within 2 units of that neighbour's centre
+//    (then nearest - 2): big enough for a finger where there is room (12
+//    units is a 24 CSS px target at the charts' phone scale), and never so
+//    big that it takes over a neighbour's centre (#63: an r=8 circle drawn
+//    later stole the tooltip of a dot 6.4 units away that it did not touch;
+//    2026-10-23, open question 15: WebKit's SVG hit area runs ~0.15-0.2 CSS
+//    px past a circle's drawn edge, so a 4-unit circle 4.15 units from a
+//    neighbour took the neighbour's centre). So a pointer at a target's centre
 //    lands on that target, unless another target's centre lies within 4
 //    units of it (marks drawn on top of each other, which no radius can
 //    separate). Such marks do not shrink each other's targets: counted, they
@@ -123,7 +127,7 @@ for (const { what, svg } of charts) {
     // HIT_R_MIN away): marks on top of each other share a centre whatever
     // their radii, so they do not shrink each other's targets.
     const near = Math.min(Infinity, ...hits.filter((_, j) => j !== i).map(d => Math.hypot(d.cx - c.cx, d.cy - c.cy)).filter(d => d > HIT_R_MIN));
-    const want = Math.max(HIT_R_MIN, Math.min(HIT_R_MAX, near / 2));
+    const want = Math.min(HIT_R_MAX, Math.max(near / 2, Math.min(HIT_R_MIN, near - HIT_R_MIN / 2)));
     if (Math.abs(c.r - want) > 0.011) badR.push(`${JSON.stringify(c.tip.split("\n")[0])} r=${c.r}, want ${want.toFixed(2)} (nearest ${near.toFixed(2)})`);
     let top = -1;
     hits.forEach((d, j) => { if (Math.hypot(d.cx - c.cx, d.cy - c.cy) <= d.r) top = j; });
@@ -131,7 +135,7 @@ for (const { what, svg } of charts) {
     if (top !== i && Math.hypot(t.cx - c.cx, t.cy - c.cy) > HIT_R_MIN)
       stolen.push(`centre of ${JSON.stringify(c.tip.replace(/\n/g, " / "))} lands on ${JSON.stringify(t.tip.replace(/\n/g, " / "))} (${Math.hypot(t.cx - c.cx, t.cy - c.cy).toFixed(2)} away)`);
   });
-  if (badR.length > 0) fail(`${what}: ${badR.length} of ${hits.length} hit radii are not clamp(nearest/2, ${HIT_R_MIN}, ${HIT_R_MAX}) over the targets more than ${HIT_R_MIN} away, e.g. ${badR.slice(0, 2).join("; ")}`);
+  if (badR.length > 0) fail(`${what}: ${badR.length} of ${hits.length} hit radii are not min(${HIT_R_MAX}, max(nearest/2, min(${HIT_R_MIN}, nearest - ${HIT_R_MIN / 2}))) over the targets more than ${HIT_R_MIN} away, e.g. ${badR.slice(0, 2).join("; ")}`);
   if (stolen.length > 0) fail(`${what}: ${stolen.length} targets' centres land on another target, e.g. ${stolen.slice(0, 2).join("; ")}`);
   // A hit circle is never inside a clip-path group: the clip cut the growth
   // chart's Tesla 2025-06 Miles target flat at the x axis, its focus ring
@@ -227,7 +231,7 @@ for (const [what, labels] of [["the MPI chart with no helmer checked", empty.mpi
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render the MPI, distribution, VMT and growth charts in vm (${charts.length} charts, ${targetsSeen} tooltip targets) and read their hit circles and tooltips; render the MPI chart with no helmer and Tesla's VMT chart before its series.
-Expectata: every target an invisible hit circle drawn after the glyphs and outside any clip-path group, its radius clamp(nearest/2, ${HIT_R_MIN}, ${HIT_R_MAX}) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the partially received months' counts (the data-through month, and the months inside a helmer's Monthly-report lag) marked partial; empty charts labelled "0" only.
+Expectata: every target an invisible hit circle drawn after the glyphs and outside any clip-path group, its radius min(${HIT_R_MAX}, max(nearest/2, min(${HIT_R_MIN}, nearest - ${HIT_R_MIN / 2}))) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the partially received months' counts (the data-through month, and the months inside a helmer's Monthly-report lag) marked partial; empty charts labelled "0" only.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 10).join("\n")}`);
 console.log(`qual pass: ${targetsSeen} chart tooltip targets are capped invisible hit circles over the glyphs; VMT tooltips give ranges, edges, running counts and the partial-month note; empty axes read "0"`);

@@ -80,12 +80,7 @@ for p in [snap / 'nhtsa-2025-jun-dec.csv', snap / 'nhtsa-2025-jun-2026-jan.csv']
     rows = list(csv.DictReader(open(p, newline='')))
     D = max(iso(r['Incident Date'].strip()) for r in rows if r['Incident Date'].strip())
     releases.setdefault(D, {r['Report ID'].strip() for r in rows if r['Report ID'].strip()})
-newest = []
-for p, is_archive in [(sorted(snap.glob('nhtsa-current-*.csv'))[-1], False),
-                      (sorted(snap.glob('nhtsa-archive-*.csv'))[-1], True)]:
-    for r in csv.DictReader(open(p, newline='')):
-        if is_archive: slurp._normalize_archive_row(r)
-        newest.append(r)
+newest = slurp.newest_snapshot_rows()
 # In-scope incidents of the newest file, deduplicated as main() does; an
 # incident's track is its surviving report's version-1 Report Type.
 filed = [r for r in newest if r['Report ID'].strip() and r['Report Version'].strip()

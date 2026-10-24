@@ -52,9 +52,7 @@ for p in sorted(snap.glob('nhtsa-current-*.csv')):
     rows = list(csv.DictReader(open(p, newline='')))
     D = max(iso(r['Incident Date'].strip()) for r in rows if r['Incident Date'].strip())
     releases.setdefault(D, (p.name, rows))
-newest = list(csv.DictReader(open(sorted(snap.glob('nhtsa-current-*.csv'))[-1], newline='')))
-for r in csv.DictReader(open(sorted(snap.glob('nhtsa-archive-*.csv'))[-1], newline='')):
-    slurp._normalize_archive_row(r); newest.append(r)
+newest = slurp.newest_snapshot_rows()
 final = five_day_by_month(newest)
 out = {}
 for m, row in slurp.FIVE_DAY_RECEIPT_OBSERVATIONS.items():

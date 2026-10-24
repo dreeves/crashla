@@ -112,13 +112,7 @@ else:
 # (2) + byte-identical offline regeneration from the newest snapshots
 current = sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1]
 archive = sorted(glob.glob('data/snapshots/nhtsa-archive-*.csv'))[-1]
-rows = []
-for path, is_archive in [(current, False), (archive, True)]:
-    with open(path, newline='') as handle:
-        for row in csv.DictReader(handle):
-            if is_archive:
-                slurp._normalize_archive_row(row)
-            rows.append(row)
+rows = slurp.newest_snapshot_rows()
 incident_original = pathlib.Path('data/incidents.js').read_text()
 vmt_original = pathlib.Path('data/vmt.js').read_text()
 

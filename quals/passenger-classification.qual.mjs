@@ -136,12 +136,7 @@ out['passes'] = {
 }
 # Calibration: every in-scope Waymo/Zoox report's latest narrative in the
 # newest snapshots, with the filed code
-rows = []
-for path, is_archive in [(sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1], False),
-                         (sorted(glob.glob('data/snapshots/nhtsa-archive-*.csv'))[-1], True)]:
-    for r in csv.DictReader(open(path, newline='')):
-        if is_archive: slurp._normalize_archive_row(r)
-        rows.append(r)
+rows = slurp.newest_snapshot_rows()
 latest = {}
 for r in slurp.filed_incident_rows(rows):
     if r['Reporting Entity'].strip() in ('Waymo LLC', 'Zoox, Inc.') and slurp.operator_in_scope(r):

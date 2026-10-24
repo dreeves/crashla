@@ -36,12 +36,7 @@ except AssertionError as e:
 
 # main() must run the check: the snapshots plus the checked-in fault CSV with
 # one value moved off the grid (the finding's replicata), offline.
-rows = []
-for path, is_archive in [(sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1], False),
-                         (sorted(glob.glob('data/snapshots/nhtsa-archive-*.csv'))[-1], True)]:
-    for r in csv.DictReader(open(path, newline='')):
-        if is_archive: slurp._normalize_archive_row(r)
-        rows.append(r)
+rows = slurp.newest_snapshot_rows()
 headers = {slurp.NHTSA_ADS_CSV_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None), slurp.NHTSA_ADS_ARCHIVE_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None)}
 slurp.fetch_nhtsa_csv = lambda stamp: (list(rows), headers)
 with tempfile.TemporaryDirectory() as d:

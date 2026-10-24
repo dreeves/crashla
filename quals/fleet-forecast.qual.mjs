@@ -190,14 +190,17 @@ Expectata: a unimodal distribution with median ~150 (100-220).
 Resultata: median=${byKey.Zoox.median}, signChanges=${byKey.Zoox.signChanges}.`,
 );
 
-// Tesla robotaxi (mainline, ~95%): the apples-to-apples fleet — a low-hundreds
-// median, bimodal (A+B), and its tail stays in robotaxi territory (no HW4 blow-up).
+// Tesla robotaxi (mainline, ~95%): the apples-to-apples fleet — a median in the
+// hundreds, bimodal (A+B), and its tail stays in robotaxi territory (no HW4
+// blow-up). The median's band was 100-600 ("low hundreds") until 2026-10-23,
+// when scenario A was re-based on the ~440 vehicles Tesla's October mileage
+// implies (tesla-forecast-floor.qual) and the median moved to ~670.
 assert.ok(
   byKey.robotaxi.mainline && Math.abs(byKey.robotaxi.scenarioProb - 0.95) < 0.02 &&
-    byKey.robotaxi.median > 100 && byKey.robotaxi.median < 600 &&
+    byKey.robotaxi.median > 200 && byKey.robotaxi.median < 2000 &&
     byKey.robotaxi.hi90 < 50000 && byKey.robotaxi.signChanges > 1,
   `Replicata: inspect Tesla's robotaxi-scope curve.
-Expectata: mainline, ~95% weight, median 100-600, bimodal, 95th percentile under 50k (no HW4 tail).
+Expectata: mainline, ~95% weight, median 200-2,000, bimodal, 95th percentile under 50k (no HW4 tail).
 Resultata: mainline=${byKey.robotaxi.mainline}, prob=${byKey.robotaxi.scenarioProb}, median=${byKey.robotaxi.median}, hi90=${byKey.robotaxi.hi90}, signChanges=${byKey.robotaxi.signChanges}.`,
 );
 

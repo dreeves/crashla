@@ -33,13 +33,10 @@ slurp = importlib.util.module_from_spec(spec); spec.loader.exec_module(slurp)
 out = {'teleop': {k: v for k, v in slurp.TELEOP_DRIVEN_REPORTS.items()},
        'adsDriven': sorted(slurp.REMOTE_LANGUAGE_ADS_DRIVEN)}
 latest = {}
-for path, is_archive in [(sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1], False),
-                         (sorted(glob.glob('data/snapshots/nhtsa-archive-*.csv'))[-1], True)]:
-    for r in csv.DictReader(open(path, newline='')):
-        if is_archive: slurp._normalize_archive_row(r)
-        if r['Reporting Entity'].strip() in slurp.HELMER_SHORT and r['Incident Date'].strip():
-            k, v = r['Report ID'], int(r['Report Version'])
-            if k not in latest or v > int(latest[k]['Report Version']): latest[k] = r
+for r in slurp.newest_snapshot_rows():
+    if r['Reporting Entity'].strip() in slurp.HELMER_SHORT and r['Incident Date'].strip():
+        k, v = r['Report ID'], int(r['Report Version'])
+        if k not in latest or v > int(latest[k]['Report Version']): latest[k] = r
 out['quoteFound'] = {k: (k in latest and q in latest[k]['Narrative']) for k, q in slurp.TELEOP_DRIVEN_REPORTS.items()}
 out['unclassified'] = sorted(k for k, r in latest.items()
     if slurp.operator_in_scope(r) and slurp.TELEOP_PATTERN.search(r['Narrative'])
@@ -77,12 +74,7 @@ out['tripsOnUnlistedRemoteCode'] = trips(dict(base, **{'Driver / Operator Type':
 import tempfile, pathlib
 def regenerate_with(extra):
     inc = pathlib.Path('data/incidents.js').read_text(); vmt = pathlib.Path('data/vmt.js').read_text()
-    rows = []
-    for path, is_archive in [(sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1], False),
-                             (sorted(glob.glob('data/snapshots/nhtsa-archive-*.csv'))[-1], True)]:
-        for r in csv.DictReader(open(path, newline='')):
-            if is_archive: slurp._normalize_archive_row(r)
-            rows.append(r)
+    rows = slurp.newest_snapshot_rows()
     template = next(r for r in rows if r['Reporting Entity'] == 'Waymo LLC' and r['Driver / Operator Type'].strip() == 'None' and r['Report Type'].strip() == '5-Day' and r['Incident Date'].strip() == 'AUG-2026')
     synth = dict(template); synth.update(extra); synth['Report ID'] = 'synthetic-guard'; synth['Same Incident ID'] = 'synthetic-guard'
     headers = {slurp.NHTSA_ADS_CSV_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None), slurp.NHTSA_ADS_ARCHIVE_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None)}
