@@ -5107,8 +5107,8 @@ All miles without a human driver count towards Vehicle Miles Traveled (VMT) and 
 </p>
 <p>
 Caveat:
-If the passenger-seat safety monitor (present in almost all Tesla robotaxi rides so far) is able to intervene to prevent incidents, then the true unsupervised miles per incident (MPI) for Tesla would be lower (worse) than what these graphs and data show.
-But I am now almost sure that the passenger-seat safety monitors have at least not had the ability to intervene in real time at normal driving speeds.
+If the passenger-seat safety monitor is able to intervene to prevent incidents, then the true unsupervised miles per incident (MPI) for Tesla would be lower (worse) than what these graphs and data show.
+But I now believe that the passenger-seat safety monitors have at least not had the ability to intervene in real time at normal driving speeds.
 </p>
     <div class="table-wrap"><table>
       <thead><tr>
