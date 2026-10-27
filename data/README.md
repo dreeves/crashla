@@ -233,7 +233,9 @@ NHTSA release has reached yet. `slurp.py` (`ghost_vmt_csv`) copies their rows
 as they stand into `data/vmt.js`'s second segment, `GHOST_VMT_CSV_TEXT`, and
 the page draws them faded, with a dashed stretch of line, on the VMT charts
 (each company's and the combined one) whenever the date window ends at the
-newest NHTSA month. No rate uses a ghost month's miles: its crashes are not
+newest NHTSA month; in those windows the sanity section's VMT sources table
+lists their rationales too, after each line's analysis months, each headed
+by the ghost tooltip's note. No rate uses a ghost month's miles: its crashes are not
 yet published, so its rows stay out of the analysis rows, the slider and
 every other chart until a release brings its incidents. The run stops when
 the master lacks the month after the data-through month, when a ghost month
@@ -245,6 +247,12 @@ So each release adds every line's estimate for the month after its
 data-through month, a month that has begun by release day. When the next
 release arrives, that month becomes its data-through month and its band
 becomes the VMT prior of every rate, so re-read the rows then.
+
+When a ghost month is measured (Tesla's page adds its weeks, CPUC or the
+hub covers it), score its row: record in AGENTS.md's ledger whether the
+measurement fell inside the band. A 95% band should miss about one time in
+20, so one miss is no reason to widen it; change a line's constants when its
+record shows more misses than that allows.
 
 A ghost row's band is a 95% interval as the page reads it: `crashla.js`
 `splitPriorSigmas` takes `vmt` as the mode of a two-piece log-normal with
@@ -288,6 +296,8 @@ open are listed in AGENTS.md):
   σ′ = √(σ² + 0.10²) while fleet growth is announced but unquantified, and h
   the months from the bracketing window's midpoint to the month's midpoint.
   Every Zoox constant is a prior: one measured change in Zoox's rate exists.
+  The same method sets Zoox's analysis months from January 2026 ("Zoox
+  anchors" above).
 
 ### Waymo anchors
 
@@ -358,9 +368,33 @@ the rounding interval of "approximately 1.3 million", 1.25M-1.35M, less that
 offset band: 1,190,013-1,319,873. Later months' bands chain forward from the
 knot and Oct-Nov 2025's are narrowed back from it, so the band is the
 disclosure's own uncertainty rather than the running sum of the monthly
-bands. The ~2M (late Mar 2026) and >3M (Aug 5, 2026) milestones are checked,
-not knotted: their scope wording varies ("autonomous miles", "miles on public
-roads"). `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
+bands. `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
+
+Since 2026-10-27 the "nearly two million autonomous miles" (Mar 24, 2026) and
+"more than 3 million miles on public roads" (Aug 5, 2026) statements are
+knots too. Until then they were only checked, because their wording varies,
+but both count driverless miles: California DMV reports hold 1,213,646 Zoox
+test miles for Dec 2024-Nov 2025 (Consumer Watchdog's tally, Feb 25, 2026),
+312,648 of them driverless (permit AVDT004), so a count that included the
+safety-driver miles would have passed 2.2M by Dec 31, 2025, months before
+Zoox said "nearly two million". Each statement is read as its rounding
+interval (1.88M-2.00M; 3.00M-3.20M) as of a day up to a week before its
+date, less the pre-series miles at their own band, and carried to the
+month's end at 0.7x-1.3x the model's daily miles: end-March
+1,859,918-2,121,276, end-July 2,880,483-3,193,308. Months between knots
+chain forward and narrow back from the next knot.
+
+The 2026 rows follow one method, the per-day rate between consecutive
+statements. Midpoints give 640,000 miles over Jan 1-Mar 24 and 1,160,000
+over Mar 25-Aug 5. California is CPUC's driverless pilot miles × 1.19 (the
+DMV-reported driverless miles CPUC misses), measured through June and grown
+5% a month after it. The rest, mostly Las Vegas, is each interval's
+remainder over its driving days (January's Las Vegas outage, Jan 22-26,
+taken as 5 days without it): 6,531 a day, then 6,181 a day, held flat after
+Aug 5. Months round to 10,000, and bands follow the formula in "Ghost
+months" above (no growth term before October).
+`quals/zoox-vmt-model.qual.mjs` recomputes every 2026 row, band and
+cumulative band from these inputs.
 
 ### Tesla's no-monitor line
 

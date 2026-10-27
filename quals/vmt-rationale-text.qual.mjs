@@ -96,8 +96,22 @@ const FACTS = [
   [r => /Sub 5/.test(r.rationale) && !/Aug 28/.test(r.rationale), "dates Sub 5 other than Aug 28"],
   // #79: the Oct-Dec 2025 bridge was x1.0653 before the 2026-08-28 move
   [r => /x1\.0688/.test(r.rationale), "gives x1.0688 as the prior bridge factor"],
-  // #80: Waymo's corrected CSV4 v2 is not yet linked from the hub
-  [r => /CSV4 v2/.test(r.rationale) && !/not yet linked/.test(r.rationale), "cites CSV4 v2 without saying it is not yet linked"],
+  // #80, restated 2026-10-27: until Oct 5 the hub did not link Waymo's
+  // corrected CSV4 v2, and this fact required saying so. Waymo's release
+  // notes of Oct 2, 2026 (uploaded Oct 5) replace the Sep 24 files, and the
+  // hub page has linked CSV4 v2 since between Oct 4 and Oct 6.
+  [r => /CSV4 v2/.test(r.rationale) && /not yet linked/.test(r.rationale), "says Waymo's corrected CSV4 v2 is not yet linked (the hub has linked it since Oct 4-6, 2026)"],
+  // 2026-10-27 sweep: NHTSA's notice FR 2026-15485 grants Zoox's FMVSS
+  // exemption "Issued on July 28, 2026", effective Jul 31 (13 rationales
+  // had Jul 30)
+  [r => r.helmer === "zoox" && /granted Jul 30|exemption Jul 30/.test(r.rationale),
+    "dates Zoox's FMVSS exemption grant Jul 30, 2026 (FR 2026-15485: issued Jul 28, effective Jul 31)"],
+  // 2026-10-27 sweep: Waymo admitted Denver, San Diego and Tampa riders by
+  // invitation from Sep 1 and Las Vegas riders gradually from Sep 14 (Waymo
+  // Help Center); San Diego and Tampa opened to anyone on Oct 14, Denver and
+  // Las Vegas are still invite-gated
+  [r => r.helmer === "waymo" && /(Denver|Las Vegas)[^;)]{0,40}public from Sep/.test(r.rationale),
+    "calls Waymo's Denver/San Diego/Tampa or Las Vegas service public from September (riders were admitted by invitation; anyone only from Oct 14 in San Diego and Tampa)"],
   // Second audit (2026-10-04) #38: Waymo's Sep 14, 2026 Las Vegas post gives
   // no weekly figure; its Sep 15, 2026 Allianz Partners post says "serving
   // more than half a million paid trips weekly"

@@ -3525,14 +3525,17 @@ const MILES_FORECAST = [
   // plus Sep-Dec at Aug's 20.8M/mo growing ~3%/mo (Denver/San Diego/Tampa
   // opened Sep 1, Ojai ramp) -> ~407M; lo = kyoom lo + 4 x 18M ~379M; hi =
   // kyoom hi + 4 x 26M ~435M (authored 405M / 380M / 440M, rounded).
-  // Zoox end-Aug 3.27M [2.59M, 3.93M] (after the 2026-10-03 CA DMV rebuild
-  // and Dec-2025 knot) plus Sep-Dec at ~0.27-0.30M/mo (LAS
-  // airport trips from Sep 3, fleet toward the 100-car NTA cap) -> ~4.5M.
+  // Zoox re-derived 2026-10-27, when its 2026 rows moved to the per-day rate
+  // between its statements (data/README.md, Zoox anchors): end-Oct 3.87M
+  // [3.49M, 4.41M] plus November and December on the same model (290k
+  // [197k, 448k], 300k [199k, 474k]) -> ~4.46M; lo = cumulative lo + both
+  // months' lows ~3.88M; hi = cumulative hi + both months' highs ~5.33M
+  // (authored 4.5M / 3.9M / 5.3M, rounded; was 4.5M / 3.5M / 6.0M).
   { helmer: "Waymo", components: [
     { weight: 1, best: 405000000, lo: 380000000, hi: 440000000 },
   ] },
   { helmer: "Zoox", components: [
-    { weight: 1, best: 4500000, lo: 3500000, hi: 6000000 },
+    { weight: 1, best: 4500000, lo: 3900000, hi: 5300000 },
   ] },
 ];
 
@@ -3812,14 +3815,19 @@ function initGrowthMetricToggle() {
 // is a stretch of the past. Each comes as a series point flagged ghost, giving
 // every line the fields a VMT chart reads from a month (helmerMonthRows);
 // init checks that each ghost month has a row for every line.
-function ghostPoints(windowSeries) {
+// The ghost rows a window shows: every one when the window ends at the newest
+// NHTSA month, none when it ends earlier. The VMT charts and the VMT sources
+// table both follow it.
+function windowGhostRows(lastMonth) {
   const analysisMonths = vmtMonthList();
-  const newest = analysisMonths[analysisMonths.length - 1];
-  const months = windowSeries.months[windowSeries.months.length - 1] === newest
-    ? [...new Set(ghostVmtRows.map(row => row.month))].sort()
-    : [];
+  return lastMonth === analysisMonths[analysisMonths.length - 1] ? ghostVmtRows : [];
+}
+
+function ghostPoints(windowSeries) {
+  const rows = windowGhostRows(windowSeries.months[windowSeries.months.length - 1]);
+  const months = [...new Set(rows.map(row => row.month))].sort();
   return months.map(month => ({month, ghost: true, helmers: Object.fromEntries(ADS_SERIES.map(helmer => {
-    const row = ghostVmtRows.find(r => r.helmer === helmer && r.month === month);
+    const row = rows.find(r => r.helmer === helmer && r.month === month);
     return [helmer, {
       vmtMonthMin: row.vmtMin, vmtMonthBest: row.vmtBest, vmtMonthMax: row.vmtMax,
       vmtCume: row.vmtCume, kyoomMin: row.kyoomMin, kyoomMax: row.kyoomMax,
@@ -5579,6 +5587,12 @@ Maybe that affects AVs too?
     </table></div>`);
 
   // --- 8. VMT sources ---
+  // A window that ends at the newest NHTSA month also lists the ghost months'
+  // rationales (rule 9: shown and marked, not left out), after each line's
+  // analysis months, each headed by its month and the ghost tooltip's note.
+  // The note is the human's English, so its span is styled as such inside the
+  // AI-text cell. Those miles are on the VMT charts but in no rate yet.
+  const ghostVmt = windowGhostRows(series.months[series.months.length - 1]);
   const vmtSrcRows = [];
   for (const helmer of ADS_SERIES) {
     const helmerVmt = vmt.filter(r => r.helmer === helmer).sort((a, b) => a.month.localeCompare(b.month));
@@ -5598,7 +5612,8 @@ Maybe that affects AVs too?
         "a VMT rationale covers two separate runs of months", {helmer, months: at.map(i => helmerVmt[i].month)});
       const span = [...new Set([helmerVmt[at[0]].month, helmerVmt[at[at.length - 1]].month])].join(" \u2013 ");
       return `${span}: ${escHtml(rationale)}`;
-    }).join("<br>");
+    }).concat(ghostVmt.filter(r => r.helmer === helmer).map(r =>
+      `${r.month} (<span class="vmt-ghost-note">${escHtml(VMT_GHOST_NOTE)}</span>): ${escHtml(r.rationale)}`)).join("<br>");
     vmtSrcRows.push(`<tr>
       <td>${escHtml(helmerLabel(helmer))}</td>
       <td class="ai-text">${ratStr}</td>

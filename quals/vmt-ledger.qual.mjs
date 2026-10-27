@@ -31,7 +31,9 @@ const CUME_PINS = {
   // 2026-10-03: 3,571,000 -> 3,530,920, the CA DMV rebuild of the early rows
   // (approved 2026-09-29): the series now excludes 40,080 pre-series
   // driverless miles from the official ~1.3M as of Dec 31, 2025
-  "zoox|2026-09": 3530920,
+  // 2026-10-27: 3,530,920 -> 3,579,920, Zoox's 2026 rows rebuilt on one
+  // method, the per-day rate between its statements (zoox-vmt-model.qual)
+  "zoox|2026-09": 3579920,
   // 2026-10-23: Tesla's weekly no-monitor miles (tesla.com/robotaxi/safety)
   // summed by month, Jan-Sep 2026
   "teslanomonitor|2026-09": 1933209,

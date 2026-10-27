@@ -10,10 +10,12 @@ import fs from "node:fs";
 //   ~2M cumulative autonomous miles late Mar 2026 (CleanTechnica 2026-03-24 /
 //     Robot Report)
 //   >3M miles on public roads, stated Aug 5, 2026 (CNBC/Bloomberg; Claims
-//     Journal Aug 6; scope caveat: "miles on public roads" vs the earlier
-//     "autonomous miles" wording)
+//     Journal Aug 6; "miles on public roads" vs the earlier "autonomous
+//     miles" wording, both driverless counts: data/README.md, Zoox anchors)
 // The milestones carry real slack ("~"/">"/"approximately"), so centrals are
 // pinned within 15% and the kyoom band must contain the round published number.
+// The Mar and Jul knots (2026-10-27) are pinned with the rest of the 2026
+// rows by zoox-vmt-model.qual.
 
 const MILESTONES = [
   { month: "2025-12", published: 1300000 },

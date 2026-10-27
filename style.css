@@ -128,6 +128,8 @@ a {
 a:hover { color: var(--accent-ink); top: -2px; }
 input { accent-color: var(--ink); }
 .ai-text { color: var(--ai-ink); }
+/* The ghost tooltip's note, inside a VMT-sources cell, is the human's text. */
+.ai-text .vmt-ghost-note { color: var(--ink); }
 
 /* Error banner, shown only when there is something to report (URL keys the
    page does not own): the drawn box, in the verdict red. */

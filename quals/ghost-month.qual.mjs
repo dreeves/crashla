@@ -12,7 +12,8 @@ import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 // month after NHTSA's data-through month for which data/vmt.csv holds rows:
 // the month in progress, or a finished month no NHTSA release has reached.
 // slurp.py writes those rows verbatim to a second segment of data/vmt.js
-// (GHOST_VMT_CSV_TEXT), which only the VMT charts read. When the date window
+// (GHOST_VMT_CSV_TEXT), which only the VMT charts and the VMT sources table
+// read (the table since 2026-10-27). When the date window
 // ends at the newest NHTSA month, each VMT chart (a company's own and the
 // combined one) continues into the ghost months, drawn faded (class
 // month-ghost on the dot, the error bar and a dashed stretch of the line), in
@@ -22,6 +23,10 @@ import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 // the month after the data-through month has no rows (so every release
 // brings the next month's estimate), when a ghost month lacks a line's row,
 // and on a row for a month that has not begun (a forecast, not miles driven).
+// In the same windows the sanity section's VMT sources table lists each ghost
+// row's rationale after its line's analysis months, headed by its month and
+// the ghost tooltip's note (rule 9: shown and marked, not left out); the note
+// is the human's English, so it sits outside the table's AI-text colour.
 
 const problems = [];
 
@@ -144,7 +149,7 @@ const app = JSON.parse(vm.runInContext(`JSON.stringify({
   lines: ADS_SERIES, all: ALL_HELMERS, months: fullMonthSeries.months, defaultStart: DEFAULT_START_MONTH,
   labels: Object.fromEntries(ADS_SERIES.map(h => [h, helmerLabel(h)])),
   note: VMT_GHOST_NOTE,
-  ghost: ghostVmtRows.map(r => ({helmer: r.helmer, month: r.month, best: r.vmtBest, lo: r.vmtMin, hi: r.vmtMax, cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax})),
+  ghost: ghostVmtRows.map(r => ({helmer: r.helmer, month: r.month, best: r.vmtBest, lo: r.vmtMin, hi: r.vmtMax, cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax, rationale: r.rationale})),
 })`, ctx));
 const frontier = app.months[app.months.length - 1];
 if (frontier !== dataThrough) problems.push(`the slider's months end at ${frontier}, want the data-through month ${dataThrough}`);
@@ -229,11 +234,46 @@ for (const cumulative of [false, true]) {
   }
 }
 
+// --- 3b. The VMT sources table ---------------------------------------------
+// The window's rows' rationales, per line, in month order; when the window
+// ends at the newest NHTSA month, the line's ghost rows follow, each as
+// "<month> (<note>): <rationale>" with the note in a vmt-ghost-note span.
+const sources = window => JSON.parse(vm.runInContext(`(() => {
+  monthRangeStart = fullMonthSeries.months.indexOf(${JSON.stringify(window[0])});
+  monthRangeEnd = fullMonthSeries.months.indexOf(${JSON.stringify(window[1])});
+  renderWindowedViews();
+  buildSanityChecks();
+  const html = document.getElementById("sanity-checks").innerHTML;
+  return JSON.stringify(html.split("<h3>VMT sources</h3>")[1].split("<h3>")[0]);
+})()`, ctx));
+// Table text is escaped as textContent is (crashla.js escHtml): &, < and >,
+// not quotes.
+const escText = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const cellOf = (section, label) => {
+  const m = new RegExp(`<tr>\\s*<td>${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}</td>\\s*<td class="ai-text">([\\s\\S]*?)</td>\\s*</tr>`).exec(section);
+  return m ? m[1] : null;
+};
+{
+  const at = sources(DEFAULT_WINDOW);
+  for (const h of app.lines) {
+    const cell = cellOf(at, escText(app.labels[h]));
+    const want = app.ghost.filter(g => g.helmer === h).sort((a, b) => (a.month < b.month ? -1 : 1))
+      .map(g => `${g.month} (<span class="vmt-ghost-note">${escText(app.note)}</span>): ${escText(g.rationale)}`);
+    if (cell === null) problems.push(`VMT sources, window ${DEFAULT_WINDOW.join("..")}: no row for ${h}`);
+    else if (!cell.endsWith(want.join("<br>")) || !cell.slice(0, cell.length - want.join("<br>").length).endsWith("<br>"))
+      problems.push(`VMT sources, window ${DEFAULT_WINDOW.join("..")}, ${h}: the cell does not end with its ghost rows' entries after its analysis months' (want ${JSON.stringify(want.join("<br>").slice(0, 120))}...)`);
+  }
+  const before = sources(BEFORE);
+  if (before.includes("vmt-ghost-note") || ghostMonths.some(m => before.includes(`${m} (`) || before.includes(`${m}:`)))
+    problems.push(`VMT sources, window ${BEFORE.join("..")}: lists a ghost month`);
+}
+
 // --- 4. The faded look ------------------------------------------------------
 const css = fs.readFileSync("style.css", "utf8");
 const rule = sel => (new RegExp(`(^|\\n)${sel.replace(/\./g, "\\.")}\\s*\\{([^}]*)\\}`).exec(css) || [])[2] || "";
 const ghostOpacity = /opacity:\s*([\d.]+)/.exec(rule(".month-ghost"));
 if (!ghostOpacity || !(+ghostOpacity[1] > 0 && +ghostOpacity[1] < 1)) problems.push(`style.css: .month-ghost sets no opacity between 0 and 1 (${JSON.stringify(rule(".month-ghost"))})`);
+if (!/color:\s*var\(--ink\)/.test(rule(".ai-text .vmt-ghost-note"))) problems.push(`style.css: .ai-text .vmt-ghost-note does not set color: var(--ink) (the ghost note is the human's English, not AI text): ${JSON.stringify(rule(".ai-text .vmt-ghost-note"))}`);
 if (!/stroke-dasharray:\s*\d/.test(rule(".month-vmt-line.month-ghost"))) problems.push(`style.css: .month-vmt-line.month-ghost sets no stroke-dasharray (${JSON.stringify(rule(".month-vmt-line.month-ghost"))})`);
 
 // --- 5. The page itself loads the ghost months ------------------------------
@@ -253,8 +293,8 @@ await server.close();
 
 assert.deepEqual(problems, [],
   `Replicata: compare data/vmt.js's ghost segment with data/vmt.csv; call slurp.ghost_vmt_csv on synthetic masters; render the VMT charts (every line checked, Monthly and Cumulative) for the default window and for one ending a month earlier; read style.css; load the page.
-Expectata: the ghost segment holds exactly the master's rows past the data-through month ${dataThrough}, a full set of lines from the month after it, none in the analysis segment; slurp stops on a missing next month, a missing line and a not-yet-begun month; in a window ending at ${dataThrough} each VMT chart continues into ${ghostMonths.join(", ")} with a faded dot, a faded error bar and a dashed stretch of its line, its targets carrying the month's miles, range and note; no ghost month in a window ending earlier or in any other view; .month-ghost faded and its line dashed; the page draws them at load.
+Expectata: the ghost segment holds exactly the master's rows past the data-through month ${dataThrough}, a full set of lines from the month after it, none in the analysis segment; slurp stops on a missing next month, a missing line and a not-yet-begun month; in a window ending at ${dataThrough} each VMT chart continues into ${ghostMonths.join(", ")} with a faded dot, a faded error bar and a dashed stretch of its line, its targets carrying the month's miles, range and note, and the VMT sources table lists each ghost row's rationale after its line's analysis months, headed by its month and the note (styled as the human's text); no ghost month in a window ending earlier or in any other view; .month-ghost faded and its line dashed; the page draws them at load.
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 15).join("\n")}`);
 
-console.log(`qual pass: ghost months ${ghostMonths.join(", ")} (after NHTSA's ${dataThrough}) are drawn faded on every VMT chart from data/vmt.js's ghost segment, and nowhere else`);
+console.log(`qual pass: ghost months ${ghostMonths.join(", ")} (after NHTSA's ${dataThrough}) are drawn faded on every VMT chart and listed in the VMT sources table from data/vmt.js's ghost segment, and nowhere else`);
