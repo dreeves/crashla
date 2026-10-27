@@ -33,6 +33,14 @@ const NO_MONITOR = {
   "2026-08": [483680, 467685],
   "2026-09": [971738, 925284],
 };
+// A month the safety page covers only in part (the month in progress: a ghost
+// month, quals/ghost-month.qual.mjs) is bounded below by the miles the page
+// shows for it so far, its city sums through the last complete week, the week
+// that starts in the month before interpolated linearly. Oct 1-18, 2026:
+// 1,179,333 (the page as of Oct 18, read from the Wayback captures of Oct 21
+// to Oct 26, which hold identical data). Both Tesla lines' rows for the month
+// sit at or above it (added 2026-10-26, with the ghost months).
+const PARTIAL = { "2026-10": 1179333 };
 // Floors are written rounded down to the thousand.
 const ROUNDING = 1000;
 
@@ -61,9 +69,19 @@ for (const [month, [page, deck]] of Object.entries(NO_MONITOR)) {
     problems.push(`${month}: page ${fmt(page)} and deck ${fmt(deck)} differ by more than 5%`);
   }
 }
+const lineRows = line => new Map(raw.slice(1).filter(p => p[col("helmer")] === line)
+  .map(p => [p[col("month")], { min: +p[col("vmt_min")] }]));
+for (const line of ["tesla", "teslanomonitor"]) {
+  const rows = lineRows(line);
+  for (const [month, shown] of Object.entries(PARTIAL)) {
+    const row = rows.get(month);
+    if (row === undefined) problems.push(`${line} ${month}: no row`);
+    else if (row.min < shown - ROUNDING) problems.push(`${line} ${month}: lower edge ${fmt(row.min)} sits below the ${fmt(shown)} miles Tesla's page already shows for the month`);
+  }
+}
 assert.deepEqual(problems, [],
-  `Replicata: compare each Tesla data/vmt.csv row for 2026-01..2026-09 with Tesla's published no-safety-monitor miles (safety page and Q3-2026 deck).
-Expectata: every row's lower edge is at least the lower of Tesla's two readings (less rounding), its central at least the higher one, and the two readings agree within 5%.
+  `Replicata: compare each Tesla data/vmt.csv row for 2026-01..2026-09 with Tesla's published no-safety-monitor miles (safety page and Q3-2026 deck), and both Tesla lines' rows for ${Object.keys(PARTIAL).join(", ")} with the miles the safety page shows for that month so far.
+Expectata: every row's lower edge is at least the lower of Tesla's two readings (less rounding), its central at least the higher one, and the two readings agree within 5%; a partly covered month's lower edges at least the page's miles for it so far (less rounding).
 Resultata: ${JSON.stringify(problems, null, 1)}.`);
 
 console.log(`qual pass: Tesla rows for ${Object.keys(NO_MONITOR).length} months sit on or above Tesla's own no-safety-monitor miles`);

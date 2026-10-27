@@ -468,6 +468,12 @@ function estimateMpi(k, m, massFrac) {
 
 let incidents = [];
 let vmtRows = [];
+// A ghost month is a month after NHTSA's data-through month for which
+// data/vmt.csv holds rows: the month in progress, or a finished month no NHTSA
+// release has reached. Its rows (data/vmt.js's GHOST_VMT_CSV_TEXT, read by
+// parseGhostVmtCsv) are only drawn, faded, on the VMT charts: with no NHTSA
+// reports for the month, no rate can use its miles (vmtRows never holds it).
+let ghostVmtRows = [];
 let faultData = {}; // reportId -> {faultfrac, reasoning}
 let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, TeslaNoMonitor: false, Waymo: true, Zoox: false};
 // Collapsible page sections (each <section class="collapsible" id="sec-<id>">).
@@ -1356,15 +1362,7 @@ function parseVmtCsv(text) {
     );
     const hit = re.exec(line);
     assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
-    const helmerRaw = hit[1].trim();
-    const helmer = ADS_SERIES.find(c => c.toLowerCase() === helmerRaw.toLowerCase());
-    assert(helmer !== undefined, "VMT sheet CSV has unknown helmer", {helmerRaw});
-    const vmtBest = Number(hit[3]);
-    const vmtCume = Number(hit[4]);
-    const kyoomMin = Number(hit[5]); // min of cumulative VMT (the kyoom band)
-    const kyoomMax = Number(hit[6]); // max of cumulative VMT
-    const vmtMin = Number(hit[7]);
-    const vmtMax = Number(hit[8]);
+    const miles = vmtRowMiles(hit, i + 1);
     // Receipt coverage: the fraction of the month's five-day-track incidents
     // present in the NHTSA release. 1 for every month except the release's
     // data-through month (reports received through the cutoff: the 15th of
@@ -1387,23 +1385,6 @@ function parseVmtCsv(text) {
     const incCov     = Number(hit[12]); // best estimate
     const incCovMin  = Number(hit[13]); // most pessimistic (smallest p)
     const incCovMax  = Number(hit[14]); // most optimistic (largest p)
-    assert(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
-      {lineNo: i + 1, vmtBest});
-    assert(Number.isFinite(vmtCume) && vmtCume >= 0,
-      "helmer_cumulative_vmt must be non-negative number", {lineNo: i + 1, vmtCume});
-    assert(Number.isFinite(kyoomMin) && kyoomMin >= 0, "kyoom_min must be non-negative number",
-      {lineNo: i + 1, kyoomMin});
-    assert(Number.isFinite(kyoomMax) && kyoomMax >= 0, "kyoom_max must be non-negative number",
-      {lineNo: i + 1, kyoomMax});
-    assert(kyoomMin <= vmtCume && vmtCume <= kyoomMax,
-      "expected kyoom_min <= helmer_cumulative_vmt <= kyoom_max",
-      {lineNo: i + 1, kyoomMin, vmtCume, kyoomMax});
-    assert(Number.isFinite(vmtMin) && vmtMin >= 0, "vmt_min must be non-negative number",
-      {lineNo: i + 1, vmtMin});
-    assert(Number.isFinite(vmtMax) && vmtMax >= 0, "vmt_max must be non-negative number",
-      {lineNo: i + 1, vmtMax});
-    assert(vmtMin <= vmtBest && vmtBest <= vmtMax,
-      "expected vmt_min <= vmt <= vmt_max", {lineNo: i + 1, vmtMin, vmtBest, vmtMax});
     assert(coverage > 0 && coverage <= 1, "coverage must be in (0, 1]",
       {lineNo: i + 1, coverage});
     assert(coverageMin > 0 && coverageMin <= coverage && coverage <= coverageMax && coverageMax <= 1,
@@ -1418,14 +1399,7 @@ function parseVmtCsv(text) {
       "incident_coverage_max must be in [incident_coverage, 1]",
       {lineNo: i + 1, incCovMax, incCov});
     rows.push({
-      helmer,
-      month: hit[2],
-      kyoomMin,
-      kyoomMax,
-      vmtMin,
-      vmtBest,
-      vmtMax,
-      vmtCume,
+      ...miles,
       coverage,
       coverageMin,
       coverageMax,
@@ -1437,6 +1411,75 @@ function parseVmtCsv(text) {
   }
   assert(rows.length > 0, "VMT sheet CSV has no data rows");
   return rows;
+}
+
+// A VMT row's helmer, month and miles columns (vmt through vmt_max: regex
+// groups 1-8 of <hit>), which data/vmt.js's analysis rows (parseVmtCsv) and
+// ghost-month rows (parseGhostVmtCsv) share.
+function vmtRowMiles(hit, lineNo) {
+  const helmerRaw = hit[1].trim();
+  const helmer = ADS_SERIES.find(c => c.toLowerCase() === helmerRaw.toLowerCase());
+  assert(helmer !== undefined, "VMT sheet CSV has unknown helmer", {helmerRaw});
+  const vmtBest = Number(hit[3]);
+  const vmtCume = Number(hit[4]);
+  const kyoomMin = Number(hit[5]); // min of cumulative VMT (the kyoom band)
+  const kyoomMax = Number(hit[6]); // max of cumulative VMT
+  const vmtMin = Number(hit[7]);
+  const vmtMax = Number(hit[8]);
+  assert(Number.isFinite(vmtBest) && vmtBest >= 0, "vmt must be non-negative number",
+    {lineNo, vmtBest});
+  assert(Number.isFinite(vmtCume) && vmtCume >= 0,
+    "helmer_cumulative_vmt must be non-negative number", {lineNo, vmtCume});
+  assert(Number.isFinite(kyoomMin) && kyoomMin >= 0, "kyoom_min must be non-negative number",
+    {lineNo, kyoomMin});
+  assert(Number.isFinite(kyoomMax) && kyoomMax >= 0, "kyoom_max must be non-negative number",
+    {lineNo, kyoomMax});
+  assert(kyoomMin <= vmtCume && vmtCume <= kyoomMax,
+    "expected kyoom_min <= helmer_cumulative_vmt <= kyoom_max",
+    {lineNo, kyoomMin, vmtCume, kyoomMax});
+  assert(Number.isFinite(vmtMin) && vmtMin >= 0, "vmt_min must be non-negative number",
+    {lineNo, vmtMin});
+  assert(Number.isFinite(vmtMax) && vmtMax >= 0, "vmt_max must be non-negative number",
+    {lineNo, vmtMax});
+  assert(vmtMin <= vmtBest && vmtBest <= vmtMax,
+    "expected vmt_min <= vmt <= vmt_max", {lineNo, vmtMin, vmtBest, vmtMax});
+  return {helmer, month: hit[2], kyoomMin, kyoomMax, vmtMin, vmtBest, vmtMax, vmtCume};
+}
+
+// The ghost months' rows (GHOST_VMT_CSV_TEXT): data/vmt.csv's rows as they
+// stand, miles columns only, since a ghost month has no NHTSA reports for a
+// coverage column to describe.
+function parseGhostVmtCsv(text) {
+  const lines = text.split(/\r?\n/).map(line => line.trimEnd());
+  assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,rationale",
+    "ghost VMT CSV header mismatch", {header: lines[0]});
+  const N = "\\d+(?:\\.\\d+)?"; // number pattern
+  const re = new RegExp(`^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line === "") continue;
+    const hit = re.exec(line);
+    assert(hit !== null, "Malformed ghost VMT CSV row", {lineNo: i + 1, line});
+    rows.push({...vmtRowMiles(hit, i + 1), rationale: csvUnquote(hit[9])});
+  }
+  return rows;
+}
+
+// What slurp.py's ghost_vmt_csv guarantees of ghostVmtRows, which ghostPoints
+// relies on: at least one ghost month, every one after the newest month of
+// vmtRows, and each with a row for every line.
+function checkGhostVmtRows() {
+  const months = vmtMonthList();
+  const newest = months[months.length - 1];
+  const ghostMonths = [...new Set(ghostVmtRows.map(row => row.month))].sort();
+  assert(ghostMonths.length > 0 && ghostMonths.every(month => month > newest),
+    "ghost months must exist and follow the newest NHTSA month", {newest, ghostMonths});
+  for (const month of ghostMonths) {
+    const lines = ghostVmtRows.filter(row => row.month === month).map(row => row.helmer).sort();
+    assert(JSON.stringify(lines) === JSON.stringify([...ADS_SERIES].sort()),
+      "a ghost month must have a row for every line", {month, lines});
+  }
 }
 
 
@@ -1605,7 +1648,17 @@ function fmtWhole(n) {
 // (audit #28); until 2026-10-03 the cumulative view paired all-time miles
 // with the month's count alone (audit #59).
 function vmtDotTooltip(month, miles, lo, hi, incidents) {
-  return `${month}\n${fmtWhole(miles)} miles\nRange: ${fmtWhole(lo)} – ${fmtWhole(hi)}\n${splur(incidents, "incident")}`;
+  return `${vmtRangeTip(month, miles, lo, hi)}\n${splur(incidents, "incident")}`;
+}
+// A ghost month's dot tooltip: its miles and range as above, and where the
+// incident count would be (NHTSA has published none for the month) a note on
+// what the month is.
+const VMT_GHOST_NOTE = "No NHTSA data for this month yet; and if the month isn't over we're extrapolating/projecting the full month";
+function vmtGhostTooltip(month, miles, lo, hi) {
+  return `${vmtRangeTip(month, miles, lo, hi)}\n${VMT_GHOST_NOTE}`;
+}
+function vmtRangeTip(month, miles, lo, hi) {
+  return `${month}\n${fmtWhole(miles)} miles\nRange: ${fmtWhole(lo)} – ${fmtWhole(hi)}`;
 }
 // An error-bar end's tooltip: the month, the end's miles, and which end it is
 // (until 2026-10-03 the two ends read alike; audit #59).
@@ -1631,6 +1684,13 @@ function vmtEndTooltip(month, miles, edge) {
 // month's full count.
 function vmtPartialNote(share, worst) {
   return `Count above only includes incidents received by ${NHTSA_DATA_THROUGH_DATE}: ~${Math.round(share * 100)}% of the month's eventual incidents (worst case ~${Math.round(worst * 100)}%)`;
+}
+// That note as the last line of an analysis month's dot tooltip: only the
+// data-through month's count, and a helmer's Monthly-lag months', are
+// partial (both factors are 1 elsewhere).
+function vmtPartialLine(row) {
+  const worst = row.coverage * row.incCovMin;
+  return worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
 }
 
 function helmerMonthRows(series, helmer) {
@@ -3746,6 +3806,27 @@ function initGrowthMetricToggle() {
   });
 }
 
+// The ghost months a VMT chart continues into after its window's months: all
+// of them when the window ends at the newest NHTSA month (the newest month of
+// vmtRows, the slider's last), none when it ends earlier, since such a window
+// is a stretch of the past. Each comes as a series point flagged ghost, giving
+// every line the fields a VMT chart reads from a month (helmerMonthRows);
+// init checks that each ghost month has a row for every line.
+function ghostPoints(windowSeries) {
+  const analysisMonths = vmtMonthList();
+  const newest = analysisMonths[analysisMonths.length - 1];
+  const months = windowSeries.months[windowSeries.months.length - 1] === newest
+    ? [...new Set(ghostVmtRows.map(row => row.month))].sort()
+    : [];
+  return months.map(month => ({month, ghost: true, helmers: Object.fromEntries(ADS_SERIES.map(helmer => {
+    const row = ghostVmtRows.find(r => r.helmer === helmer && r.month === month);
+    return [helmer, {
+      vmtMonthMin: row.vmtMin, vmtMonthBest: row.vmtBest, vmtMonthMax: row.vmtMax,
+      vmtCume: row.vmtCume, kyoomMin: row.kyoomMin, kyoomMax: row.kyoomMax,
+    }];
+  }))}));
+}
+
 // A company's own VMT chart: its one line, on its own linear axis.
 function renderHelmerMonthlyChart(globalSeries, helmer) {
   // One company's chart (its figure says whose), so a mark's name is its tip.
@@ -3781,9 +3862,12 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
   const indices = presentIndices.length > 0
     ? presentIndices
     : globalSeries.points.map((_, i) => i);
+  // After the window's months, the ghost months it continues into (none
+  // unless it ends at the newest NHTSA month): drawn faded, below.
+  const ghosts = ghostPoints(globalSeries);
   const series = {
-    months: indices.map(i => globalSeries.months[i]),
-    points: indices.map(i => globalSeries.points[i]),
+    months: [...indices.map(i => globalSeries.months[i]), ...ghosts.map(point => point.month)],
+    points: [...indices.map(i => globalSeries.points[i]), ...ghosts],
   };
   const svgW = chartViewW;
   const svgH = 250;
@@ -3815,6 +3899,9 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
   // every line's) each month's targets: its range's low and high ends, then
   // its dot, so the Tab order walks month by month and the dot wins where its
   // ends lie under it.
+  // A ghost month's marks are faded (class month-ghost), grayed rather than
+  // dropped (Anti-Magic Principle).
+  const fade = i => series.points[i].ghost ? " month-ghost" : "";
   const errs = [], vmtPaths = [], dots = [], targets = [];
   helmers.forEach((helmer, h) => {
     const rows = rowsOf[h];
@@ -3826,33 +3913,38 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
       const yLo = mapVmtY(lo(row));
       const yHi = mapVmtY(hi(row));
       errs.push(`
-      <line class="month-err" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
-      <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
-      <line class="month-err" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <line class="month-err${fade(i)}" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <line class="month-err${fade(i)}" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <line class="month-err${fade(i)}" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
     `);
     }
 
-    let vmtPath = "";
-    for (let i = 0; i < series.points.length; i++) {
-      if (!rows[i]) continue;
-      const y = mapVmtY(best(rows[i]));
-      vmtPath += `${vmtPath ? " L " : "M "}${mapX(i).toFixed(2)} ${y.toFixed(2)}`;
+    // The line through the line's months, ending at the newest NHTSA month;
+    // where the chart continues into ghost months, a faded dashed stretch
+    // runs on from that month's point through theirs.
+    const drawn = series.points.map((_, i) => i).filter(i => rows[i]);
+    const solid = drawn.filter(i => !series.points[i].ghost);
+    const ghost = drawn.filter(i => series.points[i].ghost);
+    const linePath = idx => idx.map((i, n) => `${n ? "L" : "M"} ${mapX(i).toFixed(2)} ${mapVmtY(best(rows[i])).toFixed(2)}`).join(" ");
+    vmtPaths.push(`<path class="month-vmt-line" d="${linePath(solid)}" style="stroke:${vmtColor}"></path>`);
+    if (ghost.length > 0) {
+      assert(solid.length > 0, "a VMT chart's ghost months follow no month of its line", {helmer});
+      vmtPaths.push(`<path class="month-vmt-line month-ghost" d="${linePath([solid[solid.length - 1], ...ghost])}" style="stroke:${vmtColor}"></path>`);
     }
-    vmtPaths.push(`<path class="month-vmt-line" d="${vmtPath}" style="stroke:${vmtColor}"></path>`);
 
     rows.forEach((row, i) => {
       if (!row) return;
       const x = mapX(i);
       const y = mapVmtY(best(row));
-      dots.push(`<circle class="month-dot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
+      dots.push(`<circle class="month-dot${fade(i)}" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
       const month = series.months[i];
-      // Only the data-through month's count, and a helmer's Monthly-lag
-      // months', are partial (both factors are 1 elsewhere).
-      const worst = row.coverage * row.incCovMin;
-      const note = worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
+      // A ghost month has no incident count: its tooltip says what the month
+      // is instead.
       const low = vmtEndTooltip(month, lo(row), VMT_RANGE_EDGE.lo);
       const high = vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi);
-      const dot = vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + note;
+      const dot = series.points[i].ghost
+        ? vmtGhostTooltip(month, best(row), lo(row), hi(row))
+        : vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + vmtPartialLine(row);
       targets.push(
         {x, y: mapVmtY(lo(row)), tip: low, name: markName(helmer, low)},
         {x, y: mapVmtY(hi(row)), tip: high, name: markName(helmer, high)},
@@ -6369,6 +6461,8 @@ function loadPredmarketData() {
   }
   incidents = incidentData;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
+  checkGhostVmtRows();
   faultData = buildFaultDataFromIncidents(incidentData);
   // Everything that is not a chart first (the URL state, the colophon, the
   // listeners, the markets), then the charts' column, then the views, which

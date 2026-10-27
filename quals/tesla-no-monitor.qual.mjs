@@ -107,8 +107,13 @@ const unclassified = tesla2026.filter(rid => !SHEET.includes(rid) && !ABOARD.inc
 assert.deepEqual(unclassified, [], `Replicata: classify every in-scope 2026 Tesla report.\nExpectata: each on Tesla's list or among the monitor-aboard reports.\nResultata: unclassified ${JSON.stringify(unclassified)}.`);
 
 // (3) The line's miles: the safety page's figure, inside a band holding both readings; and Tesla's coverage.
+// The rows through NHTSA's data-through month: a later row is a ghost month's
+// estimate, which has no complete reading yet (quals/ghost-month.qual.mjs;
+// its floor, the partial reading, in quals/tesla-unsupervised-floor.qual.mjs).
+// Until 2026-10-26 every teslanomonitor row was checked here.
+const dataThrough = /NHTSA_DATA_THROUGH_DATE_START \*\/\s*"(\d{4}-\d{2})/.exec(text)[1];
 const vmtCsv = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
-const rows = vmtCsv.slice(1).filter(p => p[0] === "teslanomonitor");
+const rows = vmtCsv.slice(1).filter(p => p[0] === "teslanomonitor" && p[1] <= dataThrough);
 const months = rows.map(p => p[1]);
 assert.deepEqual(months, Object.keys(MILES), `Replicata: list data/vmt.csv's teslanomonitor months.\nExpectata: ${Object.keys(MILES).join(", ")}.\nResultata: ${months.join(", ")}.`);
 // A deck reading under the chart's ~100-mile resolution (February's 0: its

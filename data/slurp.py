@@ -1442,18 +1442,71 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
         ic_best, ic_lo, ic_hi = inc_cov.get(
             (SERIES_COMPANY[_canonical_helmer(row[0].strip())], month), (1, 1, 1))
         cov_best, cov_lo, cov_hi = coverage_by_month.get(month, (1, 1, 1))
-        # Normalize the six numeric columns to plain integers: a
-        # thousands-separated "22,000,000" entered in the master CSV becomes
-        # 22000000, matching the plain-integer convention of the rest of
-        # the data and keeping the emitted CSV safe for naive parsers.
-        nums = [cell.strip().replace(",", "") for cell in row[2:8]]
-        # Exactly nine cells: a rationale with an unquoted comma would
-        # otherwise be truncated at that comma without a word.
-        must(len(row) == 9, "VMT master row must have exactly 9 cells",
-             helmer=row[0], month=month, cells=len(row))
-        rationale = row[8]
+        nums, rationale = _vmt_master_cells(row)
         writer.writerow([row[0], row[1], *nums, cov_best, cov_lo, cov_hi,
                          ic_best, ic_lo, ic_hi, rationale])
+    return out_buf.getvalue().rstrip("\n")
+
+
+def _vmt_master_cells(row):
+    """A master row's six numbers as plain integer strings, and its rationale.
+
+    A thousands-separated "22,000,000" entered in the master CSV becomes
+    22000000, matching the plain-integer convention of the rest of the data
+    and keeping the emitted CSV safe for naive parsers. Exactly nine cells: a
+    rationale with an unquoted comma would otherwise be truncated at that
+    comma without a word.
+    """
+    nums = [cell.strip().replace(",", "") for cell in row[2:8]]
+    must(len(row) == 9, "VMT master row must have exactly 9 cells",
+         helmer=row[0], month=row[1].strip(), cells=len(row))
+    return nums, row[8]
+
+
+def ghost_vmt_csv(raw_text, last_month, run_month):
+    """The master rows of the ghost months, as CSV text for data/vmt.js.
+
+    A ghost month is a month after the data-through month (last_month) for
+    which the master holds rows: the month in progress, or a finished month
+    no NHTSA release has reached. The VMT charts draw these rows faded; no
+    rate uses them until a release brings the month's incidents. The master
+    must hold the month after last_month (so each release brings the next
+    month's estimate), each ghost month must carry a row for every line with
+    a row in last_month, and no row may be for a month after run_month, the
+    month slurp runs in: a VMT row records miles already driven, estimated
+    or measured (forecasts live in crashla.js's MILES_FORECAST).
+    """
+    rows = [r for r in csv.reader(io.StringIO(raw_text))
+            if any(cell.strip() for cell in r)]
+    header, body = rows[0], rows[1:]
+    later = sorted({r[1].strip() for r in body if r[1].strip() > run_month})
+    must(not later,
+         "data/vmt.csv has rows for months that have not begun (a VMT row "
+         "records miles already driven; a forecast belongs in "
+         "MILES_FORECAST)", run_month=run_month, months=later)
+    ghost = [r for r in body if r[1].strip() > last_month]
+    months = sorted({r[1].strip() for r in ghost})
+    must(months and months[0] == month_shift(last_month, 1),
+         "data/vmt.csv has no rows for the month after NHTSA's data-through "
+         "month: add every line's estimate for it (its ghost month, drawn "
+         "faded on the VMT charts), then re-run slurp.py",
+         data_through=last_month, want=month_shift(last_month, 1),
+         ghost_months=months)
+    lines = {r[0].strip() for r in body if r[1].strip() == last_month}
+    for i, month in enumerate(months):
+        must(i == 0 or month == month_shift(months[i - 1], 1),
+             "ghost months must be consecutive", months=months)
+        have = {r[0].strip() for r in ghost if r[1].strip() == month}
+        must(have == lines,
+             "a ghost month must have a row for every line that has one in "
+             "the data-through month", month=month,
+             missing=sorted(lines - have), extra=sorted(have - lines))
+    out_buf = io.StringIO()
+    writer = csv.writer(out_buf, lineterminator="\n")
+    writer.writerow(header)
+    for row in ghost:
+        nums, rationale = _vmt_master_cells(row)
+        writer.writerow([row[0], row[1], *nums, rationale])
     return out_buf.getvalue().rstrip("\n")
 
 
@@ -2014,6 +2067,13 @@ def main():
          "covering these months to data/vmt.csv, then re-run slurp.py.",
          stale_months={m: sorted(rids) for m, rids in sorted(stale.items())})
 
+    # The ghost months' rows (ghost_vmt_csv), checked here so a missing
+    # estimate stops the run before any file is written. They are the
+    # master's months after NHTSA's data-through month; release_month_coverage
+    # below checks that the reviewed date's month is the data's.
+    run_month = f"{run_stamp[:4]}-{run_stamp[4:6]}"
+    ghost_text = ghost_vmt_csv(vmt_raw, NHTSA_DATA_THROUGH_DATE[:7], run_month)
+
     fault_target_ids = load_fault_report_ids()
     fault_master_rows = build_fault_master_rows(
         (entry["_row"] for entry in by_incident.values()),
@@ -2164,6 +2224,7 @@ def main():
         vmt_raw, inc_cov, coverage_by_month, vmt_months,
     ).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
+    ghost_template = "\n`" + js_template_literal(ghost_text) + "\n`\n"
 
     def inject(source, start_marker, end_marker, payload):
         """Replace content between marker comments with payload."""
@@ -2194,6 +2255,9 @@ def main():
     vmt_js = inject(vmt_js,
                     "/* VMT_CSV_START */", "/* VMT_CSV_END */",
                     vmt_template)
+    vmt_js = inject(vmt_js,
+                    "/* GHOST_VMT_CSV_START */", "/* GHOST_VMT_CSV_END */",
+                    ghost_template)
     with open(INCIDENT_JS, "w") as f:
         f.write(inc_js)
     with open(VMT_JS, "w") as f:
@@ -2204,6 +2268,8 @@ def main():
     total = len(incidents)
     print(f"NHTSA file last modified: {nhtsa_modified_date}")
     print(f"NHTSA incident data through: {NHTSA_DATA_THROUGH_DATE}")
+    ghost_months = sorted({r[1] for r in csv.reader(io.StringIO(ghost_text))} - {"month"})
+    print(f"Ghost months (VMT drawn faded, in no rate): {', '.join(ghost_months)}")
     print(f"Updated {relpath(INCIDENT_JS)} and {relpath(VMT_JS)}")
     print(f"Total incidents: {total}")
     for helmer, n in counts.most_common():

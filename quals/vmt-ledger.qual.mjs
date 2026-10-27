@@ -8,12 +8,13 @@ import { parseCsv } from "./csv-parse.mjs";
 // The ledger must also stay ahead of NHTSA: slurp.py aborts if NHTSA reports
 // an incident in a month with no VMT row, so each monthly cycle adds the next
 // month's rows BEFORE the ~mid-month data drop. The freshness pin below
-// advances with each cycle (2026-09-25 cycle: rows through 2026-09).
+// advances with each cycle (2026-09-25 cycle: rows through 2026-09; 2026-10-27:
+// through 2026-10, the first ghost month, quals/ghost-month.qual.mjs).
 
 // teslanomonitor (2026-10-23) is a second Tesla line, not a company: the miles
 // Tesla counts as driven with no safety monitor aboard (Jan 2026 on).
 const HELMERS = ["waymo", "tesla", "zoox", "teslanomonitor"];
-const FRESH_THROUGH = "2026-09";
+const FRESH_THROUGH = "2026-10";
 
 // Regression pins for the latest estimate rows (authored values, not external
 // anchors — external anchors live in the *-vmt-provenance quals). A silent

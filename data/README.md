@@ -91,7 +91,9 @@ The slurp pipeline is:
 5. Filter the surviving versions to the operator modes whose miles are in each company's VMT denominator (`PUBLIC_SERVICE_OPERATOR_TYPES` / `EXCLUDED_OPERATOR_TYPES` in `slurp.py`: `"None"` and `"Remote (Commercial / Test)"` for all three, plus `"In-Vehicle (Commercial / Test)"` for Tesla, whose deck miles include monitor-aboard miles; Waymo/Zoox safety-driver modes are excluded because their miles are not in those denominators; `"Other, see Narrative"` is classified per report via `OPERATOR_TYPE_OVERRIDE`), drop crashes in which a remote human was driving (`TELEOP_DRIVEN_REPORTS`, guarded by a narrative tripwire), then deduplicate by `Same Incident ID`; `SPLIT_SAME_INCIDENT_REPORTS` in `slurp.py`
    exempts reports that share an ID but describe distinct crashes
 6. Read the VMT master from `data/vmt.csv` (first, to fail fast on a stale
-   ledger before any file is written)
+   ledger before any file is written) and check its ghost months (see
+   "Ghost months" below): at least the month after the data-through month,
+   a row for every line in each, and none for a month that has not begun
 7. Sync the six mirrored columns of `data/faultfrac.csv` from the NHTSA
    rows and load the fault fractions
 8. Verify the reviewed data-through cutoff against the CSV contents (the
@@ -131,7 +133,9 @@ The slurp pipeline is:
     no-monitor rows take Tesla's coverage, and the pooled incident coverage
     counts the companies only
 11. Inject the resulting incident data into `data/incidents.js`
-12. Inject the resulting VMT CSV text into `data/vmt.js`
+12. Inject the resulting VMT CSV text into `data/vmt.js`, and the ghost
+    months' master rows, as they stand, into its second segment
+    (`GHOST_VMT_CSV_TEXT`)
 
 ## Each NHTSA release
 
@@ -161,6 +165,10 @@ The slurp pipeline is:
    2026-08 entered early and every lag went to 0. A row entered early holds
    on-time counts only: re-measure it, late column included, at the month's
    third release (for 2026-08, the Nov 2026 release).
+4. `data/vmt.csv`: every line's row for the month after the new
+   data-through month, its ghost month (see "Ghost months" below; the month
+   in progress on release day), and a re-read of the previous ghost month's
+   rows, which become the new data-through month's.
 
 These are the constants every release needs. The run also stops on what a
 release brings: an incident month newer than the newest month in
@@ -216,6 +224,70 @@ Editing rules:
 
 To change VMT data: edit `data/vmt.csv`, run `python3 data/slurp.py`, and
 commit the master together with the regenerated artifacts.
+
+### Ghost months
+
+A ghost month is a month after NHTSA's data-through month for which
+`data/vmt.csv` holds rows: the month in progress, or a finished month no
+NHTSA release has reached yet. `slurp.py` (`ghost_vmt_csv`) copies their rows
+as they stand into `data/vmt.js`'s second segment, `GHOST_VMT_CSV_TEXT`, and
+the page draws them faded, with a dashed stretch of line, on the VMT charts
+(each company's and the combined one) whenever the date window ends at the
+newest NHTSA month. No rate uses a ghost month's miles: its crashes are not
+yet published, so its rows stay out of the analysis rows, the slider and
+every other chart until a release brings its incidents. The run stops when
+the master lacks the month after the data-through month, when a ghost month
+lacks a line's row, and on a row for a month that has not begun (a VMT row
+records miles already driven; forecasts live in `crashla.js`'s
+`MILES_FORECAST`). `quals/ghost-month.qual.mjs` pins all of it.
+
+So each release adds every line's estimate for the month after its
+data-through month, a month that has begun by release day. When the next
+release arrives, that month becomes its data-through month and its band
+becomes the VMT prior of every rate, so re-read the rows then.
+
+A ghost row's band is a 95% interval as the page reads it: `crashla.js`
+`splitPriorSigmas` takes `vmt` as the mode of a two-piece log-normal with
+each edge 1.96 of its own side's sigma away. The October 2026 rows used the
+rules below, calibrated on 2026-10-27 by backtests on each line's own
+measured series (their rationales show the arithmetic; the choices still
+open are listed in AGENTS.md):
+
+- Tesla's no-monitor line, from Tesla's weekly page: the measured part is
+  the page's miles for the month so far (city sums, linear within each
+  week). The rest is projected from the last published weeks as the
+  geometric mean of two projections: the mean of holding the last week flat
+  and continuing its growth, and continuing the three-week growth. The
+  projected part's range is that projection times e^(±0.30 √(h/7)), h being
+  the days from the last published Sunday to the month's end (×0.66-1.51 at
+  13 days, ×0.53-1.88 at 31), combined with the measured part, with a 0.066
+  log term for the gap between Tesla's page and its deck added in
+  quadrature. The 0.30 is a judgment, about 1.5 times what steady-growth
+  weeks needed; it held every all-city 7-31-day stretch from late April to
+  early October 2026, a regime of 1-30% weekly growth. When the page is more
+  than five weeks behind the month's end, or a new city or vehicle type puts
+  a launch-sized step in one of the last three published weeks, a human
+  sets the central, with at least ×0.5-2 on the unmeasured part.
+- Tesla, every operator mode: floor = the no-monitor line's floor;
+  central = the no-monitor central plus June 2026's measured monitor-aboard
+  remainder (33,000 miles); top = the central × e to the root-sum-square of
+  ln(no-monitor top / no-monitor central) and ln(1.27 × no-monitor central /
+  central), a monitor-aboard share at or below June's 21% (for July-September
+  this gives their tops within 1.2%).
+- Waymo: each term of the latest row at its per-day rate for the month's
+  days, plus documented openings and pauses; band ×e^-(0.17 + 0.028k) to
+  ×e^(0.15 + 0.02k), k being the months from the end of the latest quarter
+  both CPUC and the hub have measured to the end of the month (k = 4:
+  ×0.75-1.26), from four-month-ahead backtests on CPUC's monthly California
+  miles and the hub's quarterly county miles.
+- Zoox: the per-day rate between Zoox's two latest cumulative statements,
+  California (CPUC driverless miles × 1.19 for the DMV-reported miles CPUC
+  misses) grown 5% a month from its last CPUC month and the rest held flat
+  unless a dated change is known; band ×e^(-1.96σ) to ×e^(1.96σ′), with
+  σ = √(0.065² + 0.07²h + 0.09²) (statement rounding, drift, month noise),
+  σ′ = √(σ² + 0.10²) while fleet growth is announced but unquantified, and h
+  the months from the bracketing window's midpoint to the month's midpoint.
+  Every Zoox constant is a prior: one measured change in Zoox's rate exists.
 
 ### Waymo anchors
 
