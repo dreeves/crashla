@@ -271,7 +271,7 @@ assert.ok(
     humanAirbag.lo >= 300000 && humanAirbag.hi <= 900000,
   `Replicata: inspect humanMPI for airbag metric.
 Expectata: airbag human benchmark lo/hi within [300k, 900k] (hub per-city span
-1.19\u20132.99 IPMM, repinned 2026-08-22; human-benchmark-provenance.qual pins
+1.23\u20132.77 IPMM, repinned 2026-10-27; human-benchmark-provenance.qual pins
 the exact edges).
 Resultata: ${JSON.stringify(humanAirbag)}.`,
 );
@@ -337,7 +337,7 @@ const humanSsi = vm.runInContext("METRIC_DEFS.find(m => m.key === 'seriousInjury
 assert.ok(
   humanSsi && humanSsi.lo >= 1800000 && humanSsi.hi <= 12000000 && humanSsi.lo < humanSsi.hi,
   `Replicata: inspect humanMPI for seriousInjury metric.
-Expectata: SSI+ human benchmark within [1.8M, 12M], spanning the Waymo hub per-city range ~2.56M (SF 0.391 IPMM) to ~9.62M (Phoenix 0.104 IPMM), blended ~0.213 (repinned 2026-09-25, thru Jun 2026; human-benchmark-provenance.qual pins the exact edges).
+Expectata: SSI+ human benchmark within [1.8M, 12M], spanning the Waymo hub per-city range ~2.53M (SF 0.395 IPMM) to ~9.71M (Phoenix 0.103 IPMM), blended ~0.213 (repinned 2026-10-27, thru Jun 2026; human-benchmark-provenance.qual pins the exact edges).
 Resultata: ${JSON.stringify(humanSsi)}.`,
 );
 

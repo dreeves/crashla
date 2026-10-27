@@ -290,14 +290,16 @@ open are listed in AGENTS.md):
   miles and the hub's quarterly county miles.
 - Zoox: the per-day rate between Zoox's two latest cumulative statements,
   California (CPUC driverless miles × 1.19 for the DMV-reported miles CPUC
-  misses) grown 5% a month from its last CPUC month and the rest held flat
-  unless a dated change is known; band ×e^(-1.96σ) to ×e^(1.96σ′), with
+  misses) grown e^0.05 (about 5.1%) a calendar month from its last CPUC
+  month and the rest held flat unless a dated, quantified change is known (a
+  reported pause of known length removes its days); band ×e^(-1.96σ) to
+  ×e^(1.96σ′) on the month's rounded miles, edges rounded to 1,000, with
   σ = √(0.065² + 0.07²h + 0.09²) (statement rounding, drift, month noise),
   σ′ = √(σ² + 0.10²) while fleet growth is announced but unquantified, and h
-  the months from the bracketing window's midpoint to the month's midpoint.
-  Every Zoox constant is a prior: one measured change in Zoox's rate exists.
-  The same method sets Zoox's analysis months from January 2026 ("Zoox
-  anchors" above).
+  the months from the governing window's midpoint to the month's midpoint
+  (definitions in "Zoox anchors" below). Every Zoox constant is a prior: one
+  measured change in Zoox's rate exists. The same method sets Zoox's
+  analysis months from January 2026 ("Zoox anchors" below).
 
 ### Waymo anchors
 
@@ -370,31 +372,55 @@ knot and Oct-Nov 2025's are narrowed back from it, so the band is the
 disclosure's own uncertainty rather than the running sum of the monthly
 bands. `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
 
-Since 2026-10-27 the "nearly two million autonomous miles" (Mar 24, 2026) and
-"more than 3 million miles on public roads" (Aug 5, 2026) statements are
-knots too. Until then they were only checked, because their wording varies,
-but both count driverless miles: California DMV reports hold 1,213,646 Zoox
-test miles for Dec 2024-Nov 2025 (Consumer Watchdog's tally, Feb 25, 2026),
-312,648 of them driverless (permit AVDT004), so a count that included the
-safety-driver miles would have passed 2.2M by Dec 31, 2025, months before
-Zoox said "nearly two million". Each statement is read as its rounding
-interval (1.88M-2.00M; 3.00M-3.20M) as of a day up to a week before its
-date, less the pre-series miles at their own band, and carried to the
-month's end at 0.7x-1.3x the model's daily miles: end-March
-1,859,918-2,121,276, end-July 2,880,483-3,193,308. Months between knots
-chain forward and narrow back from the next knot.
+Since 2026-10-27 the "nearly two million autonomous miles" statement (Zoox's
+journal post of Mar 23, public Mar 24, 2026) is a knot too, and the "more
+than 3 million miles on public roads" statement (Bloomberg, Aug 5, 2026,
+"To date ... over 3 million miles on public roads"; Las Vegas Sun, Aug 6) a
+floor. Until then both were only checked, because their wording varies.
+Both count driverless miles. Zoox's March post puts them "in our robotaxi",
+apart from "our retrofitted testing fleet". And the California DMV's 2025
+mileage reports (Dec 2024-Nov 2025) hold 1,213,646 Zoox test miles with
+safety drivers (permit AVT012), besides 312,648 driverless (permit AVDT004,
+a separate file), so a count that included safety-driver miles would have
+passed 2.5M by Dec 31, 2025 on that one California year alone. The March
+post's "in less than a year since our first launch" could instead mean
+miles since the Sep 10, 2025 launch, but then Jan 1-Mar 23 would need
+about 14,000-16,000 miles a day, twice Q4 2025's rate, against Zoox's "To
+date" (Mar 11) and Bloomberg's "To date" (Aug 5); the series reads both as
+all-time counts.
+
+Each statement is read as its rounding interval ("nearly X" as 0.94X to X,
+"more than X" as X to about 1.07X: 1.88M-2.00M and 3.00M-3.20M) as of a day
+up to a week before its date, the as-of day counting at its end, less the
+pre-series miles at their own band (the unrounded 30,127.3-59,986.6), and
+carried to the month's end at 0.7x-1.3x the model's daily miles, edges
+rounded outward: end-March 1,859,918-2,121,276. "More than" sets only a
+floor: Zoox's own "more than one million autonomous miles" (Mar 11, 2026)
+came when the series stood near 1.84M, so the August statement gives
+end-July a floor of 2,880,483 (3.00M less the pre-series high edge and up
+to 1.3x the model's miles for Aug 1-5) and no ceiling; the upper edge
+chains on from March. Months between knots chain forward and narrow back
+from the next knot. The as-of window is a judgment: Zoox's mileage
+statements can lag, as the Mar 11 one shows.
 
 The 2026 rows follow one method, the per-day rate between consecutive
-statements. Midpoints give 640,000 miles over Jan 1-Mar 24 and 1,160,000
-over Mar 25-Aug 5. California is CPUC's driverless pilot miles × 1.19 (the
-DMV-reported driverless miles CPUC misses), measured through June and grown
-5% a month after it. The rest, mostly Las Vegas, is each interval's
-remainder over its driving days (January's Las Vegas outage, Jan 22-26,
-taken as 5 days without it): 6,531 a day, then 6,181 a day, held flat after
-Aug 5. Months round to 10,000, and bands follow the formula in "Ghost
-months" above (no growth term before October).
-`quals/zoox-vmt-model.qual.mjs` recomputes every 2026 row, band and
-cumulative band from these inputs.
+statements. Midpoints give 640,000 miles over Jan 1-Mar 24 (83 days) and
+1,160,000 over Mar 25-Aug 5 (134 days). California is CPUC's driverless
+pilot miles × 1.19 for the DMV-reported driverless miles CPUC misses, an
+assumption: 1.19 is the midpoint of 1.05-1.33, the measured DMV/CPUC ratio
+having fallen from 3.97 to 1.33 over Apr-Nov 2025 (the Dec-2025 row,
+built on the DMV's own figures, implies 1.33). It is measured through June
+and grown e^0.05 a calendar month after it, constant within a month. The
+rest, mostly Las Vegas, is each interval's remainder over its driving days
+(January's Las Vegas passenger outage, Jan 22-26, taken as 5 days without
+Las Vegas driving): 6,530.74 a day, then 6,180.83 a day, held flat after
+Aug 5. Months round to 10,000. Bands follow the formula in "Ghost months"
+above, with no growth term before October; h is in months of 30.44 days,
+from the governing window's midpoint (the mean of its first and last
+driving days: Feb 11, and the end of May 30) to the month's mean day (Jan
+16, Feb 14.5, ...); January-March are governed by Jan 1-Mar 24, April on
+by Mar 25-Aug 5. `quals/zoox-vmt-model.qual.mjs` recomputes every 2026
+row, band and cumulative band from these inputs.
 
 ### Tesla's no-monitor line
 

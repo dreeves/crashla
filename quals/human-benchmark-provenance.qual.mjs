@@ -1,12 +1,14 @@
 // Pins the AV-cities human benchmark bands for injury / airbag / serious-injury+
 // to Waymo's LIVE Safety Impact hub per-city benchmark rates (data through
-// Jun 2026, five areas: Phoenix, SF Bay Area, LA, Austin, Atlanta; retrieved 2026-09-25,
-// previously the thru-Mar-2026 values of 2026-08-22 — supersedes the Kusano &
+// Jun 2026, five areas: Phoenix, SF Bay Area, LA, Austin, Atlanta; retrieved 2026-10-27
+// from CSV3 v2, the corrected file of Waymo's Oct-2-2026 release notes, whose
+// rates the hub displays; previously the Sep-24 file's values of 2026-09-25
+// and the thru-Mar-2026 values of 2026-08-22 — supersedes the Kusano &
 // Scanlon 56.7M paper pin: same methodology family, updated denominators and
 // city set). The rates are Waymo's DYNAMIC benchmarks (CSV3 rows without the
 // "(non-Dynamic)" suffix), re-weighted to where Waymo drove, so they shift
 // every release. Three significant figures (the page rounds to 2 dp, which
-// would move the SSI+ hi edge 3.5%: Phoenix 0.1035 shows as "0.10"). So a band edge can't silently drift
+// would move the SSI+ hi edge 3.3%: Phoenix 0.1033 shows as "0.10"). So a band edge can't silently drift
 // from its source. Each band edge = 1e6 / per-city IPMM: the lo (fewest miles
 // between crashes) = the highest-rate city, the hi = the lowest-rate city.
 // The geometric-mean central the cards use must sit near the hub's
@@ -27,9 +29,9 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 // hiRate = the highest-rate city (SF Bay Area for injury/SSI+, Atlanta for airbag),
 // loRate = the lowest-rate city (Phoenix for injury/SSI+, LA for airbag).
 const SRC = {
-  injury:        { hiRate: 6.64, loRate: 1.95, blended: 3.77 },
-  airbag:        { hiRate: 2.83, loRate: 1.27, blended: 1.62 },
-  seriousInjury: { hiRate: 0.391, loRate: 0.104, blended: 0.213 },
+  injury:        { hiRate: 6.71, loRate: 1.95, blended: 3.77 },
+  airbag:        { hiRate: 2.77, loRate: 1.23, blended: 1.61 },
+  seriousInjury: { hiRate: 0.395, loRate: 0.103, blended: 0.213 },
 };
 const REL_TOL = 0.01; // 1% — allows rounding of the edges to clean integers
 
@@ -66,8 +68,9 @@ Resultata: ${geoIpmm.toFixed(2)} IPMM.`);
 // is pinned to the injury band here. (Hospitalization+ was pinned here too,
 // bracketed by 1M/airbag blended .. 1M/SSI+ blended, until 2026-10-03; it is
 // now CRSS-measured, see the next block.)
-// WAYMO_PUBLISHED_IPMM is the hub's All-Locations Waymo rates (CSV3 v1 thru
-// Jun 2026: 0.67446 / 0.29484 / 0.011057), to four significant figures. Until
+// WAYMO_PUBLISHED_IPMM is the hub's All-Locations Waymo rates (CSV3 thru
+// Jun 2026, the same in v1 and v2: 0.67446 / 0.29484 / 0.011057), to four
+// significant figures. Until
 // 2026-10-03 it held the page's 2-dp 0.67 / 0.29 / 0.01, and the cross-check's
 // serious-injury+ ratio divided by that rounded 0.01: 3.6x where the unrounded
 // rate gives 3.3x (audit #8).
@@ -82,7 +85,7 @@ Resultata: [${afi.lo}, ${afi.hi}].`);
   const pub = vm.runInContext("WAYMO_PUBLISHED_IPMM", ctx);
   assert.equal(JSON.stringify(pub), JSON.stringify({ injury: 0.6745, airbag: 0.2948, ssi: 0.01106 }),
     `Replicata: read WAYMO_PUBLISHED_IPMM.
-Expectata: the hub's unrounded All-Locations Waymo rates thru Jun 2026 (CSV3 v1), {injury 0.6745, airbag 0.2948, ssi 0.01106}.
+Expectata: the hub's unrounded All-Locations Waymo rates thru Jun 2026 (CSV3 v1 and v2), {injury 0.6745, airbag 0.2948, ssi 0.01106}.
 Resultata: ${JSON.stringify(pub)}.`);
 }
 
@@ -120,14 +123,14 @@ const CRSS2024 = {
 };
 const BLINCOE2023_INJURY_UNREPORTED = 0.319; // Table 2-9, injury vehicles
 const HUB_AREAS = {
-  // CSV3 v1, All Crashes, Benchmark IPMM: [observed any-injury (Dynamic), any-vehicle airbag (Dynamic)]
-  "Phoenix (Maricopa)": [1.33875, 1.32269],
-  "SF Bay Area":        [4.53868, 1.91889],
-  "Los Angeles":        [1.74703, 1.26588],
-  "Austin (Travis)":    [2.22565, 2.32333],
-  "Atlanta Area":       [4.48736, 2.83121],
+  // CSV3 v2 (2026-10-27; v1 until then), All Crashes, Benchmark IPMM: [observed any-injury (Dynamic), any-vehicle airbag (Dynamic)]
+  "Phoenix (Maricopa)": [1.33818, 1.32096],
+  "SF Bay Area":        [4.58471, 1.93367],
+  "Los Angeles":        [1.70213, 1.23418],
+  "Austin (Travis)":    [2.22237, 2.31775],
+  "Atlanta Area":       [4.38798, 2.76742],
 };
-const HUB_BLENDED = [2.58069, 1.61538]; // All Locations (mileage blended), same two comparisons
+const HUB_BLENDED = [2.57996, 1.60898]; // All Locations (mileage blended), same two comparisons
 // Two sources' URLs as the bands' srcLinks give them. crashla.js's
 // BENCHMARK_SOURCES holds each URL's one label, the text of its link on the
 // page; the CRSS one must name CRSS.

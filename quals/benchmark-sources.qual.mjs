@@ -9,8 +9,10 @@
 // band's sources and NHTSA 812115 (the 94%), every Blincoe-adjusted band
 // cites the Blincoe edition it uses (2023, 813403, which Kusano et al. and
 // the hub use; plus 2015, 812013, where the US low edges average the two),
-// the release notes link the current (Sep 24, 2026) edition, and the arXiv
-// papers are "Kusano et al." (7 and 6 authors).
+// the release notes link the current edition (Oct 2, 2026 since
+// 2026-10-27; the hub has linked it since about Oct 5, and it keeps the
+// passage the all-crashes caveat cites), and the arXiv papers are "Kusano et
+// al." (7 and 6 authors).
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
@@ -163,9 +165,9 @@ Resultata: ${JSON.stringify([S[B2015], S[B2023]])}.`);
 
 // --- #69: the current release notes ---
 const notes = Object.keys(S).filter(u => /Release_Notes/.test(u));
-assert.deepEqual(notes, ["https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260924.pdf"],
+assert.deepEqual(notes, ["https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20261002.pdf"],
   `Replicata: read the Waymo Data Hub release-notes link.
-Expectata: the Sep 24, 2026 edition the hub links (data through Jun 2026), not the superseded Jun 24 one.
+Expectata: the Oct 2, 2026 edition the hub links (data through Jun 2026, with the corrected CSV3 and CSV4), not the superseded Sep 24 or Jun 24 one.
 Resultata: ${JSON.stringify(notes)}.`);
 
 // --- audit 2026-10-04 #34: the US-average rows link the inputs they name ---

@@ -133,7 +133,8 @@ Resultata: verdict was ${plain.byHelmer.Waymo.all.verdictKey}.`,
 );
 
 // hospitalization joined this list 2026-10-03 (audit #1): on the
-// CRSS-measured transport band (406k-1.38M) Waymo's ratio floor is ~2.7x; on
+// CRSS-measured transport band (406k-1.38M; 402k-1.38M since 2026-10-27)
+// Waymo's ratio floor is ~2.7x; on
 // the old severity-neighbour bracket (617k-4.695M) it read "ambiguous".
 for (const key of ["atfault", "injury", "hospitalization", "airbag", "seriousInjury"]) {
   assert.equal(

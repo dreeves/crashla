@@ -12,8 +12,10 @@ import { parseCsv } from "./csv-parse.mjs";
 //     each interval's miles: 640,000 over Jan 1-Mar 24 (83 days) and
 //     1,160,000 over Mar 25-Aug 5 (134 days).
 //   - California: CPUC's driverless pilot miles (TCP 0038380-P) x 1.19 for
-//     the DMV-reported driverless miles CPUC misses, measured through June
-//     and grown e^0.05 a month after it.
+//     the DMV-reported driverless miles CPUC misses (an assumption: the
+//     midpoint of 1.05-1.33, the DMV/CPUC ratio having fallen from 3.97 to
+//     1.33 over Apr-Nov 2025), measured through June and grown e^0.05 a
+//     calendar month after it.
 //   - The rest, mostly Las Vegas: each interval's remainder spread evenly
 //     over its driving days (January's Las Vegas outage, Jan 22-26, taken as
 //     5 days without it), held flat after Aug 5.
@@ -27,10 +29,13 @@ import { parseCsv } from "./csv-parse.mjs";
 //     round to 1,000.
 //   - Cumulative band: knots at end-March and end-July from the March and
 //     August statements (each read as of up to a week before its date, less
-//     the 40,080 pre-series driverless miles at their own band, 30,127 to
-//     59,987, then carried to the month's end at 0.7x-1.3x the model's daily
-//     miles), the Dec-2025 knot as zoox-vmt-provenance.qual pins it, chained
-//     forward with the monthly bands and narrowed back from each knot.
+//     the 40,080 pre-series driverless miles at their own band, 30,127.3 to
+//     59,986.6, then carried to the month's end at 0.7x-1.3x the model's
+//     daily miles, rounded outward), the Dec-2025 knot as
+//     zoox-vmt-provenance.qual pins it, chained forward with the monthly
+//     bands and narrowed back from each knot. The July knot is a floor only:
+//     "more than" sets no ceiling, and Zoox's own "more than one million
+//     autonomous miles" of Mar 11, 2026 came when the series stood near 1.84M.
 
 const CPUC = {
   "2026-01": 31996.94, "2026-02": 38162.55, "2026-03": 51137.72,
@@ -97,10 +102,7 @@ const knots = {
     Math.floor(S1[0] - PRE[1] + 0.7 * 7 * dayTotal("2026-03", lvW2)),
     Math.ceil(S1[1] - PRE[0] + 1.3 * (7 * dayTotal("2026-03", lvQ1) + 7 * dayTotal("2026-03", lvW2))),
   ],
-  "2026-07": [
-    Math.floor(S2[0] - PRE[1] - 1.3 * 5 * dayTotal("2026-08", lvW2)),
-    Math.ceil(S2[1] - PRE[0] + 1.3 * 2 * dayTotal("2026-07", lvW2)),
-  ],
+  "2026-07": [Math.floor(S2[0] - PRE[1] - 1.3 * 5 * dayTotal("2026-08", lvW2)), Infinity],
 };
 
 const rows = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)

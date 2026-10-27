@@ -503,10 +503,11 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //     Any-injury:  Blincoe-adj 2.80 IPMM, observed 1.92 IPMM (Table 3; the
 //       paper's results table prints 1.91)
 //   Waymo Safety Impact hub per-city human IPMM (thru Jun 2026, five areas,
-//   Sep-24-2026 release; supersedes the Kusano et al. 56.7M paper
-//   2026-08-22): Any-injury 1.95..6.64 -> blended 3.77 (observed, i.e.
-//   without the hub's 32% Blincoe correction: 1.34..4.54 -> 2.58); Airbag
-//   (any vehicle) 1.27..2.83 -> 1.62; SSI+ 0.104..0.391 -> 0.213.
+//   the corrected files of Waymo's Oct-2-2026 release notes, which replace
+//   the Sep-24-2026 ones; supersedes the Kusano et al. 56.7M paper
+//   2026-08-22): Any-injury 1.95..6.71 -> blended 3.77 (observed, i.e.
+//   without the hub's 32% Blincoe correction: 1.34..4.58 -> 2.58); Airbag
+//   (any vehicle) 1.23..2.77 -> 1.61; SSI+ 0.103..0.395 -> 0.213.
 //   CRSS 2024 microdata (NHTSA; weighted crashed in-transport vehicles, VMT
 //   3,294,031M per 813791): Hospitalization+ (anyone transported for
 //   treatment, or an A or K injury) 0.512 per M mi nationally; for urban
@@ -568,7 +569,7 @@ const BENCHMARK_SOURCES = {
   "https://arxiv.org/abs/2312.12675": "Kusano et al. 2024, Table 3",
   "https://arxiv.org/abs/2505.01515": "Kusano et al. 56.7M (arxiv 2505.01515)",
   "https://waymo.com/safety/impact/": "Waymo safety impact (271.3M mi)",
-  "https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260924.pdf": "Waymo Data Hub release notes",
+  "https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20261002.pdf": "Waymo Data Hub release notes",
   "https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf": "Third Amended SGO (2025)",
   "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791": "NHTSA 2024 crash summary",
   "https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/": "NHTSA CRSS 2024",
@@ -600,13 +601,13 @@ const METRIC_DEFS = [
         // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
         src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM; caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000 damage, no severity trigger) are exempt from AV reporting; this deflates AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible.',
         // Kusano's 9.67 is Blincoe et al. 2023-adjusted (its p. 5); the release
-        // notes are the current (Sep 24, 2026) edition, which keeps the cited
-        // "impossible" passage (audit #42, #69).
+        // notes are the current (Oct 2, 2026) edition, the one the hub links,
+        // which keeps the cited "impossible" passage (audit #42, #69).
         srcLinks: [
           'https://arxiv.org/abs/2312.12675',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
           'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf',
-          'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260924.pdf',
+          'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20261002.pdf',
         ]},
       // CRSS 2024 (813791): ~6.18M police-reported crashes/yr, ~1.77 vehicles
       // per crash, ~3,294B VMT -> ~3.3 crashed vehicles per M mi (unchanged
@@ -622,7 +623,7 @@ const METRIC_DEFS = [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
           'https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf',
-          'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20260924.pdf',
+          'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20261002.pdf',
         ]},
     },
   },
@@ -771,12 +772,12 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     countFn: rec => rec.incidents.injury,
     // AV-cities band = the Waymo Safety Impact hub's per-city human benchmark
-    // range (Phoenix 1.95 to SF 6.64 IPMM across five areas, thru Jun 2026;
+    // range (Phoenix 1.95 to SF 6.71 IPMM across five areas, thru Jun 2026;
     // supersedes Kusano 56.7M), blended central 3.77. Band edges = 1M /
     // per-city IPMM.
     humanMPI: {
-      HumansAV: {lo: 151000, hi: 513000,
-        src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-injury 1.95 (Phoenix) to 6.64 (SF) IPMM, blended 3.77 (supersedes the Kusano 56.7M paper values 2.09-8.02)',
+      HumansAV: {lo: 149000, hi: 513000,
+        src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-injury 1.95 (Phoenix) to 6.71 (SF) IPMM, blended 3.77 (supersedes the Kusano 56.7M paper values 2.09-8.02)',
         srcLinks: [
           'https://waymo.com/safety/impact/',
           'https://arxiv.org/abs/2505.01515',
@@ -810,9 +811,9 @@ const METRIC_DEFS = [
     // At-fault injury: intersection of at-fault and injury crashes.
     // Shares use the expert-avoidability standard to match the faultfrac
     // criterion (P(expert human avoids)), not legal allocation:
-    // lo: injury lo (151k) / ~94% share (NHTSA critical reason: driver error
+    // lo: injury lo (149k) / ~94% share (NHTSA critical reason: driver error
     //   in ~94% of crashes; taken as the LARGEST share an expert could avoid —
-    //   an upper bound, which is what dividing the LOW edge by it needs) ≈ 161k
+    //   an upper bound, which is what dividing the LOW edge by it needs) ≈ 159k
     //   NB: NHTSA 812115 itself disclaims that "critical reason" means crash
     //   cause or fault assignment; reading driver-error-as-critical-reason as
     //   an upper bound on expert avoidability is this repo's own assumption
@@ -820,13 +821,14 @@ const METRIC_DEFS = [
     // hi: injury hi (513k) / 50% share ≈ 1,026k
     //   50% = legal-allocation floor (single-vehicle 100%, multi ~50%);
     //   expert-avoidability can't be lower. Cross-check: 513k/214k × atfault
-    //   hi (430k) ≈ 1.03M. (Re-derived 2026-09-25 on the thru-Jun-2026 hub
-    //   injury band, and 2026-07-24 when the injury band's
+    //   hi (430k) ≈ 1.03M. (Re-derived 2026-10-27 on the corrected hub files,
+    //   2026-09-25 on the thru-Jun-2026 hub injury band, and 2026-07-24 when
+    //   the injury band's
     //   repin to the Kusano 56.7M per-city range left this stale at the old
     //   blended anchors, 272k–1,050k.)
     humanMPI: {
-      HumansAV: {lo: 161000, hi: 1026000,
-        src: 'lo: injury lo (151k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (513k) / 50% legal-allocation floor',
+      HumansAV: {lo: 159000, hi: 1026000,
+        src: 'lo: injury lo (149k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (513k) / 50% legal-allocation floor',
         srcNote: "94% = NHTSA 812115's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
         // The injury band's source and the 94%'s (audit #41: Kusano Table 3
         // and NHTSA 813791, linked until 2026-10-03, feed no number here).
@@ -877,16 +879,17 @@ const METRIC_DEFS = [
       // 1-49): Hospitalization+ involvements / injury-crash involvements =
       // 0.54291, / airbag-crash involvements = 0.65732 (a ratio of rates, not
       // a share: only 37% of airbag-crash involvements had a transport).
-      // Applied to the hub's per-area police-reported rates (CSV3 v1, thru
-      // Jun 2026, Dynamic): OBSERVED any-injury (not the 32% Blincoe-
-      // corrected 1.95..6.64 the injury band uses, since the CRSS ratio is
-      // police-reported on both sides) Phoenix 1.339, SF Bay 4.539, LA 1.747,
-      // Austin 2.226, Atlanta 4.487; any-vehicle airbag 1.323 / 1.919 /
-      // 1.266 / 2.323 / 2.831. Band = the per-area extremes across both
-      // routes: lo 1M/(4.539 x 0.54291) = 405.8k (SF Bay, injury route), hi
-      // 1M/(1.339 x 0.54291) = 1.376M (Phoenix, injury route); the
-      // mileage-blended routes give 714k (injury) and 942k (airbag), and the
-      // band's geometric center is 749k. On the all-vehicle basis the ratios
+      // Applied to the hub's per-area police-reported rates (CSV3 v2, the
+      // Oct-2-2026 correction, thru Jun 2026, Dynamic): OBSERVED any-injury
+      // (not the 32% Blincoe-corrected 1.95..6.71 the injury band uses, since
+      // the CRSS ratio is police-reported on both sides) Phoenix 1.338, SF Bay
+      // 4.585, LA 1.702, Austin 2.222, Atlanta 4.388; any-vehicle airbag
+      // 1.321 / 1.934 / 1.234 / 2.318 / 2.767. Band = the per-area extremes
+      // across both routes: lo 1M/(4.585 x 0.54291) = 401.7k (SF Bay, injury
+      // route), hi 1M/(1.338 x 0.54291) = 1.377M (Phoenix, injury route); the
+      // mileage-blended routes give 714k (injury) and 946k (airbag), and the
+      // band's geometric center is 745k (Sep-24 files: 405.8k, 1.376M, 714k,
+      // 942k, 749k). On the all-vehicle basis the ratios
       // are 0.552 / 0.702 (edges within 2%); restricted to posted limits <= 50
       // mph (a surface-street proxy that also drops the 15% with no limit
       // reported) they are 0.525 / 0.600 (injury-route edges +3.5%). The
@@ -894,16 +897,16 @@ const METRIC_DEFS = [
       // here (the hub applies none to airbag), so unlike the US band this one
       // has no Blincoe edge.
       // HumansRideshare is computed from HumansAV by the loop below.
-      HumansAV: {lo: 406000, hi: 1380000,
+      HumansAV: {lo: 402000, hi: 1380000,
         // CRSS-measured ratio of
         // crash involvements with a hospital transport (or a serious or fatal
         // injury) to injury-crash involvements (0.543) and to airbag-crash
         // involvements (0.657) (CRSS 2024, urban non-interstate passenger
         // vehicles), applied to the Waymo hub's per-area police-reported
         // any-injury rates (observed, not underreporting-adjusted: 1.34 Phoenix
-        // to 4.54 SF Bay Area IPMM) and airbag rates (1.27 LA to 2.83 Atlanta)
-        // (hub CSV3, thru Jun 2026); the band spans the per-area extremes of
-        // both routes, 1M/2.46 (SF Bay Area, injury route) to 1M/0.727
+        // to 4.58 SF Bay Area IPMM) and airbag rates (1.23 LA to 2.77 Atlanta)
+        // (hub CSV3 v2, thru Jun 2026); the band spans the per-area extremes of
+        // both routes, 1M/2.49 (SF Bay Area, injury route) to 1M/0.727
         // (Phoenix, injury route); mileage-blended: 1M/1.40 (injury route),
         // 1M/1.06 (airbag route).
         src: "CRSS-measured ratio of crashes with hospital transport or serious/fatal injury to injury crashes and to airbag crashes applied to Waymo's published per-area police-reported any-injury rates, not underreporting-adjusted",
@@ -946,23 +949,34 @@ const METRIC_DEFS = [
     fiveDay: true, // airbag deployment = SGO Request No. 1.D.iv
     countFn: rec => rec.incidents.airbag,
     // Airbag deployment in any vehicle. AV-cities band = the Waymo Safety
-    // Impact hub's per-city human benchmark (1.27 LA to 2.83 Atlanta IPMM
+    // Impact hub's per-city human benchmark (1.23 LA to 2.77 Atlanta IPMM
     // across five areas, thru Jun 2026; supersedes Kusano 56.7M; airbags are
     // mechanically triggered and rarely underreported, so no Blincoe
-    // adjustment), blended 1.62. Waymo's unlinked CSV3 v2 (Sep 28, 2026, after
-    // fixing duplicated Atlanta cells in CSV4) moves these edges to 1.23 / 2.77;
-    // re-pin when the hub links it or posts release notes.
+    // adjustment), blended 1.61: CSV3 v2, the corrected file of Waymo's
+    // Oct-2-2026 release notes (the Sep-24 file, before Waymo fixed CSV4's
+    // duplicated Atlanta cells, had 1.27 / 2.83, blended 1.62). Re-pinned
+    // 2026-10-27 after a check of state crash coding, with no discount for
+    // either state: Texas reports code each occupant's own airbag with an
+    // explicit "Not Deployed" code, and by crash type Travis's airbag-to-
+    // injury ratio is 0.90-1.06x Maricopa's, which leaves room for a few
+    // percent of Texas-specific excess at most (Travis is no edge of the
+    // band anyway); for Atlanta, the high edge, Georgia's police reports do
+    // not over-record airbag deployment relative to other states in FARS
+    // 2022's fatal crashes, and nothing public supports a discount, though
+    // the extract Waymo used cannot be audited.
     humanMPI: {
       // HumansUS airbag and SSI+ are estimated by log-interpolation between
       // the national injury and fatality anchors (positioned by the AV-cities
-      // severity ladder) with a wide band. Re-derived 2026-09-25 on the
-      // thru-Jun-2026 hub ladder (and 2026-09-04, when the 06-18 values used
-      // the pre-repin anchors and sat 13-23% low): t = ln(c_metric/c_injury) /
-      // ln(c_fatality/c_injury) on AV-cities geometric centers (injury 278k,
-      // airbag 527k, SSI+ 4.96M, fatality 93.4M) -> t = 0.11 / 0.50, mapped
-      // onto the national injury..fatality centers (922k..87.4M) -> airbag
-      // 1.52M, SSI+ 8.79M; each band keeps its prior log-width (2.9x / 4.7x)
-      // around that center, edges to 2 significant figures.
+      // severity ladder) with a wide band. Re-derived 2026-10-27 on the
+      // corrected hub ladder (and 2026-09-25 on the Sep-24 one, and
+      // 2026-09-04, when the 06-18 values used the pre-repin anchors and sat
+      // 13-23% low): t = ln(c_metric/c_injury) / ln(c_fatality/c_injury) on
+      // AV-cities geometric centers (injury 276k, airbag 542k, SSI+ 4.96M,
+      // fatality 93.4M) -> t = 0.12 / 0.50, mapped onto the national
+      // injury..fatality centers (922k..87.4M) -> airbag 1.56M, SSI+ 8.81M;
+      // each band keeps its prior log-width (2.9x / 4.7x) around that center,
+      // edges to 2 significant figures (airbag 900k-2.6M -> 920k-2.7M; SSI+
+      // unchanged).
       // human-benchmark-provenance.qual re-derives the centers. (Hospitalization+
       // was the third such band until 2026-10-03; it is now CRSS-measured.)
       // CRSS 2024 measures both directly too (police-reported, all vehicles,
@@ -970,13 +984,13 @@ const METRIC_DEFS = [
       // inside its band; the src text's "no national ... rate" predates that
       // check.
       // HumansRideshare is computed from HumansAV by the loop below.
-      HumansAV: {lo: 353000, hi: 787000,
-        src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-vehicle airbag 1.27 (LA) to 2.83 (Atlanta) IPMM, blended 1.62 (supersedes the Kusano 56.7M paper values 1.42-2.31; Austin, Tesla\'s main market, sits at 2.32)',
+      HumansAV: {lo: 361000, hi: 813000,
+        src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-vehicle airbag 1.23 (LA) to 2.77 (Atlanta) IPMM, blended 1.61 (supersedes the Kusano 56.7M paper values 1.42-2.31; Austin, Tesla\'s main market, sits at 2.32)',
         srcLinks: [
           'https://waymo.com/safety/impact/',
           'https://arxiv.org/abs/2505.01515',
         ]},
-      HumansUS: {lo: 900000, hi: 2600000,
+      HumansUS: {lo: 920000, hi: 2700000,
         src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
         // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
         // centres (the hub's injury and this band's, IIHS's fatality), the
@@ -1001,14 +1015,14 @@ const METRIC_DEFS = [
     fiveDay: true, // SSI+ ⊂ hospitalization (every ssi severity is hosp:true) = SGO Request No. 1.D.ii
     countFn: rec => rec.incidents.seriousInjury,
     // SSI+ (KABCO A+K): "Serious" + "Fatality" (suspected serious injury or
-    // worse). AV-cities band = the hub's per-city human SSI+ range (SF 0.391
-    // to Phoenix 0.104 IPMM across five areas, thru Jun 2026), blended 0.213.
+    // worse). AV-cities band = the hub's per-city human SSI+ range (SF 0.395
+    // to Phoenix 0.103 IPMM across five areas, thru Jun 2026), blended 0.213.
     humanMPI: {
       // HumansUS is estimated by log-interpolation between the national injury
       // and fatality anchors (see the airbag entry for the derivation).
       // HumansRideshare is computed from HumansAV by the loop below.
-      HumansAV: {lo: 2560000, hi: 9620000,
-        src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human SSI+ 0.104 (Phoenix) to 0.391 (SF) IPMM, blended 0.213 (supersedes the Kusano 56.7M paper values 0.12-0.46)',
+      HumansAV: {lo: 2530000, hi: 9710000,
+        src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human SSI+ 0.103 (Phoenix) to 0.395 (SF) IPMM, blended 0.213 (supersedes the Kusano 56.7M paper values 0.12-0.46)',
         srcLinks: [
           'https://waymo.com/safety/impact/',
           'https://arxiv.org/abs/2505.01515',
@@ -3527,15 +3541,15 @@ const MILES_FORECAST = [
   // kyoom hi + 4 x 26M ~435M (authored 405M / 380M / 440M, rounded).
   // Zoox re-derived 2026-10-27, when its 2026 rows moved to the per-day rate
   // between its statements (data/README.md, Zoox anchors): end-Oct 3.87M
-  // [3.49M, 4.41M] plus November and December on the same model (290k
-  // [197k, 448k], 300k [199k, 474k]) -> ~4.46M; lo = cumulative lo + both
-  // months' lows ~3.88M; hi = cumulative hi + both months' highs ~5.33M
-  // (authored 4.5M / 3.9M / 5.3M, rounded; was 4.5M / 3.5M / 6.0M).
+  // [3.49M, 4.70M] plus November and December on the same model (290k
+  // [196k, 449k], 300k [198k, 474k]) -> ~4.46M; lo = cumulative lo + both
+  // months' lows ~3.88M; hi = cumulative hi + both months' highs ~5.63M
+  // (authored 4.5M / 3.9M / 5.6M, rounded; was 4.5M / 3.5M / 6.0M).
   { helmer: "Waymo", components: [
     { weight: 1, best: 405000000, lo: 380000000, hi: 440000000 },
   ] },
   { helmer: "Zoox", components: [
-    { weight: 1, best: 4500000, lo: 3900000, hi: 5300000 },
+    { weight: 1, best: 4500000, lo: 3900000, hi: 5600000 },
   ] },
 ];
 
@@ -5153,7 +5167,8 @@ function htmlTipAttrs(name, tip) {
 // Sep 24 2026 update; 271.3M rider-only mi through Jun 2026), used only for the
 // Waymo published-rate cross-check sanity diagnostic. These are WAYMO's rates,
 // not the human benchmark (that lives in METRIC_DEFS' humanMPI). Unrounded,
-// from the hub's CSV3 v1 All Locations rows (0.67446 / 0.29484 / 0.011057), to
+// from the hub's CSV3 All Locations rows (0.67446 / 0.29484 / 0.011057 in
+// both the Sep-24 file and its Oct-2 correction), to
 // four significant figures; until 2026-10-03 they were the page's 2-dp 0.67 /
 // 0.29 / 0.01, and dividing by the rounded 0.01 showed serious-injury+ at 3.6x
 // where the unrounded rate gives 3.3x (audit #8). airbag is "any vehicle" —

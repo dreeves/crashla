@@ -9,9 +9,10 @@ import fs from "node:fs";
 //     company disclosure, superseding the earlier ~1M-late-2025 press floor)
 //   ~2M cumulative autonomous miles late Mar 2026 (CleanTechnica 2026-03-24 /
 //     Robot Report)
-//   >3M miles on public roads, stated Aug 5, 2026 (CNBC/Bloomberg; Claims
-//     Journal Aug 6; "miles on public roads" vs the earlier "autonomous
-//     miles" wording, both driverless counts: data/README.md, Zoox anchors)
+//   >3M miles on public roads, stated Aug 5, 2026 (Bloomberg Aug 5; Las Vegas
+//     Sun and Claims Journal Aug 6; "miles on public roads" vs the earlier
+//     "autonomous miles" wording, both driverless counts: data/README.md, Zoox
+//     anchors)
 // The milestones carry real slack ("~"/">"/"approximately"), so centrals are
 // pinned within 15% and the kyoom band must contain the round published number.
 // The Mar and Jul knots (2026-10-27) are pinned with the rest of the 2026

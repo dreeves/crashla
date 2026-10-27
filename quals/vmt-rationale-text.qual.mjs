@@ -96,10 +96,12 @@ const FACTS = [
   [r => /Sub 5/.test(r.rationale) && !/Aug 28/.test(r.rationale), "dates Sub 5 other than Aug 28"],
   // #79: the Oct-Dec 2025 bridge was x1.0653 before the 2026-08-28 move
   [r => /x1\.0688/.test(r.rationale), "gives x1.0688 as the prior bridge factor"],
-  // #80, restated 2026-10-27: until Oct 5 the hub did not link Waymo's
-  // corrected CSV4 v2, and this fact required saying so. Waymo's release
-  // notes of Oct 2, 2026 (uploaded Oct 5) replace the Sep 24 files, and the
-  // hub page has linked CSV4 v2 since between Oct 4 and Oct 6.
+  // #80, restated 2026-10-27: until at least Oct 4, 2026 01:54 UTC the hub
+  // did not link Waymo's corrected CSV4 v2, and this fact required saying
+  // so. Waymo's release notes dated Oct 2 (uploaded Oct 5) say the corrected
+  // CSV3 and CSV4 "should replace the files released on September 24", and
+  // the hub has linked CSV4 v2 (not CSV3 v2) since between Oct 4 and Oct 6
+  // UTC.
   [r => /CSV4 v2/.test(r.rationale) && /not yet linked/.test(r.rationale), "says Waymo's corrected CSV4 v2 is not yet linked (the hub has linked it since Oct 4-6, 2026)"],
   // 2026-10-27 sweep: NHTSA's notice FR 2026-15485 grants Zoox's FMVSS
   // exemption "Issued on July 28, 2026", effective Jul 31 (13 rationales
