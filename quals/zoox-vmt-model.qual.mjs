@@ -27,13 +27,13 @@ import { parseCsv } from "./csv-parse.mjs";
 //     adds 0.10 in quadrature from October, when fleet growth was announced
 //     but not quantified (the NTA's 100-vehicle cap expired Sep 25). Edges
 //     round to 1,000.
-//   - Cumulative band: knots at end-March and end-July from the March and
-//     August statements (each read as of up to a week before its date, less
-//     the 40,080 pre-series driverless miles at their own band, 30,127.3 to
-//     59,986.6, then carried to the month's end at 0.7x-1.3x the model's
-//     daily miles, rounded outward), the Dec-2025 knot as
+//   - Cumulative band: a knot at end-March and a floor at end-July, from the
+//     March and August statements (each read as of up to a week before its
+//     date, less the 40,080 pre-series driverless miles at their own band,
+//     30,127.3 to 59,986.6, then carried to the month's end at 0.7x-1.3x the
+//     model's daily miles, rounded outward), and the Dec-2025 knot as
 //     zoox-vmt-provenance.qual pins it, chained forward with the monthly
-//     bands and narrowed back from each knot. The July knot is a floor only:
+//     bands and narrowed back from each. The July bound is a floor only:
 //     "more than" sets no ceiling, and Zoox's own "more than one million
 //     autonomous miles" of Mar 11, 2026 came when the series stood near 1.84M.
 
@@ -141,4 +141,4 @@ assert.deepEqual(mismatches, [],
 Expectata: each month's miles, band and cumulative band equal the model's.
 Resultata: ${mismatches.join("; ")}.`);
 
-console.log(`qual pass: Zoox's 2026 rows follow the statement-window model (rest ${Math.round(lvQ1)} a day Jan 1-Mar 24, ${Math.round(lvW2)} a day from Mar 25), with knots at end-March [${knots["2026-03"]}] and end-July [${knots["2026-07"]}]`);
+console.log(`qual pass: Zoox's 2026 rows follow the statement-window model (rest ${Math.round(lvQ1)} a day Jan 1-Mar 24, ${Math.round(lvW2)} a day from Mar 25), with a knot at end-March [${knots["2026-03"]}] and a floor at end-July (${knots["2026-07"][0]})`);

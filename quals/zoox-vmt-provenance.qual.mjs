@@ -15,8 +15,8 @@ import fs from "node:fs";
 //     anchors)
 // The milestones carry real slack ("~"/">"/"approximately"), so centrals are
 // pinned within 15% and the kyoom band must contain the round published number.
-// The Mar and Jul knots (2026-10-27) are pinned with the rest of the 2026
-// rows by zoox-vmt-model.qual.
+// The Mar knot and the Jul floor (2026-10-27) are pinned with the rest of
+// the 2026 rows by zoox-vmt-model.qual.
 
 const MILESTONES = [
   { month: "2025-12", published: 1300000 },

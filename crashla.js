@@ -507,7 +507,9 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //   the Sep-24-2026 ones; supersedes the Kusano et al. 56.7M paper
 //   2026-08-22): Any-injury 1.95..6.71 -> blended 3.77 (observed, i.e.
 //   without the hub's 32% Blincoe correction: 1.34..4.58 -> 2.58); Airbag
-//   (any vehicle) 1.23..2.77 -> 1.61; SSI+ 0.103..0.395 -> 0.213.
+//   (any vehicle) 1.23..2.77 -> 1.61; SSI+ 0.103..0.395 -> 0.213. The CSV3 v2
+//   file (the hub's own CSV3 link still serves v1):
+//   https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV3%20-%20Collision%20Counts%20and%20Comparison%20to%20Benchmarks%20202009-202606-2022benchmark_v2.csv
 //   CRSS 2024 microdata (NHTSA; weighted crashed in-transport vehicles, VMT
 //   3,294,031M per 813791): Hospitalization+ (anyone transported for
 //   treatment, or an A or K injury) 0.512 per M mi nationally; for urban
@@ -2868,9 +2870,9 @@ function renderDistributionChart(series) {
   // the samples around the largest, off by up to 1.6e-3 (Tesla's at-fault
   // Peak read 323.0K for a maximum at 322,924) and dependent on the frame,
   // i.e. on which helmers were checked (Zoox 935.0K with four, 935.1K with
-  // six; audit #50). The search finds a log-normal's mode, its median, as the
-  // ln(density) parabola before it did (a parabola on the density itself read
-  // a human band's Peak 87.5M against its Median 87.4M; audit #89).
+  // six; audit #50). A parabola on the density itself had read a human band's
+  // Peak 87.5M against its Median 87.4M (audit #89); human bands now take
+  // their exact peak (below).
   const GOLDEN = (Math.sqrt(5) - 1) / 2;
   const frameGrid = logUniformGrid(logMin, logMax, DIST_FRAME_POINTS);
   let yMax = 0;
@@ -2889,8 +2891,21 @@ function renderDistributionChart(series) {
       if (f1 > f2) { b = u2; u2 = u1; f2 = f1; u1 = b - GOLDEN * (b - a); f1 = at(u1); }
       else { a = u1; u1 = u2; f1 = f2; u2 = a + GOLDEN * (b - a); f2 = at(u2); }
     }
-    c.peakX = Math.exp((a + b) / 2);
+    // A human band's density over ln x (what the chart draws) is a normal
+    // centred on its median, so its peak is the median exactly. The search
+    // only lands near it, which prints differently when the median is a whole
+    // number of its unit: the Uber/Lyft airbag band, 300K-1.2M since the
+    // 2026-10-27 hub re-pin, read "Peak: 600.0K" against "Median: 600K".
+    // Human curves take the median (the one branch). The second assert holds
+    // the chosen peak at least as high as the search's result (for an ADS
+    // curve it compares that result with itself). A tolerance on the search's
+    // bracket instead would misfire: the density is flat to the last bit for
+    // about 1e-8 sigma around the median, where the bracket drifts.
+    const searched = Math.exp((a + b) / 2);
+    c.peakX = c.est.k === null ? c.postMedian : searched;
     assert(Number.isFinite(c.peakX), "distribution chart: peak search failed", {helmer: c.helmer, i, a, b});
+    assert(c.densityFn(c.peakX) >= c.densityFn(searched),
+      "distribution chart: a human band's median is not its peak", {helmer: c.helmer, peak: c.peakX, searched});
     c.points = [...frameGrid.map(u => [u, c.densityFn(Math.exp(u))]), ...own.map((u, j) => [u, ownYs[j]])]
       .sort((p, q) => p[0] - q[0]);
     // The y scale covers every drawn sample and both markers (the refined
@@ -5734,8 +5749,10 @@ Claude notes:
   // reports it obtains by public-records request); three SGO "Serious"
   // filings (30270-8968, 30270-10112, 30270-15547) are not serious by the
   // police reports, and one (30270-13817) still awaits a police crash report.
-  // (Facts: hub CSV2 v1 "Is Suspected Serious Injury+"; Sep-24-2026 release
-  // notes p. 2 on 30270-13817, p. 8 on relying on the police crash report.
+  // (Facts: hub CSV2 v1 "Is Suspected Serious Injury+", unchanged in the
+  // Oct-2-2026 release; that edition of the release notes, which the hub and
+  // this page link, p. 2 on 30270-13817 and p. 9 on relying on the police
+  // crash report (pp. 2 and 8 in the Sep-24 edition).
   // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
   const waySsiNote = `The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious per the police reports, and one (30270-13817) still awaits a police crash report.`;
   sections.push(`

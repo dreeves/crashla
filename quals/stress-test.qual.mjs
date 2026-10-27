@@ -188,6 +188,11 @@ Resultata: ${plain.byHelmer.Waymo[key].verdictKey} at ${plain.byHelmer.Waymo[key
 //     lag model (data/slurp.py MONTHLY_ARRIVAL_LAG) thins Zoox's 2026-07
 //     Monthly-track miles to its 5-Day share, 0.63 [0.25, 1.0], because its
 //     July Monthly reports are not in the Sep-15-2026 file yet.
+//   - by 7b348ce (2026-10-27, after the Oct-15 release): still worse, 0.839x.
+//   - 2026-10-27 (later): still worse, 0.839x -> 0.865x: Zoox's 2026 rows
+//     rebuilt on the per-day rate between its statements (0.821x in d73ce85,
+//     whose end-July knot still had a ceiling; 0.865x once the July
+//     statement became a floor only).
 // Expect this assertion to keep alternating; re-pin it each release rather
 // than treating either direction as the stable truth.
 assert.ok(
@@ -208,6 +213,9 @@ Resultata: ${plain.byHelmer.Zoox.all.verdictKey} at ${plain.byHelmer.Zoox.all.ra
 //     uncertainty (audit finding #18; 1.0023x -> 0.980x).
 //   - 2026-10-04: still worse, ceiling 0.980x -> 0.968x, from the
 //     Monthly-report lag model (Zoox's 2026-07 at its 5-Day share).
+//   - by 7b348ce (2026-10-27, after the Oct-15 release): still worse, 0.898x.
+//   - 2026-10-27 (later): still worse, 0.898x -> 0.926x, the Zoox 2026
+//     rebuild (0.874x in d73ce85, with the end-July ceiling).
 // Re-pin it like the full-history one when a release or a VMT re-pin moves it.
 const zooxDefault = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {

@@ -125,8 +125,10 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
 //      above half its height) must carry at least 24 path vertices.
 //  (c) The peak was a parabola through three linear density samples, inexact
 //      for a log-normal, so a human band's Peak read 87.5M against its
-//      Median's 87.4M, though a log-normal's mode is its median. The parabola
-//      is now fit to ln(density), which is exact there.
+//      Median's 87.4M, though a log-normal's density over ln x peaks at its
+//      median. The parabola was then fit to ln(density), exact there; the
+//      golden-section search replaced it the next day (audit #50), and since
+//      2026-10-27 a human band's Peak is its median exactly (the last block).
 {
   const HALO = 0.75; // half the .month-dot stroke (style.css), drawn outside r
   const sweep = vm.runInContext(`
@@ -222,7 +224,9 @@ Resultata: ${JSON.stringify(problems.humanPeak.slice(0, 4))} (${problems.humanPe
 // 1.6e-3 (Tesla's at-fault Peak read 323.0K for a maximum at 322,924, 322.9K)
 // and moved with the frame, i.e. with which helmers were checked (Zoox 935.0K
 // with four, 935.1K with six). Each Peak tooltip must print the maximum a
-// dense search of the curve's own density finds, whichever helmers are on.
+// dense search of the curve's own density finds, whichever helmers are on;
+// for a human band, the exact maximum, its median, which the search must
+// find to 1e-6 in ln x (2026-10-27).
 {
   const swept = vm.runInContext(`
     (() => {
@@ -254,19 +258,65 @@ Resultata: ${JSON.stringify(problems.humanPeak.slice(0, 4))} (${problems.humanPe
             const curves = monthlySummaryRows(series).filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]);
             const peaks = [...renderDistributionChart(series).matchAll(/fill="none" data-tip="(Peak: [^\\n"]*)/g)].map(m => m[1].slice(6));
             curves.forEach((r, i) => out.push({state: mk + " / " + full.months[a] + ".." + full.months[b], set: set.length, helmer: r.helmer,
-              shown: peaks[i], want: fmtMiles(trueMode(r.mpiEstimates[mk]))}));
+              // A human band's density over ln x peaks at its median
+              // exactly (2026-10-27): a search lands only near it, which
+              // prints differently when the median is a whole number of its
+              // unit (fmtMiles's "600K" against "600.0K"). The search still
+              // has to find the median there, to 1e-6 in ln x.
+              shown: peaks[i], want: fmtMiles(r.mpiEstimates[mk].k === null ? r.mpiEstimates[mk].postMedian : trueMode(r.mpiEstimates[mk])),
+              humanOff: r.mpiEstimates[mk].k === null ? Math.abs(Math.log(trueMode(r.mpiEstimates[mk]) / r.mpiEstimates[mk].postMedian)) : 0}));
           }
         }
       }
       return out;
     })()`, ctx);
   const wrong = swept.filter(p => p.shown !== p.want);
+  const humanOff = swept.filter(p => !(p.humanOff < 1e-6));
+  assert.ok(humanOff.length === 0,
+    `Replicata: search each human band's density for its maximum (a 1,000-step search over its extent refined by golden section) on every metric and window above.
+Expectata: the band's median, to 1e-6 in ln x (a log-normal's mode is its median).
+Resultata: ${humanOff.length} off, e.g. ${JSON.stringify(humanOff.slice(0, 3))}.`);
   const byKey = new Map();
   for (const p of swept) { const k = p.state + " / " + p.helmer; byKey.set(k, [...(byKey.get(k) || []), p.shown]); }
   const shifting = [...byKey].filter(([, v]) => new Set(v).size > 1);
   assert.ok(wrong.length === 0 && shifting.length === 0,
     `Replicata: render the distribution chart for every metric over ${new Set(swept.map(p => p.state)).size / 10} windows with four helmers on, and over the default and full windows with all six, and read each curve's Peak tooltip.
-Expectata: the maximum of the curve's own density (a 1,000-step search over its extent refined by golden section), printed as the chart prints it, and the same with either helmer set.
+Expectata: the maximum of the curve's own density (a 1,000-step search over its extent refined by golden section; for a human band, its median, where its density over ln x peaks exactly), printed as the chart prints it, and the same with either helmer set.
 Resultata: ${wrong.length} of ${swept.length} Peaks off, e.g. ${JSON.stringify(wrong.slice(0, 4))}; ${shifting.length} that change with the helmer set, e.g. ${JSON.stringify(shifting.slice(0, 3))}.`);
   console.log(`qual pass: ${swept.length} distribution Peaks print their curve's own maximum, whichever helmers are on`);
+}
+
+// --- A human band centred on a whole number of its unit ---------------------
+// (2026-10-27.) The hub re-pin made the Uber/Lyft airbag band 300K-1.2M,
+// centred on exactly 600,000. fmtMiles prints a whole number of its unit
+// without ".0" (audit #58), so the Median read "600K", while the Peak, the
+// midpoint of a search bracket, could only land near 600,000 and read
+// "600.0K". A human band's density over ln x peaks at its median, so its
+// Peak is its Median exactly.
+// Pinned here on synthetic bands in two units, independent of the data.
+{
+  const shown = vm.runInContext(`
+    (() => {
+      const full = monthSeriesData();
+      const band = METRIC_BY_KEY.airbag.humanMPI.HumansUS;
+      const saved = [band.lo, band.hi];
+      for (const d of ALL_HELMERS) monthHelmerEnabled[d] = d === "HumansUS";
+      selectedMetricKey = "airbag";
+      const out = [];
+      for (const [lo, hi] of [[250000, 1000000], [40000, 90000], [2000000, 8000000]]) {
+        band.lo = lo; band.hi = hi;
+        // a fresh series each time: windowSummaryRows keeps one series's rows
+        const series = sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1);
+        const tips = [...renderDistributionChart(series).matchAll(/fill="none" data-tip="((?:Peak|Median): [^\\n"]*)/g)].map(m => m[1]);
+        out.push({lo, hi, tips, want: fmtMiles(Math.sqrt(lo * hi))});
+      }
+      [band.lo, band.hi] = saved;
+      return out;
+    })()`, ctx);
+  const wrong = shown.filter(s => JSON.stringify(s.tips) !== JSON.stringify([`Peak: ${s.want}`, `Median: ${s.want}`]));
+  assert.ok(wrong.length === 0,
+    `Replicata: give Humans (US average)'s airbag band edges 250K-1M, 40K-90K and 2M-8M in turn (centres 500,000, 60,000 and 4,000,000, whole numbers of their units), show it alone on the default window, and read its Peak and Median tooltips.
+Expectata: both print the centre as fmtMiles prints it ("Peak: 500K", "Median: 500K", and likewise "60K" and "4M"), a log-normal's density over ln x peaking at its median.
+Resultata: ${JSON.stringify(wrong)}.`);
+  console.log(`qual pass: ${shown.length} human bands centred on a whole number of their unit show Peak = Median exactly`);
 }

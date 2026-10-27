@@ -50,9 +50,10 @@ Resultata: lo=${band.lo} (off ${(100 * (band.lo - expLo) / expLo).toFixed(1)}%),
   // The geometric-mean central (used by the "Nx safer" cards) must sit near
   // the hub's mileage-blended value — sanity that the band brackets the right
   // point. 20% (was 15% until 2026-09-25, human-approved): the thru-Jun-2026
-  // airbag span is lopsided around its blend (geomean 17% off), because the
-  // high-rate edge is Atlanta. Waymo's unlinked CSV3 v2 (Sep 28) narrows it to
-  // +14.9%; whether to return to 15% is open until the hub links v2.
+  // airbag span is lopsided around its blend, because the high-rate edge is
+  // Atlanta: geomean 17.1% off on the Sep-24 file, 14.65% on CSV3 v2 (pinned
+  // 2026-10-27). 20% stays: at 15% the margin would be 0.35 points, and the
+  // v1-to-v2 correction alone moved the gap 2.5.
   const geo = Math.sqrt(band.lo * band.hi);
   const geoIpmm = 1e6 / geo;
   assert.ok(
@@ -123,7 +124,9 @@ const CRSS2024 = {
 };
 const BLINCOE2023_INJURY_UNREPORTED = 0.319; // Table 2-9, injury vehicles
 const HUB_AREAS = {
-  // CSV3 v2 (2026-10-27; v1 until then), All Crashes, Benchmark IPMM: [observed any-injury (Dynamic), any-vehicle airbag (Dynamic)]
+  // CSV3 v2 (2026-10-27; v1 until then), All Crashes, Benchmark IPMM: [observed any-injury (Dynamic), any-vehicle airbag (Dynamic)].
+  // The file (Last-Modified Sep 28, 2026 22:45:57 GMT; the hub's own CSV3 link still serves v1):
+  // https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV3%20-%20Collision%20Counts%20and%20Comparison%20to%20Benchmarks%20202009-202606-2022benchmark_v2.csv
   "Phoenix (Maricopa)": [1.33818, 1.32096],
   "SF Bay Area":        [4.58471, 1.93367],
   "Los Angeles":        [1.70213, 1.23418],
