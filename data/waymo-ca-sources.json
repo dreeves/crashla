@@ -1,0 +1,364 @@
+[
+  {
+    "id": 0,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2023-av-deployment---0601-0831.zip",
+    "member": "2023 AV Deployment - 0601 0831/Waymo/Driverless Deployment/PSG0038152_2023_10_AV_Month-Level_Part0.csv",
+    "sha256": "22b19a8e6fde040a3c7db511d674fd1aa2ad8e22287783f5e028b25ae85aea3d",
+    "months": [
+      "2023-08"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 1,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2023-av-deployment---0901-1130(2).zip",
+    "member": "2023 AV Deployment - 0901 1130/Waymo/Driverless Deployment/PSG0038152_2024_01_AV_Month-Level_Part0.csv",
+    "sha256": "44fec7c3591e6ec6207dfe8c657bb804503e229629a805e754627b7440ab10cc",
+    "months": [
+      "2023-09",
+      "2023-10",
+      "2023-11"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 2,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2024-av-deployment---1201-0229(1).zip",
+    "member": "2024 AV Deployment - 1201 0229/Waymo/Driverless Deployment/PSG0038152_2024_04_AV_Month-Level_Part0.csv",
+    "sha256": "abf4c27c9b6b0b689f39bddead902c44166404576b0611a73d32ec6caf86cc05",
+    "months": [
+      "2023-12",
+      "2024-01",
+      "2024-02"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 3,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2024-av-deployment---0301-0531.zip",
+    "member": "2024 AV Deployment - 0301 0531/Waymo/Driverless Deployment/PSG0038152_2024_07_Monthy-Level.csv",
+    "sha256": "49ee7157c996dc1692b4fa694531aaa117f6efbadfebb5b46a2a61c5eb445d5b",
+    "months": [
+      "2024-03",
+      "2024-04",
+      "2024-05"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 4,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-deployment_jun_aug_2024_public.zip",
+    "member": "Waymo-2024-10-01 Jun 24-Aug24_Public.zip!Redacted/2024-10_Driverless-Deployment/PSG0038152_2024_10_AV_Month-Level.csv",
+    "sha256": "bf71b51444c556400d1ee07022f29c50f64178ab279e49e8e57a3940b413ceb3",
+    "months": [
+      "2024-06",
+      "2024-07",
+      "2024-08"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 5,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-dep-sep-nov-2024-public_2a.zip",
+    "member": "Waymo Dep Sep-Nov 2024 Public_2/Waymo Dep Sep_Nov Driverless 2024 Public/PSG0038152_2025_02_(Sep_1-Nov_30)_AV_Month-Level_Part0.csv",
+    "sha256": "c9dfb2d2497a640009eb4889bbbed62e05e1411d026c749b16e41538ab3a9c0d",
+    "months": [
+      "2024-09",
+      "2024-10",
+      "2024-11"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 6,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-dep-dec-2024--public_2.zip",
+    "member": "Waymo Dep Dec 2024  Public_2/Waymo Dep Dec 2024 Driverless Public/PSG0038152_2025_02_(Dec_1-Dec_31)_AV_Month-Level_Part0.csv",
+    "sha256": "6bcfc97ebb3e5ab4650ed36b159e428da7373f68a137456d46446ecd5e66a88f",
+    "months": [
+      "2024-12"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 7,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-driverless-deployment-2025-q1.zip",
+    "member": "Waymo Driverless Deployment 2025 Q1/PSG0038152_2025_05_AV_Month-Level_Part0.csv",
+    "sha256": "b84e8f578bb216c85fb311c599e792fec6f3266f080cd8a67e7bc765812fb8d9",
+    "months": [
+      "2025-01",
+      "2025-02",
+      "2025-03"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 8,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2025q2.zip",
+    "member": "Waymo Deployment 2025Q2/Driverless Deployment/PSG0038152_2025_08_AV_ Month_Level-Deployment.csv",
+    "sha256": "1b9a66d20a3eab9816726ed4197b5739e3a12e862ecc31c8464ded5aa4141a2a",
+    "months": [
+      "2025-04",
+      "2025-05",
+      "2025-06"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 9,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2025q3.zip",
+    "member": "Waymo Deployment 2025Q3/2025-11_Driverless-Deployment Public/PSG0038152_2025_11_AV_Month_Level-Deployment.csv",
+    "sha256": "5227764f52d5ea81ba08434da9c12e9d176771f54536764daeb25ddd15e76eab",
+    "months": [
+      "2025-07",
+      "2025-08",
+      "2025-09"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 10,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2025q4.zip",
+    "member": "Waymo Deployment 2025Q4/Driverless/PSG0038152_2026_02_AV_Month-Level_Part0-Deployment.csv",
+    "sha256": "b75a5b8cbdf60e43c4ff267d8a7bc69ded5283f11cce5b8795246c335503eaa1",
+    "months": [
+      "2025-10",
+      "2025-11",
+      "2025-12"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 11,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2026q1.zip",
+    "member": "Waymo Deployment 2026Q1/Driverless/PSG0038152_2026_05_AV_Month_Part0-Deployment.csv",
+    "sha256": "dc8b2c23c540bdd0f59d22e41c9090e7225075655672c37dbb53ddc6e1f7b7c5",
+    "months": [
+      "2026-01",
+      "2026-02",
+      "2026-03"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 12,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2026q2.zip",
+    "member": "Waymo Deployment 2026Q2/Driverless Deployment/PSG0038152_2026_08_AV_Month_Part0-Deployment.csv",
+    "sha256": "644c76649e799509000f53a158a62190cff55ddf53e6cda005b1c277f2759c6f",
+    "months": [
+      "2026-04",
+      "2026-05",
+      "2026-06"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 13,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2023-av-pilot---0301-0531/2023-av-pilot---0301-0531.zip",
+    "member": "2023 AV Pilot - 0301 0531/Waymo/Waymo CPUC Driverless AV Pilot Data Report (July 1, 2023).xlsx",
+    "sha256": "c7bcae39da0487ca7f9e78768d3ced0a3bea1b8f3706cd980df726cb702cfdcc",
+    "months": [
+      "2023-03",
+      "2023-04",
+      "2023-05"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment",
+    "sheet": "Fleetwide Data"
+  },
+  {
+    "id": 14,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2023-av-pilot---0601-0831.zip",
+    "member": "2023 AV Pilot - 0601 0831/Waymo/Waymo CPUC Driverless AV Pilot Data Appendix (Q4 2023) (October 2, 2023).xlsx",
+    "sha256": "e79b59f2822f0605d5fe124466437e7fe1553f58befebb1b2fb559194c7d2c8b",
+    "months": [
+      "2023-06",
+      "2023-07",
+      "2023-08"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment",
+    "sheet": "Fleetwide Data"
+  },
+  {
+    "id": 15,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2023-av-pilot---0901-1130.zip",
+    "member": "2023 AV Pilot - 0901 1130/Waymo/Waymo CPUC Driverless AV Pilot Data Appendix (Q1 2024) (January 1, 2024).xlsx",
+    "sha256": "c36b0de310bde3e342bcc070abd7e5bc2ce3437931dcaf8339fb79d01a926a68",
+    "months": [
+      "2023-09",
+      "2023-10",
+      "2023-11"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment",
+    "sheet": "Fleetwide Data"
+  },
+  {
+    "id": 16,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2024-av-pilot---1201-0229.zip",
+    "member": "2024 AV Pilot - 1201 0229/Waymo/Driverless Pilot/Waymo Driverless Pilot (Q2 2024)-Fleetwide Data.csv",
+    "sha256": "5cfeb843d34e33e77f3c58032e112441fed75d501b2d2636b857b86bdac5cc66",
+    "months": [
+      "2023-12",
+      "2024-01",
+      "2024-02"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment"
+  },
+  {
+    "id": 17,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/2024-av-pilot---0301-0531(1).zip",
+    "member": "2024 AV Pilot - 0301 0531/Waymo/Waymo CPUC Driverless AV Pilot Data Appendix (Q3 2024) (Jul 1, 2024) Fleetwide Data.csv",
+    "sha256": "ed67bdb9a59760911f09e2f4866ddaff784f172a4ff47bdbd56d2f5ce0b442c4",
+    "months": [
+      "2024-03",
+      "2024-04",
+      "2024-05"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment"
+  },
+  {
+    "id": 18,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot_jun_aug_2024_public.zip",
+    "member": "2024.10.01 Quarterly Pilot Data Reports/Waymo/Waymo CPUC Driverless AV Pilot Data Appendix (Q4 2024) (Oct 1, 2024_Fleetwide-Data.csv",
+    "sha256": "80aaa50796b4e0b094eb231da470db1bdde983e82090231d3295c68a3a730dbb",
+    "months": [
+      "2024-06",
+      "2024-07",
+      "2024-08"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment"
+  },
+  {
+    "id": 19,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/sep_nov-2024-quarterly-pilot-data-reports.zip",
+    "member": "2025.01.01 Quarterly Pilot Data Reports/Waymo/PSG0038152_2025_02_Driverless AV Pilot Data Appendix (Sept-Nov, 2024) (Feb 3, 2025)-Fleetwide Data.csv",
+    "sha256": "b71ec07dbe85824c8b43545e359b57e3c9d1d4bf3193e448aca9e047da0aaadc",
+    "months": [
+      "2024-09",
+      "2024-10",
+      "2024-11"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment"
+  },
+  {
+    "id": 20,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/dec-2024-quarterly-pilot-data-reports_2.zip",
+    "member": "Dec 2024 Quarterly Pilot Data Reports/2025.02.01 Quarterly Pilot Data Reports/Waymo/PSG0038152_2025_02_Driverless AV Pilot Data Appendix (Dec 2024) (Feb 3, 2025)-Fleetwide Data.csv",
+    "sha256": "ba5cb3deabb5eeb2aa50c025f4c8a1043c3c134ba7e0e0b0425909b848c2e57a",
+    "months": [
+      "2024-12"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment"
+  },
+  {
+    "id": 21,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot---2025-q1.zip",
+    "member": "AV Pilot - 2025 Q1/Waymo/2025-05_Driverless-Pilot/PSG0038152_2025_05_Driverless AV Pilot Data Appendix (Q1 2025) (May 16)-Fleetwide Data.csv",
+    "sha256": "e57b07ddb442c321e910a83494d1ccc1afc82b9fc352205f69e317c52a04a066",
+    "months": [
+      "2025-01",
+      "2025-02",
+      "2025-03"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment"
+  },
+  {
+    "id": 22,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot-2025q2.zip",
+    "member": "AV Pilot 2025Q2/Waymo/2025_08_Driverless-Pilot/PSG0038152_2025_08_AV_Month_Level-Pilot.csv",
+    "sha256": "06dc40f54e0447fee3822b542649541eca4dc9c12ae9d48c88f114aafac1c0f7",
+    "months": [
+      "2025-04",
+      "2025-05",
+      "2025-06"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 23,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot-2025q3.zip",
+    "member": "AV Pilot 2025Q3/Waymo/2025_11_Driverless-Pilot Public/PSG0038152_2025_11_AV_Month_Level-Pilot.csv",
+    "sha256": "6ba442add1be4e14f36b65074ae21754174a3629e812680447e81d6e52e605b8",
+    "months": [
+      "2025-07",
+      "2025-08",
+      "2025-09"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 24,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot-2025q4.zip",
+    "member": "AV Pilot 2025Q4/Waymo/2026_02_Driverless-Pilot/PSG0038152_2026_02_AV_Month-Level-Pilot.csv",
+    "sha256": "2a58aa6dc94ffe7054c6e88b57ee414949a145cf03d02d68084d736950d91ead",
+    "months": [
+      "2025-10",
+      "2025-11",
+      "2025-12"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 25,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot-2026q1.zip",
+    "member": "AV Pilot 2026Q1/Waymo/Driverless Pilot/PSG0038152_2026_05_AV_Month_Part0.csv",
+    "sha256": "a1cc99aac7006922e3b88754b879c0e229b1d87922a05294de7c80e401bded49",
+    "months": [
+      "2026-01",
+      "2026-02",
+      "2026-03"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 26,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot-2026q2.zip",
+    "member": "AV Pilot 2026Q2/Waymo/Driverless Pilot (Public)/PSG0038152_2026_08_AV_Month_Part0-Pilot.csv",
+    "sha256": "f7f17f64b44043490a448d6949d8444d227e5e082b1b7cf229f7ea521deead23",
+    "months": [
+      "2026-04",
+      "2026-05",
+      "2026-06"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 27,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/files/uploadedfiles/cpucwebsite/content/licensing/autovehicle/2023-av-pilot---1201-0228.zip",
+    "member": "2023 AV Pilot - 1201 0228/Waymo/Waymo CPUC Driverless AV Pilot Data Report (Q2 2023) (April 3, 2023).xlsx",
+    "sha256": "fadbdb54aa40d2844595eef0717491501ecf7989d12633eacc631553ea2e7daa",
+    "months": [
+      "2022-12",
+      "2023-01",
+      "2023-02"
+    ],
+    "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment",
+    "sheet": "Fleetwide Data"
+  }
+]

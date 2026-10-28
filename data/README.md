@@ -313,7 +313,8 @@ cumulative anchor is the hub figure plus E, an explicit estimate of rider-only
 miles (incl. deadhead) in metros the hub had not yet benchmarked at that date.
 `quals/waymo-vmt-provenance.qual.mjs` pins the same table. When the hub adds
 a metro, set that metro's share of E to 0 at that anchor and re-chain
-`data/vmt.csv` (the monthly shape inside each interval is preserved).
+`data/vmt.csv`, applying the monthly allocation method below to the intervals
+it covers.
 
 | Data through | Hub figure (hub CSV1) | Counted | E lo / best / hi | Excluded metros |
 |---|---|---|---|---|
@@ -356,6 +357,80 @@ unbenchmarked-county crashes of Jan-Jun 2026 at the young-market rate
 the 4.5-9.5 per M range and Poisson noise folded in. The Sep 24, 2026 update
 added no metro; the next (data through Sep 2026) is expected ~mid/late Dec
 2026.
+
+### Waymo monthly allocation
+
+Since 2026-10-27, the 21 months July 2024–March 2026 use measured California
+miles plus an allocation of the remaining miles between cumulative anchors.
+`data/waymo-ca.csv` holds CPUC driverless deployment and pilot miles, including
+deadhead; `data/waymo-ca-sources.json` identifies each public ZIP URL, member,
+field and member SHA256. `!` separates nested ZIP members; the hash is of the
+uncompressed CSV or XLSX member, not the ZIP. Older pilot workbooks use the
+`Fleetwide Data` sheet. The files retain the full measured December 2022–June
+2026 series so the extraction and calibration can be checked.
+
+Run `python3 data/waymo_vmt.py` to print the rebuilt rows as JSON without
+editing the master. The model retains every reviewed cumulative anchor's central.
+For each anchor interval, subtract measured California miles from the US
+increment. This residual includes other states and California miles outside
+CPUC's passenger-service scope; it is not simply non-California mileage.
+Compute the residual's average daily rate at the interval's duration-weighted
+midpoint, interpolate linearly between neighboring interval rates, multiply
+by each month's days, then rescale the monthly residuals to sum exactly to
+the interval's residual. Add the measured California miles back. The final
+month absorbs integer-rounding residue so no cumulative central moves. The
+measured Q2-2026 interval supplies the last interpolation slope; its existing
+monthly rows are retained.
+
+Allocation uncertainty applies only to the residual. Its log half-width is
+`0.20 * sqrt((n - 1) / 2)` for an interval of `n` months: zero for a single
+month, 0.20 for a quarter and about 0.283 for five months. Multiply the
+interval's low/high residual by the month's allocation weight and
+`exp(±half-width)`, then add that month's fixed measured California part.
+The interval edges subtract the opposite cumulative-anchor edges and the
+measured California total. The 0.20 is a modeling prior informed by
+masking the monthly detail of 30 measured California months (January
+2024–June 2026) and reconstructing them from block totals. California is a
+proxy for the unmeasured residual; these checks do not establish 95% coverage
+for national monthly mileage. The app interprets the authored edges as a
+95% two-piece log-normal prior, as for the other VMT rows.
+
+Monthly and cumulative bounds are reconciled by interval arithmetic: carry
+monthly ranges forward, constrain them backward from the cumulative knots,
+then constrain each month by the difference of its adjacent cumulative
+ranges. This preserves the known totals without treating every month's low
+or high as jointly possible. It is not a fitted joint probability model.
+
+Four older cumulative bounds now use published precision and missing-city
+allowances, with an envelope containing each retained central. The previously
+unused September 2024 CSV1 total supplies an additional measured knot, splitting
+the July–December interval into two and three months. The
+150,000-mile pre-series offset remains the same fixed convention at every
+knot and cancels in differences. Each 2024 CSV1 total sums four values
+rounded to 1,000 miles, allowing ±2,000 miles. Table 2 of the
+[56.7M-mile paper](https://arxiv.org/pdf/2505.01515) lists 5,000 Mountain View
+miles in 2024, allowing at most 5,500 missing miles at each 2024 knot. For
+January 2025, the paper's explicit 56.700M total allows ±500 miles; its
+separately listed Mountain View and Atlanta miles allow at most another
+9,250. These arithmetic envelopes are not empirically calibrated confidence
+intervals.
+
+| Knot | Published lifetime miles | Series central | Series bounds |
+|---|---:|---:|---:|
+| June 2024 | [CSV1: 22,199,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202406-2022benchmark.csv) | 21,850,000 | 21,850,000–22,056,500 |
+| July 2024 | [CSV1: 25,308,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202407-2022benchmark.csv) | 24,850,000 | 24,850,000–25,165,500 |
+| September 2024 (new knot) | [CSV1: 33,103,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202409-2022benchmark.csv) | 32,953,000 | 32,951,000–32,960,500 |
+| December 2024 | [CSV1: 50,083,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202412-2022benchmark.csv) | 49,850,001 | 49,850,000–49,940,500 |
+| January 2025 | [Paper: 56,700,000](https://arxiv.org/pdf/2505.01515) | 56,550,001 | 56,549,500–56,559,750 |
+
+December's lower edge includes the original rounded 50M milestone after the
+offset; its central carries a one-mile ledger-rounding residue. June 2024 is
+the starting boundary: its cumulative bounds and compatible monthly bounds
+are reconciled, while its monthly central is retained. Earlier history and
+April 2026 onward retain their existing methods. A separate open source
+conflict remains: the paper's yearly table sums to about 10.066M lifetime
+miles through December 2023, outside the existing 9.3M anchor's band. This
+rebuild neither resolves nor changes that earlier anchor.
 
 ### Zoox anchors
 
