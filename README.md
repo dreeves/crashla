@@ -28,7 +28,7 @@ Subject: seeming contradiction: ego-vehicle airbag > any-vehicle airbag
 
 New thing I (aka my robominions) spotted:
 
-In "CSV3 - Collision Counts and Comparison to Benchmarks 202009-202606-2022benchmark_v2.csv" note the following two benchmarks:
+In "CSV3 - Collision Counts and Comparison to Benchmarks 202009-202606-2022benchmark_v2.csv" there are the following two benchmarks:
 (a) "Ego Vehicle Airbag Deployment (non-Dynamic)" 
 (b) "Any Airbag Deployment (non-Dynamic)"
 
