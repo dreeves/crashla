@@ -28,11 +28,11 @@ Subject: seeming contradiction: ego-vehicle airbag > any-vehicle airbag
 
 New thing I (aka my robominions) spotted:
 
-In "CSV3 - Collision Counts and Comparison to Benchmarks 202009-202606-2022benchmark_v2.csv" note the following two fields:
+In "CSV3 - Collision Counts and Comparison to Benchmarks 202009-202606-2022benchmark_v2.csv" note the following two benchmarks:
 (a) "Ego Vehicle Airbag Deployment (non-Dynamic)" 
 (b) "Any Airbag Deployment (non-Dynamic)"
 
-Presumably it doesn't make sense for (a) to ever exceed (b)? There are 19 rows in which it does:
+Presumably it doesn't make sense for (a) to ever exceed (b) for a given county and "conflict partner type group"? At most (a) should equal (b) in single-vehicle crashes. But there seem to be 19 rows with (a)>(b), for example:
 
   Santa Clara, V2V Head-on     ego 0.0395 [0.0350, 0.0445]  any 0.0151 [0.0122, 0.0185]  2.62x
   San Mateo, V2V Head-on       ego 0.0480 [0.0393, 0.0581]  any 0.0233 [0.0162, 0.0326]  2.06x
@@ -47,17 +47,16 @@ Daniel Reeves
 PS: Claude typed the following, so I'm less sure it's useful but just in case:
 
 [begin Claude]
-1. The hub's CSV3 link still serves the Sep 24 file ("...202606-2022benchmark.csv", Last-Modified Sep 24, ETag 4fe9ac65...). The page shows the v2 rates, the CSV4 link already points to _v2, and the Oct 2 release notes say the new files replace the Sep 24 ones. So a downloaded CSV3 doesn't match the page.
+1. The hub's CSV3 download link still serves the Sep 24 file, not v2 (the CSV4 link was updated).
 
-2. The Oct 2 notes say the duplicated cells "only affected the Atlanta area" and that the benchmark-year error "did not affect the calculated rates in CSV3". Yet v2's Dynamic benchmarks moved in every area, e.g. any-injury: Los Angeles -2.6%, Santa Clara -6.0%, SF Bay Area +1.0%, Atlanta Area -2.2%. The non-Dynamic rows are unchanged. Is that expected?
+2. The Oct 2 notes say only Atlanta's rates were affected, but v2's dynamic rates changed in every area (any-injury: Los Angeles -2.6%, Santa Clara -6.0%, SF Bay Area +1.0%). Expected?
 
-3. The unsuffixed "Any Fatal" rows behave as non-Dynamic: they are unchanged between the two files, like every "(non-Dynamic)" row. "Any Fatal (Dynamic)" behaves as Dynamic. That is the reverse of the other outcomes' labels. Intended?
+3. Small labeling quirk: for fatal crashes the unlabeled row is the non-dynamic one ("Any Fatal" vs "Any Fatal (Dynamic)"), while every other outcome labels its non-dynamic row "(non-Dynamic)".
 
-4. Texas: which Prsn_Airbag_ID values count as a deployment? The CRIS extract's IDs differ from the CR-3 form's codes (in CRIS, 2 = NOT DEPLOYED and 3, 4, 7, 8 = deployed front, side, rear, multiple; on the form, 2 = Deployed, Front). Kusano et al. 2025 (Table A3) names only the field.
+4. Possible typo in Scanlon et al. 2024: it counts SWITRS airbag code "L" or "M" as a deployment, but M means "Air Bag Not Deployed". Your California rates look like only L was used. Relatedly, it doesn't seem to be defined anywhere which Texas airbag codes count as a deployment.
 
-5. Georgia: does the Atlanta benchmark include crashes coded as occurring on private property (DOT-523 item 89, code 16)? Georgia's GOHS crash totals exclude them. Atlanta's non-Dynamic police-reported rate is 15.2 per million miles, against 3.4-5.4 in the other areas. Nearly all of the excess is in vehicle-to-vehicle types: rear-end 4.59 vs 0.56-1.08, lateral 2.35 vs 0.30-0.63, backing 0.41 vs 0.03-0.11.
+5. Atlanta's police-reported crash rate is 15.2 per million miles, against 3.4-5.4 in the other areas, mostly crashes between vehicles. Does it include private-property crashes (parking lots, driveways)? Georgia's own crash statistics leave those out.
 [end Claude]
-
 
 ## How safe are robotaxis?
 
