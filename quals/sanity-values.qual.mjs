@@ -256,6 +256,9 @@ Resultata: no prior-only badge found.`);
 // The human replaced the rule-7 Latin placeholder with their own English:
 // human-voice facts, then an attributed "Claude:" ai-text paragraph for the
 // analysis. Pin both halves' anchors.
+// TODO: keep or drop? This requires the human's SGO caveat to contain the
+// words "Third Amended SGO" and "June 16, 2025": a disclosure the page must
+// make, but words in the human's paragraph (no wording pins, 2026-10-28).
 assert.ok(rptSection.includes('class="ai-text"') &&
     rptSection.includes("Third Amended SGO") &&
     rptSection.includes("June 16, 2025"),

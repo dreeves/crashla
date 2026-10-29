@@ -34,7 +34,9 @@ const svgHeight = Number((html.match(/viewBox="0 0 [\d.]+ ([\d.]+)"/) || [])[1])
 const tickLabels = [...html.matchAll(
   /<text class="month-tick"[^>]*\by="([\d.]+)"[^>]*>([^<]+)<\/text>/g,
 )];
-const bottomLabel = tickLabels.find(match => match[2] === "Fleet size");
+// The axis title, read from the app (no wording pins in quals, 2026-10-28).
+const fleetTitle = vm.runInContext('growthMetricSpec("fleet").yLabel', ctx);
+const bottomLabel = tickLabels.find(match => match[2] === fleetTitle);
 const bottomLabelInset = svgHeight - Number(bottomLabel?.[1]);
 assert.equal(
   bottomLabelInset,

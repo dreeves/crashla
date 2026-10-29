@@ -194,6 +194,8 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
   }
   const xcheck = section(html, "Waymo cross-check");
   const waymoAll = inc.filter(i => i.helmer === "Waymo").length;
+  // TODO: "incidents over" is the page's wording around the count tested;
+  // check only the count (no wording pins, 2026-10-28).
   if (!xcheck.includes(`(${waymoAll.toLocaleString("en-US")} incidents over `)) problems.separators.push(`${wname} Waymo cross-check: ${JSON.stringify((/\(([^)]*) incidents over /.exec(xcheck) || ["(missing)"])[0])}, want "(${waymoAll.toLocaleString("en-US")} incidents over "`);
 }
 assert.ok(dispersionChecked >= 12, `the sweep recomputed ${dispersionChecked} dispersion rows (expected at least 12)`);

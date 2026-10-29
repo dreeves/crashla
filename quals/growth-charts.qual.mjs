@@ -86,6 +86,10 @@ for (const [key, c] of Object.entries(charts)) {
   const ftips = tipsOf(c.forecast), ttips = tipsOf(c.trajectory);
   for (const curve of c.curves) {
     const want = [curve.median, curve.lo90, curve.hi90].map(TIP_FMT[key].forecast);
+    // TODO: "Median:" and "90% CI:" here, and "Range:" and the value labels
+    // in the history check below, are the tooltips' words around the figures
+    // tested; read them from the app or check only the figures (no wording
+    // pins, 2026-10-28).
     const body = `Median: ${want[0]}\n90% CI: ${want[1]} – ${want[2]}`;
     if (!ftips.includes(`${curve.label}\n${body}`))
       problems.push(`${key}: the forecast chart's ${curve.label} tooltip should read "${body.replace("\n", " / ")}"; its tooltips are ${JSON.stringify(ftips.filter(t => t.startsWith(curve.label)))}`);

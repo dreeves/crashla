@@ -86,6 +86,8 @@ const endpoints = JSON.parse(JSON.stringify(vm.runInContext(`
 // 2026-10-03 (audit #57); growth-charts.qual pins the two charts' texts equal.
 const fmtWhole = vm.runInContext("fmtWhole", ctx);
 for (const e of endpoints) {
+  // TODO: "Median:" is the tooltip's word; find the figure without it (no
+  // wording pins, 2026-10-28).
   const tip = `Median: ${fmtWhole(Number(e.median.toPrecision(3)))}`;
   assert.ok(html.includes(tip),
     `Replicata: look for the ${e.key} forecast-endpoint median in the fleet trajectory chart.

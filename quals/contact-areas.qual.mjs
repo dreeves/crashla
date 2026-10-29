@@ -103,6 +103,8 @@ const vmtTip = vm.runInContext(`
      cap: vmtEndTooltip("2026-05", 1000000, VMT_RANGE_EDGE.lo),
      edge: VMT_RANGE_EDGE })
 `, ctx);
+// TODO: this pins the VMT tooltip's words ("miles", "Range:", "incident")
+// along with its figures; check only the figures (no wording pins, 2026-10-28).
 assert.equal(vmtTip.dot, "2026-05\n1,234,567 miles\nRange: 1,000,000 – 1,500,000\n1 incident",
   `Replicata: call vmtDotTooltip for a dot (value, range, incident count).
 Expectata: "<month>\\n<miles> miles\\nRange: <lo> – <hi>\\n1 incident" (splur singular).

@@ -626,7 +626,10 @@ const meanCheck = vm.runInContext(`
     const tips = [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]);
     for (const h of ADS_HELMERS) {
       const e = rows.find(r => r.helmer === h).mpiEstimates[mk];
-      const tip = tips.find(t => t.startsWith("Median: " + fmtMiles(e.postMedian) + "\\n"));
+      // The median marker, found by the value its first line reports.
+      const tip = tips.find(t => t.split("\\n")[0].endsWith(": " + fmtMiles(e.postMedian)));
+      // TODO: this reads the mean after the tooltip's word "mean"; find it
+      // without the page's wording (no wording pins in quals, 2026-10-28).
       const shown = (tip.match(/ · mean ([^ ]+) · /) || [])[1];
       const aMin = Math.min(...e.comps.map(c => c.a));
       // numeric mean of the drawn density (w.r.t. ln x): wide fine grid

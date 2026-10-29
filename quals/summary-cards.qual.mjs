@@ -130,6 +130,9 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
     const card = cards[labels[helmer]];
     // #6: the line names the metric it scores.
     const r = byMetric.stressAll;
+    // TODO: keep or drop the ban on the label "Overall:"? A wording check,
+    // kept because it guards a meaning: the line is the All-incidents verdict,
+    // not an overall one (no wording pins, 2026-10-28).
     if (card.stress === null || CARD_STRESS_LABEL === null || CARD_STRESS_LABEL === "Overall:" ||
         !card.stress.startsWith(CARD_STRESS_LABEL + " ") ||
         !card.stress.endsWith(`${expectMultText(r.ratioLo)}x – ${expectMultText(r.ratioHi)}x`)) {

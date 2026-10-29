@@ -191,6 +191,9 @@ for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
       const [best, lo, hi] = mode === "month" ? [r.best, r.lo, r.hi] : [r.cume, r.kmin, r.kmax];
       const mine = tips.filter(t => t.startsWith(r.month + "\n"));
       const where = `${helmer} ${r.month} (${mode === "month" ? "monthly" : "cumulative"} view)`;
+      // TODO: "miles", "Range:" and "incident(s)" here are the tooltips' words
+      // around the figures tested; check only the figures (no wording pins,
+      // 2026-10-28).
       const dot = mine.filter(t => t.startsWith(`${r.month}\n${fmtWhole(best)} miles\n`) && /\bincidents?\b/.test(t));
       if (dot.length !== 1) { fail(`${where}: expected one dot tooltip opening "${r.month} / ${fmtWhole(best)} miles"; found ${JSON.stringify(mine)}`); continue; }
       const count = mode === "month" ? n : running;

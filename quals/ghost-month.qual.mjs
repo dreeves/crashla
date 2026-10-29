@@ -197,6 +197,9 @@ for (const cumulative of [false, true]) {
       const tipSet = new Set([...markup.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)].map(m => `${m[1]}\u0000${m[2]}`));
       for (const g of rows) {
         const [best, lo, hi] = cumulative ? [g.cume, g.kmin, g.kmax] : [g.best, g.lo, g.hi];
+        // TODO: "miles" and "Range:" below are the tooltips' words around the
+        // figures tested; check only the figures and the note (no wording pins,
+        // 2026-10-28).
         const want = [
           `${g.month}\n${fmt(lo)} miles\n${app.edge.lo}`,
           `${g.month}\n${fmt(hi)} miles\n${app.edge.hi}`,

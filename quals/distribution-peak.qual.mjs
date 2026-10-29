@@ -46,6 +46,8 @@ const out = vm.runInContext(`
     const curves = rows.filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]).map(r => ({helmer: r.helmer, est: r.mpiEstimates[mk]}));
     const {xMin, xMax} = distributionExtent(curves.map(c => c.est));
     const html = renderDistributionChart(series);
+    // TODO: finds the peak markers by the word "Peak:"; find them by
+    // structure or value (no wording pins, 2026-10-28).
     const peaks = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
       .map(m => ({cx: Number(m[1]), text: m[2].split("\\n")[0]})).filter(p => p.text.startsWith("Peak:"));
     // The plot frame is the clip rect (its right margin follows the tick
@@ -176,6 +178,9 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
           || c.cx < x0 || c.cx > x1) problems.disc.push(where);
       if (c.cy - c.r - HALO < y0) problems.top.push(where);
     }
+    // TODO: tells human curves by "Range:" and compares Peak with Median by
+    // stripping those words; compare the values without the words (no
+    // wording pins, 2026-10-28).
     // human curves carry a "Range:" line, not a "median/peak" line
     for (let i = 0; i + 1 < circles.length; i += 2) {
       const [peak, median] = [circles[i], circles[i + 1]];

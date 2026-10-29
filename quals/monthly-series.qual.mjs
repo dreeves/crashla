@@ -564,6 +564,8 @@ Expectata: incomplete reporting shrinks the effective VMT, so the partial-month 
 Resultata: partial=${Math.round(partialK.partMpi)}, full=${Math.round(partialK.fullMpi)}.`,
 );
 
+// TODO: keep or drop? This requires the label "95% CI" in the source, a
+// wording pin (2026-10-28 rule).
 assert.ok(
   appScript.includes("95% CI"),
   `Replicata: inspect the MPI / distribution datapoint tooltip source.

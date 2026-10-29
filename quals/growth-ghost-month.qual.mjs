@@ -119,8 +119,7 @@ const vertices = d => [...d.matchAll(/[ML] ([\d.]+) ([\d.]+)/g)].map(m => `${m[1
 for (const key of METRICS) {
   vm.runInContext(`selectedGrowthMetric = ${JSON.stringify(key)}`, ctx);
   const html = vm.runInContext("renderFleetTimeSeriesChart()", ctx);
-  const spec = { valueLabel: vm.runInContext("growthMetricSpec(selectedGrowthMetric).valueLabel", ctx),
-    tipFmt: vm.runInContext("growthMetricSpec(selectedGrowthMetric).tipFmt", ctx) };
+  const spec = { tipFmt: vm.runInContext("growthMetricSpec(selectedGrowthMetric).tipFmt", ctx) };
   const circles = [...html.matchAll(/<circle([^>]*)><\/circle>/g)].map(m => m[1]);
   const marks = circles.filter(a => / r="3\.3"/.test(a)).map(a => ({
     ghost: / class="month-ghost"/.test(a), x: /cx="([\d.]+)"/.exec(a)[1], y: /cy="([\d.]+)"/.exec(a)[1],
@@ -149,11 +148,15 @@ for (const key of METRICS) {
       if (!dashedV.slice(1, -1).includes(at)) problems.push(`${key} · ${lane.label}: the dashed line ${JSON.stringify(dashedV)} does not pass through the faded dot at ${at}`);
       if (solidV.some(v => v.split(" ")[0] === g.x)) problems.push(`${key} · ${lane.label}: the solid line reaches the faded dot's month (x ${g.x})`);
     }
+    // The tooltip gives the point's values and ends with the ghost note; its
+    // other words are the page's and not checked (no wording pins, 2026-10-28).
     for (const month of ghostMonths) {
       const p = lane.points.find(q => q.month === month);
       if (!p) continue; // reported in section 1
-      const want = `${lane.helmer} · ${month}\n${spec.valueLabel}: ${spec.tipFmt(p.best)}\nRange: ${spec.tipFmt(p.lo)} – ${spec.tipFmt(p.hi)}\n${GHOST_NOTE}`;
-      if (!tips.includes(want)) problems.push(`${key} · ${lane.label}: no tooltip reads ${JSON.stringify(want)}`);
+      const values = [p.best, p.lo, p.hi].map(v => spec.tipFmt(v));
+      const tip = tips.find(t => t.startsWith(`${lane.helmer} · ${month}\n`));
+      if (!tip || !tip.endsWith(`\n${GHOST_NOTE}`) || !values.every(v => tip.includes(v)))
+        problems.push(`${key} · ${lane.label}: the ${month} tooltip ${JSON.stringify(tip)} should give ${values.join(", ")} and end with the ghost note`);
     }
   }
   // A fork's dashed line leaves from its helmer's faded dot.
@@ -170,7 +173,7 @@ vm.runInContext(`selectedGrowthMetric = "fleet"`, ctx);
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: load the app in vm with the analysis rows and the ghost rows (data/vmt.js) as init does, build and render the growth chart's Fleet size, Rides and Miles lines, and read FLEET_HISTORY, RIDES_HISTORY and data/vmt.csv.
-Expectata: every line's history in month order, with a point at each ghost month (${ghostMonths.join(", ")}), flagged ghost, and none later; each fork leaving from its helmer's newest point; the Miles points at the ghost months equal to the ghost rows' cumulative miles and bands; Tesla's fleet at a ghost month its miles over the month's days at ${MILES_PER_CAR_DAY} miles a car, its range covering that miles band; Tesla's rides after 2026-06 the cumulative miles over the miles-per-ride corridor, within 500; and on the chart each ghost point a faded dot (class month-ghost) that the dashed line passes through from where the solid line ends, the solid line never reaching it, its tooltip the history tooltip followed by the VMT charts' ghost note.
+Expectata: every line's history in month order, with a point at each ghost month (${ghostMonths.join(", ")}), flagged ghost, and none later; each fork leaving from its helmer's newest point; the Miles points at the ghost months equal to the ghost rows' cumulative miles and bands; Tesla's fleet at a ghost month its miles over the month's days at ${MILES_PER_CAR_DAY} miles a car, its range covering that miles band; Tesla's rides after 2026-06 the cumulative miles over the miles-per-ride corridor, within 500; and on the chart each ghost point a faded dot (class month-ghost) that the dashed line passes through from where the solid line ends, the solid line never reaching it, its tooltip giving the point's values and ending with the VMT charts' ghost note.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 12).join("\n")}`);
 console.log(`qual pass: every growth line carries the ghost months (${ghostMonths.join(", ")}) as the VMT charts do, faded on the dashed stretch with the ghost note; Tesla's fleet and rides there follow data/vmt.csv`);
