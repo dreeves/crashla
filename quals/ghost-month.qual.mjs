@@ -148,7 +148,7 @@ vm.runInContext(`
 const app = JSON.parse(vm.runInContext(`JSON.stringify({
   lines: ADS_SERIES, all: ALL_HELMERS, months: fullMonthSeries.months, defaultStart: DEFAULT_START_MONTH,
   labels: Object.fromEntries(ADS_SERIES.map(h => [h, helmerLabel(h)])),
-  note: VMT_GHOST_NOTE,
+  note: VMT_GHOST_NOTE, edge: VMT_RANGE_EDGE,
   ghost: ghostVmtRows.map(r => ({helmer: r.helmer, month: r.month, best: r.vmtBest, lo: r.vmtMin, hi: r.vmtMax, cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax, rationale: r.rationale})),
 })`, ctx));
 const frontier = app.months[app.months.length - 1];
@@ -198,8 +198,8 @@ for (const cumulative of [false, true]) {
       for (const g of rows) {
         const [best, lo, hi] = cumulative ? [g.cume, g.kmin, g.kmax] : [g.best, g.lo, g.hi];
         const want = [
-          `${g.month}\n${fmt(lo)} miles\nLow end`,
-          `${g.month}\n${fmt(hi)} miles\nHigh end`,
+          `${g.month}\n${fmt(lo)} miles\n${app.edge.lo}`,
+          `${g.month}\n${fmt(hi)} miles\n${app.edge.hi}`,
           `${g.month}\n${fmt(best)} miles\nRange: ${fmt(lo)} – ${fmt(hi)}\n${app.note}`,
         ].map(esc);
         for (const t of want) if (!tipSet.has(`${t}\u0000${name(t)}`)) problems.push(`${view}, ${where}: no target with tip ${JSON.stringify(t.slice(0, 70))}`);

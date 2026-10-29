@@ -183,17 +183,17 @@ const css = fs.readFileSync("style.css", "utf8");
 const graying = /\.mpi-card\.unchecked\s*\{[^}]*opacity:\s*0?\.\d+/.test(css);
 if (!graying) problems.unchecked.push("style.css: no .mpi-card.unchecked rule with an opacity below 1");
 
-// Rule 6: the label is the human's English, to the character (committed
-// 2026-10-04 in b068a10; until then it was agent Latin, "Omnes casus:", and
-// this block checked for the to-do recap above it). The stress lines above
-// start with CARD_STRESS_LABEL, so this pins the text the cards show.
-const CARD_STRESS_ENGLISH = "All incidents:";
-if (CARD_STRESS_LABEL !== CARD_STRESS_ENGLISH) problems.label.push(`crashla.js: CARD_STRESS_LABEL is ${JSON.stringify(CARD_STRESS_LABEL)}; want the human's English ${JSON.stringify(CARD_STRESS_ENGLISH)}`);
+// The label's words are the human's (CARD_STRESS_LABEL, committed 2026-10-04
+// in b068a10) and were pinned to the character here until 2026-10-28, when
+// the human dropped such pins (one went red on each of the human's edits and
+// caught no agent's; the human reviews every diff). The stress lines above
+// must start with CARD_STRESS_LABEL, whatever it reads, and never "Overall:"
+// (audit 2026-10-02: the line is the All-incidents verdict, not an overall one).
 
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
   `Replicata: render the summary cards for the default window, full history, the last 3 months, the last month, 2025-06..2025-11, 2024-01..2025-12 and 2021-07..2025-05 (and the default window with the default, no and all helmers checked), and read each card's stress line, each metric line's incident count and multiplier, and each card's class.
-Expectata: (label) the stress line is headed CARD_STRESS_LABEL, which is the human's English "All incidents:" exactly (never "Overall:"), and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads two significant figures below 10 and a whole number from 10; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
+Expectata: (label) the stress line is headed CARD_STRESS_LABEL (never "Overall:"), and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads two significant figures below 10 and a whole number from 10; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: summary cards over ${Object.keys(WINDOWS).length} windows name the All-incidents verdict, mark k = 0 multipliers prior-only, format multipliers to two significant figures below 10 and colour them by the value shown, show exact fault-mass counts, and gray unchecked helmers`);

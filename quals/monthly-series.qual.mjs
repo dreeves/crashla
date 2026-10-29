@@ -636,23 +636,27 @@ Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JS
 // --- 2026-09-26 render pins ---
 // (a) An ADS helmer with no VMT rows in the window (Tesla and Zoox on the
 // first month, 2021-07) is not a human cohort: its card must not fall into
-// the "Benchmarks:" template (it rendered a dangling label with an empty
-// list), and must say it has no miles in the window instead. That line is the
-// human's English, pinned to the character (committed 2026-10-04 in b068a10;
-// until then it was the Latin placeholder "Nulla milia in hac fenestra").
+// the human cards' "Benchmarks:" template (it rendered a dangling label with
+// an empty list), and must say it has no miles in the window instead: its one
+// VMT line is NO_MILES_NOTE, read from the app. The note's words are the
+// human's (committed 2026-10-04 in b068a10) and were pinned to the character
+// until 2026-10-28, when the human dropped such pins (one went red on each of
+// the human's edits and caught no agent's; the human reviews every diff).
 const firstMonthCards = vm.runInContext(`renderMpiSummaryCards(sliceSeries(monthSeriesData(), 0, 0))`, ctx);
+const NO_MILES = vm.runInContext("NO_MILES_NOTE", ctx);
 const cardOf = (html, helmer) => html.split('class="mpi-card-helmer">')
   .find(s => s.startsWith(helmer + "<")) || "";
-const NO_MILES_LINE = '<div class="mpi-card-vmt">No miles in this window</div>';
+const vmtLines = card => [...card.matchAll(/<div class="mpi-card-vmt"([^>]*)>([\s\S]*?)<\/div>/g)]
+  .map(m => ({ attrs: m[1], body: m[2] }));
 for (const helmer of ["Tesla", "Zoox"]) {
-  const card = cardOf(firstMonthCards, helmer);
-  assert.ok(card.length > 0 && !card.includes("Benchmarks:") && card.includes(NO_MILES_LINE),
-    `Replicata: render the summary cards on the 2021-07 window (no ${helmer} VMT) and read the ${helmer} card.
-Expectata: no "Benchmarks:" template (that is the human-cohort layout) and the no-miles line in the human's English, ${JSON.stringify(NO_MILES_LINE)}.
-Resultata: ${JSON.stringify(card.slice(0, 200))}.`);
+  const lines = vmtLines(cardOf(firstMonthCards, helmer));
+  assert.ok(lines.length === 1 && lines[0].attrs === "" && lines[0].body === NO_MILES,
+    `Replicata: render the summary cards on the 2021-07 window (no ${helmer} VMT) and read the ${helmer} card's VMT line.
+Expectata: one line, NO_MILES_NOTE (${JSON.stringify(NO_MILES)}): not the human cards' sources line, not the effective-VMT line.
+Resultata: ${JSON.stringify(lines)}.`);
 }
-assert.ok(cardOf(firstMonthCards, "Humans (AV cities)").includes("Benchmarks:"),
-  "the human card keeps its Benchmarks: line on the 2021-07 window");
+assert.ok(vmtLines(cardOf(firstMonthCards, "Humans (AV cities)")).some(l => l.body.includes("<a ")),
+  "the human card keeps its sources line (links) on the 2021-07 window");
 // (b) The incomplete-reporting "?" marker is drawn per MONTH, not per helmer
 // dot (per-helmer glyphs overprinted each other wherever two dots sat close):
 // one per month, visible when a shown helmer's dot that month is incomplete.

@@ -86,7 +86,9 @@ const cardHtml = vm.runInContext(`(() => {
   buildMonthlyViews();
   return document.getElementById("mpi-summary-cards").innerHTML;
 })()`, ctx);
-const benchLines = [...cardHtml.matchAll(/<div class="mpi-card-vmt">Benchmarks: (.*?)<\/div>/g)].map(m => m[1]);
+// The line is found by its shape, a card line of links (no effective-VMT
+// line has any), not by its label's words, which are the human's (2026-10-28).
+const benchLines = [...cardHtml.matchAll(/<div class="mpi-card-vmt">[^<]*(<a [\s\S]*?)<\/div>/g)].map(m => m[1]);
 assert.equal(benchLines.length, 3,
   `Replicata: render the summary cards and find the human cards' "Benchmarks:" lines.
 Expectata: three (AV cities, US average, Uber/Lyft).

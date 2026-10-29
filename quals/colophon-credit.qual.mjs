@@ -1,14 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-// The footer carries the design credit. Its exact wording is the human's, so
-// this qual pins the characters, not a paraphrase of them.
-
-const CREDIT = "design inspired by nicky case";
-const LINKED_CREDIT = CREDIT.replace(
-  "nicky case",
-  '<a href="https://ncase.me">nicky case</a>',
-);
+// The footer carries the design credit, one link to ncase.me, and shows the
+// NHTSA report-receipt cutoff date. The words around them are the human's and
+// are not pinned (2026-10-28, human-approved: a qual pinning the human's own
+// wording went red on each of the human's edits and caught no agent's; the
+// human reviews every diff). Until then this qual pinned "design inspired by
+// nicky case" and "NHTSA report-receipt cutoff:" to the character.
 
 const js = fs.readFileSync("crashla.js", "utf8");
 
@@ -22,30 +20,25 @@ Resultata: found ${assignments.length}.`,
 );
 const assignment = assignments[0];
 
-assert.match(
-  js,
-  /NHTSA report-receipt cutoff: \$\{NHTSA_DATA_THROUGH_DATE\}/,
-  `Replicata: inspect the primary provenance footer.
-Expectata: a green clause (human's English, 2026-08-31) displays the NHTSA report-receipt cutoff date.
-Resultata: the footer exposes only fetch and modification dates.`,
-);
-
+// The cutoff date reaches the footer: in the assignment itself or in a
+// constant it interpolates.
+const interpolated = [...assignment[1].matchAll(/\$\{(\w+)\}/g)].map(m => m[1]);
+const definitions = interpolated.map(name => (new RegExp(`const ${name} = ([\\s\\S]*?);\\n`).exec(js) || [, ""])[1]);
 assert.ok(
-  assignment[1].includes(LINKED_CREDIT),
-  `Replicata: read the byId("colophon").innerHTML assignment in crashla.js.
-Expectata: the exact human-supplied credit surrounds one linked "nicky case".
-Resultata: assignment was ${JSON.stringify(assignment[1].trim())}.`,
+  [assignment[1], ...definitions].some(text => text.includes("${NHTSA_DATA_THROUGH_DATE}")),
+  `Replicata: read the byId("colophon").innerHTML assignment in crashla.js and the constants it interpolates (${interpolated.join(", ")}).
+Expectata: one of them displays NHTSA_DATA_THROUGH_DATE, the report-receipt cutoff.
+Resultata: none does.`,
 );
 
 const links = [...assignment[1].matchAll(/<a\s+href="([^"]+)">([^<]+)<\/a>/g)]
   .map(([, href, text]) => ({href, text}))
-  .filter(link => link.text === "nicky case");
-assert.deepEqual(
-  links,
-  [{href: "https://ncase.me", text: "nicky case"}],
+  .filter(link => link.href === "https://ncase.me");
+assert.ok(
+  links.length === 1 && links[0].text.trim() !== "",
   `Replicata: read the byId("colophon").innerHTML assignment in crashla.js.
-Expectata: exactly one "nicky case" anchor links to the exact ncase.me origin.
-Resultata: matching anchors were ${JSON.stringify(links)}.`,
+Expectata: exactly one anchor links to the ncase.me origin, with text.
+Resultata: ncase.me anchors were ${JSON.stringify(links)}.`,
 );
 
-console.log("qual pass: footer carries the nicky case design credit");
+console.log("qual pass: footer carries the nicky case design credit and the report-receipt cutoff");

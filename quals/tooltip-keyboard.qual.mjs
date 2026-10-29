@@ -24,20 +24,13 @@
 // "Fault fraction:" line, and a narrative toggle has a short name and the
 // narrative as its description.
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 
-// The narrative toggle's short name is the human's English, pinned to the
-// character (committed 2026-10-05 in a3c39bb; until then it was agent Latin,
-// "Narratio relationis <report id>", and this qual checked for the to-do
-// recap above it; AGENTS.md rule 6).
-const js = fs.readFileSync(new URL("../crashla.js", import.meta.url), "utf8");
-const nameAt = js.indexOf("function narrativeToggleName(");
-const nameDef = nameAt < 0 ? "" : js.slice(nameAt, js.indexOf("\n}", nameAt) + 2);
-assert.ok(/^function narrativeToggleName\(reportId\) \{\s*return `Narrative of report \$\{reportId\}`;\s*\}$/.test(nameDef),
-  `Replicata: read function narrativeToggleName in crashla.js.
-Expectata: it returns the human's English, \`Narrative of report \${reportId}\`, to the character.
-Resultata: ${nameAt < 0 ? "no narrativeToggleName" : JSON.stringify(nameDef)}.`);
+// The narrative toggle's short name (narrativeToggleName) is the human's
+// English (committed 2026-10-05 in a3c39bb); the checks below read it from
+// the app. It was pinned to the character here until 2026-10-28, when the
+// human dropped such pins (one went red on each of the human's edits and
+// caught no agent's; the human reviews every diff).
 
 const server = await serveRepo();
 const DEFAULT_QUERY = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";

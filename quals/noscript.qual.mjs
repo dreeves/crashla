@@ -4,11 +4,11 @@ import fs from "node:fs";
 // With JavaScript off the page showed its h1, the abstract and the section
 // headings over empty bodies, plus a "Loading…" under Prediction Markets that
 // never resolved, and nothing said the page needs JavaScript (audit #102).
-// Spec: one <noscript> notice in the body, ahead of the abstract, whose text
-// is the human's English, "JavaScript required for charts, tables", to the
-// character (AGENTS.md rule 6; until the human wrote it, committed 2026-10-04
-// in b068a10, the notice was Latin and this qual checked for its to-do recap);
-// and a <noscript><style> in the head that hides the static "Loading…", so
+// Spec: one <noscript> notice in the body, ahead of the abstract, a paragraph
+// of text (its words are the human's, committed 2026-10-04 in b068a10, and
+// not pinned since 2026-10-28, human-approved: a qual pinning the human's own
+// wording went red on each of the human's edits and caught no agent's); and a
+// <noscript><style> in the head that hides the static "Loading…" paragraph, so
 // the markup's own text stays as written.
 
 const html = fs.readFileSync("index.html", "utf8");
@@ -29,9 +29,9 @@ Resultata: head noscript blocks: ${JSON.stringify(noscripts(head))}.`,
 );
 
 assert.ok(
-  html.includes('<p class="predmarket-loading">Loading&#x2026;</p>'),
+  /<p class="predmarket-loading">[^<]*\S[^<]*<\/p>/.test(html),
   `Replicata: read index.html's Prediction Markets section.
-Expectata: the static "Loading&#x2026;" paragraph is still there, as written (only hidden without JavaScript).
+Expectata: the static loading paragraph (class predmarket-loading) is still there with its text (only hidden without JavaScript).
 Resultata: not found.`,
 );
 
@@ -41,11 +41,10 @@ assert.equal(notices.length, 1,
 Expectata: exactly one, the notice that the page needs JavaScript.
 Resultata: ${notices.length}: ${JSON.stringify(notices)}.`);
 // HTML comments are not shown, so they are dropped before the block is read.
-const NOTICE = "JavaScript required for charts, tables";
 const notice = /^\s*<p\b[^>]*>([^<]*)<\/p>\s*$/.exec(notices[0].replace(/<!--[\s\S]*?-->/g, ""));
-assert.ok(notice !== null && notice[1] === NOTICE,
+assert.ok(notice !== null && notice[1].trim() !== "",
   `Replicata: read the body's <noscript> block.
-Expectata: one paragraph whose text is the human's English, exactly ${JSON.stringify(NOTICE)}.
+Expectata: one paragraph of text, the notice.
 Resultata: ${JSON.stringify(notices[0])}.`);
 assert.ok(body.indexOf("<noscript>") < body.indexOf('<div class="abstract">'),
   `Replicata: find the body's <noscript> notice and the abstract in index.html.

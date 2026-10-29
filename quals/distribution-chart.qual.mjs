@@ -534,7 +534,7 @@ const markerCheck = vm.runInContext(`
     const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
     const mLeft = Number(clip[1]), pW = Number(clip[2]);
     const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
-    const medians = curves.map(e => ({ cx: mapX(e.postMedian),
+    const medians = curves.map(e => ({ cx: mapX(e.postMedian), shown: fmtMiles(e.postMedian),
       finite: Number.isFinite(e.postMedian), inCI: e.postMedian >= e.lo && e.postMedian <= e.hi }));
     const circles = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
       .map(m => ({ cx: Number(m[1]), tip: m[2], head: m[2].split("\\n")[0] }));
@@ -547,19 +547,20 @@ const markerCheck = vm.runInContext(`
 
 for (const mk of ["atfault", "fatality"]) {
   const { nCurves, medians, circles, frame, helmers } = markerCheck[mk];
-  // Two markers per curve, each labeled "Peak"/"Median", none naming a helmer,
-  // none using the "≥" bound form, all inside the plot frame.
+  // Two markers per curve (peak and median), each tip opening "<label>:
+  // <value>", none naming a helmer, none using the "≥" bound form, all inside
+  // the plot frame. The labels' words are the human's ("Peak" for the S11
+  // rename, 2026-08-22) and were pinned here until 2026-10-28, when the human
+  // dropped such pins (one went red on each of the human's edits and caught
+  // no agent's; the human reviews every diff).
   assert.equal(circles.length, 2 * nCurves,
     `Replicata: render the ${mk} distribution and count markers.
 Expectata: two markers (mode + median) per curve = ${2 * nCurves}.
 Resultata: ${circles.length}.`);
   for (const c of circles) {
-    // "Peak" is the human's English (2026-08-22) for the S11 rename: the dot
-    // marks the plotted log-density's peak, not the linear-space mode (the
-    // old label "Mode" was ambiguous between the two).
-    assert.ok(/^(Peak|Median): /.test(c.head),
+    assert.ok(/^[^:\n]+: \S/.test(c.head),
       `Replicata: read a ${mk} marker tooltip's first line.
-Expectata: it leads with "Peak:" or "Median:".
+Expectata: "<label>: <value>".
 Resultata: ${JSON.stringify(c.head)}.`);
     assert.ok(!helmers.some(h => c.tip.includes(h)),
       `Replicata: scan a ${mk} marker tooltip for a helmer name.
@@ -574,9 +575,9 @@ Resultata: ${JSON.stringify(c.tip)}.`);
   for (const m of medians) {
     assert.ok(m.finite && m.inCI,
       `Replicata: check a ${mk} posterior median. Expectata: finite and within [lo,hi]. Resultata: finite=${m.finite} inCI=${m.inCI}.`);
-    assert.ok(circles.some(c => c.head.startsWith("Median:") && Math.abs(c.cx - m.cx) < 0.05),
-      `Replicata: find the Median dot at mapX(postMedian)=${m.cx.toFixed(2)} in the ${mk} chart.
-Expectata: a "Median:" marker there (dot sits at the value it reports).
+    assert.ok(circles.some(c => c.head.endsWith(`: ${m.shown}`) && Math.abs(c.cx - m.cx) < 0.05),
+      `Replicata: find the median dot at mapX(postMedian)=${m.cx.toFixed(2)} in the ${mk} chart.
+Expectata: a marker there whose tip reports the median, ${m.shown} (the dot sits at the value it reports).
 Resultata: none within 0.05px.`);
   }
 }

@@ -35,46 +35,42 @@ Expectata: a recognized short label (not "?").
 Resultata: got "?".`);
 }
 
-// "Property Damage. No Injured Reported" must map to "Property only",
-// not "No injury" (regression: "No Injur" must not match before "Property")
-const propDmg = vm.runInContext(
-  `shortenSeverity("Property Damage. No Injured Reported")`, ctx);
-assert.strictEqual(
-  propDmg, "Property only",
-  `Replicata: call shortenSeverity("Property Damage. No Injured Reported").
-Expectata: "Property only".
-Resultata: ${JSON.stringify(propDmg)}.`);
+// The display labels' words are the human's ("Serious injury (hosp.)" since
+// 2026-08-17) and are not pinned (2026-10-28, human-approved: a qual pinning
+// the human's own wording went red on each of the human's edits and caught no
+// agent's; the human reviews every diff). What is checked is which of
+// shortenSeverity's rules an NHTSA string reaches, by comparing labels.
+const short = s => vm.runInContext(`shortenSeverity(${JSON.stringify(s)})`, ctx);
 
-// "No Injured Reported" and "No Injuries Reported" must both map to "No injury"
-for (const variant of ["No Injured Reported", "No Injuries Reported"]) {
-  const short = vm.runInContext(
-    `shortenSeverity(${JSON.stringify(variant)})`, ctx);
-  assert.strictEqual(
-    short, "No injury",
-    `Replicata: call shortenSeverity(${JSON.stringify(variant)}).
-Expectata: "No injury".
-Resultata: ${JSON.stringify(short)}.`);
-}
+// "Property Damage. No Injured Reported" takes the property-damage label, not
+// the no-injury one (regression: "No Injur" must not match before "Property").
+assert.ok(
+  short("Property Damage. No Injured Reported") === short("Property Damage")
+    && short("Property Damage") !== short("No Injuries Reported"),
+  `Replicata: call shortenSeverity on "Property Damage. No Injured Reported", "Property Damage" and "No Injuries Reported".
+Expectata: the first two share the property-damage label, which differs from the no-injury label.
+Resultata: ${JSON.stringify(["Property Damage. No Injured Reported", "Property Damage", "No Injuries Reported"].map(short))}.`);
+
+// "No Injured Reported" and "No Injuries Reported" share the no-injury label
+// (a rule's, not either string falling through).
+assert.ok(
+  short("No Injured Reported") === short("No Injuries Reported")
+    && !["No Injured Reported", "No Injuries Reported"].includes(short("No Injuries Reported")),
+  `Replicata: call shortenSeverity on "No Injured Reported" and "No Injuries Reported".
+Expectata: one label for both, from a rule.
+Resultata: ${JSON.stringify(["No Injured Reported", "No Injuries Reported"].map(short))}.`);
 
 // "Serious W/ Hospitalization" (first seen in NHTSA's Aug-2026 data) gets its
 // own hosp-qualified label like the Minor/Moderate "(hosp.)" rows, keyed on
 // the FULL string: the SGO data dictionary also defines a "Serious Without
 // Hospitalization" sibling, and a "Serious W/" prefix needle would label that
 // "(hosp.)" too. The sibling must keep falling through to the bare label.
-const seriousHosp = vm.runInContext(
-  `shortenSeverity("Serious W/ Hospitalization")`, ctx);
-assert.strictEqual(
-  seriousHosp, "Serious injury (hosp.)",
-  `Replicata: call shortenSeverity("Serious W/ Hospitalization").
-Expectata: "Serious injury (hosp.)".
-Resultata: ${JSON.stringify(seriousHosp)}.`);
-const seriousNoHosp = vm.runInContext(
-  `shortenSeverity("Serious W/O Hospitalization")`, ctx);
-assert.strictEqual(
-  seriousNoHosp, "Serious",
-  `Replicata: call shortenSeverity("Serious W/O Hospitalization") (dictionary-defined, not yet in the data).
-Expectata: "Serious" — must NOT pick up the "(hosp.)" qualifier via a prefix match.
-Resultata: ${JSON.stringify(seriousNoHosp)}.`);
+assert.ok(
+  short("Serious W/ Hospitalization") !== short("Serious")
+    && short("Serious W/O Hospitalization") === short("Serious"),
+  `Replicata: call shortenSeverity on "Serious W/ Hospitalization", "Serious" and "Serious W/O Hospitalization" (dictionary-defined, not yet in the data).
+Expectata: the first its own label; the third bare "Serious"'s label, not the hosp-qualified one via a prefix match.
+Resultata: ${JSON.stringify(["Serious W/ Hospitalization", "Serious", "Serious W/O Hospitalization"].map(short))}.`);
 
 // Every known (non-Unknown) severity in the data must have a SEVERITY_RANK entry
 const rankKeys = vm.runInContext(`Object.keys(SEVERITY_RANK)`, ctx);

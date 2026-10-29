@@ -4067,6 +4067,8 @@ function cardMultSpan(mult, k) {
   return `<span class="mpi-card-mult${marks.cls || (ratioShown(mult) >= 1 ? " safer" : " worse")}"${marks.attrs}>${text}</span>`;
 }
 
+// The VMT line of a company's card when the window holds none of its miles.
+const NO_MILES_NOTE = "No miles in this window";
 function renderMpiSummaryCards(series) {
   const rows = windowSummaryRows(series);
   return rows.map(row => {
@@ -4080,7 +4082,7 @@ function renderMpiSummaryCards(series) {
       const shown = `Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}`;
       return `<div class="mpi-card-vmt"${htmlTipAttrs(`${shown} ${tip}`, tip)}>${shown}</div>`;
     };
-    const noMilesLine = `<div class="mpi-card-vmt">No miles in this window</div>`;
+    const noMilesLine = `<div class="mpi-card-vmt">${NO_MILES_NOTE}</div>`;
     // Each source once, by URL (one label per URL: BENCHMARK_SOURCES).
     const benchmarksLine = `<div class="mpi-card-vmt">Benchmarks: ${[...new Set(METRIC_DEFS.map(m => m.humanMPI && m.humanMPI[row.helmer]).filter(Boolean).flatMap(h => h.srcLinks))].map(sourceLink).join(SOURCE_LIST_SEP)}</div>`;
     // Branch on the cohort, not on vmtBest > 0: an ADS helmer with no VMT in
