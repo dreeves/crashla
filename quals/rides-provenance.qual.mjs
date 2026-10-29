@@ -92,15 +92,16 @@ Expectata: lo <= ${Math.round(cume / corridor.hi)} and hi >= ${Math.round(cume /
 Resultata: [${row.lo}, ${row.hi}].`);
 }
 // The rides history runs as far as the master's miles (audit #87): to the
-// last quarter-end month data/vmt.csv holds for Tesla, the rows' cadence.
-// Until 2026-10-03 it stopped at 2026-06 while the master held 2026-09, so
-// the all-HW4 fork left from 2026-06 under Rides but 2026-08 under Fleet and
-// Miles.
+// newest month data/vmt.csv holds for Tesla, its ghost month (the growth
+// charts draw it as the VMT charts do; growth-ghost-month.qual.mjs). Until
+// 2026-10-03 it stopped at 2026-06 while the master held 2026-09, so the
+// all-HW4 fork left from 2026-06 under Rides but 2026-08 under Fleet and
+// Miles; until 2026-10-28 it stopped at the last quarter end (2026-09), the
+// rows' cadence then, while the master and the VMT charts held 2026-10.
 {
-  const quarterEnds = master.map(r => r.month).filter(m => ["03", "06", "09", "12"].includes(m.slice(5)));
-  const want = quarterEnds.at(-1);
+  const want = master.map(r => r.month).sort().at(-1);
   assert.equal(teslaHist.at(-1).month, want,
-    `Replicata: compare the last month of RIDES_HISTORY.Tesla with the last quarter-end month of data/vmt.csv's Tesla rows.
+    `Replicata: compare the last month of RIDES_HISTORY.Tesla with the newest month of data/vmt.csv's Tesla rows.
 Expectata: ${want} (add the row as cumulative miles over the [${corridor.lo}, ${corridor.best}, ${corridor.hi}] miles-per-ride corridor).
 Resultata: ${teslaHist.at(-1).month}.`);
 }
@@ -157,4 +158,4 @@ assert.ok(waymoEnd.best >= 40000000,
 Expectata: median >= 40,000,000.
 Resultata: ${JSON.stringify(waymoEnd)}.`);
 
-console.log("qual pass: Waymo cumulative rides track the published 10M/20M milestones and the Sep-14 weekly floor; Tesla's rows follow data/vmt.csv through its last quarter end; all rides lanes monotone");
+console.log("qual pass: Waymo cumulative rides track the published 10M/20M milestones and the Sep-14 weekly floor; Tesla's rows follow data/vmt.csv through its newest month; all rides lanes monotone");

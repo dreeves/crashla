@@ -3097,8 +3097,13 @@ const FLEET_FORECAST = [
     // service at the ~180 miles per vehicle-day of Q2 2026 (5-6k miles per
     // vehicle-month; 320-660 across 120-250), against 589 registered in Texas
     // by Oct 3; a slow ramp from there to Jan 1 -> median 560, sigma 0.40
-    // (90% ~[290, 1,080]).
-    { weight: 0.71, median: 560,    sigma: 0.40, scope: "robotaxi" }, // A: slow robotaxi ramp continues
+    // (90% ~[290, 1,080]). Re-based 2026-10-28 on FLEET_HISTORY's 2026-10
+    // row, the same basis at October's average day, 465 [312, 788] (the
+    // week to Oct 18 plus the projected Oct 19-31): the floor rule
+    // (fleet-forecast.qual.mjs) put the lane's 5th percentile, 307, under
+    // that row's 312. The ramp is kept (x1.27 from mid-October to Jan 1):
+    // median 590, sigma 0.40 (90% ~[305, 1,140]).
+    { weight: 0.71, median: 590,    sigma: 0.40, scope: "robotaxi" }, // A: slow robotaxi ramp continues
     { weight: 0.24, median: 9000,   sigma: 0.70, scope: "robotaxi" }, // B: aggressive robotaxi/Cybercab scale-up
     { weight: 0.05, median: 600000, sigma: 0.95, scope: "hw4" },      // C: eyes-off FSD across the HW4 fleet
   ] },
@@ -3410,6 +3415,22 @@ function renderFleetForecastChart() {
 // distinct-vehicle count, whose data paths the site does not allow automated
 // clients to read, and the rows before it use other definitions (audit #20,
 // a human call).
+// Each helmer's last row is its ghost month's (data/README.md, Ghost months;
+// added 2026-10-28, growth-ghost-month.qual.mjs): October 2026, in progress,
+// as on a typical day of the month (mid-October). Tesla 2026-10 = cars
+// driving on a typical day (the human's choice, 2026-10-28): data/vmt.csv's
+// October miles, 2,594,000 [2,075,000, 3,635,000] for 31 days, at ~180 miles
+// per car per day (Q2 2026; 120-250, the two ranges combined in quadrature):
+// 465 [312, 788]. Unlike August's 150, a count of distinct cars seen in the
+// month, so part of the step between them is the change of definition;
+// re-derive it whenever the October miles row changes. Waymo 2026-10 =
+// September's 4,300 run on 1.5 months at the forecast's ~280 cars a month
+// (~4,700); the floor is "roughly 4,000 cars" (Semafor via Reuters, Oct 19;
+// Waymo did not comment), the ceiling September's run on at ~400 a month
+// (~5,300). Alphabet's Q3 remarks (Oct 28) gave no fleet figure. Zoox
+// 2026-10 = September's 105 run on a month at the forecast's ~13 a month
+// (~120); no count since Sep 17, so the floor stays September's, and the
+// ceiling is a Hayward ramp of ~35 a month.
 const FLEET_HISTORY = {
   Tesla: [
     {month: "2025-06", best: 12, lo: 8,  hi: 20},
@@ -3417,6 +3438,7 @@ const FLEET_HISTORY = {
     {month: "2026-04", best: 25, lo: 18, hi: 35},
     {month: "2026-06", best: 28, lo: 20, hi: 58},
     {month: "2026-08", best: 150, lo: 90, hi: 220},
+    {month: "2026-10", best: 465, lo: 312, hi: 788},
   ],
   Waymo: [
     {month: "2025-05", best: 1500, lo: 1300, hi: 1700},
@@ -3425,12 +3447,14 @@ const FLEET_HISTORY = {
     {month: "2026-02", best: 3300, lo: 3000, hi: 3700},
     {month: "2026-05", best: 3750, lo: 3400, hi: 4200},
     {month: "2026-09", best: 4300, lo: 4000, hi: 4700},
+    {month: "2026-10", best: 4700, lo: 4000, hi: 5300},
   ],
   Zoox: [
     {month: "2026-01", best: 50,  lo: 35, hi: 70},
     {month: "2026-03", best: 90,  lo: 70, hi: 115},
     {month: "2026-06", best: 100, lo: 80, hi: 130},
     {month: "2026-09", best: 105, lo: 95, hi: 120},
+    {month: "2026-10", best: 120, lo: 95, hi: 140},
   ],
 };
 const FLEET_TS_END_MONTH = "2027-01"; // the Jan-1-2027 forecast cross-section
@@ -3469,18 +3493,24 @@ const RIDES_HISTORY = {
   // corridor reconciled the miles with a "~700k paid miles by late Apr 2026"
   // figure that was actually mid-February vintage; Tesla's Q1-2026 deck puts
   // end-Mar cumulative paid miles at ~1.717M, so these rows are ~2x the old.)
-  // The rows sit at quarter ends. Through 2026-06 they are deck-chart months,
-  // whose miles are near-exact, so each band is the corridor's alone (cume /
-  // 8.3 .. cume / 4.7); 2026-09 (added 2026-10-03, audit #87) is an estimate
-  // month of data/vmt.csv, so its band divides the kyoom band by the
-  // corridor's far ends, as RIDES_FORECAST does: 3,630,000 / 6.2, 3,194,800 /
-  // 8.3, 4,506,000 / 4.7. Re-derive it when the Q3 deck re-pins September.
+  // The rows sit at quarter ends, then at the ghost month. Through 2026-06
+  // they are deck-chart months, whose miles are near-exact, so each band is
+  // the corridor's alone (cume / 8.3 .. cume / 4.7); 2026-09 (added
+  // 2026-10-03, audit #87) and the ghost month 2026-10 (added 2026-10-28,
+  // growth-ghost-month.qual.mjs) are estimate months of data/vmt.csv, so each
+  // band divides the kyoom band by the corridor's far ends, as RIDES_FORECAST
+  // does: 4,241,000 / 6.2, 4,004,800 / 8.3, 4,976,000 / 4.7 and 6,835,000 /
+  // 6.2, 6,079,800 / 8.3, 8,611,000 / 4.7. (2026-09 sat on September's
+  // cumulative of before the 2026-10-23 re-pin, 3,630,000 [3,194,800,
+  // 4,506,000], until 2026-10-28.) Re-derive a row whenever its month's
+  // cumulative miles change.
   Tesla: [
     {month: "2025-09", best: 19500,  lo: 14500,  hi: 26000},
     {month: "2025-12", best: 106000, lo: 79000,  hi: 140000},
     {month: "2026-03", best: 277000, lo: 207000, hi: 365000},
     {month: "2026-06", best: 394000, lo: 294000, hi: 519000},
-    {month: "2026-09", best: 585000, lo: 385000, hi: 959000},
+    {month: "2026-09", best: 684000, lo: 483000, hi: 1059000},
+    {month: "2026-10", best: 1102000, lo: 733000, hi: 1832000},
   ],
   // Waymo pinned to published cumulative milestones (rides-provenance.qual):
   // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
@@ -3490,7 +3520,9 @@ const RIDES_HISTORY = {
   // Sep 30 on Waymo's "over half a million trips each week" (Sep 14; the floor
   // it has stated since late March, so no newer level): lo = May's lo + 500k a
   // week (rounded up), best = May's best + ~575k a week (the 2026-03 ->
-  // 2026-05 rows' pace), hi = May's hi + 700k a week.
+  // 2026-05 rows' pace), hi = May's hi + 700k a week. The ghost month 2026-10
+  // (added 2026-10-28) extends 2026-09 the same way by October's 4.43 weeks:
+  // Alphabet's Q3 remarks (Oct 28) gave no newer weekly figure.
   Waymo: [
     {month: "2025-06", best: 11500000, lo: 10500000, hi: 12800000},
     {month: "2025-09", best: 16000000, lo: 14500000, hi: 17800000},
@@ -3498,6 +3530,7 @@ const RIDES_HISTORY = {
     {month: "2026-03", best: 26000000, lo: 24000000, hi: 28500000},
     {month: "2026-05", best: 31000000, lo: 28000000, hi: 34500000},
     {month: "2026-09", best: 41000000, lo: 36800000, hi: 46700000},
+    {month: "2026-10", best: 43500000, lo: 39100000, hi: 49800000},
   ],
   // Zoox rides anchor to its published cumulative RIDER counts — >300k riders
   // by late 2025, >350k by late Mar 2026 (CleanTechnica 2026-03-24, The
@@ -3507,11 +3540,16 @@ const RIDES_HISTORY = {
   // 1.2-2.0 riders per ride (central 1.5; the vehicle seats four and Vegas
   // groups are common). Pinned by rides-provenance.qual. (The 500k milestone
   // implies Q2 ridership ~3x Q1's pace; the pre-milestone 2026-06 row here,
-  // 265k, had extrapolated ~12k riders/month and ran ~25% low.)
+  // 265k, had extrapolated ~12k riders/month and ran ~25% low.) The ghost
+  // month 2026-10 (added 2026-10-28; no rider count since late June) runs the
+  // 500k riders on four months at RIDES_FORECAST's own rider rates: 50k a
+  // month at 1.5 riders a ride (467k), ~33k at 2.0 (317k), ~137k at 1.2
+  // (872k).
   Zoox: [
     {month: "2025-12", best: 200000, lo: 150000, hi: 265000},
     {month: "2026-03", best: 235000, lo: 175000, hi: 300000},
     {month: "2026-06", best: 333000, lo: 250000, hi: 417000},
+    {month: "2026-10", best: 467000, lo: 317000, hi: 872000},
   ],
 };
 // Cumulative-miles forecast through Jan 1, 2027, extending each helmer's
@@ -3603,11 +3641,14 @@ const RIDES_FORECAST = [
 ];
 
 // Cumulative miles = the repo's own cumulative VMT (vmtCume) with its kyoom band,
-// straight from data/vmt.csv — so this line matches the top VMT section through
-// the last NHTSA data month (data/vmt.js stops there; later master rows are not drawn)
-// by construction, and only the dashed tail is new.
+// straight from data/vmt.csv — so this line matches the top VMT section by
+// construction: its analysis rows through the last NHTSA data month, then its
+// ghost months (data/vmt.js's ghost rows; drawn faded on the dashed stretch,
+// as the VMT charts draw them), and only the dashed tail past them is new.
+// (Until 2026-10-28 it read the analysis rows only and stopped a month short
+// of the VMT charts.)
 function milesHistory(helmer) {
-  return vmtRows
+  return [...vmtRows, ...ghostVmtRows]
     .filter(r => r.helmer === helmer && fleetMonthIndex(r.month) >= 0)
     .map(r => ({month: r.month, best: r.vmtCume, lo: r.kyoomMin, hi: r.kyoomMax}));
 }
@@ -3673,13 +3714,20 @@ const MILES_AT_SIG_FIGS = new Intl.NumberFormat(NUMBER_LOCALE,
   {notation: "compact", minimumSignificantDigits: FORECAST_SIG_FIGS, maximumSignificantDigits: FORECAST_SIG_FIGS});
 
 // A lane's point list: history + the Jan-1-2027 forecast endpoint at
-// endMonth, asserting lo <= best <= hi on every point.
+// endMonth, asserting lo <= best <= hi on every point and the months in
+// order. A history point in a ghost month (a month after the newest NHTSA
+// month that data/vmt.js's ghost rows cover) is flagged ghost, as the VMT
+// charts flag theirs: an estimate of the month in progress.
 function growthLanePoints(history, forecast, endMonth) {
-  const points = [...history, {month: endMonth, ...forecast, forecast: true}];
+  const ghostMonths = new Set(ghostVmtRows.map(row => row.month));
+  const points = [...history.map(p => ({...p, ghost: ghostMonths.has(p.month)})),
+    {month: endMonth, ...forecast, forecast: true}];
   for (const p of points) {
     assert(p.lo <= p.best && p.best <= p.hi,
       "growth point must satisfy lo <= best <= hi", {point: p});
   }
+  assert(points.every((p, i) => i === 0 || p.month > points[i - 1].month),
+    "growth points' months must increase", {months: points.map(p => p.month)});
   return points;
 }
 
@@ -3718,8 +3766,7 @@ function growthScenarioNote(lanes) {
   // C eyes-off FSD on all HW4 cars 0.05). The robotaxi curve mixes A and B,
   // and B is its unexplained second hump near 9,000 vehicles.
   return `Tesla forecast splits into two scenarios: the robotaxi (~${pct("robotaxi")}%) ` +
-    `and unsupervised FSD in all HW4 cars (~${pct("hw4")}%). ` +
-    "These numbers are the scenarios' probabilities.";
+    `and unsupervised FSD in all HW4 cars (~${pct("hw4")}%). `;
 }
 
 function renderFleetTimeSeriesChart() {
@@ -3758,24 +3805,31 @@ function renderFleetTimeSeriesChart() {
     bands.push(`<path d="${up} ${down} Z" style="fill:${color};opacity:${lane.branchOnly ? 0.06 : 0.10}"></path>`);
 
     const hist = pts.filter(p => !p.forecast);
-    const last = hist[hist.length - 1], fc = pts[pts.length - 1];
+    const solidHist = hist.filter(p => !p.ghost);
+    const fc = pts[pts.length - 1];
+    const linePath = ps => ps.map((p, i) => `${i ? "L" : "M"} ${X(p).toFixed(2)} ${mapY(p.best).toFixed(2)}`).join(" ");
     // Full lanes draw a solid history line + markers; a fork lane (branchOnly) draws
     // only the dashed leg from its single anchor point to the scenario endpoint.
     if (!lane.branchOnly) {
-      const histLine = hist.map((p, i) => `${i ? "L" : "M"} ${X(p).toFixed(2)} ${mapY(p.best).toFixed(2)}`).join(" ");
-      lines.push(`<path d="${histLine}" style="${solid}"></path>`);
+      assert(solidHist.length > 0, "a growth line's ghost months follow no month of its history", {lane: lane.label});
+      lines.push(`<path d="${linePath(solidHist)}" style="${solid}"></path>`);
       for (const p of hist) {
         // History points carry the master's authored ranges (kyoom bands,
         // fleet/rides corridors), not a computed 90% interval — that label
         // belongs to the forecast marker only. They are labelled by their
         // helmer: a scenario share is a forecast's (until 2026-10-03 every
-        // Tesla point read "Tesla robotaxi (~95%) · ..."; audit #83).
-        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${spec.tipFmt(p.best)}\nRange: ${spec.tipFmt(p.lo)} – ${spec.tipFmt(p.hi)}`;
-        marks.push(`<circle cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}"></circle>`);
+        // Tesla point read "Tesla robotaxi (~95%) · ..."; audit #83). A ghost
+        // month's dot is faded (class month-ghost) and its tip ends with the
+        // VMT charts' ghost note, as on those charts.
+        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${spec.tipFmt(p.best)}\nRange: ${spec.tipFmt(p.lo)} – ${spec.tipFmt(p.hi)}${p.ghost ? `\n${VMT_GHOST_NOTE}` : ""}`;
+        marks.push(`<circle${p.ghost ? ' class="month-ghost"' : ""} cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}"></circle>`);
         targets.push({x: X(p), y: mapY(p.best), tip, name: tip});
       }
     }
-    lines.push(`<path d="M ${X(last).toFixed(2)} ${mapY(last.best).toFixed(2)} L ${X(fc).toFixed(2)} ${mapY(fc.best).toFixed(2)}" style="${dashedStroke}"></path>`);
+    // The dashed leg runs from where the solid line ends (a fork's lone
+    // anchor, when it is no ghost) through the ghost months' faded dots to the
+    // forecast.
+    lines.push(`<path d="${linePath([...solidHist.slice(-1), ...hist.filter(p => p.ghost), fc])}" style="${dashedStroke}"></path>`);
     const fx = X(fc);
     marks.push(`
       <line class="month-err" x1="${fx.toFixed(2)}" y1="${mapY(fc.lo).toFixed(2)}" x2="${fx.toFixed(2)}" y2="${mapY(fc.hi).toFixed(2)}" style="stroke:${color}"></line>

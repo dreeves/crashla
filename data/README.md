@@ -178,7 +178,10 @@ override re-reads and narrative checks of step 9, among them a new in-scope
 Tesla report from January 2026 on (re-read Tesla's latest no-monitor list,
 below) and a new month with no `teslanomonitor` row; and
 `quals/fault-coverage.qual.mjs` needs a `data/faultfrac.csv` row for every
-new incident.
+new incident. `quals/growth-ghost-month.qual.mjs` needs the growth chart's
+rows for the new ghost month (`crashla.js` `FLEET_HISTORY` and
+`RIDES_HISTORY`; "Ghost months" below), and `quals/fleet-forecast.qual.mjs`
+then checks each Jan-1 fleet forecast against them.
 
 Then re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
 comments say, and, when a new in-scope Tesla report has a passenger aboard
@@ -242,6 +245,19 @@ the master lacks the month after the data-through month, when a ghost month
 lacks a line's row, and on a row for a month that has not begun (a VMT row
 records miles already driven; forecasts live in `crashla.js`'s
 `MILES_FORECAST`). `quals/ghost-month.qual.mjs` pins all of it.
+
+The growth section's chart (Fleet size, Rides, Miles) draws the ghost months
+the same way, faded on the dashed stretch toward its Jan-1 forecast, with the
+same tooltip note (since 2026-10-28; until then it stopped a month or more
+short). Its Miles lines read the ghost rows; `crashla.js`'s `FLEET_HISTORY`
+and `RIDES_HISTORY` hold each company's estimate for every ghost month,
+written by hand. Tesla's derive from its `data/vmt.csv` row for the month:
+its fleet is cars driving on a typical day of the month (the month's miles
+over its days at ~180 miles a car per day, Tesla's Q2 2026 utilization,
+120-250 combined with the miles band in quadrature), its rides the
+cumulative miles over the miles-per-ride corridor (`TESLA_MILES_PER_RIDE`),
+so re-derive both whenever that row changes. `quals/growth-ghost-month.qual.mjs`
+pins all of it.
 
 So each release adds every line's estimate for the month after its
 data-through month, a month that has begun by release day. When the next
