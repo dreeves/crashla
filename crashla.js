@@ -3002,7 +3002,7 @@ function renderDistributionChart(series) {
   `;
 }
 
-// Density charts (the MPI distribution chart, the Jan-2027 forecast) scale y
+// Density charts (the MPI distribution chart, the growth forecast) scale y
 // to this multiple of the tallest drawn density, so the tallest curve peaks
 // 1/21 of the plot's height (~11 units) below its top and the r=3.5
 // markers on it (plus their 0.75 halo) stay inside the plot.
@@ -3016,113 +3016,126 @@ function logUniformGrid(lo, hi, n) {
   return Array.from({length: n}, (_, i) => lo + (hi - lo) * i / (n - 1));
 }
 
-// --- Fleet-size forecast (Jan 1, 2027) ---------------------------------------
+// --- Growth forecasts (GROWTH_FORECAST_DATE: Jan 1, 2028) -------------------
 // [AI TEXT] A forward-looking forecast of how many vehicles each helmer will have
 // in the service whose crashes this page counts (the operator modes whose
 // miles are in each helmer's VMT denominator: data/slurp.py
-// PUBLIC_SERVICE_OPERATOR_TYPES) on Jan 1,
-// 2027. This is an EXTERNAL judgment forecast — NOT derived from the NHTSA incident
-// or VMT pipelines. It is anchored to mid-2026 fleet counts and announced expansion
-// plans and is the author's own predictive distribution.
+// PUBLIC_SERVICE_OPERATOR_TYPES) on Jan 1, 2028, and (MILES_FORECAST and
+// RIDES_FORECAST below) its cumulative miles and rides through Dec 31, 2027.
+// These are EXTERNAL judgment forecasts, NOT derived from the NHTSA incident
+// or VMT pipelines, re-authored 2026-10-29 when the forecast date moved from
+// Jan 1, 2027 (the human's choice; the AGENTS.md ledger records the Jan-1-2027
+// forecasts for scoring).
 //
-// Each helmer's distribution is a mixture of log-normals on the vehicle count.
-// Tesla is the multimodal one (it has no vehicle-supply constraint — there are
-// already millions of FSD-capable HW4/AI4 cars on the road), so its three modes
+// Each helmer's distribution is a mixture of two-piece log-normal bands
+// {weight, best (the mode), lo (5th percentile), hi (95th)}, the format the
+// miles and rides tables use (until 2026-10-29 the fleet's were {median,
+// sigma} log-normals, converted to symmetric bands per call). Tesla's modes
 // are three different futures, not one smooth ramp:
-//   A — the slow robotaxi ramp continues (low hundreds);
-//   B — Tesla scales the dedicated robotaxi service aggressively (Cybercab +
-//       Model-Y robotaxis: a few thousand to tens of thousands);
-//   C — Tesla turns on eyes-off (operator-none) FSD across the HW4 fleet, so a
-//       large fraction of privately-owned HW4 Teslas count as ADS (hundreds of
-//       thousands to a few million). NOTE: mode C is a BROADER "fleet" than the
-//       NHTSA robotaxi-service scope Waymo/Zoox are counted under — it counts
-//       ADS-operating personal cars, not just robotaxis. So A+B (scope "robotaxi")
-//       and C (scope "hw4") are drawn as two SEPARATE Tesla curves, not one.
+//   A: the slow robotaxi ramp continues;
+//   B: Tesla scales its dedicated robotaxi service aggressively (Cybercab
+//      deployment at hundreds to a thousand a week);
+//   C: Tesla turns on eyes-off (operator-none) FSD for customer HW4 cars,
+//      so a large fraction of privately owned HW4 Teslas count as ADS. Mode C
+//      is a BROADER "fleet" than the robotaxi-service scope Waymo and Zoox are
+//      counted under, so A+B (scope "robotaxi") and C (scope "hw4") are drawn
+//      as two SEPARATE Tesla curves. Customer cars carrying riders in Tesla's
+//      network (from ~Q2 2027, Q3-2026 call, Oct 21) count in C, as before.
+// Tesla's robotaxi fleet is cars driving on a typical day, from miles (the
+// human's choice, 2026-10-29; FLEET_HISTORY), so A and B are authored as daily
+// robotaxi miles on the forecast date (TESLA_ROBOTAXI_SCENARIOS): the fleet
+// forecast is those miles / TESLA_MILES_PER_CAR_DAY, and the miles forecast
+// the cumulative along a constant-growth path to them (teslaCumulativeMiles).
 //
-// Tesla weights were fit on 2026-06-30 to the prediction markets already on the
-// page rather than picked by hand: C = 0.05 matches the Manifold "Millions of
-// Teslas at level 3 in 2026" market (~4-5%); B = 0.24 was then set so the
-// model's implied P(Tesla fleet > Waymo fleet) landed near the Manifold "Will
-// Tesla have more autonomous vehicles providing ridehailing than Waymo on Jan
-// 2nd 2027" market, then ~23%. The weights are deliberately NOT re-fit on every
-// refresh: that market traded at ~6% (0.0636) in the 2026-10-04 snapshot while
-// the model still implies ~22% (0.219), so B no longer matches it (this
-// parenthetical said "~10%" until 2026-10-04; audit #56); A = 0.71 is the
-// remainder. That fit counts ALL of C's mass toward the
-// market even though the market asks about vehicles "providing ridehailing" and
-// C's personal HW4 cars are not robotaxis (see the scope note above) — the
-// assumption is that any world where Tesla flips eyes-off across millions of HW4s
-// is also a world where its ridehailing fleet alone exceeds Waymo's ~6k vehicles,
-// so C implies the market resolves YES. If you instead treat C as silent on the
-// market, B would need to be ~0.32 (and A ~0.63) to hit the same ~23%.
+// Tesla's weights (A 0.79, B 0.14, C 0.07) were fit 2026-10-29 to Manifold's
+// "Will Tesla have more autonomous vehicles providing ridehailing than Waymo"
+// resolving Dec 31, 2027 (18.5%, 9 bettors): the probability that Tesla's
+// distinct cars (~1.3x its car-equivalents) exceed Waymo's end-2027 fleet
+// (log-normal, median ~14k, sigma 0.45, from Manifold's "How many Waymo
+// robotaxis at the end of 2027?") is ~0.04 under A and ~0.70 under B, and C
+// counts toward the market at ~0.8 (a world with eyes-off FSD across the HW4
+// fleet is one where Tesla's ride-hail fleet exceeds Waymo's). C = 0.07 is a
+// judgment between the 2026 Level-3 market (3.9%) and the any-maker "read a
+// book while driving" market's 2027 bucket (31%), discounted by Tesla's
+// guidance (customer cars only inside its network, from ~Q2 2027) and its
+// record on this promise (end-2025, then Q4 2026, now Q2 2027). Checks: the
+// mixture implies ~0.54 on "vision-only L4 reaches 100M autonomous miles
+// before 2028" (market 0.50) and ~0.25 on "driverless in 10+ US metros
+// beyond Austin by Aug 1, 2027" (0.27). Until 2026-10-29: A 0.71, B 0.24,
+// C 0.05, fit to the Jan-2-2027 market (since traded down to ~6%).
 //
-// Waymo also gets two modes (one curve, same robotaxi scope — no step CHANGE of
-// scope, just of growth rate): a base "production pace" mode plus a "hockeystick".
-// Anchored to FutureSearch's Waymo forecast: end-2026 fleet ~5,900-6,000 central at
-// the current ~265-300 cars/month pace, with weekly-rides p90 of 1.15M (P(rides >=
-// 1M) ~20%). Hitting the 1M-weekly-rides fleet needs ~7,200 vehicles via a faster
-// Mesa/Magna + Ojai(Zeekr) + Ioniq-5 ramp — the hockeystick, weight ~0.18.
+// Anchors (Oct 2026): Tesla 465 car-equivalents in October (FLEET_HISTORY),
+// 1,080 registered in Texas (573 Cybercab, 507 Model Y; TxDMV, Oct 28),
+// Cybercab capacity over 125,000 a year (Q3-2026 deck) with the line
+// "outpacing our deployments" (Moravy, Oct 26), a Dallas Cybercab launch "next
+// month" and 24/7 operation "over the rest of this year" (Q3-2026 call).
+// Waymo ~4,700 (FLEET_HISTORY), "roughly 4,000" with plans for 8,000 by
+// end-2026 and 20,000 by end-2027 (Semafor, Oct 19; Waymo declined to
+// comment), ~5,100 Ojai imports on pace by end-2026 (MoffettNathanson via the
+// NY Post, Oct 19), 1,259 registered in Texas (Oct 28). Zoox ~120
+// (FLEET_HISTORY); 5-6 built a day (CEO, Aug 10), a 100-a-week target and a
+// plant built for 10,000 a year (Jun 2026); NHTSA's operating authorization
+// allows 600 at once, up to 1,000 on request (Oct 6); Las Vegas's
+// 100-vehicle cap expired Sep 25.
 //
-// Anchors (mid-2026): Waymo ~3,600 (Q1 2026) -> ~3,871 (Jun) -> "more than
-// 4,000" (Sep 1), ~280 cars/mo, Mesa/
-// Magna plant (tens of thousands/yr capacity) now building the Ojai (Zeekr 6th-gen,
-// public rides from May 28 2026), Ioniq 5 next (50k by 2028, GA Metaplant); Tesla
-// ~150 [90, 220] in service Aug 2026 (FLEET_HISTORY; 546 registered in TX by
-// Sep 25 2026 = 420 Model Y + 126 Cybercab, and 589 = 420 + 169 Cybercab by
-// Oct 3, TxDMV MCCS registry; public Cybercab rides in Austin
-// from Sep 4), unsupervised FSD "probably Q4 2026" (Musk), ~2-4M HW4 cars in
-// the US;
-// Zoox ~50->100 vehicles, redesigned production robotaxi unveiled Jun 24 2026,
-// ~105 deployed (Jul 10 recall; "about 100", Sep 17).
+// The weights for each helmer must sum to 1 (asserted in forecastLanes). The
+// `scope` tag splits a helmer into separate drawn curves (see forecastLanes);
+// untagged components (Waymo's two modes) stay a single curve.
 //
-// median = exp(mu) of each component; sigma is the log-scale spread. The weights
-// for each helmer must sum to 1 (asserted in forecastLanes). The `scope` tag
-// splits a helmer into separate drawn curves (see forecastLanes); untagged
-// components (Waymo's two modes) stay a single curve. A {median, sigma}
-// log-normal is exactly the symmetric case of the {best, lo, hi} band
-// component (lo/hi at ±1.6449 sigma), so fleetForecastCurves converts and
-// shares the band-mixture machinery.
+// Tesla's robotaxi scenarios A and B as daily robotaxi miles on the forecast
+// date. A: the Q4-2026 Cybercab surge fades and 2027 grows Waymo-like (~3x)
+// across 6-10 metros: 504k a day (2,800 car-equivalents) [162k, end-2026's
+// rate held flat through a pause or demand saturation; 1.44M, about twice
+// Waymo's current daily miles]. B: ~20,000 cars at ~135 miles a car-day on
+// Cybercab deployment of 300-1,000 a week: 2.7M a day [0.9M with deployment
+// capped by regulators (NHTSA AQ26002, state approvals); 7.2M, ~50,000
+// Cybercabs, the line's ~1,000 a week through 2027].
+const TESLA_MILES_PER_CAR_DAY = 180;
+const TESLA_ROBOTAXI_SCENARIOS = [
+  { weight: 0.79, best: 504000,  lo: 162000, hi: 1440000 }, // A: slow ramp
+  { weight: 0.14, best: 2700000, lo: 900000, hi: 7200000 }, // B: aggressive Cybercab scale-up
+];
+// The path's start: October 2026's typical day in data/vmt.csv's Tesla row
+// (2,594,000 miles over 31 days, mid-October) and the cumulative through Oct
+// 31 (6,835,000); growth-ghost-month.qual.mjs checks both against that row.
+const TESLA_PATH_START = {day: "2026-10-16", milesPerDay: 2594000 / 31, cumulativeThrough: "2026-10-31", cumulative: 6835000};
+// Tesla's cumulative robotaxi miles through the day before the forecast date,
+// on a path whose daily miles grow at a constant rate from the start's to
+// `milesPerDay` on the forecast date. (The research of 2026-10-29 also
+// tried a front-loaded path, the Q4-2026 surge then slower growth, which
+// gives A's central ~25% more miles.)
+function teslaCumulativeMiles(milesPerDay) {
+  const DAY = 86400000;
+  const T = (Date.parse(GROWTH_FORECAST_DATE) - Date.parse(TESLA_PATH_START.day)) / DAY;
+  const from = (Date.parse(TESLA_PATH_START.cumulativeThrough) - Date.parse(TESLA_PATH_START.day)) / DAY + 1;
+  const g = Math.log(milesPerDay / TESLA_PATH_START.milesPerDay) / T; // growth per day
+  assert(g !== 0, "teslaCumulativeMiles: the path's daily miles must change", {milesPerDay});
+  return TESLA_PATH_START.cumulative + TESLA_PATH_START.milesPerDay / g * (Math.exp(g * T) - Math.exp(g * from));
+}
 const FLEET_FORECAST = [
   { helmer: "Tesla", components: [
-    // A re-based 2026-09-26 on FLEET_HISTORY's 2026-08 row (150 [90, 220]; the
-    // June setting, median 180 / sigma 0.55, predated it and put the Jan-2027
-    // 5th percentile at 79, below August's floor): August's ~150 plus the 126
-    // Cybercabs already registered in Texas by Sep 25 and a flat Model Y count
-    // (Tesla told JPMorgan ~Aug 19 it is holding Model Y adds for Cybercab) ->
-    // ~240, sigma 0.45 (90% ~[114, 503]). Re-checked 2026-10-03 (audit #84):
-    // it still meets the floor rule (5th percentile 122 >= 90, median 292 >=
-    // 150), but its premise has moved: by Oct 3 the registry lists 169
-    // Cybercabs (Model Y still 420). Re-based 2026-10-23 on Tesla's weekly
-    // mileage: the week to Oct 18 ran 79,669 miles a day, ~440 vehicles in
-    // service at the ~180 miles per vehicle-day of Q2 2026 (5-6k miles per
-    // vehicle-month; 320-660 across 120-250), against 589 registered in Texas
-    // by Oct 3; a slow ramp from there to Jan 1 -> median 560, sigma 0.40
-    // (90% ~[290, 1,080]). Re-based 2026-10-28 on FLEET_HISTORY's 2026-10
-    // row, the same basis at October's average day, 465 [312, 788] (the
-    // week to Oct 18 plus the projected Oct 19-31): the floor rule
-    // (fleet-forecast.qual.mjs) put the lane's 5th percentile, 307, under
-    // that row's 312. The ramp is kept (x1.27 from mid-October to Jan 1):
-    // median 590, sigma 0.40 (90% ~[305, 1,140]).
-    { weight: 0.71, median: 590,    sigma: 0.40, scope: "robotaxi" }, // A: slow robotaxi ramp continues
-    { weight: 0.24, median: 9000,   sigma: 0.70, scope: "robotaxi" }, // B: aggressive robotaxi/Cybercab scale-up
-    { weight: 0.05, median: 600000, sigma: 0.95, scope: "hw4" },      // C: eyes-off FSD across the HW4 fleet
+    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_CAR_DAY,
+      lo: c.lo / TESLA_MILES_PER_CAR_DAY, hi: c.hi / TESLA_MILES_PER_CAR_DAY, scope: "robotaxi" })),
+    // C: ~1M US HW4 cars with paid FSD today and ~1.5M by end-2027 (1.74M FSD
+    // subscriptions and purchases worldwide, HW3 included; Q3-2026 deck):
+    // 400k eyes-off [60k, 2.0M], from a launch anywhere in Apr-Dec 2027.
+    { weight: 0.07, best: 400000, lo: 60000, hi: 2000000, scope: "hw4" },
   ] },
   { helmer: "Waymo", components: [
-    { weight: 0.82, median: 5800, sigma: 0.16 }, // base: ~280 cars/mo pace (FutureSearch end-2026 ~5,900-6,000)
-    { weight: 0.18, median: 7500, sigma: 0.25 }, // hockeystick: Mesa/Ojai/Ioniq ramp toward the 1M-weekly-rides fleet
+    // Base: ~5,500 on Jan 1, 2027, then ~550 a month in 2027 (about 3x 2026's
+    // ~180 a month) on ~5,100 Ojai, continued imports and the Ioniq 5. Low:
+    // imports stopped (Senate bill S.4429) or demand stalls.
+    { weight: 0.78, best: 11500, lo: 7000, hi: 16000 },
+    // Plan: toward Semafor's 20,000 by end-2027; drawn as the base mode's
+    // upper tail, not a second peak (fleet-forecast.qual.mjs).
+    { weight: 0.22, best: 17000, lo: 12000, hi: 27000 },
   ] },
   { helmer: "Zoox", components: [
-    // Re-based 2026-10-03 on FLEET_HISTORY's 2026-09 row (105 [95, 120]; the
-    // June setting, median 150 / sigma 0.45, put the Jan-2027 5th percentile
-    // at 72, a ~30% shrink from a fleet that has held near 100-105 since June;
-    // audit #19). Zoox will "steadily increase the size of its robotaxi fleet
-    // over the next several months" (TechCrunch, Sep 17), the NTA's 100-
-    // vehicle Las Vegas cap ran out Sep 25, the NHTSA exemption allows 2,500
-    // a year and Hayward builds 5-6 a day (CEO, Aug 10): median 150 is ~13
-    // more a month, between the stalled summer and Q1's ~20; sigma 0.27
-    // (90% ~[96, 234]) leaves a pause or recall holding the fleet near today's
-    // as the low tail and a Hayward ramp (~35 a month) as the high one.
-    { weight: 1, median: 150, sigma: 0.27 },
+    // ~120 in October 2026 plus ~20 a month in 2027 (2.5x 2026's ~8): Las Vegas
+    // past its cap, Los Angeles via Uber, Austin and Miami going public.
+    // Production is not the limit; NHTSA's 1,000 at once bounds the high end,
+    // and the low end is a pause holding the fleet near today's.
+    { weight: 1, best: 400, lo: 150, hi: 1000 },
   ] },
 ];
 
@@ -3206,18 +3219,10 @@ function laneLegendLabel(lane) {
     : lane.label;
 }
 
-// Fleet curves via the shared band machinery: each {median, sigma} component
-// converts to its exactly-equivalent symmetric band. Converted per call (not
-// hoisted) so a corrupted FLEET_FORECAST still fails loudly at build time.
+// Fleet curves via the shared band machinery, built per call so a corrupted
+// FLEET_FORECAST still fails loudly at build time.
 function fleetForecastCurves() {
-  return bandForecastCurves(FLEET_FORECAST.map(entry => ({
-    helmer: entry.helmer,
-    components: entry.components.map(c => ({
-      weight: c.weight, scope: c.scope, best: c.median,
-      lo: c.median * Math.exp(-1.6449 * c.sigma),
-      hi: c.median * Math.exp(1.6449 * c.sigma),
-    })),
-  })));
+  return bandForecastCurves(FLEET_FORECAST);
 }
 
 // Two-piece log-normal (density w.r.t. log x): mode at `best`, with the lower/upper
@@ -3332,7 +3337,8 @@ function renderFleetForecastChart() {
   const mapX = x => mLeft + (Math.log(x) - logMin) / (logMax - logMin) * pW;
   const mapY = y => mTop + pH * (1 - y / (yMax * DENSITY_HEADROOM));
 
-  const yTitle = "Probability density for 2027 Jan 1";
+  const [fy, fm, fd] = GROWTH_FORECAST_DATE.split("-").map(Number);
+  const yTitle = `Probability density for ${fy} ${"Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[fm - 1]} ${fd}`;
   const axes = `<g aria-hidden="true">
     ${drawLogXTicks(xMin, xMax, mapX, spec.fmt, mTop, baseline, baseline + 16)}
     <line class="month-axis" x1="${mLeft}" y1="${mTop}" x2="${mLeft}" y2="${baseline}"></line>
@@ -3384,7 +3390,7 @@ function renderFleetForecastChart() {
 // --- Fleet-size trajectory (history + extrapolation) -------------------------
 // [AI TEXT] Monthly fleet-size anchors per helmer (vehicles in driverless / ADS
 // robotaxi service), each with a lo/hi uncertainty range. The trajectory is then
-// extrapolated to the Jan 1, 2027 forecast (its median + 90% interval, taken from
+// extrapolated to the GROWTH_FORECAST_DATE forecast (its median + 90% interval, taken from
 // the same FLEET_FORECAST mixture the distribution chart draws), so the two charts
 // share the endpoint by construction. These counts are NOT from the NHTSA/VMT
 // pipeline — fleet headcounts are noisier than the cumulative-mileage milestones
@@ -3393,37 +3399,34 @@ function renderFleetForecastChart() {
 // Anchors (rounded, sourced from mid-2026 reporting): Waymo 1,500 (May 2025) ->
 // 2,500 (Nov) -> 3,067 5th-gen (Dec) -> 3,300 (Feb 2026, from the "over 3,000"
 // report plus the ~280 cars/mo pace) -> 3,750 (May, consistent with the ~3,871
-// Jun report the forecast anchors below cite); Tesla driverless-service
-// vehicles ~12 at launch (Jun 2025) -> ~20 (Dec) -> ~25 (Apr 2026) -> ~28
-// active (Jun 2026; 42 registered, ~58 incl. driver-monitor mode — the
-// registry count was carried as "best" until 2026-09-04, a change of basis)
-// -> ~150 (Aug 2026: 173 distinct vehicles sighted ex-Bay-Area on
-// robotaxitracker, AP Sep 3 "more than 200 unsupervised robotaxis", 420
-// registered VINs; the Sep-3 "1 million unsupervised miles" implies ~100+
-// cars averaging ~100-150 mi/day); Zoox ~50 (Jan 2026) -> ~90 (Mar) -> ~100
-// (Jun). Added 2026-10-03 (audit #87, #19), each a stock at the step of the
-// day it was counted, as the Jan-1 forecast sits at 2027-01: Waymo 2026-09
-// = "more than 4,000 vehicles" (TechCrunch, Sep 1) as the floor: the Jun-13
-// recall's 3,871 5th-gen vehicles plus the ~300 6th-gen Ojai in service by
-// Sep 1 make ~4,200, later 5th-gen additions a little more, so ~4,300; the
+// Jun report the forecast anchors below cite); Zoox ~50 (Jan 2026) -> ~90
+// (Mar) -> ~100 (Jun). Added 2026-10-03 (audit #87, #19), each a stock at the
+// step of the day it was counted, as the Jan-1 forecast sits at its month: Waymo
+// 2026-09 = "more than 4,000 vehicles" (TechCrunch, Sep 1) as the floor: the
+// Jun-13 recall's 3,871 5th-gen vehicles plus the ~300 6th-gen Ojai in service
+// by Sep 1 make ~4,200, later 5th-gen additions a little more, so ~4,300; the
 // ceiling is the ~280 cars/month pace the forecast assumes, run from Waymo's
 // "around 4,000" of Jun 29 (~4,600, rounded up);
 // Zoox 2026-09 = "about 100 custom-built robotaxis ... spread across four
 // U.S. cities" (TechCrunch, Sep 17), after recall 26E044000 covered 105
 // units, its whole deployed driverless fleet, on Jul 10, so ~105 [95, 120].
-// Tesla has no 2026-09 row: August's 150 rests on robotaxitracker's monthly
-// distinct-vehicle count, whose data paths the site does not allow automated
-// clients to read, and the rows before it use other definitions (audit #20,
-// a human call).
+//
+// Tesla's line is cars driving on a typical day, from miles (the human's
+// choice: 2026-10-28 for October's point, 2026-10-29 for the whole line;
+// AGENTS.md ledger, 2026-10-29). From 2025-09 every month is data/vmt.csv's
+// Tesla miles for the month over its days at ~180 miles per car per day
+// (Q2 2026's miles per active car-day), its range the miles band and 120-250
+// miles per car-day combined in quadrature; growth-ghost-month.qual.mjs
+// re-derives each point, so re-derive them whenever a month's miles row
+// changes. It is miles in car units, so utilization moves it: Q2 2026's slump
+// reads 78 (March) to 29 (June). June 2025 keeps the launch count, about a
+// dozen cars, since its miles give 0.4. Until 2026-10-29 the line mixed
+// reported counts (Dec 2025 ~20; Apr 2026 ~25, the no-monitor count; Jun 2026
+// ~28 active) with robotaxitracker's count of distinct cars seen in August
+// (150 [90, 220], against its 175).
 // Each helmer's last row is its ghost month's (data/README.md, Ghost months;
 // added 2026-10-28, growth-ghost-month.qual.mjs): October 2026, in progress,
-// as on a typical day of the month (mid-October). Tesla 2026-10 = cars
-// driving on a typical day (the human's choice, 2026-10-28): data/vmt.csv's
-// October miles, 2,594,000 [2,075,000, 3,635,000] for 31 days, at ~180 miles
-// per car per day (Q2 2026; 120-250, the two ranges combined in quadrature):
-// 465 [312, 788]. Unlike August's 150, a count of distinct cars seen in the
-// month, so part of the step between them is the change of definition;
-// re-derive it whenever the October miles row changes. Waymo 2026-10 =
+// as on a typical day of the month (mid-October). Waymo 2026-10 =
 // September's 4,300 run on 1.5 months at the forecast's ~280 cars a month
 // (~4,700); the floor is "roughly 4,000 cars" (Semafor via Reuters, Oct 19;
 // Waymo did not comment), the ceiling September's run on at ~400 a month
@@ -3433,11 +3436,20 @@ function renderFleetForecastChart() {
 // ceiling is a Hayward ramp of ~35 a month.
 const FLEET_HISTORY = {
   Tesla: [
-    {month: "2025-06", best: 12, lo: 8,  hi: 20},
-    {month: "2025-12", best: 20, lo: 12, hi: 32},
-    {month: "2026-04", best: 25, lo: 18, hi: 35},
-    {month: "2026-06", best: 28, lo: 20, hi: 58},
-    {month: "2026-08", best: 150, lo: 90, hi: 220},
+    {month: "2025-06", best: 12, lo: 8, hi: 20},
+    {month: "2025-09", best: 19, lo: 12, hi: 30},
+    {month: "2025-10", best: 26, lo: 18, hi: 42},
+    {month: "2025-11", best: 35, lo: 24, hi: 57},
+    {month: "2025-12", best: 36, lo: 24, hi: 58},
+    {month: "2026-01", best: 53, lo: 36, hi: 85},
+    {month: "2026-02", best: 64, lo: 44, hi: 103},
+    {month: "2026-03", best: 78, lo: 54, hi: 125},
+    {month: "2026-04", best: 69, lo: 48, hi: 111},
+    {month: "2026-05", best: 34, lo: 23, hi: 55},
+    {month: "2026-06", best: 29, lo: 20, hi: 47},
+    {month: "2026-07", best: 50, lo: 35, hi: 77},
+    {month: "2026-08", best: 93, lo: 65, hi: 145},
+    {month: "2026-09", best: 186, lo: 132, hi: 294},
     {month: "2026-10", best: 465, lo: 312, hi: 788},
   ],
   Waymo: [
@@ -3457,7 +3469,13 @@ const FLEET_HISTORY = {
     {month: "2026-10", best: 120, lo: 95, hi: 140},
   ],
 };
-const FLEET_TS_END_MONTH = "2027-01"; // the Jan-1-2027 forecast cross-section
+// The growth forecasts' date, the one place it is set (Jan 1, 2027 until
+// 2026-10-29). The fleet, a stock, plots at its month; the cumulative rides
+// and miles, month-end totals, at the month before (CUMULATIVE_END_MONTH).
+// The human wants the horizon as a reader's slider instead (2026-10-30): see
+// AGENTS.md's open question "FORECAST HORIZON AS A SLIDER".
+const GROWTH_FORECAST_DATE = "2028-01-01";
+const FLEET_TS_END_MONTH = GROWTH_FORECAST_DATE.slice(0, 7);
 
 // Month <-> integer index, with index 0 == 2025-05 (the earliest anchor).
 function fleetMonthIndex(monthIso) {
@@ -3474,7 +3492,7 @@ function fleetMonthIso(index) {
 // [AI TEXT] The growth extrapolator toggles between three metrics: the fleet count
 // (a stock), cumulative miles (from the repo VMT master — matches the top section
 // up to today, then extrapolates), and cumulative rides (rough — see below). Each
-// metric's Jan-1-2027 forecast endpoint mirrors the fleet bimodality: Tesla's upper
+// metric's forecast endpoint mirrors the fleet's scenario mixture: Tesla's upper
 // bound balloons because the "HW4 fleet goes ADS" scenario would explode its miles
 // and rides too.
 // CUMULATIVE rides (rough, monotonic). Waymo's is pinned to published trip
@@ -3552,57 +3570,33 @@ const RIDES_HISTORY = {
     {month: "2026-10", best: 467000, lo: 317000, hi: 872000},
   ],
 };
-// Cumulative-miles forecast through Jan 1, 2027, extending each helmer's
-// cumulative VMT from the last month drawn (data/vmt.js stops at the NHTSA
-// data-through month; each component below names its own base). Tesla
-// mirrors FLEET_FORECAST's scenario mixture
-// (same A/B/C weights and robotaxi/HW4 scope split). Recalibrated 2026-07-22
-// post-Q2-deck: end-Jun actual is 2.44M cumulative after a utilization-led Q2
-// slowdown (monthly 437k Mar -> 374k/192k/157k on ~45 -> ~30 active vehicles,
-// ~5-6k mi/vehicle-month blended — fleet-count activity ratios ran ~2x hot).
-// A ("slow ramp continues"): the Jul-2026 three-metro expansion (Miami/
-// Orlando/Tampa unsupervised) + ~175 registered TX vehicles pull monthly
-// miles back toward ~400-700k by Dec. Re-based 2026-09-04 on the Sep-3
-// "1 million unsupervised miles" statement (end-Aug cume ~3.15M
-// [2.89M, 3.79M], August ~470k/mo): floor 4.5M = 3.15M + 4 x ~340k (below
-// August's rate), central 5.5M = + 4 x ~590k, ceiling 7.8M = + 4 x ~1.16M
-// (the rate doubles again by Dec). Re-based 2026-10-23 on Tesla's weekly
-// no-monitor miles (tesla.com/robotaxi/safety): the cumulative reached ~5.42M
-// by Oct 18 (data/vmt.csv's end-September 4.24M plus 1.18M for Oct 1-18), the
-// week to Oct 18 ran 557,694 miles (79,669 a day), and weekly miles grew
-// 12-21% a week from June to September and ~30% a week in October. Over the
-// 74 days to Jan 1: central 13M = weekly miles growing ~5% a week, floor 9.5M
-// = shrinking ~7% a week, ceiling 19M = the June-September ~15% a week
-// continuing (held flat they give ~11.3M; quals/tesla-forecast-floor.qual.mjs).
-// B's Cybercab ramp to ~9k arrives
-// mostly in Q4 at ramping utilization (production started Jun 2026; the
-// earlier same-day x1.25 per-vehicle rescale is reverted — it didn't survive
-// the Q2 utilization data). C's miles are ADS miles on eyes-off personal
-// HW4 cars (~600k x ~1k mi/mo x the post-flip months, timing very uncertain).
+// Cumulative-miles forecast through the day before GROWTH_FORECAST_DATE (Dec 31,
+// 2027), re-authored 2026-10-29 (the Jan-1-2027 values are in the AGENTS.md
+// ledger). Tesla mirrors FLEET_FORECAST's scenario mixture (same A/B/C weights
+// and robotaxi/HW4 scope split); its A and B follow from their daily miles on
+// the forecast date (TESLA_ROBOTAXI_SCENARIOS, teslaCumulativeMiles).
 const MILES_FORECAST = [
   { helmer: "Tesla", components: [
-    { weight: 0.71, best: 13000000,  lo: 9500000,   hi: 19000000, scope: "robotaxi" },  // A: slow ramp continues (re-based 2026-10-23)
-    { weight: 0.24, best: 40000000,  lo: 15000000,  hi: 120000000, scope: "robotaxi" }, // B: aggressive scale-up
-    { weight: 0.05, best: 400000000, lo: 100000000, hi: 1500000000, scope: "hw4" },     // C: HW4 fleet goes ADS
+    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: c.weight, best: teslaCumulativeMiles(c.best),
+      lo: teslaCumulativeMiles(c.lo), hi: teslaCumulativeMiles(c.hi), scope: "robotaxi" })),
+    // C: eyes-off miles on customer HW4 cars at 15-30 a car-day (North
+    // American FSD users drive ~16 FSD miles a day; AGENTS.md ledger
+    // 2026-09-30) from a launch anywhere in Apr-Dec 2027: ~600M [20M, 6B].
+    { weight: 0.07, best: 600000000, lo: 20000000, hi: 6000000000, scope: "hw4" },
   ] },
-  // Waymo/Zoox re-derived 2026-09-04 from the rebuilt master (the 06-30
-  // values predated the 2026-08-28 Waymo hub+E rebuild, which lowered
-  // Apr-Aug 2026 by ~2-3M/mo): Waymo end-Aug 318.1M [307.4M, 330.8M] (after
-  // the 2026-09-25 hub thru-Jun re-chain, Atlanta D withdrawn 2026-09-29)
-  // plus Sep-Dec at Aug's 20.8M/mo growing ~3%/mo (Denver/San Diego/Tampa
-  // opened Sep 1, Ojai ramp) -> ~407M; lo = kyoom lo + 4 x 18M ~379M; hi =
-  // kyoom hi + 4 x 26M ~435M (authored 405M / 380M / 440M, rounded).
-  // Zoox re-derived 2026-10-27, when its 2026 rows moved to the per-day rate
-  // between its statements (data/README.md, Zoox anchors): end-Oct 3.87M
-  // [3.49M, 4.70M] plus November and December on the same model (290k
-  // [196k, 449k], 300k [198k, 474k]) -> ~4.46M; lo = cumulative lo + both
-  // months' lows ~3.88M; hi = cumulative hi + both months' highs ~5.63M
-  // (authored 4.5M / 3.9M / 5.6M, rounded; was 4.5M / 3.5M / 6.0M).
   { helmer: "Waymo", components: [
-    { weight: 1, best: 405000000, lo: 380000000, hi: 440000000 },
+    // US. End-2026 ~408M (361.8M through October, data/vmt.csv, plus ~46M);
+    // 2027 adds ~470-495M: an average fleet of ~8,500 at ~155 miles a car-day
+    // (Q2 2026: 608k a day over ~3,800-3,900 cars; September: 714k over
+    // ~4,300). Low: October's 721k a day held flat (676M). High: an average
+    // fleet of ~13k.
+    { weight: 1, best: 880000000, lo: 680000000, hi: 1200000000 },
   ] },
   { helmer: "Zoox", components: [
-    { weight: 1, best: 4500000, lo: 3900000, hi: 5600000 },
+    // End-2026 ~4.46M (the data/vmt.csv model); 2027 adds ~8.3-8.8M: an
+    // average fleet of ~270-285 at ~85 miles a vehicle-day (now ~80-95). Low:
+    // today's rate held flat (~7.9M).
+    { weight: 1, best: 13000000, lo: 7500000, hi: 24000000 },
   ] },
 ];
 
@@ -3610,33 +3604,39 @@ const MILES_FORECAST = [
 // 0.6-0.85 on-trip share; rides-provenance.qual pins the implied ratio to
 // [4.5, 8.5]). Divides the miles scenarios into the rides scenarios.
 const TESLA_MILES_PER_RIDE = { lo: 4.7, best: 6.2, hi: 8.3 };
-// Cumulative-rides forecast through Jan 1, 2027. Tesla mirrors FLEET_FORECAST's
-// scenario mixture (same A/B/C weights and robotaxi/HW4 scope split), because
-// cumulative rides are the push-forward of the fleet scenarios and a
-// one-humped band can't represent "71% boring / 24% aggressive / 5% HW4" —
-// its computed median lands between the scenarios instead of inside one.
-// Tesla's A/B bands are the miles scenarios divided by the same
-// [4.7, 6.2, 8.3] miles-per-ride corridor as RIDES_HISTORY (a low corridor
-// value gives the HIGH rides edge, so lo/hi swap); C's rides are
-// Tesla-Network rides from eyes-off personal cars (participation deeply
-// uncertain, hence the width). Zoox extends its rider-milestone trajectory
-// with expansion upside (Miami/Austin launches, 4x SF geofence, paid rides
-// from 2026 per Fortune 2025-12-08).
+// Cumulative-rides forecast through the day before GROWTH_FORECAST_DATE (Dec 31,
+// 2027), re-authored 2026-10-29. Tesla mirrors FLEET_FORECAST's scenario
+// mixture (same A/B/C weights and robotaxi/HW4 scope split), because a
+// one-humped band can't represent "79% slow / 14% aggressive / 7% HW4": its
+// computed median lands between the scenarios instead of inside one. Tesla's
+// A/B bands are the miles scenarios divided by the same [4.7, 6.2, 8.3]
+// miles-per-ride corridor as RIDES_HISTORY (a low corridor value gives the
+// HIGH rides edge, so lo/hi swap); C's rides are Tesla-Network rides from
+// eyes-off customer cars (participation deeply uncertain, hence the width).
 const RIDES_FORECAST = [
   { helmer: "Tesla", components: [
     // A and B are the miles scenarios over the ride corridor, tied in code
     // (2026-09-26: A had stayed on the 2026-07-22 miles figures when
-    // MILES_FORECAST A was re-based on 2026-09-04). C is authored: Tesla-
-    // Network rides from eyes-off personal cars have their own miles per ride.
+    // MILES_FORECAST A was re-based on 2026-09-04). C is authored: Tesla's
+    // rides in that world, its robotaxi's plus Tesla-Network rides from
+    // eyes-off customer cars (~10% of C's miles at ~6 a ride): ~15M [2M, 150M],
+    // the low edge above the robotaxi's ~1.1M through October.
     ...MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi")
       .map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_RIDE.best, lo: c.lo / TESLA_MILES_PER_RIDE.hi, hi: c.hi / TESLA_MILES_PER_RIDE.lo, scope: "robotaxi" })),
-    { weight: 0.05, best: 15000000, lo: 2000000, hi: 120000000, scope: "hw4" },      // C: Tesla Network on eyes-off HW4
+    { weight: 0.07, best: 15000000, lo: 2000000, hi: 150000000, scope: "hw4" }, // C: Tesla Network on eyes-off HW4
   ] },
   { helmer: "Waymo", components: [
-    { weight: 1, best: 50000000, lo: 43000000, hi: 60000000 }, // ~31M May 2026 + ~31 weeks at 600-750k/wk
+    // End-2026 ~49.5M (43.5M through October, RIDES_HISTORY, plus ~0.6M a
+    // week); 2027 adds ~49-51M: an average fleet of ~8,300-8,700 at ~16 rides
+    // a car-day (2026 ran 17-19). Low: flat at 0.56M a week plus a pause.
+    // High: Manifold's 2027 weekly-rides market (2M a week at 83%, thin).
+    { weight: 1, best: 100000000, lo: 75000000, hi: 140000000 },
   ] },
   { helmer: "Zoox", components: [
-    { weight: 1, best: 550000, lo: 350000, hi: 1100000 }, // >500k riders late Jun 2026 + ~50k riders/mo run-rate + LV Uber-app launch upside, / 1.2-2.0 occupancy
+    // End-2026 ~0.56M (467k through October, RIDES_HISTORY); 2027 adds ~1.2M:
+    // an average fleet of ~270-285 at ~12 rides a vehicle-day (now ~14: about
+    // 10k a week on ~100 vehicles).
+    { weight: 1, best: 1800000, lo: 900000, hi: 3800000 },
   ] },
 ];
 
@@ -3675,7 +3675,7 @@ function growthMetricSpec(key) {
       tipFmt: v => MILES_AT_SIG_FIGS.format(v),
       // yMin 500 keeps Tesla's first cumulative points (683 / 7k / 20k mi) and
       // Zoox's early lower band on-plot (yMin 100000 clipped them until 2026-09-04)
-      yMin: 500, yMax: 4000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000],
+      yMin: 500, yMax: 10000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000],
       note: "Cumulative miles = the top section's VMT, carried through the last NHTSA data month and then extrapolated (dashed); the solid part should match the VMT charts above.",
       lanes: () => trajectoryLanes(bandForecastCurves(MILES_FORECAST), milesHistory, CUMULATIVE_END_MONTH)},
   };
@@ -3683,16 +3683,16 @@ function growthMetricSpec(key) {
   return specs[key];
 }
 
-// The Jan-1-2027 forecast's step on the trajectory's month axis, by each
-// metric's own time convention. The fleet is a stock, counted at Jan 1: the
-// 2027-01 step (FLEET_TS_END_MONTH). Cumulative rides and miles are month-end
+// The forecast's step on the trajectory's month axis, by each metric's own
+// time convention. The fleet is a stock, counted on the forecast date: that
+// date's month (FLEET_TS_END_MONTH). Cumulative rides and miles are month-end
 // totals (the 2026-08 point is the total through Aug 31), so the total
-// through Dec 31, 2026 is the 2026-12 step. Until 2026-10-03 every metric put
-// it at 2027-01, five steps after August for four months of driving, so the
-// dashed leg showed 4/5 of its slope (audit #86). Either way its tooltip
-// names the date it stands for, GROWTH_FORECAST_DATE.
-const CUMULATIVE_END_MONTH = "2026-12";
-const GROWTH_FORECAST_DATE = "2027-01-01";
+// through the day before the forecast date is the month before. Until
+// 2026-10-03 every metric put it at the fleet's step, five steps after August
+// for four months of driving, so the dashed leg showed 4/5 of its slope
+// (audit #86). Either way its tooltip names the date it stands for,
+// GROWTH_FORECAST_DATE.
+const CUMULATIVE_END_MONTH = fleetMonthIso(fleetMonthIndex(FLEET_TS_END_MONTH) - 1);
 
 // A forecast's median and 90% interval as both growth charts print them: in
 // the metric's own format, at FORECAST_SIG_FIGS significant figures, all that
@@ -3713,7 +3713,7 @@ function forecastQuantilesText(spec, median, lo, hi) {
 const MILES_AT_SIG_FIGS = new Intl.NumberFormat(NUMBER_LOCALE,
   {notation: "compact", minimumSignificantDigits: FORECAST_SIG_FIGS, maximumSignificantDigits: FORECAST_SIG_FIGS});
 
-// A lane's point list: history + the Jan-1-2027 forecast endpoint at
+// A lane's point list: history + the forecast endpoint at
 // endMonth, asserting lo <= best <= hi on every point and the months in
 // order. A history point in a ghost month (a month after the newest NHTSA
 // month that data/vmt.js's ghost rows cover) is flagged ghost, as the VMT
@@ -3762,9 +3762,9 @@ function growthScenarioNote(lanes) {
     return scenarioPct(lane.share);
   };
   // Notes on "splits into two scenarios" below: the
-  // model has three (A slow robotaxi ramp 0.71, B aggressive scale-up 0.24,
-  // C eyes-off FSD on all HW4 cars 0.05). The robotaxi curve mixes A and B,
-  // and B is its unexplained second hump near 9,000 vehicles.
+  // model has three (A slow robotaxi ramp 0.79, B aggressive scale-up 0.14,
+  // C eyes-off FSD on all HW4 cars 0.07). The robotaxi curve mixes A and B;
+  // B is its fat right shoulder toward 15,000 car-equivalents.
   return `Tesla forecast splits into two scenarios: the robotaxi (~${pct("robotaxi")}%) ` +
     `and unsupervised FSD in all HW4 cars (~${pct("hw4")}%). `;
 }
@@ -4178,9 +4178,9 @@ function renderStressTestTable(series) {
     <p>
 How wrong Claude's fault judgments would have to be to change the verdicts.
 The multiplier is the smallest factor that the true at-fault fraction would need to exceed the judged at-fault fraction before changing the at-fault verdict.
-<span class="ai-text">"At-fault" here means, on the robotaxi side, the probability that an expert human driver would have avoided the collision (judged by Claude from the narratives); the human band bounds the same quantity using legal-fault shares (50% floor), since expert avoidability cannot be lower.</span>
+<span class="ai-text">Claude: "At-fault" here means, on the robotaxi side, the probability that an expert human driver would have avoided the collision (judged by Claude from the narratives); the human band bounds the same quantity using legal-fault shares (50% floor), since expert avoidability cannot be lower.</span>
     </p>
-    <div class="table-wrap"><table class="source-table stress-table">
+    <div class="table-wrap"><table class="source-table stress-table" id="sanity-fault-flip">
       <thead><tr><th>Company</th><th class="num">Judged fault</th><th>Current verdict</th><th class="num">Flip multiplier</th><th>Verdict after flip</th></tr></thead>
       <tbody>${faultRows}</tbody>
     </table></div>`;
@@ -4190,7 +4190,7 @@ The multiplier is the smallest factor that the true at-fault fraction would need
 The "AV/human ratio" column gives the possible range for that ratio based on the confidence intervals.
 If the whole range is above 1, we call that "robustly safer".
     </p>
-    <div class="table-wrap"><table class="source-table stress-table">
+    <div class="table-wrap"><table class="source-table stress-table" id="sanity-stress">
       <thead><tr><th>Company</th><th>Metric</th><th class="num">k</th><th class="num">MPI AV (median; 95%)</th><th class="num">Human MPI (AV cities)</th><th class="num">AV/human ratio</th><th>Verdict</th></tr></thead>
       <tbody>${body}</tbody>
     </table></div>
@@ -4214,7 +4214,7 @@ Sources: Kusano & Scanlon, Waymo's safety impact page, FARS.
 This differs from Waymo's location-adjusted safety-impact methodology.
 The all-incidents comparison is broader than Waymo's surface-street, injury-focused numbers.
     </p>
-    <div class="table-wrap"><table class="source-table">
+    <div class="table-wrap"><table class="source-table" id="sanity-benchmarks">
       <thead><tr><th>Cohort</th><th>Metric</th><th class="num">Low MPI</th><th class="num">High MPI</th><th>Derivation</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>`;
@@ -5304,11 +5304,24 @@ const DISPERSION_MIN_MONTHS = 3;
 function dispersionFewMonthsNote(n) {
   return `Months in the window: ${n}. Dispersion test needs at least ${DISPERSION_MIN_MONTHS} months.`;
 }
+// The Poisson-dispersion table's assessment of a company's months: too few
+// incidents in them for the test to tell (under 20), else by the dispersion
+// index (under 0.5, under 2, under 5, and 5 or more). Named here so the quals
+// read the words from the app (2026-10-29).
+const DISPERSION_VERDICT = {
+  fewIncidents: "too few incidents to tell",
+  under: "underdispersed",
+  poisson: "consistent with Poisson",
+  mild: "mildly overdispersed",
+  over: "overdispersed",
+};
 
 function buildSanityChecks() {
   const rows = activeIncidents();
   const vmt = activeVmt();
   const series = activeSeries || monthSeriesData();
+  // Each section's table has an id (sanity-*), which the quals use to find
+  // the section, rather than its heading's words (2026-10-29).
   const sections = [];
 
   // --- 1. Passenger presence (existing) ---
@@ -5353,7 +5366,7 @@ Caveat:
 If the passenger-seat safety monitor is able to intervene to prevent incidents, then the true unsupervised miles per incident (MPI) for Tesla would be lower (worse) than what these graphs and data show.
 But I now believe that the passenger-seat safety monitors have at least not had the ability to intervene in real time at normal driving speeds.
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-passengers">
       <thead><tr>
         <th>Company</th>
         <th>With passenger</th>
@@ -5433,7 +5446,7 @@ Confidential Business Information (CBI).
   }
   sections.push(`
 <h3>Severity breakdown</h3>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-severity">
       <thead><tr>
         <th>Company</th>
         <th>Property damage only</th>
@@ -5468,7 +5481,7 @@ Below is the total adjusted Vehicle Miles Traveled (VMT) for each company across
 The "range ratio" (max &divide; min) is a measure of uncertainty in the VMT numbers.
 For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be off by up to a factor of 2.
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-vmt-uncertainty">
       <thead><tr>
         <th>Company</th>
         <th>VMT low</th>
@@ -5522,11 +5535,11 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
     const rates = monthData.map(r =>
       r.vmt > 0 ? (r.count / r.vmt * 1e6).toFixed(1) : "\u2014");
     // With few total incidents the test has no power; flag that
-    const verdict = totalK < 20 ? "too few incidents to tell"
-      : dispIdx < 0.5 ? "underdispersed"
-      : dispIdx < 2 ? "consistent with Poisson"
-      : dispIdx < 5 ? "mildly overdispersed"
-      : "overdispersed";
+    const verdict = totalK < 20 ? DISPERSION_VERDICT.fewIncidents
+      : dispIdx < 0.5 ? DISPERSION_VERDICT.under
+      : dispIdx < 2 ? DISPERSION_VERDICT.poisson
+      : dispIdx < 5 ? DISPERSION_VERDICT.mild
+      : DISPERSION_VERDICT.over;
     dispRows.push(`<tr>
       <td>${escHtml(helmerLabel(helmer))}</td>
       <td>${rates.join(", ")}</td>
@@ -5559,7 +5572,7 @@ Here we check that assumption using a Pearson chi-squared dispersion test normal
 A dispersion index near 1 supports the Poisson model; values much greater than 1 suggest that either something's awry or the robotaxis are getting better or worse.
 <span class="ai-text">Claude: Where the dispersion index is much greater than 1 (today: Tesla), the pooled full-window estimates average over a fleet, geography, and software mix that changed rapidly; narrow the date-range slider to look at a recent, more homogeneous window.</span>
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-dispersion">
       <thead><tr>
         <th>Company</th>
         <th>Monthly rate (per M mi)</th>
@@ -5618,7 +5631,7 @@ Within-AV comparisons stay consistent (same rules for all three companies), and
 the at-fault metrics are essentially immune (the exempted crashes are ~99% not 
 the AV's fault).
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-threshold">
       <thead><tr>
         <th>Company</th>
         <th>Speed = 0 mph</th>
@@ -5663,7 +5676,7 @@ Human crash rates vary by city, presumably.
 Maybe that affects AVs too?
 (So far we're only counting cities in which at least one incident has been reported.)
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-geography">
       <thead><tr>
         <th>Company</th>
         <th># cities</th>
@@ -5715,7 +5728,7 @@ Where the Vehicle Miles Traveled (VMT) estimates come from for each company.
 These are the denominators in every miles per incident (MPI) calculation, so any errors here matter a lot.
 In general we mistrust anything Tesla says except numbers in their official reports to investors which seem to be reliable and would be a big deal (e.g., securities fraud) if they weren't.
 </p>
-    <div class="table-wrap"><table class="vmt-sources">
+    <div class="table-wrap"><table class="vmt-sources" id="sanity-vmt-sources">
       <thead><tr>
         <th>Company</th>
         <th>Source and methodology (<span class="ai-text">green text = AI-generated</span>)</th>
@@ -5758,7 +5771,7 @@ NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Month
 Claude notes: 
 <span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (median of past releases, with its band), not a fraction of days.</span>
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-coverage">
       <thead><tr>
         <th>Company</th>
         <th>Month</th>
@@ -5810,14 +5823,14 @@ Claude notes:
   // this page link, p. 2 on 30270-13817 and p. 9 on relying on the police
   // crash report (pp. 2 and 8 in the Sep-24 edition).
   // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
-  const waySsiNote = `The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious per the police reports, and one (30270-13817) still awaits a police crash report.`;
+  const waySsiNote = `Claude: The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious per the police reports, and one (30270-13817) still awaits a police crash report.`;
   sections.push(`
 <h3>Waymo cross-check</h3>
 <p>
 Our full-history Waymo rates (${fmtCount(wayAll.length)} incidents over ${fmtMiles(wayVmtM.fiveDay * 1e6)} miles; SGO self-reported) vs Waymo's own published rates (surface-street only? location-weighted).
 A ratio very different from 1 suggests a problem.
 </p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table id="sanity-waymo-check">
       <thead><tr>
         <th>Metric</th>
         <th>Ours (per M mi)</th>

@@ -219,10 +219,13 @@ Resultata: drag ${JSON.stringify(drag)}; release ${JSON.stringify(release)}, ${p
   const got = p.views();
   const startMonth = p.months[got.window[0]];
   const want = p.months[p.months.indexOf("2025-06") - 2];
-  assert.ok(startMonth === want && got.heading.startsWith(`Incident browser using data from ${want} `) &&
+  // The heading's first month is the window's start (found by its form,
+  // YYYY-MM; until 2026-10-29 by the heading's words before it).
+  const headingStart = (got.heading.match(/\d{4}-\d{2}/) || [])[0];
+  assert.ok(startMonth === want && headingStart === want &&
     JSON.stringify(after) === JSON.stringify({ draw: 1, summary: 1, sanity: 1, browser: 1 }),
     `Replicata: release "Start month" (pointerup), then move it two months left with a key press before the next animation frame, then run the frame.
-Expectata: one draw and one commit, both for the later window (start ${want}): the incident browser's heading names it.
+Expectata: one draw and one commit, both for the later window (start ${want}): the incident browser's heading names it as its first month.
 Resultata: window starts ${startMonth}, heading ${JSON.stringify(got.heading)}, counts ${JSON.stringify(after)}.`);
 }
 

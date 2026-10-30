@@ -17,11 +17,16 @@ import { parseCsv } from "./csv-parse.mjs";
 //
 // Tesla's growth points derive from data/vmt.csv's miles for the month, so
 // they are re-derived here, and go red when that row changes:
-//  - Fleet: cars driving on a typical day of the month (the human's choice,
-//    2026-10-28): the month's miles over its days at ~180 miles per car per
-//    day, Tesla's Q2 2026 utilization and the basis of the Jan-1 forecast's
-//    scenario A (tesla-forecast-floor.qual.mjs); its range covers at least
-//    the month's miles band at that rate.
+//  - Fleet: cars driving on a typical day of the month (the human's choice:
+//    2026-10-28 for October's point, 2026-10-29 for the whole line from
+//    September 2025 on; June 2025's launch count of ~12 stays, since miles
+//    then give 0.4): the month's miles over its days at ~180 miles per car per
+//    day, Tesla's Q2 2026 utilization; its range covers at least the month's
+//    miles band at that rate. There is a point for every month from 2025-09
+//    to the newest ghost month, each checked, not only ghost months, so a
+//    month's revised miles row still flags its point after its NHTSA release
+//    (until 2026-10-29 only ghost months were checked, and the line mixed
+//    definitions).
 //  - Rides: for every month after the deck-chart months (2026-06 and
 //    earlier, whose near-exact miles rides-provenance.qual.mjs checks),
 //    cumulative miles over the [4.7, 6.2, 8.3] miles-per-ride corridor, the
@@ -88,23 +93,46 @@ for (const lane of lanesOf("miles").filter(l => !l.branchOnly)) {
   }
 }
 
-// --- 3. Tesla's fleet at a ghost month: cars driving on a typical day ---
+// --- 3. Tesla's fleet from 2026-10: cars driving on a typical day ---
 const MILES_PER_CAR_DAY = 180;
+const PER_DAY_FROM = "2025-09"; // Tesla's first fleet point on this basis
 const daysIn = month => new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)), 0)).getUTCDate();
 const fleetHistory = plain(vm.runInContext("FLEET_HISTORY", ctx));
-for (const month of ghostMonths) {
-  const row = ghostRows.find(r => r.helmer === "Tesla" && r.month === month);
-  const p = fleetHistory.Tesla.find(q => q.month === month);
-  const perDay = miles => miles / daysIn(month) / MILES_PER_CAR_DAY;
-  if (!p || Math.abs(p.best - perDay(row.vmtBest)) > 1 || p.lo > perDay(row.vmtMin) || p.hi < perDay(row.vmtMax))
-    problems.push(`fleet · Tesla ${month}: ${JSON.stringify(p)}; want best ${Math.round(perDay(row.vmtBest))} (${row.vmtBest} miles over ${daysIn(month)} days at ${MILES_PER_CAR_DAY} a car), lo <= ${Math.round(perDay(row.vmtMin))}, hi >= ${Math.round(perDay(row.vmtMax))}`);
+const master = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
+  .filter(r => r[0] === "tesla")
+  .map(r => ({ month: r[1], vmt: Number(r[2]), cume: Number(r[3]), kyoomMin: Number(r[4]), kyoomMax: Number(r[5]),
+    vmtMin: Number(r[6]), vmtMax: Number(r[7]) }));
+const monthsFrom = (from, to) => {
+  const out = [];
+  for (let [y, m] = from.split("-").map(Number); `${y}-${String(m).padStart(2, "0")}` <= to; m === 12 ? (y++, m = 1) : m++)
+    out.push(`${y}-${String(m).padStart(2, "0")}`);
+  return out;
+};
+const perDayMonths = fleetHistory.Tesla.filter(q => q.month >= PER_DAY_FROM).map(q => q.month);
+if (JSON.stringify(perDayMonths) !== JSON.stringify(monthsFrom(PER_DAY_FROM, newestGhost)))
+  problems.push(`fleet · Tesla: points at ${perDayMonths.join(", ")}; want every month from ${PER_DAY_FROM} to ${newestGhost}`);
+for (const p of fleetHistory.Tesla.filter(q => q.month >= PER_DAY_FROM)) {
+  const m = master.find(r => r.month === p.month);
+  const perDay = miles => miles / daysIn(p.month) / MILES_PER_CAR_DAY;
+  if (!m || Math.abs(p.best - perDay(m.vmt)) > 1 || p.lo > perDay(m.vmtMin) || p.hi < perDay(m.vmtMax))
+    problems.push(`fleet · Tesla ${p.month}: ${JSON.stringify(p)}; want best ${m ? Math.round(perDay(m.vmt)) : "(no data/vmt.csv row)"} (${m && m.vmt} miles over ${daysIn(p.month)} days at ${MILES_PER_CAR_DAY} a car), lo <= ${m && Math.round(perDay(m.vmtMin))}, hi >= ${m && Math.round(perDay(m.vmtMax))}`);
+}
+
+// --- 3b. The start of Tesla's forecast path is that month's data/vmt.csv row ---
+// Tesla's robotaxi miles forecast runs from a month's typical day and its
+// month-end cumulative (crashla.js TESLA_PATH_START, added 2026-10-29), so a
+// revised row there flags the forecast too.
+{
+  const start = plain(vm.runInContext("TESLA_PATH_START", ctx));
+  const month = start.cumulativeThrough.slice(0, 7);
+  const m = master.find(r => r.month === month);
+  if (!m || Math.abs(start.milesPerDay - m.vmt / daysIn(month)) > 1 || start.cumulative !== m.cume
+      || start.day.slice(0, 7) !== month || start.cumulativeThrough !== `${month}-${daysIn(month)}`)
+    problems.push(`TESLA_PATH_START ${JSON.stringify(start)}; want ${month}'s data/vmt.csv row: ${m ? `${m.vmt} miles over ${daysIn(month)} days (${(m.vmt / daysIn(month)).toFixed(1)} a day), cumulative ${m.cume} through ${month}-${daysIn(month)}` : "missing"}`);
 }
 
 // --- 4. Tesla's rides after the deck-chart months, from data/vmt.csv ---
 const corridor = plain(vm.runInContext("TESLA_MILES_PER_RIDE", ctx));
-const master = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
-  .filter(r => r[0] === "tesla")
-  .map(r => ({ month: r[1], cume: Number(r[3]), kyoomMin: Number(r[4]), kyoomMax: Number(r[5]) }));
 const rides = plain(vm.runInContext("RIDES_HISTORY", ctx)).Tesla;
 for (const row of rides.filter(r => r.month > "2026-06")) {
   const m = master.find(r => r.month === row.month);
@@ -170,10 +198,25 @@ for (const key of METRICS) {
 }
 vm.runInContext(`selectedGrowthMetric = "fleet"`, ctx);
 
+// --- 6. The forecast stays ahead of the ghost months ---
+// A ghost month at the cumulative forecasts' step (CUMULATIVE_END_MONTH, the
+// month before the forecast date) stops the Rides and Miles lines (the month
+// order asserted in growthLanePoints); each NHTSA release adds a month. So the
+// step must lie at least three months past the newest ghost month: this goes
+// red about two releases before the break, time to move the forecast date
+// (AGENTS.md ledger, 2026-10-29; added then, when the Jan 1, 2027 forecast
+// sat two months past October's ghost month).
+{
+  const step = vm.runInContext("CUMULATIVE_END_MONTH", ctx);
+  const monthsApart = (a, b) => (Number(b.slice(0, 4)) - Number(a.slice(0, 4))) * 12 + Number(b.slice(5)) - Number(a.slice(5));
+  if (monthsApart(newestGhost, step) < 3)
+    problems.push(`the cumulative forecasts' step ${step} is ${monthsApart(newestGhost, step)} months past the newest ghost month ${newestGhost}; want at least 3: move the forecast date (GROWTH_FORECAST_DATE)`);
+}
+
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: load the app in vm with the analysis rows and the ghost rows (data/vmt.js) as init does, build and render the growth chart's Fleet size, Rides and Miles lines, and read FLEET_HISTORY, RIDES_HISTORY and data/vmt.csv.
-Expectata: every line's history in month order, with a point at each ghost month (${ghostMonths.join(", ")}), flagged ghost, and none later; each fork leaving from its helmer's newest point; the Miles points at the ghost months equal to the ghost rows' cumulative miles and bands; Tesla's fleet at a ghost month its miles over the month's days at ${MILES_PER_CAR_DAY} miles a car, its range covering that miles band; Tesla's rides after 2026-06 the cumulative miles over the miles-per-ride corridor, within 500; and on the chart each ghost point a faded dot (class month-ghost) that the dashed line passes through from where the solid line ends, the solid line never reaching it, its tooltip giving the point's values and ending with the VMT charts' ghost note.
+Expectata: every line's history in month order, with a point at each ghost month (${ghostMonths.join(", ")}), flagged ghost, and none later; each fork leaving from its helmer's newest point; the Miles points at the ghost months equal to the ghost rows' cumulative miles and bands; Tesla's fleet a point for every month from ${PER_DAY_FROM}, each its month's miles in data/vmt.csv over the month's days at ${MILES_PER_CAR_DAY} miles a car, its range covering that miles band; Tesla's rides after 2026-06 the cumulative miles over the miles-per-ride corridor, within 500; and on the chart each ghost point a faded dot (class month-ghost) that the dashed line passes through from where the solid line ends, the solid line never reaching it, its tooltip giving the point's values and ending with the VMT charts' ghost note; and the cumulative forecasts' step at least three months past the newest ghost month.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 12).join("\n")}`);
 console.log(`qual pass: every growth line carries the ghost months (${ghostMonths.join(", ")}) as the VMT charts do, faded on the dashed stretch with the ghost note; Tesla's fleet and rides there follow data/vmt.csv`);

@@ -68,56 +68,87 @@ vm.runInContext(`
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
 `, ctx);
 
-const tipWithAreas = vm.runInContext(`
-  const inc = INCIDENT_DATA.find(i => i.svHit && i.cpHit);
-  faultTooltip(inc);
+// The fault tooltip's last line names the incident's contact areas, its own
+// (svHit) first and its crash partner's (cpHit) last, a separator between
+// them; a missing partner area shows a placeholder, not nothing. Until
+// 2026-10-29 this checked the separator's glyph (a collision emoji) and the
+// placeholder's word ("n/a"), the human's to change; now it checks the areas
+// from the data and their order.
+const areaTips = vm.runInContext(`
+  (() => {
+    const inc = INCIDENT_DATA.find(i => i.svHit && i.cpHit);
+    const incFO = INCIDENT_DATA.find(i => i.svHit && !i.cpHit);
+    return {
+      both: { svHit: inc.svHit, cpHit: inc.cpHit, tip: faultTooltip(inc) },
+      fixedObject: incFO ? { svHit: incFO.svHit, tip: faultTooltip(incFO) } : null,
+    };
+  })()
 `, ctx);
-assert.ok(
-  tipWithAreas.includes("\u{1F4A5}"),
-  `Replicata: render fault tooltip for incident with both svHit and cpHit.
-Expectata: tooltip includes collision emoji separating SV and CP contact areas.
-Resultata: tooltip was ${JSON.stringify(tipWithAreas.slice(-80))}.`,
-);
+{
+  const { svHit, cpHit, tip } = areaTips.both;
+  const line = tip.split("\n").pop();
+  const between = line.startsWith(svHit + " ") && line.endsWith(" " + cpHit)
+    ? line.slice(svHit.length, line.length - cpHit.length).trim() : "";
+  assert.ok(
+    between !== "",
+    `Replicata: render fault tooltip for incident with both svHit and cpHit (${JSON.stringify(svHit)}, ${JSON.stringify(cpHit)}).
+Expectata: its last line names the SV contact area, then a separator, then the CP contact area.
+Resultata: tooltip was ${JSON.stringify(tip.slice(-80))}.`,
+  );
+}
 
 // Verify tooltip still works for incidents with empty cpHit (fixed-object crashes)
-const tipFixedObj = vm.runInContext(`
-  const incFO = INCIDENT_DATA.find(i => i.svHit && !i.cpHit);
-  incFO ? faultTooltip(incFO) : null;
-`, ctx);
-if (tipFixedObj !== null) {
+if (areaTips.fixedObject !== null) {
+  const { svHit, tip } = areaTips.fixedObject;
+  const line = tip.split("\n").pop();
+  const rest = line.startsWith(svHit + " ") ? line.slice(svHit.length).trim().split(/\s+/) : [];
   assert.ok(
-    tipFixedObj.includes("\u{1F4A5}") && tipFixedObj.includes("n/a"),
-    `Replicata: render fault tooltip for fixed-object crash (empty cpHit).
-Expectata: tooltip shows "svHit 💥 n/a" for missing crash partner area.
-Resultata: tooltip was ${JSON.stringify(tipFixedObj.slice(-80))}.`,
+    rest.length >= 2 && rest.every(t => t !== ""),
+    `Replicata: render fault tooltip for fixed-object crash (empty cpHit; SV area ${JSON.stringify(svHit)}).
+Expectata: its last line names the SV contact area, then the separator and a placeholder for the missing crash partner area.
+Resultata: tooltip was ${JSON.stringify(tip.slice(-80))}.`,
   );
 }
 
 // Verify the VMT tooltip helpers produce the expected format. Since
 // 2026-10-03 a dot's tooltip also gives its range (audit #28: an end hidden
 // under its dot was unreadable) and an error-bar end says which end it is
-// (audit #59); the two were one helper, vmtTooltip, until then.
+// (audit #59); the two were one helper, vmtTooltip, until then. The tooltips'
+// words around the figures are the human's to change, so this checks the
+// figures line by line (until 2026-10-29 it pinned the whole text, "miles",
+// "Range:" and "incident(s)" with it): a dot's tooltip is its month, its
+// miles, its range (low then high) and its incident count; an end's, its
+// month, its miles and its end's label (VMT_RANGE_EDGE).
 const vmtTip = vm.runInContext(`
   ({ dot: vmtDotTooltip("2026-05", 1234567, 1000000, 1500000, 1),
      dot2: vmtDotTooltip("2026-05", 1234567, 1000000, 1500000, 2),
      cap: vmtEndTooltip("2026-05", 1000000, VMT_RANGE_EDGE.lo),
      edge: VMT_RANGE_EDGE })
 `, ctx);
-// TODO: this pins the VMT tooltip's words ("miles", "Range:", "incident")
-// along with its figures; check only the figures (no wording pins, 2026-10-28).
-assert.equal(vmtTip.dot, "2026-05\n1,234,567 miles\nRange: 1,000,000 – 1,500,000\n1 incident",
+const figures = line => line.match(/\d[\d,]*(?:\.\d+)?/g) || [];
+const lineFigures = tip => tip.split("\n").map(figures);
+assert.deepEqual(
+  [vmtTip.dot.split("\n")[0], ...lineFigures(vmtTip.dot).slice(1)],
+  ["2026-05", ["1,234,567"], ["1,000,000", "1,500,000"], ["1"]],
   `Replicata: call vmtDotTooltip for a dot (value, range, incident count).
-Expectata: "<month>\\n<miles> miles\\nRange: <lo> – <hi>\\n1 incident" (splur singular).
+Expectata: four lines: the month, then the figures "1,234,567" (miles), "1,000,000" and "1,500,000" (the range, low then high) and "1" (the count).
 Resultata: ${JSON.stringify(vmtTip.dot)}.`,
 );
-assert.equal(vmtTip.cap, `2026-05\n1,000,000 miles\n${vmtTip.edge.lo}`,
+assert.ok(
+  vmtTip.cap.split("\n").length === 3 && vmtTip.cap.split("\n")[0] === "2026-05" &&
+    JSON.stringify(figures(vmtTip.cap.split("\n")[1])) === JSON.stringify(["1,000,000"]) &&
+    vmtTip.cap.split("\n")[2] === vmtTip.edge.lo,
   `Replicata: call vmtEndTooltip for an error-bar's low end (no count).
-Expectata: "<month>\\n<miles> miles\\n<the low end's label>", no incident line.
+Expectata: three lines: the month, the figure "1,000,000" (miles) and the low end's label (VMT_RANGE_EDGE.lo); no incident line.
 Resultata: ${JSON.stringify(vmtTip.cap)}.`,
 );
-assert.ok(vmtTip.dot2.endsWith("2 incidents"),
+// (Until 2026-10-29 this also checked that the count's word is plural,
+// "2 incidents"; formatting.qual checks splur.)
+assert.deepEqual(
+  lineFigures(vmtTip.dot2).at(-1),
+  ["2"],
   `Replicata: call vmtDotTooltip with 2 incidents.
-Expectata: splur pluralizes to "2 incidents".
+Expectata: the count line gives the count, "2".
 Resultata: ${JSON.stringify(vmtTip.dot2)}.`,
 );
 

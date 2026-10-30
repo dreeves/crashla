@@ -57,13 +57,19 @@ Resultata: colour not found.`,
   );
 }
 
-// Both Tesla scopes are labeled with their scenario probability; the HW4 curve is dashed.
-assert.ok(
-  html.includes("Tesla robotaxi (~95%)") && html.includes("Tesla all-HW4 ADS (~5%)"),
-  `Replicata: read the fleet chart legend/markers.
-Expectata: Tesla's two scopes are labeled "Tesla robotaxi (~95%)" and "Tesla all-HW4 ADS (~5%)".
-Resultata: labels not found.`,
-);
+// Both Tesla scopes are labeled with their scenario probability, computed here
+// from FLEET_FORECAST's weights; the names come from the app (FLEET_LANE_META)
+// and are not pinned (no wording pins, 2026-10-28). The HW4 curve is dashed.
+{
+  const scopes = JSON.parse(vm.runInContext(`JSON.stringify({meta: FLEET_LANE_META,
+    weights: FLEET_FORECAST.find(f => f.helmer === "Tesla").components.map(c => ({scope: c.scope, weight: c.weight}))})`, ctx));
+  const want = ["robotaxi", "hw4"].map(k => `${scopes.meta[k].label} (~${Math.round(100 * scopes.weights.filter(w => w.scope === k).reduce((t, w) => t + w.weight, 0))}%)`);
+  assert.ok(want.every(w => html.includes(w)),
+    `Replicata: read the fleet chart legend/markers.
+Expectata: Tesla's two scopes labeled with their scenario shares from the weights: ${JSON.stringify(want)}.
+Resultata: not found.`,
+  );
+}
 assert.ok(
   (html.match(/stroke-dasharray/g) || []).length >= 1,
   `Replicata: inspect the fleet chart strokes.
@@ -175,44 +181,51 @@ Resultata: ${s.lo90} / ${s.median} / ${s.hi90}.`,
 
 const byKey = Object.fromEntries(stats.map(s => [s.key, s]));
 
-// Waymo carries a base + hockeystick mode: one unimodal curve (the hockeystick is a
-// fat right shoulder, not a second peak), central ~6,000 with a tail past ~8,000.
+// Re-pinned 2026-10-29 for the Jan 1, 2028 forecast (the human moved the
+// date; the re-pin was part of that choice). Until then: Waymo ~6,000
+// (5,000-7,000) with a tail past 8,000; Zoox ~150 (100-220); Tesla robotaxi
+// 200-2,000 at ~95%; Tesla HW4 at ~5%.
+//
+// Waymo carries a base + plan mode: one unimodal curve (the plan toward
+// Semafor's reported 20,000 is a fat right shoulder, not a second peak),
+// central ~12,000 with a tail past 18,000.
 assert.ok(
-  byKey.Waymo.median > 5000 && byKey.Waymo.median < 7000 &&
-    byKey.Waymo.hi90 > 8000 && byKey.Waymo.signChanges === 1,
+  byKey.Waymo.median > 9000 && byKey.Waymo.median < 15000 &&
+    byKey.Waymo.hi90 > 18000 && byKey.Waymo.signChanges === 1,
   `Replicata: inspect Waymo's fleet forecast.
-Expectata: unimodal, median ~6,000 (5000-7000), with a hockeystick tail past 8,000.
+Expectata: unimodal, median ~12,000 (9,000-15,000), with a tail past 18,000.
 Resultata: median=${byKey.Waymo.median}, hi90=${byKey.Waymo.hi90}, signChanges=${byKey.Waymo.signChanges}.`,
 );
 
 assert.ok(
-  byKey.Zoox.median > 100 && byKey.Zoox.median < 220 && byKey.Zoox.signChanges === 1,
+  byKey.Zoox.median > 250 && byKey.Zoox.median < 600 && byKey.Zoox.signChanges === 1,
   `Replicata: inspect Zoox's fleet forecast.
-Expectata: a unimodal distribution with median ~150 (100-220).
+Expectata: a unimodal distribution with median ~400 (250-600).
 Resultata: median=${byKey.Zoox.median}, signChanges=${byKey.Zoox.signChanges}.`,
 );
 
-// Tesla robotaxi (mainline, ~95%): the apples-to-apples fleet — a median in the
-// hundreds, bimodal (A+B), and its tail stays in robotaxi territory (no HW4
-// blow-up). The median's band was 100-600 ("low hundreds") until 2026-10-23,
-// when scenario A was re-based on the ~440 vehicles Tesla's October mileage
-// implies (tesla-forecast-floor.qual) and the median moved to ~670.
+// Tesla robotaxi (mainline, the large majority of Tesla's mass): the
+// apples-to-apples fleet in car-equivalents, a mixture of A and B, its tail
+// in robotaxi territory (no HW4 blow-up). Its median's band was 100-600 until
+// 2026-10-23 and 200-2,000 until 2026-10-29. Until 2026-10-29 the curve also
+// had to be bimodal (B a second hump); the 2028 scenarios' bands overlap
+// (A 900-8,000, B 5,000-40,000), so B is a fat right shoulder.
 assert.ok(
-  byKey.robotaxi.mainline && Math.abs(byKey.robotaxi.scenarioProb - 0.95) < 0.02 &&
-    byKey.robotaxi.median > 200 && byKey.robotaxi.median < 2000 &&
-    byKey.robotaxi.hi90 < 50000 && byKey.robotaxi.signChanges > 1,
+  byKey.robotaxi.mainline && byKey.robotaxi.scenarioProb > 0.8 &&
+    byKey.robotaxi.median > 1000 && byKey.robotaxi.median < 10000 &&
+    byKey.robotaxi.hi90 < 50000,
   `Replicata: inspect Tesla's robotaxi-scope curve.
-Expectata: mainline, ~95% weight, median 200-2,000, bimodal, 95th percentile under 50k (no HW4 tail).
+Expectata: mainline, over 80% of Tesla's weight, median 1,000-10,000, 95th percentile under 50k (no HW4 tail).
 Resultata: mainline=${byKey.robotaxi.mainline}, prob=${byKey.robotaxi.scenarioProb}, median=${byKey.robotaxi.median}, hi90=${byKey.robotaxi.hi90}, signChanges=${byKey.robotaxi.signChanges}.`,
 );
 
-// Tesla all-HW4 ADS (conditional, ~5%): the broad scenario, in the hundreds-of-
-// thousands to millions, drawn as its own unimodal curve.
+// Tesla all-HW4 ADS (conditional, a small share): the broad scenario, in the
+// hundreds of thousands to millions, drawn as its own unimodal curve.
 assert.ok(
-  !byKey.hw4.mainline && Math.abs(byKey.hw4.scenarioProb - 0.05) < 0.02 &&
+  !byKey.hw4.mainline && byKey.hw4.scenarioProb < 0.2 &&
     byKey.hw4.median > 100000 && byKey.hw4.hi90 > 1000000 && byKey.hw4.signChanges === 1,
   `Replicata: inspect Tesla's HW4-scope curve.
-Expectata: conditional (not mainline), ~5% weight, six-figure median, tail past 1M, unimodal.
+Expectata: conditional (not mainline), under 20% of Tesla's weight, six-figure median, tail past 1M, unimodal.
 Resultata: mainline=${byKey.hw4.mainline}, prob=${byKey.hw4.scenarioProb}, median=${byKey.hw4.median}, hi90=${byKey.hw4.hi90}, signChanges=${byKey.hw4.signChanges}.`,
 );
 
@@ -370,7 +383,7 @@ Expectata: immediate throw (the weights are a hard invariant).
 Resultata: no throw.`,
 );
 
-console.log("qual pass: fleet forecast draws four normalized curves; Tesla split into robotaxi (~95%) + all-HW4-ADS (~5%) scopes");
+console.log("qual pass: fleet forecast draws four normalized curves; Tesla split into its robotaxi and all-HW4-ADS scopes");
 
 // --- Tesla's rides scenarios are the miles scenarios over the ride corridor -
 // RIDES_FORECAST Tesla A stayed at the 2026-07-22 miles figures when

@@ -173,7 +173,15 @@ const vmt = run(`(() => {
     edge: typeof VMT_RANGE_EDGE === "undefined" ? null : VMT_RANGE_EDGE};
 })()`);
 const fmtWhole = n => Math.round(n).toLocaleString("en-US");
-const plural = n => `${n.toLocaleString("en-US")} ${n === 1 ? "incident" : "incidents"}`;
+// A tooltip line's figures (numbers, with their thousands separators). The
+// tooltips' words around the figures are the human's to change, so this
+// checks the figures line by line: a dot's tooltip is its month, its miles,
+// its range (low then high), its incident count and, for a partially
+// received month, the partial-reporting note; a range end's is its month, its
+// miles and its end's label (VMT_RANGE_EDGE). Until 2026-10-29 it pinned the
+// words around the figures ("miles", "Range:", "incident(s)").
+const figures = line => line.match(/\d[\d,]*(?:\.\d+)?/g) || [];
+const sameFigures = (line, want) => JSON.stringify(figures(line)) === JSON.stringify(want);
 const throughMonth = vmt.throughDate.slice(0, 7);
 const lagged = monthlyLagKeys(throughMonth);
 if (vmt.edge === null || typeof vmt.edge.lo !== "string" || typeof vmt.edge.hi !== "string"
@@ -191,23 +199,25 @@ for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
       const [best, lo, hi] = mode === "month" ? [r.best, r.lo, r.hi] : [r.cume, r.kmin, r.kmax];
       const mine = tips.filter(t => t.startsWith(r.month + "\n"));
       const where = `${helmer} ${r.month} (${mode === "month" ? "monthly" : "cumulative"} view)`;
-      // TODO: "miles", "Range:" and "incident(s)" here are the tooltips' words
-      // around the figures tested; check only the figures (no wording pins,
-      // 2026-10-28).
-      const dot = mine.filter(t => t.startsWith(`${r.month}\n${fmtWhole(best)} miles\n`) && /\bincidents?\b/.test(t));
-      if (dot.length !== 1) { fail(`${where}: expected one dot tooltip opening "${r.month} / ${fmtWhole(best)} miles"; found ${JSON.stringify(mine)}`); continue; }
+      const edges = vmt.edge === null ? [] : [vmt.edge.lo, vmt.edge.hi];
+      const isEnd = t => { const l = t.split("\n"); return l.length === 3 && edges.includes(l[2]); };
+      const dot = mine.filter(t => !isEnd(t));
+      if (dot.length !== 1) { fail(`${where}: expected one dot tooltip (the month's one target that is not a range end); found ${JSON.stringify(mine)}`); continue; }
       const count = mode === "month" ? n : running;
-      const wantLines = [`Range: ${fmtWhole(lo)} – ${fmtWhole(hi)}`, plural(count)];
-      for (const line of wantLines) if (!dot[0].split("\n").includes(line))
-        fail(`${where}: the dot tooltip ${JSON.stringify(dot[0])} lacks the line ${JSON.stringify(line)}`);
+      const lines = dot[0].split("\n");
+      const wantFigures = [[fmtWhole(best)], [fmtWhole(lo), fmtWhole(hi)], [count.toLocaleString("en-US")]];
+      wantFigures.forEach((want, i) => {
+        if (!sameFigures(lines[i + 1] || "", want))
+          fail(`${where}: the dot tooltip ${JSON.stringify(dot[0])} has the figures ${JSON.stringify(figures(lines[i + 1] || ""))} on its line ${i + 2}, want ${JSON.stringify(want)} (${["its miles", "its range", "its incident count"][i]})`);
+      });
       const partial = r.coverage * r.incCovMin < 0.999;
       const best100 = Math.round(100 * r.coverage * r.incCov), worst100 = Math.round(100 * r.coverage * r.incCovMin);
       const carries = dot[0].includes(vmt.throughDate) && dot[0].includes(`~${best100}%`) && dot[0].includes(`~${worst100}%`);
       if (partial !== carries || partial !== (r.month === throughMonth || lagged.has(`${helmer}|${r.month}`)))
         fail(`${where}: ${partial ? `a partially received month's count (the data-through month, or a month inside the helmer's Monthly-report lag) must say it holds the reports received through ${vmt.throughDate}, ~${best100}% of the month's incidents (worst case ~${worst100}%)` : "a fully reported month must carry no partial-reporting note"}; tooltip ${JSON.stringify(dot[0])}`);
       if (vmt.edge !== null) for (const [edge, v] of [[vmt.edge.lo, lo], [vmt.edge.hi, hi]]) {
-        const end = mine.filter(t => t === `${r.month}\n${fmtWhole(v)} miles\n${edge}`);
-        if (end.length !== 1) fail(`${where}: expected one range-end tooltip "${r.month} / ${fmtWhole(v)} miles / ${edge}"; found ${JSON.stringify(mine)}`);
+        const end = mine.filter(t => { const l = t.split("\n"); return l.length === 3 && l[2] === edge && sameFigures(l[1], [fmtWhole(v)]); });
+        if (end.length !== 1) fail(`${where}: expected one range-end tooltip giving ${fmtWhole(v)} and the end's label ${JSON.stringify(edge)}; found ${JSON.stringify(mine)}`);
       }
     }
   }

@@ -149,13 +149,23 @@ Resultata: ${JSON.stringify(a)} then ${JSON.stringify(b)}.`);
   }
 }
 
-// The forecast endpoint stays consistent with the sourced trajectory: 500k
-// paid rides/week as of Mar 2026 (TechCrunch 2026-03-27) makes anything under
-// ~40M by Jan 2027 arithmetically impossible without ridership SHRINKING.
-const waymoEnd = lanes.find(l => l.label === "Waymo").points.at(-1);
-assert.ok(waymoEnd.best >= 40000000,
-  `Replicata: check the Waymo rides forecast endpoint against the 500k/week Mar-2026 run rate.
-Expectata: median >= 40,000,000.
+// The forecast endpoint stays consistent with the sourced trajectory: Waymo's
+// "over half a million trips each week" (stated since late March 2026) run
+// from its newest rides row's low edge to the forecast date sets a floor any
+// median below which would need ridership to SHRINK (until 2026-10-29: a fixed
+// 40M for Jan 1, 2027).
+{
+  const forecastDate = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
+  const waymoLane = lanes.find(l => l.label === "Waymo");
+  const lastRow = waymoLane.points.filter(p => !p.forecast).at(-1);
+  const [y, m] = lastRow.month.split("-").map(Number);
+  const weeks = (Date.parse(forecastDate) - Date.UTC(y, m, 1)) / (7 * 86400000);
+  const floor = lastRow.lo + 500000 * weeks;
+  const waymoEnd = waymoLane.points.at(-1);
+  assert.ok(waymoEnd.best >= floor,
+    `Replicata: check the Waymo rides forecast endpoint against 500k trips a week from its ${lastRow.month} row's low edge (${lastRow.lo}) to ${forecastDate}.
+Expectata: median >= ${Math.round(floor)}.
 Resultata: ${JSON.stringify(waymoEnd)}.`);
+}
 
 console.log("qual pass: Waymo cumulative rides track the published 10M/20M milestones and the Sep-14 weekly floor; Tesla's rows follow data/vmt.csv through its newest month; all rides lanes monotone");

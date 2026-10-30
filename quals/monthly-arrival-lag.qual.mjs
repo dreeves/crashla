@@ -481,7 +481,9 @@ assert.ok(!shown.fiveDay && shown.ads.includes("Zoox"),
 // on a phone the lagged month's and the data-through month's glyphs sat 3.6
 // units apart and read "??"), centred on the run at its largest
 // incompleteness; every complete month keeps its own at opacity 0.
-const qmarks = [...shown.html.matchAll(/<text class="month-tick" x="([\d.]+)"[^>]*style="opacity:([\d.]+);pointer-events:none">\?<\/text>/g)]
+// (The markers are the month-tick texts that carry an opacity, found by that
+// rather than by their glyph since 2026-10-29.)
+const qmarks = [...shown.html.matchAll(/<text class="month-tick" x="([\d.]+)"[^>]*style="opacity:([\d.]+);pointer-events:none">[^<]*<\/text>/g)]
   .map(m => ({ x: Number(m[1]), opacity: m[2] }));
 const monthX = [...new Set([...shown.html.matchAll(/<circle class="month-dot" cx="([\d.]+)"/g)].map(m => Number(m[1])))].sort((a, b) => a - b);
 const groups = [];
@@ -493,18 +495,27 @@ assert.ok(monthX.length === shown.months.length && qmarks.length === wantQ.lengt
   `Replicata: the "?" markers of the default-window MPI chart with Zoox shown (metric ${shown.metric}).
 Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest 1 - incident_coverage_min over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
 Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) => ({ ...q, at: wantQ[i] && wantQ[i].months })).filter(q => q.opacity !== "0.000"))}.`);
-const tipsOf = month => [...shown.html.matchAll(/data-tip="([^"]*)"/g)]
-  .map(m => m[1].replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"))
-  .filter(t => t.startsWith(month + "\n") && /incident/.test(t));
+// A month's ADS dot tooltips, each with its helmer: the targets whose
+// accessible name is the helmer's mark-name prefix (seriesMarkName) and the
+// tip. The coverage note's figures are ~best% then ~worst%. Until 2026-10-29
+// this told the ADS tooltips by their word "incident" and pinned the note's
+// words ("incident coverage", "worst case").
+const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+const markPrefix = JSON.parse(vm.runInContext("JSON.stringify(Object.fromEntries(ADS_SERIES.map(h => [h, seriesMarkName(h, '')])))", ctx6));
+const tipsOf = month => [...shown.html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
+  .map(m => ({ tip: decode(m[1]), name: decode(m[2]) }))
+  .map(t => ({ ...t, helmer: shown.ads.find(h => t.name === markPrefix[h] + t.tip) }))
+  .filter(t => t.helmer !== undefined && t.tip.startsWith(month + "\n"));
+const percents = tip => (tip.match(/~\d+%/g) || []).map(p => Number(p.slice(1, -1)));
 for (const [key, [best, lo]] of Object.entries({ ...r.expectedLag, [`Zoox|${lagMonth}`]: [0.6, 0.25, 1] })) {
-  const month = key.slice(key.indexOf("|") + 1);
-  const note = `~${Math.round(best * 100)}% incident coverage (worst case ~${Math.round(lo * 100)}%)`;
+  const [lagged, month] = key.split("|");
+  const want = [Math.round(best * 100), Math.round(lo * 100)];
   const tips = tipsOf(month);
-  assert.ok(tips.length === shown.ads.length && tips.filter(t => t.includes(note)).length === 1
-    && tips.filter(t => !t.includes(note)).every(t => !/incident coverage/.test(t)),
+  assert.ok(tips.length === shown.ads.length && new Set(tips.map(t => t.helmer)).size === tips.length
+    && tips.every(t => JSON.stringify(percents(t.tip)) === JSON.stringify(t.helmer === lagged ? want : [])),
     `Replicata: the ${month} ADS dot tooltips of that chart.
-Expectata: ${shown.ads.length} tooltips; the lagged helmer's (${key}) says "${note}", the others carry no coverage note.
-Resultata: ${JSON.stringify(tips)}.`);
+Expectata: ${shown.ads.length} tooltips, one per shown ADS helmer; the lagged helmer's (${key}) gives its coverage as ~${want[0]}% (worst case ~${want[1]}%), the others no coverage figures.
+Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
 }
 
 console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart`);

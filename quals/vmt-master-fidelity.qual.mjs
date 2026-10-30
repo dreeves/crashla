@@ -153,13 +153,14 @@ Resultata: ${m.helmer} ${m.month} is missing despite being in range.`);
 }
 
 // --- 3. Rendered charts show master values verbatim, in BOTH view modes ---
-// Each datapoint renders minimal "<month>\n<value> miles" tooltips: the dot
+// Each datapoint's tooltips open with its month, then its miles: the dot
 // carries the central value, the two error-bar ends carry lo/hi. So each
-// helmer-month should expose its {central, lo, hi} as "<n> miles" tooltips.
+// helmer-month should expose its {central, lo, hi} as the figure opening a
+// tooltip's second line (until 2026-10-29 found by the word "miles" after it).
 const adsName = lc => Object.keys(rendered.perHelmer).find(h => h.toLowerCase() === lc);
 const milesByMonth = html => {
   const out = {};
-  for (const h of html.matchAll(/data-tip="(\d{4}-\d{2})\n([\d,]+) miles/g)) {
+  for (const h of html.matchAll(/data-tip="(\d{4}-\d{2})\n([\d,]+)/g)) {
     (out[h[1]] ??= new Set()).add(num(h[2]));
   }
   return out;
@@ -177,13 +178,13 @@ for (const m of inRange) {
   for (const v of [m.vmt, m.lo, m.hi]) {
     assert.ok(monthlySet.has(v),
       `Replicata: read ${m.helmer} ${m.month} monthly VMT tooltips.
-Expectata: a "${v.toLocaleString()} miles" tooltip (master monthly value) is present.
+Expectata: a tooltip giving ${v.toLocaleString()} as its miles (the master monthly value, the figure opening its second line) is present.
 Resultata: tooltips had ${JSON.stringify([...monthlySet])}.`);
   }
   for (const v of [m.cume, m.kmin, m.kmax]) {
     assert.ok(cumSet.has(v),
       `Replicata: read ${m.helmer} ${m.month} cumulative VMT tooltips.
-Expectata: a "${v.toLocaleString()} miles" tooltip (master cumulative value) is present.
+Expectata: a tooltip giving ${v.toLocaleString()} as its miles (the master cumulative value, the figure opening its second line) is present.
 Resultata: tooltips had ${JSON.stringify([...cumSet])}.`);
   }
 }

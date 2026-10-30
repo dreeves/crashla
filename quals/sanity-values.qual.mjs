@@ -96,12 +96,27 @@ vm.runInContext(`
 
 const html = getNode("sanity-checks").innerHTML;
 
+// A sanity section: from the heading before the table with this id up to the
+// next heading. The tables carry ids since 2026-10-29; until then this qual
+// found each section by its heading's words, which are the human's to change.
+const sectionOf = id => {
+  const at = html.indexOf(`id="${id}"`);
+  assert.ok(at >= 0,
+    `Replicata: find the table with id "${id}" in the sanity section.
+Expectata: present (each sanity section's table has an id, sanity-*).
+Resultata: none.`);
+  const start = html.lastIndexOf("<h3", at), end = html.indexOf("<h3", at);
+  return html.slice(start, end < 0 ? html.length : end);
+};
+// A table's body rows, as the attributes of each <tr> and the text of its cells.
+const bodyRows = section => [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(section) || [])[1] || "").matchAll(/<tr([^>]*)>([\s\S]*?)<\/tr>/g)]
+  .map(m => ({ attrs: m[1], cells: [...m[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(c => c[1]) }));
+
 // --- Passenger counts must add up ---
 // Extract rows from the passenger presence table: each <tr> has
 // helmer, withPax, noPax, unk, total, %
 // The total column must equal withPax + noPax + unk
-const paxSection = html.split("<h3>Passenger presence</h3>")[1]
-  .split("<h3>")[0];
+const paxSection = sectionOf("sanity-passengers");
 // Counts are grouped "1,164" (fmtCount; audit #54), so cells parse as [\d,]+.
 const count = s => Number(s.replace(/,/g, ""));
 const paxTrMatches = [...paxSection.matchAll(/<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)<\/td>\s*<td>([\d,]+)<\/td>\s*<td>([\d,]+)<\/td>\s*<td>([\d,]+)<\/td>/g)];
@@ -121,17 +136,20 @@ Resultata: sum is ${withPax + noPax + unk}.`);
 }
 
 // --- Severity counts add up per helmer ---
-const sevSection = html.split("<h3>Severity breakdown</h3>")[1]
-  .split("<h3>")[0];
+const sevSection = sectionOf("sanity-severity");
 // "Unknown" severities (NHTSA reports injuries as Unknown on some incidents)
 // get their own column: they are NOT property-damage-only — lumping them
 // there once overstated that column — and with the column present the five
-// buckets must partition the total exactly.
+// buckets must partition the total exactly (the rows below). The header names
+// one column per cell of those rows; until 2026-10-29 this checked the
+// Unknown column's header word instead.
+const sevHeaders = [...sevSection.matchAll(/<th[\s>]/g)].length;
+const sevRowCells = bodyRows(sevSection).filter(r => !/\binsufficient\b/.test(r.attrs)).map(r => r.cells.length);
 assert.ok(
-  sevSection.includes(">Unknown<"),
-  `Replicata: look for an Unknown column header in the severity table.
-Expectata: present (Unknown-severity incidents are not property-damage-only).
-Resultata: headers were ${JSON.stringify([...sevSection.matchAll(/<th>([^<]*)<\/th>/g)].map(m => m[1]))}.`);
+  sevRowCells.length >= 1 && sevRowCells.every(n => n === 7 && n === sevHeaders),
+  `Replicata: count the severity table's header columns and each full row's cells.
+Expectata: seven cells a row (company, five severity buckets, total), and one header column per cell.
+Resultata: ${sevHeaders} header columns; rows of ${JSON.stringify(sevRowCells)} cells.`);
 // Each row: helmer, propDmg (%), injOnly (%), hosp (%), fatal (%), unknown (%), total
 const sevPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)<\/td>/g;
 const sevMatches = [...sevSection.matchAll(sevPattern)];
@@ -164,10 +182,10 @@ Resultata: ${JSON.stringify(zeroShares)}.`);
 // Commented out 2026-06-11 with the app's Narrative redaction table: all
 // narratives are currently 0% CBI (Tesla un-redacted via update reports).
 // quals/cbi-watch.qual.mjs fails loudly if redaction returns; re-enable
-// this block together with the table in crashla.js buildSanityChecks.
+// this block together with the table in crashla.js buildSanityChecks, giving
+// that table an id, sanity-cbi, as the other sanity tables have.
 /*
-const cbiSection = html.split("<h3>Narrative redaction</h3>")[1]
-  .split("<h3>")[0];
+const cbiSection = sectionOf("sanity-cbi");
 const cbiPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>\s*<td>(\d+)<\/td>/g;
 const cbiMatches = [...cbiSection.matchAll(cbiPattern)];
 assert.ok(cbiMatches.length >= 3,
@@ -186,8 +204,7 @@ Resultata: sum is ${redacted + full}.`);
 */
 
 // --- VMT range ratio is always >= 1 ---
-const vmtSection = html.split("<h3>VMT uncertainty</h3>")[1]
-  .split("<h3>")[0];
+const vmtSection = sectionOf("sanity-vmt-uncertainty");
 const ratioMatches = [...vmtSection.matchAll(/([\d.]+)x/g)];
 assert.ok(ratioMatches.length >= 3,
   `Replicata: VMT uncertainty table has range ratios.
@@ -204,28 +221,29 @@ Resultata: got ${ratio}.`);
 }
 
 // --- Poisson dispersion index is non-negative ---
-const dispSection = html.split("<h3>Poisson dispersion</h3>")[1]
-  .split("<h3>")[0];
-// Dispersion index column: look for decimal numbers in the 4th td
-const dispPattern = /<td>([\d.]+)<\/td>\s*<td>(too few|underdispersed|consistent|mildly|overdispersed)/g;
-const dispMatches = [...dispSection.matchAll(dispPattern)];
-assert.ok(dispMatches.length >= 3,
+// The full rows (company, monthly rates, overall rate, index, assessment); a
+// grayed row (class insufficient) has one cell giving the reason. The index is
+// the 4th cell and the assessment the 5th, one of the app's DISPERSION_VERDICT
+// (until 2026-10-29 this found the index by the assessment's words).
+const dispSection = sectionOf("sanity-dispersion");
+const dispVerdicts = JSON.parse(vm.runInContext("JSON.stringify(Object.values(DISPERSION_VERDICT))", ctx));
+const dispFull = bodyRows(dispSection).filter(r => !/\binsufficient\b/.test(r.attrs));
+assert.ok(dispFull.length >= 3 && dispFull.every(r => r.cells.length === 5),
   `Replicata: Poisson dispersion table has helmer rows.
-Expectata: at least 3.
-Resultata: found ${dispMatches.length}.`);
+Expectata: at least 3 full rows of five cells.
+Resultata: rows of ${JSON.stringify(dispFull.map(r => r.cells.length))} cells.`);
 
-for (const m of dispMatches) {
-  const idx = parseFloat(m[1]);
+for (const { cells } of dispFull) {
+  const idx = Number(cells[3]);
   assert.ok(
-    idx >= 0,
-    `Replicata: dispersion index non-negative.
-Expectata: chi-squared / df >= 0.
-Resultata: got ${idx}.`);
+    cells[3] !== "" && idx >= 0 && dispVerdicts.includes(cells[4]),
+    `Replicata: read a dispersion row's index (4th cell) and assessment (5th cell).
+Expectata: chi-squared / df >= 0, and an assessment from DISPERSION_VERDICT ${JSON.stringify(dispVerdicts)}.
+Resultata: ${JSON.stringify(cells.slice(3))}.`);
 }
 
 // --- Reporting threshold: speed=0 count <= total for each helmer ---
-const rptSection = html.split("<h3>Reporting threshold disparities</h3>")[1]
-  .split("<h3>")[0];
+const rptSection = sectionOf("sanity-threshold");
 const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)<\/td>/g;
 const rptMatches = [...rptSection.matchAll(rptPattern)];
 assert.ok(rptMatches.length >= 3,
@@ -255,19 +273,16 @@ Resultata: no prior-only badge found.`);
 // --- Third-Amended-SGO carve-out caveat present (human-finalized 2026-08-22) ---
 // The human replaced the rule-7 Latin placeholder with their own English:
 // human-voice facts, then an attributed "Claude:" ai-text paragraph for the
-// analysis. Pin both halves' anchors.
-// TODO: keep or drop? This requires the human's SGO caveat to contain the
-// words "Third Amended SGO" and "June 16, 2025": a disclosure the page must
-// make, but words in the human's paragraph (no wording pins, 2026-10-28).
-assert.ok(rptSection.includes('class="ai-text"') &&
-    rptSection.includes("Third Amended SGO") &&
-    rptSection.includes("June 16, 2025"),
-  `Replicata: search the Reporting threshold disparities section for the
-Third-Amended-SGO reporting-carve-out caveat.
-Expectata: the caveat naming the Third Amended SGO and its June 16, 2025
-effective date, with the attributed ai-text analysis paragraph — the
-asymmetric sub-$1,000 struck-by-another-vehicle exemption biases
-post-amendment all-incident comparisons against any human benchmark.
+// analysis. Until 2026-10-29 this also required the human's paragraph to
+// name "Third Amended SGO" and "June 16, 2025"; the human dropped such wording
+// pins (2026-10-28) and decided to drop these two (2026-10-29). The
+// ai-text analysis paragraph must still be there.
+assert.ok(rptSection.includes('class="ai-text"'),
+  `Replicata: search the Reporting threshold disparities section (the table sanity-threshold's) for the
+attributed analysis of the Third-Amended-SGO reporting carve-out.
+Expectata: an ai-text paragraph — the asymmetric sub-$1,000
+struck-by-another-vehicle exemption biases post-amendment all-incident
+comparisons against any human benchmark.
 Resultata: not found.`);
 
 // --- Incident totals consistent across passenger, severity, CBI tables ---
@@ -314,7 +329,7 @@ Resultata: they differ.`);
 // the rationale cells are Claude-written (data/vmt.csv rationale column), so
 // every one must carry the ai-text class that styles them. A cell without it
 // would silently read as human-vetted copy.
-const vmtSrcSection = html.split("<h3>VMT sources</h3>")[1].split("<h3>")[0];
+const vmtSrcSection = sectionOf("sanity-vmt-sources");
 const vmtSrcCells = [...vmtSrcSection.matchAll(/<tr>\s*<td>[^<]*<\/td>\s*<td([^>]*)>/g)];
 assert.ok(
   vmtSrcCells.length >= 3,
@@ -347,18 +362,21 @@ Resultata: ${JSON.stringify(cells)}.`);
 }
 // --- The five-day-track metric list is derived, not hand-written ------------
 // seriousInjury gained fiveDay on 2026-09-04; two strings still named three
-// metrics until 2026-09-26.
+// metrics until 2026-09-26. The note is the incident-coverage section's ai-text
+// note, and the clause the cards' Effective-VMT tooltip; until 2026-10-29 this
+// found each by its words ("5-Day-track metrics (", "Five-day-tracked VMT
+// denominator (").
 {
   const labels = JSON.parse(vm.runInContext(`JSON.stringify(METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel))`, ctx));
-  const note = html.split("5-Day-track metrics (")[1] || "";
-  assert.ok(note && labels.every(l => note.slice(0, 200).toLowerCase().includes(l.toLowerCase())),
-    `Replicata: read the sanity note's "5-Day-track metrics (...)" parenthetical.
+  const note = (sectionOf("sanity-coverage").match(/<span class="ai-text">([\s\S]*?)<\/span>/) || [])[1] || "";
+  assert.ok(note && labels.every(l => note.toLowerCase().includes(l.toLowerCase())),
+    `Replicata: read the incident-coverage section's ai-text note.
 Expectata: it names every fiveDay metric: ${JSON.stringify(labels)}.
-Resultata: ${JSON.stringify(note.slice(0, 200))}.`);
+Resultata: ${JSON.stringify(note.slice(0, 600))}.`);
   const cards = vm.runInContext(`renderMpiSummaryCards(activeSeries)`, ctx);
-  const tip = (cards.match(/Five-day-tracked VMT denominator \(([^)]*)\)/) || [])[1] || "";
-  assert.ok(labels.every(l => tip.toLowerCase().includes(l.toLowerCase())),
-    `Replicata: read the cards' Effective-VMT tooltip's five-day clause.
-Expectata: it names every fiveDay metric: ${JSON.stringify(labels)}.
+  const tip = (cards.match(/<div class="mpi-card-vmt" data-tip="([^"]*)"/) || [])[1] || "";
+  assert.ok(tip && labels.every(l => tip.toLowerCase().includes(l.toLowerCase())),
+    `Replicata: read the first company card's Effective-VMT tooltip.
+Expectata: its five-day clause names every fiveDay metric: ${JSON.stringify(labels)}.
 Resultata: ${JSON.stringify(tip)}.`);
 }

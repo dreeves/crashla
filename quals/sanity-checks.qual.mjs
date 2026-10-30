@@ -97,68 +97,59 @@ vm.runInContext(`
 `, ctx);
 
 const html = getNode("sanity-checks").innerHTML;
+const escHtml = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const label = helmer => vm.runInContext(`helmerLabel(${JSON.stringify(helmer)})`, ctx);
 
-// --- All expected subsection headings are present ---
-const expectedHeadings = [
-  "Passenger presence",
-  // "Narrative redaction" removed from expected headings 2026-06-11:
-  // table commented out in the app (0% CBI everywhere); see cbi-watch qual.
-  "Severity breakdown",
-  "VMT uncertainty",
-  "Poisson dispersion",
-  "Reporting threshold disparities",
-  "Geography",
-  "VMT sources",
-  "Incident coverage for partial months",
-  "Waymo cross-check",
-  "human benchmark derivations",
-  "Sensitivity analysis",
+// --- Every subsection renders its table ---
+// Each sanity section's table has an id (sanity-*, since 2026-10-29). Until
+// then this qual found the sections by their headings' words and checked
+// their tables by their column headers' words, which are the human's to
+// change; now each table must render, with at least one row, and a header
+// column for each cell of a full row (one without a colspan cell giving a
+// reason). What the cells hold is checked against the data by
+// sanity-values, sanity-windows, waymo-reconciliation and stress-test.
+const SECTION_TABLES = [
+  "sanity-passengers",
+  // The Narrative redaction table was commented out 2026-06-11 (0% CBI
+  // everywhere; see cbi-watch qual); re-enabled, its table takes the id
+  // sanity-cbi and joins this list.
+  "sanity-severity",
+  "sanity-vmt-uncertainty",
+  "sanity-dispersion",
+  "sanity-threshold",
+  "sanity-geography",
+  "sanity-vmt-sources",
+  "sanity-coverage",
+  "sanity-waymo-check",
+  "sanity-benchmarks",
+  "sanity-stress",
+  "sanity-fault-flip",
 ];
+const tableOf = id => (new RegExp(`<table[^>]*\\bid="${id}"[^>]*>([\\s\\S]*?)</table>`).exec(html) || [])[1] ?? null;
+const rowsOf = table => [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(table) || [])[1] || "").matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)].map(m => m[1]);
 
-for (const heading of expectedHeadings) {
+for (const id of SECTION_TABLES) {
+  const table = tableOf(id);
+  const headers = table === null ? 0 : [...table.matchAll(/<th[\s>]/g)].length;
+  const rows = table === null ? [] : rowsOf(table);
+  const full = rows.filter(r => !/colspan=/.test(r)).map(r => [...r.matchAll(/<td[\s>]/g)].length);
   assert.ok(
-    html.includes(heading),
-    `Replicata: render sanity checks section.
-Expectata: section includes "${heading}" subsection.
-Resultata: heading not found in sanity checks HTML.`);
+    table !== null && rows.length >= 1 && full.length >= 1 && full.every(n => n === headers),
+    `Replicata: render the sanity checks section (full history) and find the table with id "${id}".
+Expectata: it renders once, with at least one full row, and its header has one column per cell of each full row.
+Resultata: ${table === null ? "no such table" : `${headers} header columns; ${rows.length} rows, full ones of ${JSON.stringify(full)} cells`}.`);
 }
-
-// --- Passenger presence has expected columns ---
-assert.ok(
-  html.includes("With passenger") && html.includes("No passenger"),
-  `Replicata: check passenger presence table structure.
-Expectata: table has "With passenger" and "No passenger" columns.
-Resultata: columns not found.`);
 
 // Commented out 2026-06-11 with the app's redaction table (and its stale
 // Expectata: Tesla is no longer 100% redacted; everyone is at 0%).
 /*
 // --- Narrative redaction: Tesla should show 100% redacted ---
 assert.ok(
-  html.includes("Redacted (CBI)") && html.includes("100%"),
+  (tableOf("sanity-cbi") || "").includes("<td>100%</td>"),
   `Replicata: check narrative redaction content.
 Expectata: Tesla redacts all narratives, so table includes "100%".
 Resultata: expected content not found.`);
 */
-
-// --- Severity breakdown has all categories ---
-assert.ok(
-  html.includes("Property damage only") &&
-    html.includes("Injury (no hosp.)") &&
-    html.includes("Hospitalization") &&
-    html.includes("Fatality"),
-  `Replicata: check severity breakdown categories.
-Expectata: all four severity categories present.
-Resultata: some categories missing.`);
-
-// --- VMT uncertainty has range ratio ---
-assert.ok(
-  html.includes("VMT low") &&
-    html.includes("VMT high") &&
-    html.includes("Range ratio"),
-  `Replicata: check VMT uncertainty table structure.
-Expectata: table has low/high VMT and range ratio columns.
-Resultata: expected columns not found.`);
 
 // --- Poisson dispersion: Tesla verdict tracks its sample size ---
 // Tesla crossed the 20-incident threshold in the Jul-2026 NHTSA drop (24
@@ -166,60 +157,47 @@ Resultata: expected columns not found.`);
 // to tell" branch no longer fires for any live helmer. Tesla's monthly rates
 // swing wildly (tiny-fleet ramp months like Jul 2025 at ~475/M mi vs ~5-17
 // later), so the test reads overdispersed by a wide margin (X²/dof ≈ 12.3).
-// Re-pin if the data moves a verdict tier.
-const dispBlock = (html.match(/<h3>Poisson dispersion<\/h3>[\s\S]*?<\/table>/) || [""])[0];
-const teslaDispRow = dispBlock.split("</tr>").find(s => s.includes("<td>Tesla</td>")) || "";
+// Re-pin if the data moves a verdict tier. The assessment's words are the
+// app's, DISPERSION_VERDICT (until 2026-10-29 this qual spelled them out).
+const DV = JSON.parse(vm.runInContext("JSON.stringify(DISPERSION_VERDICT)", ctx));
+const teslaDispRow = rowsOf(tableOf("sanity-dispersion") || "").find(r => r.includes(`<td>${escHtml(label("Tesla"))}</td>`)) || "";
 assert.ok(
-  teslaDispRow.includes("<td>overdispersed</td>"),
+  teslaDispRow.includes(`<td>${DV.over}</td>`),
   `Replicata: check Poisson dispersion verdict for Tesla.
-Expectata: Tesla (24 incidents, dispersion index ~12.3) shows "overdispersed".
+Expectata: Tesla (24 incidents, dispersion index ~12.3) shows the overdispersed assessment, DISPERSION_VERDICT.over (${JSON.stringify(DV.over)}).
 Resultata: Tesla dispersion row was ${JSON.stringify(teslaDispRow)}.`);
 
-// --- Reporting threshold: speed=0 data present ---
-assert.ok(
-  html.includes("Speed = 0 mph") && html.includes("AV stopped"),
-  `Replicata: check reporting threshold table structure.
-Expectata: table has speed=0 and AV stopped columns.
-Resultata: expected columns not found.`);
-
 // --- Geography: Waymo spans multiple cities ---
+// (The cities are the incidents' locations, from the data.)
+const geoTable = tableOf("sanity-geography") || "";
 assert.ok(
-  html.includes("San Francisco, CA") &&
-    html.includes("Los Angeles, CA") &&
-    html.includes("Phoenix, AZ") &&
-    html.includes("Austin, TX"),
+  geoTable.includes("San Francisco, CA") &&
+    geoTable.includes("Los Angeles, CA") &&
+    geoTable.includes("Phoenix, AZ") &&
+    geoTable.includes("Austin, TX"),
   `Replicata: check geographic spread.
-Expectata: geography section includes SF, LA, Phoenix, Austin.
+Expectata: geography table includes SF, LA, Phoenix, Austin.
 Resultata: some expected cities missing.`);
 
-// --- VMT sources: rationale text is present ---
-assert.ok(
-  html.includes("Source and methodology") &&
-    html.includes("robotaxitracker"),
-  `Replicata: check VMT sources content.
-Expectata: VMT sources table includes methodology descriptions.
-Resultata: expected content not found.`);
-
-// --- Incident coverage section ---
-assert.ok(
-  html.includes("Incident coverage") &&
-    html.includes("Calendar coverage"),
-  `Replicata: check incident coverage content.
-Expectata: Incident coverage section with calendar coverage explanation appears.
-Resultata: expected content not found.`);
-
-// --- Human benchmarks: derivation table ---
-assert.ok(
-  html.includes("Derivation") &&
-    html.includes("Low MPI") &&
-    html.includes("High MPI"),
-  `Replicata: check human benchmark derivations table.
-Expectata: table has Low MPI, High MPI, and Derivation columns.
-Resultata: expected columns not found.`);
+// --- VMT sources: each line's rationale text is present ---
+// One row per ADS line, its source-and-methodology cell (styled as AI text)
+// not empty. Until 2026-10-29 this checked the column header's words and one
+// word of a rationale; sanity-windows checks each cell against the VMT rows.
+{
+  const want = JSON.parse(vm.runInContext("JSON.stringify(ADS_SERIES.map(h => helmerLabel(h)))", ctx)).map(escHtml);
+  const got = rowsOf(tableOf("sanity-vmt-sources") || "").map(r => /^\s*<td>([^<]*)<\/td>\s*<td class="ai-text">([\s\S]*?)<\/td>\s*$/.exec(r))
+    .map(m => m === null ? null : { name: m[1], cell: m[2] });
+  assert.ok(
+    got.length === want.length && got.every((r, i) => r !== null && r.name === want[i] && r.cell.trim() !== ""),
+    `Replicata: check VMT sources content.
+Expectata: one row per ADS line (${JSON.stringify(want)}), each with a non-empty ai-text methodology cell.
+Resultata: ${JSON.stringify(got.map(r => r && { name: r.name, cell: r.cell.slice(0, 40) }))}.`);
+}
 
 // --- All three helmers appear across tables ---
+// (Each helmer's label, read from the app.)
 for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
-  const count = (html.match(new RegExp(`>${helmer}<`, "g")) || []).length;
+  const count = (html.match(new RegExp(`>${escHtml(label(helmer)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}<`, "g")) || []).length;
   assert.ok(
     count >= 8,
     `Replicata: check ${helmer} presence across sanity check tables.
@@ -228,7 +206,7 @@ Resultata: ${helmer} appeared ${count} times.`);
 }
 
 // --- Verify subsection count ---
-const h3Count = (html.match(/<h3>/g) || []).length;
+const h3Count = (html.match(/<h3[\s>]/g) || []).length;
 // 10 since 2026-06-11: the Narrative redaction table is commented out
 // (0% CBI everywhere; see quals/cbi-watch.qual.mjs).
 assert.ok(

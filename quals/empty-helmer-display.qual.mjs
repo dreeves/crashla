@@ -99,11 +99,12 @@ Resultata: Waymo legend item class was ${JSON.stringify(itemClass(legend, WAYMO)
   );
 }
 
-// VMT per-helmer chart: empty graph (axes), not an elided "".
+// VMT per-helmer chart: empty graph (axes), not an elided "". The axes are
+// found by their class (until 2026-10-29 by the axis title's words).
 assert.ok(
-  out.teslaChart.includes("<svg") && out.teslaChart.includes("Vehicle Miles Traveled"),
+  out.teslaChart.includes("<svg") && (out.teslaChart.match(/<line class="month-axis"/g) || []).length === 2,
   `Replicata: call renderHelmerMonthlyChart for Tesla in a window with no Tesla data.
-Expectata: a non-empty SVG (empty axes) renders instead of vanishing.
+Expectata: a non-empty SVG (empty axes: two month-axis lines) renders instead of vanishing.
 Resultata: output was ${JSON.stringify(out.teslaChart.slice(0, 80))}.`,
 );
 assert.ok(
@@ -158,12 +159,14 @@ const grid = vm.runInContext(`
 })()
 `, ctx);
 
+// Each chart is headed by its helmer's label, read from the app (until
+// 2026-10-29 spelled out here).
+const headed = helmer => grid.includes(`<h3>${vm.runInContext(`helmerLabel(${JSON.stringify(helmer)})`, ctx)}</h3>`);
 assert.ok(
-  grid.includes("<h3>Waymo</h3>") && grid.includes("<h3>Zoox</h3>") &&
-    !grid.includes("<h3>Tesla</h3>"),
+  headed("Waymo") && headed("Zoox") && !headed("Tesla"),
   `Replicata: uncheck Tesla (leave Waymo + Zoox checked) and render the VMT chart grid.
 Expectata: the grid shows Waymo and Zoox VMT charts but no Tesla chart at all.
-Resultata: grid had Tesla=${grid.includes("<h3>Tesla</h3>")}, Waymo=${grid.includes("<h3>Waymo</h3>")}, Zoox=${grid.includes("<h3>Zoox</h3>")}.`,
+Resultata: grid had Tesla=${headed("Tesla")}, Waymo=${headed("Waymo")}, Zoox=${headed("Zoox")}.`,
 );
 
 console.log("qual pass: selected-but-empty helmers stay visible (grayed legend chip, empty VMT chart)");

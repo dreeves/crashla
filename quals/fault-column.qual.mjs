@@ -90,22 +90,27 @@ activeSeries = { months: ["2025-06"] };
 buildBrowser();
 `, ctx);
 
-// A header's text sits in its th's button since 2026-10-04 (audit #19).
-const headers = getNode("incidents-head").children[0].children.map(th => th.children.map(c => c.textContent).join(""));
-assert.equal(
-  headers.includes("Fault"),
-  true,
+// A header's text sits in its th's button since 2026-10-04 (audit #19); the
+// button's focus key names its column's sort key ("sort-<key>"). The headers'
+// words are the app's (HEADER_LABELS); until 2026-10-29 this qual spelled out
+// "Fault" and "Fault variance".
+const headerButtons = getNode("incidents-head").children[0].children.map(th => th.children[0]);
+const headers = headerButtons.map(b => b.textContent);
+const headerKeys = headerButtons.map(b => b.getAttribute("data-focus-key"));
+const appHeaders = JSON.parse(vm.runInContext("JSON.stringify(HEADER_LABELS)", ctx));
+assert.ok(
+  JSON.stringify(headers) === JSON.stringify(appHeaders) && headerKeys.includes("sort-fault"),
   `Replicata: render the incident browser header row.
-Expectata: columns include the "Fault" header.
-Resultata: headers were ${JSON.stringify(headers)}.`,
+Expectata: one column per HEADER_LABELS entry, labelled from it, the fault column (sort key fault) among them.
+Resultata: headers were ${JSON.stringify(headers)}, sort keys ${JSON.stringify(headerKeys)}.`,
 );
 
-assert.equal(
-  headers.includes("Fault variance"),
-  false,
+assert.deepEqual(
+  headerKeys.filter(k => k !== null && k.startsWith("sort-fault")),
+  ["sort-fault"],
   `Replicata: render the incident browser header row after consolidating to a single fault estimate.
-Expectata: the obsolete "Fault variance" column is gone.
-Resultata: headers were ${JSON.stringify(headers)}.`,
+Expectata: one fault column only (the obsolete fault-variance column is gone).
+Resultata: sort keys were ${JSON.stringify(headerKeys)}.`,
 );
 
 const bodyRows = getNode("incidents-body").children;

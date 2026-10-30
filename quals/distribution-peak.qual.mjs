@@ -46,21 +46,25 @@ const out = vm.runInContext(`
     const curves = rows.filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]).map(r => ({helmer: r.helmer, est: r.mpiEstimates[mk]}));
     const {xMin, xMax} = distributionExtent(curves.map(c => c.est));
     const html = renderDistributionChart(series);
-    // TODO: finds the peak markers by the word "Peak:"; find them by
-    // structure or value (no wording pins, 2026-10-28).
-    const peaks = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
-      .map(m => ({cx: Number(m[1]), text: m[2].split("\\n")[0]})).filter(p => p.text.startsWith("Peak:"));
+    // The markers' tooltip targets, in drawing order: each curve's peak, then
+    // its median, each tip opening "<label>: <value>". Found by position since
+    // 2026-10-29 (until then the peaks by their tooltips' word "Peak:"); the
+    // medians' values below confirm the order.
+    const targets = [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
+      .map(m => ({cx: Number(m[1]), text: m[2].split("\\n")[0]}));
+    const peaks = targets.filter((_, i) => i % 2 === 0);
+    const medianValues = targets.filter((_, i) => i % 2 === 1).map(t => t.text.slice(t.text.indexOf(": ") + 2));
     // The plot frame is the clip rect (its right margin follows the tick
     // labels since 2026-10-03, so it is read, not assumed).
     const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
-    res[mk] = {xMin, xMax, frame: [Number(clip[1]), Number(clip[1]) + Number(clip[2])], peaks, curves: curves.map(c => {
+    res[mk] = {xMin, xMax, frame: [Number(clip[1]), Number(clip[1]) + Number(clip[2])], peaks, medianValues, curves: curves.map(c => {
       // true mode: fine log grid over the curve's own extent
       let best = -Infinity, arg = NaN;
       for (let i = 0; i <= 4000; i++) {
         const x = Math.exp(Math.log(c.est.xMin) + (Math.log(c.est.xMax) - Math.log(c.est.xMin)) * i / 4000);
         const y = c.est.densityFn(x); if (y > best) { best = y; arg = x; }
       }
-      return {helmer: c.helmer, k: c.est.k, mode: arg, median: c.est.postMedian};
+      return {helmer: c.helmer, k: c.est.k, mode: arg, median: c.est.postMedian, medianShown: fmtMiles(c.est.postMedian)};
     })};
   }
   return res;
@@ -76,7 +80,11 @@ Resultata: off-frame.`);
       `Replicata: compare the k=0 ${c.helmer} ${mk} curve's mode and median. Expectata: mode < median (right-skewed prior-only bell). Resultata: mode ${c.mode}, median ${c.median}.`);
   }
   assert.equal(r.peaks.length, r.curves.length,
-    `Replicata: count "Peak:" markers on the ${mk} chart. Expectata: ${r.curves.length}. Resultata: ${r.peaks.length}.`);
+    `Replicata: count the peak markers (the first of each curve's two) on the ${mk} chart. Expectata: ${r.curves.length}. Resultata: ${r.peaks.length}.`);
+  assert.deepEqual(r.medianValues, r.curves.map(c => c.medianShown),
+    `Replicata: read the value each ${mk} curve's second marker reports.
+Expectata: its curve's median, as the chart prints it (each curve's markers are its peak, then its median).
+Resultata: ${JSON.stringify(r.medianValues)}.`);
   const edge = r.peaks.filter(p => Math.abs(p.cx - r.frame[0]) < 0.5 || Math.abs(p.cx - r.frame[1]) < 0.5);
   assert.equal(edge.length, 0,
     `Replicata: check no ${mk} Peak marker sits on the frame edge (${r.frame}).
@@ -100,14 +108,20 @@ console.log("qual pass: distribution-chart frame contains every curve's density 
       const series = sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1);
       const html = renderDistributionChart(series);
       const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
+      // Each curve's second marker is its median (by position since
+      // 2026-10-29, until then by its tooltip's word "Median:"); its value
+      // must be the curve's median.
+      const curves = monthlySummaryRows(series).filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates.fatality);
       return {frame: [Number(clip[1]), Number(clip[1]) + Number(clip[2])],
+        want: curves.map(r => fmtMiles(r.mpiEstimates.fatality.postMedian)),
         medians: [...html.matchAll(/<circle[^>]*cx="([\\d.]+)"[^>]*r="([\\d.]+)"[^>]*data-tip="([^"]*)"/g)]
-          .map(m => ({cx: Number(m[1]), r: Number(m[2]), text: m[3].split("\\n")[0]})).filter(p => p.text.startsWith("Median:"))};
+          .map(m => ({cx: Number(m[1]), r: Number(m[2]), text: m[3].split("\\n")[0]})).filter((_, i) => i % 2 === 1)};
     })()`, ctx);
   const [left, right] = medians.frame;
-  assert.ok(medians.medians.length >= 6 && medians.medians.every(p => p.cx - p.r > left && p.cx + p.r < right),
+  assert.ok(medians.medians.length >= 6 && medians.medians.every(p => p.cx - p.r > left && p.cx + p.r < right) &&
+      JSON.stringify(medians.medians.map(p => p.text.slice(p.text.indexOf(": ") + 2))) === JSON.stringify(medians.want),
     `Replicata: render the fatality distribution with all six helmers on and locate every Median marker.
-Expectata: each disc fully inside the frame [${left}, ${right}].
+Expectata: each disc (the second marker of each curve, reporting its median: ${JSON.stringify(medians.want)}) fully inside the frame [${left}, ${right}].
 Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
 }
 
@@ -141,12 +155,14 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
         [full.months.indexOf("2025-01"), full.months.indexOf("2025-06")]];
       const sets = [ALL_HELMERS, ["HumansAV", "Tesla", "Waymo"], ["HumansUS", "Tesla", "Zoox"], ["HumansUS"], ["Waymo"]];
       const out = [];
+      // A human curve's markers are named for its cohort (seriesMarkName).
+      const humanPrefixes = HUMAN_HELMERS.map(h => escAttr(seriesMarkName(h, "")));
       for (const set of sets) {
         for (const d of ALL_HELMERS) monthHelmerEnabled[d] = set.includes(d);
         for (const mk of METRIC_KEYS) {
           selectedMetricKey = mk;
           for (const [a, b] of windows) out.push({state: set.join("+") + " / " + mk + " / " + full.months[a] + ".." + full.months[b],
-            colors: Object.fromEntries(ALL_HELMERS.map(h => [HELMER_COLORS[h], h])),
+            colors: Object.fromEntries(ALL_HELMERS.map(h => [HELMER_COLORS[h], h])), humanPrefixes,
             html: renderDistributionChart(sliceSeries(full, a, b))});
         }
       }
@@ -154,7 +170,7 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
     })()`, ctx);
   const problems = {clipGroup: [], disc: [], top: [], coarse: [], humanPeak: []};
   let markers = 0, curvesSeen = 0;
-  for (const {state, html, colors} of sweep) {
+  for (const {state, html, colors, humanPrefixes} of sweep) {
     const vb = html.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/).map(Number);
     const clip = html.match(/<clipPath id="dist-clip"><rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/).slice(1).map(Number);
     const [x0, y0, x1, y1] = [clip[0], clip[1], clip[0] + clip[2], clip[1] + clip[3]];
@@ -165,11 +181,12 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
     // tooltip; the hit circles follow the dots in the same order, so the
     // i-th target is the i-th dot's.
     const dots = [...html.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="([\d.]+)" class="month-dot" style="([^"]*)">/g)];
-    const tips = [...html.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="[\d.]+" fill="none" data-tip="([^"]*)"/g)];
+    const tips = [...html.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="[\d.]+" fill="none" data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)];
     if (dots.length !== tips.length || dots.some((d, i) => Math.abs(Number(d[1]) - Number(tips[i][1])) > 0.01 || Math.abs(Number(d[2]) - Number(tips[i][2])) > 0.01))
       problems.disc.push(`${state}: ${dots.length} marker dots but ${tips.length} hit circles, or not in step`);
     const circles = dots.map((m, i) => ({at: m.index, cx: Number(m[1]), cy: Number(m[2]), r: Number(m[3]),
-        color: (m[4].match(/(?:fill|stroke):(#[0-9a-f]{6})(?!.*fill:#)/i) || [])[1], tip: (tips[i] ? tips[i][3] : "").split("\n")}));
+        color: (m[4].match(/(?:fill|stroke):(#[0-9a-f]{6})(?!.*fill:#)/i) || [])[1], tip: (tips[i] ? tips[i][3] : "").split("\n"),
+        human: tips[i] !== undefined && humanPrefixes.some(p => tips[i][4] === p + tips[i][3])}));
     markers += circles.length;
     for (const c of circles) {
       const where = `${state}: ${c.tip[0]} at (${c.cx}, ${c.cy})`;
@@ -178,14 +195,15 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
           || c.cx < x0 || c.cx > x1) problems.disc.push(where);
       if (c.cy - c.r - HALO < y0) problems.top.push(where);
     }
-    // TODO: tells human curves by "Range:" and compares Peak with Median by
-    // stripping those words; compare the values without the words (no
-    // wording pins, 2026-10-28).
-    // human curves carry a "Range:" line, not a "median/peak" line
+    // Each curve's markers are its peak, then its median; a human curve's are
+    // named for its cohort (seriesMarkName), and each tip opens
+    // "<label>: <value>". Until 2026-10-29 this told the human curves by
+    // their tips' word "Range:" and compared the values by stripping the
+    // words "Peak: " and "Median: ".
+    const value = c => c.tip[0].slice(c.tip[0].indexOf(": ") + 2);
     for (let i = 0; i + 1 < circles.length; i += 2) {
       const [peak, median] = [circles[i], circles[i + 1]];
-      if (peak.tip[1] && peak.tip[1].startsWith("Range:")
-          && peak.tip[0].replace("Peak: ", "") !== median.tip[0].replace("Median: ", ""))
+      if (peak.human && value(peak) !== value(median))
         problems.humanPeak.push(`${state}: ${peak.tip[0]} vs ${median.tip[0]}`);
     }
     for (const m of html.matchAll(/<path d="(M [^"]+)" style="stroke:(#[0-9a-f]{6});stroke-width:2;fill:none/gi)) {
@@ -261,7 +279,11 @@ Resultata: ${JSON.stringify(problems.humanPeak.slice(0, 4))} (${problems.humanPe
           for (const [a, b] of wins) {
             const series = sliceSeries(full, a, b);
             const curves = monthlySummaryRows(series).filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]);
-            const peaks = [...renderDistributionChart(series).matchAll(/fill="none" data-tip="(Peak: [^\\n"]*)/g)].map(m => m[1].slice(6));
+            // Each curve's first marker is its peak (by position since
+            // 2026-10-29, until then by its tooltip's word "Peak:"), its value
+            // after the tip's "<label>: ".
+            const peaks = [...renderDistributionChart(series).matchAll(/fill="none" data-tip="([^\\n"]*)/g)]
+              .map(m => m[1].slice(m[1].indexOf(": ") + 2)).filter((_, j) => j % 2 === 0);
             curves.forEach((r, i) => out.push({state: mk + " / " + full.months[a] + ".." + full.months[b], set: set.length, helmer: r.helmer,
               // A human band's density over ln x peaks at its median
               // exactly (2026-10-27): a search lands only near it, which
@@ -312,16 +334,19 @@ Resultata: ${wrong.length} of ${swept.length} Peaks off, e.g. ${JSON.stringify(w
         band.lo = lo; band.hi = hi;
         // a fresh series each time: windowSummaryRows keeps one series's rows
         const series = sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1);
-        const tips = [...renderDistributionChart(series).matchAll(/fill="none" data-tip="((?:Peak|Median): [^\\n"]*)/g)].map(m => m[1]);
+        // The band's two markers' values, after each tip's "<label>: "
+        // (until 2026-10-29 the tips were found by the words "Peak:" and
+        // "Median:").
+        const tips = [...renderDistributionChart(series).matchAll(/fill="none" data-tip="([^\\n"]*)/g)].map(m => m[1].slice(m[1].indexOf(": ") + 2));
         out.push({lo, hi, tips, want: fmtMiles(Math.sqrt(lo * hi))});
       }
       [band.lo, band.hi] = saved;
       return out;
     })()`, ctx);
-  const wrong = shown.filter(s => JSON.stringify(s.tips) !== JSON.stringify([`Peak: ${s.want}`, `Median: ${s.want}`]));
+  const wrong = shown.filter(s => JSON.stringify(s.tips) !== JSON.stringify([s.want, s.want]));
   assert.ok(wrong.length === 0,
     `Replicata: give Humans (US average)'s airbag band edges 250K-1M, 40K-90K and 2M-8M in turn (centres 500,000, 60,000 and 4,000,000, whole numbers of their units), show it alone on the default window, and read its Peak and Median tooltips.
-Expectata: both print the centre as fmtMiles prints it ("Peak: 500K", "Median: 500K", and likewise "60K" and "4M"), a log-normal's density over ln x peaking at its median.
+Expectata: both (its peak, then its median) give the centre as fmtMiles prints it ("500K", and likewise "60K" and "4M"), a log-normal's density over ln x peaking at its median.
 Resultata: ${JSON.stringify(wrong)}.`);
   console.log(`qual pass: ${shown.length} human bands centred on a whole number of their unit show Peak = Median exactly`);
 }

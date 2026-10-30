@@ -127,10 +127,25 @@ const metrics = vm.runInContext(`
     chartMpiAll: document.getElementById("chart-mpi-all").innerHTML,
     legendMpiHelmers: document.getElementById("month-legend-mpi-helmers").innerHTML,
     legendMpiLines: document.getElementById("month-legend-mpi-lines").innerHTML,
+    vmtModeToggle: document.getElementById("vmt-mode-toggle").innerHTML,
   };
 })()
 `, ctx);
 const plain = JSON.parse(JSON.stringify(metrics));
+// Labels and names, read from the app: page wording is the human's to change,
+// so this qual reads it from the app's constants (or finds elements by their
+// structure) rather than spelling it out (until 2026-10-29 it spelled out the
+// card labels, the headings, the axis titles, the legend's labels and words
+// around tooltip figures).
+const appValue = expr => JSON.parse(vm.runInContext(`JSON.stringify(${expr})`, ctx));
+const cardLabelOf = key => appValue(`METRIC_BY_KEY[${JSON.stringify(key)}].cardLabel`);
+const metricLabelOf = key => appValue(`METRIC_BY_KEY[${JSON.stringify(key)}].label`);
+const helmerLabelOf = helmer => appValue(`helmerLabel(${JSON.stringify(helmer)})`);
+const escText = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const escAttr = s => escText(s).replace(/"/g, "&quot;");
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// A chart's y-axis title (the rotated month-label text), present and not empty.
+const hasAxisTitle = svg => /<text class="month-label"[^>]*>[^<]+<\/text>/.test(svg);
 
 assert(
   plain.months.includes("2025-06") && plain.months.includes("2026-02"),
@@ -255,12 +270,15 @@ Expectata: every incident has a boolean airbagAny field.
 Resultata: some incidents are missing or have non-boolean airbagAny.`,
 );
 
-// Verify airbag appears in summary cards when rendered (all metrics enabled)
+// Verify airbag appears in summary cards when rendered (all metrics enabled):
+// its line opens with the metric's card label (METRIC_DEFS cardLabel), not
+// the raw field name.
+const cardLine = key => new RegExp(`data-metric="${key}">\\s*<div>${escRe(cardLabelOf(key))}: `);
 assert.ok(
-  plain.summaryCardHtml.includes("Airbag deployment") &&
+  cardLine("airbag").test(plain.summaryCardHtml) &&
     plain.summaryCardHtml.includes("incAirbag") === false,
   `Replicata: render summary cards with all metrics enabled.
-Expectata: summary cards include "Airbag deployment" label (not raw field name).
+Expectata: the cards' airbag line opens with the metric's card label, ${JSON.stringify(cardLabelOf("airbag"))} (not the raw field name).
 Resultata: card HTML snippet: ${JSON.stringify(plain.summaryCardHtml.slice(0, 200))}.`,
 );
 
@@ -327,9 +345,9 @@ Resultata: classification was ${JSON.stringify(moderateSeverityCheck)}.`,
 );
 
 assert.ok(
-  plain.summaryCardHtml.includes("Serious injury+"),
+  cardLine("seriousInjury").test(plain.summaryCardHtml),
   `Replicata: render summary cards with all metrics enabled.
-Expectata: summary cards include "Serious injury+" label.
+Expectata: the cards' serious-injury line opens with the metric's card label, ${JSON.stringify(cardLabelOf("seriousInjury"))}.
 Resultata: label not found in card HTML.`,
 );
 
@@ -369,19 +387,21 @@ assert.ok(
     !renderedAll.includes("<h3>") &&
     renderedAll.includes("month-mpi-all-line") &&
     renderedAll.includes("stroke-width:2") &&
-    renderedAll.includes("Miles Per Incident (MPI)"),
+    hasAxisTitle(renderedAll),
   `Replicata: render cross-helmer miles-per-incident chart.
-Expectata: chart body has all-helmer line traces, month labels, and the MPI axis, with the title in the section header (not an <h3> in the body).
+Expectata: chart body has all-helmer line traces, month labels, and a titled MPI axis, with the title in the section header (not an <h3> in the body).
 Resultata: rendered snippets were ${JSON.stringify(renderedAll.slice(0, 400))}.`,
 );
 
 // The cross-helmer chart title lives in the section header (#mpi-heading), set
 // by renderWindowedViews, so it stays visible when the section is collapsed.
-assert.equal(
-  plain.mpiHeading,
-  "Miles per any incident over time",
+// It names the selected metric by its label (METRIC_DEFS label); switching the
+// metric swaps that label and nothing else. (Until 2026-10-29 both headings
+// were pinned to the character.)
+assert.ok(
+  plain.mpiHeading.includes(metricLabelOf("all")),
   `Replicata: read the #mpi-heading section header after buildMonthlyViews with the all-incident metric.
-Expectata: header reads "Miles per any incident over time".
+Expectata: header names the metric's label, ${JSON.stringify(metricLabelOf("all"))}.
 Resultata: header was ${JSON.stringify(plain.mpiHeading)}.`,
 );
 
@@ -394,15 +414,17 @@ const airbagHeading = vm.runInContext(`
 `, ctx);
 assert.equal(
   airbagHeading,
-  "Miles per airbag-deploying incident over time",
+  plain.mpiHeading.replace(metricLabelOf("all"), metricLabelOf("airbag")),
   `Replicata: select the airbag metric and rebuild; read the #mpi-heading header.
-Expectata: header reuses the exact selected metric label.
+Expectata: header reuses the exact selected metric label: the all-incident header with ${JSON.stringify(metricLabelOf("airbag"))} in place of ${JSON.stringify(metricLabelOf("all"))}.
 Resultata: header was ${JSON.stringify(airbagHeading)}.`,
 );
 
-// k=0 months have no point estimate (MLE = miles/0 = ∞); they render a "≥ lo"
-// up-arrow marker (with a "(0 incidents)" tooltip), not a finite dot, and are
-// never skipped (e.g. a month whose incidents are all 0% at-fault).
+// k=0 months have no point estimate (MLE = miles/0 = ∞); they render a marker
+// whose tooltip gives the count 0 (in parentheses after the MPI figure, on
+// its second line), and are never skipped (e.g. a month whose incidents are
+// all 0% at-fault). Until 2026-10-29 the count was found with the word after
+// it ("(0 incidents)").
 const jeffreysZero = vm.runInContext(`
   (() => {
     const savedMetric = selectedMetricKey;
@@ -424,7 +446,7 @@ const jeffreysZero = vm.runInContext(`
     monthHelmerEnabled = savedEnabled;
     // Count tooltips (data-tip), not text: each tip is also the mark's
     // aria-label (2026-10-03, audit #4).
-    return {zeroMonths, zeroDotTips: (html.match(/data-tip="[^"]*\\(0 incidents\\)/g) || []).length};
+    return {zeroMonths, zeroDotTips: (html.match(/data-tip="[^"\\n]*\\n[^"\\n(]*\\(0[ )]/g) || []).length};
   })()
 `, ctx);
 assert.ok(
@@ -437,7 +459,7 @@ assert.equal(
   jeffreysZero.zeroDotTips,
   jeffreysZero.zeroMonths,
   `Replicata: render the cross-helmer at-fault MPI chart with all helmers enabled.
-Expectata: every k=0 helmer-month renders a marker with a "(0 incidents)" tooltip (up-arrow, not skipped).
+Expectata: every k=0 helmer-month renders a marker whose tooltip gives the incident count 0 (not skipped).
 Resultata: ${jeffreysZero.zeroDotTips} zero-incident tooltips for ${jeffreysZero.zeroMonths} k=0 helmer-months.`,
 );
 
@@ -564,20 +586,19 @@ Expectata: incomplete reporting shrinks the effective VMT, so the partial-month 
 Resultata: partial=${Math.round(partialK.partMpi)}, full=${Math.round(partialK.fullMpi)}.`,
 );
 
-// TODO: keep or drop? This requires the label "95% CI" in the source, a
-// wording pin (2026-10-28 rule).
-assert.ok(
-  appScript.includes("95% CI"),
-  `Replicata: inspect the MPI / distribution datapoint tooltip source.
-Expectata: credible intervals are labeled "95% CI".
-Resultata: "95% CI" label missing from source.`,
-);
+// Until 2026-10-29 this qual also required the label "95% CI" in the source,
+// a wording pin the human dropped; fault-mixture.qual checks the 95% itself,
+// numerically.
 
+// The per-helmer VMT charts offer a monthly and a cumulative view: two
+// radios of one group. Until 2026-10-29 this checked the source for their
+// labels' words.
 assert.ok(
-  appScript.includes("Monthly VMT") && appScript.includes("Cumulative VMT"),
-  `Replicata: inspect source for the VMT view toggle labels.
-Expectata: the per-helmer VMT charts offer Monthly VMT and Cumulative VMT views.
-Resultata: expected labels missing from source.`,
+  /<input type="radio" name="vmt-mode" id="vmt-mode-monthly"/.test(plain.vmtModeToggle) &&
+    /<input type="radio" name="vmt-mode" id="vmt-mode-cumulative"/.test(plain.vmtModeToggle),
+  `Replicata: render the monthly legends and read the VMT view toggle (#vmt-mode-toggle).
+Expectata: the per-helmer VMT charts offer a monthly and a cumulative view, two radios named vmt-mode (vmt-mode-monthly, vmt-mode-cumulative).
+Resultata: toggle markup was ${JSON.stringify(plain.vmtModeToggle.slice(0, 400))}.`,
 );
 
 // The grid now respects the helmer checkboxes (Zoox is off by default), so
@@ -595,43 +616,39 @@ const rendered = vm.runInContext(`
 `, ctx);
 assert.ok(
   rendered.includes("<svg") &&
-    rendered.includes("Tesla") &&
-    rendered.includes("Waymo") &&
-    rendered.includes("Zoox") &&
+    ["Tesla", "Waymo", "Zoox"].every(h => rendered.includes(`<h3>${escText(helmerLabelOf(h))}</h3>`)) &&
     rendered.includes("data-tip=") &&
     rendered.includes("month-vmt-line") &&
     rendered.includes("month-dot") &&
-    rendered.includes("Vehicle Miles Traveled (VMT)") &&
+    hasAxisTitle(rendered) &&
     rendered.includes("month-err") &&
     rendered.includes("month-axis") &&
     !rendered.includes("month-inc-bar"),
   `Replicata: render monthly charts per helmer.
-Expectata: each helmer chart is VMT-only — a left VMT axis, a VMT line with dots and error bars, and no incident bars.
+Expectata: a chart headed by each company's label (helmerLabel), each VMT-only — a titled left VMT axis, a VMT line with dots and error bars, and no incident bars.
 Resultata: rendered snippets were ${JSON.stringify(rendered.slice(0, 400))}.`,
 );
 
 
-// The metric selector is a dropdown: a "Miles per ___ incident" label wrapping
-// one <option value="key">blank</option> per metric. Derived from METRIC_DEFS
-// so this self-updates as metrics change.
+// The metric selector is a dropdown inside its label, one
+// <option value="key">blank</option> per metric. Derived from METRIC_DEFS
+// so this self-updates as metrics change. The helmer legend names every
+// helmer by its label (helmerLabel). Until 2026-10-29 this spelled out five
+// helmer labels and the label's words around the dropdown ("Miles per",
+// "incident").
 const metricOptions = vm.runInContext(`METRIC_DEFS.map(m => ({key: m.key, blank: m.blank}))`, ctx);
 const allMetricOptionsPresent = metricOptions.length === 10 && metricOptions.every(o =>
   plain.legendMpiLines.includes(`value="${o.key}"`) &&
   plain.legendMpiLines.includes(`>${o.blank}</option>`));
+const legendLabels = appValue("ALL_HELMERS").map(helmerLabelOf);
 
 assert.ok(
-  plain.legendMpiHelmers.includes("Tesla") &&
-  plain.legendMpiHelmers.includes("Waymo") &&
-    plain.legendMpiHelmers.includes("Zoox") &&
-  plain.legendMpiHelmers.includes("Humans (AV cities)") &&
-    plain.legendMpiHelmers.includes("Humans (US average)") &&
+  legendLabels.every(l => plain.legendMpiHelmers.includes(`</span>${escText(l)}`)) &&
   plain.legendMpiHelmers.includes("type=\"checkbox\"") &&
-  plain.legendMpiLines.includes("<select id=\"month-metric-select\"") &&
-  plain.legendMpiLines.includes("Miles per") &&
-  plain.legendMpiLines.includes("incident</label>") &&
+  /<label[^>]*for="month-metric-select"[^>]*>[^<]*<select id="month-metric-select"[\s\S]*<\/select>[^<]*<\/label>/.test(plain.legendMpiLines) &&
   allMetricOptionsPresent,
   `Replicata: render monthly legends.
-Expectata: helmer legend has colors+checkboxes; the metric selector is a "Miles per ___ incident" dropdown with one option per metric.
+Expectata: helmer legend has colors+checkboxes and every helmer's label (${JSON.stringify(legendLabels)}); the metric selector is a dropdown inside its label with one option per metric.
 Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JSON.stringify(plain.legendMpiLines)}.`,
 );
 
@@ -646,8 +663,9 @@ Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JS
 // the human's edits and caught no agent's; the human reviews every diff).
 const firstMonthCards = vm.runInContext(`renderMpiSummaryCards(sliceSeries(monthSeriesData(), 0, 0))`, ctx);
 const NO_MILES = vm.runInContext("NO_MILES_NOTE", ctx);
+// A card, found by its helmer's label (helmerLabel).
 const cardOf = (html, helmer) => html.split('class="mpi-card-helmer">')
-  .find(s => s.startsWith(helmer + "<")) || "";
+  .find(s => s.startsWith(escText(helmerLabelOf(helmer)) + "<")) || "";
 const vmtLines = card => [...card.matchAll(/<div class="mpi-card-vmt"([^>]*)>([\s\S]*?)<\/div>/g)]
   .map(m => ({ attrs: m[1], body: m[2] }));
 for (const helmer of ["Tesla", "Zoox"]) {
@@ -657,7 +675,7 @@ for (const helmer of ["Tesla", "Zoox"]) {
 Expectata: one line, NO_MILES_NOTE (${JSON.stringify(NO_MILES)}): not the human cards' sources line, not the effective-VMT line.
 Resultata: ${JSON.stringify(lines)}.`);
 }
-assert.ok(vmtLines(cardOf(firstMonthCards, "Humans (AV cities)")).some(l => l.body.includes("<a ")),
+assert.ok(vmtLines(cardOf(firstMonthCards, "HumansAV")).some(l => l.body.includes("<a ")),
   "the human card keeps its sources line (links) on the 2021-07 window");
 // (b) The incomplete-reporting "?" marker is drawn per MONTH, not per helmer
 // dot (per-helmer glyphs overprinted each other wherever two dots sat close):
@@ -675,7 +693,9 @@ const incompleteSet = new Set(vm.runInContext(`
   [...new Set(parseVmtCsv(VMT_CSV_TEXT).filter(r => monthHelmerEnabled[r.helmer] && (r.coverage < 1 || r.incCov < 1)).map(r => r.month))]`, ctx));
 const incompleteMonths = windowMonthList.filter(m => incompleteSet.has(m)).length;
 const incompleteRuns = windowMonthList.filter((m, i) => incompleteSet.has(m) && !(i > 0 && incompleteSet.has(windowMonthList[i - 1]))).length;
-const qmarkOpacities = [...plain.chartMpiAll.matchAll(/<text class="month-tick"[^>]*style="opacity:([\d.]+);pointer-events:none">\?<\/text>/g)].map(m => Number(m[1]));
+// The markers are the month-tick texts that carry an opacity (found by that,
+// not by their glyph, since 2026-10-29).
+const qmarkOpacities = [...plain.chartMpiAll.matchAll(/<text class="month-tick"[^>]*style="opacity:([\d.]+);pointer-events:none">[^<]*<\/text>/g)].map(m => Number(m[1]));
 const visibleQmarks = qmarkOpacities.filter(o => o > 0).length;
 const windowMonths = windowMonthList.length;
 assert.ok(qmarkOpacities.every(o => o >= 0 && o <= 1) && qmarkOpacities.length === windowMonths - incompleteMonths + incompleteRuns && visibleQmarks === incompleteRuns,
@@ -690,33 +710,42 @@ Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
   const dt = vm.runInContext(`
     (() => { const rows = parseVmtCsv(VMT_CSV_TEXT); const m = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
       return { month: m, incCovMin: rows.find(r => r.month === m).incCovMin }; })()`, ctx);
-  const tips = [...plain.chartMpiAll.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]).filter(t => t.startsWith(dt.month));
-  // ADS dots carry an incident count; the human dots carry no coverage note (their data is complete).
-  const adsTips = tips.filter(t => /incident/.test(t));
-  const worst = [...new Set(adsTips.map(t => (t.match(/worst case ~(\d+)%/) || [])[1]))];
+  // The chart's targets and their accessible names, each the mark's company
+  // label then its tip (seriesMarkName): the ADS dots are the ones named for
+  // an ADS line. The coverage note gives two figures, ~best% then
+  // ~worst%. Until 2026-10-29 this told the ADS dots by their tooltips'
+  // word "incident" and found the figure by the words "worst case".
+  const prefixes = appValue("ADS_SERIES.map(h => seriesMarkName(h, ''))").map(escAttr);
+  const adsTips = [...plain.chartMpiAll.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
+    .filter(m => m[1].startsWith(dt.month + "\n") && prefixes.some(p => m[2] === p + m[1])).map(m => m[1]);
+  const worst = [...new Set(adsTips.map(t => { const pct = t.match(/~\d+%/g) || []; return pct.length === 2 ? pct[1].slice(1, -1) : undefined; }))];
   assert.ok(adsTips.length >= 1 && worst.length === 1 && Number(worst[0]) === Math.round(dt.incCovMin * 100),
-    `Replicata: read the ${dt.month} ADS dot tooltips on the default (Monthly-track) MPI chart.
-Expectata: every one says "worst case ~${Math.round(dt.incCovMin * 100)}%" = incident_coverage_min, the figure the sanity table shows.
+    `Replicata: read the ${dt.month} ADS dot tooltips on the default (Monthly-track) MPI chart (the targets named for an ADS line).
+Expectata: every one's coverage note gives the worst case, its second figure, as ~${Math.round(dt.incCovMin * 100)}% = incident_coverage_min, the figure the sanity table shows.
 Resultata: ${JSON.stringify(worst)} from ${adsTips.length} tooltips.`);
   const fiveDayTips = vm.runInContext(`
     (() => { const s = monthSeriesData(); const start = s.months.indexOf(DEFAULT_START_MONTH);
       const saved = selectedMetricKey; selectedMetricKey = "fatality";
       const html = renderAllHelmersMpiChart(sliceSeries(s, start, s.months.length - 1)); selectedMetricKey = saved;
       return [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]).filter(t => t.startsWith(${JSON.stringify(dt.month)})); })()`, ctx);
-  assert.ok(fiveDayTips.length >= 1 && fiveDayTips.every(t => !/incident coverage/.test(t)),
+  assert.ok(fiveDayTips.length >= 1 && fiveDayTips.every(t => !/~\d+%/.test(t)),
     `Replicata: the same month's dot tooltips on a five-day-track metric (fatality).
-Expectata: no incident-coverage note (five-day metrics carry no Monthly-track thinning).
+Expectata: no incident-coverage note, so no ~N% figure (five-day metrics carry no Monthly-track thinning).
 Resultata: ${JSON.stringify(fiveDayTips.slice(0, 2))}.`);
 }
 // (c) The card's Effective-VMT tooltip states the numbers only; the per-month
 // VMT rationales live in the sanity section's VMT-sources table (embedded
 // here they made the tooltip 7,000-8,700px tall, unreadable and unpinnable).
+// No rationale of the VMT rows (the first 40 characters of each) may appear
+// in it; until 2026-10-29 this looked for a few words common in them
+// ("US est.", "deck", "CPUC").
 const vmtTips = [...plain.summaryCardHtml.matchAll(/class="mpi-card-vmt" data-tip="([^"]*)"/g)].map(m => m[1]);
+const rationales = appValue("[...new Set([...vmtRows, ...parseGhostVmtCsv(GHOST_VMT_CSV_TEXT)].map(r => r.rationale))]");
 // One card per ADS line, checked or not (unchecked lines' cards are grayed).
 const adsLines = vm.runInContext("ADS_SERIES.length", ctx);
-assert.ok(vmtTips.length === adsLines && vmtTips.every(t => t.length < 700 && !/US (rough )?est\.|deck|CPUC/.test(t)),
+assert.ok(rationales.length > 0 && vmtTips.length === adsLines && vmtTips.every(t => t.length < 700 && !rationales.some(r => t.includes(escAttr(r.slice(0, 40))))),
   `Replicata: read the ${adsLines} ADS cards' Effective-VMT data-tips on the default window.
-Expectata: each under 700 characters and free of rationale prose.
+Expectata: each under 700 characters and free of rationale prose (no VMT row's rationale).
 Resultata: lengths ${JSON.stringify(vmtTips.map(t => t.length))}.`);
 
 console.log("qual pass: monthly charts render cross-helmer and per-helmer incident-rate views");

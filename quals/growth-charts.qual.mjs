@@ -57,7 +57,22 @@ const TIP_FMT = {
   rides: { history: v => whole(sig3(v)), forecast: v => whole(sig3(v)) },
   miles: { history: milesAt3, forecast: milesAt3 },
 };
-const ENDPOINT = { fleet: "2027-01", rides: "2026-12", miles: "2026-12" };
+// The forecast's date, read from the app; the fleet (a stock) plots at its
+// month, the cumulative metrics (month-end totals) at the month before.
+const FORECAST_DATE = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
+const monthBefore = month => {
+  const [y, m] = month.split("-").map(Number);
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
+};
+const ENDPOINT = { fleet: FORECAST_DATE.slice(0, 7), rides: monthBefore(FORECAST_DATE.slice(0, 7)), miles: monthBefore(FORECAST_DATE.slice(0, 7)) };
+// A tooltip gives these figures, in this order (its words are the page's
+// and not checked: no wording pins, 2026-10-28).
+const givesInOrder = (tip, figures) => {
+  let at = 0;
+  for (const f of figures) { const i = tip.indexOf(f, at); if (i < 0) return false; at = i + f.length; }
+  return true;
+};
+const bodyOf = tip => tip.split("\n").slice(1).join("\n");
 const problems = [];
 const charts = JSON.parse(JSON.stringify(vm.runInContext(`(() => {
   const out = {};
@@ -86,35 +101,31 @@ for (const [key, c] of Object.entries(charts)) {
   const ftips = tipsOf(c.forecast), ttips = tipsOf(c.trajectory);
   for (const curve of c.curves) {
     const want = [curve.median, curve.lo90, curve.hi90].map(TIP_FMT[key].forecast);
-    // TODO: "Median:" and "90% CI:" here, and "Range:" and the value labels
-    // in the history check below, are the tooltips' words around the figures
-    // tested; read them from the app or check only the figures (no wording
-    // pins, 2026-10-28).
-    const body = `Median: ${want[0]}\n90% CI: ${want[1]} – ${want[2]}`;
-    if (!ftips.includes(`${curve.label}\n${body}`))
-      problems.push(`${key}: the forecast chart's ${curve.label} tooltip should read "${body.replace("\n", " / ")}"; its tooltips are ${JSON.stringify(ftips.filter(t => t.startsWith(curve.label)))}`);
-    const end = ttips.filter(t => t.startsWith(`${curve.label} · 2027-01-01 (forecast)\n`));
-    if (end.length !== 1 || !end[0].endsWith(body))
-      problems.push(`${key}: the trajectory's ${curve.label} endpoint tooltip should open "${curve.label} · 2027-01-01 (forecast)" and read "${body.replace("\n", " / ")}"; found ${JSON.stringify(ttips.filter(t => t.startsWith(curve.label) && /forecast/.test(t)))}`);
+    const ftip = ftips.filter(t => t.startsWith(`${curve.label}\n`));
+    if (ftip.length !== 1 || !givesInOrder(bodyOf(ftip[0]), want))
+      problems.push(`${key}: the forecast chart's ${curve.label} tooltip should give its median, 5th and 95th percentiles as ${want.join(", ")}; found ${JSON.stringify(ftip)}`);
+    const end = ttips.filter(t => t.startsWith(`${curve.label} · ${FORECAST_DATE}`));
+    if (end.length !== 1 || ftip.length !== 1 || bodyOf(end[0]) !== bodyOf(ftip[0]))
+      problems.push(`${key}: the trajectory's ${curve.label} endpoint tooltip should open "${curve.label} · ${FORECAST_DATE}" and print what the forecast chart prints; found ${JSON.stringify(end)} against ${JSON.stringify(ftip)}`);
   }
   for (const e of c.endMonths) {
     if (e.month !== ENDPOINT[key] || !e.forecast)
       problems.push(`${key}: the ${e.label} lane's Jan-1 endpoint is at the ${e.month} step (forecast: ${e.forecast}); want ${ENDPOINT[key]}`);
   }
   // History points print the metric's figures (#51): miles and rides at
-  // three significant figures, the fleet exactly.
-  const VALUE = { fleet: "Fleet size", rides: "Rides", miles: "Miles" };
+  // three significant figures, the fleet exactly; value, low, high in order.
   for (const lane of c.history) {
     for (const p of lane.points) {
       const f = TIP_FMT[key].history;
-      const want = `${lane.helmer} · ${p.month}\n${VALUE[key]}: ${f(p.best)}\nRange: ${f(p.lo)} – ${f(p.hi)}`;
-      if (!ttips.includes(want)) problems.push(`${key}: no history tooltip reads ${JSON.stringify(want)}; found ${JSON.stringify(ttips.filter(t => t.startsWith(`${lane.helmer} · ${p.month}\n`)))}`);
+      const want = [f(p.best), f(p.lo), f(p.hi)];
+      const tip = ttips.filter(t => t.startsWith(`${lane.helmer} · ${p.month}\n`));
+      if (tip.length !== 1 || !givesInOrder(bodyOf(tip[0]), want)) problems.push(`${key}: the ${lane.helmer} ${p.month} history tooltip should give ${want.join(", ")}; found ${JSON.stringify(tip)}`);
     }
   }
   // Scenario shares belong to forecasts (audit #83): an observed history
   // point is labelled by its helmer alone. Until 2026-10-03 all 24 Tesla
   // history tooltips read "Tesla robotaxi (~95%) · 2026-08 ...".
-  const history = ttips.filter(t => !/\(forecast\)/.test(t.split("\n")[0]));
+  const history = ttips.filter(t => !t.split("\n")[0].includes(FORECAST_DATE));
   if (history.length === 0) problems.push(`${key}: no history-point tooltips found`);
   for (const t of history) {
     const head = t.split("\n")[0];
@@ -140,7 +151,7 @@ for (const [key, c] of Object.entries(charts)) {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render both growth charts for fleet, rides and miles in vm and read their legends, forecast tooltips and lane endpoints.
-Expectata: one legend order in both charts; each forecast printed at three significant figures (miles before the unit suffix, "6.27M"; rides and the fleet in full digits), the same in both charts; each history point's value and range at three significant figures for miles and rides, exactly for the fleet; the endpoint at 2026-12 for the cumulative metrics and 2027-01 for the fleet, its tooltip dated 2027-01-01; every history point labelled "<helmer> · <month>", without a scenario share; a note giving Tesla's two scenario shares ("~<robotaxi share>%" and "~<HW4 share>%") as the legend chips carry them.
+Expectata: one legend order in both charts; each forecast's median, 5th and 95th percentiles printed at three significant figures (miles before the unit suffix, "6.27M"; rides and the fleet in full digits), the same in both charts; each history point's value and range at three significant figures for miles and rides, exactly for the fleet; the endpoint at the forecast date's month for the fleet and the month before for the cumulative metrics, its tooltip dated GROWTH_FORECAST_DATE (${FORECAST_DATE}); every history point labelled "<helmer> · <month>", without a scenario share; a note giving Tesla's two scenario shares ("~<robotaxi share>%" and "~<HW4 share>%") as the legend chips carry them.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 8).join("\n")}`);
 console.log("qual pass: the growth charts share one legend order, print forecasts alike at three significant figures, date the Jan-1 endpoint by its own time convention, label history points by helmer and explain the scenario shares");

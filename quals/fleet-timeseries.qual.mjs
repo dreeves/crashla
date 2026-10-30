@@ -79,20 +79,25 @@ Resultata: ${dashCount}.`);
 
 const endpoints = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => fleetForecastCurves().map(c => ({
-  key: c.key, mainline: c.mainline, median: c.median })))()
+  key: c.key, label: c.legendLabel, mainline: c.mainline, median: c.median })))()
 `, ctx)));
+const FORECAST_DATE = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
 
 // Forecasts print at three significant figures in both growth charts since
 // 2026-10-03 (audit #57); growth-charts.qual pins the two charts' texts equal.
 const fmtWhole = vm.runInContext("fmtWhole", ctx);
+// The endpoint's tooltip is found by its lane's label and the forecast date
+// and must give the median; its words are the page's and not checked (no
+// wording pins, 2026-10-28).
+const decodeTip = t => t.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+const tips = [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => decodeTip(m[1]));
 for (const e of endpoints) {
-  // TODO: "Median:" is the tooltip's word; find the figure without it (no
-  // wording pins, 2026-10-28).
-  const tip = `Median: ${fmtWhole(Number(e.median.toPrecision(3)))}`;
-  assert.ok(html.includes(tip),
-    `Replicata: look for the ${e.key} forecast-endpoint median in the fleet trajectory chart.
-Expectata: the chart reports "${tip}" (same value as the distribution chart, incl. the HW4 fork).
-Resultata: not found.`);
+  const median = fmtWhole(Number(e.median.toPrecision(3)));
+  const tip = tips.filter(t => t.startsWith(`${e.label} · ${FORECAST_DATE}`));
+  assert.ok(tip.length === 1 && tip[0].split("\n").slice(1).join("\n").includes(median),
+    `Replicata: look for the ${e.key} forecast-endpoint tooltip in the fleet trajectory chart.
+Expectata: one, giving the distribution chart's median ${median} (incl. the HW4 fork).
+Resultata: ${JSON.stringify(tip)}.`);
 }
 
 // --- 3b. The toggle offers all three metrics; each renders both charts ---
@@ -157,7 +162,10 @@ Expectata: non-decreasing (cumulative can't shrink).
 Resultata: a lane's series decreases.`);
 }
 
-// --- 4. Every fleet lane is well-formed and ends at the 2027-01 forecast ---
+// --- 4. Every fleet lane is well-formed and ends at the forecast's month ---
+const END_MONTH = vm.runInContext("FLEET_TS_END_MONTH", ctx);
+assert.equal(END_MONTH, FORECAST_DATE.slice(0, 7),
+  `Replicata: compare FLEET_TS_END_MONTH with GROWTH_FORECAST_DATE. Expectata: the date's month (a stock plots at the step of its day). Resultata: ${END_MONTH} vs ${FORECAST_DATE}.`);
 
 const lanes = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => growthMetricSpec("fleet").lanes().map(lane => {
@@ -183,8 +191,8 @@ Resultata: ${lanes.filter(l => l.branchOnly).length}.`);
 for (const l of lanes) {
   assert.ok(l.ordered,
     `Replicata: read ${l.label}'s points. Expectata: lo <= best <= hi. Resultata: out of order.`);
-  assert.equal(l.endMonth, "2027-01",
-    `Replicata: read ${l.label}'s last point. Expectata: 2027-01. Resultata: ${l.endMonth}.`);
+  assert.equal(l.endMonth, END_MONTH,
+    `Replicata: read ${l.label}'s last point. Expectata: ${END_MONTH}. Resultata: ${l.endMonth}.`);
   assert.ok(l.endIsForecast,
     `Replicata: check ${l.label}'s endpoint. Expectata: forecast === true. Resultata: not flagged.`);
 }

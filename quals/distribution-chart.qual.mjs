@@ -317,32 +317,38 @@ Expectata: two markers (mode + median) per legend entry, one target per marker.
 Resultata: ${legendItemCount} legend items, ${peakMarkerCount} markers, ${markerTargetCount} targets.`,
 );
 
-for (const [helmer, color, label] of [
-  ["HumansAV", "#c9a800", "Humans (AV cities)"],
-  ["Tesla", "#d13b2d", "Tesla"],
-  ["Waymo", "#2060c0", "Waymo"],
-  ["Zoox", "#2a8f57", "Zoox"],
+// Each chip is labelled with its helmer's label, read from the app (until
+// 2026-10-29 spelled out here).
+const escText = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const labelOf = helmer => vm.runInContext(`helmerLabel(${JSON.stringify(helmer)})`, ctx);
+const chip = (color, helmer) => `month-chip" style="background:${color}"></span>${escText(labelOf(helmer))}`;
+for (const [helmer, color] of [
+  ["HumansAV", "#c9a800"],
+  ["Tesla", "#d13b2d"],
+  ["Waymo", "#2060c0"],
+  ["Zoox", "#2a8f57"],
 ]) {
   assert.ok(
-    distChart.includes(`month-chip" style="background:${color}"></span>${label}`),
+    distChart.includes(chip(color, helmer)),
     `Replicata: render the distribution chart with ${helmer} enabled.
-Expectata: legend shows a ${color} chip labeled "${label}".
+Expectata: legend shows a ${color} chip labeled with ${helmer}'s label, ${JSON.stringify(labelOf(helmer))}.
 Resultata: chip+label pair not found in output.`,
   );
 }
 
 assert.ok(
-  !distChart.includes("Humans (US average)"),
+  !distChart.includes(escText(labelOf("HumansUS"))),
   `Replicata: render the distribution chart with HumansUS disabled (default).
-Expectata: legend has no "Humans (US average)" entry.
-Resultata: found "Humans (US average)" in output.`,
+Expectata: legend has no entry for HumansUS (its label, ${JSON.stringify(labelOf("HumansUS"))}).
+Resultata: found it in output.`,
 );
 
+// The y axis is titled (until 2026-10-29 the title's words were pinned).
 assert.ok(
-  distChart.includes("Probability Density for True MPI"),
-  `Replicata: call renderDistributionChart and inspect y-axis label.
-Expectata: y-axis label is "Probability Density for True MPI".
-Resultata: expected label not found in output.`,
+  /<text class="month-label"[^>]*>[^<]+<\/text>/.test(distChart),
+  `Replicata: call renderDistributionChart and inspect the y-axis title.
+Expectata: a y-axis title (a month-label text) that is not empty.
+Resultata: no such title in output.`,
 );
 
 assert.ok(
@@ -364,17 +370,22 @@ const seriousTitle = vm.runInContext(`
   return {
     heading: document.getElementById("dist-heading").textContent,
     chartHtml: document.getElementById("chart-distributions").innerHTML,
+    label: METRIC_BY_KEY.seriousInjury.label,
     start: activeSeries.months[0],
     end: activeSeries.months[activeSeries.months.length - 1],
   };
 })()
 `, ctx);
 
-assert.equal(
-  seriousTitle.heading,
-  `Miles per serious-injury-causing incident probability distributions using data from ${seriousTitle.start} to ${seriousTitle.end}`,
+// The header names the metric by its label (METRIC_DEFS label) and the
+// window by its first and last months, in that order. Until 2026-10-29 the
+// whole header was pinned to the character.
+const headingMonths = heading => heading.match(/\d{4}-\d{2}/g) || [];
+assert.ok(
+  seriousTitle.heading.includes(seriousTitle.label) &&
+    JSON.stringify(headingMonths(seriousTitle.heading)) === JSON.stringify([seriousTitle.start, seriousTitle.end]),
   `Replicata: render the windowed views with the serious-injury metric selected.
-Expectata: the section header reuses the exact selected metric label and active date window.
+Expectata: the section header reuses the exact selected metric label (${JSON.stringify(seriousTitle.label)}) and active date window (${seriousTitle.start} to ${seriousTitle.end}).
 Resultata: heading was ${JSON.stringify(seriousTitle.heading)}.`,
 );
 
@@ -397,6 +408,7 @@ const windowEffect = vm.runInContext(`
     fullWaymo,
     slicedWaymo,
     heading: document.getElementById("dist-heading").textContent,
+    label: METRIC_BY_KEY.all.label,
     start: activeSeries.months[0],
     end: activeSeries.months[activeSeries.months.length - 1],
   };
@@ -405,8 +417,8 @@ const windowEffect = vm.runInContext(`
 
 assert.ok(
   windowEffect.fullWaymo !== windowEffect.slicedWaymo &&
-    windowEffect.heading ===
-      `Miles per any incident probability distributions using data from ${windowEffect.start} to ${windowEffect.end}`,
+    windowEffect.heading.includes(windowEffect.label) &&
+    JSON.stringify(headingMonths(windowEffect.heading)) === JSON.stringify([windowEffect.start, windowEffect.end]),
   `Replicata: compare the all-incident distribution inputs for the full month window vs a sliced month window.
 Expectata: narrowing the month window changes the bell-curve inputs and the section header reflects the sliced date range.
 Resultata: fullWaymo=${windowEffect.fullWaymo}, slicedWaymo=${windowEffect.slicedWaymo}, heading=${JSON.stringify(windowEffect.heading)}.`,
@@ -623,14 +635,18 @@ const meanCheck = vm.runInContext(`
     for (const d of ALL_HELMERS) monthHelmerEnabled[d] = ["HumansAV", "Tesla", "Waymo", "Zoox"].includes(d);
     const rows = monthlySummaryRows(series);
     const html = renderDistributionChart(series);
-    const tips = [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]);
+    const targets = [...html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)].map(m => ({tip: m[1], name: m[2]}));
     for (const h of ADS_HELMERS) {
       const e = rows.find(r => r.helmer === h).mpiEstimates[mk];
-      // The median marker, found by the value its first line reports.
-      const tip = tips.find(t => t.split("\\n")[0].endsWith(": " + fmtMiles(e.postMedian)));
-      // TODO: this reads the mean after the tooltip's word "mean"; find it
-      // without the page's wording (no wording pins in quals, 2026-10-28).
-      const shown = (tip.match(/ · mean ([^ ]+) · /) || [])[1];
+      // The median marker: one of the helmer's (named for it,
+      // seriesMarkName), found by the value its first line reports.
+      const tip = targets.find(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip
+        && t.tip.split("\\n")[0].endsWith(": " + fmtMiles(e.postMedian))).tip;
+      // The mean: the second of the second line's " · "-separated parts,
+      // after the median (or peak) and before the MLE, its value the part's
+      // last word. Until 2026-10-29 this read it after the tooltip's word
+      // "mean".
+      const shown = ((tip.split("\\n")[1] || "").split(" · ")[1] || "").split(" ").pop();
       const aMin = Math.min(...e.comps.map(c => c.a));
       // numeric mean of the drawn density (w.r.t. ln x): wide fine grid
       let m0 = 0, m1 = 0;

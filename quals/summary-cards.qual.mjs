@@ -1,8 +1,9 @@
 // The summary cards ("Sources and raw numbers"): what each card line says
 // and how it is marked. Added 2026-10-03 for the 2026-10-02 audit findings:
-//   #6  the line under Effective VMT is the All-incidents stress verdict, and
-//       its label must say so (it read "Overall:", beside a Waymo card that is
-//       robustly safer on 7 of 10 metrics);
+//   #6  the line under Effective VMT is the All-incidents stress verdict,
+//       headed by CARD_STRESS_LABEL (it read "Overall:", beside a Waymo card
+//       that is robustly safer on 7 of 10 metrics; until 2026-10-29 this qual
+//       also banned that word);
 //   #16 a multiplier resting on zero incidents (k = 0) carries the prior-only
 //       marking its stress badge carries (faded, the prior-only tip), not a
 //       safer/worse colour (Tesla's fatality "0.1x" was solid red);
@@ -128,12 +129,10 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
   assert.deepEqual(Object.keys(cards), Object.values(labels), `${wname}: every helmer has a card`);
   for (const [helmer, byMetric] of Object.entries(ests)) {
     const card = cards[labels[helmer]];
-    // #6: the line names the metric it scores.
+    // #6: the line is headed CARD_STRESS_LABEL and gives the All-incidents
+    // range.
     const r = byMetric.stressAll;
-    // TODO: keep or drop the ban on the label "Overall:"? A wording check,
-    // kept because it guards a meaning: the line is the All-incidents verdict,
-    // not an overall one (no wording pins, 2026-10-28).
-    if (card.stress === null || CARD_STRESS_LABEL === null || CARD_STRESS_LABEL === "Overall:" ||
+    if (card.stress === null || CARD_STRESS_LABEL === null ||
         !card.stress.startsWith(CARD_STRESS_LABEL + " ") ||
         !card.stress.endsWith(`${expectMultText(r.ratioLo)}x – ${expectMultText(r.ratioHi)}x`)) {
       const shown = card.stress && card.stress.replace(/<span class="visually-hidden">[^<]*<\/span>/g, "").replace(/<[^>]*>/g, "");
@@ -159,11 +158,12 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
         if (line.multClass.trim() !== want || line.multAttrs.includes("data-tip")) problems.colour.push(`${where}: ${JSON.stringify(line.multText)} has class ${JSON.stringify(line.multClass.trim())}, want ${want}`);
       }
     }
-    // #56: fault-mass counts
+    // #56: fault-mass counts, the figure that opens the line's count text
+    // (until 2026-10-29 read by stripping the words after it).
     for (const [key, injuryOnly] of [["atfault", false], ["atfaultInjury", true]]) {
       if (byMetric[key] === null) continue;
       const want = exactFaultText(helmer, win, injuryOnly);
-      const got = card.lines[key].kText.replace(/ incidents? → $/, "");
+      const got = card.lines[key].kText.split(" ")[0];
       if (got !== want) problems.faultCount.push(`${wname} ${helmer} ${key}: shows ${JSON.stringify(got)}, exact sum rounds to ${JSON.stringify(want)}`);
     }
   }
@@ -190,13 +190,15 @@ if (!graying) problems.unchecked.push("style.css: no .mpi-card.unchecked rule wi
 // in b068a10) and were pinned to the character here until 2026-10-28, when
 // the human dropped such pins (one went red on each of the human's edits and
 // caught no agent's; the human reviews every diff). The stress lines above
-// must start with CARD_STRESS_LABEL, whatever it reads, and never "Overall:"
-// (audit 2026-10-02: the line is the All-incidents verdict, not an overall one).
+// must start with CARD_STRESS_LABEL, whatever it reads; its ban on the word
+// "Overall:" (audit 2026-10-02: the line is the All-incidents verdict, not an
+// overall one) was dropped on 2026-10-29, the line's All-incidents range
+// still checked.
 
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
   `Replicata: render the summary cards for the default window, full history, the last 3 months, the last month, 2025-06..2025-11, 2024-01..2025-12 and 2021-07..2025-05 (and the default window with the default, no and all helmers checked), and read each card's stress line, each metric line's incident count and multiplier, and each card's class.
-Expectata: (label) the stress line is headed CARD_STRESS_LABEL (never "Overall:"), and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads two significant figures below 10 and a whole number from 10; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
+Expectata: (label) the stress line is headed CARD_STRESS_LABEL, and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads two significant figures below 10 and a whole number from 10; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: summary cards over ${Object.keys(WINDOWS).length} windows name the All-incidents verdict, mark k = 0 multipliers prior-only, format multipliers to two significant figures below 10 and colour them by the value shown, show exact fault-mass counts, and gray unchecked helmers`);

@@ -101,6 +101,9 @@ const stress = vm.runInContext(`
   const rows = monthlySummaryRows(monthSeriesData());
   buildMonthlyViews();
   buildSanityChecks();
+  // The window the sanity section's tables show (the default one, as the page
+  // loads): its rows with miles, as renderStressTestTable takes them.
+  const shown = windowSummaryRows(activeSeries).filter(r => r.vmtBest > 0);
   return {
     byHelmer: Object.fromEntries(rows.filter(row => row.vmtBest > 0).map(row => [
       row.helmer,
@@ -111,6 +114,12 @@ const stress = vm.runInContext(`
     // null until crashla.js defines it, so the red run reports the check
     cardStressLabel: typeof CARD_STRESS_LABEL === "undefined" ? null : CARD_STRESS_LABEL,
     sanityHtml: document.getElementById("sanity-checks").innerHTML,
+    verdictClass: Object.fromEntries(Object.entries(STRESS_VERDICT_META).map(([k, m]) => [k, m.className])),
+    // The stress table's rows, a helmer's metrics with an estimate each, and
+    // the fault-flip table's, a helmer with an at-fault estimate each.
+    stressRows: shown.map(r => METRIC_KEYS.filter(key => r.mpiEstimates[key] !== null)
+      .map(key => { const s = helmerHumanStress(r, key); return [fmtRatio(s.ratioLo), fmtRatio(s.ratioHi), s.verdictKey]; })).flat(),
+    flipRows: shown.filter(r => r.mpiEstimates.atfault !== null).length,
   };
 })()
 `, ctx);
@@ -247,27 +256,38 @@ Expectata: even Waymo's pessimistic edge remains above 1x human safety.
 Resultata: ratio range was ${plain.byHelmer.Waymo.atfault.ratioLo}x to ${plain.byHelmer.Waymo.atfault.ratioHi}x.`,
 );
 
-// The cards' stress line is the All-incidents verdict, labelled as such
-// (CARD_STRESS_LABEL; it read "Overall:" until 2026-10-03, audit #6;
-// summary-cards.qual checks the line itself).
+// The cards' stress line is the All-incidents verdict, headed
+// CARD_STRESS_LABEL (it read "Overall:" until 2026-10-03, audit #6;
+// summary-cards.qual checks the line itself). Until 2026-10-29 this also
+// banned the word "Overall:" and found an ambiguous verdict by its word; the
+// verdict is now found by its badge's class (STRESS_VERDICT_META).
+const badge = key => `class="stress-badge ${plain.verdictClass[key]}`;
 assert.ok(
-  plain.cardStressLabel !== null && plain.cardStressLabel !== "Overall:" &&
+  plain.cardStressLabel !== null &&
     plain.summaryCardHtml.includes(`<div class="mpi-card-stress">${plain.cardStressLabel} `) &&
-    !plain.summaryCardHtml.includes("Overall:") &&
-    plain.summaryCardHtml.includes("ambiguous"),
+    plain.summaryCardHtml.includes(badge("ambiguous")),
   `Replicata: render top summary cards with stress labels.
-Expectata: each stress line is headed CARD_STRESS_LABEL (the All-incidents verdict, not "Overall:"), and ambiguous verdicts appear.
+Expectata: each stress line is headed CARD_STRESS_LABEL (the All-incidents verdict), and ambiguous verdict badges appear.
 Resultata: label ${JSON.stringify(plain.cardStressLabel)}; summary card HTML snippet was ${JSON.stringify(plain.summaryCardHtml.slice(0, 400))}.`,
 );
 
-assert.ok(
-  plain.sanityHtml.includes("Sensitivity analysis") &&
-    plain.sanityHtml.includes("AV/human ratio") &&
-    plain.sanityHtml.includes("robustly safer"),
-  `Replicata: render skeptical stress-test sanity subsection.
-Expectata: sanity HTML includes the English heading, ratio column, and safer verdict label.
-Resultata: sanity HTML snippet was ${JSON.stringify(plain.sanityHtml.slice(0, 500))}.`,
-);
+// The sanity section's stress table (id sanity-stress): a row per helmer
+// metric with an estimate, each giving the AV/human ratio range and the
+// verdict computed for it, robustly safer among them. Until 2026-10-29 this
+// checked the heading's, the ratio column's and the safer verdict's words.
+{
+  const table = (/<table[^>]*\bid="sanity-stress"[^>]*>([\s\S]*?)<\/table>/.exec(plain.sanityHtml) || [])[1] || "";
+  const rows = [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(table) || [])[1] || "").matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
+    .map(m => [...m[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(c => c[1]));
+  const want = plain.stressRows.map(([lo, hi, key]) => [`${lo}x – ${hi}x`, plain.verdictClass[key]]);
+  const got = rows.map(cells => [cells[5], (/class="stress-badge ([^ "]+)/.exec(cells[6] || "") || [])[1]]);
+  assert.ok(
+    want.length > 0 && JSON.stringify(got) === JSON.stringify(want) && want.some(([, cls]) => cls === plain.verdictClass.safer),
+    `Replicata: render the skeptical stress-test sanity subsection (default window) and read the stress table's ratio and verdict cells.
+Expectata: a row per helmer metric with an estimate, its ratio cell the AV/human ratio range and its badge the verdict helmerHumanStress computes, a robustly safer one among them: ${JSON.stringify(want.slice(0, 4))}... (${want.length} rows).
+Resultata: ${JSON.stringify(got.slice(0, 4))}... (${got.length} rows).`,
+  );
+}
 
 // Faultfrac sensitivity: smallest multiplier on the judged at-fault mass that
 // changes the verdict. (Serialized as strings because Infinity doesn't
@@ -283,7 +303,9 @@ const flips = JSON.parse(JSON.stringify(vm.runInContext(`
   }
   return {out,
     distHtml: document.getElementById("chart-distributions").innerHTML,
-    distHeading: document.getElementById("dist-heading").textContent};
+    distHeading: document.getElementById("dist-heading").textContent,
+    metricLabel: selectedMonthMetric().label,
+    window: [activeSeries.months[0], activeSeries.months[activeSeries.months.length - 1]]};
 })()
 `, ctx)));
 
@@ -341,29 +363,43 @@ Resultata: entry was ${JSON.stringify(flips.out[helmer])}.`,
   );
 }
 
-assert.ok(
-  plain.sanityHtml.includes("Flip multiplier") &&
-    plain.sanityHtml.includes("Judged fault") &&
-    plain.sanityHtml.includes("Verdict after flip"),
-  `Replicata: render the sanity-checks sensitivity subsection.
-Expectata: the faultfrac sensitivity table (human-finalized English headers) renders under the Sensitivity analysis h3.
-Resultata: sanity HTML lacks the fault sensitivity table.`,
-);
+// The faultfrac sensitivity table (id sanity-fault-flip) renders in the same
+// section as the stress table, a row of five cells per helmer with an
+// at-fault estimate. Until 2026-10-29 this checked its headers' words.
+{
+  const at = plain.sanityHtml.indexOf('id="sanity-fault-flip"');
+  const sameSection = at >= 0 && plain.sanityHtml.lastIndexOf("<h3", at) === plain.sanityHtml.lastIndexOf("<h3", plain.sanityHtml.indexOf('id="sanity-stress"'));
+  const table = at < 0 ? "" : plain.sanityHtml.slice(at, plain.sanityHtml.indexOf("</table>", at));
+  const cells = [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(table) || [])[1] || "").matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
+    .map(m => [...m[1].matchAll(/<td[\s>]/g)].length);
+  assert.ok(
+    sameSection && cells.length === plain.flipRows && cells.every(n => n === 5),
+    `Replicata: render the sanity-checks sensitivity subsection (default window).
+Expectata: the faultfrac sensitivity table renders in the stress table's section, a row of five cells for each of the ${plain.flipRows} helmers with an at-fault estimate.
+Resultata: ${at < 0 ? "no table with id sanity-fault-flip" : `same section ${sameSection}; rows of ${JSON.stringify(cells)} cells`}.`,
+  );
+}
 
 // The distributions container holds exactly one chart for the slider-selected
-// window: no second trailing-window chart, no constant-rate note, no title
-// suffix, and no in-body heading (the title is in the #dist-heading section
-// header). Recency is controlled by the date-range slider.
-assert.ok(
-  !flips.distHtml.includes("<h3>") &&
-    !flips.distHtml.includes("dist-note") &&
-    !flips.distHtml.includes("Aggregated") &&
-    !flips.distHtml.includes("Trailing") &&
-    flips.distHeading.includes("using data from"),
-  `Replicata: build monthly views and inspect the chart-distributions container and #dist-heading.
-Expectata: one chart body with no in-body <h3>/note/suffix; the title lives in the section header.
+// window: no second trailing-window chart, no constant-rate note, and no
+// in-body heading (the title is in the #dist-heading section header, which
+// names the selected metric, by its label, and the window's first and last
+// months). Recency is controlled by the date-range slider. Until 2026-10-29
+// this also banned the old title suffixes' words ("Aggregated", "Trailing")
+// and found the window in the heading by its words ("using data from").
+{
+  const months = flips.distHeading.match(/\d{4}-\d{2}/g) || [];
+  assert.ok(
+    (flips.distHtml.match(/<svg[\s>]/g) || []).length === 1 &&
+      !/<h3[\s>]/.test(flips.distHtml) &&
+      !flips.distHtml.includes("dist-note") &&
+      flips.distHeading.includes(flips.metricLabel) &&
+      JSON.stringify(months) === JSON.stringify(flips.window),
+    `Replicata: build monthly views and inspect the chart-distributions container and #dist-heading.
+Expectata: one chart body (one <svg>) with no in-body <h3>/note; the section header names the metric (${JSON.stringify(flips.metricLabel)}) and the window's months ${JSON.stringify(flips.window)}.
 Resultata: heading ${JSON.stringify(flips.distHeading)}; body head ${JSON.stringify(flips.distHtml.slice(0, 120))}.`,
-);
+  );
+}
 
 // --- Fault-flip search next to a band edge (audit #5, 2026-10-03) ---------
 // Until 2026-10-03 the flip search ran a light CDF (mixture trimmed at 1e-4,

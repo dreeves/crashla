@@ -175,6 +175,7 @@ const render = (cumulative, [first, final]) => JSON.parse(vm.runInContext(`(() =
 
 const fmt = n => Math.round(n).toLocaleString("en-US");
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const unesc = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const ghostDots = markup => [...markup.matchAll(/<circle class="month-dot month-ghost" cx="([^"]*)" cy="([^"]*)"/g)].map(m => [+m[1], +m[2]]);
 const ghostErrs = markup => (markup.match(/<line class="month-err month-ghost"/g) || []).length;
 const solidPaths = markup => [...markup.matchAll(/<path class="month-vmt-line" d="([^"]*)"/g)].map(m => m[1]);
@@ -186,6 +187,19 @@ const yTop = markup => Math.max(...[...markup.matchAll(/<text class="month-tick"
   .map(m => { const s = m[1]; const k = s.endsWith("M") ? 1e6 : s.endsWith("K") ? 1e3 : 1; return parseFloat(s.replace(/,/g, "")) * k; }));
 const DEFAULT_WINDOW = [app.defaultStart, frontier];
 const BEFORE = [app.defaultStart, app.months[app.months.length - 2]];
+// A tooltip line's figures (numbers, with their thousands separators). The
+// tooltips' words around the figures are the human's to change, so a ghost
+// month's targets are checked by their lines' figures and the app's labels:
+// a range end's tooltip is its month, its miles and its end's label
+// (VMT_RANGE_EDGE); the dot's, its month, its miles, its range (low then high)
+// and the ghost note (VMT_GHOST_NOTE). Until 2026-10-29 they were pinned
+// whole, with the words "miles" and "Range:".
+const figures = line => line.match(/\d[\d,]*(?:\.\d+)?/g) || [];
+const tipIs = (tip, month, figs, last) => {
+  const l = tip.split("\n");
+  return l.length === figs.length + 2 && l[0] === month && l[l.length - 1] === last &&
+    figs.every((f, i) => JSON.stringify(figures(l[i + 1])) === JSON.stringify(f));
+};
 
 for (const cumulative of [false, true]) {
   const view = cumulative ? "Cumulative" : "Monthly";
@@ -194,18 +208,18 @@ for (const cumulative of [false, true]) {
     const rows = app.ghost.filter(g => g.helmer === h).sort((a, b) => (a.month < b.month ? -1 : 1));
     for (const [where, markup] of [[`${h}'s own chart`, at.own[h]], ["the combined chart", at.combined]]) {
       const name = tip => where === "the combined chart" ? `${esc(app.labels[h])} · ${tip}` : tip;
-      const tipSet = new Set([...markup.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)].map(m => `${m[1]}\u0000${m[2]}`));
+      // Each target: its tip (unescaped) and whether its accessible name is
+      // the one this chart gives it.
+      const targets = [...markup.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
+        .map(m => ({ tip: unesc(m[1]), named: m[2] === name(m[1]) }));
       for (const g of rows) {
         const [best, lo, hi] = cumulative ? [g.cume, g.kmin, g.kmax] : [g.best, g.lo, g.hi];
-        // TODO: "miles" and "Range:" below are the tooltips' words around the
-        // figures tested; check only the figures and the note (no wording pins,
-        // 2026-10-28).
         const want = [
-          `${g.month}\n${fmt(lo)} miles\n${app.edge.lo}`,
-          `${g.month}\n${fmt(hi)} miles\n${app.edge.hi}`,
-          `${g.month}\n${fmt(best)} miles\nRange: ${fmt(lo)} – ${fmt(hi)}\n${app.note}`,
-        ].map(esc);
-        for (const t of want) if (!tipSet.has(`${t}\u0000${name(t)}`)) problems.push(`${view}, ${where}: no target with tip ${JSON.stringify(t.slice(0, 70))}`);
+          [`its low end (${fmt(lo)}, ${app.edge.lo})`, t => tipIs(t, g.month, [[fmt(lo)]], app.edge.lo)],
+          [`its high end (${fmt(hi)}, ${app.edge.hi})`, t => tipIs(t, g.month, [[fmt(hi)]], app.edge.hi)],
+          [`its dot (${fmt(best)}, range ${fmt(lo)} – ${fmt(hi)}, the ghost note)`, t => tipIs(t, g.month, [[fmt(best)], [fmt(lo), fmt(hi)]], app.note)],
+        ];
+        for (const [what, is] of want) if (!targets.some(t => t.named && is(t.tip))) problems.push(`${view}, ${where}: no target for ${h} ${g.month}'s ${what}`);
         if (yTop(markup) < hi) problems.push(`${view}, ${where}: y axis tops out at ${yTop(markup)}, under ${h} ${g.month}'s high end ${hi}`);
       }
     }
@@ -241,14 +255,23 @@ for (const cumulative of [false, true]) {
 // The window's rows' rationales, per line, in month order; when the window
 // ends at the newest NHTSA month, the line's ghost rows follow, each as
 // "<month> (<note>): <rationale>" with the note in a vmt-ghost-note span.
-const sources = window => JSON.parse(vm.runInContext(`(() => {
+// The table is found by its id, sanity-vmt-sources (by its heading's words
+// until 2026-10-29).
+const sources = window => {
+  const html = JSON.parse(vm.runInContext(`(() => {
   monthRangeStart = fullMonthSeries.months.indexOf(${JSON.stringify(window[0])});
   monthRangeEnd = fullMonthSeries.months.indexOf(${JSON.stringify(window[1])});
   renderWindowedViews();
   buildSanityChecks();
-  const html = document.getElementById("sanity-checks").innerHTML;
-  return JSON.stringify(html.split("<h3>VMT sources</h3>")[1].split("<h3>")[0]);
+  return JSON.stringify(document.getElementById("sanity-checks").innerHTML);
 })()`, ctx));
+  const table = /<table[^>]*\bid="sanity-vmt-sources"[^>]*>([\s\S]*?)<\/table>/.exec(html);
+  assert.ok(table !== null,
+    `Replicata: build the sanity section for ${window.join("..")} and find the VMT sources table (id sanity-vmt-sources).
+Expectata: present.
+Resultata: none.`);
+  return table[1];
+};
 // Table text is escaped as textContent is (crashla.js escHtml): &, < and >,
 // not quotes.
 const escText = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
