@@ -40,13 +40,17 @@ KNOTS = [
     ("2026-06", 277829761, 275179379, 281379379),
 ]
 ALLOC = 0.20  # Three-month residual log half-width; proxy calibration, not US truth.
-# TODO: Explain the refined June cumulative boundary while retaining its
-# existing monthly central and the same 150,000-mile pre-series convention.
-BOUNDARY_NOTE = ("Summa centralis Iunii 2024 servata; limites cumulati ex "
-                 "22.199M milibus passuum publicatis, rotundatione et milibus "
-                 "Mountain View omissis, summa centrali priore inclusa. "
-                 "Limites mensis cum summis cumulatis conciliati "
-                 "(data/README.md, Waymo monthly allocation).")
+# June 2024's rationale in data/vmt.csv (that row predates the allocation, so
+# model() does not produce it): the refined cumulative boundary, with the
+# month's central and the 150,000-mile pre-series convention kept. English
+# since 2026-10-30 (the human's rule: AI-labeled text may be English; it was
+# Latin with a to-do recap until then).
+BOUNDARY_NOTE = ("US est.: June 2024's monthly central is kept. Its cumulative band "
+                 "now comes from the 22.199M miles Waymo published, less the same "
+                 "~150,000 pre-series miles and widened for that figure's rounding "
+                 "and Mountain View's omitted miles, and it still holds the earlier "
+                 "central; the month's band is reconciled with it (data/README.md, "
+                 "Waymo monthly allocation).")
 
 
 def month_info(month):
@@ -96,15 +100,17 @@ def model():
             lo = math.floor(ca[m] + b["low"] * w * math.exp(-width))
             hi = math.ceil(ca[m] + b["high"] * w * math.exp(width))
             assert 0 < lo <= value <= hi, (m, lo, value, hi)
-            # TODO: Explain the measured California part, the allocation of the
-            # remaining miles between cumulative anchors, and the modeled band.
-            rationale = (f"Aestimatio US: California (CPUC) {ca[m]:,.2f} milia passuum mensa; "
-                         f"reliqua {value-ca[m]:,.2f} inter {b['before'][0]} et {b['after'][0]} "
-                         "ex summis cumulatis distributa, celeritatibus diurnis lineariter "
-                         "interpolatis et summa intervalli servata. Incertitudo allocationis "
-                         "solis reliquis milibus applicatur; limites mensium et summarum "
-                         "inter se cohaerent. Limites sunt aestimationes exemplaris, non "
-                         "mensurae probabilitatis US comprobatae (data/README.md, Waymo monthly allocation).")
+            # The measured California part, the allocation of the remaining
+            # miles between cumulative anchors, and the modeled band (English
+            # since 2026-10-30; Latin with a to-do recap until then).
+            rationale = (f"US est.: California (CPUC) {ca[m]:,.2f} miles measured; the other "
+                         f"{value-ca[m]:,.2f} (other states, and California miles outside "
+                         f"CPUC's scope) allocated between the cumulative anchors of "
+                         f"{b['before'][0]} and {b['after'][0]}, with daily rates interpolated "
+                         "linearly and each interval's total kept. Only those other miles carry "
+                         "allocation uncertainty, and the monthly and cumulative bands agree "
+                         "with each other. The bands are model estimates, not validated US "
+                         "probability intervals (data/README.md, Waymo monthly allocation).")
             rows.append(dict(month=m, vmt=value, vmt_min=lo, vmt_max=hi,
                              measured_ca=ca[m], residual=value-ca[m],
                              anchor_start=b["before"][0], anchor_end=b["after"][0],
