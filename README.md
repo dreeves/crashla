@@ -1,8 +1,15 @@
+Next Tasks:
+
+* [LAT] Translate Latin to English IFF it's green text labeled as AI-generated
+* [SLI] Slider to parametrize the forecast date in the forecast section at the bottom
+
 Other name ideas:
 
 * Teslapologetics
 * Via et Veritas
 * Bayes Against the Machine
+
+## Emails To Waymo
 
 VMT discrepancy in Waymo data (2026-09-25):
 
@@ -47,6 +54,7 @@ Daniel Reeves
 PS: Claude typed the following, so I'm less sure it's useful but just in case:
 
 [begin Claude]
+
 1. The hub's CSV3 download link still serves the Sep 24 file, not v2 (the CSV4 link was updated).
 
 2. The Oct 2 notes say only Atlanta's rates were affected, but v2's dynamic rates changed in every area (any-injury: Los Angeles -2.6%, Santa Clara -6.0%, SF Bay Area +1.0%). Expected?
@@ -56,6 +64,7 @@ PS: Claude typed the following, so I'm less sure it's useful but just in case:
 4. Possible typo in Scanlon et al. 2024: it counts SWITRS airbag code "L" or "M" as a deployment, but M means "Air Bag Not Deployed". Your California rates look like only L was used. Relatedly, it doesn't seem to be defined anywhere which Texas airbag codes count as a deployment.
 
 5. Atlanta's police-reported crash rate is 15.2 per million miles, against 3.4-5.4 in the other areas, mostly crashes between vehicles. Does it include private-property crashes (parking lots, driveways)? Georgia's own crash statistics leave those out.
+
 [end Claude]
 
 ## How safe are robotaxis?
