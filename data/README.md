@@ -274,8 +274,9 @@ A ghost row's band is a 95% interval as the page reads it: `crashla.js`
 `splitPriorSigmas` takes `vmt` as the mode of a two-piece log-normal with
 each edge 1.96 of its own side's sigma away. The October 2026 rows used the
 rules below, calibrated on 2026-10-27 by backtests on Tesla's and Waymo's
-measured series (Zoox's constants are priors; their rationales show the
-arithmetic). The choices they left open were settled the same day (AGENTS.md
+measured series (Zoox's constants are priors; its October rationale shows the
+arithmetic, and `quals/zoox-vmt-model.qual.mjs` recomputes every 2026 row).
+The choices they left open were settled the same day (AGENTS.md
 ledger, 2026-10-27 (later)):
 
 - Tesla's no-monitor line, from Tesla's weekly page: the measured part is

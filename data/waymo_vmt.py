@@ -40,6 +40,18 @@ KNOTS = [
     ("2026-06", 277829761, 275179379, 281379379),
 ]
 ALLOC = 0.20  # Three-month residual log half-width; proxy calibration, not US truth.
+# Every allocated month's rationale: one text, so the page's VMT sources table
+# shows the 21 months as one entry (until 2026-10-30 each month restated it
+# around its own California and remaining miles; those figures are in
+# data/waymo-ca.csv and model()'s output).
+ALLOCATION_NOTE = ("US est.: each month's California part is CPUC's measured driverless "
+                   "miles (data/waymo-ca.csv); the rest (other states, and California "
+                   "miles outside CPUC's scope) is allocated between Waymo's published "
+                   "cumulative totals, with daily rates interpolated linearly and each "
+                   "interval's total kept. Only the rest carries allocation uncertainty, "
+                   "and the monthly and cumulative bands agree with each other. The bands "
+                   "are model estimates, not validated US probability intervals "
+                   "(data/README.md, Waymo monthly allocation).")
 # June 2024's rationale in data/vmt.csv (that row predates the allocation, so
 # model() does not produce it): the refined cumulative boundary, with the
 # month's central and the 150,000-mile pre-series convention kept. English
@@ -100,17 +112,7 @@ def model():
             lo = math.floor(ca[m] + b["low"] * w * math.exp(-width))
             hi = math.ceil(ca[m] + b["high"] * w * math.exp(width))
             assert 0 < lo <= value <= hi, (m, lo, value, hi)
-            # The measured California part, the allocation of the remaining
-            # miles between cumulative anchors, and the modeled band (English
-            # since 2026-10-30; Latin with a to-do recap until then).
-            rationale = (f"US est.: California (CPUC) {ca[m]:,.2f} miles measured; the other "
-                         f"{value-ca[m]:,.2f} (other states, and California miles outside "
-                         f"CPUC's scope) allocated between the cumulative anchors of "
-                         f"{b['before'][0]} and {b['after'][0]}, with daily rates interpolated "
-                         "linearly and each interval's total kept. Only those other miles carry "
-                         "allocation uncertainty, and the monthly and cumulative bands agree "
-                         "with each other. The bands are model estimates, not validated US "
-                         "probability intervals (data/README.md, Waymo monthly allocation).")
+            rationale = ALLOCATION_NOTE
             rows.append(dict(month=m, vmt=value, vmt_min=lo, vmt_max=hi,
                              measured_ca=ca[m], residual=value-ca[m],
                              anchor_start=b["before"][0], anchor_end=b["after"][0],
