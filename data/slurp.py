@@ -334,8 +334,12 @@ SPLIT_SAME_INCIDENT_REPORTS = {"30270-10320"}
 # crashes or vehicles), and so does an out-of-scope filing of a helmer under
 # an in-scope crash's Same Incident ID, which may be a re-filing that moved
 # the crash out of scope (public_service_incidents()). A replaced report is
-# dropped whatever its scope, and main() stops on an entry whose two reports
-# are not both filed under one Same Incident ID. Until 2026-10-31 the dedup
+# dropped, whatever its scope, from rows that hold its re-filing; an earlier
+# release's rows, from before the re-filing, keep it (the receipt and
+# arrival recounts read those with this table: dropping it everywhere, as
+# the first version of the table did, took the crash out of the first
+# release of its month). main() stops on an entry whose two reports are not
+# both filed under one Same Incident ID. Until 2026-10-31 the dedup
 # picked the higher Report Version, then the later submission month, but the
 # versions of different Report IDs share no scale (Waymo's re-filings under a
 # new ID came as v1 and as v2), so a newer re-filing under a new ID lost to
@@ -1274,21 +1278,23 @@ def public_service_incidents(rows):
     present" -- so v1's "None" must not survive; it did until 2026-09-04).
     Then the surviving versions are filtered to each entity's public-service
     operator types (is_public_service_incident), less the reports a re-filing
-    replaced (SUPERSEDED_REPORTS), and keyed by Same Incident ID, or by Report
-    ID for SPLIT_SAME_INCIDENT_REPORTS. Two in-scope reports under one key stop
-    the run, and so does an out-of-scope filing of a helmer under an in-scope
-    report's Same Incident ID (a re-filing that may have moved the crash out
-    of scope), until a human records which report stands (2026-10-31; until
-    then the higher Report Version won, compared across Report IDs, whose
-    versions share no scale). Other entities' filings are never in scope, so
-    a duplicate one files (Transdev, Waymo's fleet operator, shares 139 Same
-    Incident IDs with Waymo) can neither displace nor retire a helmer's
-    report."""
-    latest = latest_filings(rows).values()
+    in <rows> replaced (SUPERSEDED_REPORTS: an earlier release's rows, from
+    before the re-filing, keep the original), and keyed by Same Incident ID,
+    or by Report ID for SPLIT_SAME_INCIDENT_REPORTS. Two in-scope reports
+    under one key stop the run, and so does an out-of-scope filing of a
+    helmer under an in-scope report's Same Incident ID (a re-filing that may
+    have moved the crash out of scope), until a human records which report
+    stands (2026-10-31; until then the higher Report Version won, compared
+    across Report IDs, whose versions share no scale). Other entities'
+    filings are never in scope, so a duplicate one files (Transdev, Waymo's
+    fleet operator, shares 139 Same Incident IDs with Waymo) can neither
+    displace nor retire a helmer's report."""
+    latest = latest_filings(rows)
+    replaced = {old for old, new in SUPERSEDED_REPORTS.items() if new in latest}
     by_incident = {}
-    for r in latest:
+    for r in latest.values():
         rid = r["Report ID"]
-        if not is_public_service_incident(r) or rid in SUPERSEDED_REPORTS:
+        if not is_public_service_incident(r) or rid in replaced:
             continue
         iid = rid if rid in SPLIT_SAME_INCIDENT_REPORTS else r["Same Incident ID"]
         incumbent = by_incident.setdefault(iid, r)
@@ -1301,7 +1307,9 @@ def public_service_incidents(rows):
              "step 6)",
              reports=sorted([rid, incumbent["Report ID"]]), sameIncidentId=iid)
     in_scope_ids = {r["Same Incident ID"] for r in by_incident.values()}
-    retiring = [r for r in latest
+    # A report listed as replaced has been read, whether or not these rows
+    # hold its re-filing yet
+    retiring = [r for r in latest.values()
                 if r["Reporting Entity"].strip() in HELMER_SHORT
                 and not is_public_service_incident(r)
                 and r["Report ID"] not in SPLIT_SAME_INCIDENT_REPORTS
@@ -2132,7 +2140,9 @@ def check_occupancy_classified(row):
 def check_superseded_reviewed(rows):
     """Stop the run unless each SUPERSEDED_REPORTS entry names two reports
     filed in <rows> whose latest filings share a Same Incident ID (an entry
-    whose re-filing is missing would drop a crash without a word)."""
+    applies only to rows that hold its re-filing, so one whose re-filing is
+    missing would stop applying without a word, and the replaced report
+    would count again)."""
     latest = latest_filings(rows)
     bad = sorted((old, new) for old, new in SUPERSEDED_REPORTS.items()
                  if old not in latest or new not in latest

@@ -95,10 +95,12 @@ for r in filed:
     if rid not in by_rid or ver > by_rid[rid][0]: by_rid[rid] = (ver, r)
 by_inc = {}
 # One in-scope report per Same Incident ID: a re-filing's replaced report
-# (SUPERSEDED_REPORTS) drops out, and two left under one ID would stop
-# main() (since 2026-10-31; until then the higher Report Version won)
+# (SUPERSEDED_REPORTS) drops out of rows that hold the re-filing, and two
+# left under one ID would stop main() (since 2026-10-31; until then the
+# higher Report Version won)
+replaced = {old for old, new in slurp.SUPERSEDED_REPORTS.items() if new in by_rid}
 for _ver, r in by_rid.values():
-    if not slurp.is_public_service_incident(r) or r['Report ID'] in slurp.SUPERSEDED_REPORTS: continue
+    if not slurp.is_public_service_incident(r) or r['Report ID'] in replaced: continue
     rid = r['Report ID']
     iid = rid if rid in slurp.SPLIT_SAME_INCIDENT_REPORTS else r['Same Incident ID']
     assert iid not in by_inc, ('two in-scope reports under one Same Incident ID', iid, rid, by_inc[iid]['Report ID'])
@@ -115,7 +117,13 @@ for r in by_inc.values():
     tracks[(h, M, track)] += 1
     if track == 'monthly' and M in table_months:
         due = mnum(M) + 1
-        seen = [D for D in sorted(releases) if mnum(D) >= due and r['Report ID'] in releases[D]]
+        # A crash arrives with its first report: a report that a re-filing
+        # under a new Report ID replaced (SUPERSEDED_REPORTS) reached the
+        # file before the re-filing did (2026-10-31, review of package SLURP:
+        # looking up the surviving Report ID alone measured such a crash as
+        # arriving at its re-filing's release)
+        reports = {r['Report ID']} | {old for old, new in slurp.SUPERSEDED_REPORTS.items() if new == r['Report ID']}
+        seen = [D for D in sorted(releases) if mnum(D) >= due and reports & releases[D]]
         arrivals[(h, M)][mnum(seen[0]) - due] += 1
 out['arrivalDiffs'] = [
     [h, m, list(c), trimmed(arrivals[(h, m)][j] for j in range(max([0, *arrivals[(h, m)]]) + 1))]
@@ -318,7 +326,7 @@ assert.deepEqual(r.lag, { Waymo: 0, Tesla: 0, Zoox: 0 },
 Expectata: {Waymo: 0, Tesla: 0, Zoox: 0} -- on the Oct-15-2026 release every helmer's in-scope August 2026 Monthly-track reports reached the public file at the normal release (Zoox's had arrived one release late from January through July).
 Resultata: ${JSON.stringify(r.lag)}.`);
 assert.deepEqual(r.arrivalDiffs, [],
-  `Replicata: recompute each helmer-month's Monthly-track arrivals from data/snapshots (in-scope incidents of the newest file, deduplicated as main() does; arrival = the first release whose data-through month is at least M+1 holding the surviving Report ID).
+  `Replicata: recompute each helmer-month's Monthly-track arrivals from data/snapshots (in-scope incidents of the newest file, deduplicated as main() does; arrival = the first release whose data-through month is at least M+1 holding the surviving Report ID or a report it replaced, SUPERSEDED_REPORTS).
 Expectata: MONTHLY_ARRIVAL_OBSERVATIONS matches the recompute in every row.
 Resultata: [helmer, month, table, recomputed] ${JSON.stringify(r.arrivalDiffs)}.`);
 assert.deepEqual(r.shareDiffs, [],

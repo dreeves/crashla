@@ -22,7 +22,18 @@
 //     Incident IDs) can neither displace nor retire a helmer's report, whatever
 //     its version or date (the completeness critic's check, pinned here);
 //   - each SUPERSEDED_REPORTS entry names two filed reports that share a Same
-//     Incident ID.
+//     Incident ID; the table holds the reviewed 30270-1535 -> 30270-1583 and
+//     whatever entries later releases add, each checked by the baseline run
+//     (check_superseded_reviewed). Its first version (2026-10-31) required
+//     the table to be exactly that one entry, which a correct release adding
+//     an entry would have turned red (review of package SLURP, the same day);
+//   - an entry takes its report out only of rows that hold its re-filing:
+//     the rows of an earlier release, from before the re-filing, still count
+//     the original (the receipt and arrival recounts read earlier releases'
+//     snapshots with today's table). Until a second review the same day an
+//     entry dropped its report from any rows, so the first release of a
+//     month whose crash was later re-filed lost that crash, and
+//     FIVE_DAY_RECEIPT_OBSERVATIONS' recount with it.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { SLURP_OFFLINE_PY } from "./slurp-offline.mjs";
@@ -65,6 +76,20 @@ out['refiledOutOfScope'] = brief(run_main([gone]), [C])
 # left scope asks)
 unrated_crash = '\n'.join(l for l in TEXT['faultfrac.csv'].split('\n') if not l.startswith(C + ','))
 out['refiledListed'] = brief(run_main([gone], fault_text=unrated_crash, SUPERSEDED_REPORTS={**out['superseded'], C: '30270-99996'}), [C])
+# where that entry applies, with public_service_incidents() called directly
+# (main() stops on an entry whose re-filing is not filed): on the newest
+# snapshots' rows without 30270-99996, as an earlier release's rows are from
+# before the re-filing, the crash is still counted; on the rows with it, not
+def counts_crash(rows, superseded):
+    saved = slurp.SUPERSEDED_REPORTS
+    slurp.SUPERSEDED_REPORTS = superseded
+    try:
+        return C in {r['Report ID'] for r in slurp.public_service_incidents(rows).values()}
+    finally:
+        slurp.SUPERSEDED_REPORTS = saved
+entry = {**out['superseded'], C: '30270-99996'}
+out['entryBeforeRefiling'] = counts_crash(_filed, entry)
+out['entryWithRefiling'] = counts_crash(_filed + [gone], entry)
 # a Transdev duplicate of an in-scope Waymo report: newer, a higher version,
 # driverless or not
 dup = dict(crash, **{'Reporting Entity': 'Transdev Alternative Services', 'Report ID': '30531-99995',
@@ -81,9 +106,9 @@ Expectata: the runs complete or stop with an AssertionError.
 Resultata: exit ${run.status}; ${run.stderr.slice(-1500)}`);
 const S = JSON.parse(run.stdout.trim().split("\n").at(-1));
 
-assert.deepEqual(S.superseded, { "30270-1535": "30270-1583" },
+assert.equal(S.superseded["30270-1535"], "30270-1583",
   `Replicata: read SUPERSEDED_REPORTS from data/slurp.py.
-Expectata: {"30270-1535": "30270-1583"}: the one in-scope pair of Report IDs under one Same Incident ID (6f2cffa37c36b66, Chandler, OCT-2021), 30270-1583 the re-filing ("Other than the addition of the zip code in which the incident occurred, the content of this report is unchanged from the initial report ... [Report ID # 30270-1535-1]").
+Expectata: it holds "30270-1535": "30270-1583", the in-scope pair of Report IDs under one Same Incident ID (6f2cffa37c36b66, Chandler, OCT-2021) on the Oct-15-2026 release, 30270-1583 the re-filing ("Other than the addition of the zip code in which the incident occurred, the content of this report is unchanged from the initial report ... [Report ID # 30270-1535-1]"). Entries a later release adds are allowed; the baseline run below checks every entry (check_superseded_reviewed).
 Resultata: ${JSON.stringify(S.superseded)}.`);
 assert.ok(S.baseline.stop === "" && "30270-1583" in S.baseline.stored && !("30270-1535" in S.baseline.stored),
   `Replicata: run slurp.main() offline on the newest snapshots.
@@ -106,9 +131,13 @@ assert.ok(S.refiledListed.stop === "" && !(S.crash in S.refiledListed.stored) &&
   `Replicata: the out-of-scope re-filing of ${S.crash} again, with SUPERSEDED_REPORTS saying 30270-99996 replaced it (and its data/faultfrac.csv row deleted).
 Expectata: the run completes and the crash is out of scope: ${S.crash} is not counted, one incident fewer (${S.baseline.count - 1}).
 Resultata: ${S.refiledListed.stop === "" ? `${S.refiledListed.count} incidents, stored ${JSON.stringify(S.refiledListed.stored)}` : JSON.stringify(S.refiledListed.stop.slice(0, 300))}.`);
+assert.ok(S.entryBeforeRefiling === true && S.entryWithRefiling === false,
+  `Replicata: call slurp.public_service_incidents() with SUPERSEDED_REPORTS saying 30270-99996 replaced ${S.crash}, once on the newest snapshots' rows without 30270-99996 (as an earlier release's snapshot, from before the re-filing, holds them) and once on the same rows with the re-filing.
+Expectata: an entry takes its report out only of rows that hold its re-filing: ${S.crash} is counted in the rows without 30270-99996 and not in the rows with it (quals/receipt-observations.qual.mjs, quals/receipt-coverage.qual.mjs and quals/monthly-arrival-lag.qual.mjs read earlier releases' snapshots with today's table).
+Resultata: counted without the re-filing: ${S.entryBeforeRefiling}; with it: ${S.entryWithRefiling}.`);
 assert.ok(S.transdev.stop === "" && S.crash in S.transdev.stored && S.transdev.count === S.baseline.count,
   `Replicata: add two Transdev filings under ${S.crash}'s Same Incident ID, version 3, submitted SEP-2026, one coded "None" and one "In-Vehicle (Commercial / Test)", and run slurp.main() offline.
 Expectata: it completes with ${S.crash} counted and ${S.baseline.count} incidents: another entity's filing never displaces or retires a helmer's report.
 Resultata: ${S.transdev.stop === "" ? `${S.transdev.count} incidents, stored ${JSON.stringify(S.transdev.stored)}` : JSON.stringify(S.transdev.stop.slice(0, 300))}.`);
 
-console.log("qual pass: two in-scope reports, or an out-of-scope re-filing, under one Same Incident ID stop slurp until SUPERSEDED_REPORTS or SPLIT_SAME_INCIDENT_REPORTS says which stands (30270-1583 for 30270-1535); other entities' duplicates never displace a helmer's report");
+console.log("qual pass: two in-scope reports, or an out-of-scope re-filing, under one Same Incident ID stop slurp until SUPERSEDED_REPORTS or SPLIT_SAME_INCIDENT_REPORTS says which stands (30270-1583 for 30270-1535), and an entry applies only to rows that hold its re-filing; other entities' duplicates never displace a helmer's report");

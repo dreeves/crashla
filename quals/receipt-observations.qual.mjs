@@ -35,10 +35,13 @@ def five_day_by_month(rows):
         if rid not in by_rid or ver > by_rid[rid][0]: by_rid[rid] = (ver, r)
     by_inc = {}
     # One in-scope report per Same Incident ID: a re-filing's replaced report
-    # (SUPERSEDED_REPORTS) drops out, and two left under one ID would stop
-    # main() (since 2026-10-31; until then the higher Report Version won)
+    # (SUPERSEDED_REPORTS) drops out of rows that hold the re-filing (a
+    # month's first release, from before it, keeps the original), and two
+    # left under one ID would stop main() (since 2026-10-31; until then the
+    # higher Report Version won)
+    replaced = {old for old, new in slurp.SUPERSEDED_REPORTS.items() if new in by_rid}
     for _ver, r in by_rid.values():
-        if not slurp.is_public_service_incident(r) or r['Report ID'] in slurp.SUPERSEDED_REPORTS: continue
+        if not slurp.is_public_service_incident(r) or r['Report ID'] in replaced: continue
         rid = r['Report ID']
         iid = rid if rid in slurp.SPLIT_SAME_INCIDENT_REPORTS else r['Same Incident ID']
         assert iid not in by_inc, ('two in-scope reports under one Same Incident ID', iid, rid, by_inc[iid]['Report ID'])
