@@ -75,12 +75,21 @@ const leaked = analysisCsv.slice(1).filter(r => r[1] > dataThrough).map(r => `${
 if (leaked.length) problems.push(`data/vmt.js's analysis segment holds ghost-month rows: ${leaked.join(", ")}`);
 
 // --- 2. slurp.py's guards, on synthetic masters -----------------------------
+// The real master's call passes the master's newest month as the month slurp
+// runs in: the run month only bounds the master from above (no row for a
+// month that has not begun), and the newest month is the earliest run month
+// the master can pass, so the check holds on whatever day the qual runs.
+// Until 2026-10-31 it passed the literal '2026-10', which a correct November
+// row (data/README.md, Each NHTSA release, step 4) would have failed (audit
+// 2026-10-30, QT-01); the run-month guard itself is tested on the synthetic
+// masters below.
 const py = String.raw`
-import importlib.util, json
+import csv, importlib.util, io, json
 spec = importlib.util.spec_from_file_location('slurp_ghost', 'data/slurp.py')
 slurp = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(slurp)
 master = open('data/vmt.csv').read()
+newest_month = max(r[1].strip() for r in list(csv.reader(io.StringIO(master)))[1:] if any(c.strip() for c in r))
 H = 'helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,rationale'
 def row(h, m, v): return f'{h},{m},{v},{v},{v},{v},{v},{v},r'
 def text(*rows): return '\n'.join([H, *rows]) + '\n'
@@ -91,7 +100,7 @@ def stop(raw, last, run):
         return str(e)
     return ''
 out = {
-    'real': slurp.ghost_vmt_csv(master, slurp.NHTSA_DATA_THROUGH_DATE[:7], '2026-10'),
+    'real': slurp.ghost_vmt_csv(master, slurp.NHTSA_DATA_THROUGH_DATE[:7], newest_month),
     'none': stop(text(row('waymo', '2031-01', 5), row('zoox', '2031-01', 5)), '2031-01', '2031-02'),
     'partial': stop(text(row('waymo', '2031-01', 5), row('zoox', '2031-01', 5), row('waymo', '2031-02', 5)), '2031-01', '2031-02'),
     'future': stop(text(row('waymo', '2031-01', 5), row('waymo', '2031-02', 5), row('waymo', '2031-03', 5)), '2031-01', '2031-02'),

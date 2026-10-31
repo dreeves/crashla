@@ -65,9 +65,13 @@ Resultata: not in PAX_NONE.`);
 // passenger was aboard ("Safety monitor was present and no passengers were
 // inside the vehicle"). slurp.py's reviewed PASSENGER_OVERRIDE stores
 // the narrative's answer. Cross-check every Tesla record against its own
-// narrative's wording ("a passenger vehicle" is a crash partner, not a rider):
-const SAYS_NONE = /\bno passengers?\b|\bdid not have any passengers?\b/i;
-const SAYS_RIDER = /\b(?:one|two|three|a) passengers?\b(?! (?:vehicle|car))|\bmonitor and (?:(?:a|one|two|three) )?passengers?\b/i;
+// narrative's wording ("a passenger vehicle" is a crash partner, not a rider).
+// Tesla's narratives since August 2026 also say "rider(s)" ("The ADS had no
+// riders in the vehicle", "one rider present"; its Oct-18-2026 spreadsheet,
+// six reports due in NHTSA's next release), the same statement in other
+// words, so both words count (audit 2026-10-30, R3):
+const SAYS_NONE = /\bno (?:passengers?|riders?)\b|\bdid not have any passengers?\b/i;
+const SAYS_RIDER = /\b(?:one|two|three|a) (?:passengers?|riders?)\b(?! (?:vehicle|car))|\bmonitor and (?:(?:a|one|two|three) )?passengers?\b/i;
 // JSON round-trip: arrays built in the vm realm fail deepStrictEqual.
 const tesla = JSON.parse(vm.runInContext(`JSON.stringify(INCIDENT_DATA.filter(r => r.helmer === "Tesla").map(r => ({id: r.reportId, belted: r.belted, narrative: r.narrative})))`, ctx));
 const mismatch = [];
@@ -80,11 +84,10 @@ assert.deepEqual(mismatch, [],
   `Replicata: classify each Tesla incident's \`belted\` value (PAX sets) and compare it with what its narrative says about passengers.
 Expectata: they agree: "no passengers" -> PAX_NONE, a stated passenger -> PAX_PRESENT (the safety monitor is not a passenger).
 Resultata: ${JSON.stringify(mismatch, null, 1)}.`);
+// Which Tesla reports carry a rider is checked against slurp.py's reviewed
+// map below, after the map is read (until 2026-10-31 this was a hand-kept list
+// of the 9 Report IDs, re-pinned at every release that brought a rider).
 const riders = tesla.filter(r => present.has(r.belted)).map(r => r.id).sort();
-assert.deepEqual(riders, ["13781-11687", "13781-13237", "13781-13644", "13781-13647", "13781-13648", "13781-14630", "13781-15342", "13781-16255", "13781-16676"],
-  `Replicata: list the Tesla incidents classified "with passenger".
-Expectata: the 9 whose narratives state a rider aboard (9 of 31, 29%; the other 22 say no passengers).
-Resultata: ${JSON.stringify(riders)}.`);
 
 // slurp.py's guards on the map: an entry reviewed against a filed value that
 // has since changed stops the run (a re-filing must be re-read); every
@@ -167,6 +170,7 @@ with tempfile.TemporaryDirectory() as d:
     try: slurp.main(); out['main'] = ''
     except AssertionError as e: out['main'] = str(e)
 out['template'] = template['Report ID']
+out['paxMap'] = {k: list(v) for k, v in slurp.PASSENGER_OVERRIDE.items()}
 # The tripwire reads each in-scope code through PAX_CLASS: a code crashla.js
 # does not classify must stop the run, not default to "with passenger"
 out['paxClass'] = slurp.PAX_CLASS
@@ -182,7 +186,28 @@ assert.equal(run.status, 0, `Replicata: load data/slurp.py and exercise its pass
 Expectata: PASSENGER_OVERRIDE, reviewed_belted(), check_passengers_reviewed() and check_occupancy_classified() exist and run.
 Resultata: exit ${run.status}; ${run.stderr.slice(-800)}`);
 const g = JSON.parse(run.stdout.trim().split("\n").at(-1));
-const {trips, passes, unclassified, flagged, listedNotFlagged, reviewedKept, main, template, paxClass, novelCode, ...guards} = g;
+const {trips, passes, unclassified, flagged, listedNotFlagged, reviewedKept, main, template, paxClass, novelCode, paxMap, ...guards} = g;
+
+// The incidents counted with a rider are the ones the reviewed map stores a
+// rider for (decision #57b, 2026-10-04: derived from PASSENGER_OVERRIDE, the
+// point where each new Tesla report's narrative is read, instead of a list of
+// Report IDs re-pinned at every release). For every helmer, among the reports
+// the map covers (every in-scope Tesla report, above), those data/incidents.js
+// counts with a passenger are exactly those whose stored code the map makes a
+// passenger code, and every covered report stores the map's code.
+const stored = JSON.parse(vm.runInContext(`JSON.stringify(INCIDENT_DATA.map(r => ({id: r.reportId, helmer: r.helmer, belted: r.belted})))`, ctx));
+const storedById = new Map(stored.map(r => [r.id, r]));
+const mapDisagrees = Object.entries(paxMap).filter(([id, [, applied]]) => storedById.get(id)?.belted !== applied)
+  .map(([id, [, applied]]) => `${id}: map ${JSON.stringify(applied)}, stored ${JSON.stringify(storedById.get(id)?.belted)}`);
+const riderSets = [...new Set(stored.map(r => r.helmer))].sort().map(helmer => ({
+  helmer,
+  map: Object.entries(paxMap).filter(([id, [, applied]]) => storedById.get(id)?.helmer === helmer && paxClass[applied] === "present").map(([id]) => id).sort(),
+  shown: stored.filter(r => r.helmer === helmer && r.id in paxMap && present.has(r.belted)).map(r => r.id).sort(),
+})).filter(s => JSON.stringify(s.map) !== JSON.stringify(s.shown));
+assert.deepEqual({ mapDisagrees, riderSets }, { mapDisagrees: [], riderSets: [] },
+  `Replicata: compare data/incidents.js's passenger codes with slurp.py's reviewed PASSENGER_OVERRIDE, entry by entry and as each helmer's set of reports counted with a rider.
+Expectata: every covered report stores the map's code, and for each helmer the covered reports counted with a passenger are the ones the map gives a passenger code.
+Resultata: ${JSON.stringify({ mapDisagrees, riderSets })}.`);
 assert.deepEqual(guards, {
   mapCoversTesla: true, exactPasses: true, missingTrips: true, staleTrips: true, staleZooxTrips: true,
   monitorOnly: "Subject Vehicle - No Passenger In Vehicle", refiledTrips: true,

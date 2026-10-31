@@ -178,6 +178,36 @@ assert.deepEqual(zeroShares, [],
 Expectata: no cell pairs a nonzero count with "0%".
 Resultata: ${JSON.stringify(zeroShares)}.`);
 
+// The data holds no "Unknown" severity (slurp.py stops on an in-scope one
+// until SEVERITY_OVERRIDE resolves it), so the partition above cannot see an
+// Unknown counted as property damage too, the bug fixed 2026-07-01. Render
+// the table again with one Waymo property-damage incident set to Unknown
+// (audit 2026-10-30, QT-06): it must move from the property-damage column to
+// the Unknown column, and the row must still partition its total.
+const sevCells = (section, helmer) => {
+  const m = new RegExp(`<tr>\\s*<td>${helmer}</td>((?:\\s*<td>[^<]*</td>){6})`).exec(section);
+  return m === null ? null : [...m[1].matchAll(/<td>([\d,]+)/g)].map(c => count(c[1]));
+};
+const unknownHtml = vm.runInContext(`(() => {
+  const i = INCIDENT_DATA.findIndex(r => r.helmer === "Waymo" && !INJURY_SEVERITIES.has(r.severity) && !UNKNOWN_SEVERITIES.has(r.severity));
+  incidents = INCIDENT_DATA.map((r, j) => j === i ? {...r, severity: "Unknown"} : r);
+  buildSanityChecks();
+  const out = document.getElementById("sanity-checks").innerHTML;
+  incidents = INCIDENT_DATA;
+  buildSanityChecks();
+  return out;
+})()`, ctx);
+const sectionIn = (h, id) => {
+  const at = h.indexOf(`id="${id}"`);
+  return h.slice(h.lastIndexOf("<h3", at), h.indexOf("<h3", at) < 0 ? h.length : h.indexOf("<h3", at));
+};
+const before = sevCells(sevSection, "Waymo"), after = sevCells(sectionIn(unknownHtml, "sanity-severity"), "Waymo");
+assert.ok(before !== null && after !== null && after[0] === before[0] - 1 && after[4] === before[4] + 1
+    && after.slice(0, 5).reduce((a, b) => a + b, 0) === after[5] && after[5] === before[5],
+  `Replicata: set one Waymo property-damage incident's severity to "Unknown" and rebuild the sanity section's Severity breakdown (full history).
+Expectata: Waymo's property-damage count falls by one, its Unknown count rises by one, and its five buckets still sum to its unchanged total.
+Resultata: Waymo [property damage, injury, hospitalization, fatal, unknown, total] ${JSON.stringify(before)} -> ${JSON.stringify(after)}.`);
+
 // --- Narrative redaction counts add up ---
 // Commented out 2026-06-11 with the app's Narrative redaction table: all
 // narratives are currently 0% CBI (Tesla un-redacted via update reports).

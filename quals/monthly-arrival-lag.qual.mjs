@@ -44,8 +44,11 @@
 //      helmer; a lowest monthly share of 0; a share table for an unlagged
 //      helmer; a fractional lag; arrival tables covering different months; a
 //      month both observed and excluded; an observation for the data-through
-//      month; a measurable month without an observation; and an arrival row
-//      that disagrees with the counts;
+//      month; a measurable month without an observation, and that stop comes
+//      BEFORE the lag check (with the month gone, a tie in the month before it
+//      would otherwise read as a lag disagreement, as Tesla's 2026-07 would on
+//      the Nov-2026 release); and an arrival row that disagrees with the
+//      counts;
 //   4. a lagged month is never the reference month of the pooled
 //      data-through-month coverage (its count is incomplete);
 //   5. the app accepts the extra partially received month(s) at the end of a
@@ -91,11 +94,15 @@ for r in filed:
     rid, ver = r['Report ID'], int(r['Report Version'])
     if rid not in by_rid or ver > by_rid[rid][0]: by_rid[rid] = (ver, r)
 by_inc = {}
+# One in-scope report per Same Incident ID: a re-filing's replaced report
+# (SUPERSEDED_REPORTS) drops out, and two left under one ID would stop
+# main() (since 2026-10-31; until then the higher Report Version won)
 for _ver, r in by_rid.values():
-    if not slurp.is_public_service_incident(r): continue
+    if not slurp.is_public_service_incident(r) or r['Report ID'] in slurp.SUPERSEDED_REPORTS: continue
     rid = r['Report ID']
     iid = rid if rid in slurp.SPLIT_SAME_INCIDENT_REPORTS else r['Same Incident ID']
-    if iid not in by_inc or slurp.newer_filing(r, by_inc[iid]): by_inc[iid] = r
+    assert iid not in by_inc, ('two in-scope reports under one Same Incident ID', iid, rid, by_inc[iid]['Report ID'])
+    by_inc[iid] = r
 # Arrivals are measured for the table's months only (older incidents are in
 # the archive file, which no release snapshot series covers; slurp's own
 # must() makes the table reach every month that is now measurable).
@@ -265,6 +272,15 @@ synthetic['observedExcluded'] = w_call(MONTHLY_ARRIVAL_MONTHS_EXCLUDED={'2031-02
 synthetic['future'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={h: {**t, W_D: (0,)} for h, t in W_OBS.items()})
 # the month that is now measurable (2031-04) has no observation
 synthetic['due'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={h: {m: c for m, c in t.items() if m != '2031-04'} for h, t in W_OBS.items()})
+# the same where the month before it is a tie, (1, 1), for a helmer whose lag
+# is 0 (Tesla): with the measurable month gone the tie is the helmer's newest
+# observed month, and the missing month must still be what stops the run, not
+# the tie read as a lag disagreement. On the Nov-2026 release the measurable
+# month (2026-08) is every helmer's newest observation and Tesla's 2026-07 is
+# such a tie (audit 2026-10-30, R2).
+tie_obs = {**W_OBS, 'Tesla': {**W_OBS['Tesla'], '2031-03': (1, 1)}}
+synthetic['dueTie'] = w_call(counts=w_counts(tie_obs), MONTHLY_ARRIVAL_OBSERVATIONS={
+    h: {m: c for m, c in t.items() if m != '2031-04'} for h, t in tie_obs.items()})
 # an arrival row that disagrees with the counts
 synthetic['arrivalTotal'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={**W_OBS, 'Waymo': {**W_OBS['Waymo'], '2031-01': (6, 0)}})
 out['direct'] = direct
@@ -393,6 +409,7 @@ const expectSynthetic = {
   observedExcluded: /^a month is both observed and excluded/,
   future: /^an arrival observation for the data-through month or later/,
   due: /^no Monthly-report arrival observation for a month that is now measurable/,
+  dueTie: /^no Monthly-report arrival observation for a month that is now measurable/,
   arrivalTotal: /^MONTHLY_ARRIVAL_OBSERVATIONS disagree with this release/,
 };
 for (const [name, re] of Object.entries(expectSynthetic)) {

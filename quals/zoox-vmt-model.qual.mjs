@@ -48,11 +48,20 @@ const S1 = [1880000, 2000000];
 const S2 = [3000000, 3200000];
 const PRE = [20174.2 + 0.5 * 19906.2, 20174.2 + 2 * 19906.2];
 const LV_PAUSE_JAN = 5;
-const DAYS = {
-  "2026-01": 31, "2026-02": 28, "2026-03": 31, "2026-04": 30, "2026-05": 31,
-  "2026-06": 30, "2026-07": 31, "2026-08": 31, "2026-09": 30, "2026-10": 31,
-};
-const MONTHS = Object.keys(DAYS);
+// The months the model covers: every zoox row of data/vmt.csv from January
+// 2026 on, ghost months included, each with its calendar length. Until
+// 2026-10-31 this was a fixed list ending at 2026-10, so the November row each
+// release adds went unchecked (audit 2026-10-30, QT-10 and R8).
+const rows = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
+  .filter(p => p[0] === "zoox")
+  .map(p => ({ month: p[1], vmt: +p[2], cume: +p[3], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7] }));
+const MONTHS = rows.map(r => r.month).filter(m => m >= "2026-01");
+const nextMonth = m => { const n = +m.slice(0, 4) * 12 + +m.slice(5, 7); return `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, "0")}`; };
+assert.ok(MONTHS.length > 0 && MONTHS[0] === "2026-01" && MONTHS.every((m, i) => i === 0 || m === nextMonth(MONTHS[i - 1])),
+  `Replicata: list data/vmt.csv's zoox months from 2026-01 on.
+Expectata: consecutive months starting at 2026-01.
+Resultata: ${JSON.stringify(MONTHS)}.`);
+const DAYS = Object.fromEntries(MONTHS.map(m => [m, new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).getUTCDate()]));
 const mid = ([a, b]) => (a + b) / 2;
 
 // Day of year of each month's first day, and of its mean day (Jan 16).
@@ -105,9 +114,6 @@ const knots = {
   "2026-07": [Math.floor(S2[0] - PRE[1] - 1.3 * 5 * dayTotal("2026-08", lvW2)), Infinity],
 };
 
-const rows = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
-  .filter(p => p[0] === "zoox")
-  .map(p => ({ month: p[1], vmt: +p[2], cume: +p[3], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7] }));
 const dec = rows.find(r => r.month === "2025-12");
 assert.ok(dec !== undefined, "Replicata: find zoox 2025-12 in data/vmt.csv. Expectata: present. Resultata: missing.");
 

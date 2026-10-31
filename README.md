@@ -1,6 +1,5 @@
 Next Tasks:
 
-* [LAT] Translate Latin to English IFF it's green text labeled as AI-generated
 * [SLI] Slider to parametrize the forecast date in the forecast section at the bottom
 
 Other name ideas:
