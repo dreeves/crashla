@@ -16,7 +16,10 @@ const rows = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
 const mismatches = [];
 for (let i = 1; i < rows.length; i++) {
   const r = rows[i], p = rows[i - 1];
-  if (r.month < "2023-02" || r.month > "2026-03") continue;
+  // The rebuilt months: July 2021-March 2026 since 2026-10-31 (open question
+  // 15; 2023-02 on until then). kyoom-band.qual applies the same rule to
+  // every line and month.
+  if (r.month > "2026-03") continue;
   const lo = Math.max(r.lo, r.clo - p.chi);
   const hi = Math.min(r.hi, r.chi - p.clo);
   if (r.lo !== lo || r.hi !== hi) mismatches.push({month: r.month, plotted: [r.lo, r.hi], constrained: [lo, hi]});

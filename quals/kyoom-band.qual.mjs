@@ -73,6 +73,20 @@ Resultata: prev [${s.pkmin}, ${s.pkmax}], this [${r.kmin}, ${r.kmax}].`,
 Expectata: kyoom_min >= ${s.pkmin} + ${r.vmin} = ${s.pkmin + r.vmin} and kyoom_max <= ${s.pkmax} + ${r.vmax} = ${s.pkmax + r.vmax}.
 Resultata: kyoom [${r.kmin}, ${r.kmax}].`,
   );
+  // The converse (added 2026-10-31, audit 2026-10-30 QT-07/VMT-6): this
+  // month's band already holds the cumulative constraints, because vmt[t] =
+  // cume[t] - cume[t-1] lies in [kyoom_min[t] - kyoom_max[t-1], kyoom_max[t] -
+  // kyoom_min[t-1]]. A month's rates take that intersection
+  // (crashla.js windowVmtBand), so a wider authored band showed one range on
+  // the VMT chart and used another (Tesla 2025-09 drew 85,850-126,250 and
+  // rated 94,370-119,750). waymo-monthly-band.qual states the same rule for
+  // Waymo's rebuilt months.
+  if (!first) assert.ok(
+    r.vmin >= r.kmin - s.pkmax && r.vmax <= r.kmax - s.pkmin,
+    `Replicata: compare ${r.helmer} ${r.month}'s monthly band with the difference of its cumulative band and last month's.
+Expectata: vmt_min >= ${r.kmin} - ${s.pkmax} = ${r.kmin - s.pkmax} and vmt_max <= ${r.kmax} - ${s.pkmin} = ${r.kmax - s.pkmin}.
+Resultata: monthly band [${r.vmin}, ${r.vmax}].`,
+  );
   if (r.kmin > s.min || r.kmax < s.max) tightened += 1;
   s.pkmin = r.kmin;
   s.pkmax = r.kmax;

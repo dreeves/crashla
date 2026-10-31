@@ -57,11 +57,13 @@ _REVIEWED = set()
 for _name in ('OPERATOR_TYPE_OVERRIDE', 'TELEOP_DRIVEN_REPORTS', 'REMOTE_LANGUAGE_ADS_DRIVEN',
               'SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN', 'PASSENGER_OVERRIDE', 'OCCUPANCY_LANGUAGE_REVIEWED',
               'SPLIT_SAME_INCIDENT_REPORTS', 'SUPERSEDED_REPORTS', 'LOCATION_OVERRIDE', 'SEVERITY_OVERRIDE',
-              'AIRBAG_OVERRIDE', 'VEHICLES_INVOLVED'):
+              'AIRBAG_OVERRIDE', 'VEHICLES_INVOLVED', 'SECOND_INVOLVEMENTS', 'SECOND_AV_REVIEWED',
+              'MISFILED_ADS_REPORTS', 'NON_ADS_FILE_EXCLUDED'):
     _REVIEWED |= set(getattr(slurp, _name, ()))
 def _trips(r):
     probe = dict(r, **{'Report ID': 'synthetic-probe'})
-    for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified, slurp.check_occupancy_classified):
+    for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified, slurp.check_occupancy_classified,
+                  slurp.check_second_av_classified):
         try: check(probe)
         except AssertionError: return True
     return False

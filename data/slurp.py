@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Slurp live NHTSA SGO crash data into inline data for the web tool.
 
-Fetches current + archive ADS incident CSVs from NHTSA, deduplicates by
+Fetches current + archive ADS incident CSVs from NHTSA, and its current ADAS
+and OTHER CSVs for the reports an ADS drove that NHTSA filed there
+(MISFILED_ADS_REPORTS), deduplicates by
 Report ID (keeping the highest Report Version), keeps the crashes in which
 each helmer's ADS was driving in a mode whose miles are in its VMT
 denominator (PUBLIC_SERVICE_OPERATOR_TYPES / EXCLUDED_OPERATOR_TYPES,
 OPERATOR_TYPE_OVERRIDE, TELEOP_DRIVEN_REPORTS, and the narrative tripwires
 beside them), keeps one report per Same Incident ID (a reviewed table says
 which when two are filed: SUPERSEDED_REPORTS, SPLIT_SAME_INCIDENT_REPORTS),
+adds a record for the second AV of each crash one report files for two of a
+helmer's AVs (SECOND_INVOLVEMENTS),
 joins in the in-repo VMT master (data/vmt.csv) and fault inputs
 (data/faultfrac.csv), and injects the data into data/incidents.js and
 data/vmt.js (between marker comments). Every check runs before any of
@@ -43,6 +47,29 @@ NHTSA_ADS_CSV_URL = (
 NHTSA_ADS_ARCHIVE_URL = (
     "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/"
     "SGO-2021-01_Incident_Reports_ADS.csv"
+)
+# NHTSA's two other current SGO files: Level 2 (ADAS) reports, and reports
+# whose automation system was not reported ("OTHER"). NHTSA files each report
+# by its latest version's "Automation System Engaged?" (ADS, ADAS or
+# Unknown; NHTSA's SGO page, https://www.nhtsa.gov/laws-regulations/
+# standing-general-order-crash-reporting, read 2026-10-31: "For some
+# incidents, the type of automation system engaged at the time of the
+# incident (ADS or Level 2 ADAS) was not reported and data for those
+# incidents are listed in the Other data file"; "When multiple versions of a
+# report exist from a specific entity, the values from the latest report are
+# used"), so a crash an ADS drove lands outside the ADS file when its company
+# codes that field wrong. slurp fetches and snapshots both with the ADS files
+# and reads from them only the reports MISFILED_ADS_REPORTS lists
+# (misfiled_ads_rows(); decision of 2026-10-31, open question 1). Their
+# archives (2021-2025, closed since JUN-2025) are not read: a 2026-10-31 sweep
+# of them found no report a Waymo, Tesla or Zoox ADS drove.
+NHTSA_ADAS_CSV_URL = (
+    "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/"
+    "SGO-2021-01_Incident_Reports_ADAS.csv"
+)
+NHTSA_OTHER_CSV_URL = (
+    "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/"
+    "SGO-2021-01_Incident_Reports_OTHER.csv"
 )
 # NHTSA's canonical SGO page labels each release "through <date>": reports
 # RECEIVED through that date, which is the 15th of the month before the
@@ -92,10 +119,17 @@ NHTSA_DATA_THROUGH_DATE = "2026-09-15"
 # 17/60 — a transcription slip; every filter variant reproduces the counts
 # below, e.g. the Feb numerator includes Zoox 30610-14026).
 # A month's denominator is final at its second NORMAL release: verified across
-# every release snapshot (Feb 19->38 then flat x6; Apr 3->58 flat; May 16->58
+# every release snapshot (Dec 2025 13->55 then flat; Jan 2026 21->63 then
+# flat; Feb 19->38 then flat x6; Apr 3->58 flat; May 16->58
 # flat; Jun 17->61 flat; Jul 12->58 flat). The one exception proves the rule — Mar ran 25->53->72
 # because its second release WAS the truncated May-15 one.
+# Dec 2025 and Jan 2026 entered 2026-10-31 (decision of that day on open
+# question 11): their first releases are the two legacy snapshots, which the
+# table had left out (quals/receipt-observations.qual.mjs now requires every
+# month data/snapshots can measure). Neither moves the high edge.
 FIVE_DAY_RECEIPT_OBSERVATIONS = {
+    "2025-12": (13, 55),   # Jan-2026 release (legacy snapshot nhtsa-2025-jun-dec.csv) vs the Oct-15-2026 file
+    "2026-01": (21, 63),   # Feb-2026 release (legacy snapshot nhtsa-2025-jun-2026-jan.csv) vs the Oct-15-2026 file
     "2026-02": (19, 38),   # Mar-16-2026 release vs the Aug-17-2026 file
     "2026-03": (25, 72),   # Apr-15-2026 release
     "2026-05": (16, 58),   # Jun-15-2026 release
@@ -167,7 +201,10 @@ MONTHLY_ARRIVAL_OBSERVATIONS = {
 MONTHLY_ARRIVAL_MONTHS_EXCLUDED = {
     "2026-03": "its second release (May 15, 2026) was truncated, so its "
                "Monthly reports reached the file one release late for "
-               "Waymo too (all 44 in scope; Tesla 2 of 2 on time, Zoox 0 of 2)",
+               "Waymo too (all 44 in scope in the ADS file; the 45th, "
+               "30270-14303, is in NHTSA's ADAS file, MISFILED_ADS_REPORTS, "
+               "which data/snapshots holds only from the Oct-15-2026 release; "
+               "Tesla 2 of 2 on time, Zoox 0 of 2)",
 }
 # Each helmer's lag is the extra lag of the majority of its newest observed
 # month with any Monthly-track incident (ties count as late), which
@@ -439,6 +476,21 @@ VEHICLES_INVOLVED = {
     "30270-15393": 3,
     "30270-15659": 3,
     "30270-15723": 3,
+    # Batch below added 2026-10-31 (decision of that day on open question 11,
+    # "(b)"): the nonfatal Jul-Aug 2026 reports whose narratives count their
+    # vehicles, in their words; the six murky bystander rows of 2026-08-22
+    # keep the default (quals/vehicles-involved.qual.mjs).
+    "30270-15832": 3,   # "All three vehicles involved sustained damage."
+    "30270-15894": 3,   # "All three vehicles sustained damage."
+    "30270-16165": 3,   # "All three vehicles involved sustained damage."
+    "30270-16202": 3,   # "All three vehicles sustained damage."
+    "30270-16261": 3,   # "All three vehicles sustained damage."
+    "30270-16278": 4,   # "All four vehicles involved sustained damage."
+    "30270-16300": 4,   # "All four vehicles sustained damage."
+    "30270-16325": 3,   # "All three vehicles sustained damage."
+    "30270-16345": 3,   # "All three vehicles involved sustained damage."
+    "30270-16452": 3,   # "all three vehicles involved sustained damage."
+    "30270-16493": 3,   # "All three vehicles sustained damage."
 }
 
 # Tesla appends this disclaimer to the front of every redacted-update narrative.
@@ -802,6 +854,112 @@ OCCUPANCY_PATTERN = re.compile(
 # words that show why (none so far).
 OCCUPANCY_LANGUAGE_REVIEWED = {}
 
+# Crashes one report files for two of a helmer's AVs (decision #47, the
+# human's answer of 2026-10-04, "Each AV involved"; added 2026-10-31): every AV
+# involved counts once, like the crashed-vehicle human benchmarks and Waymo's
+# own crash list (Safety Impact hub CSV2, https://waymo.com/safety/impact/,
+# data through Jun 2026, read 2026-10-31, lists each report below twice;
+# 30270-11224, held below, once). Two AVs that each filed a report
+# (30270-16207 and -16174, Atlanta, AUG-2026) already counted twice. Keyed by
+# Report ID: the narrative's words naming the second AV ("quote"), and that
+# AV's own fields as the narrative gives them, under NHTSA's column names (a
+# contact area as the tuple of its boxes, "Unknown" passengers where the
+# narrative does not say; where the two AVs struck each other, the report's
+# contact areas swapped).
+# second_involvement_rows() makes the second AV's row: the report's latest
+# filing with these fields and the Report ID + SECOND_INVOLVEMENT_SUFFIX; its
+# record takes the crash's fields and their overrides (severity, airbag,
+# place, vehicles involved) from the report, adds `secondOf` naming it, and
+# needs its own data/faultfrac.csv row.
+SECOND_INVOLVEMENT_SUFFIX = "-B"
+SECOND_INVOLVEMENTS = {
+    # FEB-2025 San Francisco: parked for its own dropoff beside the reporting
+    # Waymo, whose passenger doored a cyclist passing between the two
+    "30270-9987": {
+        "quote": "The cyclist then fell into the passenger side of the second Waymo AV.",
+        "SV Precrash Speed (MPH)": "0", "SV Pre-Crash Movement": "Parked",
+        "CP Pre-Crash Movement": "Proceeding Straight",
+        "Crash With": "Non-Motorist: Cyclist", "Were All Passengers Belted?": "Unknown",
+        "SV Contact Area": ("Right",), "CP Contact Area": ()},
+    # JUL-2025 Phoenix (airport lot): reversing out of its stall, speed not
+    # stated, when the reporting Waymo pulled forward into its right side
+    "30270-11424": {
+        "quote": "While the second Waymo AV was reversing, the initial Waymo AV "
+                 "proceeded forward and the front left of the Waymo AV made "
+                 "contact with the right side of the second Waymo AV.",
+        "SV Precrash Speed (MPH)": "", "SV Pre-Crash Movement": "Backing",
+        "CP Pre-Crash Movement": "Proceeding Straight",
+        "Crash With": "SUV", "Were All Passengers Belted?": "Unknown",
+        "SV Contact Area": ("Right",), "CP Contact Area": ("Front Left",)},
+    # JAN-2026 Tempe: stopped in the red-light queue behind the reporting
+    # Waymo; the red-runner careening off its first crash hit it (where on the
+    # Waymo, not stated)
+    "30270-13817": {
+        "quote": "the left side of the passenger car then made contact with an "
+                 "additional Waymo AV (VIN [XXX]) that was stopped behind the "
+                 "initial Waymo AV in traffic.",
+        "SV Precrash Speed (MPH)": "0", "SV Pre-Crash Movement": "Stopped",
+        "CP Pre-Crash Movement": "Other, see Narrative",
+        "Crash With": "Passenger Car", "Were All Passengers Belted?": "Unknown",
+        "SV Contact Area": ("Unknown",), "CP Contact Area": ("Left",)},
+    # MAY-2026 Phoenix: parked, partly in-lane with hazards on; its own
+    # passenger opened its rear left door into the passing reporting Waymo
+    "30270-14890": {
+        "quote": "The front right side of the Waymo AV made contact with the "
+                 "open rear left door of the Parked Waymo AV.",
+        "SV Precrash Speed (MPH)": "0", "SV Pre-Crash Movement": "Parked",
+        "CP Pre-Crash Movement": "Passing",
+        "Crash With": "SUV", "Were All Passengers Belted?": PAX_BELT_UNSTATED,
+        "SV Contact Area": ("Rear Left",), "CP Contact Area": ("Front Right",)},
+    # JUN-2026 San Francisco: stopped, yielding behind the first collision,
+    # when the driverless SUV rolled backwards into its front left
+    "30270-15346": {
+        "quote": "the rear right side of the SUV made contact with the front "
+                 "left side of a second stationary Waymo AV ([XXX]) that was "
+                 "facing south, yielded in-lane behind the initial collision "
+                 "with the first Waymo AV.",
+        "SV Precrash Speed (MPH)": "0", "SV Pre-Crash Movement": "Stopped",
+        "CP Pre-Crash Movement": "Other, see Narrative",
+        "Crash With": "SUV", "Were All Passengers Belted?": "Unknown",
+        "SV Contact Area": ("Front Left",), "CP Contact Area": ("Rear Right",)},
+}
+# Narrative words naming a second AV of the reporting company: "two",
+# "second", "another", "different", "additional", "first" or "initial" before
+# the company's name, "the Level 4 ADS of both", or the defined terms "Parked
+# Waymo AV" and "Second Waymo AV" (case-sensitive: lowercase, "the parked
+# Waymo AV" names the reporting AV, in 69 other in-scope narratives, and
+# "stopped" or "parked Waymo AV" in either case in 161). Calibrated 2026-10-31
+# on every in-scope narrative of the newest files, all three companies: it
+# matches exactly the 17 reports of the two tables (the five above, the two
+# Atlanta reports, the one held below, and nine that name an AV that was not
+# in the collision). check_second_av_classified() stops the run on any other.
+SECOND_AV_PATTERN = re.compile(
+    r"(?i:\b(?:second|another|different|additional|third|two|both|first|initial)\s+"
+    r"(?:Waymo|Zoox|Tesla|robotaxi|Cybercab|ADS)\b|\bLevel\s+4\s+ADS\s+of\s+both\b)|"
+    r"\b(?:Parked|Second)\s+Waymo\s+AV\b")
+# In-scope reports whose narrative trips SECOND_AV_PATTERN but that get no
+# second record, keyed by Report ID with the reason.
+SECOND_AV_REVIEWED = {
+    "30270-16207": "the two Waymos of this AUG-2026 Atlanta crash each filed a report (30270-16174 is the other)",
+    "30270-16174": "the two Waymos of this AUG-2026 Atlanta crash each filed a report (30270-16207 is the other)",
+    "30270-6878": "another Waymo struck the same towed pickup minutes earlier, its own crash and report (30270-7013)",
+    "30270-8933": "a second Waymo was stopped nearby; the van struck only the reporting Waymo",
+    "30270-9111": "another Waymo passed in the traffic; only the reporting Waymo was struck",
+    "30270-9534": "the reporting Waymo passed a second, stopped Waymo; the passing car struck only the reporting one",
+    "30270-9897": "a different Waymo was stopped ahead; the passing car struck only the reporting Waymo",
+    "30270-10640": "a second Waymo stopped in front of the SUV, which reversed into the reporting Waymo only",
+    "30270-11715": "another Waymo stopped beside the truck, which reversed into the reporting Waymo only",
+    "30270-14355": "the reporting Waymo yielded to a second Waymo ahead; a car rear-ended the reporting one only",
+    "30270-14075": "\"the two Waymo AV passengers\": one Waymo",
+    # Held for the human (2026-10-31): the narrative says "the Level 4 ADS of
+    # both Waymo AVs were engaged" and "Both vehicles sustained damage" (the
+    # moving Waymo's passenger opened its door into the stopped Waymo's
+    # mirror), but Waymo's crash list (hub CSV2) lists the report once. Its
+    # second AV, if the human counts it, rates 0 (a stopped AV struck by
+    # another vehicle's opening door).
+    "30270-11224": "held for the human: both Waymos' ADS engaged and both damaged, but hub CSV2 lists the report once",
+}
+
 
 def must(cond, msg, **ctx):
     if not cond:
@@ -922,43 +1080,154 @@ def archive_csv_rows(text):
     return [_normalize_archive_row(row) for row in csv.DictReader(io.StringIO(text))]
 
 
-# Each NHTSA file: its URL, its snapshot prefix, and its loader. A live fetch
-# (fetch_nhtsa_csv) and every offline regeneration (newest_snapshot_rows, used
-# by the quals) parse through these, so both see the same rows.
+# The reports NHTSA filed outside its ADS file that an ADS drove (decision of
+# 2026-10-31, open question 1: "Reviewed list + tripwire"), keyed by Report
+# ID: (the snapshot prefix of the file that holds it, the filed "Driver /
+# Operator Type" and "Automation System Engaged?" the review read, the
+# narrative's words saying an ADS drove). misfiled_ads_rows() reads these
+# reports' rows with the ADS files' rows, and every check after applies to
+# them as to any other.
+MISFILED_ADS_REPORTS = {
+    # Waymo, MAR-2026 San Francisco (a Monthly report submitted APR-2026):
+    # stopped for a dropoff, its passenger opened the rear right door into a
+    # car passing on the right. Coded "ADAS", so in the Level 2 file only; on
+    # Waymo's own crash list (Safety Impact hub CSV2,
+    # https://waymo.com/safety/impact/, data through Jun 2026, read
+    # 2026-10-31), the one report of that list the ADS file lacked.
+    "30270-14303": ("nhtsa-adas", "None", "ADAS",
+                    "At the time of the impact, the Waymo AV's Level 4 ADS was "
+                    "engaged in autonomous mode."),
+}
+# Waymo, Tesla and Zoox reports in those files whose latest operator type is
+# one an ADS could have been driving in (NON_ADS_FILE_REVIEW_TYPES) but that
+# no ADS drove, keyed by Report ID: (the snapshot prefix, the filed operator
+# type and "Automation System Engaged?" the review read, why it stays out).
+NON_ADS_FILE_EXCLUDED = {
+    # JUL-2025 Flowery Branch GA, 46 mph on a rural road, ADAS verified
+    # engaged, Operating Entity "Tesla - Internal Fleet Loaner", narrative
+    # redacted: an employee's loaner on Level 2, in a state with no Tesla
+    # robotaxi service
+    "13781-11293": ("nhtsa-adas", "Other, see Narrative", "ADAS",
+                    "a Level 2 crash of a Tesla employee loaner in Georgia"),
+}
+# Operator types a Waymo, Tesla or Zoox report in a non-ADS file must be
+# listed for (misfiled_ads_rows()): the two an ADS drives in, and the two that
+# do not say who drove. "Consumer" and the in-vehicle modes put a human at the
+# wheel.
+NON_ADS_FILE_REVIEW_TYPES = {"None", "Remote (Commercial / Test)",
+                             "Other, see Narrative", "Unknown"}
+
+
+def misfiled_ads_rows(ads_rows, non_ads_texts):
+    """The rows of the MISFILED_ADS_REPORTS in NHTSA's non-ADS files
+    (<non_ads_texts>: {snapshot prefix: CSV text}, the current ADAS and OTHER
+    files), contact areas under their true labels as in the current ADS file
+    (the ADAS file's are rotated the same way: 30270-14303's crash partner's
+    "front left side" is published under "Front"). <ads_rows> are the ADS
+    files' rows.
+
+    Stops on a Waymo, Tesla or Zoox report in those files whose latest
+    operator type is in NON_ADS_FILE_REVIEW_TYPES and that neither
+    MISFILED_ADS_REPORTS nor NON_ADS_FILE_EXCLUDED lists, and on a listed
+    report that is not in its file, is also in the ADS files, or whose latest
+    filing no longer has the reviewed operator type, automation system and
+    (if admitted) words (a correction that moves it to the ADS file stops the
+    run until its entry is dropped)."""
+    rows = {prefix: list(csv.DictReader(io.StringIO(text)))
+            for prefix, text in non_ads_texts.items()}
+    # Every report, by its latest version: one filed with a blank Same
+    # Incident ID or Incident Date too (main() stops on such a helmer report)
+    latest = {prefix: latest_filings([r for r in file_rows if r["Report ID"].strip()])
+              for prefix, file_rows in rows.items()}
+    reviewed = {**MISFILED_ADS_REPORTS, **NON_ADS_FILE_EXCLUDED}
+    unlisted = sorted(rid for by_rid in latest.values() for rid, r in by_rid.items()
+                      if r["Reporting Entity"].strip() in HELMER_SHORT
+                      and r["Driver / Operator Type"].strip() in NON_ADS_FILE_REVIEW_TYPES
+                      and rid not in reviewed)
+    must(not unlisted,
+         "a Waymo, Tesla or Zoox report in NHTSA's ADAS or OTHER file has an "
+         "operator type an ADS could have been driving in (read its narrative: "
+         "if an ADS drove, list it in MISFILED_ADS_REPORTS in data/slurp.py and "
+         "rate it in data/faultfrac.csv, else in NON_ADS_FILE_EXCLUDED with the "
+         "reason: data/README.md, Each NHTSA release, step 6)",
+         reports=unlisted)
+    ads_ids = {r["Report ID"] for r in ads_rows}
+    changed = sorted(rid for rid, (prefix, operator, engaged, *_why) in reviewed.items()
+                     if rid not in latest[prefix] or rid in ads_ids
+                     or latest[prefix][rid]["Driver / Operator Type"].strip() != operator
+                     or latest[prefix][rid]["Automation System Engaged?"].strip() != engaged)
+    changed += sorted(rid for rid, (prefix, *_values, quote) in MISFILED_ADS_REPORTS.items()
+                      if rid in latest[prefix] and quote not in latest[prefix][rid]["Narrative"])
+    must(not changed,
+         "a MISFILED_ADS_REPORTS or NON_ADS_FILE_EXCLUDED entry in data/slurp.py "
+         "no longer matches NHTSA's files: its report has left the file the "
+         "entry names, is in the ADS file too, or was re-filed with another "
+         "operator type, automation system or narrative (re-read it; drop the "
+         "entry if NHTSA now files it as ADS, else update it: data/README.md, "
+         "Each NHTSA release, step 6)",
+         reports=sorted(set(changed)))
+    return [_normalize_current_row(r) for rid, (prefix, *_values) in MISFILED_ADS_REPORTS.items()
+            for r in rows[prefix] if r["Report ID"] == rid]
+
+
+# Each ADS file: its URL, its snapshot prefix, and its loader; and each
+# non-ADS file (NON_ADS_SOURCES), read through misfiled_ads_rows(). A live
+# fetch (fetch_nhtsa_csv) and every offline regeneration (newest_snapshot_rows,
+# used by the quals) parse through these (nhtsa_rows), so both see the same
+# rows.
 NHTSA_SOURCES = (
     (NHTSA_ADS_CSV_URL, "nhtsa-current", current_csv_rows),
     (NHTSA_ADS_ARCHIVE_URL, "nhtsa-archive", archive_csv_rows),
 )
+NON_ADS_SOURCES = (
+    (NHTSA_ADAS_CSV_URL, "nhtsa-adas"),
+    (NHTSA_OTHER_CSV_URL, "nhtsa-other"),
+)
+must(all(prefix in {p for _u, p in NON_ADS_SOURCES}
+         for prefix, *_values in [*MISFILED_ADS_REPORTS.values(), *NON_ADS_FILE_EXCLUDED.values()]),
+     "a MISFILED_ADS_REPORTS or NON_ADS_FILE_EXCLUDED entry must name a "
+     "NON_ADS_SOURCES snapshot prefix")
+must(not set(MISFILED_ADS_REPORTS) & set(NON_ADS_FILE_EXCLUDED),
+     "a non-ADS-file report is both admitted and excluded")
+
+
+def nhtsa_rows(texts):
+    """The rows slurp reads from NHTSA's files (<texts>: {snapshot prefix: CSV
+    text} for every NHTSA_SOURCES and NON_ADS_SOURCES file): every row of the
+    ADS files, then the MISFILED_ADS_REPORTS rows of the others."""
+    ads = [row for _url, prefix, parse in NHTSA_SOURCES for row in parse(texts[prefix])]
+    return ads + misfiled_ads_rows(ads, {prefix: texts[prefix] for _url, prefix in NON_ADS_SOURCES})
 
 
 def newest_snapshot_rows():
-    """Rows of the newest current and archive snapshots, parsed as a live fetch is."""
-    rows = []
-    for _url, prefix, parse in NHTSA_SOURCES:
+    """Rows of the newest snapshot of each NHTSA file, parsed as a live fetch is."""
+    texts = {}
+    for prefix in [p for _url, p, _parse in NHTSA_SOURCES] + [p for _url, p in NON_ADS_SOURCES]:
         with open(latest_snapshot_path(prefix), newline="", encoding="utf-8") as f:
-            rows += parse(f.read())
-    return rows
+            texts[prefix] = f.read()
+    return nhtsa_rows(texts)
 
 
 def fetch_nhtsa_csv(stamp):
-    """Fetch ADS incident reports from both current and archive CSVs.
+    """Fetch NHTSA's ADS incident report CSVs (current and archive) and its
+    current ADAS and OTHER CSVs, saving each that differs from its newest
+    snapshot before any is parsed (a run that stops has saved the release).
 
-    Returns (rows, headers_by_url), retaining the reviewed HTTP headers for
-    both ingested CSVs.
+    Returns (rows, headers_by_url): nhtsa_rows() of the four, and the HTTP
+    headers of each fetched CSV.
     """
-    all_rows = []
+    texts = {}
     headers_by_url = {}
-    for url, prefix, parse in NHTSA_SOURCES:
-        print(f"Fetching NHTSA ADS CSV from {url} ...")
+    for url, prefix in [(u, p) for u, p, _parse in NHTSA_SOURCES] + list(NON_ADS_SOURCES):
+        print(f"Fetching NHTSA SGO CSV from {url} ...")
         with urllib.request.urlopen(url, timeout=60) as resp:
             lm = resp.headers.get("Last-Modified")
             etag = resp.headers.get("ETag")
             payload = resp.read()
         headers_by_url[url] = (lm, etag)
-        text = payload.decode("utf-8")
-        snapshot_csv_if_changed(prefix, text, stamp)
-        all_rows += parse(text)
-    return all_rows, headers_by_url
+        texts[prefix] = payload.decode("utf-8")
+        snapshot_csv_if_changed(prefix, texts[prefix], stamp)
+    return nhtsa_rows(texts), headers_by_url
 
 
 def modified_date_from_last_modified(last_modified):
@@ -1686,8 +1955,17 @@ def js_template_literal(text):
 
 EXPECTED_REPORT_TYPES = {
     "1-Day", "5-Day", "10-Day Update", "Monthly", "Update",
-    "No New or Updated Incident Reports",
+    "No New or Updated Incident Reports", "Monthly - No Incident",
 }
+# The Report Types that file no crash: a reporting entity's statement that it
+# has none to report, "No New or Updated Incident Reports" (in older files
+# "Monthly - No Incident"). main() skips these rows by their type; until
+# 2026-10-31 it skipped every row with a blank Same Incident ID or Incident
+# Date instead, which would have dropped a helmer's crash report filed with
+# either field blank without a word (decision of 2026-10-31, open question 1).
+NEGATIVE_FILING_TYPES = {"No New or Updated Incident Reports", "Monthly - No Incident"}
+must(NEGATIVE_FILING_TYPES <= EXPECTED_REPORT_TYPES,
+     "NEGATIVE_FILING_TYPES must be EXPECTED_REPORT_TYPES")
 EXPECTED_DRIVER_TYPES = {
     "",
     "Consumer",
@@ -1927,6 +2205,23 @@ must(not set(TELEOP_DRIVEN_REPORTS) & set(REMOTE_LANGUAGE_ADS_DRIVEN),
      "a report is classified both teleoperator-driven and ADS-driven")
 must(not set(PASSENGER_OVERRIDE) & set(OCCUPANCY_LANGUAGE_REVIEWED),
      "a report's passenger code is both re-coded and kept as filed")
+# The NHTSA columns a SECOND_INVOLVEMENTS entry gives for its AV, besides its
+# quote and its two contact areas (second_involvement_rows()); every other
+# column is the report's.
+SECOND_INVOLVEMENT_COLUMNS = ("SV Precrash Speed (MPH)", "SV Pre-Crash Movement",
+                              "CP Pre-Crash Movement", "Crash With",
+                              "Were All Passengers Belted?")
+SECOND_INVOLVEMENT_CONTACTS = ("SV Contact Area", "CP Contact Area")
+must(all(set(e) == {"quote", *SECOND_INVOLVEMENT_COLUMNS, *SECOND_INVOLVEMENT_CONTACTS}
+         and all(set(e[p]) <= set(CONTACT_AREA_LABELS) for p in SECOND_INVOLVEMENT_CONTACTS)
+         and e["Were All Passengers Belted?"] in PAX_CLASS
+         for e in SECOND_INVOLVEMENTS.values()),
+     "a SECOND_INVOLVEMENTS entry must give its quote, exactly the columns "
+     "SECOND_INVOLVEMENT_COLUMNS names, its two contact areas as tuples of "
+     "CONTACT_AREA_LABELS, and a passenger code PAX_CLASS classifies")
+must(not set(SECOND_INVOLVEMENTS) & set(SECOND_AV_REVIEWED),
+     "a report is classified both as filing a second AV and as naming one that "
+     "was not in the collision")
 must(all(len(v) == 2 and v[1] in PAX_CLASS for v in PASSENGER_OVERRIDE.values()),
      "PASSENGER_OVERRIDE entries must be (reviewed filed value, value to "
      "store), the stored value a code PAX_CLASS classifies")
@@ -2137,6 +2432,56 @@ def check_occupancy_classified(row):
          narrative=row["Narrative"][:300])
 
 
+def check_second_av_classified(row):
+    """Stop the run on an in-scope report whose narrative names a second AV
+    of its company (SECOND_AV_PATTERN) until a human classifies it: a
+    SECOND_INVOLVEMENTS entry if that AV was in the collision, else
+    SECOND_AV_REVIEWED with the reason."""
+    rid = row["Report ID"]
+    flagged = (operator_in_scope(row)
+               and SECOND_AV_PATTERN.search(row["Narrative"]) is not None)
+    must(not flagged or rid in SECOND_INVOLVEMENTS or rid in SECOND_AV_REVIEWED,
+         "the narrative names a second AV of the reporting company (read it: if "
+         "that AV was in the collision, add a SECOND_INVOLVEMENTS entry in "
+         "data/slurp.py with the words naming it and its own fields, and rate "
+         "its record in data/faultfrac.csv under the report's Report ID + "
+         f"{SECOND_INVOLVEMENT_SUFFIX!r}; else list the report in "
+         "SECOND_AV_REVIEWED with the reason: data/README.md, Each NHTSA "
+         "release, step 6)",
+         reportId=rid, narrative=row["Narrative"][:300])
+
+
+def second_involvement_rows(incidents):
+    """{Report ID: the second AV's row} for each SECOND_INVOLVEMENTS report
+    among <incidents> (public_service_incidents()' surviving filings): the
+    report's row with the entry's fields, its contact areas spelled out in
+    NHTSA's Y columns, and its own Report ID (the report's +
+    SECOND_INVOLVEMENT_SUFFIX). Stops unless every entry names one of
+    <incidents> whose narrative holds the entry's quote, and every
+    SECOND_AV_REVIEWED entry one whose narrative trips SECOND_AV_PATTERN (an
+    entry whose report left scope or whose words changed must be re-read)."""
+    by_rid = {r["Report ID"]: r for r in incidents}
+    stale = sorted(rid for rid, entry in SECOND_INVOLVEMENTS.items()
+                   if rid not in by_rid or entry["quote"] not in by_rid[rid]["Narrative"])
+    stale += sorted(rid for rid in SECOND_AV_REVIEWED
+                    if rid not in by_rid or not SECOND_AV_PATTERN.search(by_rid[rid]["Narrative"]))
+    must(not stale,
+         "a SECOND_INVOLVEMENTS or SECOND_AV_REVIEWED entry in data/slurp.py "
+         "names a report that is not in scope, or whose latest narrative no "
+         "longer holds the entry's words (re-read the report and update or "
+         "drop the entry: data/README.md, Each NHTSA release, step 6)",
+         reports=stale)
+    rows = {}
+    for rid, entry in SECOND_INVOLVEMENTS.items():
+        second = dict(by_rid[rid])
+        second.update((column, entry[column]) for column in SECOND_INVOLVEMENT_COLUMNS)
+        second.update((f"{prefix} - {label}", "Y" if label in entry[prefix] else "")
+                      for prefix in SECOND_INVOLVEMENT_CONTACTS for label in CONTACT_AREA_LABELS)
+        second["Report ID"] = rid + SECOND_INVOLVEMENT_SUFFIX
+        rows[rid] = second
+    return rows
+
+
 def check_superseded_reviewed(rows):
     """Stop the run unless each SUPERSEDED_REPORTS entry names two reports
     filed in <rows> whose latest filings share a Same Incident ID (an entry
@@ -2222,25 +2567,36 @@ def main():
     nhtsa_modified_date = modified_date_from_last_modified(nhtsa_last_modified)
 
     # Anti-Postel: fail loud on unexpected field values.
-    # Skip placeholder rows (empty incident ID or date) from archive.
     valid_rows = []
     for i, r in enumerate(rows):
-        iid = r["Same Incident ID"].strip()
-        idate = r["Incident Date"].strip()
-        if not iid or not idate:
-            continue  # Placeholder rows (e.g., "No New or Updated" entries)
         rt = r["Report Type"].strip()
         must(rt in EXPECTED_REPORT_TYPES,
              "unexpected Report Type (classify it in EXPECTED_REPORT_TYPES in "
              "data/slurp.py: data/README.md, Each NHTSA release, step 6)",
              row=i, value=rt, expected=sorted(EXPECTED_REPORT_TYPES))
+        if rt in NEGATIVE_FILING_TYPES:
+            continue  # a filing that reports no crash
+        iid = r["Same Incident ID"].strip()
+        idate = r["Incident Date"].strip()
+        driver = r["Reporting Entity"].strip()
+        must(driver not in HELMER_SHORT or (iid and idate),
+             "a Waymo, Tesla or Zoox crash report with no Same Incident ID or "
+             "Incident Date (it would count nowhere: read it in the newest "
+             "snapshot and ask what NHTSA's file is missing before going on: "
+             "data/README.md, Each NHTSA release, step 6)",
+             row=i, reportId=r["Report ID"], version=r["Report Version"],
+             sameIncidentId=iid, incidentDate=idate)
+        if not iid or not idate:
+            # Another company's crash report missing either field (12 in the
+            # archive file, among them Mobileye 33175-9303 to -9307): never in
+            # scope, so it stays out
+            continue
         dt = r["Driver / Operator Type"].strip()
         must(dt in EXPECTED_DRIVER_TYPES,
              "unexpected Driver / Operator Type (classify it in "
              "EXPECTED_DRIVER_TYPES in data/slurp.py: data/README.md, Each "
              "NHTSA release, step 6)",
              row=i, value=dt, expected=sorted(EXPECTED_DRIVER_TYPES))
-        driver = r["Reporting Entity"].strip()
         must(driver in EXPECTED_HELMERS,
              "unexpected Reporting Entity (classify it in EXPECTED_HELMERS in "
              "data/slurp.py: data/README.md, Each NHTSA release, step 6)",
@@ -2255,6 +2611,7 @@ def main():
              row=i, entity=driver, value=dt)
         check_teleop_classified(r)
         check_safety_driver_classified(r)
+        check_second_av_classified(r)
         sev = r["Highest Injury Severity Alleged"].strip()
         must(sev in EXPECTED_SEVERITIES,
              "unexpected Highest Injury Severity Alleged (classify it in "
@@ -2286,8 +2643,18 @@ def main():
     # versions to each entity's public-service operator types (see
     # PUBLIC_SERVICE_OPERATOR_TYPES), then keep one report per Same Incident
     # ID: public_service_incidents(), the one deduplication every count uses.
-    by_incident = {iid: {"_row": r}
-                   for iid, r in public_service_incidents(rows).items()}
+    # Then every AV involved, keyed by Report ID: each incident's surviving
+    # filing, and the second AV of each crash one report files for two
+    # (SECOND_INVOLVEMENTS; decision #47). An entry's "_crash" is the report
+    # whose crash-level fields and overrides its record takes, its "_fields"
+    # what the record adds. The receipt and Monthly-track coverage counts read
+    # the filings themselves (they measure when reports arrive).
+    in_scope = public_service_incidents(rows)
+    by_incident = {r["Report ID"]: {"_row": r, "_crash": r["Report ID"], "_fields": {}}
+                   for r in in_scope.values()}
+    for rid, second in second_involvement_rows(in_scope.values()).items():
+        by_incident[second["Report ID"]] = {"_row": second, "_crash": rid,
+                                            "_fields": {"secondOf": rid}}
 
     # The VMT master. The archive includes years of data; we only need
     # months with VMT.
@@ -2375,6 +2742,9 @@ def main():
     incidents = []
     for iid, entry in window_by_incident.items():
         r = entry["_row"]
+        # The report whose crash this is: the crash-level overrides (airbag,
+        # severity, place, vehicles involved) are keyed by it
+        crash = entry["_crash"]
         rec = {}
         for csv_field in FIELDS:
             key = KEY_MAP[csv_field]
@@ -2395,7 +2765,7 @@ def main():
         # the reviewed AIRBAG_OVERRIDE value
         filed_airbag = rec["airbagAny"]
         reviewed_airbag, rec["airbagAny"] = AIRBAG_OVERRIDE.get(
-            rid, (filed_airbag, "Yes" in filed_airbag))
+            crash, (filed_airbag, "Yes" in filed_airbag))
         must(reviewed_airbag == filed_airbag,
              "AIRBAG_OVERRIDE was reviewed against a different filed Any Air "
              "Bags Deployed? (the report was re-filed; re-read its narrative "
@@ -2428,10 +2798,10 @@ def main():
         # None for an unrated incident: the unrated stop below lists them all
         # before anything is written.
         rec["fault"] = fault_data.get(rid)
-        rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(rid, 2)
+        rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(crash, 2)
         filed_severity = rec["severity"]
         reviewed_severity, rec["severity"] = SEVERITY_OVERRIDE.get(
-            rid, (filed_severity, filed_severity))
+            crash, (filed_severity, filed_severity))
         must(reviewed_severity == filed_severity,
              "SEVERITY_OVERRIDE was reviewed against a different filed Highest "
              "Injury Severity Alleged (the report was re-filed; re-read its "
@@ -2448,7 +2818,7 @@ def main():
              reportId=rid, narrative=rec["narrative"][:300])
         filed_loc = (rec["city"], rec["state"])
         reviewed_loc, (rec["city"], rec["state"]) = LOCATION_OVERRIDE.get(
-            rid, (filed_loc, filed_loc))
+            crash, (filed_loc, filed_loc))
         must(reviewed_loc == filed_loc,
              "LOCATION_OVERRIDE was reviewed against a different filed City / "
              "State (the report was re-filed; re-read its narrative and update "
@@ -2463,6 +2833,7 @@ def main():
         check_occupancy_classified(r)
         rec["belted"] = reviewed_belted(rid, rec["belted"])
         rec["series"] = incident_series(rec["helmer"], rid, nhtsa_month_to_iso(rec["date"]))
+        rec.update(entry["_fields"])
         incidents.append(rec)
     check_passengers_reviewed(incidents)
     check_overrides_apply(incidents)

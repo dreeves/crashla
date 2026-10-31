@@ -191,11 +191,13 @@ reviewed_rids = (set(slurp.OPERATOR_TYPE_OVERRIDE) | set(slurp.TELEOP_DRIVEN_REP
                  | set(slurp.PASSENGER_OVERRIDE) | set(slurp.OCCUPANCY_LANGUAGE_REVIEWED)
                  | slurp.SPLIT_SAME_INCIDENT_REPORTS | set(slurp.SUPERSEDED_REPORTS)
                  | set(slurp.SUPERSEDED_REPORTS.values()) | set(slurp.LOCATION_OVERRIDE)
-                 | set(slurp.SEVERITY_OVERRIDE) | set(slurp.AIRBAG_OVERRIDE) | set(slurp.VEHICLES_INVOLVED))
+                 | set(slurp.SEVERITY_OVERRIDE) | set(slurp.AIRBAG_OVERRIDE) | set(slurp.VEHICLES_INVOLVED)
+                 | set(slurp.SECOND_INVOLVEMENTS) | set(slurp.SECOND_AV_REVIEWED)
+                 | set(slurp.MISFILED_ADS_REPORTS) | set(slurp.NON_ADS_FILE_EXCLUDED))
 def trips_unlisted(r):
     probe = dict(r, **{'Report ID': 'synthetic-probe'})
     for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified,
-                  slurp.check_occupancy_classified):
+                  slurp.check_occupancy_classified, slurp.check_second_av_classified):
         try: check(probe)
         except AssertionError: return True
     return False

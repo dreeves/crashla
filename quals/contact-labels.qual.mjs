@@ -58,7 +58,10 @@ Expectata: each equals the spreadsheet's contact areas (which agree with the nar
 Resultata: ${JSON.stringify(sheetMismatch, null, 1)}.`);
 
 // (2) Every reporter: incidents from Jul 2025 on (all from the current file)
-// whose narrative names a front or rear box of the AV carry that box.
+// whose narrative names a front or rear box of the AV carry that box. A second
+// AV's record (secondOf; data/slurp.py SECOND_INVOLVEMENTS, since 2026-10-31)
+// repeats its report's narrative, whose "the Waymo AV" is the reporting AV, so
+// only the report's own record is read.
 const MON = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split(" ");
 const ym = d => { const [m, y] = d.split("-"); return +y * 100 + MON.indexOf(m) + 1; };
 const AV = "(?:Waymo|ADS|AV|Zoox|Tesla)";
@@ -71,7 +74,7 @@ const PHRASES = [
 ];
 const agreement = {};
 for (const [re, label] of PHRASES) {
-  const hits = data.filter(r => ym(r.date) >= 202507 && re.test(r.narrative));
+  const hits = data.filter(r => r.secondOf === undefined && ym(r.date) >= 202507 && re.test(r.narrative));
   const agree = hits.filter(r => r.svHit.split(" + ").includes(label)).length;
   agreement[label] = { hits: hits.length, agree, share: +(agree / hits.length).toFixed(3) };
 }
@@ -82,7 +85,12 @@ Expectata: at least 20 matches per phrase, and at least 85% of them carry the na
 Resultata: ${JSON.stringify(agreement)}.`);
 
 // (3) The pipeline: one loader per NHTSA file, shared by fetch_nhtsa_csv and
-// the offline regenerations; the relabel map; the guard.
+// the offline regenerations; the relabel map; the guard. Since 2026-10-31 the
+// rows also hold the one ADS-driven report NHTSA filed in its ADAS file,
+// 30270-14303 (MISFILED_ADS_REPORTS; quals/misfiled-reports.qual.mjs), read
+// from the newest nhtsa-adas snapshot with its contact areas moved as the
+// current ADS file's are: its crash partner's "front left side" is published
+// under "Front".
 const py = String.raw`
 import sys, csv, io, json, glob
 sys.path.insert(0, 'data')
@@ -106,20 +114,25 @@ for r in cur:
         latest[r['Report ID']] = r
 out['sheet'] = {rid: [slurp._contact_areas(latest[rid], 'SV Contact Area'), slurp._contact_areas(latest[rid], 'CP Contact Area')]
                 for rid in json.loads(sys.argv[1])}
-out['snapshotRowsShared'] = slurp.newest_snapshot_rows() == cur + arc
+non_ads = {p: open(sorted(glob.glob(f'data/snapshots/{p}-*.csv'))[-1], newline='').read() for _u, p in slurp.NON_ADS_SOURCES}
+admitted = [slurp._normalize_current_row(r) for _u, p in slurp.NON_ADS_SOURCES for r in csv.DictReader(io.StringIO(non_ads[p]))
+            if r['Report ID'] in slurp.MISFILED_ADS_REPORTS]
+out['admitted'] = [r['Report ID'] for r in admitted]
+out['snapshotRowsShared'] = slurp.newest_snapshot_rows() == cur + arc + admitted
 # fetch_nhtsa_csv must parse with the same loaders (served the snapshots; no snapshot written)
 class Resp:
     def __init__(self, body): self.body = body; self.headers = {'Last-Modified': 'Thu, 15 Oct 2026 12:00:00 GMT', 'ETag': None}
     def __enter__(self): return self
     def __exit__(self, *a): return False
     def read(self): return self.body
-bodies = {slurp.NHTSA_ADS_CSV_URL: cur_text.encode('utf-8'), slurp.NHTSA_ADS_ARCHIVE_URL: arc_text.encode('utf-8')}
+bodies = {slurp.NHTSA_ADS_CSV_URL: cur_text.encode('utf-8'), slurp.NHTSA_ADS_ARCHIVE_URL: arc_text.encode('utf-8'),
+          **{u: non_ads[p].encode('utf-8') for u, p in slurp.NON_ADS_SOURCES}}
 slurp.urllib.request.urlopen = lambda url, timeout=60: Resp(bodies[url])
 slurp.snapshot_csv_if_changed = lambda prefix, text, stamp: None
 import contextlib
 with contextlib.redirect_stdout(io.StringIO()):   # its progress lines are not the JSON
     fetched, _headers = slurp.fetch_nhtsa_csv('qual')
-out['fetchShared'] = fetched == cur + arc
+out['fetchShared'] = fetched == cur + arc + admitted
 # the guard: a file whose labels NHTSA has fixed must stop the run
 fixed = io.StringIO()
 writer = csv.DictWriter(fixed, fieldnames=list(raw_cur[0].keys()))
@@ -156,10 +169,10 @@ assert.deepEqual(pySheet, [],
   `Replicata: compute slurp._contact_areas (SV, CP) for all 17 reports Tesla's spreadsheet shares with NHTSA's file.
 Expectata: each equals the spreadsheet.
 Resultata: ${JSON.stringify(pySheet.map(([rid]) => [rid, out.sheet[rid]]))}.`);
-assert.ok(out.snapshotRowsShared && out.fetchShared,
-  `Replicata: compare slurp.newest_snapshot_rows() and fetch_nhtsa_csv() (served the snapshots) with current_csv_rows + archive_csv_rows.
-Expectata: all three give the same rows (one loader per file, used everywhere).
-Resultata: newest_snapshot_rows equal=${out.snapshotRowsShared}, fetch equal=${out.fetchShared}.`);
+assert.ok(out.snapshotRowsShared && out.fetchShared && JSON.stringify(out.admitted) === JSON.stringify(["30270-14303"]),
+  `Replicata: compare slurp.newest_snapshot_rows() and fetch_nhtsa_csv() (served the snapshots) with current_csv_rows + archive_csv_rows + the MISFILED_ADS_REPORTS rows of the newest nhtsa-adas and nhtsa-other snapshots, their contact areas moved.
+Expectata: all three give the same rows (one loader per file, used everywhere), the non-ADS files adding 30270-14303's one row.
+Resultata: newest_snapshot_rows equal=${out.snapshotRowsShared}, fetch equal=${out.fetchShared}, non-ADS rows ${JSON.stringify(out.admitted)}.`);
 assert.match(out.guardOnFixed, /CURRENT_FILE_CONTACT_LABEL/,
   `Replicata: feed slurp.current_csv_rows a current file whose contact labels NHTSA has already fixed.
 Expectata: the run stops with a message naming CURRENT_FILE_CONTACT_LABEL.

@@ -20,7 +20,9 @@ import { parseCsv } from "./csv-parse.mjs";
 //       stated precision; the Zoox Dec-2025 and Mar-2026 knots, the Zoox
 //       Jul-2026 floor (both added 2026-10-27) and Tesla's Aug-2026 floor
 //       state the band edges their rows carry;
-//   (4) the specific facts the audit corrected stay corrected.
+//   (4) the specific facts the audit corrected stay corrected;
+//   (5) Tesla's Sep 2025-Jun 2026 rationales disclose possible driver's-seat
+//       trips (decision of 2026-10-31, open question 13).
 
 const raw = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const rows = raw.slice(1).map(p => ({
@@ -127,7 +129,48 @@ const FACTS = [
   // and the Jan 27 restart
   [r => r.helmer === "zoox" && /Jan 22-27/.test(r.rationale) && !/X user/.test(r.rationale),
     "credits the Jan 22 start of Zoox's Las Vegas outage to someone other than the X user LVRJ cites"],
+  // Audit 2026-10-30 (added 2026-10-31). VMT-7: Alphabet's Q3 remarks (Oct
+  // 28, 2026) gave "more than 300 million fully autonomous miles", a
+  // Waymo total-miles floor stated after June, so the call is no longer a
+  // coming anchor and "no figure exists" no longer holds
+  [r => r.helmer === "waymo" && /Next anchors: Alphabet/.test(r.rationale),
+    "lists Alphabet's Oct 28, 2026 call as a coming anchor"],
+  [r => r.helmer === "waymo" && /No Waymo total-miles figure measured after Jun 2026 exists/.test(r.rationale),
+    "says no Waymo total-miles figure after June 2026 exists (Alphabet's Oct 28 remarks gave a floor)"],
+  // Review of the VMT package (2026-10-31): Alphabet's Oct 28 floor is not
+  // the only Waymo total-distance figure stated after June 2026, nor the only
+  // one for a date after June. The hub's 271.329M (Sep 24) is for June 30,
+  // and Waymo stated current floors in kilometres: "more than 300 million
+  // fully autonomous kilometres" (https://waymo.com/blog/2026/09/waymo-in-singapore,
+  // Sep 17, 2026) and "over 450 million fully autonomous kilometres"
+  // (https://waymo.com/waymo-in-canada/, with its Oct 16, 2026 Toronto note).
+  // The Oct 28 figure is the highest and the newest.
+  [r => r.helmer === "waymo" && /only Waymo total-(miles|distance) figure/.test(r.rationale),
+    "calls Alphabet's Oct 28 floor the only Waymo total-distance figure after June 2026 (the hub stated 271.329M for June on Sep 24; Waymo's Sep 17 and Oct 16 pages state kilometre floors)"],
+  // VMT-3: Waymo's 2023-2024 rows did not follow California's monthly miles
+  [r => r.helmer === "waymo" && /scaled to US/.test(r.rationale),
+    "describes Waymo rows as California miles scaled to the US"],
+  // VMT-4: the inner combination of the October projection is geometric
+  [r => r.helmer === "teslanomonitor" && /the mean of holding the last week flat/.test(r.rationale),
+    "calls the October projection's flat/continued-growth combination 'the mean' (it is geometric)"],
+  // VMT-5: the October no-monitor band's page/deck term is 0.066, 1.96 x the
+  // rms log gap over Apr-Sep, not September's 4.8%
+  [r => r.helmer === "teslanomonitor" && /plus the 4\.8% gap/.test(r.rationale),
+    "names September's 4.8% page/deck gap as the October band's term"],
+  // #12 (2026-10-04 audit): Levinson's "just last week" (Fortune, Dec 8, 2025)
+  // dates Zoox's 1M-mile crossing to Dec 1-7, not about Nov 22
+  [r => r.helmer === "zoox" && /Nov 22/.test(r.rationale),
+    "dates Zoox's 1M-mile crossing to about Nov 22 (Fortune, Dec 8, 2025: during Dec 1-7)"],
 ];
+
+// Decision of 2026-10-31 (open question 13): every Tesla month that may hold
+// trips with a safety monitor in the driver's seat (Sep 2025-Jun 2026, the
+// every-mode line's months before Tesla's no-monitor series) discloses it:
+// such a trip's crashes, if it ran as FSD (Supervised), go to NHTSA's Level 2
+// file, so they may be missing from the count.
+const undisclosed = rows.filter(r => r.helmer === "tesla" && r.month >= "2025-09" && r.month <= "2026-06"
+  && !(/driver's seat/.test(r.rationale) && /Level 2 file/.test(r.rationale) && /no-monitor line/.test(r.rationale)))
+  .map(r => r.month);
 const factErrors = [];
 for (const r of rows) for (const [bad, what] of FACTS) if (bad(r)) factErrors.push(`${r.helmer} ${r.month}: ${what}`);
 const problems = {
@@ -136,11 +179,12 @@ const problems = {
   anchorsNotTheRows: [...new Set(anchorErrors)],
   bandEdgesNotStated: unstated,
   correctedFactsRecur: factErrors,
+  driversSeatUndisclosed: undisclosed,
 };
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0));
 assert.deepEqual(failing, {},
-  `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations, (2) internal shorthand, (3) stated anchors and band edges against the rows, (4) the audit's corrected facts.
-Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each Waymo "<x>M end-<Mon>-<YYYY>" and exact-central milestone equals the rows' cumulative to its stated precision, and the Zoox Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs.
+  `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations, (2) internal shorthand, (3) stated anchors and band edges against the rows, (4) the audit's corrected facts, (5) Tesla's driver's-seat disclosure.
+Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each Waymo "<x>M end-<Mon>-<YYYY>" and exact-central milestone equals the rows' cumulative to its stated precision, and the Zoox Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs; (5) every Tesla rationale of Sep 2025-Jun 2026 says those months may hold trips with a safety monitor in the driver's seat, whose crashes NHTSA may file in its Level 2 file, a bias the no-monitor line avoids.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections, use no internal shorthand, and state the anchors their rows carry`);

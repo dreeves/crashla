@@ -155,16 +155,20 @@ Resultata: expected content not found.`);
 // Tesla crossed the 20-incident threshold in the Jul-2026 NHTSA drop (24
 // incidents after Houston inclusion), so the small-sample "too few incidents
 // to tell" branch no longer fires for any live helmer. Tesla's monthly rates
-// swing wildly (tiny-fleet ramp months like Jul 2025 at ~475/M mi vs ~5-17
-// later), so the test reads overdispersed by a wide margin (X²/dof ≈ 12.3).
-// Re-pin if the data moves a verdict tier. The assessment's words are the
-// app's, DISPERSION_VERDICT (until 2026-10-29 this qual spelled them out).
+// swing wildly (its launch month Jul 2025 at 232/M mi vs ~3-40 later), so the
+// test reads overdispersed. Re-pin if the data moves a verdict tier. History:
+// X²/dof ≈ 12.3 when this was written, 5.63 ("overdispersed") until
+// 2026-10-31, when July 2025's miles were re-read from Tesla's decks and its
+// Jul 23 call (audit 2026-10-30, VMT-1: 6,317 -> 8,619, July's rate 316.6 ->
+// 232.0 per M mi), 4.43 ("mildly overdispersed") since. The assessment's
+// words are the app's, DISPERSION_VERDICT (until 2026-10-29 this qual
+// spelled them out).
 const DV = JSON.parse(vm.runInContext("JSON.stringify(DISPERSION_VERDICT)", ctx));
 const teslaDispRow = rowsOf(tableOf("sanity-dispersion") || "").find(r => r.includes(`<td>${escHtml(label("Tesla"))}</td>`)) || "";
 assert.ok(
-  teslaDispRow.includes(`<td>${DV.over}</td>`),
+  teslaDispRow.includes(`<td>${DV.mild}</td>`),
   `Replicata: check Poisson dispersion verdict for Tesla.
-Expectata: Tesla (24 incidents, dispersion index ~12.3) shows the overdispersed assessment, DISPERSION_VERDICT.over (${JSON.stringify(DV.over)}).
+Expectata: Tesla (dispersion index ~4.4 in the default window) shows the mildly overdispersed assessment, DISPERSION_VERDICT.mild (${JSON.stringify(DV.mild)}).
 Resultata: Tesla dispersion row was ${JSON.stringify(teslaDispRow)}.`);
 
 // --- Geography: Waymo spans multiple cities ---

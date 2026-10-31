@@ -71,4 +71,21 @@ Expectata: the Dec-2025 knot [${knotLo}, ${knotHi}] = [1.25M - (20,174 + 2 x 19,
 Resultata: [${dec.kmin}, ${dec.kmax}].`);
 }
 
+// The 1M crossing (added 2026-10-31, decision #12 of the 2026-10-04 audit).
+// Zoox's CTO Jesse Levinson, at Fortune Brainstorm AI in San Francisco on
+// Monday, Dec 8, 2025: "Zoox crossed the 1 million mile technical threshold
+// for autonomous rides just last week" (Fortune, Dec 8, 2025, and its Dec 9
+// newsletter), i.e. during Dec 1-7. The series counts from May 2024, so the
+// crossing is where the cumulative plus the 40,080 pre-series driverless
+// miles passes 1,000,000, the month's miles spread evenly over its days.
+{
+  const PRE = 40080;
+  const nov = rows.find(x => x.month === "2025-11"), dec = rows.find(x => x.month === "2025-12");
+  const day = 31 * (1000000 - PRE - nov.cume) / (dec.cume - nov.cume);
+  assert.ok(day > 0 && day <= 7,
+    `Replicata: find the day Zoox's cumulative plus the ${PRE} pre-series miles passes 1,000,000 (end-Nov ${nov.cume + PRE}, December ${dec.cume - nov.cume} spread evenly).
+Expectata: during Dec 1-7, 2025 (Fortune, Dec 8, 2025: "just last week").
+Resultata: ${day <= 0 ? `before December (end-Nov is already ${nov.cume + PRE})` : `Dec ${day.toFixed(1)}`}.`);
+}
+
 console.log(`qual pass: zoox cumulative VMT tracks all three published mileage milestones (1.3M Dec 2025, ~2M late Mar 2026, >3M by end-Jul 2026 per the Aug-5 statement), and its Dec-2025 band is the 1.3M disclosure's own uncertainty`);

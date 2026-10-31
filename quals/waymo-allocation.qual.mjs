@@ -19,8 +19,14 @@ import { execFileSync } from "node:child_process";
 // Aligned quarter blocks: smooth log RMSE 0.0814 versus flat 0.1274. June
 // 2025's shutdown remains outside the smooth +/-0.20 log band (error -0.3021).
 // The actual model observes California directly, so that local shutdown does
-// not need to be predicted or copied onto other cities. Nine-month early-pilot
-// allocations failed this calibration and retain their older wide allowances.
+// not need to be predicted or copied onto other cities. The formula's widths
+// are calibrated up to six months; past that they undercover (12 months:
+// 85.7%), so since 2026-10-31 the builder gives a longer interval (2022's
+// twelve months, before California's monthly series) the series' old early
+// allowance, ln 2 (half to twice the month's miles), and every such width
+// must pass the same guard at its own length (12 months: 156/168, 92.9%).
+// Until 2026-10-31 the model began in July 2024 and the nine-month 2023
+// interval, which failed this calibration, kept its older wide allowances.
 
 const lines = fs.readFileSync("data/waymo-ca.csv", "utf8").trim().split("\n");
 assert.equal(lines.shift(), "month,deployment,pilot,total,deployment_source,pilot_source",
@@ -106,23 +112,29 @@ assert.ok(quarters.length > 0,
 const quarterWidth = quarters[0].allocation_log_halfwidth;
 assert.ok(Number.isFinite(quarterWidth) && quarterWidth > 0,
   `Replicata: read the three-month allocation allowance.\nExpectata: a positive finite log half-width.\nResultata: ${quarterWidth}.`);
-for (const row of produced) {
+const CALIBRATED_MONTHS = 6;
+for (const row of produced.filter(r => span(r) <= CALIBRATED_MONTHS)) {
   const expectedWidth = quarterWidth * Math.sqrt((span(row) - 1) / 2);
   assert.ok(Math.abs(row.allocation_log_halfwidth - expectedWidth) < 1e-12,
     `Replicata: inspect the authoring model's ${span(row)}-month allowance at ${row.month}.\nExpectata: the calibrated interval-length scaling, ${expectedWidth}.\nResultata: ${row.allocation_log_halfwidth}.`);
 }
 
-for (const n of [2, 3, 4, 5, 6]) {
+// Masked-month coverage at block length n and log half-width w, over every
+// alignment that holds at least two whole blocks.
+function guard(n, width) {
   const predictions = Array.from({length: n}, (_, offset) => {
     const count = Math.floor((sample.length - offset) / n) * n;
-    return reconstruct(sample.slice(offset, offset + count), n, smoothRate);
+    return count >= 2 * n ? reconstruct(sample.slice(offset, offset + count), n, smoothRate) : [];
   }).flat();
-  const width = quarterWidth * Math.sqrt((n - 1) / 2);
   const hits = predictions.filter(r => Math.abs(r.error) <= width).length;
   const coverage = hits / predictions.length;
   assert.ok(coverage >= 0.90,
     `Replicata: mask California in ${n}-month blocks under every alignment, reconstruct its months, and apply log half-width ${width}.\nExpectata: at least 90% empirical coverage, a coarse calibration guard.\nResultata: ${hits}/${predictions.length} (${(100 * coverage).toFixed(2)}%).`);
 }
+for (const n of [2, 3, 4, 5, 6]) guard(n, quarterWidth * Math.sqrt((n - 1) / 2));
+// Every width the model uses past the calibrated lengths passes the guard at
+// its own length.
+for (const row of produced.filter(r => span(r) > CALIBRATED_MONTHS)) guard(span(row), row.allocation_log_halfwidth);
 
 const smooth = reconstruct(sample, 3, smoothRate);
 const flat = reconstruct(sample, 3, flatRate);

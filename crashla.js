@@ -555,11 +555,14 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // surface-street rates, the fatality band is all-urban-roads
 // (freeway-inclusive, matching the AV side's all-roads scope), and the
 // HumansUS bands are national all-road-type rates. The AV numerators and
-// denominators include some freeway driving (Waymo from mid-2026, Tesla
-// highway rides from Sep 2025) that the surface-street benchmarks exclude —
-// a pro-AV residual for the crash-frequency metrics; per the 2026-06-26
-// investigation it is immaterial today (9 of 2049 incidents freeway-coded,
-// all Waymo, none airbag/serious/fatal).
+// denominators include some freeway driving (Waymo's from late 2025, its
+// freeway-coded crashes starting in Oct 2025, with freeway rides suspended
+// May 21 to Jul 29, 2026; Tesla highway rides from Sep 2025) that the
+// surface-street benchmarks exclude — a pro-AV residual for the
+// crash-frequency metrics; per the 2026-06-26 investigation it is immaterial
+// (on 2026-10-31, 10 of 2,220 incidents freeway-coded, all Waymo; one,
+// 30270-13955, a hospital transport, so it counts in Hospitalization+; none
+// an airbag, serious or fatal crash).
 //
 // One label per benchmark source, keyed by URL (audit #68, 2026-10-03). Every
 // humanMPI srcLinks entry is a URL from this table, so a list that gathers
@@ -3439,7 +3442,7 @@ function renderFleetForecastChart() {
 const FLEET_HISTORY = {
   Tesla: [
     {month: "2025-06", best: 12, lo: 8, hi: 20},
-    {month: "2025-09", best: 19, lo: 12, hi: 30},
+    {month: "2025-09", best: 19, lo: 13, hi: 30},
     {month: "2025-10", best: 26, lo: 18, hi: 42},
     {month: "2025-11", best: 35, lo: 24, hi: 57},
     {month: "2025-12", best: 36, lo: 24, hi: 58},
@@ -3587,10 +3590,10 @@ const MILES_FORECAST = [
     { weight: 0.07, best: 600000000, lo: 20000000, hi: 6000000000, scope: "hw4" },
   ] },
   { helmer: "Waymo", components: [
-    // US. End-2026 ~408M (361.8M through October, data/vmt.csv, plus ~46M);
+    // US. End-2026 ~408M (361.7M through October, data/vmt.csv, plus ~46M);
     // 2027 adds ~470-495M: an average fleet of ~8,500 at ~155 miles a car-day
     // (Q2 2026: 608k a day over ~3,800-3,900 cars; September: 714k over
-    // ~4,300). Low: October's 721k a day held flat (676M). High: an average
+    // ~4,300). Low: October's 718k a day held flat (676M). High: an average
     // fleet of ~13k.
     { weight: 1, best: 880000000, lo: 680000000, hi: 1200000000 },
   ] },
@@ -5014,6 +5017,13 @@ assert(HEADER_LABELS.length === SORT_COLUMNS.length,
 // judgment (the judged fault fraction, the reasoning behind it, and the
 // contact areas) shown under an expanded incident narrative.
 const NARRATIVE_FAULT_LABEL = "Fault fraction:";
+// The incident browser shows the second AV of a crash one report files for
+// two of a company's AVs (data/slurp.py SECOND_INVOLVEMENTS; decision #47,
+// 2026-10-04: each AV involved counts) as a row of its own, with the report's
+// narrative after this label, so the row does not read as a duplicate filing.
+// TODO: English for this label, which marks the row as the other AV of the
+// same report: "[Second AV in this report]".
+const SECOND_INVOLVEMENT_LABEL = "[Alterum AV eiusdem relationis]";
 function narrativeToggleName(reportId) {
   return `Narrative of report ${reportId}`;
 }
@@ -5118,9 +5128,11 @@ function renderTable() {
   for (const r of filtered) {
     const tr = document.createElement("tr");
     const isCbi = r.narrativeCbi === "Y";
-    const narrativeText = isCbi
+    const filedText = isCbi
       ? "[\"Confidential Business Information\"]"
       : (r.narrative || "");
+    // A second AV's row (secondOf names its report) leads with its label.
+    const narrativeText = r.secondOf === undefined ? filedText : `${SECOND_INVOLVEMENT_LABEL} ${filedText}`;
     const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
 
     const fault = faultFrac(r.reportId);
@@ -5149,7 +5161,7 @@ function renderTable() {
       <td class="date-cell">${escHtml(r.date)}</td>
       <td>${escHtml(incidentLocation(r))}</td>
       <td>${escHtml(r.crashWith)}</td>
-      <td>${escHtml(r.speed !== null ? String(r.speed) : "?")}</td>
+      <td>${r.speed !== null ? escHtml(String(r.speed)) : '<span aria-hidden="true">?</span>'}</td>
       <td class="fault-cell" data-tip="${escAttr(faultTip)}" aria-describedby="narr-fault-${rid}">${faultHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
       <td class="${narrativeClass}"><span class="narrative-toggle" role="button" tabindex="0" aria-expanded="false" aria-label="${escAttr(narrativeToggleName(r.reportId))}" aria-describedby="narr-text-${rid}" data-focus-key="narrative-${rid}"><span id="narr-text-${rid}">${escHtml(narrativeText)}</span></span><span class="narrative-fault" id="narr-fault-${rid}">${NARRATIVE_FAULT_LABEL} ${escHtml(faultTip)}</span></td>
@@ -6568,6 +6580,11 @@ function loadPredmarketData() {
       "incident missing svHit", {reportId: inc.reportId});
     assert(typeof inc.cpHit === "string",
       "incident missing cpHit", {reportId: inc.reportId});
+    // A second AV's record (data/slurp.py SECOND_INVOLVEMENTS) names the
+    // report it shares; no other record has the field.
+    assert(inc.secondOf === undefined ||
+      (inc.secondOf !== inc.reportId && incidentData.some(other => other.reportId === inc.secondOf)),
+      "incident secondOf must name another incident's report", {reportId: inc.reportId, secondOf: inc.secondOf});
     if (inc.fault !== null) {
       const f = inc.fault.faultfrac;
       assert(typeof f === "number" && f >= 0 && f <= 1,

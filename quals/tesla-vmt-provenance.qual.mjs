@@ -42,7 +42,9 @@ const byMonth = Object.fromEntries(rows.map(r => [r.month, r]));
 // Bounds are absolute, generous enough for chart-read noise on both our side
 // and any future re-extraction, tighter in relative terms as months grow.
 const PINS = [
-  ["2025-07", 7000,    6800,    10000,   false], // verbal: 7,000 mi @ Jul 23 call
+  // July 2025 (restated 2026-10-31, audit 2026-10-30 VMT-1): the Q2-2026
+  // deck's reading, the one deck reading the Jul 23 call allows (below)
+  ["2025-07", 9302,    6800,    10000,   true],
   ["2025-08", 20000,   14000,   28000,   false],
   ["2025-09", 121000,  108000,  134000,  false],
   ["2025-10", 266000,  240000,  292000,  false],
@@ -70,6 +72,38 @@ Resultata: ${row.cume}.`);
     `Replicata: check tesla ${month}'s kyoom band against the deck-chart value.
 Expectata: the authored cumulative band [kyoom_min, kyoom_max] contains ${chart}.
 Resultata: [${row.kmin}, ${row.kmax}].`);
+}
+
+// The launch months (added 2026-10-31, audit 2026-10-30 VMT-1). At these
+// months' scale a chart reading is good to a few thousand miles, and the
+// three decks disagree: end-of-month cumulatives read from the Q4-2025 (p11),
+// Q1-2026 (p9) and Q2-2026 (p9) decks' vector paths are June 2,018 / 1,473 /
+// 245, July 4,893 / 4,647 / 9,302 and August 19,697 / 19,461 / 18,481. On
+// the Jul 23, 2025 call Elluswamy said "We have more than seven thousand
+// miles operating in the Austin area" (Motley Fool transcript,
+// https://www.fool.com/earnings/call-transcripts/2025/07/23/tesla-tsla-q2-2025-earnings-call-transcript/), a floor on
+// the end-of-July cumulative that rules out the two lower July readings. Each
+// month's cumulative band holds every reading the call allows, and July's
+// floor is the call's.
+const CALL_FLOOR_JUL_2025 = 7000;
+const DECK_READINGS = {
+  "2025-06": [2018, 1473, 245],
+  "2025-07": [4893, 4647, 9302],
+  "2025-08": [19697, 19461, 18481],
+};
+const jul = byMonth["2025-07"];
+assert.ok(jul.kmin >= CALL_FLOOR_JUL_2025,
+  `Replicata: read tesla 2025-07's kyoom_min against the Jul 23, 2025 call's "more than seven thousand miles".
+Expectata: kyoom_min >= ${CALL_FLOOR_JUL_2025} (the end-of-July cumulative is at least the Jul 23 figure).
+Resultata: ${jul.kmin}.`);
+for (const [month, readings] of Object.entries(DECK_READINGS)) {
+  const row = byMonth[month];
+  const allowed = readings.filter(x => month !== "2025-07" || x >= CALL_FLOOR_JUL_2025);
+  const outside = allowed.filter(x => x < row.kmin || x > row.kmax);
+  assert.deepEqual(outside, [],
+    `Replicata: compare tesla ${month}'s kyoom band with the three decks' readings of that month.
+Expectata: the band contains every reading the Jul 23 call does not rule out (${allowed.join(", ")}).
+Resultata: [${row.kmin}, ${row.kmax}] leaves out ${outside.join(", ")}.`);
 }
 
 // The disclosed series is a floor on total in-scope VMT (deadhead ambiguity is
