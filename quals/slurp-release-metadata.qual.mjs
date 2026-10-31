@@ -7,8 +7,12 @@ import { spawnSync } from "node:child_process";
 // on a weekend or holiday; quals/nhtsa-cutoff-date.qual.mjs). The reviewed cutoff must (1) match the data
 // by month, (2) be guarded by content (the newest submission month must be
 // the cutoff month; early Monthly filings inside it are legitimate), (3)
-// carry the measured five-day receipt-coverage
-// triple, and (4) never be enforced by pinning the CSV's HTTP headers or
+// estimate the data-through month's five-day receipt coverage from the
+// release itself, observed / expected, its high edge the reviewed
+// FIVE_DAY_RECEIPT_COVERAGE_MAX at or above every measured first-release share
+// (since 2026-10-31, decision D6; quals/receipt-coverage.qual.mjs pins the
+// estimate; until then the coverage was the reviewed constant triple
+// FIVE_DAY_RECEIPT_COVERAGE), and (4) never be enforced by pinning the CSV's HTTP headers or
 // bytes — a narrative correction (Aug 27, 2026: NHTSA replaced the wrong
 // narrative on Stack AV 34952-11803 v1) must not break ingestion. Offline regeneration from the newest snapshots must
 // reproduce the committed payloads byte for byte.
@@ -27,33 +31,38 @@ src = pathlib.Path('data/slurp.py').read_text()
 for banned in ('NHTSA_EXPECTED_ETAG', 'NHTSA_EXPECTED_LAST_MODIFIED', 'validate_nhtsa_headers'):
     assert banned not in src, banned
 
-# (3) the reviewed triple is consistent with its own measurements
-cov = slurp.FIVE_DAY_RECEIPT_COVERAGE
+# (3) the reviewed high edge covers its measurements, and the release's
+# triple is observed / expected below it
+hi = slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX
 fracs = sorted(n / d for n, d in slurp.FIVE_DAY_RECEIPT_OBSERVATIONS.values())
 assert len(fracs) >= 3, fracs
-assert 0 < cov[1] <= fracs[0] and fracs[-1] <= cov[2] < 1 and cov[1] < cov[0] < cov[2], (cov, fracs)
+assert fracs[-1] <= hi < 1, (hi, fracs)
 month = slurp.NHTSA_DATA_THROUGH_DATE[:7]
-assert slurp.release_month_coverage(slurp.NHTSA_DATA_THROUGH_DATE, month) == cov
+newest_rows = slurp.newest_snapshot_rows()
+counts = slurp.monthly_track_counts(newest_rows)
+vmt_values = slurp.parse_vmt_values(slurp.read_vmt_master())
+got = slurp.release_month_coverage(slurp.NHTSA_DATA_THROUGH_DATE, month, counts, vmt_values)
+assert 0 < got[1] < got[0] < got[2] == hi, got
 
 # (1) a new release (months advanced past the reviewed cutoff) fails loudly
 for stale in ('2026-06', '2026-08', '2027-01'):
     try:
-        slurp.release_month_coverage('2026-07-15', stale)
+        slurp.release_month_coverage('2026-07-15', stale, counts, vmt_values)
     except AssertionError:
         pass
     else:
         raise AssertionError('release_month_coverage accepted a cutoff month that disagrees with the data')
 
-# a constant that disagrees with its measurements fails loudly
-saved = slurp.FIVE_DAY_RECEIPT_COVERAGE
-slurp.FIVE_DAY_RECEIPT_COVERAGE = (0.9, 0.8, 0.95)
+# a high edge below a measured first-release share fails loudly
+saved = slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX
+slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX = fracs[-1] - 0.05
 try:
-    slurp.release_month_coverage('2026-07-15', '2026-07')
-except AssertionError:
-    pass
+    slurp.release_month_coverage('2026-07-15', '2026-07', counts, vmt_values)
+except AssertionError as exc:
+    assert 'FIVE_DAY_RECEIPT_COVERAGE_MAX' in str(exc), exc
 else:
-    raise AssertionError('release_month_coverage accepted a triple outside its measurements')
-slurp.FIVE_DAY_RECEIPT_COVERAGE = saved
+    raise AssertionError('release_month_coverage accepted a high edge below its measurements')
+slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX = saved
 
 def report(entity, rid, incident, submission, report_type='5-Day'):
     return {
@@ -112,7 +121,7 @@ else:
 # (2) + byte-identical offline regeneration from the newest snapshots
 current = sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1]
 archive = sorted(glob.glob('data/snapshots/nhtsa-archive-*.csv'))[-1]
-rows = slurp.newest_snapshot_rows()
+rows = newest_rows
 incident_original = pathlib.Path('data/incidents.js').read_text()
 vmt_original = pathlib.Path('data/vmt.js').read_text()
 
@@ -126,15 +135,24 @@ last_modified = format_datetime(datetime.datetime.fromisoformat(modified + 'T12:
 headers = {slurp.NHTSA_ADS_CSV_URL: (last_modified, None), slurp.NHTSA_ADS_ARCHIVE_URL: (last_modified, None)}
 slurp.sync_fault_csvs = lambda master_rows: None
 
-def regenerate(all_rows):
+fault_original = pathlib.Path('data/faultfrac.csv').read_text()
+saved_fault_input = slurp.FAULT_INPUT
+def regenerate(all_rows, fault_lines=()):
+    # fault_lines: data/faultfrac.csv rows for synthetic reports (slurp stops
+    # on an unrated in-scope incident since 2026-10-31, decision #4)
     slurp.fetch_nhtsa_csv = lambda stamp: (list(all_rows), headers)
     with tempfile.TemporaryDirectory() as temp_dir:
         temp = pathlib.Path(temp_dir)
         (temp / 'incidents.js').write_text(incident_original)
         (temp / 'vmt.js').write_text(vmt_original)
+        (temp / 'faultfrac.csv').write_text(fault_original.rstrip('\n') + ''.join('\n' + line for line in fault_lines) + '\n')
         slurp.INCIDENT_JS = temp / 'incidents.js'
         slurp.VMT_JS = temp / 'vmt.js'
-        slurp.main()
+        slurp.FAULT_INPUT = temp / 'faultfrac.csv'
+        try:
+            slurp.main()
+        finally:
+            slurp.FAULT_INPUT = saved_fault_input
         return (temp / 'incidents.js').read_text(), (temp / 'vmt.js').read_text()
 
 inc_regen, vmt_regen = regenerate(rows)
@@ -158,9 +176,10 @@ next_label = (last_date.replace(day=1) + datetime.timedelta(days=32)).strftime('
 # The clones below copy a template row under new IDs, so the template must be
 # a row slurp counts on its own: a driverless ("None") Waymo 5-Day filing of
 # the data-through month that needs no reviewed entry (none keyed by its
-# Report ID or Same Incident ID, a filed city and state, and no narrative
-# tripwire firing once its Report ID is new), filed once (its Report ID has
-# one version and its Same Incident ID one report, so the tie clone meets it).
+# Report ID, which every reviewed table is keyed by since 2026-10-31, a filed
+# city and state, and no narrative tripwire firing once its Report ID is
+# new), filed once (its Report ID has one version and its Same Incident ID one
+# report, so the tie clone meets it).
 # The smallest such Report ID, so NHTSA's row order cannot pick a template
 # whose clone stops the run for another reason (until 2026-10-04 the first
 # listed row was used: second audit, #58).
@@ -170,9 +189,9 @@ reports = collections.Counter(r['Same Incident ID'] for r in filed_rows)
 reviewed_rids = (set(slurp.OPERATOR_TYPE_OVERRIDE) | set(slurp.TELEOP_DRIVEN_REPORTS)
                  | set(slurp.REMOTE_LANGUAGE_ADS_DRIVEN) | set(slurp.SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN)
                  | set(slurp.PASSENGER_OVERRIDE) | set(slurp.OCCUPANCY_LANGUAGE_REVIEWED)
-                 | slurp.SPLIT_SAME_INCIDENT_REPORTS)
-reviewed_iids = (set(slurp.LOCATION_OVERRIDE) | set(slurp.SEVERITY_OVERRIDE)
-                 | set(slurp.AIRBAG_OVERRIDE) | set(slurp.VEHICLES_INVOLVED))
+                 | slurp.SPLIT_SAME_INCIDENT_REPORTS | set(slurp.SUPERSEDED_REPORTS)
+                 | set(slurp.SUPERSEDED_REPORTS.values()) | set(slurp.LOCATION_OVERRIDE)
+                 | set(slurp.SEVERITY_OVERRIDE) | set(slurp.AIRBAG_OVERRIDE) | set(slurp.VEHICLES_INVOLVED))
 def trips_unlisted(r):
     probe = dict(r, **{'Report ID': 'synthetic-probe'})
     for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified,
@@ -186,7 +205,7 @@ eligible = [r for r in filed_rows
             and r['Driver / Operator Type'].strip() == 'None' and slurp.is_public_service_incident(r)
             and r['City'].strip() and r['State'].strip()
             and versions[r['Report ID']] == 1 and reports[r['Same Incident ID']] == 1
-            and r['Report ID'] not in reviewed_rids and r['Same Incident ID'] not in reviewed_iids
+            and r['Report ID'] not in reviewed_rids
             and not trips_unlisted(r)]
 assert eligible, 'no Waymo 5-Day filing of the data-through month can serve as a clone template'
 template = min(eligible, key=lambda r: r['Report ID'])
@@ -195,7 +214,9 @@ early_monthly['Report ID'] = 'synthetic-early-monthly'
 early_monthly['Same Incident ID'] = 'synthetic-early-monthly'
 early_monthly['Report Type'] = 'Monthly'
 early_monthly['Report Submission Date'] = last_label
-regenerate(rows + [early_monthly])  # must not raise
+# rated, as every in-scope incident must be (a copy of the template's row)
+template_fault = next(line for line in fault_original.split('\n') if line.startswith(template['Report ID'] + ','))
+regenerate(rows + [early_monthly], [template_fault.replace(template['Report ID'], 'synthetic-early-monthly', 1)])  # must not raise
 late_monthly = dict(early_monthly)
 late_monthly['Report ID'] = 'synthetic-late-monthly'
 late_monthly['Same Incident ID'] = 'synthetic-late-monthly'
@@ -227,17 +248,21 @@ probe = datetime.date(probe_y, probe_m, 15)
 while probe.weekday() >= 5 or probe in holidays:
     probe += datetime.timedelta(days=1)
 try:
-    slurp.release_month_coverage(probe.isoformat(), probe.isoformat()[:7])
+    slurp.release_month_coverage(probe.isoformat(), probe.isoformat()[:7], counts, vmt_values)
 except AssertionError as exc:
     assert 'receipt' in str(exc).lower(), exc
 else:
     raise AssertionError('release_month_coverage accepted a cutoff with no receipt observation for the month that just became final')
 assert '2026-04' in slurp.RECEIPT_MONTHS_EXCLUDED, 'the truncated May-15-2026 release month is the documented exclusion'
 
-# (6) a Same-Incident version tie between two Report IDs is broken by the
-# later Report Submission Date, and an exact tie stops the run. The one real
-# pair, 6f2cffa37c36b66 = 30270-1583 (v1, NOV-2021 re-filing) and 30270-1535
-# (v1, OCT-2021), resolves to 30270-1583 by that rule, not by CSV row order.
+# (6) two in-scope Report IDs under one Same Incident ID stop the run until a
+# reviewed table says which stands (since 2026-10-31; until then the higher
+# Report Version won, then the later Report Submission Date, and only an exact
+# tie stopped it: quals/same-incident-dedup.qual.mjs). The one real pair,
+# 6f2cffa37c36b66 = 30270-1583 (v1, NOV-2021 re-filing) and 30270-1535 (v1,
+# OCT-2021), resolves to 30270-1583 by its SUPERSEDED_REPORTS entry, not by
+# CSV row order; a second report at the template's own version and
+# submission month stops the run.
 assert '"reportId": "30270-1583"' in inc_regen and '"reportId": "30270-1535"' not in inc_regen
 tie = dict(template)
 tie['Report ID'] = 'synthetic-tie'
@@ -245,7 +270,7 @@ tie['Report Submission Date'] = template['Report Submission Date']
 try:
     regenerate(rows + [tie])
 except AssertionError as exc:
-    assert 'tie' in str(exc).lower(), exc
+    assert 'Same Incident ID' in str(exc) and 'synthetic-tie' in str(exc), exc
 else:
     raise AssertionError('slurp accepted two Report IDs at the same version and submission month for one Same Incident ID')
 

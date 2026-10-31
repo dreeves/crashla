@@ -339,8 +339,10 @@ SPLIT_SAME_INCIDENT_REPORTS = {"30270-10320"}
 # picked the higher Report Version, then the later submission month, but the
 # versions of different Report IDs share no scale (Waymo's re-filings under a
 # new ID came as v1 and as v2), so a newer re-filing under a new ID lost to
-# the original's later version, and an out-of-scope re-filing (as 30270-7598
-# re-filed 30270-4881) left the original counted.
+# the original's later version, and an out-of-scope re-filing left the
+# original counted (30270-7598, "In-Vehicle (Commercial / Test)", re-filed
+# 30270-4881, which stayed counted until an OPERATOR_TYPE_OVERRIDE took it out
+# on 2026-09-26).
 SUPERSEDED_REPORTS = {
     # 30270-1583 (v1, NOV-2021): "Other than the addition of the zip code in
     # which the incident occurred, the content of this report is unchanged
@@ -1474,7 +1476,7 @@ def monthly_lag_coverage(counts, last_month):
         newest = max((m for m, c in table.items() if sum(c) > 0), default=None)
         must(newest is not None,
              "a helmer's MONTHLY_ARRIVAL_OBSERVATIONS hold no Monthly-track "
-             "incident", helmer=helmer)
+             "incident (data/README.md, Each NHTSA release, step 3)", helmer=helmer)
         arrived = table[newest]
         majority = next(j for j in range(len(arrived))
                         if 2 * sum(arrived[:j + 1]) > sum(arrived))
