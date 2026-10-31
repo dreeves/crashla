@@ -7,6 +7,9 @@
 //    and OPERATOR_TYPE_OVERRIDE do. Until then, a Zoox re-filing of
 //    30610-16451 with a resolved severity would have been hidden by the
 //    override's "Property Damage" (audit 2026-10-30, R6).
+//    The same holds for TELEOP_DRIVEN_REPORTS, the reviewed table that takes
+//    reports out of scope: each entry's quote must still be in its report's
+//    latest narrative.
 // 2. The overrides are keyed by Report ID, not Same Incident ID: a filing's
 //    Same Incident ID changes between versions (12 Waymo reports did, with VIN
 //    or Incident Date corrections, e.g. 30270-7157), and the override then
@@ -47,6 +50,9 @@ out['unknownRefiled'] = brief(run_main([refile('30270-16261', **{'Highest Injury
 # 1. re-filings that change a reviewed field
 out['severityRefiled'] = brief(run_main([refile('30610-16451', **{'Highest Injury Severity Alleged': 'Minor W/O Hospitalization'})]), ['30610-16451'])
 out['airbagRefiled'] = brief(run_main([refile('30270-10573', **{'Any Air Bags Deployed?': 'Unknown'})]), ['30270-10573'])
+# the teleoperator-driven exclusion rests on its quote: a re-filing without it
+teleop = latest['13781-15395']
+out['teleopRefiled'] = brief(run_main([refile('13781-15395', Narrative=teleop['Narrative'].replace(slurp.TELEOP_DRIVEN_REPORTS['13781-15395'], 'The vehicle made contact with a hidden tree stump'))]))
 # 2. re-filings that change only the Same Incident ID: every override still applies
 ids = ['30270-15022', '30270-15301', '30270-15662', '30270-10573']
 out['sidChanged'] = brief(run_main([refile(i, **{'Same Incident ID': 'synthetic-sid-' + i}) for i in ids]), ids)
@@ -88,6 +94,8 @@ const stops = {
     "30610-16451 (reviewed Unknown, stored Property Damage) re-filed \"Minor W/O Hospitalization\""],
   airbagRefiled: ["30270-10573", /AIRBAG_OVERRIDE/,
     "30270-10573 (reviewed \"No\", stored deployed) re-filed \"Unknown\""],
+  teleopRefiled: ["13781-15395", /TELEOP_DRIVEN_REPORTS/,
+    "13781-15395 (out of every metric: a remote operator hit a tree stump) re-filed without the narrative words its TELEOP_DRIVEN_REPORTS entry quotes"],
   stale: ["30270-14625", /SEVERITY_OVERRIDE/,
     "a SEVERITY_OVERRIDE entry for 30270-14625, a report out of scope (a test driver aboard)"],
 };
@@ -107,4 +115,4 @@ assert.ok(typeof S.direct === "object" && ["severity", "airbag", "location", "ve
 Expectata: each table's stale entry stops the run, naming the report (SEVERITY_OVERRIDE, AIRBAG_OVERRIDE, LOCATION_OVERRIDE, VEHICLES_INVOLVED), and entries that all name stored incidents pass.
 Resultata: ${JSON.stringify(S.direct)}.`);
 
-console.log("qual pass: a re-filing that changes a reviewed severity or airbag value stops slurp, overrides follow their Report ID through Same Incident ID changes, a stale override entry stops it, and so does an in-scope Unknown severity");
+console.log("qual pass: a re-filing that changes a reviewed severity or airbag value, or drops the words a teleoperator-driven exclusion quotes, stops slurp, overrides follow their Report ID through Same Incident ID changes, a stale override entry stops it, and so does an in-scope Unknown severity");

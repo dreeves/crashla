@@ -2144,6 +2144,24 @@ def check_superseded_reviewed(rows):
          entries=bad)
 
 
+def check_teleop_quotes(rows):
+    """Stop the run unless each TELEOP_DRIVEN_REPORTS entry's quote is in its
+    report's latest filed narrative (<rows>): the exclusion rests on those
+    words, so a re-filing that drops them must be re-read before the crash
+    stays out of every metric (since 2026-10-31: open question 10's
+    reviewed-value rule, for the reviewed table that takes reports out of
+    scope)."""
+    latest = latest_filings(rows)
+    changed = sorted(rid for rid, quote in TELEOP_DRIVEN_REPORTS.items()
+                     if rid not in latest or quote not in latest[rid]["Narrative"])
+    must(not changed,
+         "a TELEOP_DRIVEN_REPORTS entry's quote is not in its report's latest "
+         "filed narrative (the report was re-filed or is gone: re-read it and "
+         "update or drop the entry in data/slurp.py: data/README.md, Each "
+         "NHTSA release, step 6)",
+         reports=changed)
+
+
 def check_overrides_apply(incidents):
     """Stop the run unless every entry of the field overrides keyed by Report
     ID names an in-scope incident of the analysis window (<incidents>, the
@@ -2252,6 +2270,7 @@ def main():
         valid_rows.append(r)
     rows = valid_rows
     check_superseded_reviewed(rows)
+    check_teleop_quotes(rows)
 
     # Deduplicate by Report ID over every filed row, filter the surviving
     # versions to each entity's public-service operator types (see

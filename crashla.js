@@ -5764,14 +5764,6 @@ In general we mistrust anything Tesla says except numbers in their official repo
       </tr>`);
     }
   }
-  // TODO: English for this parenthetical in the note below, which says how
-  // the data-through month's "calendar coverage" is now estimated (slurp.py
-  // release_month_coverage, since 2026-10-31): "(this release's count of the
-  // month's 5-Day-track incidents divided by the count expected at each
-  // company's rate in its latest complete month, as for incident coverage;
-  // its upper end is the largest share any first release has held)". It
-  // replaces "(median of past releases, with its band)", no longer the method.
-  const receiptCoverageMethod = "(numerus huius editionis divisus per numerum exspectatum ex ratione cuiusque societatis in mense suo proximo completo, sicut in incident coverage; terminus superior est pars maxima quam ulla prima editio tenuit)";
   sections.push(`
 <h3>Incident coverage for partial months</h3>
 <p>
@@ -5779,7 +5771,7 @@ In general we mistrust anything Tesla says except numbers in their official repo
 "Incident coverage" estimates what fraction of incidents from that period have actually been reported.
 NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Monthly (must be reported by the following month).
 Claude notes: 
-<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release ${escHtml(receiptCoverageMethod)}, not a fraction of days.</span>
+<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the measured fraction of a month's 5-Day-track incidents present in a first release (this release's count over the count expected at each company's rate in its latest complete month, as for incident coverage; the high end is the largest share a first release has held), not a fraction of days.</span>
 </p>
     <div class="table-wrap"><table id="sanity-coverage">
       <thead><tr>
