@@ -111,18 +111,21 @@ const heading = vm.runInContext(`
   buildMonthlyViews();
   return {
     rendered: document.getElementById("incident-browser-heading").textContent,
-    expected: "Incident browser using data from 2025-07 to 2026-01",
+    expected: ["2025-07", "2026-01"],
   };
 })()
 `, ctx);
 
 const plain = JSON.parse(JSON.stringify(heading));
 
-assert.equal(
-  plain.rendered,
+// The heading names the window by its first and last months (found by their
+// form, YYYY-MM; until 2026-10-31 this spelled the whole heading, whose words
+// are the human's: audit 2026-10-30, QT-09).
+assert.deepEqual(
+  plain.rendered.match(/\d{4}-\d{2}/g) || [],
   plain.expected,
   `Replicata: set the active month range to 2025-07 through 2026-01 and rebuild the incident browser.
-Expectata: the browser heading shows "Incident browser using data from 2025-07 to 2026-01".
+Expectata: the browser heading names the window's first and last months, ${JSON.stringify(plain.expected)}, in that order, and no other month.
 Resultata: the rendered heading was "${plain.rendered}".`,
 );
 

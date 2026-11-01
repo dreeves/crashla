@@ -59,11 +59,16 @@ async function freshPolymarket(entry) {
     must(typeof m.closed === "boolean" && !Number.isNaN(Date.parse(m.endDate)) &&
       (uma === null || typeof uma === "string"),
       `polymarket ${entry.slug}: ${JSON.stringify(m.question)} lacks closed / endDate, or has an odd umaResolutionStatus`);
+    // A volume is a number >= 0 (a sub-market's comes as a string): until
+    // 2026-10-31 a missing one was written as 0, drawn "$0" as a live figure
+    // (2026-10-30 audit, CR-07).
+    must(Number.isFinite(parseFloat(m.volume)) && parseFloat(m.volume) >= 0,
+      `polymarket ${entry.slug}: ${JSON.stringify(m.question)} has volume ${JSON.stringify(m.volume)}, not a number >= 0`);
     return {
       question: m.question,
       outcomes: m.outcomes,
       outcomePrices: m.outcomePrices,
-      volume: m.volume || "0",
+      volume: m.volume,
       closed: m.closed,
       endDate: m.endDate,
       umaResolutionStatus: uma,
@@ -100,11 +105,13 @@ async function freshPolymarket(entry) {
     if (m.umaResolutionStatus === "resolved") warnings.push(`RESOLVED: polymarket ${entry.slug} (${m.question}) — disable or replace it`);
     else if (m.closed || Date.parse(m.endDate) <= Date.now()) warnings.push(`CLOSED: polymarket ${entry.slug} (${m.question}) stopped trading (closed, or past its endDate ${m.endDate}) — disable or replace it`);
   }
+  must(Number.isFinite(parseFloat(ev.volume)) && parseFloat(ev.volume) >= 0,
+    `polymarket ${entry.slug}: the event has volume ${JSON.stringify(ev.volume)}, not a number >= 0`);
   return {
     title: ev.title,
     slug: entry.slug,
     enabled: entry.enabled,
-    volume: parseFloat(ev.volume) || 0,
+    volume: parseFloat(ev.volume),
     markets,
   };
 }
@@ -125,7 +132,8 @@ async function freshManifold(entry) {
   } else out.answers = m.answers
     .slice().sort((a, b) => a.index - b.index)
     .map(a => ({ label: a.text, prob: a.probability, resolution: a.resolution ?? null, resolutionProbability: a.resolutionProbability ?? null }));
-  out.volume = m.volume || 0;
+  must(Number.isFinite(m.volume) && m.volume >= 0, `manifold ${entry.slug}: volume ${JSON.stringify(m.volume)}, not a number >= 0`);
+  out.volume = m.volume;
   // Every outcome carries its probability, a number in [0, 1] (until
   // 2026-10-04 a missing one was written as nothing and drawn "NaN%"; audit
   // #30). The page names the resolutions YES, NO, MKT (by the probability it

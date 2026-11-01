@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 import { stripComments, rules, decls, onlyDecl } from "./css-parse.mjs";
+import { appScript, dataScript } from "./load-app.mjs";
 
 // Generated tables: each pans inside its own box (so the phone page never
 // scrolls sideways and the global sticky th has nothing to stick to), numeric
@@ -41,14 +43,54 @@ const num = rule("td.num, th.num");
 assert.ok(num, "one td.num, th.num rule");
 assert.equal(onlyDecl(num.body, "text-align", "td.num, th.num"), "right");
 assert.equal(onlyDecl(num.body, "white-space", "td.num, th.num"), "nowrap");
-for (const header of ["k", "MPI AV (median; 95%)", "Human MPI (AV cities)", "AV/human ratio",
-                      "Judged fault", "Flip multiplier", "Low MPI", "High MPI"]) {
-  assert.ok(liveJs.includes(`<th class="num">${header}</th>`),
-    `Replicata: read the stress and derivation table headers in crashla.js.
-Expectata: the numeric column header ${JSON.stringify(header)} carries class="num" so it aligns with its cells.
-Resultata: it does not.`);
+// Each numeric column's header carries class="num" so it aligns with its
+// cells. Read off the rendered sanity section (default window): in every
+// table a header cell carries the class exactly when its column's body cells
+// do, and in the three tables of figures (the stress table, the fault-flip
+// table and the human benchmark derivations) the columns that carry it are
+// exactly those whose cells are figures ("—" and "∞", which stand in for a
+// figure, fit either kind of column). Until 2026-10-31 this looked for eight
+// header words in crashla.js, which are the human's (audit 2026-10-30,
+// QT-09).
+{
+  class Stub { constructor() { this._h = ""; } set textContent(v) { this._h = String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); } get textContent() { return this._h; } set innerHTML(v) { this._h = v; } get innerHTML() { return this._h; } }
+  const nodes = new Map();
+  const ctx = vm.createContext({ console, document: { getElementById: id => (nodes.has(id) || nodes.set(id, new Stub()), nodes.get(id)), createElement: () => new Stub() } });
+  vm.runInContext(dataScript, ctx, { filename: "data.js" });
+  vm.runInContext(appScript, ctx, { filename: "crashla.js" });
+  const html = vm.runInContext(`incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT); faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
+    fullMonthSeries = monthSeriesData();
+    activeSeries = sliceSeries(fullMonthSeries, fullMonthSeries.months.indexOf(DEFAULT_START_MONTH), fullMonthSeries.months.length - 1);
+    buildSanityChecks(); document.getElementById("sanity-checks").innerHTML`, ctx);
+  const FIGURES = new Set(["sanity-stress", "sanity-fault-flip", "sanity-benchmarks"]);
+  const isNum = attrs => /\bclass="[^"]*\bnum\b/.test(attrs);
+  const kind = text => /^[\u2014\u221e]$/.test(text) ? "stand-in" : /^[\d.,;\s\u2013x\u221eKMBT]*\d[\d.,;\s\u2013x\u221eKMBT]*$/.test(text) ? "figure" : "text";
+  const problems = [], seen = new Set();
+  for (const m of html.matchAll(/<table([^>]*)>([\s\S]*?)<\/table>/g)) {
+    const id = (/\bid="([^"]*)"/.exec(m[1]) || [])[1];
+    seen.add(id);
+    const heads = [...((/<thead>([\s\S]*?)<\/thead>/.exec(m[2]) || [])[1] || "").matchAll(/<th([^>]*)>/g)].map(h => isNum(h[1]));
+    const rows = [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(m[2]) || [])[1] || "").matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)]
+      .map(r => [...r[1].matchAll(/<td([^>]*)>([\s\S]*?)<\/td>/g)].map(c => ({ num: isNum(c[1]), span: /colspan/.test(c[1]), text: c[2].replace(/<[^>]*>/g, "").trim() })))
+      .filter(r => r.length === heads.length && !r.some(c => c.span));
+    heads.forEach((thNum, j) => {
+      const cells = rows.map(r => r[j]);
+      if (cells.some(c => c.num !== thNum)) problems.push(`${id} column ${j + 1}: header ${thNum ? "" : "not "}numeric, body cells ${JSON.stringify([...new Set(cells.map(c => c.num))])}`);
+      if (!FIGURES.has(id)) return;
+      const kinds = new Set(cells.map(c => kind(c.text)));
+      const figures = kinds.has("figure") && !kinds.has("text"), text = kinds.has("text");
+      if ((figures && !thNum) || (text && thNum)) problems.push(`${id} column ${j + 1}: header ${thNum ? "" : "not "}numeric, its cells ${figures ? "figures" : "text"} (e.g. ${JSON.stringify(cells[0] && cells[0].text.slice(0, 40))})`);
+    });
+  }
+  const missing = [...FIGURES].filter(id => !seen.has(id));
+  assert.ok(problems.length === 0 && missing.length === 0,
+    `Replicata: render the sanity section (default window) and compare each table's header cells with its body cells.
+Expectata: a header cell carries class="num" exactly when its column's body cells do; in ${[...FIGURES].join(", ")}, exactly the columns of figures carry it.
+Resultata: ${missing.length ? `no table ${JSON.stringify(missing)}; ` : ""}${JSON.stringify(problems)}.`);
 }
-assert.equal((liveJs.match(/<td class="num">\$\{fmtCount\(stress\.av\.k\)\}<\/td>/g) || []).length, 2,
+// (The Sensitivity table's count carries its metric's count note since
+// 2026-10-31, countHtml: the fatality count's tooltip, decision #1.)
+assert.equal((liveJs.match(/<td class="num">\$\{(?:fmtCount\(stress\.av\.k\)|countHtml\(stress\.metric, fmtCount\(stress\.av\.k\)\))\}<\/td>/g) || []).length, 2,
   "both stress tables mark the k cell numeric");
 assert.ok(liveJs.includes('<td class="num">${fmtMiles(h.lo)}</td><td class="num">${fmtMiles(h.hi)}</td>'),
   "the derivation table marks Low and High MPI numeric");

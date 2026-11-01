@@ -219,13 +219,17 @@ Expectata: mainline, over 80% of Tesla's weight, median 1,000-10,000, 95th perce
 Resultata: mainline=${byKey.robotaxi.mainline}, prob=${byKey.robotaxi.scenarioProb}, median=${byKey.robotaxi.median}, hi90=${byKey.robotaxi.hi90}, signChanges=${byKey.robotaxi.signChanges}.`,
 );
 
-// Tesla all-HW4 ADS (conditional, a small share): the broad scenario, in the
-// hundreds of thousands to millions, drawn as its own unimodal curve.
+// Tesla all-HW4 ADS (conditional, a small share): the broad scenario, drawn
+// as its own unimodal curve, in car-equivalents like Tesla's line (the
+// human's choice, 2026-10-30: its ADS miles a day / TESLA_MILES_PER_CAR_DAY),
+// so tens of thousands to hundreds of thousands. Until 2026-10-31 it counted
+// distinct customer cars, and this pinned a six-figure median and a tail past
+// 1M.
 assert.ok(
   !byKey.hw4.mainline && byKey.hw4.scenarioProb < 0.2 &&
-    byKey.hw4.median > 100000 && byKey.hw4.hi90 > 1000000 && byKey.hw4.signChanges === 1,
+    byKey.hw4.median > 10000 && byKey.hw4.hi90 > 100000 && byKey.hw4.signChanges === 1,
   `Replicata: inspect Tesla's HW4-scope curve.
-Expectata: conditional (not mainline), under 20% of Tesla's weight, six-figure median, tail past 1M, unimodal.
+Expectata: conditional (not mainline), under 20% of Tesla's weight, median past 10,000 car-equivalents, tail past 100,000, unimodal.
 Resultata: mainline=${byKey.hw4.mainline}, prob=${byKey.hw4.scenarioProb}, median=${byKey.hw4.median}, hi90=${byKey.hw4.hi90}, signChanges=${byKey.hw4.signChanges}.`,
 );
 
@@ -235,7 +239,7 @@ Resultata: mainline=${byKey.hw4.mainline}, prob=${byKey.hw4.scenarioProb}, media
 // curves. Each displayed median/CI must be a real quantile of the drawn
 // density — the single two-piece curve this replaced put its 8M "Median" dot
 // at the 14th percentile of its own curve, and a one-humped band can't
-// represent "71% boring / 24% aggressive / 5% HW4" at all. ---
+// represent three weighted futures (slow, aggressive, HW4) at all. ---
 
 const quantileStats = vm.runInContext(`
 (() => {
@@ -277,20 +281,48 @@ Resultata: CDF(median=${q.median}) = ${q.cdfMedian.toFixed(3)}, CDF(lo90) = ${q.
 }
 
 // The scenario mixture restores the property that motivated it: Tesla's
-// robotaxi-scope miles median sits with scenario A's ~71% mass, not in the
-// no-man's-land (~32M) the single fat-tailed curve produced; the HW4 lane
-// is dashed/conditional in the hundreds of millions. The band is read from
-// MILES_FORECAST A itself (2026-09-26): the hardcoded [3.4M, 6.5M] of
-// 2026-07-22 went stale when A was re-based on 2026-09-04 and the median
-// sat 3% under its ceiling with no regression.
+// robotaxi-scope miles median sits with scenario A's mass (most of Tesla's
+// weight), not in the no-man's-land (~32M) the single fat-tailed curve
+// produced; the HW4 lane is dashed/conditional in the hundreds of millions.
+// The band is read from MILES_FORECAST A itself (2026-09-26): the hardcoded
+// [3.4M, 6.5M] of 2026-07-22 went stale when A was re-based on 2026-09-04
+// and the median sat 3% under its ceiling with no regression.
 const milesA = JSON.parse(vm.runInContext(`JSON.stringify(MILES_FORECAST.find(f => f.helmer === "Tesla").components.find(c => c.weight > 0.5))`, ctx));
 const milesByKey = Object.fromEntries(quantileStats.filter(q => q.metric === "miles").map(q => [q.key, q]));
 assert.ok(milesByKey.robotaxi.median > milesA.lo && milesByKey.robotaxi.median < milesA.hi && !milesByKey.robotaxi.dashed,
   `Replicata: read Tesla's robotaxi-scope cumulative-miles median.
-Expectata: inside scenario A's band [${milesA.lo}, ${milesA.hi}] (A carries ~71% of the mass) and drawn solid.
+Expectata: inside scenario A's band [${milesA.lo}, ${milesA.hi}] (A carries weight ${milesA.weight} of Tesla's mass) and drawn solid.
 Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
-// No FLEET lane four months out may put 5% of its mass below the LAST
-// OBSERVED floor of its helmer, nor its median below the last observed best.
+
+// --- 4c. Tesla's all-HW4 lane contains its robotaxi lane (2026-10-30) ---
+// Scenario C is Tesla's whole ADS service in that world: the robotaxi's own
+// cars, miles and rides plus eyes-off driving on customer HW4 cars (the
+// human's decision, 2026-10-30, which the comments' own definitions
+// require). The HW4 lane is drawn as a fork from Tesla's own history line,
+// so at the 5th percentile, the median and the 95th percentile it may sit
+// nowhere below the robotaxi lane. Until 2026-10-31 it did, for rides (median
+// 16.7M against 20.0M, 5th percentile 2.08M against 7.33M) and miles (5th
+// percentile 16.8M against 60.2M): its rides had kept the Jan-1-2027
+// forecast's numbers, and its miles counted customer cars alone.
+{
+  const lanes = JSON.parse(vm.runInContext(`JSON.stringify(["fleet", "rides", "miles"].map(metric => ({metric,
+    curves: fleetDistributionCurves(metric).filter(c => c.historyHelmer === "Tesla")
+      .map(c => ({key: c.key, lo90: c.lo90, median: c.median, hi90: c.hi90}))})))`, ctx));
+  const below = [];
+  for (const {metric, curves} of lanes) {
+    const robotaxi = curves.find(c => c.key === "robotaxi"), hw4 = curves.find(c => c.key === "hw4");
+    for (const q of ["lo90", "median", "hi90"]) {
+      if (!(hw4[q] >= robotaxi[q])) below.push(`${metric} ${q}: all-HW4 ${Math.round(hw4[q]).toLocaleString("en-US")} < robotaxi ${Math.round(robotaxi[q]).toLocaleString("en-US")}`);
+    }
+  }
+  assert.ok(below.length === 0,
+    `Replicata: build Tesla's robotaxi and all-HW4 lanes for the fleet, rides and miles forecasts and read each lane's 5th percentile, median and 95th percentile.
+Expectata: for every metric, each of the all-HW4 lane's three at or above the robotaxi lane's (C contains the robotaxi's own cars, rides and miles).
+Resultata: ${below.join("; ")}.`);
+}
+
+// No FLEET lane may put 5% of its mass below the LAST OBSERVED floor of its
+// helmer, nor its median below the last observed best.
 // Tesla's robotaxi lane broke this until 2026-09-26: FLEET_HISTORY's 2026-08
 // row (150 [90, 220]) re-based the miles scenarios on 2026-09-04 but not the
 // fleet scenario A, which still sat on the mid-2026 ~25-28-car anchor (median
@@ -299,12 +331,13 @@ Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
 // 5th percentile at 72 under a fleet observed at 100 [80, 130] (audit #19).
 // Every lane is checked, Tesla's all-HW4 fork against Tesla's history.
 {
+  const forecastDate = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
   const lanes = JSON.parse(vm.runInContext(`JSON.stringify(fleetDistributionCurves("fleet").map(c => ({
     label: c.legendLabel, helmer: c.historyHelmer, lo90: c.lo90, median: c.median,
     last: FLEET_HISTORY[c.historyHelmer].at(-1)})))`, ctx));
   const below = lanes.filter(l => !(l.lo90 >= l.last.lo && l.median >= l.last.best));
   assert.ok(lanes.length === 4 && below.length === 0,
-    `Replicata: compare each fleet lane's Jan-2027 forecast with its helmer's latest FLEET_HISTORY observation.
+    `Replicata: compare each fleet lane's forecast for ${forecastDate} with its helmer's latest FLEET_HISTORY observation.
 Expectata: in all 4 lanes, 5th percentile >= the observed low edge and median >= the observed best.
 Resultata: ${below.map(l => `${l.label}: lo90 ${Math.round(l.lo90)}, median ${Math.round(l.median)} vs ${l.last.month} ${l.last.best} [${l.last.lo}, ${l.last.hi}]`).join("; ")}.`);
 }
@@ -316,7 +349,8 @@ Resultata: ${below.map(l => `${l.label}: lo90 ${Math.round(l.lo90)}, median ${Ma
 // (TechCrunch), after recall 26E044000 covered 105 units, its whole deployed
 // driverless fleet, on Jul 10. Until 2026-10-03 the histories stopped at
 // 2026-05 (Waymo, 3,750) and 2026-06 (Zoox, 100). A stock counted on Sep 1
-// or Sep 17 sits at the 2026-09 step, as the Jan-1 forecast sits at 2027-01.
+// or Sep 17 sits at the 2026-09 step, as the fleet forecast sits at its
+// date's month (GROWTH_FORECAST_DATE's).
 {
   const hist = JSON.parse(vm.runInContext(`JSON.stringify(FLEET_HISTORY)`, ctx));
   const at = (helmer, month) => hist[helmer].find(r => r.month === month);
@@ -407,4 +441,41 @@ Resultata: ${d.m.length} / ${d.r.length}.`);
 Expectata: the rides scenario {${want.best}, ${want.lo}, ${want.hi}} with the same weight.
 Resultata: {${rc.best}, ${rc.lo}, ${rc.hi}} weight ${rc.weight}.`);
   });
+}
+
+// --- Tesla's scenario C is A's robotaxi plus eyes-off customer driving ---
+// (the human's decision, 2026-10-30.) C is Tesla's whole ADS service in that
+// world: scenario A's robotaxi ramp, tied in code, plus eyes-off driving on
+// customer HW4 cars (crashla.js TESLA_EYES_OFF), edge by edge (the two parts
+// taken as moving together). Its fleet is in car-equivalents, the unit of
+// Tesla's line: the two parts' ADS miles a day on the forecast date over
+// TESLA_MILES_PER_CAR_DAY. Its miles are A's cumulative plus the customer
+// cars' eyes-off miles, its rides A's rides plus the Tesla-Network rides on
+// those miles. Until 2026-10-31 C counted distinct customer cars, its miles
+// left out the robotaxi's, and its rides kept the Jan-1-2027 forecast's.
+{
+  const d = JSON.parse(vm.runInContext(`JSON.stringify((() => {
+    const comps = t => t.find(f => f.helmer === "Tesla").components;
+    return {fleet: comps(FLEET_FORECAST), miles: comps(MILES_FORECAST), rides: comps(RIDES_FORECAST),
+      daily: TESLA_ROBOTAXI_SCENARIOS, eyesOff: TESLA_EYES_OFF, perCarDay: TESLA_MILES_PER_CAR_DAY};
+  })())`, ctx));
+  const EDGES = ["best", "lo", "hi"];
+  const heaviest = cs => cs.reduce((a, c) => (c.weight > a.weight ? c : a));
+  const a = { daily: heaviest(d.daily), miles: heaviest(d.miles.filter(c => c.scope === "robotaxi")),
+    rides: heaviest(d.rides.filter(c => c.scope === "robotaxi")) };
+  const want = {
+    fleet: Object.fromEntries(EDGES.map(k => [k, (a.daily[k] + d.eyesOff.milesPerDay[k]) / d.perCarDay])),
+    miles: Object.fromEntries(EDGES.map(k => [k, a.miles[k] + d.eyesOff.cumulative[k]])),
+    rides: Object.fromEntries(EDGES.map(k => [k, a.rides[k] + d.eyesOff.cumulative[k] * d.eyesOff.ridesPerMile])),
+  };
+  const problems = [];
+  for (const metric of ["fleet", "miles", "rides"]) {
+    const c = d[metric].filter(x => x.scope === "hw4");
+    if (c.length !== 1 || c[0].weight !== d.eyesOff.weight || EDGES.some(k => !(Math.abs(c[0][k] - want[metric][k]) <= 1e-9 * want[metric][k])))
+      problems.push(`${metric}: C ${JSON.stringify(c)}; want weight ${d.eyesOff.weight} and ${JSON.stringify(want[metric])}`);
+  }
+  assert.ok(problems.length === 0,
+    `Replicata: read Tesla's scenario C component (scope "hw4") in FLEET_FORECAST, MILES_FORECAST and RIDES_FORECAST, with scenario A (the heaviest robotaxi component), TESLA_EYES_OFF and TESLA_MILES_PER_CAR_DAY.
+Expectata: one C component per table, weighted TESLA_EYES_OFF.weight, each edge A's plus the eyes-off part: fleet (A's daily miles + the eyes-off daily miles) / TESLA_MILES_PER_CAR_DAY, miles A's cumulative + the eyes-off cumulative, rides A's rides + the eyes-off cumulative x TESLA_EYES_OFF.ridesPerMile.
+Resultata: ${problems.join("; ")}.`);
 }

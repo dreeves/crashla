@@ -134,36 +134,46 @@ Resultata: ${JSON.stringify(got)}.`);
 
 // --- fmtRatio: the one multiplier format ---
 // Every AV-vs-human multiplier (summary cards, their All-incidents line, the
-// stress tables, the fault-flip multipliers) reads two significant figures
-// below 10 and a whole number from 10 (audit #55). Until 2026-10-03 the cards
-// printed toFixed(1) below 10 ("0.0x" for Tesla's 0.026 fatality multiplier,
-// "10.0x" for 9.96) and fmtRatio three tiers ("0.00x", "10.0x" .. "99.9x").
-// ratioShown is the value printed, from which the safer/worse colour is read
-// (a 0.996 printed "1.0x" in the worse red).
+// stress tables, the fault-flip multipliers) reads exactly three significant
+// figures, grouped en-US style, never an exponent (decision #2 of the
+// 2026-10-04 audit, the human's "3 sig figs everywhere"; examples 0.997 ->
+// "0.997x", 1.04 -> "1.04x", 10.7 -> "10.7x", 158 -> "158x", 37,125.4 ->
+// "37,100x"). From 2026-10-03 (audit #55) until 2026-10-31 it read two
+// significant figures below 10 and a whole number from 10, so a deciding
+// edge anywhere in [0.995, 1.05) printed "1.0x" under either verdict
+// (1.0291 "robustly safer" beside 0.9983 "ambiguous"); before that the cards
+// printed toFixed(1) below 10 ("0.0x" for Tesla's 0.026 fatality multiplier)
+// and fmtRatio three tiers ("0.00x", "10.0x" .. "99.9x"). ratioShown is the
+// value printed, from which the safer/worse colour is read.
 const ratioTests = [
-  [1e-7,    "0.00000010"],  // no exponent, however small
-  [0.0021,  "0.0021"],
-  [0.004,   "0.0040"],      // was "0.00"
-  [0.005,   "0.0050"],      // was "0.01"
-  [0.026,   "0.026"],
-  [0.5,     "0.50"],
-  [0.959,   "0.96"],
-  [0.996,   "1.0"],
-  [1.043,   "1.0"],
-  [9.94,    "9.9"],
-  [9.96,    "10"],          // two significant figures round to 10: a whole number
-  [9.99,    "10"],          // was "9.99"
-  [9.995,   "10"],          // was "10.0"
-  [9.996,   "10"],          // the old rollover cases: never "10.00"
-  [9.999,   "10"],          // was "10.0"
-  [10,      "10"],          // was "10.0"
-  [13.8,    "14"],          // was "13.8"
-  [99.949,  "100"],         // was "99.9"
-  [99.95,   "100"],
+  [1e-7,    "0.000000100"], // no exponent, however small
+  [0.0021,  "0.00210"],
+  [0.004,   "0.00400"],
+  [0.005,   "0.00500"],
+  [0.026,   "0.0260"],
+  [0.5,     "0.500"],
+  [0.959,   "0.959"],
+  [0.996,   "0.996"],       // was "1.0"
+  [0.997,   "0.997"],
+  [0.9983,  "0.998"],       // an ambiguous edge (Zoox at-fault injury, 2025-08..2026-09) reads below 1
+  [0.9995,  "1.00"],
+  [1.0291,  "1.03"],        // a robustly safer edge (the same, 2025-07..2026-09) reads above 1
+  [1.04,    "1.04"],
+  [1.043,   "1.04"],        // was "1.0"
+  [9.94,    "9.94"],
+  [9.96,    "9.96"],        // was "10"
+  [9.99,    "9.99"],
+  [9.996,   "10.0"],        // three figures round to 10: never "10" or "10.00"
+  [9.999,   "10.0"],
+  [10,      "10.0"],
+  [10.7,    "10.7"],
+  [13.8,    "13.8"],        // was "14"
+  [99.949,  "99.9"],
   [99.99,   "100"],         // never "100.0"
   [100,     "100"],
   [150,     "150"],
-  [37125.4, "37,125"],
+  [158,     "158"],
+  [37125.4, "37,100"],      // was "37,125"
 ];
 
 for (const [input, expected] of ratioTests) {
@@ -171,11 +181,11 @@ for (const [input, expected] of ratioTests) {
   try { got = run(`fmtRatio(${input})`); } catch (e) { got = `throws ${e.message}`; }
   assert.equal(got, expected,
     `Replicata: fmtRatio(${input}).
-Expectata: ${JSON.stringify(expected)} (two significant figures below 10, a whole number from 10).
+Expectata: ${JSON.stringify(expected)} (exactly three significant figures, en-US grouping, no exponent).
 Resultata: ${JSON.stringify(got)}.`);
 }
 
-for (const [input, expected] of [[0.996, 1], [0.959, 0.96], [9.96, 10], [13.8, 14], [0.0021, 0.0021]]) {
+for (const [input, expected] of [[0.996, 0.996], [0.959, 0.959], [9.96, 9.96], [9.996, 10], [13.8, 13.8], [0.0021, 0.0021], [0.9995, 1], [37125.4, 37100]]) {
   let got;
   try { got = run(`ratioShown(${input})`); } catch (e) { got = `throws ${e.message}`; }
   assert.equal(got, expected,
@@ -209,7 +219,7 @@ for (const fallback of ["de-DE", "ar-EG"]) {
   for (const [expr, expected] of [
     ["fmtWhole(1164)", "1,164"], ["fmtWhole(2306848)", "2,306,848"], ["fmtCount(1164)", "1,164"],
     ["fmtCount(93.25)", "93.3"], ["fmtMiles(500)", "500"], ["fmtMiles(184535)", "184.5K"],
-    ["fmtRatio(37125.4)", "37,125"], ["fmtRatio(0.026)", "0.026"],
+    ["fmtRatio(37125.4)", "37,100"], ["fmtRatio(0.026)", "0.0260"],
   ]) {
     let got;
     try { got = vm.runInContext(expr, loc); } catch (e) { got = `throws ${e.message}`; }

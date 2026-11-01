@@ -193,6 +193,16 @@ Resultata: [${us.lo}, ${us.hi}].`);
 Expectata: srcLinks cite CRSS 2024 (${CRSS2024_URL}), and the src no longer claims that no human hospital-transport rate exists.
 Resultata: srcLinks ${JSON.stringify(h.srcLinks)}; src ${h.src}`);
   }
+  // The AV band's edges reproduce from CSV3 v2's observed any-injury rates
+  // (SF Bay 4.584714 gives 402K), which only the Oct-2 release notes link (p.
+  // 2); the hub page links CSV3 v1, whose 4.538677 gives 406K. So the band
+  // links the release notes too (2026-10-30 audit, LNK-2; until 2026-10-31
+  // it linked the hub and CRSS only). Its Uber/Lyft band takes its links.
+  const RELEASE_NOTES_URL = "https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20261002.pdf";
+  assert.ok(av.srcLinks.includes(RELEASE_NOTES_URL),
+    `Replicata: read the HumansAV hospitalization band's srcLinks.
+Expectata: they cite the Waymo Data Hub release notes (${RELEASE_NOTES_URL}), whose page 2 links CSV3 v2, the file that reproduces the band's 402K edge.
+Resultata: ${JSON.stringify(av.srcLinks)}.`);
   assert.ok(us.srcLinks.includes(BLINCOE2023_URL),
     `Replicata: read the HumansUS hospitalization band's srcLinks.
 Expectata: they cite Blincoe et al. 2023 (${BLINCOE2023_URL}), the source of the 31.9% share.
@@ -360,6 +370,27 @@ Resultata: ${band.src}.`);
       `Replicata: log-interpolate the national ${key} center from the AV-cities severity ladder (t = ${t.toFixed(3)}) between the national injury and fatality centers.
 Expectata: the HumansUS ${key} band's geometric center within 2% of ${Math.round(center)}.
 Resultata: band [${bands[key].HumansUS.lo}, ${bands[key].HumansUS.hi}], center ${Math.round(us(key))} (${ratio.toFixed(3)}x).`);
+  }
+  // CRSS 2024 measures both rates directly (police-reported crashed
+  // in-transport vehicles, all vehicles, all roads, VMT 3,294,031M per
+  // 813791): vehicles in crashes where any person's airbag deployed (AIR_BAG
+  // 1-9), 0.73966 per M mi (1.35M MPI), and in crashes with a suspected
+  // serious or fatal injury (MAX_SEV 3-4), 0.08647 (11.6M); recomputed by two
+  // auditors from CRSS2024CSV.zip (2026-10-30 audit, copy-1 and LNK-1). Each
+  // lies inside its band, and the entry's comments say so. The src may not
+  // claim that no national rate exists, as it did until 2026-10-31 ("No
+  // national airbag-deployment per-mile rate", "No clean national SSI+ (KABCO
+  // A+K) per-mile rate"; the hospitalization src lost the same claim on
+  // 2026-10-03, audit #1).
+  const CRSS2024_DIRECT = { airbag: 0.73966, seriousInjury: 0.08647 };
+  const comments = metricDefComments("airbag");
+  for (const [key, perM] of Object.entries(CRSS2024_DIRECT)) {
+    const h = bands[key].HumansUS, mpi = 1e6 / perM;
+    assert.ok(h.lo < mpi && mpi < h.hi && !/\bno (clean )?national\b/i.test(h.src) && h.srcLinks.includes(CRSS2024_URL)
+      && comments.includes(perM.toFixed(3)),
+      `Replicata: read the HumansUS ${key} band, its src and srcLinks, and the airbag entry's comments in crashla.js.
+Expectata: CRSS 2024's directly measured rate, ${perM} per M mi (${Math.round(mpi)} MPI), inside the band; srcLinks cite CRSS 2024; the comments state ${perM.toFixed(3)}; the src does not claim that no national rate exists.
+Resultata: band [${h.lo}, ${h.hi}]; srcLinks ${JSON.stringify(h.srcLinks)}; comments ${comments.includes(perM.toFixed(3)) ? "state" : "do not state"} it; src ${h.src}`);
   }
 }
 

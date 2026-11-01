@@ -30,6 +30,7 @@ const active = page => page.evaluate(() => {
     cls: el.getAttribute("class"),
     ariaSort: el.getAttribute("aria-sort"), ariaPressed: el.getAttribute("aria-pressed"),
     type: el.getAttribute("type"), thSort: el.closest("th") === null ? null : el.closest("th").getAttribute("aria-sort"),
+    key: el.getAttribute("data-focus-key"),
     ariaDisabled: el.getAttribute("aria-disabled"), ariaExpanded: el.getAttribute("aria-expanded"),
     ring: el.matches(":focus-visible"),
   };
@@ -95,16 +96,19 @@ Resultata: focus is on ${JSON.stringify(a)}.`);
     `[${engine}] Replicata: read the incident table's eight column headers (#19).
 Expectata: each th holds one <button type="button"> with the header's text, and the th itself is not a Tab stop.
 Resultata: ${JSON.stringify(plainHeaders.length > 0 ? plainHeaders : headerCells)}.`);
-  await page.locator("#incidents-head th button", { hasText: "Speed (mph)" }).focus();
+  // The speed column's header button, found by its focus key (the sort
+  // column's key, "sort-speed"; until 2026-10-31 by its text, which is the
+  // human's: audit 2026-10-30, QT-09).
+  await page.locator('#incidents-head th button[data-focus-key="sort-speed"]').focus();
   await page.keyboard.press("Enter");
   a = await active(page);
-  assert.ok(a.tag === "BUTTON" && a.type === "button" && a.text === "Speed (mph)" && a.thSort === "ascending" && a.ring,
+  assert.ok(a.tag === "BUTTON" && a.type === "button" && a.key === "sort-speed" && a.thSort === "ascending" && a.ring,
     `[${engine}] Replicata: focus the 'Speed (mph)' column header's button and press Enter.
 Expectata: the table sorts ascending by speed (its th reads aria-sort="ascending") and focus stays on that button, its ring showing.
 Resultata: focus is on ${JSON.stringify(a)}.`);
   await page.keyboard.press("Enter");
   a = await active(page);
-  assert.ok(a.text === "Speed (mph)" && a.thSort === "descending",
+  assert.ok(a.key === "sort-speed" && a.thSort === "descending",
     `[${engine}] Replicata: sort by 'Speed (mph)' with Enter, then press Enter again.
 Expectata: the sort reverses (aria-sort descending) with focus still on the header's button.
 Resultata: focus is on ${JSON.stringify(a)}.`);
@@ -112,7 +116,7 @@ Resultata: focus is on ${JSON.stringify(a)}.`);
   // the th until the header became a button, 2026-10-04; reviewer).
   await page.keyboard.press("Space");
   a = await active(page);
-  assert.ok(a.tag === "BUTTON" && a.text === "Speed (mph)" && a.thSort === "ascending" && a.ring,
+  assert.ok(a.tag === "BUTTON" && a.key === "sort-speed" && a.thSort === "ascending" && a.ring,
     `[${engine}] Replicata: sort by 'Speed (mph)' descending with Enter twice, then press Space.
 Expectata: the sort reverses again (aria-sort ascending) with focus still on the header's button, its ring showing.
 Resultata: focus is on ${JSON.stringify(a)}.`);
@@ -227,6 +231,27 @@ Resultata: ${JSON.stringify(state)}; url ${page.url()}.`);
     `[${engine}] Replicata: press Space on the open 'Incident browser' heading.
 Expectata: the section collapses again (aria-expanded "false").
 Resultata: ${JSON.stringify(state)}.`);
+  // A held key toggles a heading once, not once a key repeat (2026-10-30
+  // audit, ui-render-3): until 2026-10-31 every repeat toggled the section,
+  // ~30 a second, so it flickered open and shut and ended wherever the count
+  // left it, and in WebKit a key held for ~4 s took history.replaceState past
+  // 100 calls in 10 s, which threw and left the address bar behind the
+  // section. Playwright sends a held key's further keydowns with repeat set.
+  for (const key of [" ", "Enter"]) {
+    await page.locator("#sec-markets .sec-head [role=button]").focus();
+    const was = await page.evaluate(() => document.getElementById("sec-markets").classList.contains("collapsed"));
+    for (let i = 0; i < 30; i++) await page.keyboard.down(key);
+    await page.keyboard.up(key);
+    const held = await page.evaluate(() => ({
+      collapsed: document.getElementById("sec-markets").classList.contains("collapsed"),
+      expanded: document.querySelector("#sec-markets .sec-head [role=button]").getAttribute("aria-expanded"),
+    }));
+    const inUrl = /[?&]x=[^&]*markets/.test(page.url());
+    assert.ok(held.collapsed === !was && held.expanded === String(was) && inUrl === held.collapsed,
+      `[${engine}] Replicata: focus the 'Prediction Markets' heading (${was ? "collapsed" : "open"}) and hold ${key === " " ? "Space" : "Enter"} for 30 key events (29 of them repeats).
+Expectata: the section toggles once (to ${was ? "open" : "collapsed"}), aria-expanded follows, and x= in the address ${was ? "drops" : "lists"} markets.
+Resultata: ${JSON.stringify(held)}; url ${page.url()}.`);
+  }
   await page.focus("#date-range-max");
   await page.keyboard.press("Tab");
   a = await active(page);

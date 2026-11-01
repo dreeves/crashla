@@ -68,7 +68,9 @@ KNOTS = [
     ("2024-09", 33103000, 33101000, 33110500),
     ("2024-12", 50083000, 50081000, 50090500),
     # The paper's 56.7M; the central keeps the series' one-mile ledger
-    # residue, so no later cumulative moves.
+    # residue, so January 2025's cumulative central does not move (February
+    # 2025's moved 14,250 miles when the December 2024 knot went to CSV1:
+    # data/README.md, Waymo monthly allocation).
     ("2025-01", 56700001, 56699500, 56709750),
     ("2025-03", 71620000, 71620000, 71620000),
     ("2025-06", 96665000, 96365000, 97265000),

@@ -78,10 +78,22 @@ for (const [re, label] of PHRASES) {
   const agree = hits.filter(r => r.svHit.split(" + ").includes(label)).length;
   agreement[label] = { hits: hits.length, agree, share: +(agree / hits.length).toFixed(3) };
 }
-const weak = Object.entries(agreement).filter(([, a]) => a.hits < 20 || a.share < 0.85);
+// The bar is slurp's own for these tests (check_contact_area_labels:
+// CONTACT_AREA_MIN_MATCHES matches and CONTACT_AREA_MIN_AGREEMENT agreement),
+// which a rotated file (0-6% as published) misses by far. Until 2026-10-31
+// this kept a separate 85% bar beside slurp's 75%, set beside measured
+// agreement of 0.86-0.99, so one more disagreeing front-right report (38/45 =
+// 0.844) would turn it red on a correct release (audit 2026-10-30, QT-08).
+const bar = spawnSync("python3", ["-c", "import sys, json; sys.path.insert(0, 'data'); import slurp; print(json.dumps([slurp.CONTACT_AREA_MIN_MATCHES, slurp.CONTACT_AREA_MIN_AGREEMENT]))"],
+  { cwd: new URL("..", import.meta.url), encoding: "utf8" });
+assert.equal(bar.status, 0, `Replicata: read slurp.CONTACT_AREA_MIN_MATCHES and CONTACT_AREA_MIN_AGREEMENT.
+Expectata: python exits 0.
+Resultata: ${bar.stderr.slice(-800)}`);
+const [minMatches, minAgreement] = JSON.parse(bar.stdout);
+const weak = Object.entries(agreement).filter(([, a]) => a.hits < minMatches || a.agree < minAgreement * a.hits);
 assert.deepEqual(weak, [],
   `Replicata: for incidents dated Jul-2025 or later, match narratives naming the AV's rear, rear left, rear right, front left or front right, and check svHit.
-Expectata: at least 20 matches per phrase, and at least 85% of them carry the named box.
+Expectata: at least ${minMatches} matches per phrase (slurp's CONTACT_AREA_MIN_MATCHES), and at least ${minAgreement * 100}% of them (CONTACT_AREA_MIN_AGREEMENT) carry the named box.
 Resultata: ${JSON.stringify(agreement)}.`);
 
 // (3) The pipeline: one loader per NHTSA file, shared by fetch_nhtsa_csv and

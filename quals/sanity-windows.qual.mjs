@@ -144,9 +144,12 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
     if (grayed || JSON.stringify(got) !== JSON.stringify(want)) problems.dispersion.push(`${wname} ${helmer} (${data.length} months, ${K} incidents): got ${JSON.stringify(got).slice(0, 160)}${grayed ? " grayed" : ""}, want ${JSON.stringify(want).slice(0, 160)}`);
   }
 
-  // #40: each rationale with the months it covers, in order.
+  // #40: each rationale with the months it covers, in order, for every ADS
+  // line with a row (each company, and Tesla's no-monitor line under its
+  // label; until 2026-10-31 the companies only, found by their keys, so the
+  // no-monitor line's row went unread: audit 2026-10-30, QT-04).
   const src = bodyRows(section(html, "sanity-vmt-sources"));
-  for (const helmer of ADS) {
+  for (const helmer of LINES) {
     const rows = vmt.filter(r => r.helmer === helmer && w(r.month)).sort((x, y) => x.month < y.month ? -1 : 1);
     const runs = [];
     for (const r of rows) {
@@ -154,7 +157,7 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
       else runs.push({ rationale: r.rationale, first: r.month, last: r.month });
     }
     const want = runs.map(s => `${s.first === s.last ? s.first : `${s.first} – ${s.last}`}: ${escHtml(s.rationale)}`);
-    const row = src.find(r => r.cells[0] && r.cells[0].text === helmer);
+    const row = src.find(r => r.cells[0] && r.cells[0].text === escHtml(LABEL[helmer]));
     const got = row ? row.cells[1].html.split("<br>") : [];
     if (JSON.stringify(got) !== JSON.stringify(want)) problems.vmtSources.push(`${wname} ${helmer}: got ${JSON.stringify(got.map(g => g.slice(0, 40)))}, want ${JSON.stringify(want.map(g => g.slice(0, 40)))}`);
   }

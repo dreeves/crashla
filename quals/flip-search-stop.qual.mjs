@@ -2,13 +2,15 @@
 // faultFlipMultiplier brackets the smallest multiplier at which the at-fault
 // verdict changes, then halves the bracket. Until 2026-10-05 it halved it 40
 // times, to ~12 significant figures, for a multiplier the Sensitivity table
-// prints to two (fmtRatio); each halving builds a full marginal CDF, and the
+// prints to two (fmtRatio; three since 2026-10-31, decision #2); each halving
+// builds a full marginal CDF, and the
 // search was 61 of the sanity section's ~80 ms per slider step. Spec:
 //  - narrowToPrinted(lo, hi, flips) narrows a bracket (no flip at lo, a flip
 //    at hi) until every value in it prints alike under fmtRatio, and stops at
 //    the first such bracket: its result flips and prints as the flip point
 //    does, and it evaluates no bracket that already printed alike. A flip
-//    point on a print boundary (1.05, between "1.0" and "1.1") has no such
+//    point on a print boundary (1.005, between "1.00" and "1.01"; at two
+//    figures 1.05, between "1.0" and "1.1") has no such
 //    bracket; there it stops once the bracket is narrower than 1e-12 in ln;
 //  - the rule is fmtRatio's, not a precision of its own: with fmtRatio printing
 //    four significant figures the same holds at four;

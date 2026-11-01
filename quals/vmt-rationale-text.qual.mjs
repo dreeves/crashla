@@ -161,6 +161,15 @@ const FACTS = [
   // dates Zoox's 1M-mile crossing to Dec 1-7, not about Nov 22
   [r => r.helmer === "zoox" && /Nov 22/.test(r.rationale),
     "dates Zoox's 1M-mile crossing to about Nov 22 (Fortune, Dec 8, 2025: during Dec 1-7)"],
+  // Second review of the VMT package (2026-10-31): the Third Amended SGO
+  // (dated Apr 24, 2025,
+  // https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf)
+  // lists "Vehicle tow-away, if the crash involved a subject vehicle equipped
+  // with an ADS" (Request No. 1.D.v), and p. 13 counts "a tow-away of or air
+  // bag deployment on any vehicle involved in the crash": the towed vehicle
+  // need not be the one with the ADS
+  [r => /tow-?away of (?:a vehicle equipped with an ADS|an ADS-equipped vehicle)/.test(r.rationale),
+    "says the SGO's tow-away trigger needs the towed vehicle to carry an ADS (Request No. 1.D: any vehicle's tow-away, 'if the crash involved a subject vehicle equipped with an ADS')"],
 ];
 
 // Decision of 2026-10-31 (open question 13): every Tesla month that may hold

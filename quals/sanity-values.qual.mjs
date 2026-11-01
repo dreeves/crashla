@@ -293,12 +293,50 @@ Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
 // A "robustly safer/worse" badge resting on ZERO observed incidents (the
 // posterior is prior-dominated) must be visually demoted and tooltipped,
 // mirroring the charts' hollow-dot convention for k = 0. The current data
-// always has such rows (e.g. Tesla at-fault-injury, k = 0).
-assert.ok(html.includes("stress-badge") && html.includes("prior-only"),
-  `Replicata: search the stress-test table for a k=0 verdict badge.
+// always has such rows (e.g. Tesla at-fault-injury, k = 0). Both sensitivity
+// tables carry verdict badges, one per row: the stress table's verdict (its
+// 7th cell) and the fault-flip table's current verdict (its 3rd cell); their
+// rows are the app's (renderStressTestTable), whose estimates give each
+// verdict's k. Until
+// 2026-10-31 this checked only that some badge on the page carried the class
+// (audit 2026-10-30, QT-02: a table marking every k > 0 badge and no k = 0
+// one passed). The marker's tip says zero incidents were observed, so a
+// marked k > 0 badge is as wrong as an unmarked k = 0 one.
+{
+  const wantK = JSON.parse(vm.runInContext(`JSON.stringify((() => {
+    const rows = windowSummaryRows(activeSeries).filter(r => r.vmtBest > 0);
+    return {
+      stress: rows.flatMap(r => METRIC_KEYS.filter(key => r.mpiEstimates[key] !== null).map(key => r.mpiEstimates[key].k)),
+      flip: rows.filter(r => r.mpiEstimates.atfault !== null).map(r => r.mpiEstimates.atfault.k),
+    };
+  })())`, ctx));
+  const priorTip = vm.runInContext("PRIOR_ONLY_TIP", ctx);
+  const escAttr = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  // A badge cell: whether its badge is marked prior-only, and whether a marked
+  // one carries the prior-only tip.
+  const badge = cell => {
+    const m = /<span class="stress-badge ([^"]*)"([^>]*)>/.exec(cell || "");
+    const marked = m !== null && m[1].split(" ").includes("prior-only");
+    return { marked, tipped: m !== null && m[2].includes(`data-tip="${escAttr(priorTip)}"`) };
+  };
+  const problems = [];
+  for (const [id, col, ks] of [["sanity-stress", 6, wantK.stress], ["sanity-fault-flip", 2, wantK.flip]]) {
+    const sec = sectionOf(id);
+    const rows = bodyRows(sec.slice(sec.indexOf(`id="${id}"`)));
+    if (rows.length !== ks.length) { problems.push(`${id}: ${rows.length} rows, want ${ks.length}`); continue; }
+    rows.forEach((r, i) => {
+      const b = badge(r.cells[col]);
+      if (b.marked !== (ks[i] === 0) || (b.marked && !b.tipped))
+        problems.push(`${id} row ${i + 1} (${r.cells[0]}${id === "sanity-stress" ? ` ${r.cells[1]}` : ""}): k = ${ks[i]}, badge ${b.marked ? `marked prior-only${b.tipped ? "" : " without the prior-only tip"}` : "not marked"}`);
+    });
+  }
+  const zeros = wantK.stress.filter(k => k === 0).length;
+  assert.ok(problems.length === 0 && zeros > 0,
+    `Replicata: read the verdict badge of every row of the stress table (id sanity-stress) and of the fault-flip table (id sanity-fault-flip), full history, beside the k of the estimate each verdict rests on.
 Expectata: a stress-badge carrying the prior-only class (faded/italic, with
-an explanatory tooltip) on every verdict whose incident count is zero.
-Resultata: no prior-only badge found.`);
+an explanatory tooltip, PRIOR_ONLY_TIP) on every verdict whose incident count is zero, and on no other; at least one such verdict.
+Resultata: ${zeros} verdicts with k = 0; ${JSON.stringify(problems.slice(0, 8))}${problems.length > 8 ? ` (${problems.length} in all)` : ""}.`);
+}
 
 // --- Third-Amended-SGO carve-out caveat present (human-finalized 2026-08-22) ---
 // The human replaced the rule-7 Latin placeholder with their own English:

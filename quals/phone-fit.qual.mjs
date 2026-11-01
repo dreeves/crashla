@@ -15,7 +15,13 @@
 //    minimum width made the page 292 px wide);
 //  - #67: under a coarse pointer the slider thumbs are 24-28 px across (they
 //    were 18 px, with a month 4.6-6.1 px of travel), and the fill still runs
-//    from thumb centre to thumb centre; under a fine pointer they stay 18 px.
+//    from thumb centre to thumb centre; under a fine pointer they stay 18 px;
+//  - #22: under a coarse pointer the incident box is capped at half the
+//    window's height, so half the screen still scrolls the page (decision
+//    #22, the human's "Shorter box", implemented 2026-10-31: at 80vh, 671 of a
+//    Pixel 7's 839 px, a swipe mid-screen scrolled only the table's ~82,700
+//    px of rows); under a fine pointer the cap stays 80vh. The default view's
+//    box, which its rows overfill, is drawn at its cap.
 import assert from "node:assert/strict";
 import { ENGINES, devices, serveRepo } from "./browser.mjs";
 
@@ -33,16 +39,17 @@ async function open(browser, url, contextOptions) {
     document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true");
   return page;
 }
-// The sanity table under the heading `title`.
+// The sanity table with the id `id` (sanity-vmt-sources, sanity-benchmarks)
+// and the box it pans in. Until 2026-10-31 found by its heading's words, which
+// are the human's (audit 2026-10-30, QT-09).
 const tables = page => page.evaluate(() => {
-  const wrapAfter = title => {
-    const h = [...document.querySelectorAll("#sanity-checks h3")].find(h => h.textContent === title);
-    let n = h.nextElementSibling;
-    while (n !== null && !n.classList.contains("table-wrap")) n = n.nextElementSibling;
-    return n;
+  const table = id => {
+    const t = document.getElementById(id);
+    if (t === null || !t.parentElement.classList.contains("table-wrap")) throw new Error(`no table #${id} in a .table-wrap`);
+    return t;
   };
-  const vw = wrapAfter("VMT sources"), dw = wrapAfter("Specific human benchmark derivations");
-  const vt = vw.querySelector("table"), dt = dw.querySelector("table");
+  const vt = table("sanity-vmt-sources"), dt = table("sanity-benchmarks");
+  const vw = vt.parentElement;
   const names = [...vt.querySelectorAll("tbody tr")].map(tr => {
     const td = tr.children[0];
     const range = document.createRange();
@@ -83,6 +90,18 @@ const slider = page => page.evaluate(async () => {
     coarse: matchMedia("(pointer: coarse)").matches };
 });
 
+// The incident box's cap and drawn height, the box scrolled into view (it
+// is laid out only near the screen: content-visibility).
+const incidentBox = page => page.evaluate(async () => {
+  const box = document.querySelector(".table-scroll");
+  box.scrollIntoView({ block: "start" });
+  const row = document.querySelector("#incidents-body tr");
+  for (let i = 0; i < 30 && !row.checkVisibility({ contentVisibilityAuto: true }); i++) await new Promise(r => requestAnimationFrame(r));
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  return { cap: parseFloat(getComputedStyle(box).maxHeight), height: box.getBoundingClientRect().height,
+    innerHeight, coarse: matchMedia("(pointer: coarse)").matches };
+});
+
 const server = await serveRepo();
 const problems = [];
 try {
@@ -110,6 +129,10 @@ try {
           if (Math.abs(s.fill.left - a) > 1.5 || Math.abs(s.fill.right - b) > 1.5)
             problems.push(`${engineName} ${what}: slider fill ${s.fill.left.toFixed(1)}-${s.fill.right.toFixed(1)}, thumb centres ${a.toFixed(1)} and ${b.toFixed(1)}`);
         }
+        const b = await incidentBox(page);
+        const share = b.coarse ? 0.5 : 0.8;
+        if (Math.abs(b.cap - share * b.innerHeight) > 1 || Math.abs(b.height - b.cap) > 1)
+          problems.push(`${engineName} ${what} (${b.coarse ? "coarse" : "fine"} pointer): the incident box's cap is ${b.cap.toFixed(1)} px and it is drawn ${b.height.toFixed(1)} px tall in a ${b.innerHeight} px window (want ${share * 100}% of it, ${(share * b.innerHeight).toFixed(1)} px, drawn at the cap)`);
         if (page.errors.length > 0) problems.push(`${engineName} ${what}: page errors ${JSON.stringify(page.errors)}`);
         await page.context().close();
       }
@@ -128,8 +151,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium (Pixel 7, 375 px, 1200 px), Firefox (375 px with touch, 1200 px) and WebKit (iPhone 14, iPhone SE, 1200 px), open the default view and measure the "VMT sources" table against its box, where each company's name sits in its row, the narrowest Derivation cell of "Specific human benchmark derivations", and the date slider's thumbs (by hit-testing) and fill; then the page width at 270, 280 and 290 px.
-Expectata: the "VMT sources" table fits its box; each name at its row's top; Derivation cells at least 18em wide; thumbs 24-28 px under a coarse pointer and 18 px under a fine one, the fill from thumb centre to thumb centre; no sideways scroll.
+  `Replicata: in Chromium (Pixel 7, 375 px, 1200 px), Firefox (375 px with touch, 1200 px) and WebKit (iPhone 14, iPhone SE, 1200 px), open the default view and measure the "VMT sources" table against its box, where each company's name sits in its row, the narrowest Derivation cell of "Specific human benchmark derivations", the date slider's thumbs (by hit-testing) and fill, and the incident box's cap and drawn height; then the page width at 270, 280 and 290 px.
+Expectata: the "VMT sources" table fits its box; each name at its row's top; Derivation cells at least 18em wide; thumbs 24-28 px under a coarse pointer and 18 px under a fine one, the fill from thumb centre to thumb centre; the incident box capped at 50% of the window's height under a coarse pointer and 80% under a fine one, and drawn at its cap; no sideways scroll.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: on phones the sanity tables fit and read at a normal line length, the slider's thumbs are finger-sized, and the page does not scroll sideways from 270 px, in three engines");

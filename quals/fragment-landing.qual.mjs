@@ -13,10 +13,12 @@
 // off screen and ~41 px on screen, so in Firefox the page shrank ~680 px
 // under the scroll once the box came on screen (until the review of
 // 2026-10-05).
-// With a short incident table (fewer rows than fill the box's 80vh cap) a
-// section below the box may land off by as much as the room its rows leave
-// in the box (80vh minus the box's drawn height), in either direction: the
-// box is 80vh until it is first drawn and its own height after, so a section
+// With a short incident table (fewer rows than fill the box's cap: 80vh,
+// 50vh under a coarse pointer since 2026-10-31, decision #22; read from the
+// box's max-height) a section below the box may land off by as much as the
+// room its rows leave in the box (its cap minus its drawn height), in either
+// direction: the box is at its cap until it is first drawn and its own height
+// after, so a section
 // below it moves by that room when the box is first drawn (accepted by the
 // human on 2026-10-05, over laying a short table's box out always, which
 // made some filter clicks slower; load-order.qual, scroll-restore.qual).
@@ -33,6 +35,7 @@
 // writes (in the sanity section) is not checked: Firefox looks for the words
 // before the script has written them, and missed them before 2026-10-05 too.
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { ENGINES, devices, serveRepo, openPage } from "./browser.mjs";
 
 const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
@@ -41,8 +44,20 @@ const SHORT = "?f=Tesla&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault&d=2026-05.2026-
 const BELOW = ["#sec-browser", "#sec-markets", "#sec-summary", "#sec-sanity", "#sec-fleet"];
 const PHONE = ["#sec-browser", "#sec-sanity", "#sec-fleet"];
 const SHORT_BELOW = ["#sec-markets", "#sec-sanity", "#sec-fleet"];
-const TEXT_LINKS = [["Prediction Markets", "#sec-markets"], ["Sources and raw numbers", "#sec-summary"],
-  ["AV company growth and forecast", "#sec-fleet"]];
+// A text-fragment link to a section's heading: the heading's text as
+// index.html gives it (the text the browsers search before the script runs),
+// read from the section with that id. Until 2026-10-31 the three headings'
+// words were spelled here; they are the human's (audit 2026-10-30, QT-09).
+const INDEX = fs.readFileSync("index.html", "utf8");
+const headingText = id => {
+  const m = new RegExp(`<section class="collapsible" id="${id.slice(1)}">\\s*<h2 class="sec-head"><span class="sec-toggle">([^<]+)</span></h2>`).exec(INDEX);
+  assert.ok(m, `Replicata: read the heading of ${id} in index.html. Expectata: <h2 class="sec-head"><span class="sec-toggle">(its text)</span></h2> right after the section's opening tag. Resultata: none.`);
+  return m[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").trim();
+};
+const TEXT_LINKS = ["#sec-markets", "#sec-summary", "#sec-fleet"].map(id => [headingText(id), id]);
+// The fragment directive's own delimiters ("-" and ",", besides "&") are
+// escaped, so the heading's text is searched for whole.
+const textDirective = text => encodeURIComponent(text).replace(/-/g, "%2D");
 const DESK = { viewport: { width: 1200, height: 900 } };
 // [name, context options, sections for the default view, sections for the short table]
 const CONFIGS = {
@@ -82,7 +97,7 @@ try {
                 await new Promise(r => requestAnimationFrame(r));
               }
               await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-              return { height: b.getBoundingClientRect().height, cap: 0.8 * innerHeight };
+              return { height: b.getBoundingClientRect().height, cap: parseFloat(getComputedStyle(b).maxHeight) };
             });
             const off = at.want - at.scrollY;
             const room = short ? box.cap - box.height : 0;
@@ -98,7 +113,7 @@ try {
         // browser and the sanity section and to the growth section's.
         for (const [text, section] of TEXT_LINKS) {
           const where = `${engineName} ${what} #:~:text=${text}`;
-          const page = await openPage(browser, server.url + DEF + "#:~:text=" + encodeURIComponent(text), options);
+          const page = await openPage(browser, server.url + DEF + "#:~:text=" + textDirective(text), options);
           await settle(page);
           const head = await page.evaluate(sel => {
             const b = document.querySelector(sel + " .sec-head").getBoundingClientRect();
@@ -119,8 +134,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, at 1200x900 and on a phone (Pixel 7, Firefox at 412x915, iPhone 14), open ${DEF} followed by each of ${BELOW.join(", ")} (on phones ${PHONE.join(", ")}) in a fresh context, wait until every view is built, and read where the section sits; at 1200x900 also open ${SHORT} (a two-row incident table) followed by each of ${SHORT_BELOW.join(", ")}; then scroll the incident box into view and read its drawn height; and in every configuration open ${DEF} followed by ${TEXT_LINKS.map(([text]) => `#:~:text=${encodeURIComponent(text)}`).join(", ")}.
-Expectata: the section's top at the top of the window (or the page scrolled as far as it goes), with the two-row table at most the room its rows leave in the box (80vh minus the box's drawn height) above or below that; the default view's box drawn at its 80vh cap and the two-row one shorter; the fragment still in the address; no page error; each text-fragment link shows its heading whole in the window.
+  `Replicata: in Chromium, Firefox and WebKit, at 1200x900 and on a phone (Pixel 7, Firefox at 412x915, iPhone 14), open ${DEF} followed by each of ${BELOW.join(", ")} (on phones ${PHONE.join(", ")}) in a fresh context, wait until every view is built, and read where the section sits; at 1200x900 also open ${SHORT} (a two-row incident table) followed by each of ${SHORT_BELOW.join(", ")}; then scroll the incident box into view and read its drawn height; and in every configuration open ${DEF} followed by ${TEXT_LINKS.map(([text]) => `#:~:text=${textDirective(text)}`).join(", ")}.
+Expectata: the section's top at the top of the window (or the page scrolled as far as it goes), with the two-row table at most the room its rows leave in the box (its cap, 80vh or under a coarse pointer 50vh, minus the box's drawn height) above or below that; the default view's box drawn at its cap and the two-row one shorter; the fragment still in the address; no page error; each text-fragment link shows its heading whole in the window.
 Resultata: ${problems.length} of ${results.length} loads wrong:
 ${problems.join("\n")}`);
 console.log(`qual pass: ${results.length} links opened fresh (#sec-... and #:~:text=) land on their targets in three engines, desktop and phone (a section below a two-row incident table within the room its rows leave in its box)`);

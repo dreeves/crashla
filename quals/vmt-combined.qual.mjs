@@ -82,6 +82,8 @@ const paths = markup => [...markup.matchAll(/<path class="month-vmt-line" d="([^
 const targets = markup => [...markup.matchAll(/<circle [^>]*data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"><\/circle>/g)]
   .map(m => ({ tip: m[1], name: m[2] }));
 const figureName = markup => (/<svg class="month-svg"[^>]*aria-label="([^"]*)"/.exec(markup) || [])[1];
+// The chart's y-axis title, the rotated label drawSingleMonthAxes writes.
+const axisTitle = markup => (/<text class="month-label"[^>]*transform="rotate\(-90[^"]*"[^>]*>([^<]*)<\/text>/.exec(markup) || [])[1];
 const escAttr = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const sorted = xs => [...xs].sort();
 
@@ -95,6 +97,7 @@ const STATES = [
   ["no company checked", ["HumansAV"], false, DEFAULT_WINDOW],
 ];
 const problems = [];
+const titles = { false: new Set(), true: new Set() };
 for (const [what, checked, cumulative, window] of STATES) {
   const { combined, own } = render(checked, cumulative, window);
   const lines = app.lines.filter(h => checked.includes(h));
@@ -116,8 +119,17 @@ for (const [what, checked, cumulative, window] of STATES) {
 
   if (!/<svg class="month-svg"/.test(combined) || !/class="month-axis"/.test(combined))
     problems.push(`${what}: no chart with axes drawn`);
-  const wantFigure = cumulative ? "Cumulative VMT" : "Vehicle Miles Traveled (VMT)";
-  if (figureName(combined) !== wantFigure) problems.push(`${what}: figure named ${JSON.stringify(figureName(combined))}, want ${JSON.stringify(wantFigure)}`);
+  // The figure is named by its axis title, which is each line's own chart's
+  // (whose figure is "<line label> <axis title>") and follows the toggle.
+  // Until 2026-10-31 this spelled the two titles, which are the human's words
+  // (audit 2026-10-30, QT-09).
+  const title = axisTitle(combined);
+  titles[cumulative].add(title);
+  if (!title || figureName(combined) !== escAttr(title)) problems.push(`${what}: figure named ${JSON.stringify(figureName(combined))}, its axis title ${JSON.stringify(title)}; want the figure named by its axis title`);
+  for (const h of lines) {
+    if (axisTitle(own[h]) !== title || figureName(own[h]) !== escAttr(`${label(h)} ${title}`))
+      problems.push(`${what}: ${h}'s own chart has axis title ${JSON.stringify(axisTitle(own[h]))} and figure name ${JSON.stringify(figureName(own[h]))}; want the combined chart's title ${JSON.stringify(title)} and the name "<its label> <title>"`);
+  }
   // Linear from 0: the lowest y tick label is "0".
   const yTicks = [...combined.matchAll(/<text class="month-tick" x="[^"]*" y="([^"]*)" text-anchor="end">([^<]*)<\/text>/g)]
     .map(m => ({ y: Number(m[1]), label: m[2] })).sort((a, b) => b.y - a.y);
@@ -138,9 +150,12 @@ for (const [what, checked, cumulative, window] of STATES) {
       problems.push(`${what}: ${h} has ${byLine[h].length} marks on the combined chart, its own chart ${want.length}, or their tips differ (first combined ${JSON.stringify(sorted(byLine[h])[0])}, first own ${JSON.stringify(want[0])})`);
   }
 }
+// One axis title per view, the two views' different.
+if (titles.false.size !== 1 || titles.true.size !== 1 || [...titles.false][0] === [...titles.true][0])
+  problems.push(`axis titles: monthly view ${JSON.stringify([...titles.false])}, cumulative view ${JSON.stringify([...titles.true])}; want one title per view, the two different`);
 assert.deepEqual(problems, [],
   `Replicata: for each state (${STATES.map(s => s[0]).join("; ")}), set the checkboxes, the Monthly/Cumulative toggle and the window, run renderWindowedViews() and read #chart-vmt-combined, beside each line's own chart (renderHelmerMonthlyChart).
-Expectata: a legend chip per checked line in ADS_SERIES order (grayed for a line with no months in the window), one VMT line per checked line in its colour, axes even with no line checked, the figure named by its axis title, a linear axis from 0, and each line's marks exactly its own chart's, each named "<line label> · <tip>".
+Expectata: a legend chip per checked line in ADS_SERIES order (grayed for a line with no months in the window), one VMT line per checked line in its colour, axes even with no line checked, the figure named by its axis title (each line's own chart "<line label> <axis title>", one title per Monthly/Cumulative view, the two different), a linear axis from 0, and each line's marks exactly its own chart's, each named "<line label> · <tip>".
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 12).join("\n")}`);
 

@@ -81,6 +81,59 @@ Resultata: ${targets} targets; ${wrongAll.length} misplaced, e.g. ${JSON.stringi
   assert.deepEqual(page.errors, [], `[${engine}] uncaught page errors: ${JSON.stringify(page.errors)}`);
   await browser.close();
 }
+
+// --- A narrow window: the tip is drawn at the size it was measured at ------
+// position() measures the tip at the window's left edge, then draws it at
+// least 12 px in. Until 2026-10-31 (2026-10-30 audit, ui-render-2) its
+// max-width was 320 px, so in a window narrower than 332 px a long tip
+// measured 320 px wide had 308 px or less once drawn, rewrapped taller than
+// the flip above its target had allowed for, and ran past the window's
+// bottom (the no-monitor card's "Effective VMT" line, focused at the bottom
+// edge of a 320x700 window: tip y 494-707), flush with its right edge. The
+// tip's width is capped at the window less both 12 px margins, so the size
+// measured is the size drawn.
+for (const [engine, launcher] of Object.entries(ENGINES)) {
+  const browser = await launcher.launch();
+  for (const width of [300, 320]) {
+    const page = await openPage(browser, server.url + DEFAULT_QUERY, { viewport: { width, height: 700 } });
+    // The longest tips, each measured at left 0 and drawn at left 12.
+    const sizes = await page.evaluate(() => {
+      const tip = document.getElementById("chart-tip");
+      const texts = [...new Set([...document.querySelectorAll("[data-tip]")].map(e => e.getAttribute("data-tip")))]
+        .sort((a, b) => b.length - a.length).slice(0, 6);
+      const at = left => { tip.style.left = left + "px"; tip.style.top = "0px"; const r = tip.getBoundingClientRect(); return [r.width, r.height]; };
+      const out = texts.map(text => { tip.textContent = text; tip.style.display = "block"; return { text: text.slice(0, 40), atEdge: at(0), at12: at(12) }; });
+      tip.style.display = "none";
+      return { out, innerWidth };
+    });
+    const resized = sizes.out.filter(t => Math.abs(t.atEdge[0] - t.at12[0]) > 0.5 || Math.abs(t.atEdge[1] - t.at12[1]) > 0.5 || t.at12[0] > sizes.innerWidth - 24 + 0.5);
+    // The finder's case: the no-monitor card's Effective VMT line, focused
+    // with its bottom at the window's bottom edge.
+    const real = await page.evaluate(async () => {
+      document.activeElement.blur();
+      const el = [...document.querySelectorAll(".mpi-card-vmt[data-tip]")].at(-1);
+      el.scrollIntoView({ block: "end" });
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return true;
+    });
+    await page.keyboard.press("Shift");
+    await page.evaluate(() => [...document.querySelectorAll(".mpi-card-vmt[data-tip]")].at(-1).focus({ preventScroll: true }));
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const shown = await page.evaluate(() => {
+      const t = document.getElementById("chart-tip").getBoundingClientRect();
+      return { left: t.left, right: t.right, top: t.top, bottom: t.bottom, innerWidth, innerHeight,
+        shown: getComputedStyle(document.getElementById("chart-tip")).display !== "none" };
+    });
+    const inside = real && shown.shown && shown.left >= 12 - 0.5 && shown.right <= shown.innerWidth - 12 + 0.5 && shown.top >= 0 && shown.bottom <= shown.innerHeight;
+    assert.ok(resized.length === 0 && inside,
+      `[${engine}] Replicata: in a ${width}x700 window, measure the page's six longest tooltips at the window's left edge and 12 px in; then focus the last card's "Effective VMT" line from the keyboard with its bottom at the window's bottom edge.
+Expectata: each tip the same size at both places and no wider than the window less 24 px; the focused line's tip inside the window, 12 px from its sides.
+Resultata: ${JSON.stringify(resized)}; focused tip ${JSON.stringify(shown)}.`);
+    assert.deepEqual(page.errors, [], `[${engine}] uncaught page errors: ${JSON.stringify(page.errors)}`);
+    await page.context().close();
+  }
+  await browser.close();
+}
 await server.close();
 
-console.log("qual pass: a focused target's tooltip sits beside it after the browser's focus scroll, in Chromium, Firefox and WebKit");
+console.log("qual pass: a focused target's tooltip sits beside it after the browser's focus scroll, in Chromium, Firefox and WebKit; in a window under 332 px it is drawn at the size it was measured at");

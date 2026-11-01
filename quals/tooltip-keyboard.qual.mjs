@@ -360,7 +360,9 @@ Resultata: ${glyphs} "[?]" text nodes; ${namelessStops.length} nameless focusabl
     // #19: a sortable header is a button in its column header, named by the
     // header's text.
     // (The sanity tables' headers, plain text, share some of these names.)
-    const LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
+    // The labels are the app's (until 2026-10-31 spelled here; they are the
+    // human's words: audit 2026-10-30, QT-09).
+    const LABELS = await page.evaluate(() => HEADER_LABELS);
     const byId = new Map(nodes.map(n => [n.nodeId, n]));
     const withButton = live.filter(h => {
       if (!h.role || h.role.value !== "columnheader" || !h.name) return false;

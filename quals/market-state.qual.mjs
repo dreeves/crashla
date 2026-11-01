@@ -411,6 +411,32 @@ const allOpen = () => {
   }
   const ev = await vm.runInContext(`fetchPolymarketEvent(${JSON.stringify(POLY.slug)}, ${JSON.stringify(POLY)})`, ctx);
   if (keys(ev) !== keys(POLY) || keys(ev.markets[0]) !== keys(POLY.markets[0])) problems.push(`fetchPolymarketEvent keys ${keys(ev)} / ${keys(ev.markets[0])}; the snapshot's ${keys(POLY)} / ${keys(POLY.markets[0])}`);
+  // A reply without its volume fails that market's fetch, as one without its
+  // probability or price does (audit #30), so the card stays grayed on the
+  // odds it had: until 2026-10-31 (2026-10-30 audit, CR-07) the fetchers
+  // filled in 0, drawn "Ṁ0" and "$0" as live, measured figures.
+  const rejects = async (expr, reply2) => {
+    fetchImpl = () => reply(reply2);
+    try { await vm.runInContext(expr, ctx); return null; } catch (err) { return String(err.message || err); }
+  };
+  const noVolume = o => Object.fromEntries(Object.entries(o).filter(([k]) => k !== "volume"));
+  const manifoldOpen = open(enabled(snap.m).find(m => !m.answers));
+  const polyOpen = [{ ...polymarketReply[0], closed: false, markets: polymarketReply[0].markets.map(mk => ({ ...mk, closed: false,
+    outcomePrices: "[\"0.032\", \"0.968\"]", umaResolutionStatus: null })) }];
+  for (const [what, expr, body] of [
+    ["a Manifold market with no volume", `fetchManifoldMarket(${JSON.stringify(enabled(snap.m).find(m => !m.answers))})`, noVolume(manifoldOpen)],
+    ["a Polymarket event with no volume", `fetchPolymarketEvent(${JSON.stringify(POLY.slug)}, ${JSON.stringify(POLY)})`, [noVolume(polyOpen[0])]],
+    ["a Polymarket sub-market with no volume", `fetchPolymarketEvent(${JSON.stringify(POLY.slug)}, ${JSON.stringify(POLY)})`, [{ ...polyOpen[0], markets: polyOpen[0].markets.map(noVolume) }]],
+  ]) {
+    const err = await rejects(expr, body);
+    if (err === null || !/volume/.test(err)) problems.push(`${what}: the page's fetch ${err === null ? "succeeded" : `failed for another reason (${err})`}; want it to fail on the missing volume`);
+  }
+  // ...and both open replies, volumes intact, still fetch.
+  for (const [what, expr, body] of [["an open Manifold market", `fetchManifoldMarket(${JSON.stringify(enabled(snap.m).find(m => !m.answers))})`, manifoldOpen],
+    ["an open Polymarket event", `fetchPolymarketEvent(${JSON.stringify(POLY.slug)}, ${JSON.stringify(POLY)})`, polyOpen]]) {
+    const err = await rejects(expr, body);
+    if (err !== null) problems.push(`${what} with its volume: the page's fetch failed (${err})`);
+  }
 }
 
 // --- 6. The faded cards' style -----------------------------------------------
@@ -519,6 +545,11 @@ globalThis.fetch = async url => ({ ok: true, status: 200, json: async () =>
     ["a Polymarket sub-market's Yes price null", fx => { for (const mk of fx.polymarket[0].markets) Object.assign(mk, { umaResolutionStatus: null, outcomes: "[\"Yes\", \"No\"]", outcomePrices: "[null, \"1\"]" }); }, /price/],
     ["a binary Manifold market with no probability", fx => { delete fx.manifold[binaries[1].slug].probability; }, /probability/],
     ["a Manifold answer with no probability", fx => { delete fx.manifold[MULTI_M.slug].answers[1].probability; }, /probability/],
+    // ...and volumes that are not volumes (2026-10-30 audit, CR-07): until
+    // 2026-10-31 the script wrote 0 for a missing one.
+    ["a Polymarket event with no volume", fx => { delete fx.polymarket[0].volume; }, /volume/],
+    ["a Polymarket sub-market with no volume", fx => { for (const mk of fx.polymarket[0].markets) delete mk.volume; }, /volume/],
+    ["a Manifold market with no volume", fx => { delete fx.manifold[binaries[1].slug].volume; }, /volume/],
   ]) {
     const fx = JSON.parse(JSON.stringify(fixtures));
     for (const mk of fx.polymarket[0].markets) Object.assign(mk, { umaResolutionStatus: null, outcomes: "[\"Yes\", \"No\"]", outcomePrices: "[\"0.032\", \"0.968\"]" });

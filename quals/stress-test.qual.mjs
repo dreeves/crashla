@@ -115,11 +115,25 @@ const stress = vm.runInContext(`
     cardStressLabel: typeof CARD_STRESS_LABEL === "undefined" ? null : CARD_STRESS_LABEL,
     sanityHtml: document.getElementById("sanity-checks").innerHTML,
     verdictClass: Object.fromEntries(Object.entries(STRESS_VERDICT_META).map(([k, m]) => [k, m.className])),
+    verdictLabel: Object.fromEntries(Object.entries(STRESS_VERDICT_META).map(([k, m]) => [k, m.label])),
     // The stress table's rows, a helmer's metrics with an estimate each, and
-    // the fault-flip table's, a helmer with an at-fault estimate each.
-    stressRows: shown.map(r => METRIC_KEYS.filter(key => r.mpiEstimates[key] !== null)
-      .map(key => { const s = helmerHumanStress(r, key); return [fmtRatio(s.ratioLo), fmtRatio(s.ratioHi), s.verdictKey]; })).flat(),
-    flipRows: shown.filter(r => r.mpiEstimates.atfault !== null).length,
+    // the fault-flip table's, a helmer with an at-fault estimate each: what
+    // each row's cells must show, from helmerHumanStress and
+    // faultFlipMultiplier (counts and ratios in the app's formats, fmtCount
+    // and fmtRatio, which formatting.qual and summary-cards.qual check).
+    stressCells: shown.flatMap(r => METRIC_KEYS.filter(key => r.mpiEstimates[key] !== null).map(key => {
+      const s = helmerHumanStress(r, key);
+      return {company: helmerLabel(r.helmer), metric: s.metric.cardLabel, k: s.av.k, kText: fmtCount(s.av.k),
+        av: [s.av.postMedian, s.av.lo, s.av.hi], human: [s.human.lo, s.human.hi],
+        ratio: [fmtRatio(s.ratioLo), fmtRatio(s.ratioHi)], verdict: s.verdictKey};
+    })),
+    flipCells: shown.filter(r => r.mpiEstimates.atfault !== null).map(r => {
+      const s = helmerHumanStress(r, "atfault");
+      const flip = faultFlipMultiplier(s.av, s.human, r.incTotal);
+      return {company: helmerLabel(r.helmer), k: s.av.k, kText: fmtCount(s.av.k), verdict: s.verdictKey,
+        mult: flip === null ? null : flip.mult === Infinity ? "Infinity" : fmtRatio(flip.mult),
+        flipped: flip === null ? null : flip.flipped};
+    }),
   };
 })()
 `, ctx);
@@ -271,21 +285,49 @@ Expectata: each stress line is headed CARD_STRESS_LABEL (the All-incidents verdi
 Resultata: label ${JSON.stringify(plain.cardStressLabel)}; summary card HTML snippet was ${JSON.stringify(plain.summaryCardHtml.slice(0, 400))}.`,
 );
 
-// The sanity section's stress table (id sanity-stress): a row per helmer
-// metric with an estimate, each giving the AV/human ratio range and the
-// verdict computed for it, robustly safer among them. Until 2026-10-29 this
-// checked the heading's, the ratio column's and the safer verdict's words.
-{
-  const table = (/<table[^>]*\bid="sanity-stress"[^>]*>([\s\S]*?)<\/table>/.exec(plain.sanityHtml) || [])[1] || "";
-  const rows = [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(table) || [])[1] || "").matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
+// A table's body rows (by the table's id), each as its cells' markup.
+const tableRows = id => {
+  const table = (new RegExp(`<table[^>]*\\bid="${id}"[^>]*>([\\s\\S]*?)<\\/table>`).exec(plain.sanityHtml) || [])[1] || "";
+  return [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(table) || [])[1] || "").matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
     .map(m => [...m[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(c => c[1]));
-  const want = plain.stressRows.map(([lo, hi, key]) => [`${lo}x – ${hi}x`, plain.verdictClass[key]]);
-  const got = rows.map(cells => [cells[5], (/class="stress-badge ([^ "]+)/.exec(cells[6] || "") || [])[1]]);
+};
+const cellText = cell => (cell || "").replace(/<[^>]*>/g, "");
+const cellFigures = cell => cellText(cell).match(/\d[\d,]*(?:\.\d+)?/g) || [];
+const whole = n => Math.round(n).toLocaleString("en-US");
+const escHtml = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// A verdict badge: its classes after stress-badge, sorted, and its text; a
+// verdict on zero incidents adds prior-only (sanity-values.qual checks its tip).
+const badgeOf = cell => {
+  const m = /<span class="stress-badge ([^"]*)"[^>]*>([^<]*)<\/span>/.exec(cell || "");
+  return m === null ? null : { classes: m[1].split(" ").sort(), label: m[2] };
+};
+const wantBadge = (verdict, priorOnly) => ({
+  classes: [plain.verdictClass[verdict], ...(priorOnly ? ["prior-only"] : [])].sort(),
+  label: escHtml(plain.verdictLabel[verdict]),
+});
+
+// The sanity section's stress table (id sanity-stress): a row per helmer
+// metric with an estimate, robustly safer among them, its seven cells what
+// helmerHumanStress computes: the company and metric (their labels), the
+// incident count k, the AV's posterior median and 95% CI, the AV-cities human
+// band, the AV/human ratio range, and the verdict's badge (marked prior-only
+// at k = 0). Until 2026-10-29 this checked the heading's, the ratio column's
+// and the safer verdict's words; until 2026-10-31 only the ratio cell and the
+// badge's first class (audit 2026-10-30, QTV-M1 and QT-02: the median shown
+// as the CI's upper edge, the human band's low edge halved, and every badge's
+// prior-only marking inverted all passed).
+{
+  const rows = tableRows("sanity-stress");
+  const want = plain.stressCells.map(c => [escHtml(c.company), escHtml(c.metric), c.kText, c.av.map(whole), c.human.map(whole),
+    `${c.ratio[0]}x – ${c.ratio[1]}x`, wantBadge(c.verdict, c.k === 0)]);
+  const got = rows.map(cells => [cells[0], cells[1], cellText(cells[2]), cellFigures(cells[3]), cellFigures(cells[4]),
+    cells[5], badgeOf(cells[6])]);
+  const wrong = want.map((w, i) => [i, w, got[i]]).filter(([i, w, g]) => rows[i] === undefined || rows[i].length !== 7 || JSON.stringify(g) !== JSON.stringify(w));
   assert.ok(
-    want.length > 0 && JSON.stringify(got) === JSON.stringify(want) && want.some(([, cls]) => cls === plain.verdictClass.safer),
-    `Replicata: render the skeptical stress-test sanity subsection (default window) and read the stress table's ratio and verdict cells.
-Expectata: a row per helmer metric with an estimate, its ratio cell the AV/human ratio range and its badge the verdict helmerHumanStress computes, a robustly safer one among them: ${JSON.stringify(want.slice(0, 4))}... (${want.length} rows).
-Resultata: ${JSON.stringify(got.slice(0, 4))}... (${got.length} rows).`,
+    want.length > 0 && rows.length === want.length && wrong.length === 0 && plain.stressCells.some(c => c.verdict === "safer"),
+    `Replicata: render the skeptical stress-test sanity subsection (default window) and read every cell of the stress table.
+Expectata: a row per helmer metric with an estimate (${want.length} rows), a robustly safer one among them, each of seven cells: company, metric, k, the AV's median then 95% CI, the human band, the AV/human ratio range, and the verdict's badge (prior-only at k = 0), as helmerHumanStress computes them.
+Resultata: ${rows.length} rows; ${wrong.length} differ, e.g. ${JSON.stringify(wrong.slice(0, 3).map(([i, w, g]) => ({ row: i + 1, want: w, got: g })))}.`,
   );
 }
 
@@ -337,8 +379,80 @@ Expectata: the flip is feasible (multiplier below the cap), so a finite value is
 Resultata: flip was ${JSON.stringify(flips.out.Waymo)}.`,
 );
 
-// The k=0 branch: scaling zero judged at-fault mass can never change a
-// verdict. Tested with a synthetic estimate rather than whichever helmer
+// --- The shared shift toward 1 (decision #3 of the 2026-10-04 audit) ------
+// faultFlipMultiplier moves every incident's fault probability toward 1 by
+// one shared fraction t, p -> p + (1 - p)t, over the n incidents of the
+// metric the fault fractions are taken over (All incidents for at-fault,
+// Injury for at-fault injury), and reports s = (shifted mass) / (judged mass)
+// = 1 + (n/k - 1)t. At t = 0 the shifted mixture is the displayed at-fault
+// posterior's, exactly; at t = 1 every incident is at fault, so it is that
+// universe metric's posterior, exactly, and the cap s = n/k is reachable.
+// Until 2026-10-31 the search scaled each Poisson-binomial component's mass
+// (a_K = K·s + 1/2) with fixed weights, so the K = 0 component (Zoox's
+// P(K = 0) = 0.0976) kept its weight at every s and Zoox read ∞ in the
+// default window beside an All-incidents verdict of robustly worse.
+const shift = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  if (typeof shiftedFaultComponents === "undefined") return null;
+  const full = monthSeriesData();
+  const months = full.months, last = months.length - 1;
+  const out = [];
+  for (const [name, a] of [["default", months.indexOf(DEFAULT_START_MONTH)], ["full", 0]]) {
+    for (const row of monthlySummaryRows(sliceSeries(full, a, last)).filter(r => r.vmtBest > 0)) {
+      for (const [key, universe, n] of [["atfault", "all", row.incTotal], ["atfaultInjury", "injury", row.incInjury]]) {
+        const est = row.mpiEstimates[key], whole = row.mpiEstimates[universe];
+        if (est === null || est.k === 0) continue;
+        out.push({window: name, helmer: row.helmer, key, n, k: est.k,
+          t0: JSON.stringify(shiftedFaultComponents(est, n, 0)) === JSON.stringify(est.comps),
+          t1: JSON.stringify(shiftedFaultComponents(est, n, 1)) === JSON.stringify(whole.comps),
+          band: [est.vmtMin, est.vmtBest, est.vmtMax].join() === [whole.vmtMin, whole.vmtBest, whole.vmtMax].join()});
+      }
+    }
+  }
+  return out;
+})()
+`, ctx)));
+assert.ok(shift !== null && shift.length >= 12 && shift.every(r => r.t0 && r.t1 && r.band),
+  `Replicata: for every company's at-fault and at-fault-injury estimate (k > 0) in the default window and the full history, build the shared-shift mixture (shiftedFaultComponents) at t = 0 and at t = 1.
+Expectata: at t = 0 exactly the displayed estimate's mixture components; at t = 1 exactly the components of the metric the fault fractions are taken over (All incidents, Injury), on the same VMT band, so the shifted posterior there is that metric's.
+Resultata: ${shift === null ? "crashla.js defines no shiftedFaultComponents" : JSON.stringify(shift.filter(r => !(r.t0 && r.t1 && r.band)).slice(0, 4)) + ` (${shift.length} estimates checked)`}.`);
+
+// The default window's fault-flip table (what the page shows on load), at the
+// fault values and VMT of 2026-10-31 (NHTSA's Oct-15-2026 release): Zoox's
+// multiplier is finite, the verdict it reaches is its All-incidents verdict
+// (robustly worse), as at the cap (t = 1); Waymo's "robustly safer" lasts to
+// 4.45x (4.3x on the old scaling, two figures); Tesla's and its no-monitor
+// line's verdicts stay ambiguous at the cap, as their All-incidents ones do.
+// Like the knife-edge pins above, these values move with the data: re-pin
+// them when a release or a VMT or fault re-pin moves them.
+const defaultFlips = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const full = monthSeriesData();
+  const rows = monthlySummaryRows(sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1))
+    .filter(r => r.vmtBest > 0 && r.mpiEstimates.atfault !== null);
+  return Object.fromEntries(rows.map(row => {
+    const stress = helmerHumanStress(row, "atfault");
+    const flip = faultFlipMultiplier(stress.av, stress.human, row.incTotal);
+    return [row.helmer, {mult: flip === null ? null : flip.mult === Infinity ? "∞" : fmtRatio(flip.mult) + "x",
+      flipped: flip && flip.flipped, all: helmerHumanStress(row, "all").verdictKey}];
+  }));
+})()
+`, ctx)));
+const WANT_DEFAULT_FLIPS = {
+  Tesla: {mult: "∞", flipped: null, all: "ambiguous"},
+  TeslaNoMonitor: {mult: "∞", flipped: null, all: "ambiguous"},
+  Waymo: {mult: "4.45x", flipped: "ambiguous", all: "ambiguous"},
+  Zoox: {mult: "18.1x", flipped: "worse", all: "worse"},
+};
+assert.deepEqual(defaultFlips, WANT_DEFAULT_FLIPS,
+  `Replicata: compute the default window's fault-flip multipliers (faultFlipMultiplier, printed by fmtRatio) and each company's All-incidents verdict.
+Expectata: ${JSON.stringify(WANT_DEFAULT_FLIPS)}: Zoox's multiplier finite and its verdict after the flip its All-incidents verdict.
+Resultata: ${JSON.stringify(defaultFlips)}.`);
+
+// The k=0 branch: with no judged at-fault mass the multiplier s (the shifted
+// mass over the judged mass) has no value, and the search reports null, as
+// it did when it scaled the judged mass (which could never change a verdict
+// at k = 0). Tested with a synthetic estimate rather than whichever helmer
 // happens to have zero mass this month (Zoox was zero until its incidents
 // were rated).
 const zeroMassFlip = vm.runInContext(
@@ -364,19 +478,36 @@ Resultata: entry was ${JSON.stringify(flips.out[helmer])}.`,
 }
 
 // The faultfrac sensitivity table (id sanity-fault-flip) renders in the same
-// section as the stress table, a row of five cells per helmer with an
-// at-fault estimate. Until 2026-10-29 this checked its headers' words.
+// section as the stress table, a row per helmer with an at-fault estimate,
+// its five cells what faultFlipMultiplier computes for it: the company, the
+// judged at-fault mass k, the current verdict's badge (prior-only at k = 0),
+// the flip multiplier (fmtRatio and "x", "∞" where no feasible multiplier
+// flips the verdict, no figure where there is no judged mass to scale) and
+// the verdict after the flip (no badge where there is none). Until 2026-10-29
+// this checked its headers' words; until 2026-10-31 only its five cells a
+// row (audit 2026-10-30, QTV-M1: Waymo's 4.4x printed as "∞" passed).
 {
   const at = plain.sanityHtml.indexOf('id="sanity-fault-flip"');
   const sameSection = at >= 0 && plain.sanityHtml.lastIndexOf("<h3", at) === plain.sanityHtml.lastIndexOf("<h3", plain.sanityHtml.indexOf('id="sanity-stress"'));
-  const table = at < 0 ? "" : plain.sanityHtml.slice(at, plain.sanityHtml.indexOf("</table>", at));
-  const cells = [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(table) || [])[1] || "").matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
-    .map(m => [...m[1].matchAll(/<td[\s>]/g)].length);
+  const rows = tableRows("sanity-fault-flip");
+  const multShown = c => c.mult === null ? { none: true } : c.mult === "Infinity" ? "∞" : `${c.mult}x`;
+  const wrong = plain.flipCells.map((c, i) => {
+    const cells = rows[i] || [];
+    const multCell = cells[3] === undefined ? null : c.mult === null
+      ? { none: cellFigures(cells[3]).length === 0 && !cellText(cells[3]).includes("∞") && badgeOf(cells[3]) === null }
+      : cellText(cells[3]);
+    const flipped = cells[4] === undefined ? undefined : c.flipped === null
+      ? (badgeOf(cells[4]) === null && cellFigures(cells[4]).length === 0 ? null : { shown: cellText(cells[4]) })
+      : badgeOf(cells[4]);
+    const want = [escHtml(c.company), c.kText, wantBadge(c.verdict, c.k === 0), multShown(c), c.flipped === null ? null : wantBadge(c.flipped, false)];
+    const got = [cells[0], cellText(cells[1]), badgeOf(cells[2]), multCell, flipped];
+    return cells.length === 5 && JSON.stringify(got) === JSON.stringify(want) ? null : { row: i + 1, want, got };
+  }).filter(x => x !== null);
   assert.ok(
-    sameSection && cells.length === plain.flipRows && cells.every(n => n === 5),
-    `Replicata: render the sanity-checks sensitivity subsection (default window).
-Expectata: the faultfrac sensitivity table renders in the stress table's section, a row of five cells for each of the ${plain.flipRows} helmers with an at-fault estimate.
-Resultata: ${at < 0 ? "no table with id sanity-fault-flip" : `same section ${sameSection}; rows of ${JSON.stringify(cells)} cells`}.`,
+    sameSection && rows.length === plain.flipCells.length && wrong.length === 0,
+    `Replicata: render the sanity-checks sensitivity subsection (default window) and read every cell of the faultfrac sensitivity table.
+Expectata: the table renders in the stress table's section, a row of five cells for each of the ${plain.flipCells.length} helmers with an at-fault estimate: company, judged fault, current verdict (prior-only at k = 0), flip multiplier and verdict after the flip, as faultFlipMultiplier computes them.
+Resultata: ${at < 0 ? "no table with id sanity-fault-flip" : `same section ${sameSection}; ${rows.length} rows; ${wrong.length} differ, e.g. ${JSON.stringify(wrong.slice(0, 3))}`}.`,
   );
 }
 

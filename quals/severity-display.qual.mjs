@@ -72,6 +72,21 @@ assert.ok(
 Expectata: the first its own label; the third bare "Serious"'s label, not the hosp-qualified one via a prefix match.
 Resultata: ${JSON.stringify(["Serious W/ Hospitalization", "Serious", "Serious W/O Hospitalization"].map(short))}.`);
 
+// The older NHTSA encoding's bare "Minor" and "Moderate" (filings 2023-2025)
+// take the labels of their rank-mates "Minor W/O Hospitalization" and
+// "Moderate W/O Hospitalization" (the same SEVERITY_INFO flags), not their
+// own raw strings and not the "(hosp.)" labels: until 2026-10-31 they fell
+// through to "Minor" and "Moderate", so a sort by severity alternated
+// "Minor", "Minor injury", "Minor", ... (2026-10-30 audit, critic-3). The same
+// pattern as the no-injury variants above.
+assert.ok(
+  short("Minor") === short("Minor W/O Hospitalization") && short("Minor") !== short("Minor W/ Hospitalization")
+    && short("Moderate") === short("Moderate W/O Hospitalization") && short("Moderate") !== short("Moderate W/ Hospitalization")
+    && short("Minor") !== short("Moderate"),
+  `Replicata: call shortenSeverity on "Minor", "Minor W/O Hospitalization", "Minor W/ Hospitalization", "Moderate", "Moderate W/O Hospitalization" and "Moderate W/ Hospitalization".
+Expectata: bare "Minor" shares "Minor W/O Hospitalization"'s label and bare "Moderate" "Moderate W/O Hospitalization"'s; neither takes a "(hosp.)" label, and the two differ.
+Resultata: ${JSON.stringify(["Minor", "Minor W/O Hospitalization", "Minor W/ Hospitalization", "Moderate", "Moderate W/O Hospitalization", "Moderate W/ Hospitalization"].map(short))}.`);
+
 // Every known (non-Unknown) severity in the data must have a SEVERITY_RANK entry
 const rankKeys = vm.runInContext(`Object.keys(SEVERITY_RANK)`, ctx);
 for (const sev of severities) {

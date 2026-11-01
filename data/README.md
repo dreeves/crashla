@@ -318,9 +318,14 @@ Then what the release brings:
 
 Then the quals: `quals/growth-ghost-month.qual.mjs` needs the growth chart's
 rows for the new ghost month (`crashla.js` `FLEET_HISTORY` and
-`RIDES_HISTORY`; "Ghost months" below), and `quals/fleet-forecast.qual.mjs`
-then checks each Jan-1 fleet forecast against them. Re-pin the knife-edge
-verdicts in `quals/stress-test.qual.mjs` as its comments say.
+`RIDES_HISTORY`; "Ghost months" below) and the start of Tesla's forecast
+path at that month's exit rate (`TESLA_PATH_START`; the qual's
+`PAGE_MEASURED` records the Tesla page figure the rate rests on), and
+`quals/fleet-forecast.qual.mjs` then checks each Jan-1 fleet forecast against
+them. Re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
+comments say, and its default-window fault-flip table (`WANT_DEFAULT_FLIPS`:
+each line's printed multiplier, the verdict it reaches and its All-incidents
+verdict, since 2026-10-31) when a release or a VMT or fault re-pin moves it.
 `quals/tesla-no-monitor.qual.mjs` pins Tesla's list, the monitor-aboard
 list, the line's crashes by month and its miles by month, and goes red on a
 new no-monitor crash or row until they are re-pinned.
@@ -395,8 +400,13 @@ its fleet is cars driving on a typical day of the month (the month's miles
 over its days at ~180 miles a car per day, Tesla's Q2 2026 utilization,
 120-250 combined with the miles band in quadrature), its rides the
 cumulative miles over the miles-per-ride corridor (`TESLA_MILES_PER_RIDE`),
-so re-derive both whenever that row changes. `quals/growth-ghost-month.qual.mjs`
-pins all of it.
+so re-derive both whenever that row changes. Tesla's growth forecast starts
+from its newest month too (since 2026-10-30): `TESLA_PATH_START` is the day
+after that month, the month's cumulative, and its late-month rate, the
+no-monitor line's projection of the days after Tesla's page was last
+measured plus the monitor-aboard remainder (the all-modes row less the
+no-monitor row) at its average for the month; re-derive it with the rows.
+`quals/growth-ghost-month.qual.mjs` pins all of it.
 
 So each release adds every line's estimate for the month after its
 data-through month, a month that has begun by release day. When the next
@@ -442,15 +452,15 @@ ledger, 2026-10-27 (later)):
   this gives their tops within 1.2%).
 - Waymo: each term of the latest row at its per-day rate for the month's
   days, plus documented openings and pauses (for October 2026, among them
-  Waymo's Oct 27 expansion, https://waymo.com/blog/shorts/more-places/, and
-  Alphabet's Q3 remarks of Oct 28, "more than 300 million fully autonomous
-  miles",
-  https://blog.google/company-news/inside-google/message-ceo/alphabet-earnings-q3-2026/);
+  Waymo's Oct 27 expansion, https://waymo.com/blog/shorts/more-places/);
   band ×e^-(0.17 + 0.028k) to ×e^(0.15 + 0.02k), k being the months from
   the end of the latest quarter both CPUC and the hub have measured to the
   end of the month (k = 4:
   ×0.75-1.26), from four-month-ahead backtests on CPUC's monthly California
-  miles and the hub's quarterly county miles.
+  miles and the hub's quarterly county miles. Alphabet's Q3 remarks of Oct
+  28, 2026, "more than 300 million fully autonomous miles"
+  (https://blog.google/company-news/inside-google/message-ceo/alphabet-earnings-q3-2026/),
+  gave only a floor, which the series clears.
 - Zoox: the per-day rate between Zoox's two latest cumulative statements,
   California (CPUC driverless miles × 1.19 for the DMV-reported miles CPUC
   misses) grown e^0.05 (about 5.1%) a calendar month from its last CPUC
@@ -570,7 +580,11 @@ Run `python3 data/waymo_vmt.py` to print the rebuilt rows as JSON without
 editing the master. Each knot's series central is its lifetime figure less
 the pre-series offset's central (above, Waymo anchors); the hub anchors
 (March 2025 on) keep their reviewed centrals, and January 2025 its one-mile
-ledger residue, so no cumulative from January 2025 on moved in the rebuild.
+ledger residue, so the rebuild moved no cumulative central from January 2025
+on except February 2025's, 14,250 miles lower: January's monthly fell when
+the December 2024 knot moved to CSV1 (below), and the interpolated daily
+rates then shifted 14,250 of February-March 2025's fixed total from February
+to March.
 For each knot interval, subtract measured California miles from the US
 increment. This residual includes other states and California miles outside
 CPUC's passenger-service scope; it is not simply non-California mileage.
@@ -597,9 +611,14 @@ An interval longer than six months, 2022's twelve, therefore keeps the
 series' old early allowance, `ln 2` (half to twice a month's miles), which
 covers 92.9% of the masked 12-month blocks. California is a proxy for the
 unmeasured residual; these checks do not establish 95% coverage for national
-monthly mileage, least of all for 2021-2022, when California had no
-rider-only service to measure. The app interprets the authored edges as a 95%
-two-piece log-normal prior, as for the other VMT rows.
+monthly mileage, least of all for July 2021–November 2022, whose months have
+no measured California part: the CPUC series in `data/waymo-ca.csv` starts
+in December 2022, though Waymo's rider-only ride-hailing reached San
+Francisco in March 2022
+([Victor et al. 2023](https://storage.googleapis.com/waymo-uploads/files/documents/safety/Safety%20Performance%20of%20Waymo%20RO%20at%201M%20miles.pdf),
+p. 8) and drove 70,000 rider-only miles there that year, 13% of 2022's
+524,000 (Kusano et al. 2025, Table 2). The app interprets the authored edges
+as a 95% two-piece log-normal prior, as for the other VMT rows.
 
 Monthly and cumulative bounds are reconciled by interval arithmetic: carry
 monthly ranges forward, constrain them backward from the cumulative knots
@@ -665,7 +684,8 @@ offset's central, like September 2024's: the pre-series offset is common to
 every knot and cancels in their differences, and the retained centrals'
 rounding gaps no longer enter the months between them. That moved 199,000
 miles into the history before July 2024, Waymo's own figures' difference
-from the old 22M milestone, and changed no cumulative from January 2025 on.
+from the old 22M milestone, and changed no cumulative central from January
+2025 on except February 2025's, 14,250 miles lower (above).
 April 2026 onward keeps its existing method; its cumulative bands chain from
 the March 2026 knot (and back from June 2026's) as before, with the offset's
 range.
@@ -796,12 +816,17 @@ https://gizmodo.com/elon-musk-made-tesla-fans-think-unsupervised-robotaxis-had-a
 If such a trip ran as FSD (Supervised), a Level 2 system, its crash is
 reportable only under the Third Amended SGO's Level 2 triggers (Request No.
 1.D: a fatality, a hospital transport, a struck vulnerable road user, an
-airbag, or a tow-away of a vehicle equipped with an ADS) and goes to NHTSA's
-Level 2 file, none of whose Tesla reports the page counts. The miles stay in
-the denominator, so the every-mode line may understate Tesla's crash rate by
-an amount no public source measures; the no-monitor line, whose miles
-exclude every monitor-aboard trip, avoids it. The rationales of the Tesla
-rows for those months say so.
+airbag deployment, or "Vehicle tow-away, if the crash involved a subject
+vehicle equipped with an ADS"; the order counts "a tow-away of or air bag
+deployment on any vehicle involved in the crash, regardless of whether the
+tow-away or air bag deployment involved the subject vehicle", so the towed
+vehicle need not be the one with the ADS; NHTSA, dated Apr 24, 2025,
+https://www.nhtsa.gov/sites/nhtsa.gov/files/2025-04/third-amended-SGO-2021-01_2025.pdf,
+pp. 12-13) and goes to NHTSA's Level 2 file, none of whose Tesla reports the
+page counts. The miles stay in the denominator, so the every-mode line may
+understate Tesla's crash rate by an amount no public source measures; the
+no-monitor line, whose miles exclude every monitor-aboard trip, avoids it.
+The rationales of the Tesla rows for those months say so.
 
 ## Fault CSV synchronization
 

@@ -90,32 +90,42 @@ Resultata: ratio ${ratio.toFixed(2)}x.`);
 }
 
 // --- The rendered "Waymo cross-check" table (audit #8, #48) ---
+// Its section is the heading before the table with id sanity-waymo-check up
+// to the next heading, and a metric's row is the one whose published rate is
+// that metric's (the three differ several-fold). Until 2026-10-31 the section
+// was found by its heading's words and the rows by their labels, which are
+// the human's (audit 2026-10-30, QT-09).
 vm.runInContext("fullMonthSeries = monthSeriesData(); activeSeries = fullMonthSeries; buildSanityChecks();", ctx);
 const html = getNode("sanity-checks").innerHTML;
-const start = html.indexOf("<h3>Waymo cross-check</h3>");
-assert.ok(start >= 0, "Replicata: render the sanity checks. Expectata: a Waymo cross-check section. Resultata: none.");
-const section = html.slice(start, html.indexOf("<h3>", start + 4));
-const rendered = Object.fromEntries([...section.matchAll(/<tr><td>([^<]*)<\/td><td>([^<]*)<\/td><td>([^<]*)<\/td><td>([^<]*)<\/td><\/tr>/g)]
-  .map(m => [m[1], {ours: m[2], published: m[3], ratio: m[4]}]));
+const at = html.indexOf('id="sanity-waymo-check"');
+assert.ok(at >= 0, "Replicata: render the sanity checks. Expectata: a Waymo cross-check table (id sanity-waymo-check). Resultata: none.");
+const start = html.lastIndexOf("<h3", at), next = html.indexOf("<h3", at);
+const section = html.slice(start, next < 0 ? html.length : next);
+const rendered = [...section.matchAll(/<tr><td>([^<]*)<\/td><td>([^<]*)<\/td><td>([^<]*)<\/td><td>([^<]*)<\/td><\/tr>/g)]
+  .map(m => ({label: m[1], ours: m[2], published: m[3], ratio: m[4]}));
 const expected = {
-  "Any injury": {ours: stats.injury, published: pub.injury},
-  "Airbag deployment": {ours: stats.airbag, published: pub.airbag},
-  "Serious injury+": {ours: stats.ssi, published: pub.ssi},
+  injury: {ours: stats.injury, published: pub.injury, track: "Monthly-track"},
+  airbag: {ours: stats.airbag, published: pub.airbag, track: "five-day-track"},
+  seriousInjury: {ours: stats.ssi, published: pub.ssi, track: "five-day-track"},
 };
-for (const [label, exp] of Object.entries(expected)) {
-  const row = rendered[label];
-  assert.ok(row, `Replicata: find the "${label}" row of the Waymo cross-check. Expectata: present. Resultata: rows ${JSON.stringify(Object.keys(rendered))}.`);
+assert.equal(rendered.length, Object.keys(expected).length,
+  `Replicata: read the Waymo cross-check table's rows. Expectata: one per metric compared (${Object.keys(expected).join(", ")}). Resultata: ${JSON.stringify(rendered)}.`);
+for (const [metric, exp] of Object.entries(expected)) {
   // Within 0.5%: both rate columns must show enough digits to reproduce the
   // ratio beside them (2 dp showed the serious-injury+ rates as 0.04 and 0.01).
-  for (const col of ["ours", "published"]) {
-    const shown = Number(row[col]);
-    assert.ok(Math.abs(shown - exp[col]) / exp[col] <= 0.005,
-      `Replicata: read the "${label}" row's ${col} rate in the Waymo cross-check.
-Expectata: ${exp[col].toPrecision(4)} per M mi (within 0.5%; ${col === "ours" ? `${label === "Any injury" ? "Monthly-track" : "five-day-track"} denominator` : "Waymo's unrounded rate"}).
-Resultata: ${JSON.stringify(row[col])}.`);
-  }
+  const near = (shown, want) => Math.abs(Number(shown) - want) / want <= 0.005;
+  const rows = rendered.filter(r => near(r.published, exp.published));
+  assert.ok(rows.length === 1,
+    `Replicata: find the ${metric} row of the Waymo cross-check: the row whose published rate is ${exp.published.toPrecision(4)} per M mi (WAYMO_PUBLISHED_IPMM, within 0.5%: Waymo's unrounded rate).
+Expectata: exactly one.
+Resultata: rows ${JSON.stringify(rendered)}.`);
+  const row = rows[0];
+  assert.ok(near(row.ours, exp.ours),
+    `Replicata: read the ${metric} row's own rate in the Waymo cross-check.
+Expectata: ${exp.ours.toPrecision(4)} per M mi (within 0.5%; ${exp.track} denominator).
+Resultata: ${JSON.stringify(row)}.`);
   assert.equal(row.ratio, `${(exp.ours / exp.published).toFixed(1)}x`,
-    `Replicata: read the "${label}" row's ratio in the Waymo cross-check.
+    `Replicata: read the ${metric} row's ratio in the Waymo cross-check.
 Expectata: ${(exp.ours / exp.published).toFixed(1)}x, ours over Waymo's unrounded published rate.
 Resultata: ${JSON.stringify(row.ratio)}.`);
 }

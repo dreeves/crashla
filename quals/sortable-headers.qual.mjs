@@ -119,7 +119,11 @@ vm.runInContext(`
 `, ctx);
 
 const headerRow = () => getNode("incidents-head").children[0].children;
-const LABELS = ["Company", "Date", "Location", "Crash with", "Speed (mph)", "Fault", "Severity", "Narrative"];
+// The column labels, read from the app (until 2026-10-31 spelled here; they
+// are the human's words: audit 2026-10-30, QT-09).
+const LABELS = JSON.parse(vm.runInContext("JSON.stringify(HEADER_LABELS)", ctx));
+assert.ok(LABELS.length > 0 && new Set(LABELS).size === LABELS.length && LABELS.every(l => typeof l === "string" && l.trim() !== ""),
+  `Replicata: read HEADER_LABELS. Expectata: one distinct, non-empty label per column. Resultata: ${JSON.stringify(LABELS)}.`);
 
 // Since 2026-10-04 a header's text is a <button type="button"> in its th
 // (the ARIA sortable-table pattern; audit #19): the button is the Tab stop and

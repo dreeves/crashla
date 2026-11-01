@@ -21,7 +21,13 @@
 //    unbreakable alone, they grew WebKit's table 12%);
 //  - #66: the date slider's fill runs exactly between the two thumb centres
 //    (it ran on raw percentages, 4px past the thumb in one-month windows at
-//    either end of the series).
+//    either end of the series);
+//  - (2026-10-30 audit, ui-render-1) the date slider's three labels, the
+//    series' first and last months under its ends and the default start's
+//    under its tick, never touch: until 2026-10-31 the tick's label shared
+//    the end labels' row, and at 320 CSS px its right edge met the end label
+//    ("2025-062026-09"; 5 px over at 300, 8 px over at 280 with a coarse
+//    pointer). It has a row of its own.
 import assert from "node:assert/strict";
 import { ENGINES, devices, serveRepo, drawnAll } from "./browser.mjs";
 
@@ -245,6 +251,27 @@ try {
       if (!ok) problems.push(`${engineName} slider${d || " (default window)"}: fill ${r.left.toFixed(1)}-${r.right.toFixed(1)}, thumb centres ${r.a.toFixed(1)} and ${r.b.toFixed(1)}`);
       await closePage(page);
     }
+    // ui-render-1 -- the slider's labels clear each other (their text's
+    // boxes, by Range), from 280 px up and on phones.
+    const sliderSizes = [[280, { viewport: { width: 280, height: 653 } }], [300, { viewport: { width: 300, height: 700 } }],
+      [320, { viewport: { width: 320, height: 700 } }], [360, { viewport: { width: 360, height: 700 } }], [1200, { viewport: { width: 1200, height: 900 } }],
+      ...(engineName === "webkit" ? [["iPhone SE", devices["iPhone SE"]]] : engineName === "chromium" ? [["280 touch", { viewport: { width: 280, height: 653 }, hasTouch: true, isMobile: true }]] : [])];
+    for (const [what, options] of sliderSizes) {
+      const page = await open(browser, server.url + DEF, options);
+      const labels = await page.evaluate(() => [".date-range-end-label.min", ".date-range-tick-label", ".date-range-end-label.max"].map(sel => {
+        const el = document.querySelector(sel);
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const r = range.getBoundingClientRect();
+        return { sel, text: el.textContent, left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+      }));
+      for (let i = 0; i < labels.length; i++) for (let j = i + 1; j < labels.length; j++) {
+        const a = labels[i], b = labels[j];
+        const apart = Math.max(b.left - a.right, a.left - b.right, b.top - a.bottom, a.top - b.bottom);
+        if (apart < 2) problems.push(`${engineName} ${what}: the slider labels "${a.text}" and "${b.text}" are ${apart.toFixed(1)} px apart (want at least 2)`);
+      }
+      await closePage(page);
+    }
     await browser.close();
   }
 } finally {
@@ -252,8 +279,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: load the page in Chromium, Firefox and WebKit; measure the Sensitivity-analysis table at 1200px in five windows, the page width at 320-390px, chart text and tooltip targets at 400px, 1200px and (WebKit) on an iPhone 14, the charts' viewBoxes across a 1200 -> 400 -> 400 (shorter) -> 1200px resize, chart labels in six states, incident dates and table height at 1200 and 400px, and the date slider's fill in four windows.
-Expectata: the table fits its box; no sideways scroll; chart ticks >= 12 and axis titles >= 11 CSS px; every target as large as its spacing allows up to a 12 CSS px radius, and its centre its own; the charts redrawn at their column's width on a width change and not on a height change; no label into a y title or onto its neighbour; dates on one line without a taller table; the fill from thumb centre to thumb centre.
+  `Replicata: load the page in Chromium, Firefox and WebKit; measure the Sensitivity-analysis table at 1200px in five windows, the date slider's three labels at 280-360 and 1200px and on a phone, the page width at 320-390px, chart text and tooltip targets at 400px, 1200px and (WebKit) on an iPhone 14, the charts' viewBoxes across a 1200 -> 400 -> 400 (shorter) -> 1200px resize, chart labels in six states, incident dates and table height at 1200 and 400px, and the date slider's fill in four windows.
+Expectata: the table fits its box; no sideways scroll; chart ticks >= 12 and axis titles >= 11 CSS px; every target as large as its spacing allows up to a 12 CSS px radius, and its centre its own; the charts redrawn at their column's width on a width change and not on a height change; no label into a y title or onto its neighbour; dates on one line without a taller table; the fill from thumb centre to thumb centre; the slider's labels at least 2 px apart.
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 30).join("\n")}`);
 console.log("qual pass: tables, controls, charts and the date slider fit and line up in three engines at phone and desktop widths");

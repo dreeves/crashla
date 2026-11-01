@@ -64,18 +64,24 @@ try {
     const browser = await engine.launch();
     try {
       // Keys: End on "Start month", Home on "End month", then ArrowRight.
+      // Each input keeps the name it loads with, the two names distinct (read
+      // from the page; until 2026-10-31 this spelled them, and they are the
+      // human's words: audit 2026-10-30, QT-09).
       const page = await open(browser, server.url + DEF);
       const months = await page.evaluate(() => fullMonthSeries.months);
       const last = months[months.length - 1];
+      const names = await read(page);
       await page.focus("#date-range-min");
       await page.keyboard.press("End");
       await page.focus("#date-range-max");
       await page.keyboard.press("Home");
       await page.keyboard.press("ArrowRight");
       const keys = await read(page);
-      const wantKeys = { label: last, start: ["Start month", last], end: ["End month", last] };
+      const wantKeys = { label: last, start: [names.start[0], last], end: [names.end[0], last] };
+      if (!names.start[0] || !names.end[0] || names.start[0] === names.end[0])
+        problems.push(`${engineName}: the start and end inputs load named ${JSON.stringify([names.start[0], names.end[0]])}; want two distinct names`);
       if (keys.label !== wantKeys.label || JSON.stringify(keys.start) !== JSON.stringify(wantKeys.start) || JSON.stringify(keys.end) !== JSON.stringify(wantKeys.end))
-        problems.push(`${engineName}: after End on "Start month", Home and ArrowRight on "End month": ${JSON.stringify(keys)}; want ${JSON.stringify(wantKeys)}`);
+        problems.push(`${engineName}: after End on "Start month", Home and ArrowRight on "End month": ${JSON.stringify(keys)}; want ${JSON.stringify(wantKeys)} (each input keeping the name it loaded with)`);
       if (page.errors.length > 0) problems.push(`${engineName}: page errors ${JSON.stringify(page.errors)}`);
       await page.context().close();
 
@@ -113,12 +119,13 @@ try {
         await p.mouse.move(at.x + dMonths * at.perMonth, at.y, { steps: 20 });
         await p.mouse.up();
         await p.waitForTimeout(300);
+        // The heading names the window by its months (YYYY-MM).
         const after = await p.evaluate(() => ({
           label: document.querySelector(".date-range-label").textContent,
-          heading: document.getElementById("incident-browser-heading").textContent,
+          heading: document.getElementById("incident-browser-heading").textContent.match(/\d{4}-\d{2}/g),
           d: (/[?&]d=([^&]*)/.exec(location.search) || [, "(none)"])[1],
         }));
-        const wantAfter = { label: want, heading: `Incident browser using data from ${want} to ${want}`, d: `${want}.${want}` };
+        const wantAfter = { label: want, heading: [want, want], d: `${want}.${want}` };
         if (JSON.stringify(after) !== JSON.stringify(wantAfter)) problems.push(`${engineName}: on 2025-06..2026-03, ${id === "date-range-max" ? "the end thumb dragged 20 months left" : "the start thumb dragged 20 months right"} (stopped by the other) gives ${JSON.stringify(after)}; want ${JSON.stringify(wantAfter)} (the release commits the window)`);
         if (p.errors.length > 0) problems.push(`${engineName} clamped drag ${id}: page errors ${JSON.stringify(p.errors)}`);
         await p.context().close();

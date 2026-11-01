@@ -126,7 +126,10 @@ Resultata: focus is on ${JSON.stringify(a)}.`);
   await page.keyboard.press("Enter");
   await page.click("#incidents-head th:nth-child(5)");
   a = await active(page);
-  assert.ok(a.tag === "BUTTON" && a.text === "Speed (mph)" && !a.ring,
+  // The fifth header is the speed column's, its button keyed "sort-speed"
+  // (until 2026-10-31 found by its text, which is the human's: audit
+  // 2026-10-30, QT-09).
+  assert.ok(a.tag === "BUTTON" && a.key === "sort-speed" && !a.ring,
     `[${engine}] Replicata: focus the third incident's narrative, press Enter, then click the 'Speed (mph)' header.
 Expectata: focus is on the header's button (the control clicked), with no focus ring, in every engine; never <body>.
 Resultata: focus is on ${JSON.stringify(a)}.`);

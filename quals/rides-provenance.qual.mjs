@@ -107,10 +107,11 @@ Resultata: ${teslaHist.at(-1).month}.`);
 }
 
 // Zoox's rides anchor to its published cumulative RIDER counts (>300k riders
-// by late 2025, >350k by late Mar 2026, >500k by late Jun 2026 — the first
-// two are the same milestones the VMT series cites; the third is from the
-// robotaxi-redesign announcement, 2026-06-25) divided by an occupancy band
-// of 1.2-2.0 riders per ride.
+// by late 2025, >350k by late Mar 2026, half a million by late Jun 2026 —
+// the first two are the same milestones the VMT series cites; the third is
+// Zoox's robotaxi-redesign post of 2026-06-24, "feedback from half a million
+// riders", https://zoox.com/journal/the-updated-zoox-robotaxi) divided by an
+// occupancy band of 1.2-2.0 riders per ride.
 const zooxByMonth = Object.fromEntries(JSON.parse(hist).Zoox.map(r => [r.month, r]));
 const zooxFirst = JSON.parse(hist).Zoox[0];
 assert.ok(zooxFirst.month >= "2025-12" && zooxFirst.best >= 150000,
@@ -126,7 +127,7 @@ Resultata: ${JSON.stringify(zooxMar)}.`);
 const zooxJun = zooxByMonth["2026-06"];
 assert.ok(zooxJun !== undefined && zooxJun.lo <= 333000 && 333000 <= zooxJun.hi
     && zooxJun.best >= 250000 && zooxJun.best <= 417000,
-  `Replicata: read Zoox's 2026-06 row against the >500k-riders milestone (redesign PR, Jun 25 2026).
+  `Replicata: read Zoox's 2026-06 row against the >500k-riders milestone (redesign post, Jun 24 2026).
 Expectata: band contains ~333k (500k / 1.5 riders per ride) and best in [250k, 417k] (occupancy 1.2-2.0).
 Resultata: ${JSON.stringify(zooxJun)}.`);
 

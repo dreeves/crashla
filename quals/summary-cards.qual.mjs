@@ -7,9 +7,11 @@
 //   #16 a multiplier resting on zero incidents (k = 0) carries the prior-only
 //       marking its stress badge carries (faded, the prior-only tip), not a
 //       safer/worse colour (Tesla's fatality "0.1x" was solid red);
-//   #55 one multiplier format: two significant figures below 10, whole numbers
-//       from 10, its colour read off the value shown ("0.0x", "10.0x", and a
-//       0.996 printed "1.0x" in the worse red);
+//   #55 one multiplier format, its colour read off the value shown ("0.0x",
+//       "10.0x", and a 0.996 printed "1.0x" in the worse red): since
+//       2026-10-31 exactly three significant figures, en-US grouping (decision
+//       #2 of the 2026-10-04 audit; two below 10 and whole numbers from 10
+//       until then, which printed any deciding edge in [0.995, 1.05) "1.0x");
 //   #56 a fault-mass count is the exact sum of its 0.05-grid fault values
 //       (Waymo's 93.25 displayed as 93.2, from a float sum of 93.24999...);
 //   #67 the cards of unchecked helmers stay rendered but grayed.
@@ -58,10 +60,13 @@ const WINDOWS = {
 };
 const cardsHtml = ([a, b]) => vm.runInContext(
   `renderMpiSummaryCards(sliceSeries(fullMonthSeries, ${months.indexOf(a)}, ${months.indexOf(b)}))`, ctx);
+// Every ADS line's card (ADS_SERIES: each company, and Tesla's no-monitor
+// line, since 2026-10-31; until then ADS_HELMERS, so the no-monitor card's
+// multipliers and counts went unchecked: audit 2026-10-30, QT-03).
 const estimates = ([a, b]) => run(`(() => {
   const rows = monthlySummaryRows(sliceSeries(fullMonthSeries, ${months.indexOf(a)}, ${months.indexOf(b)}));
   const out = {};
-  for (const row of rows.filter(r => ADS_HELMERS.includes(r.helmer) && r.vmtBest > 0)) {
+  for (const row of rows.filter(r => ADS_SERIES.includes(r.helmer) && r.vmtBest > 0)) {
     out[row.helmer] = {};
     for (const m of METRIC_DEFS) {
       const est = row.mpiEstimates[m.key];
@@ -75,7 +80,9 @@ const estimates = ([a, b]) => run(`(() => {
 })()`);
 
 // One card per helmer: its container class, the stress line, and per metric
-// line its incident count text and multiplier span.
+// line its incident count text and multiplier span. A count that carries its
+// metric's note (the fatality count, since 2026-10-31: fatality-count-note
+// .qual) is its tooltip's span, whose text is the count.
 function parseCards(html) {
   const cards = {};
   for (const piece of html.split(/(?=<div class="mpi-card(?: [^"]*)?" style=)/).filter(p => p.startsWith('<div class="mpi-card'))) {
@@ -83,8 +90,8 @@ function parseCards(html) {
     const name = /<div class="mpi-card-helmer">([^<]*)<\/div>/.exec(piece)[1];
     const stress = (/<div class="mpi-card-stress">([\s\S]*?)<\/div>/.exec(piece) || [])[1] ?? null;
     const lines = {};
-    for (const m of piece.matchAll(/<div class="mpi-card-metric[^"]*" data-metric="([^"]+)">\s*<div>[^:]*: ([^<]*?)<span class="mpi-card-mpi">[^<]*<\/span>(?:\s*<span class="mpi-card-mult([^"]*)"([^>]*)>([^<]*)((?:<span class="visually-hidden">[^<]*<\/span>)?)<\/span>)?/g)) {
-      lines[m[1]] = { kText: m[2], multClass: m[3] ?? null, multAttrs: m[4] ?? null, multText: m[5] ?? null, multHidden: m[6] ?? "" };
+    for (const m of piece.matchAll(/<div class="mpi-card-metric[^"]*" data-metric="([^"]+)">\s*<div>[^:]*: (?:<span [^>]*>([^<]*)<\/span>)?([^<]*?)<span class="mpi-card-mpi">[^<]*<\/span>(?:\s*<span class="mpi-card-mult([^"]*)"([^>]*)>([^<]*)((?:<span class="visually-hidden">[^<]*<\/span>)?)<\/span>)?/g)) {
+      lines[m[1]] = { kText: (m[2] ?? "") + m[3], multClass: m[4] ?? null, multAttrs: m[5] ?? null, multText: m[6] ?? null, multHidden: m[7] ?? "" };
     }
     cards[name] = { cls, stress, lines };
   }
@@ -96,22 +103,21 @@ const PRIOR_ONLY_TIP = run("PRIOR_ONLY_TIP");
 const escHtml = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const escAttr = s => escHtml(s).replace(/"/g, "&quot;");
 
-// The multiplier format (#55), spelled out: two significant figures below 10
-// (no exponent however small), a whole number with thousands separators from
-// 10 (9.96 rounds to "10").
-const twoSig = n => Number(n.toPrecision(2));
-const shownMult = n => twoSig(n) >= 10 ? Math.round(n) : twoSig(n);
-const expectMultText = n => shownMult(n) >= 10
-  ? shownMult(n).toLocaleString("en-US")
-  : shownMult(n).toLocaleString("en-US", { minimumSignificantDigits: 2, maximumSignificantDigits: 2 });
+// The multiplier format (#55, decision #2), spelled out: exactly three
+// significant figures (no exponent however small), with thousands
+// separators (37,125.4 reads "37,100", 9.996 "10.0").
+const shownMult = n => Number(n.toPrecision(3));
+const expectMultText = n => shownMult(n).toLocaleString("en-US", { minimumSignificantDigits: 3, maximumSignificantDigits: 3 });
 
-// The exact fault mass of a helmer's window (#56): fault values sit on the
+// The exact fault mass of a line's window (#56): fault values sit on the
 // 0.05 grid, so their sum is a whole number of twentieths; one decimal, half up.
-const faultInc = run(`INCIDENT_DATA.map(r => ({helmer: r.helmer, month: monthKeyFromIncidentLabel(r.date), frac: r.fault.faultfrac, injury: INJURY_SEVERITIES.has(r.severity)}))`);
+// A line's incidents are those whose series lists it (a no-monitor incident
+// is also Tesla's).
+const faultInc = run(`INCIDENT_DATA.map(r => ({series: r.series, month: monthKeyFromIncidentLabel(r.date), frac: r.fault.faultfrac, injury: INJURY_SEVERITIES.has(r.severity)}))`);
 function exactFaultText(helmer, [a, b], injuryOnly) {
   let twentieths = 0;
   for (const r of faultInc) {
-    if (r.helmer !== helmer || r.month < a || r.month > b || (injuryOnly && !r.injury)) continue;
+    if (!r.series.includes(helmer) || r.month < a || r.month > b || (injuryOnly && !r.injury)) continue;
     const t = Math.round(r.frac * 20);
     assert.ok(Math.abs(r.frac * 20 - t) < 1e-9, `fault value ${r.frac} off the 0.05 grid`);
     twentieths += t;
@@ -198,7 +204,7 @@ if (!graying) problems.unchecked.push("style.css: no .mpi-card.unchecked rule wi
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
   `Replicata: render the summary cards for the default window, full history, the last 3 months, the last month, 2025-06..2025-11, 2024-01..2025-12 and 2021-07..2025-05 (and the default window with the default, no and all helmers checked), and read each card's stress line, each metric line's incident count and multiplier, and each card's class.
-Expectata: (label) the stress line is headed CARD_STRESS_LABEL, and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads two significant figures below 10 and a whole number from 10; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
+Expectata: (label) the stress line is headed CARD_STRESS_LABEL, and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads exactly three significant figures with en-US grouping; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
-console.log(`qual pass: summary cards over ${Object.keys(WINDOWS).length} windows name the All-incidents verdict, mark k = 0 multipliers prior-only, format multipliers to two significant figures below 10 and colour them by the value shown, show exact fault-mass counts, and gray unchecked helmers`);
+console.log(`qual pass: summary cards over ${Object.keys(WINDOWS).length} windows name the All-incidents verdict, mark k = 0 multipliers prior-only, format multipliers to three significant figures and colour them by the value shown, show exact fault-mass counts, and gray unchecked helmers`);

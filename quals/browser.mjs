@@ -71,9 +71,13 @@ export async function openPage(browser, url, contextOptions = {}, offlineDelayMs
 }
 
 // Whether the page has drawn the views below its charts (the incident
-// browser's heading names the window once it is built, also in a window with
-// no incidents): for quals that open pages themselves. The page builds them
-// at load; on 2026-10-05 it built them in tasks after its first frame.
-export const drawnAll = () => document.getElementById("incident-browser-heading").textContent.includes(" using data from ") &&
+// browser's heading names the window's months, YYYY-MM, once it is built,
+// also in a window with no incidents; index.html's heading names none): for
+// quals that open pages themselves. The page builds them at load; on
+// 2026-10-05 it built them in tasks after its first frame. Until 2026-10-31
+// this waited for the heading's words (" using data from "), which are the
+// human's, so a rewording timed every waiting qual out (audit 2026-10-30,
+// QT-09).
+export const drawnAll = () => /\d{4}-\d{2}/.test(document.getElementById("incident-browser-heading").textContent) &&
   document.querySelector("#sanity-checks h3") !== null &&
   document.querySelector("#chart-fleet-forecast svg") !== null;

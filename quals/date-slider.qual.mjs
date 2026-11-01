@@ -272,17 +272,20 @@ const commits = JSON.parse(JSON.stringify(vm.runInContext(`
   try { fire(min, "change"); } catch (err) { threw = String(err.message).slice(0, 40); }
   const thrown = { threw, heading: heading(), sanityHasWindow: sanity() === (buildSanityChecks(), sanity()) };
   window.history.replaceState = () => {};
-  return { want: "Incident browser using data from " + months[last - 4] + " to " + months[last],
-    wantAfterThrow: "Incident browser using data from " + months[last - 9] + " to " + months[last], commit, thrown };
+  return { want: [months[last - 4], months[last]], wantAfterThrow: [months[last - 9], months[last]], commit, thrown };
 })()
 `, ctx)));
-assert.ok(commits.commit.writes === 1 && commits.commit.headingAtWrite[0] === commits.want && commits.commit.sanityCurrentAtWrite[0] === true,
+// The incident browser's heading names its window by its first and last
+// months (found by their form, YYYY-MM; until 2026-10-31 this spelled the
+// whole heading, whose words are the human's: audit 2026-10-30, QT-09).
+const headingMonths = heading => JSON.stringify(heading.match(/\d{4}-\d{2}/g) || []);
+assert.ok(commits.commit.writes === 1 && headingMonths(commits.commit.headingAtWrite[0]) === JSON.stringify(commits.want) && commits.commit.sanityCurrentAtWrite[0] === true,
   `Replicata: move the start thumb four months back from the last month and release it (the change event), counting history.replaceState calls.
-Expectata: exactly one, made after the incident browser ("${commits.want}") and the sanity section were rebuilt for the new window.
+Expectata: exactly one, made after the incident browser (its heading naming ${JSON.stringify(commits.want)}) and the sanity section were rebuilt for the new window.
 Resultata: ${commits.commit.writes} writes; heading at each write ${JSON.stringify(commits.commit.headingAtWrite)}; sanity section already rebuilt at each write: ${JSON.stringify(commits.commit.sanityCurrentAtWrite)}.`);
-assert.ok(commits.thrown.threw !== null && commits.thrown.heading === commits.wantAfterThrow && commits.thrown.sanityHasWindow,
+assert.ok(commits.thrown.threw !== null && headingMonths(commits.thrown.heading) === JSON.stringify(commits.wantAfterThrow) && commits.thrown.sanityHasWindow,
   `Replicata: with history.replaceState throwing (WebKit past 100 calls in 10 s), move the start thumb nine months back from the last month and release it.
-Expectata: the throw reaches the caller, and the incident browser ("${commits.wantAfterThrow}") and the sanity section already show the new window.
+Expectata: the throw reaches the caller, and the incident browser (its heading naming ${JSON.stringify(commits.wantAfterThrow)}) and the sanity section already show the new window.
 Resultata: ${JSON.stringify(commits.thrown)}.`);
 
 console.log("qual pass: date range slider labels its endpoints and its inputs, its inputs announce months, its thumbs cannot cross, and a commit writes the URL once, last");

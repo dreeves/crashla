@@ -13,11 +13,13 @@
 //    past the markets heading (until the second review of 2026-10-05, for
 //    reloads and returns; the page builds every view at load since).
 //  - The incident box is laid out only near the screen (content-visibility)
-//    and is 80vh until it is first drawn: right for a box its rows fill to
-//    its 80vh cap, which comes back exactly; a short table's box, drawn at
-//    its own height while the reader scrolled past it, comes back undrawn at
-//    80vh, so a section below it is allowed to come back off by the room its
-//    rows leave in the box (80vh minus its drawn height; for two rows 546 px
+//    and is at its cap until it is first drawn (80vh; 50vh under a coarse
+//    pointer since 2026-10-31, decision #22; read from the box's max-height):
+//    right for a box its rows fill to its cap, which comes back exactly; a
+//    short table's box, drawn at its own height while the reader scrolled past
+//    it, comes back undrawn at its cap, so a section below it is allowed to
+//    come back off by the room its rows leave in the box (its cap minus its
+//    drawn height; for two rows 546 px
 //    in WebKit at 1200x900, 475 px on a Pixel 7, 336 px on an iPhone 14, and
 //    none in Chromium at 1200x900 or in Firefox), and not otherwise
 //    (accepted by the human on 2026-10-05, over laying a short table's box
@@ -31,7 +33,7 @@
 import assert from "node:assert/strict";
 import { ENGINES, devices, serveRepo, openPage, drawnAll } from "./browser.mjs";
 
-// The default view (the incident box full: its 80vh cap) and a short table
+// The default view (the incident box full: its cap) and a short table
 // (Tesla's incidents of May 2026, two rows: the box shorter than its cap).
 const PAGES = {
   default: { query: "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault", short: false,
@@ -92,7 +94,7 @@ try {
                 document.querySelector(sel).scrollIntoView();
                 await frame();
                 window.__left = true;  // gone once the page is loaded again
-                return { scrollY: document.scrollingElement.scrollTop, href: location.href, boxHeight, cap: 0.8 * innerHeight };
+                return { scrollY: document.scrollingElement.scrollTop, href: location.href, boxHeight, cap: parseFloat(getComputedStyle(box).maxHeight) };
               }, sel);
               const where = `${engineName} ${what} ${pageName} ${way} at ${sel}`;
               if (left.boxHeight < left.cap - 1 !== short) problems.push(`${where}: the incident box was drawn ${Math.round(left.boxHeight)} px tall (its cap ${Math.round(left.cap)} px), not ${short ? "shorter than" : "at"} its cap: this page no longer tests ${short ? "a short" : "a full"} box`);
@@ -130,7 +132,7 @@ try {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: in Chromium, Firefox and WebKit, at 1200x900 and on a phone (Pixel 7, Firefox at 412x915, iPhone 14), open ${PAGES.default.query} (the default view) and ${PAGES.short.query} (a two-row incident table) fresh and wait until every view is built; then, for each of ${PAGES.default.sections.join(", ")} in turn (on the second page those below the incident box), scroll the incident box into view and then the section to the top of the window, and either reload from the page (location.reload()) or go to another page of the site and come back (history.back()), and wait until every view is built again.
-Expectata: each time, the page a new load of navigation type "reload" or "back_forward", the address unchanged, no page error; on the default page (the incident box drawn at its 80vh cap) the section's top back at the top of the window (or the page scrolled as far as it goes); on the two-row page (its box drawn shorter) the section's top at most the room its rows leave in the box below that (80vh minus the box's drawn height), and not above it.
+Expectata: each time, the page a new load of navigation type "reload" or "back_forward", the address unchanged, no page error; on the default page (the incident box drawn at its cap, 80vh or under a coarse pointer 50vh) the section's top back at the top of the window (or the page scrolled as far as it goes); on the two-row page (its box drawn shorter) the section's top at most the room its rows leave in the box below that (its cap minus the box's drawn height), and not above it.
 Resultata: ${problems.length} problems in ${results.length} returns:
 ${problems.join("\n")}`);
 console.log(`qual pass: ${results.length} reloads and returns through the history put the reader back where they were (with a short incident table, within the room its rows leave in its box), in three engines, desktop and phone`);

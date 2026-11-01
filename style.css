@@ -89,12 +89,20 @@
      the default-start tick by it too (sliderAt), so the fill runs from thumb
      centre to thumb centre at any size. */
   --thumb: 18px;
+  /* The incident box's cap (.table-scroll), the height it takes with more
+     than about twenty rows and the room it holds before it is drawn. */
+  --table-cap: 80vh;
 }
 /* A finger needs a larger thumb than a mouse: 18px thumbs left a phone's
    reader ~5px of precision on a slider where a month is 4.6-6.1px of travel
-   (until 2026-10-05, audit #67). */
+   (until 2026-10-05, audit #67). And a shorter incident box: a swipe that
+   starts in the box scrolls its rows, not the page, so at half the window
+   half the screen still scrolls the page (decision #22 of the 2026-10-04
+   audit, the human's "Shorter box"). Until 2026-10-31 the box was 80vh, 671
+   of a Pixel 7's 839 px, and only a swipe from the strip above it moved the
+   page on past its ~82,700 px of rows. */
 @media (pointer: coarse) {
-  :root { --thumb: 26px; }
+  :root { --thumb: 26px; --table-cap: 50vh; }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 /* Form controls do not inherit typography from the page in any browser. One
@@ -127,9 +135,17 @@ a {
 }
 a:hover { color: var(--accent-ink); top: -2px; }
 input { accent-color: var(--ink); }
-.ai-text { color: var(--ai-ink); }
-/* The ghost tooltip's note, inside a VMT-sources cell, is the human's text. */
-.ai-text .vmt-ghost-note { color: var(--ink); }
+/* AI-generated text carries a dotted underline as well as its colour, so
+   the mark does not depend on colour: a forced-colors theme repaints all
+   text in its own ink, and until 2026-10-31 the mark went with it (decision
+   #29 of the 2026-10-04 audit, the human's "Non-colour cue everywhere").
+   Dotted, so it reads apart from links' solid underlines. */
+.ai-text { color: var(--ai-ink); text-decoration: underline dotted; }
+/* The ghost tooltip's note, inside a VMT-sources cell, is the human's text:
+   the body's ink, and an inline-block, which the cell's underline does not
+   reach (a parent's text decoration covers its inline children, which
+   cannot take it off). */
+.ai-text .vmt-ghost-note { color: var(--ink); display: inline-block; }
 
 /* Error banner, shown only when there is something to report (URL keys the
    page does not own): the drawn box, in the verdict red. */
@@ -311,11 +327,12 @@ td.num.pair > span { white-space: nowrap; }
    (content-visibility): its 1,000-odd rows were laid out again on every
    slider commit wherever the page was scrolled, ~0.2 s of a key press's
    ~0.3 s on a desktop (until 2026-10-05, audit #23, #25). Off screen it keeps
-   the height it last had, or 80vh (its height with more than about twenty
-   rows) before it has been drawn; it scrolls its own rows, so nothing it
-   holds draws outside it. Until its table is first built it holds that 80vh
-   on screen too (the reservations under @media (scripting: enabled)).
-   A box its rows do not fill (fewer than about twenty) is therefore 80vh
+   the height it last had, or its cap (--table-cap: 80vh, 50vh under a coarse
+   pointer; its height with more than about twenty rows) before it has been
+   drawn; it scrolls its own rows, so nothing it holds draws outside it. Until
+   its table is first built it holds that cap on screen too (the reservations
+   under @media (scripting: enabled)).
+   A box its rows do not fill (fewer than about twenty) is therefore at its cap
    until it is first drawn and shorter after, so what is below it moves up by
    the difference when it is first drawn, and a reload or a return through
    the history can put a place below it that much off: 546px in WebKit at
@@ -327,11 +344,11 @@ td.num.pair > span { white-space: nowrap; }
    WebKit (load-order.qual). */
 .table-scroll {
   overflow: auto;
-  max-height: 80vh;
+  max-height: var(--table-cap);
   overscroll-behavior-x: contain;
   scroll-padding-top: calc(3 * var(--fs-sm) * var(--lh-body) + 0.7rem + 8px);
   content-visibility: auto;
-  contain-intrinsic-block-size: auto 80vh;
+  contain-intrinsic-block-size: auto var(--table-cap);
 }
 .table-scroll th {
   cursor: pointer;
@@ -552,11 +569,21 @@ tbody tr:hover { background: var(--accent-wash); }
   background: var(--ink-soft);
   margin: -7px auto 0;
 }
+/* The default start's label, in a row of its own under the end labels (which
+   sit in the slider's 20px bottom margin), at its tick's place: a label in
+   the end labels' row met the last month's at 320 CSS px (until 2026-10-31;
+   2026-10-30 audit, ui-render-1). */
+.date-range-tick-row {
+  position: relative;
+  height: calc(var(--fs-xs) * var(--lh-body));
+  pointer-events: none;
+}
 .date-range-tick-label {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
   font-size: var(--fs-xs);
   color: var(--ink-soft);
-  text-align: center;
-  margin-top: calc(var(--thumb) / 2 - 8px);
   white-space: nowrap;
 }
 
@@ -577,9 +604,10 @@ tbody tr:hover { background: var(--accent-wash); }
    scripting: without it the sections stay empty. */
 @media (scripting: enabled) {
   /* the window's label in its pill (a line, its padding and border), the
-     gap under it, the slider */
+     gap under it, the slider, its bottom margin (the end labels' row) and the
+     default start's label row */
   #date-range-controls:empty {
-    min-height: calc(var(--fs-base) * var(--lh-body) + 0.1rem + 4px + 0.2rem + 24px);
+    min-height: calc(var(--fs-base) * var(--lh-body) + 0.1rem + 4px + 0.2rem + 24px + 20px + var(--fs-xs) * var(--lh-body));
   }
   /* the helmer legend: its seven chips take two lines at desktop width (since
      Tesla's no-monitor line, 2026-10-24), and the gap between them */
@@ -608,7 +636,8 @@ tbody tr:hover { background: var(--accent-wash); }
   }
   /* The incident box, until the incident browser is first built (the build
      fills the filter buttons above it, which no later build empties): the
-     80vh it takes with more than about twenty rows, on screen as off.
+     cap it takes with more than about twenty rows (--table-cap), on screen
+     as off.
      Firefox scrolls to a #sec-... link's section once the bare page is laid
      out, before the script runs, and again just before DOMContentLoaded.
      Empty, the box was 80vh off screen (its placeholder, .table-scroll) and
@@ -618,7 +647,7 @@ tbody tr:hover { background: var(--accent-wash); }
      by ~4,360px on a desktop (until the review of 2026-10-05;
      fragment-landing.qual). */
   #filters:empty ~ .table-scroll {
-    min-height: 80vh;
+    min-height: var(--table-cap);
   }
 }
 .month-chart h3 {
@@ -1096,12 +1125,18 @@ th[aria-sort] > button::after { forced-color-adjust: preserve-parent-color; }
   .month-grid { stroke: GrayText; }
 }
 
-/* Floating tooltip (replaces SVG <title> for mobile support) */
+/* Floating tooltip (replaces SVG <title> for mobile support). Its width is
+   capped at the window (the fixed tip's containing block) less the 12px
+   margin crashla.js's position() keeps on each side, so the size position()
+   measures at the window's left edge is the size it draws 12px in: with a
+   320px cap alone, in a window under 332px a long tip measured 320px wide
+   rewrapped taller at 308px, ran past the window's bottom and sat flush
+   with its right edge (until 2026-10-31; 2026-10-30 audit, ui-render-2). */
 .chart-tip {
   display: none;
   position: fixed;
   z-index: 1000;
-  max-width: 320px;
+  max-width: min(320px, calc(100% - 24px));
   padding: 0.5rem 0.7rem;
   background: var(--ink);
   color: var(--paper);

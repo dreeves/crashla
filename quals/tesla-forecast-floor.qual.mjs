@@ -13,8 +13,9 @@ import { parseCsv } from "./csv-parse.mjs";
 // - Miles: the robotaxi lane's median is at least the cumulative through Oct
 //   18 (data/vmt.csv's end-September cumulative plus Tesla's 1,179,333
 //   no-monitor miles for Oct 1-18) plus the week to Oct 18 (557,694 miles)
-//   held flat for the 74 days to Jan 1. A median below that assumes a decline
-//   no data show (weekly miles grew 12-30% every week from June to October).
+//   held flat through the day before the forecast date. A median below that
+//   assumes a decline no data show (weekly miles grew 12-30% every week from
+//   June to October).
 // - Fleet: the robotaxi lane's median is at least the week to Oct 18's
 //   79,669 miles a day over the ~180 miles per vehicle-day Tesla's fleet ran
 //   in Q2 2026 (5-6k miles per vehicle-month), ~442 vehicles in service.
@@ -35,11 +36,13 @@ const ctx = vm.createContext({
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
-// The days from Oct 18, 2026 (the last day the page had measured) to the
+// The driving days after Oct 18, 2026 (the last day the page had measured)
+// that the forecast's cumulative covers: Oct 19 through the day before the
 // forecast date, read from the app (74 for Jan 1, 2027, the forecast date
-// until 2026-10-29).
+// until 2026-10-29; 439 for Jan 1, 2028). From 2026-10-29 to 2026-10-31 this
+// counted from Oct 18 and so took in one day too many (75, then 440).
 const FORECAST_DATE = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
-const DAYS_TO_FORECAST = (Date.parse(FORECAST_DATE) - Date.parse("2026-10-18")) / 86400000;
+const DAYS_TO_FORECAST = (Date.parse(FORECAST_DATE) - Date.parse("2026-10-19")) / 86400000;
 const milesFloor = +sepRow[3] + OCT_1_18 + WEEK_TO_OCT_18 / 7 * DAYS_TO_FORECAST;
 const med = JSON.parse(vm.runInContext(`JSON.stringify(Object.fromEntries(["miles", "fleet"].map(m =>
   [m, fleetDistributionCurves(m).find(c => c.key === "robotaxi").median])))`, ctx));
@@ -47,7 +50,7 @@ const med = JSON.parse(vm.runInContext(`JSON.stringify(Object.fromEntries(["mile
 const fmt = n => Math.round(n).toLocaleString("en-US");
 assert.ok(med.miles >= milesFloor && med.fleet >= fleetFloor,
   `Replicata: read Tesla's robotaxi-lane medians for cumulative miles and fleet size on the forecast date (${FORECAST_DATE}).
-Expectata: miles median >= ${fmt(milesFloor)} (cumulative through Oct 18 plus the week to Oct 18 held flat for the ${DAYS_TO_FORECAST} days to the forecast date); fleet median >= ${fmt(fleetFloor)} (the week to Oct 18's daily miles at ${MILES_PER_VEHICLE_DAY} miles per vehicle-day).
+Expectata: miles median >= ${fmt(milesFloor)} (cumulative through Oct 18 plus the week to Oct 18 held flat for the ${DAYS_TO_FORECAST} days from Oct 19 through the day before the forecast date); fleet median >= ${fmt(fleetFloor)} (the week to Oct 18's daily miles at ${MILES_PER_VEHICLE_DAY} miles per vehicle-day).
 Resultata: miles median ${fmt(med.miles)}, fleet median ${fmt(med.fleet)}.`);
 
-console.log(`qual pass: Tesla's ${FORECAST_DATE} medians (${fmt(med.miles)} miles, ${fmt(med.fleet)} vehicles) sit at or above what its October 2026 mileage implies`);
+console.log(`qual pass: Tesla's ${FORECAST_DATE} medians (${fmt(med.miles)} miles, ${fmt(med.fleet)} vehicles) sit at or above what its October 2026 mileage implies (miles floor ${fmt(milesFloor)} over ${DAYS_TO_FORECAST} days; fleet floor ${fmt(fleetFloor)})`);

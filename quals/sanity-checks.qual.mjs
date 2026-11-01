@@ -155,8 +155,9 @@ Resultata: expected content not found.`);
 // Tesla crossed the 20-incident threshold in the Jul-2026 NHTSA drop (24
 // incidents after Houston inclusion), so the small-sample "too few incidents
 // to tell" branch no longer fires for any live helmer. Tesla's monthly rates
-// swing wildly (its launch month Jul 2025 at 232/M mi vs ~3-40 later), so the
-// test reads overdispersed. Re-pin if the data moves a verdict tier. History:
+// swing wildly (its first month with incidents, Jul 2025, at 232/M mi vs
+// ~3-40 later), so the test reads overdispersed. Re-pin if the data moves a
+// verdict tier. History:
 // X²/dof ≈ 12.3 when this was written, 5.63 ("overdispersed") until
 // 2026-10-31, when July 2025's miles were re-read from Tesla's decks and its
 // Jul 23 call (audit 2026-10-30, VMT-1: 6,317 -> 8,619, July's rate 316.6 ->

@@ -238,4 +238,31 @@ const measure = parsed.filter(r => decls(r.body, "max-width").includes("70ch"));
 assert.deepEqual(measure.map(r => r.sel), [".abstract, #sanity-checks p, .month-note"],
   "prose blocks share one 70ch measure (decision 9); tables and charts keep the full width");
 
+// --- 10. AI text's mark survives without colour ----------------------------
+// AI-generated text (class ai-text, the "green text = AI-generated" legend)
+// carries a dotted underline as well as its colour, in every mode: a
+// forced-colors theme repaints all text in its own ink, which took the mark
+// away (decision #29 of the 2026-10-04 audit, the human's "Non-colour cue
+// everywhere"; implemented 2026-10-31). One top-level rule, which no media
+// block restyles; dotted, so it reads apart from links' solid underlines. The
+// human's ghost note inside an AI-text cell (.vmt-ghost-note) takes neither
+// cue: its own ink, and inline-block, which a parent's text decoration does
+// not reach (an inline child cannot take one off: text-decoration: none is
+// banned above anyway).
+const aiText = parsed.filter(r => r.sel === ".ai-text");
+assert.ok(aiText.length === 1 && aiText[0].context.length === 0 && /\bunderline\b/.test(onlyDecl(aiText[0].body, "text-decoration", ".ai-text"))
+    && /\bdotted\b/.test(onlyDecl(aiText[0].body, "text-decoration", ".ai-text")),
+  `Replicata: read style.css's .ai-text rules.
+Expectata: one, top-level, declaring text-decoration: underline dotted (with its colour).
+Resultata: ${JSON.stringify(aiText.map(r => ({ context: r.context, body: r.body.trim() })))}.`);
+const aiDeco = parsed.filter(r => r.sel !== ".ai-text" && selectors(r).some(sel => /\.ai-text\b/.test(sel))
+  && ["text-decoration", "text-decoration-line", "text-decoration-style"].some(p => has(r, p)));
+assert.deepEqual(aiDeco.map(r => r.sel), [], "no other rule restyles AI text's underline");
+const ghostNote = byExactSel(".ai-text .vmt-ghost-note");
+assert.ok(ghostNote.length === 1 && onlyDecl(ghostNote[0].body, "display", ".ai-text .vmt-ghost-note") === "inline-block"
+    && onlyDecl(ghostNote[0].body, "color", ".ai-text .vmt-ghost-note") === "var(--ink)",
+  `Replicata: read style.css's .ai-text .vmt-ghost-note rule.
+Expectata: color: var(--ink) and display: inline-block (out of the AI cell's underline).
+Resultata: ${JSON.stringify(ghostNote.map(r => r.body.trim()))}.`);
+
 console.log("qual pass: one type family, one scale, one emphasis weight, one rule per role");

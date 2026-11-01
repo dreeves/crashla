@@ -33,8 +33,13 @@ function lgamma(x) {
 }
 
 // Lower regularized incomplete gamma function P(a, x)
-// Series expansion for x < a + 1, continued fraction otherwise
-function gammainc(a, x) {
+// Series expansion for x < a + 1, continued fraction otherwise. lga is
+// lgamma(a): a caller evaluating one shape many times (a marginal CDF's
+// prior nodes, gammaquant's Newton steps) passes the value it computed once;
+// until 2026-10-31 every call recomputed it, ~830,000 lgamma calls a page
+// build (2026-10-30 audit, ui-render-5). The default (one evaluation, an
+// implicit branch) serves a one-off call.
+function gammainc(a, x, lga = lgamma(a)) {
   if (x < 0) return 0;
   if (x === 0) return 0;
   // Iteration cap for both branches. Near x ~ a the series terms decay like
@@ -54,7 +59,7 @@ function gammainc(a, x) {
       if (Math.abs(term) < Math.abs(sum) * 1e-14) { converged = true; break; }
     }
     assert(converged, "gammainc: series did not converge", {a, x, nMax});
-    return sum * Math.exp(-x + a * Math.log(x) - lgamma(a));
+    return sum * Math.exp(-x + a * Math.log(x) - lga);
   }
   // Continued fraction for upper gamma Q(a,x) = 1 - P(a,x)
   // Using modified Lentz's method
@@ -76,7 +81,7 @@ function gammainc(a, x) {
     if (Math.abs(delta - 1) < 1e-14) { converged = true; break; }
   }
   assert(converged, "gammainc: continued fraction did not converge", {a, x, nMax});
-  const q = Math.exp(-x + a * Math.log(x) - lgamma(a)) / f;
+  const q = Math.exp(-x + a * Math.log(x) - lga) / f;
   return 1 - q;
 }
 
@@ -107,13 +112,14 @@ function gammaquant(a, b, p) {
     "gammaquant: invalid params", {a, b, p});
   // Initial guess via Wilson-Hilferty approximation on chi-squared
   let x = approxGammaQuant(a, b, p);
+  const lga = lgamma(a);
   // Newton's method to refine
   for (let i = 0; i < 50; i++) {
-    const cdf = gammainc(a, x * b);
+    const cdf = gammainc(a, x * b, lga);
     const err = cdf - p;
     if (Math.abs(err) < 1e-12) break;
     // PDF of Gamma(a, b): b^a x^{a-1} e^{-bx} / Gamma(a)
-    const logpdf = a * Math.log(b) + (a-1) * Math.log(x) - b*x - lgamma(a);
+    const logpdf = a * Math.log(b) + (a-1) * Math.log(x) - b*x - lga;
     const pdf = Math.exp(logpdf);
     if (pdf < 1e-100) break; // avoid division by ~0
     const step = err / pdf;
@@ -133,16 +139,23 @@ function gammaquant(a, b, p) {
 // deliberate DETERMINISTIC allocations — Koopman's fractional-death
 // accounting, see the fatality comment below — not probabilities, so that
 // metric stays on the single-component path.)
+// The recurrence runs in place, from the top weight down, so each step reads
+// the previous step's weights before overwriting them: the same products and
+// sums as building each step's weights into a new array, as it did until
+// 2026-10-31 (equal to the bit on 3,744 lists, every fault-fraction list the
+// page builds among them), without an allocation per incident. The fault-flip
+// search (shiftedFaultComponents) runs it over every incident of a window,
+// 1,232 for Waymo's default window, about twenty times a search.
 function poissonBinomialWeights(fracs) {
-  let w = [1];
-  for (const p of fracs) {
+  const w = new Float64Array(fracs.length + 1);
+  w[0] = 1;
+  for (let len = 1; len <= fracs.length; len++) {
+    const p = fracs[len - 1];
     assert(p > 0 && p <= 1, "poissonBinomialWeights: p outside (0, 1]", {p});
-    const next = new Array(w.length + 1).fill(0);
-    for (let i = 0; i < w.length; i++) {
-      next[i] += w[i] * (1 - p);
-      next[i + 1] += w[i] * p;
-    }
-    w = next;
+    const q = 1 - p;
+    w[len] = w[len - 1] * p;
+    for (let i = len - 1; i > 0; i--) w[i] = w[i - 1] * p + w[i] * q;
+    w[0] = w[0] * q;
   }
   return w;
 }
@@ -182,39 +195,33 @@ function mixtureComponents(k, fracs) {
 function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax) {
   const prior = vmtPriorNodes(vmtMin, vmtBest, vmtMax, comps[comps.length - 1].a);
   const a0 = comps[0].a;
-  const lg0 = lgamma(a0);      // for the density recurrence base
+  const lg0 = lgamma(a0);      // for the density recurrence base and gammainc
   const lg1 = lgamma(a0 + 1);  // for the CDF recurrence base
   // The recurrences need consecutive shapes (a, a+1, a+2, ...), which is what
-  // mixtureComponents produces. The flip-multiplier's mass-scaled mixtures
-  // space shapes by s instead, so keep a generic per-component path for them.
-  const consecutive = comps.every((c, j) =>
-    j === 0 || Math.abs(c.a - comps[j - 1].a - 1) < 1e-12);
-  const lgs = consecutive ? null : comps.map(c => lgamma(c.a));
+  // mixtureComponents produces for every caller. Until 2026-10-31 the
+  // flip-multiplier's mass-scaled mixtures spaced shapes by s instead, and a
+  // generic per-component path (one gammainc per component and node) served
+  // them; the shared shift that replaced the scaling keeps the shapes
+  // consecutive (shiftedFaultComponents).
+  assert(comps.every((c, j) => j === 0 || Math.abs(c.a - comps[j - 1].a - 1) < 1e-12),
+    "makeMarginalMpiCdf: mixture shapes must be consecutive (a, a+1, a+2, ...)", {shapes: comps.map(c => c.a)});
   const evalBoth = x => {
     const lnx = Math.log(x);
     let cdf = 0, dens = 0;
     for (let i = 0; i < prior.v.length; i++) {
       const w = prior.v[i] / x;
       const lnw = prior.lnv[i] - lnx;
-      let cdfSum = 0, densSum = 0;
-      if (consecutive) {
-        let q = 1 - gammainc(a0, w);              // Q(a0, w)
-        let t = Math.exp(a0 * lnw - w - lg1);     // w^a0 e^-w / Γ(a0+1)
-        let d = Math.exp(a0 * lnw - w - lg0);     // gamma pdf · w = dQ/d(ln x)
-        cdfSum = comps[0].w * q;
-        densSum = comps[0].w * d;
-        for (let j = 1; j < comps.length; j++) {
-          q += t;                    // Q(a+1, w) = Q(a, w) + w^a e^-w / Γ(a+1)
-          d *= w / comps[j - 1].a;   // pdf recurrence: ratio w / a
-          t *= w / comps[j].a;       // term recurrence: ratio w / (a+1)
-          cdfSum += comps[j].w * q;
-          densSum += comps[j].w * d;
-        }
-      } else {
-        for (let j = 0; j < comps.length; j++) {
-          cdfSum += comps[j].w * (1 - gammainc(comps[j].a, w));
-          densSum += comps[j].w * Math.exp(comps[j].a * lnw - w - lgs[j]);
-        }
+      let q = 1 - gammainc(a0, w, lg0);         // Q(a0, w)
+      let t = Math.exp(a0 * lnw - w - lg1);     // w^a0 e^-w / Γ(a0+1)
+      let d = Math.exp(a0 * lnw - w - lg0);     // gamma pdf · w = dQ/d(ln x)
+      let cdfSum = comps[0].w * q;
+      let densSum = comps[0].w * d;
+      for (let j = 1; j < comps.length; j++) {
+        q += t;                    // Q(a+1, w) = Q(a, w) + w^a e^-w / Γ(a+1)
+        d *= w / comps[j - 1].a;   // pdf recurrence: ratio w / a
+        t *= w / comps[j].a;       // term recurrence: ratio w / (a+1)
+        cdfSum += comps[j].w * q;
+        densSum += comps[j].w * d;
       }
       cdf += prior.w[i] * cdfSum;
       dens += prior.w[i] * densSum;
@@ -377,7 +384,15 @@ function splitPriorSigmas(vmtMin, vmtBest, vmtMax) {
 // window's Tesla card reads 126,329 for the model's 126,328, 322 of the 450
 // whole-mile card values still differ from the model's in their last
 // digits, and 16 of 3,150 tooltip values round differently from the model's
-// (211 before), each within 4e-5 of a rounding boundary.
+// (211 before), each within 4e-5 of a rounding boundary. Re-measured on
+// 2026-10-31 on NHTSA's Oct-15-2026 release (2026-10-30 audit, numbers-1;
+// the same independent model): the displayed quantiles of all 1,170
+// per-month posteriors sit within 4.5e-5 (22 above 4e-5: the worst 4.46e-5,
+// Tesla's k = 0 Monthly-track posteriors of the data-through month 2026-09,
+// then 4.26e-5, the no-monitor line's k = 0 posteriors of 2026-01, a full
+// month whose authored band is lopsided, 531 / 547 / 1,110; the median
+// 9.6e-7); the 80% fan edges, drawn but never printed, within 1.02e-4; and
+// the default window's cards within 1.6e-5 (2026-07..2026-09's 2.3e-5).
 // fault-mixture.qual holds six such estimates to 5e-5.
 // A degenerate band (vmtMin = vmtBest = vmtMax) is one node of weight 1 at
 // vmtBest exactly, so the marginal reduces bit-for-bit to the point posterior.
@@ -593,6 +608,14 @@ function sourceLink(url) {
   assert(label !== undefined, "benchmark source URL missing from BENCHMARK_SOURCES", {url});
   return `<a href="${escAttr(url)}">${escHtml(label)}</a>`;
 }
+// The note a fractional fatality count carries wherever it prints (the cards,
+// the MPI and distribution charts' tooltips, the Sensitivity table), the
+// fatality metric's countNote below (decision #1 of the 2026-10-04 audit,
+// the human's "Add a note"): Waymo's card read "Fatality: 0.8 incidents"
+// beside a severity table counting 2 fatal crashes, with nothing saying why.
+// TODO: English for this note, which says that each fatal crash counts
+// 1/(number of vehicles involved), so this count can be fractional.
+const FRACTIONAL_DEATH_NOTE = "Quaeque collisio mortifera ut 1/(numerus vehiculorum implicatorum) numeratur, itaque hic numerus fractus esse potest.";
 const METRIC_DEFS = [
   { key: "all",
     blank: "any",
@@ -915,8 +938,12 @@ const METRIC_DEFS = [
         // (Phoenix, injury route); mileage-blended: 1M/1.40 (injury route),
         // 1M/1.06 (airbag route).
         src: "CRSS-measured ratio of crashes with hospital transport or serious/fatal injury to injury crashes and to airbag crashes applied to Waymo's published per-area police-reported any-injury rates, not underreporting-adjusted",
+        // The release notes (Oct 2, 2026; p. 2 links CSV3 v2, whose observed
+        // rates give the 402K edge; the hub page's CSV3 link serves v1, which
+        // gives 406K): linked since 2026-10-31 (2026-10-30 audit, LNK-2).
         srcLinks: [
           'https://waymo.com/safety/impact/',
+          'https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20261002.pdf',
           'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
         ]},
       // US average: hi = the police-reported national Hospitalization+ rate,
@@ -986,8 +1013,11 @@ const METRIC_DEFS = [
       // was the third such band until 2026-10-03; it is now CRSS-measured.)
       // CRSS 2024 measures both directly too (police-reported, all vehicles,
       // all roads): airbag 0.740 per M mi (1.35M MPI), A+K 0.086 (11.6M), each
-      // inside its band; the src text's "no national ... rate" predates that
-      // check.
+      // inside its band. The src says so since 2026-10-31; until then it read
+      // "No national airbag-deployment per-mile rate" and "No clean national
+      // SSI+ (KABCO A+K) per-mile rate" (2026-10-30 audit, copy-1 and LNK-1).
+      // The bands stay the interpolations; re-deriving them from the CRSS
+      // rates would be a method change, the human's call.
       // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 361000, hi: 813000,
         src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-vehicle airbag 1.23 (LA) to 2.77 (Atlanta) IPMM, blended 1.61 (supersedes the Kusano 56.7M paper values 1.42-2.31; Austin, Tesla\'s main market, sits at 2.32)',
@@ -996,7 +1026,11 @@ const METRIC_DEFS = [
           'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 920000, hi: 2700000,
-        src: 'No national airbag-deployment per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
+        // TODO: English for the src's first clause, which says that CRSS 2024
+        // measures this rate directly (police-reported, all vehicles, all
+        // roads): 0.740 vehicles in airbag-deployment crashes per M mi (1.35M
+        // MPI), which lies inside this band.
+        src: 'CRSS 2024 frequentiam nationalem a vigilibus relatam directe metitur, 0.740 vehicula in collisionibus cum sacculis aeriis explicatis per M mi (1.35M MPI), intra hunc ambitum; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
         // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
         // centres (the hub's injury and this band's, IIHS's fatality), the
         // national injury centre (CRSS 2024, both Blincoe editions) and the
@@ -1033,7 +1067,11 @@ const METRIC_DEFS = [
           'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 4000000, hi: 19000000,
-        src: 'No clean national SSI+ (KABCO A+K) per-mile rate; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
+        // TODO: English for the src's first clause, which says that CRSS 2024
+        // measures this rate directly (police-reported, all vehicles, all
+        // roads): 0.086 vehicles in crashes with a suspected serious or fatal
+        // injury (KABCO A+K) per M mi (11.6M MPI), which lies inside this band.
+        src: 'CRSS 2024 frequentiam nationalem a vigilibus relatam directe metitur, 0.086 vehicula in collisionibus cum vulnere gravi aut mortifero (KABCO A+K) per M mi (11.6M MPI), intra hunc ambitum; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
         // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
         // centres (the hub's injury and this band's, IIHS's fatality), the
         // national injury centre (CRSS 2024, both Blincoe editions) and the
@@ -1056,6 +1094,10 @@ const METRIC_DEFS = [
     defaultEnabled: false, primary: false,
     fiveDay: true, // fatality = SGO Request No. 1.D.i
     countFn: rec => rec.incidents.fatality,
+    // countNote: what the count's fractions mean, wherever the count prints
+    // (countNoteLine, countHtml); the one metric whose count is fractional
+    // by definition rather than by fault judgment.
+    countNote: FRACTIONAL_DEATH_NOTE,
     // FLEET basis matching the fractional-death AV count above (Koopman/
     // Piper): the 1/N-per-fatal-crash sum equals fatal crashes fleet-wide and
     // proxies deaths (deaths ≈ 1.08x fatal crashes nationally). HumansAV uses
@@ -1805,7 +1847,6 @@ function monthlySummaryRows(series) {
     const incFields = Object.fromEntries(
       METRIC_DEFS.map(m => [m.incField, windowCounts[m.key].k]));
 
-    const vmtRationales = [...new Set(rows.map(r => r.rationale).filter(Boolean))];
     // Pre-compute MPI estimates for each metric (consumed by cards + distribution).
     // vmtBest > 0: Bayesian Gamma posterior from observed incidents + VMT.
     // vmtBest === 0: log-normal from literature CI (humanMPI on METRIC_DEFS).
@@ -1858,7 +1899,6 @@ function monthlySummaryRows(series) {
     return {
       helmer,
       vmtMin, vmtBest, vmtMax, vmtRawBest,
-      vmtRationales,
       ...incFields,
       mpiEstimates,
     };
@@ -1885,7 +1925,9 @@ function estimateMpiWindow(k, fracs, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS
   const quant = makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax);
   const tail = (1 - massFrac) / 2;
   return {
-    k, comps, quant, vmtMin, vmtBest, vmtMax,
+    // fracs: the at-fault metrics' nonzero fault fractions (null for every
+    // other metric), which the fault-flip search shifts (shiftedFaultComponents)
+    k, fracs, comps, quant, vmtMin, vmtBest, vmtMax,
     median: vmtBest / k, // MLE point estimate (∞ at k=0); shown only in the distribution marker tooltip, never as the point estimate (that is postMedian)
     // Exact tail-mass quantiles of the marginal posterior (the drawn bell), so
     // "95% CI" means exactly 95% — under the two-piece VMT prior that puts
@@ -1918,6 +1960,28 @@ const STRESS_VERDICT_ORDER = ["safer", "ambiguous", "worse"];
 // within 7.7e-7 of its exact quantile, so 1e-4 leaves 100x.
 const FLIP_CDF_TOLERANCE = 1e-4;
 
+// The at-fault mixture with every incident's fault probability moved toward
+// 1 by one shared fraction t in [0, 1], p -> p + (1 - p)t (decision #3 of the
+// 2026-10-04 audit, the human's "shared shift toward 1"), over the
+// nIncidents incidents of the metric the fault fractions are taken over (All
+// incidents for at-fault, Injury for at-fault injury): est.fracs holds the
+// nonzero fractions, the rest of the incidents are at 0. Its mass is
+// k + (nIncidents - k)t, s times the judged mass for s = 1 + (nIncidents/k -
+// 1)t. At t = 0 the fractions are est's own (a fraction at 0 is dropped, as
+// mixtureComponents takes only nonzero ones), so the components are the
+// displayed estimate's exactly; at t = 1 every fraction is exactly 1 (p +
+// (1 - p) rounds to 1 for every p in [0, 1]), the one component the universe
+// metric's estimate has, a = nIncidents + 1/2. Shifting keeps the shapes
+// consecutive, so the marginal CDF keeps its one-gammainc-a-node recurrence.
+function shiftedFaultComponents(est, nIncidents, t) {
+  const zeros = nIncidents - est.fracs.length;
+  assert(Number.isInteger(zeros) && zeros >= 0 && t >= 0 && t <= 1,
+    "shiftedFaultComponents: needs the universe metric's incident count and a shift in [0, 1]",
+    {nIncidents, judged: est.fracs.length, t});
+  const shifted = [...est.fracs, ...new Array(zeros).fill(0)].map(p => p + (1 - p) * t).filter(p => p > 0);
+  return mixtureComponents(est.k + (nIncidents - est.k) * t, shifted);
+}
+
 // Faultfrac sensitivity: the faultfracs are Claude's judgments from
 // company-written narratives, so ask how undercounted the true at-fault mass
 // would have to be to change the stress verdict. Returns the verdict the
@@ -1925,14 +1989,21 @@ const FLIP_CDF_TOLERANCE = 1e-4;
 // s > 1 on the judged mass at which the verdict (vs the AV-cities band)
 // changes, to the precision the table prints it (narrowToPrinted: a value
 // that prints as the flip point does and flips), and the verdict it changes
-// to; null when k = 0 (scaling zero mass
-// changes nothing); mult Infinity when no s <= 10^4 flips it.
-// nIncidents: the metric universe's incident count (e.g. incTotal for
-// at-fault). Fault fractions are probabilities, so the true at-fault mass
-// can never exceed it: the search stops at s = nIncidents / k ("every
-// incident at fault") and reports Infinity beyond that. Without the cap
-// (until 2026-09-04) Tesla showed "5.85x -> robustly worse", which needed
-// 39 at-fault incidents out of 24.
+// to; null when k = 0 (s, a multiple of the judged mass, has no value at
+// zero mass); mult Infinity when no s <= 10^4 flips it.
+// The mass s times the judged one is the shared shift's
+// (shiftedFaultComponents), t = (s - 1) / (sMax - 1), over the metric
+// universe's incident count nIncidents (incTotal for at-fault). Fault
+// fractions are probabilities, so the true at-fault mass can never exceed
+// it: the search stops at s = sMax = nIncidents / k, every incident at fault
+// (t = 1), where the posterior is the universe metric's, and reports
+// Infinity beyond that. Without the cap (until 2026-09-04) Tesla showed
+// "5.85x -> robustly worse", which needed 39 at-fault incidents out of 24.
+// Until 2026-10-31 the search scaled the mass inside each Poisson-binomial
+// component (a_K = K·s + 1/2) with the weights fixed, so the K = 0 component
+// kept its weight at every s: Zoox's P(K = 0) = 0.0976 held its CDF at the
+// band floor under 0.975 even at the cap, and its multiplier read ∞ in the
+// default window beside an All-incidents verdict of robustly worse.
 function faultFlipMultiplier(est, human, nIncidents) {
   if (est.k === 0) return null;
   assert(Number.isFinite(nIncidents) && nIncidents >= est.k,
@@ -1940,31 +2011,30 @@ function faultFlipMultiplier(est, human, nIncidents) {
     {nIncidents, k: est.k});
   const sMax = nIncidents / est.k;
   const tail = (1 - CI_MASS_DEFAULT_PCT / 100) / 2;
-  const verdictAt = s => {
-    // Scale the judged at-fault mass inside each mixture component (a_K =
-    // K·s + 1/2). The verdict needs only two CDF evaluations, no quantile
-    // search: lo > human.hi <=> F(human.hi) < tail, and hi < human.lo <=>
-    // F(human.lo) > 1 - tail. The CDF is the displayed CI's own (every
-    // component, the adaptive node count), so the search measures what the
-    // CI shows. Until 2026-10-03 it ran a lighter CDF (components under 1e-4
-    // dropped, 13 prior nodes) whose CI edges sat up to 0.7% from the
-    // displayed ones, and asserted its s = 1 verdict equal to the displayed
-    // one: a CI edge inside that gap threw, blanking the sanity section and
-    // the incident browser for the window. The full CDF (scaled shapes are
-    // not consecutive, so it loses its cheap recurrence) measured ~20 ms
-    // more per sanity rebuild in Chromium, ~90 ms at 4x CPU throttling.
-    const scaled = est.comps.map(c => ({a: (c.a - 0.5) * s + 0.5, w: c.w}));
-    const cdf = makeMarginalMpiCdf(scaled, est.vmtMin, est.vmtBest, est.vmtMax);
+  // The verdict at shift t needs only two CDF evaluations, no quantile
+  // search: lo > human.hi <=> F(human.hi) < tail, and hi < human.lo <=>
+  // F(human.lo) > 1 - tail. The CDF is the displayed CI's own kind (every
+  // component, the adaptive node count), so the search measures what the CI
+  // shows. Until 2026-10-03 it ran a lighter CDF (components under 1e-4
+  // dropped, 13 prior nodes) whose CI edges sat up to 0.7% from the
+  // displayed ones, and asserted its s = 1 verdict equal to the displayed
+  // one: a CI edge inside that gap threw, blanking the sanity section and the
+  // incident browser for the window.
+  const verdictAtShift = t => {
+    const cdf = makeMarginalMpiCdf(shiftedFaultComponents(est, nIncidents, t), est.vmtMin, est.vmtBest, est.vmtMax);
     return cdf(human.hi) < tail ? "safer"
       : cdf(human.lo) > 1 - tail ? "worse" : "ambiguous";
   };
+  // Called only with 1 < s <= sMax (the loop below, and the narrowing after
+  // it), which the loop reaches only when sMax > 1.
+  const verdictAt = s => verdictAtShift((s - 1) / (sMax - 1));
   // The search starts from the displayed verdict, read off the displayed CI.
   const base = stressVerdictKey(est.lo, est.hi, human);
-  // Its own verdict at s = 1 may differ only where a band edge sits within
-  // the quantile solver's precision of the CI edge between the two verdicts
-  // (safer|worse borders no single edge); anywhere else the CI does not
-  // belong to this estimate.
-  const atOne = verdictAt(1);
+  // Its own verdict at s = 1 (t = 0) may differ only where a band edge sits
+  // within the quantile solver's precision of the CI edge between the two
+  // verdicts (safer|worse borders no single edge); anywhere else the CI does
+  // not belong to this estimate.
+  const atOne = verdictAtShift(0);
   const edgeGap = {
     "ambiguous|safer": Math.abs(Math.log(est.lo / human.hi)),
     "ambiguous|worse": Math.abs(Math.log(est.hi / human.lo)),
@@ -1974,11 +2044,12 @@ function faultFlipMultiplier(est, human, nIncidents) {
     {base, atOne, edgeGap, lo: est.lo, hi: est.hi, human});
   let lo = 1;
   let hi = null;
-  for (let e = 1; e <= 80; e++) {
+  // Steps of 10^(1/20) up to the cap; with every incident already fully at
+  // fault (sMax = 1) there is no step to take, and no flip.
+  for (let e = 1; lo < sMax && e <= 80; e++) {
     const s = Math.min(Math.pow(10, e / 20), sMax);
     if (verdictAt(s) !== base) { hi = s; break; }
     lo = s;
-    if (s === sMax) break; // every incident at fault and still no flip
   }
   if (hi === null) return {base, mult: Infinity, flipped: null};
   const mult = narrowToPrinted(lo, hi, s => verdictAt(s) !== base);
@@ -1999,7 +2070,7 @@ function faultFlipMultiplier(est, human, nIncidents) {
 // ~80 ms per slider step (audit #23). The stop follows fmtRatio, so a change
 // of its precision carries over. A bracket whose ends still print apart once
 // it is narrower than 1e-12 in ln holds a flip point on a print boundary
-// (1.05 between "1.0" and "1.1"), which no narrowing separates; hi, which
+// (1.005 between "1.00" and "1.01"), which no narrowing separates; hi, which
 // flips, then prints as the flip point does (as the distribution chart's peak
 // search stops).
 function narrowToPrinted(lo, hi, flips) {
@@ -2013,23 +2084,30 @@ function narrowToPrinted(lo, hi, flips) {
 
 // The one format of an AV-vs-human multiplier or ratio (the summary cards'
 // multipliers and their All-incidents line, the stress tables' ratio ranges,
-// the fault-flip multipliers): two significant figures below 10, a whole
-// number from 10. ratioShown is the value printed (9.96 rounds to 10, so it
-// prints "10"), and a multiplier's safer/worse colour is read off it. Until
-// 2026-10-03 the cards printed toFixed(1) below 10 ("0.0x" for Tesla's 0.026
-// fatality multiplier, "10.0x" for 9.96, and a 0.996 as "1.0x" in the worse
-// red) and this function three tiers ("0.00x", "10.0x" .. "99.9x"; audit #55).
-// The significant-figure formatter never writes an exponent (1e-7 prints
-// "0.00000010").
-const RATIO_TWO_SIG = new Intl.NumberFormat(NUMBER_LOCALE, {minimumSignificantDigits: 2, maximumSignificantDigits: 2});
+// the fault-flip multipliers): exactly three significant figures, grouped
+// en-US style (0.997 -> "0.997", 10.7 -> "10.7", 37,125.4 -> "37,100";
+// decision #2 of the 2026-10-04 audit, 2026-10-31). ratioShown is the value
+// printed (9.996 rounds to 10, which prints "10.0"), and a multiplier's
+// safer/worse colour is read off it; the formatter prints that rounded value,
+// so the two cannot part on a tie (the double nearest 9.995 lies just under
+// it: toPrecision rounds it to 9.99, Intl.NumberFormat to "10.0", in
+// Chromium, Firefox and WebKit alike). Until 2026-10-31 this printed two
+// significant figures below 10 and a whole number from 10, so every edge in
+// [0.995, 1.05) read "1.0x", "robustly safer" at 1.029 and "ambiguous" at
+// 0.998 alike; until 2026-10-03 the cards printed toFixed(1) below 10
+// ("0.0x" for Tesla's 0.026 fatality multiplier, "10.0x" for 9.96, and a
+// 0.996 as "1.0x" in the worse red) and this function three tiers ("0.00x",
+// "10.0x" .. "99.9x"; audit #55). The significant-figure formatter never
+// writes an exponent (1e-7 prints "0.000000100").
+const RATIO_SIG_FIGS = 3;
+const RATIO_AT_SIG_FIGS = new Intl.NumberFormat(NUMBER_LOCALE,
+  {minimumSignificantDigits: RATIO_SIG_FIGS, maximumSignificantDigits: RATIO_SIG_FIGS});
 function ratioShown(n) {
   assert(Number.isFinite(n) && n > 0, "ratioShown: invalid input", {n});
-  const twoSig = Number(n.toPrecision(2));
-  return twoSig >= 10 ? Math.round(n) : twoSig;
+  return Number(n.toPrecision(RATIO_SIG_FIGS));
 }
 function fmtRatio(n) {
-  const shown = ratioShown(n);
-  return shown >= 10 ? fmtWhole(shown) : RATIO_TWO_SIG.format(shown);
+  return RATIO_AT_SIG_FIGS.format(ratioShown(n));
 }
 
 function helmerHumanStress(row, metricKey) {
@@ -2684,7 +2762,7 @@ function renderAllHelmersMpiChart(series) {
       const color = metricMarkerColor(row.helmer);
       const k = mpi.incidentCount;
       const ci95 = mpi.bands[mpi.bands.length - 1];
-      const kLine = k !== null ? ` (${splur(k, "incident")})` : "";
+      const kLine = k !== null ? ` (${splur(k, "incident")})${countNoteLine(row.metric)}` : "";
       const ciLabel = k !== null ? "95% CI" : "Range";
       const incompleteNote = mpi.covRatio < 0.999
         ? `\n~${(mpi.covBest * 100).toFixed(0)}% incident coverage (worst case ~${(mpi.covRatio * 100).toFixed(0)}%)`
@@ -2966,7 +3044,7 @@ function renderDistributionChart(series) {
   const glyphs = [], targets = [];
   for (const c of curves) {
     const color = HELMER_COLORS[c.helmer];
-    const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})` : "";
+    const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})${countNoteLine(c.metric)}` : "";
     const ciLine = `${c.est.k !== null ? "95% CI" : "Range"}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}${kLine}`;
     const mle = c.est.k !== null ? c.est.median : NaN; // vmtBest/k, ∞ at k=0
     const mean = c.est.k !== null ? c.densityFn.mean : NaN;
@@ -3033,10 +3111,13 @@ function logUniformGrid(lo, hi, n) {
 // forecasts for scoring).
 //
 // Each helmer's distribution is a mixture of two-piece log-normal bands
-// {weight, best (the mode), lo (5th percentile), hi (95th)}, the format the
-// miles and rides tables use (until 2026-10-29 the fleet's were {median,
-// sigma} log-normals, converted to symmetric bands per call). Tesla's modes
-// are three different futures, not one smooth ramp:
+// {weight, best, lo, hi}, the format of all three tables (until 2026-10-29 the
+// fleet's were {median, sigma} log-normals, converted to symmetric bands per
+// call): `best` is the band's mode, and lo and hi sit 1.6449 sigmas out on
+// their own sides, so 10% of the band's mass lies outside [lo, hi], split
+// between the two tails in proportion to the two sides' widths (4-6% each in
+// the bands below), not 5% apiece. Tesla's modes are three different futures,
+// not one smooth ramp:
 //   A: the slow robotaxi ramp continues;
 //   B: Tesla scales its dedicated robotaxi service aggressively (Cybercab
 //      deployment at hundreds to a thousand a week);
@@ -3046,28 +3127,54 @@ function logUniformGrid(lo, hi, n) {
 //      counted under, so A+B (scope "robotaxi") and C (scope "hw4") are drawn
 //      as two SEPARATE Tesla curves. Customer cars carrying riders in Tesla's
 //      network (from ~Q2 2027, Q3-2026 call, Oct 21) count in C, as before.
+//      C is Tesla's whole ADS service in that world: A's robotaxi ramp plus
+//      the customer cars' eyes-off driving (TESLA_EYES_OFF), edge by edge, so
+//      in every table its lane's 5th percentile, median and 95th percentile
+//      sit at or above the robotaxi lane's (the human's decision, 2026-10-30;
+//      fleet-forecast.qual.mjs). Further down its miles and rides do not: the
+//      two-piece band drawn through C's summed edges (not the distribution of
+//      the sum itself) has a wider low side in ln x than A's, so below about
+//      the 3rd percentile (rides 3.4%, miles 2.9%) its quantiles fall under
+//      the robotaxi lane's.
 // Tesla's robotaxi fleet is cars driving on a typical day, from miles (the
 // human's choice, 2026-10-29; FLEET_HISTORY), so A and B are authored as daily
 // robotaxi miles on the forecast date (TESLA_ROBOTAXI_SCENARIOS): the fleet
 // forecast is those miles / TESLA_MILES_PER_CAR_DAY, and the miles forecast
 // the cumulative along a constant-growth path to them (teslaCumulativeMiles).
+// C's fleet is the same unit, car-equivalents (the human's choice,
+// 2026-10-30): its ADS miles a day on the forecast date over
+// TESLA_MILES_PER_CAR_DAY; until 2026-10-31 it counted distinct customer cars.
 //
-// Tesla's weights (A 0.79, B 0.14, C 0.07) were fit 2026-10-29 to Manifold's
-// "Will Tesla have more autonomous vehicles providing ridehailing than Waymo"
-// resolving Dec 31, 2027 (18.5%, 9 bettors): the probability that Tesla's
-// distinct cars (~1.3x its car-equivalents) exceed Waymo's end-2027 fleet
-// (log-normal, median ~14k, sigma 0.45, from Manifold's "How many Waymo
-// robotaxis at the end of 2027?") is ~0.04 under A and ~0.70 under B, and C
-// counts toward the market at ~0.8 (a world with eyes-off FSD across the HW4
-// fleet is one where Tesla's ride-hail fleet exceeds Waymo's). C = 0.07 is a
-// judgment between the 2026 Level-3 market (3.9%) and the any-maker "read a
-// book while driving" market's 2027 bucket (31%), discounted by Tesla's
-// guidance (customer cars only inside its network, from ~Q2 2027) and its
-// record on this promise (end-2025, then Q4 2026, now Q2 2027). Checks: the
-// mixture implies ~0.54 on "vision-only L4 reaches 100M autonomous miles
-// before 2028" (market 0.50) and ~0.25 on "driverless in 10+ US metros
-// beyond Austin by Aug 1, 2027" (0.27). Until 2026-10-29: A 0.71, B 0.24,
-// C 0.05, fit to the Jan-2-2027 market (since traded down to ~6%).
+// Tesla's weights (A 0.79, B 0.14, C 0.07) were fit on 2026-10-29 to
+// Manifold's "Will Tesla have more autonomous vehicles providing ridehailing
+// than Waymo on Dec 31 2027?" (18.5%, 9 bettors, 2026-10-29;
+// https://manifold.markets/HillaryClinton/will-tesla-have-more-autonomous-veh-qLuQQPP6Cy):
+// the probability that Tesla's distinct cars (~1.3x its car-equivalents) exceed
+// Waymo's end-2027 fleet (log-normal, median ~14k, sigma 0.45, from
+// Manifold's "How many Waymo robotaxis at the end of 2027?") is ~0.04 under A
+// and was ~0.70 under B, and C counts toward the market at ~0.8 (a world with
+// eyes-off FSD across the HW4 fleet is one where Tesla's ride-hail fleet
+// exceeds Waymo's). That fit had B's high at the research's 60,000; B's high
+// moved to 40,000 the same day without a refit, so on these inputs B now
+// gives ~0.64 and the mixture 17.8%, not 18.5%. Refit on them, B would be
+// ~0.15; on the page's own Waymo forecast in place of the market's
+// log-normal, the weights give 19.6% and a refit B ~0.12. Whether to refit,
+// and on which Waymo distribution, is the human's call (audit 2026-10-30:
+// forecasts-comment-arithmetic, forecasts-waymo-vs-cited-markets). C = 0.07
+// is a judgment between the 2026 Level-3 market (3.9%) and the any-maker
+// "read a book while driving" market's 2027 bucket (31%), discounted by
+// Tesla's guidance (customer cars only inside its network, from ~Q2 2027) and
+// its record on this promise (end-2025, then Q4 2026, now Q2 2027). Checks:
+// the mixture puts ~0.74 on Tesla's cumulative miles reaching 100M before
+// 2028 (A ~0.67, B ~1.0, C ~0.93), against 0.50 for "Before 2028" on
+// Manifold's "When will vision-only level 4 self-driving be widely deployed?"
+// (2026-10-31; https://manifold.markets/dreev/when-will-visiononly-level-4-selfdr),
+// whose FAQ defines widely deployed as "100 million autonomous miles, with
+// zero fatalities that are the fault of the AI", so the market asks for more
+// than the miles (this comment gave ~0.54 until 2026-10-31, when the mixture
+// then in place gave ~0.67); and ~0.25 on "driverless in 10+ US metros beyond
+// Austin by Aug 1, 2027" (0.27). Until 2026-10-29: A 0.71, B 0.24, C 0.05,
+// fit to the Jan-2-2027 market (since traded down to ~6%).
 //
 // Anchors (Oct 2026): Tesla 465 car-equivalents in October (FLEET_HISTORY),
 // 1,080 registered in Texas (573 Cybercab, 507 Model Y; TxDMV, Oct 28),
@@ -3089,47 +3196,91 @@ function logUniformGrid(lo, hi, n) {
 //
 // Tesla's robotaxi scenarios A and B as daily robotaxi miles on the forecast
 // date. A: the Q4-2026 Cybercab surge fades and 2027 grows Waymo-like (~3x)
-// across 6-10 metros: 504k a day (2,800 car-equivalents) [162k, end-2026's
-// rate held flat through a pause or demand saturation; 1.44M, about twice
-// Waymo's current daily miles]. B: ~20,000 cars at ~135 miles a car-day on
-// Cybercab deployment of 300-1,000 a week: 2.7M a day [0.9M with deployment
-// capped by regulators (NHTSA AQ26002, state approvals); 7.2M, ~50,000
-// Cybercabs, the line's ~1,000 a week through 2027].
+// across 6-10 metros: 504k a day (2,800 car-equivalents) [162k: growth slowing
+// to ~3% a month from late October's ~107k a day, through a pause or demand
+// saturation, so ~114k on Jan 1, 2027 and x1.42 through 2027 on the path
+// below; 1.44M, about twice Waymo's current daily miles]. B: ~20,000 cars at
+// ~135 miles a car-day on Cybercab deployment of 300-1,000 a week: 2.7M a day
+// [0.9M with deployment capped by regulators (NHTSA AQ26002, state
+// approvals); 7.2M, ~50,000 Cybercabs, the line's ~1,000 a week through
+// 2027]. (On the path below A's central reaches ~134k a day on Jan 1, 2027
+// and grows x3.8 through 2027.)
 const TESLA_MILES_PER_CAR_DAY = 180;
 const TESLA_ROBOTAXI_SCENARIOS = [
   { weight: 0.79, best: 504000,  lo: 162000, hi: 1440000 }, // A: slow ramp
   { weight: 0.14, best: 2700000, lo: 900000, hi: 7200000 }, // B: aggressive Cybercab scale-up
 ];
-// The path's start: October 2026's typical day in data/vmt.csv's Tesla row
-// (2,594,000 miles over 31 days, mid-October) and the cumulative through Oct
-// 31 (6,835,000); growth-ghost-month.qual.mjs checks both against that row.
-const TESLA_PATH_START = {day: "2026-10-16", milesPerDay: 2594000 / 31, cumulativeThrough: "2026-10-31", cumulative: 6835000};
-// Tesla's cumulative robotaxi miles through the day before the forecast date,
-// on a path whose daily miles grow at a constant rate from the start's to
-// `milesPerDay` on the forecast date. (The research of 2026-10-29 also
-// tried a front-loaded path, the Q4-2026 surge then slower growth, which
-// gives A's central ~25% more miles.)
-function teslaCumulativeMiles(milesPerDay) {
-  const DAY = 86400000;
-  const T = (Date.parse(GROWTH_FORECAST_DATE) - Date.parse(TESLA_PATH_START.day)) / DAY;
-  const from = (Date.parse(TESLA_PATH_START.cumulativeThrough) - Date.parse(TESLA_PATH_START.day)) / DAY + 1;
-  const g = Math.log(milesPerDay / TESLA_PATH_START.milesPerDay) / T; // growth per day
-  assert(g !== 0, "teslaCumulativeMiles: the path's daily miles must change", {milesPerDay});
-  return TESLA_PATH_START.cumulative + TESLA_PATH_START.milesPerDay / g * (Math.exp(g * T) - Math.exp(g * from));
+// Scenario C's eyes-off driving on customer HW4 cars, which C adds to A's
+// robotaxi ramp edge by edge in all three tables (the human's decision,
+// 2026-10-30). ~1M US HW4 cars with paid FSD today and ~1.5M by end-2027
+// (1.74M FSD subscriptions and purchases worldwide, HW3 included; Q3-2026
+// deck): 400k cars eyes-off on the forecast date [60k; 2.0M, more than the
+// ~1.5M with paid FSD by end-2027, which needs eyes-off on HW4 cars without
+// paid FSD too], from a launch anywhere in Apr-Dec 2027, at ~16 eyes-off
+// miles a car-day [15, 30]: 6.4M miles a day [0.9M, 60M]. The ~16 is an
+// estimate with no source: the AGENTS.md ledger's 2026-09-30 entry, cited for
+// it until 2026-10-31, gives Tesla's 7.142B FSD (Supervised) miles in North
+// America over a window it infers as Jul 2025-Jun 2026 and no count of the
+// cars, and 16 a day on those miles takes ~1.2M cars. Through Dec 31, 2027
+// they drive ~600M eyes-off miles [20M, 6B], and Tesla-Network rides carry
+// ~10% of those miles at ~6 miles a ride.
+const TESLA_EYES_OFF = {
+  weight: 0.07,
+  milesPerDay: { best: 400000 * 16, lo: 60000 * 15, hi: 2000000 * 30 }, // on the forecast date
+  cumulative: { best: 600000000, lo: 20000000, hi: 6000000000 },          // through the day before
+  ridesPerMile: 0.1 / 6,                                                 // Tesla-Network rides
+};
+// Two {best, lo, hi} bands summed edge by edge (scenario C's robotaxi part
+// and its eyes-off part, taken as moving together).
+function sumBands(a, b) {
+  return { best: a.best + b.best, lo: a.lo + b.lo, hi: a.hi + b.hi };
+}
+// The path's start (the human's choice, 2026-10-30: "start at Oct's exit
+// rate"): Nov 1, 2026, the day after data/vmt.csv's newest Tesla month, at
+// that month's late-October rate, so the cumulative takes no step at the
+// month boundary. The rate is the no-monitor line's projection of Oct 19-31
+// (the teslanomonitor 2026-10 row's 2,561,000 less the 1,179,333 Tesla's page
+// measured for Oct 1-18, over those 13 days) plus the monitor-aboard
+// remainder at its October average (the tesla row's 2,594,000 less the
+// teslanomonitor row's, over 31 days): 107,347 a day. (The projection grows
+// 21.4% a week, so its last days run above that average.) The cumulative is
+// the tesla row's through Oct 31 (6,835,000). growth-ghost-month.qual.mjs
+// checks all three against data/vmt.csv's newest Tesla rows. From 2026-10-29
+// to 2026-10-31 the path started at October's typical day (2,594,000 / 31,
+// mid-October), so on Nov 1 every scenario edge ran 8-20% under the
+// late-October rate.
+const TESLA_PATH_START = {day: "2026-11-01", cumulative: 6835000,
+  milesPerDay: (2561000 - 1179333) / 13 + (2594000 - 2561000) / 31};
+// Tesla's cumulative robotaxi miles through the day before the forecast date
+// for a band of daily miles on the forecast date, edge by edge: each edge's
+// path grows its daily miles at a constant rate from the start's, on its day,
+// to the edge's on the forecast date, so its cumulative is the start's plus
+// the days times the logarithmic mean of the two rates. (The research of
+// 2026-10-29 also tried a front-loaded path, the Q4-2026 surge then slower
+// growth, which gave A's central ~25% more miles than the path from
+// mid-October's typical day then in use.)
+function teslaCumulativeMiles(band) {
+  const T = (Date.parse(GROWTH_FORECAST_DATE) - Date.parse(TESLA_PATH_START.day)) / 86400000;
+  const m0 = TESLA_PATH_START.milesPerDay;
+  const cumulative = milesPerDay => {
+    assert(milesPerDay !== m0, "teslaCumulativeMiles: the path's daily miles must change", {milesPerDay});
+    return TESLA_PATH_START.cumulative + T * (milesPerDay - m0) / Math.log(milesPerDay / m0);
+  };
+  return { best: cumulative(band.best), lo: cumulative(band.lo), hi: cumulative(band.hi) };
 }
 const FLEET_FORECAST = [
+  // Every Tesla scenario's fleet is its ADS miles a day on the forecast date
+  // over TESLA_MILES_PER_CAR_DAY: car-equivalents, the unit of Tesla's line.
+  // C is A's robotaxi miles plus the eyes-off miles (TESLA_EYES_OFF).
   { helmer: "Tesla", components: [
-    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_CAR_DAY,
-      lo: c.lo / TESLA_MILES_PER_CAR_DAY, hi: c.hi / TESLA_MILES_PER_CAR_DAY, scope: "robotaxi" })),
-    // C: ~1M US HW4 cars with paid FSD today and ~1.5M by end-2027 (1.74M FSD
-    // subscriptions and purchases worldwide, HW3 included; Q3-2026 deck):
-    // 400k eyes-off [60k, 2.0M], from a launch anywhere in Apr-Dec 2027.
-    { weight: 0.07, best: 400000, lo: 60000, hi: 2000000, scope: "hw4" },
-  ] },
+    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ ...c, scope: "robotaxi" })),
+    { weight: TESLA_EYES_OFF.weight, ...sumBands(TESLA_ROBOTAXI_SCENARIOS[0], TESLA_EYES_OFF.milesPerDay), scope: "hw4" },
+  ].map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_CAR_DAY, lo: c.lo / TESLA_MILES_PER_CAR_DAY,
+    hi: c.hi / TESLA_MILES_PER_CAR_DAY, scope: c.scope })) },
   { helmer: "Waymo", components: [
-    // Base: ~5,500 on Jan 1, 2027, then ~550 a month in 2027 (about 3x 2026's
-    // ~180 a month) on ~5,100 Ojai, continued imports and the Ioniq 5. Low:
-    // imports stopped (Senate bill S.4429) or demand stalls.
+    // Base: ~5,500 on Jan 1, 2027, then ~500 a month in 2027 (nearly 3x
+    // 2026's ~180 a month) on ~5,100 Ojai, continued imports and the Ioniq 5.
+    // Low: imports stopped (Senate bill S.4429) or demand stalls.
     { weight: 0.78, best: 11500, lo: 7000, hi: 16000 },
     // Plan: toward Semafor's 20,000 by end-2027; drawn as the base mode's
     // upper tail, not a second peak (fleet-forecast.qual.mjs).
@@ -3185,8 +3336,8 @@ function renormComponents(components) {
 
 // One lane per (helmer × scope), for any scenario-component forecast table
 // (fleet, miles, rides). scenarioProb is the lane's share of its helmer's
-// total mass, so Tesla's two lanes read ~95% / ~5%; each lane's components are
-// renormalized to a proper density. `mainline` marks the apples-to-apples lane
+// total mass, so Tesla's two lanes read A+B's and C's weights; each lane's
+// components are renormalized to a proper density. `mainline` marks the apples-to-apples lane
 // (Tesla's robotaxi lane, not the conditional HW4 one).
 function forecastLanes(table) {
   const lanes = [];
@@ -3231,9 +3382,10 @@ function fleetForecastCurves() {
 }
 
 // Two-piece log-normal (density w.r.t. log x): mode at `best`, with the lower/upper
-// spread set so lo/hi sit at matching distances each side. Lets miles/rides — given
-// only as {best, lo, hi} with an asymmetric (Tesla) band — render as an honest,
-// normalized, single-peaked density without inventing mixture components.
+// spread set so lo/hi sit at matching distances each side. Lets every forecast
+// table's components (fleet, miles, rides) — given only as {best, lo, hi},
+// asymmetric for Tesla — render as an honest, normalized, single-peaked density
+// without inventing mixture components.
 function splitLogNormalSigmas(best, lo, hi) {
   assert(lo <= best && best <= hi && lo > 0, "splitLogNormal: need 0 < lo <= best <= hi", {best, lo, hi});
   const mu = Math.log(best);
@@ -3249,7 +3401,8 @@ function splitLogNormalLogDensity(best, lo, hi, x) {
 }
 
 // Mixture of two-piece log-normals: the single density behind every forecast
-// curve (fleet converts its {median, sigma} components to symmetric bands).
+// curve (until 2026-10-29 the fleet's {median, sigma} components were
+// converted to symmetric bands first; FLEET_FORECAST has been bands since).
 // Each scenario component is a {weight, best, lo, hi} band — the same banding
 // idiom as every other miles/rides figure. `best` is each component's MODE, so
 // displayed medians/CIs are always computed from the density
@@ -3269,8 +3422,8 @@ function bandMixtureQuantiles(components, ps) {
   return quantilesFromLogDensity(x => bandMixtureLogDensity(components, x), lo, hi, ps);
 }
 
-// Plottable curves for a band-component forecast table (miles/rides): same
-// lane structure as the fleet metric (Tesla splits into robotaxi + HW4).
+// Plottable curves for a band-component forecast table (fleet, miles, rides):
+// one per lane (Tesla splits into robotaxi + HW4).
 function bandForecastCurves(table) {
   return forecastLanes(table).map(lane => {
     let xMin = Infinity, xMax = 0;
@@ -3393,25 +3546,29 @@ function renderFleetForecastChart() {
 }
 
 // --- Fleet-size trajectory (history + extrapolation) -------------------------
-// [AI TEXT] Monthly fleet-size anchors per helmer (vehicles in driverless / ADS
-// robotaxi service), each with a lo/hi uncertainty range. The trajectory is then
-// extrapolated to the GROWTH_FORECAST_DATE forecast (its median + 90% interval, taken from
-// the same FLEET_FORECAST mixture the distribution chart draws), so the two charts
-// share the endpoint by construction. These counts are NOT from the NHTSA/VMT
-// pipeline — fleet headcounts are noisier than the cumulative-mileage milestones
-// the VMT series anchors to, hence the wide lo/hi ranges.
+// [AI TEXT] Monthly fleet-size anchors per helmer, each with a lo/hi
+// uncertainty range: Waymo's and Zoox's are vehicles in driverless robotaxi
+// service, Tesla's its cars driving on a typical day, from miles (below). The
+// trajectory is then extrapolated to the GROWTH_FORECAST_DATE forecast (its
+// median + 90% interval, taken from the same FLEET_FORECAST mixture the
+// distribution chart draws), so the two charts share the endpoint by
+// construction. Waymo's and Zoox's counts are NOT from the NHTSA/VMT pipeline
+// (fleet headcounts are noisier than the cumulative-mileage milestones the VMT
+// series anchors to, hence the wide lo/hi ranges); Tesla's line is
+// data/vmt.csv's miles in car units.
 //
 // Anchors (rounded, sourced from mid-2026 reporting): Waymo 1,500 (May 2025) ->
 // 2,500 (Nov) -> 3,067 5th-gen (Dec) -> 3,300 (Feb 2026, from the "over 3,000"
-// report plus the ~280 cars/mo pace) -> 3,750 (May, consistent with the ~3,871
-// Jun report the forecast anchors below cite); Zoox ~50 (Jan 2026) -> ~90
+// report plus the ~280 cars/mo pace) -> 3,750 (May, consistent with the Jun-13
+// recall's 3,871 5th-gen vehicles cited below); Zoox ~50 (Jan 2026) -> ~90
 // (Mar) -> ~100 (Jun). Added 2026-10-03 (audit #87, #19), each a stock at the
-// step of the day it was counted, as the Jan-1 forecast sits at its month: Waymo
-// 2026-09 = "more than 4,000 vehicles" (TechCrunch, Sep 1) as the floor: the
-// Jun-13 recall's 3,871 5th-gen vehicles plus the ~300 6th-gen Ojai in service
-// by Sep 1 make ~4,200, later 5th-gen additions a little more, so ~4,300; the
-// ceiling is the ~280 cars/month pace the forecast assumes, run from Waymo's
-// "around 4,000" of Jun 29 (~4,600, rounded up);
+// step of the day it was counted, as the fleet forecast sits at its date's
+// month: Waymo 2026-09 = "more than 4,000 vehicles" (TechCrunch, Sep 1) as the
+// floor: the Jun-13 recall's 3,871 5th-gen vehicles plus the ~300 6th-gen Ojai
+// in service by Sep 1 make ~4,200, later 5th-gen additions a little more, so
+// ~4,300; the ceiling is ~280 cars a month (the pace of the Jan-1-2027
+// forecast then in place; see October below) run from Waymo's "around 4,000"
+// of Jun 29 (~4,600, rounded up);
 // Zoox 2026-09 = "about 100 custom-built robotaxis ... spread across four
 // U.S. cities" (TechCrunch, Sep 17), after recall 26E044000 covered 105
 // units, its whole deployed driverless fleet, on Jul 10, so ~105 [95, 120].
@@ -3432,13 +3589,18 @@ function renderFleetForecastChart() {
 // Each helmer's last row is its ghost month's (data/README.md, Ghost months;
 // added 2026-10-28, growth-ghost-month.qual.mjs): October 2026, in progress,
 // as on a typical day of the month (mid-October). Waymo 2026-10 =
-// September's 4,300 run on 1.5 months at the forecast's ~280 cars a month
-// (~4,700); the floor is "roughly 4,000 cars" (Semafor via Reuters, Oct 19;
-// Waymo did not comment), the ceiling September's run on at ~400 a month
+// September's 4,300 run on 1.5 months at ~280 cars a month (~4,700), the pace
+// of the Jan-1-2027 forecast in place when the point was written (2026-10-28):
+// above 2026's average of ~180 a month and under the ~320 a month from
+// mid-October that the current forecast's ~5,500 on Jan 1, 2027 needs, as
+// Ojai imports ramp (~5,100 on pace by end-2026, MoffettNathanson via the NY
+// Post, Oct 19). The floor is "roughly 4,000 cars" (Semafor via Reuters, Oct
+// 19; Waymo did not comment), the ceiling September's run on at ~400 a month
 // (~5,300). Alphabet's Q3 remarks (Oct 28) gave no fleet figure. Zoox
-// 2026-10 = September's 105 run on a month at the forecast's ~13 a month
-// (~120); no count since Sep 17, so the floor stays September's, and the
-// ceiling is a Hayward ramp of ~35 a month.
+// 2026-10 = September's 105 run on a month at ~13 a month (~120), the pace of
+// the Jan-1-2027 forecast then in place: above 2026's average of ~8 a month,
+// with Hayward building 5-6 a day (CEO, Aug 10); no count since Sep 17, so the
+// floor stays September's, and the ceiling is a Hayward ramp of ~35 a month.
 const FLEET_HISTORY = {
   Tesla: [
     {month: "2025-06", best: 12, lo: 8, hi: 20},
@@ -3557,17 +3719,23 @@ const RIDES_HISTORY = {
   ],
   // Zoox rides anchor to its published cumulative RIDER counts — >300k riders
   // by late 2025, >350k by late Mar 2026 (CleanTechnica 2026-03-24, The
-  // Robot Report; the same milestones the VMT series cites), and >500k by
-  // late Jun 2026 (robotaxi-redesign announcement, 2026-06-25: "feedback from
-  // more than half a million riders") — divided by an occupancy band of
+  // Robot Report; the same milestones the VMT series cites), and half a
+  // million by Jun 24, 2026 (Zoox's robotaxi-redesign post,
+  // https://zoox.com/journal/the-updated-zoox-robotaxi, 2026-06-24:
+  // "feedback from half a million riders") — divided by an occupancy band of
   // 1.2-2.0 riders per ride (central 1.5; the vehicle seats four and Vegas
   // groups are common). Pinned by rides-provenance.qual. (The 500k milestone
   // implies Q2 ridership ~3x Q1's pace; the pre-milestone 2026-06 row here,
   // 265k, had extrapolated ~12k riders/month and ran ~25% low.) The ghost
-  // month 2026-10 (added 2026-10-28; no rider count since late June) runs the
-  // 500k riders on four months at RIDES_FORECAST's own rider rates: 50k a
-  // month at 1.5 riders a ride (467k), ~33k at 2.0 (317k), ~137k at 1.2
-  // (872k).
+  // month 2026-10 (added 2026-10-28) has no newer rider count: Zoox's Jul 30
+  // post repeats the floor, "more than half a million riders"
+  // (https://zoox.com/journal/zoox-nhtsa-part-555-commercial-exemption). It
+  // runs the 500k riders on four months at Q2's rider pace (>350k riders on
+  // Mar 23 to half a million on Jun 24, about 50k a month) at 1.5 riders a
+  // ride (467k, about 7.7k rides a week since June). Its band, ~33k riders a
+  // month at 2.0 riders a ride (317k) to ~137k at 1.2 (872k), is the rider
+  // pace range of the Jan-1-2027 forecast (350k-1.1M rides by end-2026),
+  // kept when the forecast moved to Jan 1, 2028.
   Zoox: [
     {month: "2025-12", best: 200000, lo: 150000, hi: 265000},
     {month: "2026-03", best: 235000, lo: 175000, hi: 300000},
@@ -3582,26 +3750,28 @@ const RIDES_HISTORY = {
 // the forecast date (TESLA_ROBOTAXI_SCENARIOS, teslaCumulativeMiles).
 const MILES_FORECAST = [
   { helmer: "Tesla", components: [
-    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: c.weight, best: teslaCumulativeMiles(c.best),
-      lo: teslaCumulativeMiles(c.lo), hi: teslaCumulativeMiles(c.hi), scope: "robotaxi" })),
-    // C: eyes-off miles on customer HW4 cars at 15-30 a car-day (North
-    // American FSD users drive ~16 FSD miles a day; AGENTS.md ledger
-    // 2026-09-30) from a launch anywhere in Apr-Dec 2027: ~600M [20M, 6B].
-    { weight: 0.07, best: 600000000, lo: 20000000, hi: 6000000000, scope: "hw4" },
+    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: c.weight, ...teslaCumulativeMiles(c), scope: "robotaxi" })),
+    // C: A's robotaxi miles plus the customer cars' eyes-off miles
+    // (TESLA_EYES_OFF: ~600M [20M, 6B]). Until 2026-10-31 C counted the
+    // customer cars' miles alone.
+    { weight: TESLA_EYES_OFF.weight, ...sumBands(teslaCumulativeMiles(TESLA_ROBOTAXI_SCENARIOS[0]), TESLA_EYES_OFF.cumulative), scope: "hw4" },
   ] },
   { helmer: "Waymo", components: [
     // US. End-2026 ~408M (361.7M through October, data/vmt.csv, plus ~46M);
     // 2027 adds ~470-495M: an average fleet of ~8,500 at ~155 miles a car-day
     // (Q2 2026: 608k a day over ~3,800-3,900 cars; September: 714k over
-    // ~4,300). Low: October's 718k a day held flat (676M). High: an average
-    // fleet of ~13k.
-    { weight: 1, best: 880000000, lo: 680000000, hi: 1200000000 },
+    // ~4,300). Low: October's 718k a day held flat for the 426 days from Nov
+    // 1, 2026 through Dec 31, 2027 (667M; 680M until 2026-10-31, against a
+    // flat hold then given as 676M). High: an average fleet of ~13k.
+    { weight: 1, best: 880000000, lo: 667000000, hi: 1200000000 },
   ] },
   { helmer: "Zoox", components: [
     // End-2026 ~4.46M (the data/vmt.csv model); 2027 adds ~8.3-8.8M: an
     // average fleet of ~270-285 at ~85 miles a vehicle-day (now ~80-95). Low:
-    // today's rate held flat (~7.9M).
-    { weight: 1, best: 13000000, lo: 7500000, hi: 24000000 },
+    // today's rate held flat, October's 290,000 over its 31 days for the 426
+    // days from Nov 1, 2026 through Dec 31, 2027 (7.86M; 7.5M until
+    // 2026-10-31).
+    { weight: 1, best: 13000000, lo: 7860000, hi: 24000000 },
   ] },
 ];
 
@@ -3609,38 +3779,53 @@ const MILES_FORECAST = [
 // 0.6-0.85 on-trip share; rides-provenance.qual pins the implied ratio to
 // [4.5, 8.5]). Divides the miles scenarios into the rides scenarios.
 const TESLA_MILES_PER_RIDE = { lo: 4.7, best: 6.2, hi: 8.3 };
+// A band of Tesla robotaxi miles as rides on that corridor: a low corridor
+// value gives the HIGH rides edge, so lo/hi swap.
+function teslaRidesBand(miles) {
+  return { best: miles.best / TESLA_MILES_PER_RIDE.best, lo: miles.lo / TESLA_MILES_PER_RIDE.hi, hi: miles.hi / TESLA_MILES_PER_RIDE.lo };
+}
 // Cumulative-rides forecast through the day before GROWTH_FORECAST_DATE (Dec 31,
 // 2027), re-authored 2026-10-29. Tesla mirrors FLEET_FORECAST's scenario
 // mixture (same A/B/C weights and robotaxi/HW4 scope split), because a
-// one-humped band can't represent "79% slow / 14% aggressive / 7% HW4": its
-// computed median lands between the scenarios instead of inside one. Tesla's
-// A/B bands are the miles scenarios divided by the same [4.7, 6.2, 8.3]
-// miles-per-ride corridor as RIDES_HISTORY (a low corridor value gives the
-// HIGH rides edge, so lo/hi swap); C's rides are Tesla-Network rides from
-// eyes-off customer cars (participation deeply uncertain, hence the width).
+// one-humped band can't represent three weighted futures (slow, aggressive,
+// HW4): its computed median lands between the scenarios instead of inside
+// one. Tesla's A/B bands are the miles scenarios divided by the same [4.7,
+// 6.2, 8.3] miles-per-ride corridor as RIDES_HISTORY (teslaRidesBand); C's
+// rides are A's plus Tesla-Network rides from eyes-off customer cars
+// (participation deeply uncertain, hence the width).
 const RIDES_FORECAST = [
   { helmer: "Tesla", components: [
     // A and B are the miles scenarios over the ride corridor, tied in code
     // (2026-09-26: A had stayed on the 2026-07-22 miles figures when
-    // MILES_FORECAST A was re-based on 2026-09-04). C is authored: Tesla's
-    // rides in that world, its robotaxi's plus Tesla-Network rides from
-    // eyes-off customer cars (~10% of C's miles at ~6 a ride): ~15M [2M, 150M],
-    // the low edge above the robotaxi's ~1.1M through October.
+    // MILES_FORECAST A was re-based on 2026-09-04).
     ...MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi")
-      .map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_RIDE.best, lo: c.lo / TESLA_MILES_PER_RIDE.hi, hi: c.hi / TESLA_MILES_PER_RIDE.lo, scope: "robotaxi" })),
-    { weight: 0.07, best: 15000000, lo: 2000000, hi: 150000000, scope: "hw4" }, // C: Tesla Network on eyes-off HW4
+      .map(c => ({ weight: c.weight, ...teslaRidesBand(c), scope: "robotaxi" })),
+    // C: Tesla's rides in that world, A's robotaxi rides plus the
+    // Tesla-Network rides on the eyes-off miles (TESLA_EYES_OFF: ~10% of
+    // them at ~6 a ride, ~10M [0.33M, 100M]). Until 2026-10-31 C was authored
+    // as ~15M [2M, 150M], the Jan-1-2027 forecast's figures with a wider high
+    // edge, which put the lane's median and 5th percentile under the robotaxi
+    // lane's.
+    { weight: TESLA_EYES_OFF.weight, scope: "hw4",
+      ...sumBands(teslaRidesBand(teslaCumulativeMiles(TESLA_ROBOTAXI_SCENARIOS[0])),
+        { best: TESLA_EYES_OFF.cumulative.best * TESLA_EYES_OFF.ridesPerMile,
+          lo: TESLA_EYES_OFF.cumulative.lo * TESLA_EYES_OFF.ridesPerMile,
+          hi: TESLA_EYES_OFF.cumulative.hi * TESLA_EYES_OFF.ridesPerMile }) },
   ] },
   { helmer: "Waymo", components: [
-    // End-2026 ~49.5M (43.5M through October, RIDES_HISTORY, plus ~0.6M a
-    // week); 2027 adds ~49-51M: an average fleet of ~8,300-8,700 at ~16 rides
-    // a car-day (2026 ran 17-19). Low: flat at 0.56M a week plus a pause.
-    // High: Manifold's 2027 weekly-rides market (2M a week at 83%, thin).
+    // End-2026 ~48.7M (43.5M through October, RIDES_HISTORY, plus ~0.6M a
+    // week for Nov-Dec's 8.7 weeks); 2027 adds ~49-51M (~98-100M in all): an
+    // average fleet of ~8,300-8,700 at ~16 rides a car-day (2026 ran 17-19).
+    // Low: flat at 0.56M a week plus a pause. High: Manifold's 2027
+    // weekly-rides market (2M a week at 83%, thin).
     { weight: 1, best: 100000000, lo: 75000000, hi: 140000000 },
   ] },
   { helmer: "Zoox", components: [
-    // End-2026 ~0.56M (467k through October, RIDES_HISTORY); 2027 adds ~1.2M:
-    // an average fleet of ~270-285 at ~12 rides a vehicle-day (now ~14: about
-    // 10k a week on ~100 vehicles).
+    // End-2026 ~0.53M (467k through October, RIDES_HISTORY, plus Nov-Dec at
+    // about 7.7k rides a week); 2027 adds ~1.2M: an average fleet of ~270-285
+    // at ~12 rides a vehicle-day (now ~11: about 7.7k rides a week, Q2's ~50k
+    // riders a month at 1.5 riders a ride as in RIDES_HISTORY, on ~100
+    // vehicles).
     { weight: 1, best: 1800000, lo: 900000, hi: 3800000 },
   ] },
 ];
@@ -3660,24 +3845,25 @@ function milesHistory(helmer) {
 
 // The toggle-able metrics. Each provides a `lanes()` list of drawable series plus
 // its own y-axis framing and number formats: `fmt` for its axis ticks, and
-// `tipFmt` for the values in its tooltips (history points, and forecasts
-// once forecastQuantilesText has rounded them): the fleet, an observed
-// count, exactly; rides and miles at FORECAST_SIG_FIGS significant figures,
-// miles before their unit suffix (MILES_AT_SIG_FIGS). Every metric forks
-// Tesla into its two scopes (robotaxi mainline + conditional HW4 branch).
+// `tipAt(v, n)` for the values in its tooltips, v at n significant figures
+// and never below whole units: the fleet and rides in full digits, miles
+// before their unit suffix (milesAtSigFigs). A forecast prints at
+// FORECAST_SIG_FIGS (forecastQuantilesText), a history point at
+// historySigFigs. Every metric forks Tesla into its two scopes (robotaxi
+// mainline + conditional HW4 branch).
 function growthMetricSpec(key) {
   const specs = {
-    fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipFmt: fmtWhole,
+    fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipAt: wholeAtSigFigs,
       yMin: 6, yMax: 4000000, yTicks: [10, 100, 1000, 10000, 100000, 1000000],
       note: "",
       lanes: () => trajectoryLanes(fleetForecastCurves(), h => FLEET_HISTORY[h], FLEET_TS_END_MONTH)},
     rides: {label: "Rides (cumulative)", yLabel: "Cumulative rides", valueLabel: "Rides", fmt: fmtWhole,
-      tipFmt: v => fmtWhole(Number(v.toPrecision(FORECAST_SIG_FIGS))),
+      tipAt: wholeAtSigFigs,
       yMin: 3000, yMax: 400000000, yTicks: [10000, 100000, 1000000, 10000000, 100000000],
       note: "Waymo's estimates based on published ride milestones; Zoox's on published rider counts; Tesla's on published miles with assumed ride length",
       lanes: () => trajectoryLanes(bandForecastCurves(RIDES_FORECAST), h => RIDES_HISTORY[h], CUMULATIVE_END_MONTH)},
     miles: {label: "Miles (cumulative)", yLabel: "Cumulative miles", valueLabel: "Miles", fmt: fmtMiles,
-      tipFmt: v => MILES_AT_SIG_FIGS.format(v),
+      tipAt: milesAtSigFigs,
       // yMin 500 keeps Tesla's first cumulative points (683 / 7k / 20k mi) and
       // Zoox's early lower band on-plot (yMin 100000 clipped them until 2026-09-04)
       yMin: 500, yMax: 10000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000],
@@ -3706,17 +3892,54 @@ const CUMULATIVE_END_MONTH = fleetMonthIso(fleetMonthIndex(FLEET_TS_END_MONTH) -
 // eight digits in both; audit #57).
 const FORECAST_SIG_FIGS = 3;
 function forecastQuantilesText(spec, median, lo, hi) {
-  const f = v => spec.tipFmt(Number(v.toPrecision(FORECAST_SIG_FIGS)));
+  const f = v => spec.tipAt(v, FORECAST_SIG_FIGS);
   return `Median: ${f(median)}\n90% CI: ${f(lo)} – ${f(hi)}`;
 }
-// Miles at FORECAST_SIG_FIGS significant figures before the unit suffix
-// ("6.27M", "99.0M", "1.50B"), the growth charts' tooltip figures. Until
-// 2026-10-04 a forecast rounded to three figures was then printed by
-// fmtMiles, which keeps one decimal of the unit (6.3M, 99M, 1.5B), and a
-// history point by fmtMiles alone, so Tesla's 2026-03 read "1.7M / Range:
-// 1.7M – 2.0M" (audit #51).
-const MILES_AT_SIG_FIGS = new Intl.NumberFormat(NUMBER_LOCALE,
-  {notation: "compact", minimumSignificantDigits: FORECAST_SIG_FIGS, maximumSignificantDigits: FORECAST_SIG_FIGS});
+// The growth charts' tooltip figures: v at n significant figures, never
+// below whole units (a value of k whole digits prints at most k figures).
+// Miles before the unit suffix ("6.27M", "99.0M", "1.50B"; MILES_AT_SIG_FIGS
+// holds the formatter for each count of figures, n - 1 its index); the fleet
+// and rides in full digits. Until 2026-10-04 a forecast rounded to three
+// figures was then printed by fmtMiles, which keeps one decimal of the unit
+// (6.3M, 99M, 1.5B), and a history point by fmtMiles alone, so Tesla's
+// 2026-03 read "1.7M / Range: 1.7M – 2.0M" (audit #51).
+const MILES_AT_SIG_FIGS = Array.from({length: 15}, (_, i) => new Intl.NumberFormat(NUMBER_LOCALE,
+  {notation: "compact", minimumSignificantDigits: i + 1, maximumSignificantDigits: i + 1}));
+function milesAtSigFigs(v, n) {
+  assert(Number.isFinite(v) && v >= 1, "growth tooltip figure must be at least 1", {v});
+  const k = Math.min(n, String(Math.round(v)).length);
+  assert(k <= MILES_AT_SIG_FIGS.length, "growth tooltip: more figures than MILES_AT_SIG_FIGS holds", {v, n});
+  return MILES_AT_SIG_FIGS[k - 1].format(v);
+}
+// (fmtWhole rounds to whole units whatever n is.)
+function wholeAtSigFigs(v, n) {
+  assert(Number.isFinite(v) && v >= 1, "growth tooltip figure must be at least 1", {v});
+  return fmtWhole(Number(v.toPrecision(n)));
+}
+// The figures a growth-chart history point prints its value and its range's
+// edges at: the fewest, at least FORECAST_SIG_FIGS, at which every two of
+// them that differ in whole units print apart; two equal in whole units
+// print alike, so the figures stop at whole units (decision #51b of the
+// 2026-10-04 audit, the human's "Enough digits for the range", 2026-10-05).
+// At three figures a tight band could print an edge as its value: the
+// decision's example, Waymo's 2025-12 miles as of 2026-10-05, 174,262,000
+// [173,562,000, 175,162,000], read "174M / Range: 174M – 175M" for "174.3M /
+// Range: 173.6M – 175.2M". On 2026-10-31's data the one such point was
+// Waymo's 2026-03 miles, 222,463,000 [221,553,000, 223,763,000]: "222M /
+// Range: 222M – 224M" until then, "222.5M / Range: 221.6M – 223.8M" now.
+function historySigFigs(values) {
+  const at = n => values.map(v => Math.round(Number(v.toPrecision(n))));
+  const tied = n => values.some((v, i) => values.some((w, j) =>
+    Math.round(v) !== Math.round(w) && at(n)[i] === at(n)[j]));
+  let n = FORECAST_SIG_FIGS;
+  for (; tied(n); n++) assert(n < 21, "historySigFigs: no count of figures prints the values apart", {values});
+  return n;
+}
+// A history point's value and range edges as its tooltip prints them.
+function historyTipFigures(spec, p) {
+  const n = historySigFigs([p.best, p.lo, p.hi]);
+  return [p.best, p.lo, p.hi].map(v => spec.tipAt(v, n));
+}
 
 // A lane's point list: history + the forecast endpoint at
 // endMonth, asserting lo <= best <= hi on every point and the months in
@@ -3754,12 +3977,12 @@ function trajectoryLanes(curves, historyFn, endMonth) {
   });
 }
 
-// Note under the growth charts' legend. It must convey
-// that Tesla's forecast splits into its robotaxi scenarios (the "(~95%)" on
-// the "Tesla robotaxi" chip) and the scenario in which eyes-off FSD runs on
-// every HW4 car (the "(~5%)" on "Tesla all-HW4 ADS"), and that those
-// percentages are the scenarios' probabilities, not shares of a fleet. Until
-// 2026-10-03 the page explained neither (audit #83).
+// Note under the growth charts' legend (the human's copy): Tesla's forecast
+// splits into its robotaxi scenarios (A and B, the share on the "Tesla
+// robotaxi" chip) and the scenario in which unsupervised FSD runs in all HW4
+// cars (C, the share on "Tesla all-HW4 ADS"). Until 2026-10-28 it also said
+// that those numbers are the scenarios' probabilities; the human removed that
+// sentence. Until 2026-10-03 the page explained neither (audit #83).
 function growthScenarioNote(lanes) {
   const pct = key => {
     const lane = lanes.find(l => l.key === key);
@@ -3826,7 +4049,8 @@ function renderFleetTimeSeriesChart() {
         // Tesla point read "Tesla robotaxi (~95%) · ..."; audit #83). A ghost
         // month's dot is faded (class month-ghost) and its tip ends with the
         // VMT charts' ghost note, as on those charts.
-        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${spec.tipFmt(p.best)}\nRange: ${spec.tipFmt(p.lo)} – ${spec.tipFmt(p.hi)}${p.ghost ? `\n${VMT_GHOST_NOTE}` : ""}`;
+        const [best, lo, hi] = historyTipFigures(spec, p);
+        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${best}\nRange: ${lo} – ${hi}${p.ghost ? `\n${VMT_GHOST_NOTE}` : ""}`;
         marks.push(`<circle${p.ghost ? ' class="month-ghost"' : ""} cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}"></circle>`);
         targets.push({x: X(p), y: mapY(p.best), tip, name: tip});
       }
@@ -3897,20 +4121,19 @@ function initGrowthMetricToggle() {
   });
 }
 
-// The ghost months a VMT chart continues into after its window's months: all
-// of them when the window ends at the newest NHTSA month (the newest month of
-// vmtRows, the slider's last), none when it ends earlier, since such a window
-// is a stretch of the past. Each comes as a series point flagged ghost, giving
-// every line the fields a VMT chart reads from a month (helmerMonthRows);
-// init checks that each ghost month has a row for every line.
 // The ghost rows a window shows: every one when the window ends at the newest
-// NHTSA month, none when it ends earlier. The VMT charts and the VMT sources
-// table both follow it.
+// NHTSA month (the newest month of vmtRows, the slider's last), none when it
+// ends earlier, since such a window is a stretch of the past. The VMT charts
+// and the VMT sources table both follow it.
 function windowGhostRows(lastMonth) {
   const analysisMonths = vmtMonthList();
   return lastMonth === analysisMonths[analysisMonths.length - 1] ? ghostVmtRows : [];
 }
 
+// The ghost months a VMT chart continues into after its window's months
+// (windowGhostRows), each as a series point flagged ghost, giving every line
+// the fields a VMT chart reads from a month (helmerMonthRows); init checks
+// that each ghost month has a row for every line.
 function ghostPoints(windowSeries) {
   const rows = windowGhostRows(windowSeries.months[windowSeries.months.length - 1]);
   const months = [...new Set(rows.map(row => row.month))].sort();
@@ -3990,6 +4213,13 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
   // The incident count on the miles' basis: the month's, or (cumulative
   // view) all through it, as vmtCume is.
   const incidentsOf = row => vmtCumulative ? row.incidentsCume : row.incidents.total;
+  // The partial-count note (vmtPartialLine) describes the month's own count,
+  // so only the monthly view's tooltips carry it (decision #35 of the
+  // 2026-10-04 audit, the human's "Monthly view only"): under the cumulative
+  // view's running total, Waymo's 2026-09 read "2,135 incidents / Count above
+  // only includes incidents received by 2026-09-15: ~8% of the month's
+  // eventual incidents" until 2026-10-31.
+  const partialOf = row => vmtCumulative ? "" : vmtPartialLine(row);
 
   // Each line's error bars, its path, then its dots and (hitCircles, over
   // every line's) each month's targets: its range's low and high ends, then
@@ -4040,7 +4270,7 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
       const high = vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi);
       const dot = series.points[i].ghost
         ? vmtGhostTooltip(month, best(row), lo(row), hi(row))
-        : vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + vmtPartialLine(row);
+        : vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + partialOf(row);
       targets.push(
         {x, y: mapVmtY(lo(row)), tip: low, name: markName(helmer, low)},
         {x, y: mapVmtY(hi(row)), tip: high, name: markName(helmer, high)},
@@ -4116,12 +4346,12 @@ function renderMpiSummaryCards(series) {
           // Point estimate everywhere is the posterior median (finite even at k=0),
           // so the multiple is always a plain Nx. (est.k===null excludes humans.)
           // It prints in the one ratio format (fmtRatio) and its colour follows
-          // the value printed (ratioShown), so "1.0x" is never the worse red;
+          // the value printed (ratioShown), so "1.00x" is never the worse red;
           // a multiplier resting on zero incidents gets the prior-only marking
           // instead of a colour, like its stress badge (audit #16, #55).
           const mult = (humanGeo && est.k !== null) ? est.postMedian / humanGeo : null;
           const multStr = mult !== null ? ` ${cardMultSpan(mult, est.k)}` : "";
-          const kLine = est.k !== null ? `${splur(est.k, "incident")} \u2192 ` : "";
+          const kLine = est.k !== null ? `${countHtml(m, splur(est.k, "incident"))} \u2192 ` : "";
           const ciLabel = est.k !== null ? "95% CI" : "Range";
           const srcLine = (est.k === null && humanBench)
             ? `<div class="mpi-card-sources">${humanBench.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)}</div>`
@@ -4152,7 +4382,7 @@ function renderStressTestTable(series) {
       return `<tr>
         <td>${escHtml(helmerLabel(row.helmer))}</td>
         <td>${escHtml(stress.metric.cardLabel)}</td>
-        <td class="num">${fmtCount(stress.av.k)}</td>
+        <td class="num">${countHtml(stress.metric, fmtCount(stress.av.k))}</td>
         <td class="num pair"><span>${fmtWhole(stress.av.postMedian)};</span> <span>${fmtWhole(stress.av.lo)} \u2013 ${fmtWhole(stress.av.hi)}</span></td>
         <td class="num">${fmtWhole(stress.human.lo)} \u2013 ${fmtWhole(stress.human.hi)}</td>
         <td class="num">${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</td>
@@ -4395,9 +4625,17 @@ function renderDateRangeControls() {
     ? months[startIdx]
     : `${months[startIdx]} \u2014 ${months[endIdx]}`;
   // Tick mark at DEFAULT_START_MONTH (the default analysis-window start —
-  // Tesla's VMT series begins there; Zoox's runs from 2024-05)
+  // Tesla's VMT series begins there; Zoox's runs from 2024-05): its line on
+  // the track, its label in a row of its own under the end labels, so the
+  // three labels never meet. Until 2026-10-31 the label shared the end
+  // labels' row and met the last month's at 320 CSS px ("2025-062026-09";
+  // 2026-10-30 audit, ui-render-1).
   const defIdx = months.indexOf(DEFAULT_START_MONTH);
   const defFrac = defIdx >= 0 && maxIdx > 0 ? defIdx / maxIdx : -1;
+  const [tickLine, tickLabel] = defFrac >= 0
+    ? [`<div class="date-range-tick" style="left:${sliderAt(defFrac)}"><div class="date-range-tick-line"></div></div>`,
+       `<span class="date-range-tick-label" style="left:${sliderAt(defFrac)}">${DEFAULT_START_MONTH}</span>`]
+    : ["", ""];
   container.innerHTML = `
     <div class="date-range-header">
       <span class="date-range-label">${rangeLabel}</span>
@@ -4405,10 +4643,7 @@ function renderDateRangeControls() {
     <div class="date-range-slider">
       <div class="date-range-track"></div>
       <div class="date-range-fill" id="date-range-fill" style="left:${sliderAt(frac(startIdx))};width:${sliderSpan(frac(endIdx) - frac(startIdx))}"></div>
-      ${defFrac >= 0 ? `<div class="date-range-tick" style="left:${sliderAt(defFrac)}">
-        <div class="date-range-tick-line"></div>
-        <div class="date-range-tick-label">${DEFAULT_START_MONTH}</div>
-      </div>` : ""}
+      ${tickLine}
       <span class="date-range-end-label min">${months[0]}</span>
       <span class="date-range-end-label max">${months[maxIdx]}</span>
       <input type="range" class="date-range-input date-range-input-min" id="date-range-min" data-focus-key="range-min"
@@ -4418,6 +4653,7 @@ function renderDateRangeControls() {
              min="0" max="${maxIdx}" value="${endIdx}" step="1"
              aria-label="End month" aria-valuetext="${months[endIdx]}">
     </div>
+    <div class="date-range-tick-row">${tickLabel}</div>
   `;
   const minInput = byId("date-range-min");
   const maxInput = byId("date-range-max");
@@ -4959,6 +5195,27 @@ function loadUiStateFromLocation() {
   syncUrlState();
 }
 
+// The page's asserts fail loudly by throwing (rules 9 and 12); an uncaught
+// error or promise rejection, at init or in a later redraw, shows in the
+// page's banner with its message (the window "error" and
+// "unhandledrejection" handlers init sets up first). Until 2026-10-31 such a
+// throw left a silently half-drawn page: a deploy pairing this crashla.js
+// with the previous release's data/vmt.js stopped init at
+// "GHOST_VMT_CSV_TEXT is not defined" with no chart, card or incident row
+// drawn and nothing to say that anything had failed (2026-10-30 audit,
+// critic-1). The latest error replaces the one shown.
+// TODO: English for this lead-in, which tells the reader that something went
+// wrong on this page, so parts of it may be missing or wrong, and that the
+// error's message follows.
+const PAGE_ERROR_LEAD = "Huic paginae error accidit, itaque partes eius deesse aut falsae esse possunt. Error:";
+function showPageError(message) {
+  const banner = byId("url-banner");
+  const line = banner.querySelector(".banner-error");
+  line.textContent = `${PAGE_ERROR_LEAD} ${message}`;
+  line.hidden = false;
+  banner.hidden = false;
+}
+
 function syncUrlState() {
   if (!canSyncUrlState()) return;
   // The fragment rides along: a #sec-... link keeps naming its section, and
@@ -4994,13 +5251,19 @@ function initCollapsibles() {
     // 2026-10-04 index.html made the spans nine inert "buttons" there, two
     // of them empty; audit #66). Enter and Space toggle it as a click does.
     // Until 2026-10-03 a collapsed section could not be opened without a
-    // pointer.
+    // pointer. A held key toggles it once: its repeats (e.repeat) are
+    // ignored, though still kept from scrolling the page. Until 2026-10-31
+    // every repeat toggled it, ~30 a second, so a held key flickered the
+    // section open and shut, and in WebKit a key held ~4 s took
+    // history.replaceState past 100 calls in 10 s, which threw and left the
+    // address bar behind the section (2026-10-30 audit, ui-render-3).
     const label = head.querySelector(".sec-toggle");
     label.setAttribute("role", "button");
     label.tabIndex = 0;
     head.addEventListener("keydown", e => {
       if (e.key !== "Enter" && e.key !== " ") return;
       e.preventDefault();
+      if (e.repeat) return;
       toggle();
     });
   }
@@ -5195,10 +5458,17 @@ function shortenSeverity(s) {
   const rules = [
     ["Property", "Property only"],
     ["No Injur", "No injury"],
-    ["Minor W/O", "Minor injury"],
-    ["Minor W/", "Minor injury (hosp.)"],
-    ["Moderate W/O", "Moderate injury"],
-    ["Moderate W/", "Moderate injury (hosp.)"],
+    // The hosp-qualified variant first, keyed on its full string, then the
+    // bare word, which takes its rank-mates (the same SEVERITY_INFO flags):
+    // "Minor W/O Hospitalization" and the older encoding's bare "Minor"
+    // share one label, as do the two Moderates. Until 2026-10-31 the
+    // W/O variants had rules of their own and the bare words fell through
+    // to their raw strings, so a sort by severity alternated "Minor",
+    // "Minor injury", "Minor", ... (2026-10-30 audit, critic-3).
+    ["Minor W/ Hospitalization", "Minor injury (hosp.)"],
+    ["Minor", "Minor injury"],
+    ["Moderate W/ Hospitalization", "Moderate injury (hosp.)"],
+    ["Moderate", "Moderate injury"],
     // Conveys: a serious (KABCO A) injury with hospital transport, 
     // distinguished from bare "Serious".
     // Keyed on the full string, not a "Serious W/" prefix, so the dictionary-
@@ -5244,6 +5514,19 @@ function tipTargetAttrs(name) {
 // is decoration.
 function htmlTipAttrs(name, tip) {
   return ` data-tip="${escAttr(tip)}" role="img"${tipTargetAttrs(name)}`;
+}
+
+// A metric's count note (METRIC_DEFS countNote: the fatality metric's
+// fractional count) where its count prints: a further line of a chart
+// mark's tooltip (countNoteLine), or the tooltip of the count's text in a
+// card or a table cell (countHtml). A metric without one prints its count as
+// before (the one branch each).
+function countNoteLine(metric) {
+  return metric.countNote === undefined ? "" : `\n${metric.countNote}`;
+}
+function countHtml(metric, text) {
+  return metric.countNote === undefined ? text
+    : `<span${htmlTipAttrs(`${text} ${metric.countNote}`, metric.countNote)}>${text}</span>`;
 }
 
 // --- Sanity Checks ---
@@ -5735,6 +6018,10 @@ Maybe that affects AVs too?
   // Tesla's Jul-Sep 2026 rows rest on Tesla's own no-monitor miles (its
   // robotaxi safety page and Q3-2026 deck) plus June's measured monitor-aboard
   // remainder (2026-10-23); its no-monitor line's rows are those miles alone.
+  // TODO: the legend in this table's header ("green text = AI-generated", the
+  // human's words) names the colour alone; since 2026-10-31 AI text also
+  // carries a dotted underline in every mode (style.css .ai-text; decision #29
+  // of the 2026-10-04 audit), so the legend may want to say so.
   sections.push(`
 <h3>VMT sources</h3>
 <p>
@@ -6061,6 +6348,18 @@ function oddsClass(p) {
 
 function fmtPct(p) { return Math.round(p * 100) + "%"; }
 
+// A market's volume as a number: a Polymarket sub-market's comes as a
+// string ("17475.932927"), an event's and a Manifold market's as a number.
+// Anti-Postel: a missing or unparseable one fails the fetch that brought it
+// (so the card stays grayed on the odds it had) and the render, as a missing
+// probability or price does; until 2026-10-31 (2026-10-30 audit, CR-07) a
+// fetch filled in 0, drawn "Ṁ0" or "$0" as a live, measured figure.
+function marketVolume(v, details) {
+  const n = parseFloat(v);
+  assert(Number.isFinite(n) && n >= 0, "a market needs its volume, a number >= 0", {...details, volume: v});
+  return n;
+}
+
 // Tier chosen on the ROUNDED value so 999,500 prints "$1.0M", not "$1000K".
 function fmtVol(v) {
   return v >= 999500 ? "$" + (v / 1e6).toFixed(1) + "M"
@@ -6256,7 +6555,7 @@ function polymarketOutcomes(ev, now) {
     return {
       label: m.question,
       prob: yesProbability(m),
-      volText: fmtVol(parseFloat(m.volume) || 0),
+      volText: fmtVol(marketVolume(m.volume, {question: m.question})),
       resolution: polymarketResolutionText(m),
       closed: m.closed || Date.parse(m.endDate) <= now,
     };
@@ -6315,11 +6614,11 @@ function renderPredmarketsPanel(config, manifold, isoDate) {
   for (const ev of config) {
     if (!(ev.markets || []).length) continue;
     appendMarketGroup(grid, ev.title, polymarketUrl(ev.slug),
-      fmtVol(parseFloat(ev.volume) || 0), polymarketOutcomes(ev, now), ev.live, `pm-${ev.slug}`);
+      fmtVol(marketVolume(ev.volume, {slug: ev.slug})), polymarketOutcomes(ev, now), ev.live, `pm-${ev.slug}`);
   }
 
   for (const m of manifold) {
-    appendMarketGroup(grid, m.question, m.url, fmtMana(m.volume), manifoldOutcomes(m, now), m.live, `pm-${m.slug}`);
+    appendMarketGroup(grid, m.question, m.url, fmtMana(marketVolume(m.volume, {slug: m.slug})), manifoldOutcomes(m, now), m.live, `pm-${m.slug}`);
   }
 
   panel.textContent = "";
@@ -6396,11 +6695,12 @@ async function fetchPolymarketEvent(slug, templateEntry) {
         (uma === null || typeof uma === "string"),
         "a Polymarket market needs closed, endDate and umaResolutionStatus",
         {slug, question: m.question, closed: m.closed, endDate: m.endDate, umaResolutionStatus: uma});
+      marketVolume(m.volume, {slug, question: m.question});
       const fresh = {
         question: m.question,
         outcomes: m.outcomes,
         outcomePrices: m.outcomePrices,
-        volume: m.volume || "0",
+        volume: m.volume,
         closed: m.closed,
         endDate: m.endDate,
         umaResolutionStatus: uma,
@@ -6420,11 +6720,12 @@ async function fetchPolymarketEvent(slug, templateEntry) {
   assert(freshMarkets.length === templateEntry.markets.length,
     "Polymarket sub-market questions no longer match the curated snapshot",
     {slug, kept: [...kept], got: (ev.markets || []).map(m => m.question)});
+  marketVolume(ev.volume, {slug});
   return {
     title: ev.title,
     slug: ev.slug,
     enabled: templateEntry.enabled,
-    volume: ev.volume || 0,
+    volume: ev.volume,
     markets: freshMarkets,
   };
 }
@@ -6448,6 +6749,7 @@ async function fetchManifoldMarket(templateEntry) {
     {slug: templateEntry.slug, outcomeType: m.outcomeType});
   assert(Number.isFinite(m.closeTime), "a Manifold market needs a closeTime",
     {slug: templateEntry.slug, closeTime: m.closeTime});
+  marketVolume(m.volume, {slug: templateEntry.slug});
   const answers = binary ? undefined : m.answers
     .slice().sort((a, b) => a.index - b.index)
     .map(a => ({label: a.text, prob: a.probability,
@@ -6462,7 +6764,7 @@ async function fetchManifoldMarket(templateEntry) {
     resolution: binary ? m.resolution ?? null : undefined,
     resolutionProbability: binary ? m.resolutionProbability ?? null : undefined,
     answers,
-    volume: m.volume || 0,
+    volume: m.volume,
   };
   // A resolution code the cards cannot name, or an outcome without its
   // probability (audit #30), fails this market's fetch here, so it stays
@@ -6539,6 +6841,9 @@ function loadPredmarketData() {
 // --- Init ---
 
 {
+  // First, so every later failure shows (showPageError).
+  window.addEventListener("error", e => showPageError(e.message));
+  window.addEventListener("unhandledrejection", e => showPageError(String(e.reason)));
   const incidentData = INCIDENT_DATA;
   assert(Array.isArray(incidentData), "INCIDENT_DATA must be an array");
   assert(incidentData.length > 0, "INCIDENT_DATA must not be empty");
