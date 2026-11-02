@@ -26,9 +26,18 @@ import { parseCsv } from "./csv-parse.mjs";
 
 const raw = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const rows = raw.slice(1).map(p => ({
-  helmer: p[0], month: p[1], cume: +p[3], kmin: +p[4], kmax: +p[5], rationale: p[8],
+  helmer: p[0], month: p[1], cume: +p[3], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7], rationale: p[8],
 }));
 const cumeOf = (helmer, month) => rows.find(r => r.helmer === helmer && r.month === month)?.cume;
+// The months before `knot` whose cumulative band a later constraint narrowed:
+// narrower than the month before's band plus the month's own band, the chain
+// forward (a series' first month chains from zero, the band before it).
+const narrowedBefore = (helmer, knot) => {
+  const own = rows.filter(r => r.helmer === helmer && r.month < knot);
+  const before = [{kmin: 0, kmax: 0}, ...own];
+  return own.filter((r, i) => r.kmin > before[i].kmin + r.vmin || r.kmax < before[i].kmax + r.vmax)
+    .map(r => r.month);
+};
 const MON = { Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
   Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12" };
 // Half a unit of the last stated decimal, in miles ("174.26M" -> 5,000), plus
@@ -170,6 +179,14 @@ const FACTS = [
   // need not be the one with the ADS
   [r => /tow-?away of (?:a vehicle equipped with an ADS|an ADS-equipped vehicle)/.test(r.rationale),
     "says the SGO's tow-away trigger needs the towed vehicle to carry an ADS (Request No. 1.D: any vehicle's tow-away, 'if the crash involved a subject vehicle equipped with an ADS')"],
+  // Review of the VMT package (2026-10-31): since the 1M-crossing reshape
+  // (decision #12 of the 2026-10-04 audit) the Dec-2025 Zoox knot narrows
+  // back one month's cumulative band, November 2025's; October's and every
+  // earlier month's forward chain already lies inside the knot's backward
+  // chain, so a plural "earlier months'" is true only if the rows narrow two
+  [r => r.helmer === "zoox" && r.month === "2025-12" && /earlier months' (?:bands? )?(?:are )?narrow(?:ed)? back/.test(r.rationale)
+    && narrowedBefore("zoox", "2025-12").length < 2,
+    `says the Dec-2025 knot narrows back earlier months' bands (the rows narrow ${JSON.stringify(narrowedBefore("zoox", "2025-12"))} only)`],
 ];
 
 // Decision of 2026-10-31 (open question 13): every Tesla month that may hold

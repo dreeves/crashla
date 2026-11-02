@@ -31,7 +31,9 @@ import fs from "node:fs";
 // This qual exists because the pre-2025 rows were once interpolated without
 // respecting the early milestones and overstated Jan-2023 cumulative ~4x;
 // until 2026-10-31 the end-2023 pin was 9.3M, an analyst's estimate (Egil
-// Juliussen, EE Times, Jul 2, 2025) that Table 2 contradicts (open
+// Juliussen, EE Times, Jul 2, 2025,
+// https://www.eetimes.com/waymos-robotaxi-program-progress-and-potential/)
+// that Table 2 contradicts (open
 // question 15), and the 2024 pins were the rounded milestones 22M, 25.3M and
 // 50M, which CSV1 refines.
 //

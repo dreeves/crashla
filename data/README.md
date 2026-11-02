@@ -168,7 +168,9 @@ The slurp pipeline is:
 9. Apply narrative-verified field overrides from `slurp.py`, each keyed by
    Report ID (severity, airbag, city and state — see
    `quals/field-overrides.qual.mjs` for the pins;
-   vehicles-involved — see `quals/fatality-guard.qual.mjs`; passenger
+   vehicles-involved — see `quals/fatality-guard.qual.mjs`, and
+   `quals/vehicles-involved.qual.mjs` for the nonfatal counts a narrative
+   states; passenger
    presence (`PASSENGER_OVERRIDE`): every Tesla report, since Tesla's filings
    conflate a rider with its in-car safety monitor, and any Waymo or Zoox
    report whose narrative contradicts its filed code — see
@@ -384,7 +386,8 @@ newest NHTSA month; in those windows the sanity section's VMT sources table
 lists their rationales too, after each line's analysis months, each headed
 by the ghost tooltip's note. No rate uses a ghost month's miles: its crashes are not
 yet published, so its rows stay out of the analysis rows, the slider and
-every other chart until a release brings its incidents. The run stops when
+every other chart but the growth section's (below) until a release brings its
+incidents. The run stops when
 the master lacks the month after the data-through month, when a ghost month
 lacks a line's row, and on a row for a month that has not begun (a VMT row
 records miles already driven; forecasts live in `crashla.js`'s
@@ -702,9 +705,10 @@ Las Vegas band, 30,127-59,987, central 40,080. The Dec-2025 cumulative is
 1,300,000 - 40,080 = 1,259,920, and its band (the knot, added 2026-10-03) is
 the rounding interval of "approximately 1.3 million", 1.25M-1.35M, less that
 offset band: 1,190,013-1,319,873. Later months' bands chain forward from the
-knot and Oct-Nov 2025's are narrowed back from it, so the band is the
-disclosure's own uncertainty rather than the running sum of the monthly
-bands. `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
+knot and earlier months' are narrowed back from it, which binds only November
+2025's since the 2026-10-31 reshape (below; until then October's too), so the
+band is the disclosure's own uncertainty rather than the running sum of the
+monthly bands. `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
 
 Since 2026-10-27 the "nearly two million autonomous miles" statement (Zoox's
 journal post of Mar 23, public Mar 24, 2026) is a knot too, and the "more
@@ -872,11 +876,18 @@ They are useful for:
 - Historical reference
 - Manual inspection
 - Comparing an older snapshot against the latest live NHTSA fetch
+- The release history: they are NHTSA's Jan-2026 and Feb-2026 releases, the
+  first to hold December 2025's and January 2026's incidents, whose
+  five-day-track receipt shares `FIVE_DAY_RECEIPT_OBSERVATIONS` holds since
+  2026-10-31; `quals/receipt-observations.qual.mjs` and
+  `quals/monthly-arrival-lag.qual.mjs` read them with the timestamped
+  snapshots when they recount that history
 
 They are not parsed as incident inputs in the current build pipeline.
-The only code-path interaction is that `data/slurp.py` may compare a fetched
-current NHTSA CSV against the latest legacy current snapshot to avoid writing an
-immediate duplicate when the timestamped snapshot scheme is first used.
+The only code-path interaction in `data/slurp.py` is that it may compare a
+fetched current NHTSA CSV against the latest legacy current snapshot to avoid
+writing an immediate duplicate when the timestamped snapshot scheme is first
+used.
 
 ## Why snapshot counts can disagree with `incidents.js`
 

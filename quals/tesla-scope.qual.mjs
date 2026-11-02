@@ -4,9 +4,9 @@
 // "Remote (Commercial / Test)" (remote-assistance operator maneuvering the
 // car). The Remote inclusion was a human decision (2026-08-19): the vehicle's
 // miles are in the VMT denominator, so its crashes belong in the numerator;
-// fault is judged 0 when a remote human, not the ADS, was driving (mirrors the
-// passenger-caused-incident convention). [2026-09-26: teleoperator-DRIVEN
-// crashes now leave every metric — see the stump note below and
+// fault was judged 0 when a remote human, not the ADS, was driving.
+// [2026-09-26: teleoperator-DRIVEN crashes now leave every metric — see the
+// stump note below and
 // teleop-scope.qual; the Remote code itself still counts.] Before this, report 13781-15395 (the
 // Houston tree-stump recovery crash, MAY-2026) sat in the CSV for a month,
 // silently excluded — EXPECTED_DRIVER_TYPES whitelists operator types

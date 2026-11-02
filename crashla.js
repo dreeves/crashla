@@ -504,7 +504,7 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // To add a new MPI variant, just add one entry here and (if needed) add the
 // corresponding incident field accumulation in monthSeriesData().
 //
-// Human reference MPI ranges from Kusano/Scanlon methodology
+// Human reference MPI ranges from the Kusano et al. methodology
 // (surface streets, passenger vehicles, Blincoe underreporting adjustment)
 // and FARS/NHTSA. We show ranges because the exact apples-to-apples
 // correction is uncertain. The true value should lie within [lo, hi].
@@ -1269,7 +1269,7 @@ const CI_MASS_DEFAULT_PCT = 95;
 const CI_FAN_LEVELS = [0.50, 0.80, 0.95]; // nested CI bands from tight to wide
 const ADS_HELMERS = ["Tesla", "Waymo", "Zoox"];
 // Human benchmark cohorts: HumansAV = drivers on surface streets in AV
-// operating cities (Kusano/Scanlon + Waymo safety hub); HumansUS = the
+// operating cities (Kusano et al. + Waymo safety hub); HumansUS = the
 // nationwide average (CRSS/FARS, all road types). Same "driver", two
 // reference populations.
 // HumansRideshare = a rider's typical alternative to an AV (human-driven
@@ -5189,7 +5189,7 @@ function loadUiStateFromLocation() {
     `Some of this page's URL parameters are missing -- ${rejected.map(param => param.map(urlBannerToken).join("=")).join(", ")} -- so we're showing the default view.`;
   banner.querySelector(".banner-rejected").hidden = rejected.length === 0;
   banner.hidden = unknownKeys.length + rejected.length === 0;
-  byId("url-banner-dismiss").addEventListener("click", () => { banner.hidden = true; });
+  byId("url-banner-dismiss").addEventListener("click", hideUrlBanner);
   // The strip: the address bar is rewritten from state, which never carries
   // foreign keys.
   syncUrlState();
@@ -5214,6 +5214,16 @@ function showPageError(message) {
   line.textContent = `${PAGE_ERROR_LEAD} ${message}`;
   line.hidden = false;
   banner.hidden = false;
+  byId("url-banner-dismiss").addEventListener("click", hideUrlBanner);
+}
+
+// The banner's button hides it. Both code paths that show the banner arm it
+// (loadUiStateFromLocation at init, and showPageError, which init can reach
+// before that: until 2026-11-01 a deploy skew that stopped init early showed
+// a banner its button could not dismiss); a named listener added twice
+// registers once.
+function hideUrlBanner() {
+  byId("url-banner").hidden = true;
 }
 
 function syncUrlState() {

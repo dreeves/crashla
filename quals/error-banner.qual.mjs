@@ -10,7 +10,8 @@
 // (PAGE_ERROR_LEAD, the app's; its words start in Latin with a to-do recap,
 // rule 7, and are not pinned here). Checked in Chromium, Firefox and WebKit:
 //  - a data/vmt.js without GHOST_VMT_CSV_TEXT (the skew above): the banner
-//    shows the lead-in and the message, which names the missing variable;
+//    shows the lead-in and the message, which names the missing variable,
+//    and its button dismisses it;
 //  - on a page that drew, an error thrown from a timer, then an unhandled
 //    promise rejection: the banner shows each one's message in turn, and its
 //    button dismisses it;
@@ -49,6 +50,11 @@ try {
         if (!(errors.length > 0 && b.shown && b.errorShown && b.lead !== null && b.lead.trim() !== "" &&
               b.error.startsWith(b.lead) && b.error.includes("GHOST_VMT_CSV_TEXT")))
           problems.push(`${engineName}, data/vmt.js without GHOST_VMT_CSV_TEXT: page errors ${JSON.stringify(errors)}; banner ${JSON.stringify(b)}`);
+        // The button works even though init stopped early (until 2026-11-01
+        // its handler was wired late in init, so a skewed deploy's banner
+        // could not be dismissed).
+        await page.evaluate(() => document.getElementById("url-banner-dismiss").click());
+        if ((await page.evaluate(banner)).shown) problems.push(`${engineName}, data/vmt.js without GHOST_VMT_CSV_TEXT: the banner's button does not dismiss the error banner`);
         await ctx.close();
       }
       // --- errors on a page that drew -------------------------------------
