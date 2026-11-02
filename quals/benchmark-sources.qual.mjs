@@ -6,7 +6,7 @@
 // whole "<a>label</a>" strings: arXiv 2312.12675, the Waymo hub and NHTSA
 // 813791 each appeared twice under two labels. The same fix pins which
 // sources each derivation cites: the at-fault-injury bands cite the injury
-// band's sources and NHTSA 812115 (the 94%), every Blincoe-adjusted band
+// band's sources and NHTSA 812 506 (the 94%), every Blincoe-adjusted band
 // cites the Blincoe edition it uses (2023, 813403, which Kusano et al. and
 // the hub use; plus 2015, 812013, where the US low edges average the two),
 // the release notes link the current edition (Oct 2, 2026 since
@@ -129,21 +129,23 @@ const linksOf = (metric, cohort) => {
   return b.srcLinks;
 };
 const HUB = "https://waymo.com/safety/impact/";
-const N812115 = "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115";
+// The 94% share: NHTSA's Crash Stats DOT HS 812 506 (Mar 2018), the reissue of
+// 812115 (Feb 2015) with the same 94% (the human, 2026-11-02).
+const N812506 = "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812506";
 const B2015 = "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013";
 const B2023 = "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403";
 
-// --- #41: at-fault injury = injury band / 94% (812115) .. / 50% ---
-assert.deepEqual([...linksOf("atfaultInjury", "HumansAV")].sort(), [HUB, N812115].sort(),
+// --- #41: at-fault injury = injury band / 94% (812 506) .. / 50% ---
+assert.deepEqual([...linksOf("atfaultInjury", "HumansAV")].sort(), [HUB, N812506].sort(),
   `Replicata: read the AV-cities at-fault-injury sources.
-Expectata: the injury band's source (the Waymo hub) and NHTSA 812115 (the 94% share) — not Kusano's Table 3 or NHTSA 813791, which feed no number of this band.
+Expectata: the injury band's source (the Waymo hub) and NHTSA 812 506 (the 94% share) — not Kusano's Table 3 or NHTSA 813791, which feed no number of this band.
 Resultata: ${JSON.stringify(linksOf("atfaultInjury", "HumansAV"))}.`);
 {
   const us = linksOf("atfaultInjury", "HumansUS");
-  const missing = [...linksOf("injury", "HumansUS"), N812115].filter(u => !us.includes(u));
+  const missing = [...linksOf("injury", "HumansUS"), N812506].filter(u => !us.includes(u));
   assert.deepEqual(missing, [],
     `Replicata: read the US-average at-fault-injury sources.
-Expectata: the US injury band's sources plus NHTSA 812115 (the 94% share).
+Expectata: the US injury band's sources plus NHTSA 812 506 (the 94% share).
 Resultata: missing ${JSON.stringify(missing)} from ${JSON.stringify(us)}.`);
 }
 

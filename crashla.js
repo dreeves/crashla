@@ -595,7 +595,7 @@ const BENCHMARK_SOURCES = {
   "https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/": "NHTSA CRSS 2024",
   "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013": "Blincoe et al. 2015 (underreporting)",
   "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403": "Blincoe et al. 2023",
-  "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115": "NHTSA critical reason (94%)",
+  "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812506": "NHTSA critical reason (94%)",
   "https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison": "IIHS urban/rural comparison",
   "https://www.uber.com/us/en/about/reports/us-safety-report/": "Uber US Safety Report",
   "https://www.lyft.com/blog/posts/2024-safety-transparency-report": "Lyft Safety Transparency Report",
@@ -613,9 +613,7 @@ function sourceLink(url) {
 // fatality metric's countNote below (decision #1 of the 2026-10-04 audit,
 // the human's "Add a note"): Waymo's card read "Fatality: 0.8 incidents"
 // beside a severity table counting 2 fatal crashes, with nothing saying why.
-// TODO: English for this note, which says that each fatal crash counts
-// 1/(number of vehicles involved), so this count can be fractional.
-const FRACTIONAL_DEATH_NOTE = "Quaeque collisio mortifera ut 1/(numerus vehiculorum implicatorum) numeratur, itaque hic numerus fractus esse potest.";
+const FRACTIONAL_DEATH_NOTE = `This count can be fractional because each fatal crash is counted as 1/(number of vehicles involved) for reasons articulated in an article by Kelsey Piper.`;
 const METRIC_DEFS = [
   { key: "all",
     blank: "any",
@@ -842,9 +840,11 @@ const METRIC_DEFS = [
     // lo: injury lo (149k) / ~94% share (NHTSA critical reason: driver error
     //   in ~94% of crashes; taken as the LARGEST share an expert could avoid —
     //   an upper bound, which is what dividing the LOW edge by it needs) ≈ 159k
-    //   NB: NHTSA 812115 itself disclaims that "critical reason" means crash
-    //   cause or fault assignment; reading driver-error-as-critical-reason as
-    //   an upper bound on expert avoidability is this repo's own assumption
+    //   NB: NHTSA's summary (Crash Stats DOT HS 812 506, Mar 2018, the reissue
+    //   of 812115, Feb 2015; linked since 2026-11-02) itself disclaims that
+    //   "critical reason" means crash cause or fault assignment; reading
+    //   driver-error-as-critical-reason as an upper bound on expert
+    //   avoidability is this repo's own assumption
     //   (ratified 2026-06-12, re-ratified 2026-08-21 as Codex M3).
     // hi: injury hi (513k) / 50% share ≈ 1,026k
     //   50% = legal-allocation floor (single-vehicle 100%, multi ~50%);
@@ -857,24 +857,24 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 159000, hi: 1026000,
         src: 'lo: injury lo (149k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (513k) / 50% legal-allocation floor',
-        srcNote: "94% = NHTSA 812115's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
+        srcNote: "94% = NHTSA 812 506's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
         // The injury band's source and the 94%'s (audit #41: Kusano Table 3
         // and NHTSA 813791, linked until 2026-10-03, feed no number here).
         srcLinks: [
           'https://waymo.com/safety/impact/',
-          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812506',
         ]},
       HumansUS: {lo: 830000, hi: 2180000,
         src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
         srcNote: "[same as above for humans in AV cities]",
-        // The US injury band's sources and the 94%'s (audit #41: 812115 was
-        // missing until 2026-10-03).
+        // The US injury band's sources and the 94%'s (audit #41: the 94%'s
+        // source was missing until 2026-10-03).
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
           'https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
-          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812115',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812506',
         ]},
     },
   },
@@ -1026,11 +1026,7 @@ const METRIC_DEFS = [
           'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 920000, hi: 2700000,
-        // TODO: English for the src's first clause, which says that CRSS 2024
-        // measures this rate directly (police-reported, all vehicles, all
-        // roads): 0.740 vehicles in airbag-deployment crashes per M mi (1.35M
-        // MPI), which lies inside this band.
-        src: 'CRSS 2024 frequentiam nationalem a vigilibus relatam directe metitur, 0.740 vehicula in collisionibus cum sacculis aeriis explicatis per M mi (1.35M MPI), intra hunc ambitum; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
+        src: 'CRSS 2024 directly measures this rate (police-reported, all vehicles, all roads): 0.740 vehicles in airbag-deployment crashes per million miles (1.35M MPI) which lies inside this band; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
         // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
         // centres (the hub's injury and this band's, IIHS's fatality), the
         // national injury centre (CRSS 2024, both Blincoe editions) and the
@@ -1067,11 +1063,7 @@ const METRIC_DEFS = [
           'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 4000000, hi: 19000000,
-        // TODO: English for the src's first clause, which says that CRSS 2024
-        // measures this rate directly (police-reported, all vehicles, all
-        // roads): 0.086 vehicles in crashes with a suspected serious or fatal
-        // injury (KABCO A+K) per M mi (11.6M MPI), which lies inside this band.
-        src: 'CRSS 2024 frequentiam nationalem a vigilibus relatam directe metitur, 0.086 vehicula in collisionibus cum vulnere gravi aut mortifero (KABCO A+K) per M mi (11.6M MPI), intra hunc ambitum; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
+        src: 'CRSS 2024 directly measures this rate (police-reported, all vehicles, all roads): 0.086 vehicles in crashes with a suspected serious or fatal injury (KABCO A+K) per million miles (11.6M MPI), which lies inside this band; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
         // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
         // centres (the hub's injury and this band's, IIHS's fatality), the
         // national injury centre (CRSS 2024, both Blincoe editions) and the
@@ -5204,10 +5196,7 @@ function loadUiStateFromLocation() {
 // "GHOST_VMT_CSV_TEXT is not defined" with no chart, card or incident row
 // drawn and nothing to say that anything had failed (2026-10-30 audit,
 // critic-1). The latest error replaces the one shown.
-// TODO: English for this lead-in, which tells the reader that something went
-// wrong on this page, so parts of it may be missing or wrong, and that the
-// error's message follows.
-const PAGE_ERROR_LEAD = "Huic paginae error accidit, itaque partes eius deesse aut falsae esse possunt. Error:";
+const PAGE_ERROR_LEAD = `Something is broken on this page. Error:`;
 function showPageError(message) {
   const banner = byId("url-banner");
   const line = banner.querySelector(".banner-error");
@@ -5294,9 +5283,7 @@ const NARRATIVE_FAULT_LABEL = "Fault fraction:";
 // two of a company's AVs (data/slurp.py SECOND_INVOLVEMENTS; decision #47,
 // 2026-10-04: each AV involved counts) as a row of its own, with the report's
 // narrative after this label, so the row does not read as a duplicate filing.
-// TODO: English for this label, which marks the row as the other AV of the
-// same report: "[Second AV in this report]".
-const SECOND_INVOLVEMENT_LABEL = "[Alterum AV eiusdem relationis]";
+const SECOND_INVOLVEMENT_LABEL = "[Second AV in this report]";
 function narrativeToggleName(reportId) {
   return `Narrative of report ${reportId}`;
 }
@@ -6028,10 +6015,7 @@ Maybe that affects AVs too?
   // Tesla's Jul-Sep 2026 rows rest on Tesla's own no-monitor miles (its
   // robotaxi safety page and Q3-2026 deck) plus June's measured monitor-aboard
   // remainder (2026-10-23); its no-monitor line's rows are those miles alone.
-  // TODO: the legend in this table's header ("green text = AI-generated", the
-  // human's words) names the colour alone; since 2026-10-31 AI text also
-  // carries a dotted underline in every mode (style.css .ai-text; decision #29
-  // of the 2026-10-04 audit), so the legend may want to say so.
+  // Note that AI-generated text is now dotted-underlined, not merely green.
   sections.push(`
 <h3>VMT sources</h3>
 <p>
