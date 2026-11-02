@@ -4445,7 +4445,7 @@ function renderHumanBenchmarkTable() {
   return `
     <h3>Specific human benchmark derivations</h3>
     <p>
-Sources: Kusano & Scanlon, Waymo's safety impact page, FARS.
+Sources: Kusano et al, Waymo's safety impact page, FARS.
 This differs from Waymo's location-adjusted safety-impact methodology.
 The all-incidents comparison is broader than Waymo's surface-street, injury-focused numbers.
     </p>
@@ -5186,7 +5186,7 @@ function loadUiStateFromLocation() {
   // name=value a value the page cannot read); the page is showing its default
   // view instead, and the address bar now carries that default view.
   banner.querySelector(".banner-rejected").textContent =
-    `Some of this page's URL parameters are missing -- ${rejected.map(param => param.map(urlBannerToken).join("=")).join(", ")} -- so we're showing the default view.`;
+    `Some of this page's URL parameters (${rejected.map(param => param.map(urlBannerToken).join("=")).join(", ")}) are missing / messed up so we're showing the default view.`;
   banner.querySelector(".banner-rejected").hidden = rejected.length === 0;
   banner.hidden = unknownKeys.length + rejected.length === 0;
   byId("url-banner-dismiss").addEventListener("click", hideUrlBanner);
@@ -5877,7 +5877,7 @@ For confidence bands we use a statistical model that assumes a Poisson process w
 (Also, apologies that this is all miles. That's the data we have and it would be messier to convert it all.)
 Here we check that assumption using a Pearson chi-squared dispersion test normalized by monthly VMT.
 A dispersion index near 1 supports the Poisson model; values much greater than 1 suggest that either something's awry or the robotaxis are getting better or worse.
-<span class="ai-text">Claude: Where the dispersion index is much greater than 1 (today: Tesla), the pooled full-window estimates average over a fleet, geography, and software mix that changed rapidly; narrow the date-range slider to look at a recent, more homogeneous window.</span>
+Use the date-range slider to look at more specific time windows.
 </p>
     <div class="table-wrap"><table id="sanity-dispersion">
       <thead><tr>
@@ -6134,7 +6134,7 @@ Claude notes:
   // this page link, p. 2 on 30270-13817 and p. 9 on relying on the police
   // crash report (pp. 2 and 8 in the Sep-24 edition).
   // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
-  const waySsiNote = `Claude: The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious per the police reports, and one (30270-13817) still awaits a police crash report.`;
+  const waySsiNote = `The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious per the police reports, and one (30270-13817) still awaits a police crash report.`;
   sections.push(`
 <h3>Waymo cross-check</h3>
 <p>
@@ -6150,7 +6150,7 @@ A ratio very different from 1 suggests a problem.
       </tr></thead>
       <tbody>${wayXRows.join("")}</tbody>
     </table></div>
-<p><span class="ai-text">${escHtml(waySsiNote)}</span></p>`);
+<p><span>${escHtml(waySsiNote)}</span></p>`);
 
   // --- 10. Human benchmark derivations ---
   sections.push(renderHumanBenchmarkTable());

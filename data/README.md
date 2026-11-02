@@ -312,7 +312,8 @@ Then what the release brings:
    passenger code, operator type: re-read the narrative), and an override
    entry that names no in-scope incident of the window; an incident with no
    city or state (`LOCATION_OVERRIDE`); a new in-scope Tesla report
-   (`PASSENGER_OVERRIDE`, from its narrative, and `TESLA_NO_MONITOR_REPORTS`
+   (`PASSENGER_OVERRIDE`, from its narrative, "Unknown" when the narrative
+   says nothing about who was aboard, and `TESLA_NO_MONITOR_REPORTS`
    or `TESLA_MONITOR_ABOARD_REPORTS`: re-read Tesla's latest no-monitor list,
    below); an occupancy disagreement (`PASSENGER_OVERRIDE` /
    `OCCUPANCY_LANGUAGE_REVIEWED`); and the contact-area label check

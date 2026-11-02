@@ -74,10 +74,22 @@ const SAYS_NONE = /\bno (?:passengers?|riders?)\b|\bdid not have any passengers?
 const SAYS_RIDER = /\b(?:one|two|three|a) (?:passengers?|riders?)\b(?! (?:vehicle|car))|\bmonitor and (?:(?:a|one|two|three) )?passengers?\b/i;
 // JSON round-trip: arrays built in the vm realm fail deepStrictEqual.
 const tesla = JSON.parse(vm.runInContext(`JSON.stringify(INCIDENT_DATA.filter(r => r.helmer === "Tesla").map(r => ({id: r.reportId, belted: r.belted, narrative: r.narrative})))`, ctx));
+// What a narrative says about riders and what a code says, on one scale. A
+// narrative that says nothing about who was aboard agrees only with an Unknown
+// code, which the reviewed map stores for it (the human, 2026-11-02, open
+// question 18; 13781-16941, due in the ~Nov 16, 2026 release, is the first).
+const narrativeSays = n => SAYS_NONE.test(n) ? "none" : SAYS_RIDER.test(n) ? "rider" : "unknown";
+const codeSays = b => none.has(b) ? "none" : present.has(b) ? "rider" : "unknown";
+const SILENT = "The Tesla ADS was stopped when a passenger car made contact with the rear of the vehicle.";
+for (const [code, agrees] of [["Unknown", true], ["Subject Vehicle - All Belted", false], ["Subject Vehicle - No Passenger In Vehicle", false]]) {
+  assert.equal(narrativeSays(SILENT) === codeSays(code), agrees,
+    `Replicata: classify a Tesla narrative that says nothing about who was aboard (${JSON.stringify(SILENT)}) and the code ${JSON.stringify(code)}.
+Expectata: they agree exactly when the code is Unknown (open question 18's rule).
+Resultata: narrative ${narrativeSays(SILENT)}, code ${codeSays(code)}.`);
+}
 const mismatch = [];
 for (const r of tesla) {
-  const says = SAYS_NONE.test(r.narrative) ? "none" : SAYS_RIDER.test(r.narrative) ? "rider" : "unstated";
-  const coded = none.has(r.belted) ? "none" : present.has(r.belted) ? "rider" : "unknown";
+  const says = narrativeSays(r.narrative), coded = codeSays(r.belted);
   if (says !== coded) mismatch.push(`${r.id}: narrative ${says}, coded ${coded} (${JSON.stringify(r.belted)})`);
 }
 assert.deepEqual(mismatch, [],

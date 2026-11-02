@@ -797,7 +797,9 @@ PASSENGER_OVERRIDE = {
     # Zoox, JUN-2026 San Francisco, filed no passenger: "An occupied Zoox
     # autonomous vehicle was stopped at a traffic light"; belt use not stated
     "30610-15826": (PAX_NO, PAX_BELT_UNSTATED),
-    # Tesla: every in-scope report (the monitor is not a passenger)
+    # Tesla: every in-scope report (the monitor is not a passenger); a
+    # narrative that says nothing about who was aboard is stored as
+    # (filed code, "Unknown") (the human, 2026-11-02, open question 18)
     "13781-11375": (PAX_BELTED, PAX_NO),   # "a safety monitor present with no passengers"
     "13781-11507": ("Unknown", PAX_NO),    # "no passengers were inside the vehicle"
     "13781-11687": (PAX_BELTED, PAX_BELTED),  # "a safety monitor present with one passenger"
