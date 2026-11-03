@@ -476,9 +476,13 @@ assert.match(app.middle, /precedes/,
 
 // 6. The MPI-over-time chart with Zoox shown (the default view hides it, so
 // until the reviewer's 2026-10-04 addition nothing pinned this): each month's
-// "?" fades in by the largest 1 - incident_coverage_min among the shown
-// helmers' dots on a Monthly-track metric, so a lagged month gets its own
-// "?", and the lagged helmer's dot tooltip carries that month's coverage note.
+// "?" fades in by the largest incompleteness among the shown helmers' dots on
+// a Monthly-track metric, 1 - coverage x incident_coverage_min (the month's
+// whole completeness at worst, as the effective miles scale it; until
+// 2026-11-02 1 - incident_coverage_min alone, decision 23(a)), so a lagged
+// month gets its own "?", and the lagged helmer's dot tooltip carries that
+// month's coverage note. In a lagged month the receipt coverage is 1, so its
+// whole completeness is its incident coverage.
 // Zoox's month before the data-through month carries the synthetic lag
 // triple of section 5.
 // On All incidents, a Monthly-track metric that needs no fault ratings, so
@@ -502,7 +506,7 @@ const shown = JSON.parse(vm.runInContext(`(() => {
     fiveDay: metric.fiveDay === true, metric: metric.key, ads,
     html: renderAllHelmersMpiChart(sliceSeries(s, start, s.months.length - 1)),
     months,
-    expected: months.map(m => Math.max(0, ...csv.filter(r => r.month === m && ads.includes(r.helmer)).map(r => 1 - r.incCovMin))),
+    expected: months.map(m => Math.max(0, ...csv.filter(r => r.month === m && ads.includes(r.helmer)).map(r => 1 - r.coverage * r.incCovMin))),
   });
 })()`, ctx6));
 assert.ok(!shown.fiveDay && shown.ads.includes("Zoox"),
@@ -523,7 +527,7 @@ const wantQ = groups.map(g => ({ months: g.map(i => shown.months[i]).join("+"),
 assert.ok(monthX.length === shown.months.length && qmarks.length === wantQ.length &&
   qmarks.every((q, i) => q.opacity === wantQ[i].opacity && Math.abs(q.x - wantQ[i].x) <= 0.01),
   `Replicata: the "?" markers of the default-window MPI chart with Zoox shown (metric ${shown.metric}).
-Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest 1 - incident_coverage_min over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
+Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest 1 - coverage x incident_coverage_min over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
 Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) => ({ ...q, at: wantQ[i] && wantQ[i].months })).filter(q => q.opacity !== "0.000"))}.`);
 // A month's ADS dot tooltips, each with its helmer: the targets whose
 // accessible name is the helmer's mark-name prefix (seriesMarkName) and the

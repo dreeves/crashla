@@ -223,4 +223,58 @@ assert.ok(indexHtml.includes('id="chart-fleet-timeseries"'),
 Expectata: a #chart-fleet-timeseries element exists for the init render.
 Resultata: not found.`);
 
-console.log("qual pass: fleet trajectory chart renders history + dashed extrapolation, sharing the FLEET_FORECAST endpoint");
+// --- 7. Every growth view carries its note; the fleet view's states Tesla's unit ---
+// Each metric's note (growthMetricSpec(key).note) is a plain-text month-note
+// paragraph under the scenario note. The fleet view's note says that Tesla's
+// line, the all-HW4 fork included, counts car-equivalents (its ADS miles a
+// day over TESLA_MILES_PER_CAR_DAY) while Waymo's and Zoox's count cars
+// (decision 23(d) of the 2026-11-01 open questions, the human's, 2026-11-02:
+// "Yes, in Latin"; until then the fleet note was empty and the page did not
+// say it). Its words are not checked (no wording pins, 2026-10-28); the
+// figure is: the note must give TESLA_MILES_PER_CAR_DAY, read from the app.
+const notes = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const out = {};
+  for (const key of ${JSON.stringify(METRICS)}) {
+    selectedGrowthMetric = key;
+    out[key] = { note: growthMetricSpec(key).note, html: renderFleetTimeSeriesChart() };
+  }
+  selectedGrowthMetric = "fleet";
+  return { out, perCarDay: TESLA_MILES_PER_CAR_DAY };
+})()
+`, ctx)));
+for (const key of METRICS) {
+  const { note, html: chart } = notes.out[key];
+  const paragraphs = [...chart.matchAll(/<p class="month-note">([^<]*)<\/p>/g)].map(m => m[1]);
+  assert.ok(typeof note === "string" && note.trim() !== "" && paragraphs.length === 2 && paragraphs[1] === note,
+    `Replicata: render the "${key}" growth view and read its month-note paragraphs.
+Expectata: two plain-text notes, the scenario note then the metric's own note (growthMetricSpec("${key}").note, non-empty).
+Resultata: note ${JSON.stringify(note)}; paragraphs ${JSON.stringify(paragraphs)}.`);
+}
+assert.ok(new RegExp(`(^|[^\\d,.])${notes.perCarDay}([^\\d,.]|$)`).test(notes.out.fleet.note),
+  `Replicata: read the fleet view's note (growthMetricSpec("fleet").note).
+Expectata: it gives Tesla's car-equivalent rate, TESLA_MILES_PER_CAR_DAY (${notes.perCarDay} miles a car-day).
+Resultata: ${JSON.stringify(notes.out.fleet.note)}.`);
+
+// --- 8. The fleet view's y axis tops out at the decade above what it draws ---
+// The fleet trajectory's log axis framed 6 to 4,000,000 while nothing it drew
+// passed ~358,000 (the all-HW4 lane's 95th percentile), so its top decade
+// and a half were empty (decision 23(g), 2026-11-02: top it at 1M). Its top,
+// growthMetricSpec("fleet").yMax, must be the smallest power of ten at or
+// above the largest value it draws: every lane's history ranges and its
+// forecast endpoint's 90% interval (the band and the error bar reach its 5th
+// and 95th percentiles).
+const frame = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => {
+  const spec = growthMetricSpec("fleet");
+  const drawn = spec.lanes().flatMap(lane => lane.points.flatMap(p => [p.lo, p.best, p.hi]));
+  return { yMax: spec.yMax, yMin: spec.yMin, top: Math.max(...drawn), bottom: Math.min(...drawn) };
+})()
+`, ctx)));
+const decadeAbove = 10 ** Math.ceil(Math.log10(frame.top));
+assert.ok(frame.yMax === decadeAbove && frame.bottom >= frame.yMin,
+  `Replicata: read the fleet view's y frame (growthMetricSpec("fleet").yMin/yMax) and the largest and smallest values its lanes draw.
+Expectata: the top is the decade at or above the largest drawn value, ${decadeAbove.toLocaleString("en-US")} (the largest is ${Math.round(frame.top).toLocaleString("en-US")}), and nothing drawn falls under the bottom, ${frame.yMin}.
+Resultata: top ${frame.yMax.toLocaleString("en-US")}; smallest drawn ${frame.bottom}.`);
+
+console.log("qual pass: fleet trajectory chart renders history + dashed extrapolation, sharing the FLEET_FORECAST endpoint; every growth view carries its note, the fleet view's giving Tesla's car-equivalent rate; the fleet axis tops out at the decade above what it draws");

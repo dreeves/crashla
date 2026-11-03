@@ -702,14 +702,27 @@ assert.ok(qmarkOpacities.every(o => o >= 0 && o <= 1) && qmarkOpacities.length =
   `Replicata: count "?" marker texts on the default-window MPI-over-time chart and how many are visible (opacity > 0).
 Expectata: one per complete month (${windowMonths - incompleteMonths}, at opacity 0, grayed out rather than suppressed) and one per run of adjacent incomplete months (${incompleteRuns}, visible), each with a finite opacity in [0, 1].
 Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
-// (d) The MPI-over-time tooltip's "worst case" coverage IS incident_coverage_min.
-// Until 2026-09-26 the chart derived it as vmtMin / vmtRawMin, i.e. (receipt
-// best / receipt min) x incCovMin = 24% for 2026-08 while the sanity table
-// said 17.3%; the same ratio set the dot and "?" opacity.
+// (d) The MPI-over-time tooltip of a partially received month gives the
+// month's WHOLE completeness for the metric shown, best then worst: the share
+// of the month's eventual incidents the release holds, as the effective
+// miles scale it. On a Monthly-track metric that is the receipt coverage
+// times the incident coverage (coverage x incident_coverage, coverage x
+// incident_coverage_min: the incident coverage is defined given the receipt
+// coverage's best, data/vmt.js); on a five-day-track metric the receipt
+// coverage alone (coverage, coverage_min). Until 2026-11-02 the chart gave
+// (and its "?" and dots faded by) the incident coverage alone on the Monthly
+// track, ~60% for 2026-09 where the month held ~8% of its incidents, and
+// nothing on the five-day track, which held ~14% (decision 23(a) of the
+// 2026-11-01 open questions, 2026-11-02). Until 2026-09-26 the chart derived
+// its worst case as vmtMin / vmtRawMin, i.e. (receipt best / receipt min) x
+// incCovMin = 24% for 2026-08 while the sanity table said 17.3%.
 {
   const dt = vm.runInContext(`
     (() => { const rows = parseVmtCsv(VMT_CSV_TEXT); const m = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
-      return { month: m, incCovMin: rows.find(r => r.month === m).incCovMin }; })()`, ctx);
+      const r = rows.find(x => x.month === m);
+      return { month: m, coverage: r.coverage, coverageMin: r.coverageMin, incCov: r.incCov, incCovMin: r.incCovMin }; })()`, ctx);
+  const wantMonthly = [Math.round(dt.coverage * dt.incCov * 100), Math.round(dt.coverage * dt.incCovMin * 100)];
+  const wantFiveDay = [Math.round(dt.coverage * 100), Math.round(dt.coverageMin * 100)];
   // The chart's targets and their accessible names, each the mark's company
   // label then its tip (seriesMarkName): the ADS dots are the ones named for
   // an ADS line. The coverage note gives two figures, ~best% then
@@ -718,20 +731,24 @@ Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
   const prefixes = appValue("ADS_SERIES.map(h => seriesMarkName(h, ''))").map(escAttr);
   const adsTips = [...plain.chartMpiAll.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
     .filter(m => m[1].startsWith(dt.month + "\n") && prefixes.some(p => m[2] === p + m[1])).map(m => m[1]);
-  const worst = [...new Set(adsTips.map(t => { const pct = t.match(/~\d+%/g) || []; return pct.length === 2 ? pct[1].slice(1, -1) : undefined; }))];
-  assert.ok(adsTips.length >= 1 && worst.length === 1 && Number(worst[0]) === Math.round(dt.incCovMin * 100),
+  const figuresOf = t => (t.match(/~\d+%/g) || []).map(p => Number(p.slice(1, -1)));
+  const monthly = [...new Set(adsTips.map(t => JSON.stringify(figuresOf(t))))];
+  assert.ok(adsTips.length >= 1 && monthly.length === 1 && monthly[0] === JSON.stringify(wantMonthly),
     `Replicata: read the ${dt.month} ADS dot tooltips on the default (Monthly-track) MPI chart (the targets named for an ADS line).
-Expectata: every one's coverage note gives the worst case, its second figure, as ~${Math.round(dt.incCovMin * 100)}% = incident_coverage_min, the figure the sanity table shows.
-Resultata: ${JSON.stringify(worst)} from ${adsTips.length} tooltips.`);
+Expectata: every one's coverage note gives the month's whole completeness, ~${wantMonthly[0]}% (worst case ~${wantMonthly[1]}%): receipt coverage ${dt.coverage} x incident coverage ${dt.incCov} (worst ${dt.incCovMin}).
+Resultata: ${JSON.stringify(monthly)} from ${adsTips.length} tooltips.`);
   const fiveDayTips = vm.runInContext(`
     (() => { const s = monthSeriesData(); const start = s.months.indexOf(DEFAULT_START_MONTH);
       const saved = selectedMetricKey; selectedMetricKey = "fatality";
       const html = renderAllHelmersMpiChart(sliceSeries(s, start, s.months.length - 1)); selectedMetricKey = saved;
-      return [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => m[1]).filter(t => t.startsWith(${JSON.stringify(dt.month)})); })()`, ctx);
-  assert.ok(fiveDayTips.length >= 1 && fiveDayTips.every(t => !/~\d+%/.test(t)),
-    `Replicata: the same month's dot tooltips on a five-day-track metric (fatality).
-Expectata: no incident-coverage note, so no ~N% figure (five-day metrics carry no Monthly-track thinning).
-Resultata: ${JSON.stringify(fiveDayTips.slice(0, 2))}.`);
+      const prefixes = ADS_SERIES.map(h => escAttr(seriesMarkName(h, '')));
+      return [...html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
+        .filter(m => m[1].startsWith(${JSON.stringify(dt.month)} + "\\n") && prefixes.some(p => m[2] === p + m[1])).map(m => m[1]); })()`, ctx);
+  const fiveDay = [...new Set(fiveDayTips.map(t => JSON.stringify(figuresOf(t))))];
+  assert.ok(fiveDayTips.length >= 1 && fiveDay.length === 1 && fiveDay[0] === JSON.stringify(wantFiveDay),
+    `Replicata: the same month's ADS dot tooltips on a five-day-track metric (fatality).
+Expectata: every one's coverage note gives the receipt coverage alone, ~${wantFiveDay[0]}% (worst case ~${wantFiveDay[1]}%): five-day metrics carry no Monthly-track thinning, but the release holds only part of the month's five-day reports.
+Resultata: ${JSON.stringify(fiveDay)} from ${fiveDayTips.length} tooltips, e.g. ${JSON.stringify(fiveDayTips.slice(0, 1))}.`);
 }
 // (c) The card's Effective-VMT tooltip states the numbers only; the per-month
 // VMT rationales live in the sanity section's VMT-sources table (embedded

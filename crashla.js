@@ -3896,8 +3896,17 @@ function milesHistory(helmer) {
 function growthMetricSpec(key) {
   const specs = {
     fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipAt: wholeAtSigFigs,
-      yMin: 6, yMax: 4000000, yTicks: [10, 100, 1000, 10000, 100000, 1000000],
-      note: "",
+      // yMax 1,000,000, the decade above the largest value drawn (the all-HW4
+      // lane's 95th percentile, ~320,000; 4,000,000 until 2026-11-02, sized
+      // for that lane's distinct customer cars, 1.92M, before it counted
+      // car-equivalents; decision 23(g); quals/fleet-timeseries.qual.mjs)
+      yMin: 6, yMax: 1000000, yTicks: [10, 100, 1000, 10000, 100000, 1000000],
+      // TODO: translate. The note should say that Tesla's fleet line, the
+      // all-HW4 fork included, counts car-equivalents (its ADS miles a day
+      // divided by TESLA_MILES_PER_CAR_DAY, 180 miles a car-day), while
+      // Waymo's and Zoox's lines count cars (decision 23(d), the human's
+      // "Yes, in Latin", 2026-11-02).
+      note: `Linea Teslae, ramo omnium vehiculorum HW4 incluso, aequivalentia vehiculorum numerat: milia passuum eius in die divisa per ${TESLA_MILES_PER_CAR_DAY} milia passuum vehiculi in die. Lineae Waymo et Zoox ipsa vehicula numerant.`,
       lanes: () => trajectoryLanes(fleetForecastCurves(), h => FLEET_HISTORY[h], FLEET_TS_END_MONTH)},
     rides: {label: "Rides (cumulative)", yLabel: "Cumulative rides", valueLabel: "Rides", fmt: fmtWhole,
       tipAt: wholeAtSigFigs,
@@ -3913,6 +3922,7 @@ function growthMetricSpec(key) {
       lanes: () => trajectoryLanes(bandForecastCurves(MILES_FORECAST), milesHistory, CUMULATIVE_END_MONTH)},
   };
   assert(specs[key] !== undefined, "unknown growth metric", {key});
+  assert(typeof specs[key].note === "string" && specs[key].note.trim() !== "", "a growth metric's note must be non-empty", {key});
   return specs[key];
 }
 
@@ -4113,7 +4123,7 @@ function renderFleetTimeSeriesChart() {
     ${renderGrowthMetricToggle()}
     ${fleetCurveLegend(lanes.map(l => ({color: l.color, legendLabel: l.label})))}
     <p class="month-note">${growthScenarioNote(lanes)}</p>
-    ${spec.note ? `<p class="month-note">${spec.note}</p>` : ""}
+    <p class="month-note">${spec.note}</p>
     <svg class="month-svg" viewBox="0 0 ${svgW} ${svgH}" role="figure" aria-label="${escAttr(spec.yLabel)}">
       <defs><clipPath id="fleet-ts-clip"><rect x="${mLeft}" y="${mTop}" width="${pW}" height="${pH}"></rect></clipPath></defs>
       <g clip-path="url(#fleet-ts-clip)">
