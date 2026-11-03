@@ -18,6 +18,7 @@
 // that sentence honest.
 import assert from "node:assert/strict";
 import vm from "node:vm";
+import { execFileSync } from "node:child_process";
 import { appScript, dataScript } from "./load-app.mjs";
 
 const ctx = vm.createContext({ console, Math, Number, Object, JSON, Array, Set, Map, isFinite, parseFloat, parseInt, Date });
@@ -58,5 +59,21 @@ for (const f of fatalities) {
   assert.equal(f.vehiclesInvolved, EXPECTED_VEHICLES[f.reportId],
     `Replicata: read vehiclesInvolved for fatality ${f.reportId} and compare to its narrative's vehicle count.\nExpectata: ${EXPECTED_VEHICLES[f.reportId]} (from the narrative; see VEHICLES_INVOLVED in data/slurp.py).\nResultata: ${f.vehiclesInvolved}.\n${FIX}`);
 }
+
+// Each fatality's count is a reviewed VEHICLES_INVOLVED entry, the default 2
+// included, so the narrative words it rests on are re-checked when the report
+// is re-filed (check_reviewed_quotes in data/slurp.py; decision 26(c) of
+// 2026-11-02: VEHICLES_INVOLVED's fatality entries store verbatim quotes,
+// re-checked on re-filing). Until 2026-11-02 30270-16196 inherited the default
+// with no entry, so a re-filing that changed its vehicle count would not have
+// stopped slurp.
+const reviewedCounts = new Set(JSON.parse(execFileSync("python3", ["-c",
+  `import json, sys\nsys.path.insert(0, "data")\nimport slurp\nprint(json.dumps(sorted(slurp.VEHICLES_INVOLVED)))`],
+  { encoding: "utf8" }).trim().split("\n").at(-1)));
+const fatalCrashes = vm.runInContext(
+  `INCIDENT_DATA.filter(r => r.severity === "Fatality").map(r => r.secondOf ?? r.reportId)`, ctx);
+const unreviewed = [...fatalCrashes].filter(rid => !reviewedCounts.has(rid));
+assert.deepEqual(unreviewed, [],
+  `Replicata: list each fatality's report and look it up in VEHICLES_INVOLVED in data/slurp.py.\nExpectata: every fatality has an entry (count, the narrative's words that give it), even when the count is the default 2.\nResultata: no entry for ${JSON.stringify(unreviewed)}.\n${FIX}`);
 
 console.log(`qual pass: exactly 3 fatalities, all Waymo, none judged at fault, each death divided by its narrative's vehicle count (${SEEN})`);

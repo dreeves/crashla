@@ -145,7 +145,7 @@ function gammaquant(a, b, p) {
 // 2026-10-31 (equal to the bit on 3,744 lists, every fault-fraction list the
 // page builds among them), without an allocation per incident. The fault-flip
 // search (shiftedFaultComponents) runs it over every incident of a window,
-// 1,232 for Waymo's default window, about twenty times a search.
+// 1,233 for Waymo's default window on 2026-11-02, about twenty times a search.
 function poissonBinomialWeights(fracs) {
   const w = new Float64Array(fracs.length + 1);
   w[0] = 1;
@@ -545,14 +545,16 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // srcLinks: the URLs of the sources a band's numbers come from; each URL's
 // one label is in BENCHMARK_SOURCES below.
 //
-// srcAiText: true marks a src whose words are an AI's, never the human's, so
-// the derivations table renders it as AI text (.ai-text, green; the VMT
-// sources table's legend: "green text = AI-generated"), as it does srcNote.
-// A src without it is the human's. Four carry it: the AV-cities fatality
-// band's, which the human labelled "Claude:" (2026-08-31), and the AV-cities
-// injury, airbag and serious-injury+ bands' Waymo-hub derivations, an agent's
-// English of 2026-08-22 since edited only in their figures (decision 23(b)
-// of the 2026-11-01 open questions, 2026-11-02; quals/ai-derivation-text.qual.mjs).
+// srcAiText: true marks a src that is AI text, so the derivations table
+// renders it as AI text (.ai-text, green; the VMT sources table's legend:
+// "green text = AI-generated"), as it does srcNote; a src without it is the
+// human's. Four carry it (decision 23(b) of the 2026-11-01 open questions,
+// 2026-11-02; quals/ai-derivation-text.qual.mjs): the AV-cities fatality
+// band's, which the human committed labelled "Claude:" (2026-08-31, in place
+// of an agent's Latin of 2026-08-28), and the AV-cities injury, airbag and
+// serious-injury+ bands' Waymo-hub derivations, an agent's English of
+// 2026-08-22, since edited by agents in their figures and in "six cities" ->
+// "five areas" (9c41e6d, 2026-09-04).
 //
 // fiveDay: true marks metrics whose qualifying incidents are structurally on
 // NHTSA's five-day reporting track — Third Amended SGO (Apr 24, 2025)
@@ -1748,9 +1750,12 @@ function vmtEndTooltip(month, miles, edge) {
 // at worst (incCov is conditional on the receipt-coverage best, so the
 // product is the month's expected share; data/vmt.js). The VMT chart's miles are the full month's,
 // so August's 10 Waymo incidents beside 20.8M miles read as a tenth of the
-// usual crash rate until 2026-10-03 (audit #60). This is not the MPI chart's
-// "incident coverage", which is incCov alone: there the receipt coverage is
-// already in the denominator.
+// usual crash rate until 2026-10-03 (audit #60). The MPI chart's dots carry
+// it too, for the metric shown (receivedShare): until 2026-11-02 they gave the
+// incident coverage alone, incCov (~60% for 2026-09, whose release held ~8%
+// of the month's incidents), and nothing on the five-day track, whose
+// receipt coverage was ~14% (decision 23(a) of the 2026-11-01 open
+// questions).
 // Note must say that the count above holds only
 // the reports NHTSA had received by the cutoff date shown, about X% of the
 // month's eventual incidents (worst case about Y%), so it is far below the
@@ -1758,12 +1763,25 @@ function vmtEndTooltip(month, miles, edge) {
 function vmtPartialNote(share, worst) {
   return `Count above only includes incidents received by ${NHTSA_DATA_THROUGH_DATE}: ~${Math.round(share * 100)}% of the month's eventual incidents (worst case ~${Math.round(worst * 100)}%)`;
 }
-// That note as the last line of an analysis month's dot tooltip: only the
-// data-through month's count, and a helmer's Monthly-lag months', are
-// partial (both factors are 1 elsewhere).
-function vmtPartialLine(row) {
-  const worst = row.coverage * row.incCovMin;
-  return worst < 0.999 ? `\n${vmtPartialNote(row.coverage * row.incCov, worst)}` : "";
+// The share of a month's eventual incidents that the release holds, best and
+// worst, as the effective miles scale it (monthSeriesData): on the five-day
+// track the receipt coverage, coverage and coverageMin; on the Monthly track
+// the receipt coverage times the incident coverage, coverage x incCov and
+// coverage x incCovMin (incCov is defined given the receipt coverage's best,
+// so both edges take the receipt best; data/vmt.js). Both are 1 in every
+// fully received month.
+function receivedShare(row, fiveDay) {
+  return fiveDay ? {best: row.coverage, worst: row.coverageMin}
+    : {best: row.coverage * row.incCov, worst: row.coverage * row.incCovMin};
+}
+// That note as the last line of an analysis month's dot tooltip, for a count
+// on the five-day track or on the Monthly track (fiveDay). On the five-day
+// track only the data-through month's count is partial; on the Monthly track
+// a helmer's Monthly-lag months' counts are partial too (every factor is 1
+// elsewhere). The VMT charts' count is all incidents, a Monthly-track count.
+function partialCountLine(row, fiveDay) {
+  const share = receivedShare(row, fiveDay);
+  return share.worst < 0.999 ? `\n${vmtPartialNote(share.best, share.worst)}` : "";
 }
 
 function helmerMonthRows(series, helmer) {
@@ -2262,7 +2280,7 @@ function monthSeriesData() {
   // Shared human entries: same reference in every month (literature-based
   // MPI), one per benchmark cohort (see HUMAN_HELMERS).
   const humanEntryFor = cohort => ({
-    month: null, coverage: 1,
+    month: null, coverage: 1, coverageMin: 1,
     incCov: 1, incCovMin: 1, // literature-based: nothing is still being reported
     vmtMin: 0, vmtBest: 0, vmtMax: 0,
     vmtRawMin: 0, vmtRawBest: 0, vmtRawMax: 0,
@@ -2366,6 +2384,7 @@ function monthSeriesData() {
       const entry = {
         month,
         coverage: vmt.coverage, // receipt coverage best (< 1 only in the data-through month)
+        coverageMin: vmt.coverageMin, // and its low edge (receivedShare)
         // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * vmt.coverage * vmt.incCovMin,
         vmtBest: vmt.vmtBest * vmt.coverage * vmt.incCov,
@@ -2706,26 +2725,27 @@ function renderAllHelmersMpiChart(series) {
       if (row === null) return null;
       const mpi = row.mpiByMetric[metric.key];
       if (!mpi) return null;
-      // covRatio: worst-case Monthly-track incident coverage for metrics
-      // without a five-day guarantee (incident_coverage_min; 1 = fully
-      // reported, <1 = NHTSA monthly reports still pending) and 1 for the
-      // five-day-track metrics, whose denominator is the receipt-scaled raw
-      // triple — the same metric-data selection mpiByMetric makes. Drives dot
-      // opacity so incomplete months are visually demoted without a separate
-      // code path. covBest is the best estimate (incident_coverage: pooled in
-      // the data-through month, the helmer's 5-Day share in its Monthly-lag
-      // months), shown in the tooltip to match the sanity table's "best"
-      // column. Read
-      // from the coverage columns directly: until 2026-09-26 it was the ratio
-      // of two differently composed VMT edges, (receipt best / receipt min) x
-      // incCovMin, i.e. 24% where the sanity table said 17.3%.
-      const covRatio = metric.fiveDay === true ? 1 : row.incCovMin;
-      const covBest = metric.fiveDay === true ? 1 : row.incCov;
+      // covRatio: the month's whole completeness at worst for the metric
+      // shown (receivedShare: the receipt coverage on the five-day track,
+      // times the incident coverage on the Monthly track; 1 = fully
+      // reported), the factors the metric's effective miles carry, the same
+      // metric-data selection mpiByMetric makes. Drives the dot, error-bar
+      // and "?" opacity, so incomplete months are visually demoted without a
+      // separate code path; its tooltip line (partialCountLine) gives the
+      // share, best and worst. Until 2026-11-02 it was the incident coverage
+      // alone on the Monthly track (incident_coverage_min, 27% for 2026-09,
+      // whose release held ~4% of its incidents at worst) and 1 on the
+      // five-day track (decision 23(a) of the 2026-11-01 open questions).
+      // Read from the coverage columns directly: until 2026-09-26 it was the
+      // ratio of two differently composed VMT edges, (receipt best / receipt
+      // min) x incCovMin, i.e. 24% where the sanity table said 17.3%.
+      const fiveDay = metric.fiveDay === true;
+      const covRatio = receivedShare(row, fiveDay).worst;
       // Y-range: every point's median dot is on-scale; fully-reported k≥1 months
       // also contribute their finite VMT spread (mpiMax = ∞ at k=0, so excluded).
       yMax = Math.max(yMax, covRatio > 0.99 && Number.isFinite(mpi.mpiMax)
                            ? mpi.mpiMax : mpi.mpiMedian);
-      return {...mpi, covRatio, covBest};
+      return {...mpi, covRatio, partialLine: partialCountLine(row, fiveDay)};
     });
     seriesRows.push({helmer, metric, vals});
   }
@@ -2806,10 +2826,7 @@ function renderAllHelmersMpiChart(series) {
       const ci95 = mpi.bands[mpi.bands.length - 1];
       const kLine = k !== null ? ` (${splur(k, "incident")})${countNoteLine(row.metric)}` : "";
       const ciLabel = k !== null ? "95% CI" : "Range";
-      const incompleteNote = mpi.covRatio < 0.999
-        ? `\n~${(mpi.covBest * 100).toFixed(0)}% incident coverage (worst case ~${(mpi.covRatio * 100).toFixed(0)}%)`
-        : "";
-      const tip = `${series.months[i]}\nMPI: ${fmtMiles(mpi.mpiMedian)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${incompleteNote}`;
+      const tip = `${series.months[i]}\nMPI: ${fmtMiles(mpi.mpiMedian)}${kLine}\n${ciLabel}: ${fmtMiles(ci95.lo)} – ${fmtMiles(ci95.hi)}${mpi.partialLine}`;
       // Dot at the posterior median (finite even at k=0); hollow for k=0 months
       // (prior-only, no event data) like the distribution chart.
       const yc = clampY(mpi.mpiMedian);
@@ -3187,36 +3204,41 @@ function logUniformGrid(lo, hi, n) {
 // 2026-10-30): its ADS miles a day on the forecast date over
 // TESLA_MILES_PER_CAR_DAY; until 2026-10-31 it counted distinct customer cars.
 //
-// Tesla's weights (A 0.79, B 0.14, C 0.07) were fit on 2026-10-29 to
-// Manifold's "Will Tesla have more autonomous vehicles providing ridehailing
-// than Waymo on Dec 31 2027?" (18.5%, 9 bettors, 2026-10-29;
+// Tesla's weights (A 0.78, B 0.15, C 0.07) are fit to Manifold's "Will Tesla
+// have more autonomous vehicles providing ridehailing than Waymo on Dec 31
+// 2027?" at its price of 2026-11-02, 18.46% (0.184638, read from
+// https://api.manifold.markets/v0/slug/will-tesla-have-more-autonomous-veh-qLuQQPP6Cy
+// at 18:31 PST; 9 bettors, last trade Oct 23;
 // https://manifold.markets/HillaryClinton/will-tesla-have-more-autonomous-veh-qLuQQPP6Cy):
-// the probability that Tesla's distinct cars (~1.3x its car-equivalents) exceed
-// Waymo's end-2027 fleet (log-normal, median ~14k, sigma 0.45, from
-// Manifold's "How many Waymo robotaxis at the end of 2027?") is ~0.04 under A
-// and was ~0.70 under B, and C counts toward the market at ~0.8 (a world with
+// the probability that Tesla's distinct cars (~1.3x its car-equivalents)
+// exceed Waymo's end-2027 fleet (log-normal, median ~14k, sigma 0.45, from
+// Manifold's "How many Waymo robotaxis at the end of 2027?") is 0.041 under A
+// and 0.641 under B, and C counts toward the market at ~0.8 (a world with
 // eyes-off FSD across the HW4 fleet is one where Tesla's ride-hail fleet
-// exceeds Waymo's). That fit had B's high at the research's 60,000; B's high
-// moved to 40,000 the same day without a refit, so on these inputs B now
-// gives ~0.64 and the mixture 17.8%, not 18.5%. Refit on them, B would be
-// ~0.15; on the page's own Waymo forecast in place of the market's
-// log-normal, the weights give 19.6% and a refit B ~0.12. Whether to refit,
-// and on which Waymo distribution, is the human's call (audit 2026-10-30:
-// forecasts-comment-arithmetic, forecasts-waymo-vs-cited-markets). C = 0.07
-// is a judgment between the 2026 Level-3 market (3.9%) and the any-maker
-// "read a book while driving" market's 2027 bucket (31%), discounted by
-// Tesla's guidance (customer cars only inside its network, from ~Q2 2027) and
-// its record on this promise (end-2025, then Q4 2026, now Q2 2027). Checks:
-// the mixture puts ~0.74 on Tesla's cumulative miles reaching 100M before
-// 2028 (A ~0.67, B ~1.0, C ~0.93), against 0.50 for "Before 2028" on
-// Manifold's "When will vision-only level 4 self-driving be widely deployed?"
-// (2026-10-31; https://manifold.markets/dreev/when-will-visiononly-level-4-selfdr),
-// whose FAQ defines widely deployed as "100 million autonomous miles, with
-// zero fatalities that are the fault of the AI", so the market asks for more
-// than the miles (this comment gave ~0.54 until 2026-10-31, when the mixture
-// then in place gave ~0.67); and ~0.25 on "driverless in 10+ US metros beyond
-// Austin by Aug 1, 2027" (0.27). Until 2026-10-29: A 0.71, B 0.24, C 0.05,
-// fit to the Jan-2-2027 market (since traded down to ~6%).
+// exceeds Waymo's). With C at its judged 0.07 (below), B = (0.1846 - 0.07 x
+// 0.8 - 0.93 x 0.041) / (0.641 - 0.041) = 0.151 and A the rest, 0.779; at two
+// decimals the mixture gives 18.38% (quals/tesla-forecast-inputs.qual.mjs
+// checks the fit). Refit 2026-11-02 at the human's decision (open question
+// 22(a)): the fit of 2026-10-29 (A 0.79, B 0.14, at the market's 18.5% then)
+// had B's high at the research's 60,000, under which B gave ~0.70; B's high
+// moved to 40,000 the same day without a refit, and those weights then gave
+// 17.8% (audit 2026-10-30, forecasts-comment-arithmetic). On the page's own
+// Waymo forecast in place of the market's log-normal these weights give 20.3%,
+// and a refit there B ~0.12 (forecasts-waymo-vs-cited-markets). C = 0.07 is a
+// judgment between the 2026 Level-3 market (3.9%) and the any-maker "read a
+// book while driving" market's 2027 bucket (31%), discounted by Tesla's
+// guidance (customer cars only inside its network, from ~Q2 2027) and its
+// record on this promise (end-2025, then Q4 2026, now Q2 2027). Checks: the
+// mixture puts ~0.74 on Tesla's cumulative miles reaching 100M before 2028 (A
+// ~0.67, B ~1.0, C ~0.93), against 0.50 for "Before 2028" on Manifold's "When
+// will vision-only level 4 self-driving be widely deployed?" (2026-10-31;
+// https://manifold.markets/dreev/when-will-visiononly-level-4-selfdr), whose
+// FAQ defines widely deployed as "100 million autonomous miles, with zero
+// fatalities that are the fault of the AI", so the market asks for more than
+// the miles (this comment gave ~0.54 until 2026-10-31, when the mixture then
+// in place gave ~0.67); and ~0.25 on "driverless in 10+ US metros beyond
+// Austin by Aug 1, 2027" (0.27). Until 2026-10-29: A 0.71, B 0.24, C 0.05, fit
+// to the Jan-2-2027 market (since traded down to ~6%).
 //
 // Anchors (Oct 2026): Tesla 465 car-equivalents in October (FLEET_HISTORY),
 // 1,080 registered in Texas (573 Cybercab, 507 Model Y; TxDMV, Oct 28),
@@ -3249,8 +3271,8 @@ function logUniformGrid(lo, hi, n) {
 // and grows x3.8 through 2027.)
 const TESLA_MILES_PER_CAR_DAY = 180;
 const TESLA_ROBOTAXI_SCENARIOS = [
-  { weight: 0.79, best: 504000,  lo: 162000, hi: 1440000 }, // A: slow ramp
-  { weight: 0.14, best: 2700000, lo: 900000, hi: 7200000 }, // B: aggressive Cybercab scale-up
+  { weight: 0.78, best: 504000,  lo: 162000, hi: 1440000 }, // A: slow ramp
+  { weight: 0.15, best: 2700000, lo: 900000, hi: 7200000 }, // B: aggressive Cybercab scale-up
 ];
 // Scenario C's eyes-off driving on customer HW4 cars, which C adds to A's
 // robotaxi ramp edge by edge in all three tables (the human's decision,
@@ -3258,24 +3280,56 @@ const TESLA_ROBOTAXI_SCENARIOS = [
 // (1.74M FSD subscriptions and purchases worldwide, HW3 included; Q3-2026
 // deck): 400k cars eyes-off on the forecast date [60k; 2.0M, more than the
 // ~1.5M with paid FSD by end-2027, which needs eyes-off on HW4 cars without
-// paid FSD too], from a launch anywhere in Apr-Dec 2027, at ~16 eyes-off
-// miles a car-day [15, 30]: 6.4M miles a day [0.9M, 60M]. The ~16 is an
-// estimate with no source: the AGENTS.md ledger's 2026-09-30 entry, cited for
-// it until 2026-10-31, gives Tesla's 7.142B FSD (Supervised) miles in North
-// America over a window it infers as Jul 2025-Jun 2026 and no count of the
-// cars, and 16 a day on those miles takes ~1.2M cars. Through Dec 31, 2027
-// they drive ~600M eyes-off miles [20M, 6B], and Tesla-Network rides carry
-// ~10% of those miles at ~6 miles a ride.
+// paid FSD too], from a launch anywhere in Apr-Dec 2027, at 25 eyes-off
+// miles a car-day [15, 30]: 10M miles a day [0.9M, 60M].
+// The 25 is Tesla's latest FSD (Supervised) miles per active FSD car-day,
+// sourced at the human's decision (open question 22(b), 2026-11-02; ~16 until
+// then, an estimate with no source). Tesla's Q3-2026 Update (Oct 21, 2026)
+// charts "Cumulative Miles Driven with FSD (Supervised)" (p. 8;
+// vector-extracted, 11.818B at the end of June 2026 and 15.493B at the end of
+// September; from June 2025 on, month by month, within 0.04B of the Q2-2026
+// Update's own chart) and counts "Active FSD Subscriptions" (p. 5: 1.48M at
+// Q2's end, 1.74M at Q3's; the "metric includes both upfront payment and
+// monthly subscriptions and excludes free trials"). Q3's 3.675B miles over its
+// 92 days and the quarter's mean count, 1.61M, give 24.8 miles a car-day; the
+// quarters before give 12.9 (Q3 2025), 16.1, 17.0 and 21.4 (Q2 2026), on the
+// counts of 0.95M (the Q2-2026 Update's, at Q2 2025's end), 1.04M, 1.10M and
+// 1.28M. As a rate per car it runs high: the miles include free trials, which
+// the count leaves out, and both are worldwide and include HW3 cars. lo 15,
+// near late 2025's rate (16.1 in Q4), allows an eyes-off domain narrower than
+// today's supervised use; hi 30, a little over what an average US Tesla is
+// driven, ~27 miles a day (Tesla's FSD safety page, captured Oct 23, 2026: the
+// US fleet's "size (over three million U.S. vehicles)" and "activity (over 30
+// billion miles annually in the U.S.)"), since a car's eyes-off miles cannot
+// exceed its miles, though the cars on FSD are driven more than the average.
+// Through Dec 31, 2027 they drive ~600M eyes-off miles [20M, 6B], and
+// Tesla-Network rides carry ~10% of those miles at ~6 miles a ride. The 600M
+// was derived on 2026-10-30 at ~16 a car-day and is not re-derived at 25:
+// the same ramp of cars at 25 gives ~940M, which puts the all-HW4 rides
+// lane's 5th percentile (7.97M) under the robotaxi lane's (8.06M), against
+// the rule that the all-HW4 lane sits nowhere below it (the human's decision,
+// 2026-10-30; quals/fleet-forecast.qual.mjs). Which gives is the human's call
+// (2026-11-02). (The exact sum of A's rides and the eyes-off rides, moving
+// together, has its 5th percentile under the robotaxi lane's at either
+// figure, ~7.97M at 600M and ~7.93M at 940M: the two-piece band through C's
+// summed edges, with its narrower low side, kept the rule at 600M.)
 const TESLA_EYES_OFF = {
   weight: 0.07,
-  milesPerDay: { best: 400000 * 16, lo: 60000 * 15, hi: 2000000 * 30 }, // on the forecast date
-  cumulative: { best: 600000000, lo: 20000000, hi: 6000000000 },          // through the day before
-  ridesPerMile: 0.1 / 6,                                                 // Tesla-Network rides
+  cars: { best: 400000, lo: 60000, hi: 2000000 },               // eyes-off on the forecast date
+  milesPerCarDay: { best: 25, lo: 15, hi: 30 },                 // each one's eyes-off miles a day
+  cumulative: { best: 600000000, lo: 20000000, hi: 6000000000 }, // through the day before
+  ridesPerMile: 0.1 / 6,                                         // Tesla-Network rides
 };
 // Two {best, lo, hi} bands summed edge by edge (scenario C's robotaxi part
 // and its eyes-off part, taken as moving together).
 function sumBands(a, b) {
   return { best: a.best + b.best, lo: a.lo + b.lo, hi: a.hi + b.hi };
+}
+// Two {best, lo, hi} bands multiplied edge by edge (scenario C's eyes-off
+// cars and their miles a car-day, taken as moving together): C's eyes-off
+// miles a day on the forecast date.
+function productBands(a, b) {
+  return { best: a.best * b.best, lo: a.lo * b.lo, hi: a.hi * b.hi };
 }
 // The path's start (the human's choice, 2026-10-30: "start at Oct's exit
 // rate"): Nov 1, 2026, the day after data/vmt.csv's newest Tesla month, at
@@ -3316,7 +3370,7 @@ const FLEET_FORECAST = [
   // C is A's robotaxi miles plus the eyes-off miles (TESLA_EYES_OFF).
   { helmer: "Tesla", components: [
     ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ ...c, scope: "robotaxi" })),
-    { weight: TESLA_EYES_OFF.weight, ...sumBands(TESLA_ROBOTAXI_SCENARIOS[0], TESLA_EYES_OFF.milesPerDay), scope: "hw4" },
+    { weight: TESLA_EYES_OFF.weight, ...sumBands(TESLA_ROBOTAXI_SCENARIOS[0], productBands(TESLA_EYES_OFF.cars, TESLA_EYES_OFF.milesPerCarDay)), scope: "hw4" },
   ].map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_CAR_DAY, lo: c.lo / TESLA_MILES_PER_CAR_DAY,
     hi: c.hi / TESLA_MILES_PER_CAR_DAY, scope: c.scope })) },
   { helmer: "Waymo", components: [
@@ -3897,16 +3951,18 @@ function growthMetricSpec(key) {
   const specs = {
     fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipAt: wholeAtSigFigs,
       // yMax 1,000,000, the decade above the largest value drawn (the all-HW4
-      // lane's 95th percentile, ~320,000; 4,000,000 until 2026-11-02, sized
-      // for that lane's distinct customer cars, 1.92M, before it counted
-      // car-equivalents; decision 23(g); quals/fleet-timeseries.qual.mjs)
+      // lane's 95th percentile, ~317,000; decision 23(g) of the 2026-11-01
+      // open questions; quals/fleet-timeseries.qual.mjs). 4,000,000 until
+      // 2026-11-02, set when that lane counted distinct customer cars (its
+      // 95th percentile 2.86M for Jan 1, 2027, 1.92M for Jan 1, 2028 on
+      // 2026-10-29), before it counted car-equivalents (2026-10-31).
       yMin: 6, yMax: 1000000, yTicks: [10, 100, 1000, 10000, 100000, 1000000],
-      // TODO: translate. The note should say that Tesla's fleet line, the
+      // The note should say that Tesla's fleet line, the
       // all-HW4 fork included, counts car-equivalents (its ADS miles a day
       // divided by TESLA_MILES_PER_CAR_DAY, 180 miles a car-day), while
       // Waymo's and Zoox's lines count cars (decision 23(d), the human's
       // "Yes, in Latin", 2026-11-02).
-      note: `Linea Teslae, ramo omnium vehiculorum HW4 incluso, aequivalentia vehiculorum numerat: milia passuum eius in die divisa per ${TESLA_MILES_PER_CAR_DAY} milia passuum vehiculi in die. Lineae Waymo et Zoox ipsa vehicula numerant.`,
+      note: `For number of vehicles, the scenario where all HW4 Teslas with "Full Self-Driving" become unsupervised is actually counting "car equivalents": ADS miles per day day divided by ${TESLA_MILES_PER_CAR_DAY}, our assumed miles per car-day. Waymo and Zoox count actual number of vehicles. This is an attempt to be more apples-to-apples since a private Tesla that takes one short trip a month shouldn't count for as much as a full-time robotaxi.`,
       lanes: () => trajectoryLanes(fleetForecastCurves(), h => FLEET_HISTORY[h], FLEET_TS_END_MONTH)},
     rides: {label: "Rides (cumulative)", yLabel: "Cumulative rides", valueLabel: "Rides", fmt: fmtWhole,
       tipAt: wholeAtSigFigs,
@@ -3918,7 +3974,7 @@ function growthMetricSpec(key) {
       // yMin 500 keeps Tesla's first cumulative points (683 / 7k / 20k mi) and
       // Zoox's early lower band on-plot (yMin 100000 clipped them until 2026-09-04)
       yMin: 500, yMax: 10000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000],
-      note: "Cumulative miles = the top section's VMT, carried through the last NHTSA data month and then extrapolated (dashed); the solid part should match the VMT charts above.",
+      note: "Cumulative miles = the top section's VMT, extrapolated forward; the solid part should match the VMT charts above.",
       lanes: () => trajectoryLanes(bandForecastCurves(MILES_FORECAST), milesHistory, CUMULATIVE_END_MONTH)},
   };
   assert(specs[key] !== undefined, "unknown growth metric", {key});
@@ -3978,7 +4034,9 @@ function wholeAtSigFigs(v, n) {
 // [173,562,000, 175,162,000], read "174M / Range: 174M – 175M" for "174.3M /
 // Range: 173.6M – 175.2M". On 2026-10-31's data the one such point was
 // Waymo's 2026-03 miles, 222,463,000 [221,553,000, 223,763,000]: "222M /
-// Range: 222M – 224M" until then, "222.5M / Range: 221.6M – 223.8M" now.
+// Range: 222M – 224M" until then, "222.5M / Range: 221.6M – 223.8M" after.
+// Since 2026-11-02 that point is 222,408,000 and prints "222.4M / Range:
+// 221.6M – 223.8M".
 function historySigFigs(values) {
   const at = n => values.map(v => Math.round(Number(v.toPrecision(n))));
   const tied = n => values.some((v, i) => values.some((w, j) =>
@@ -4042,7 +4100,7 @@ function growthScenarioNote(lanes) {
     return scenarioPct(lane.share);
   };
   // Notes on "splits into two scenarios" below: the
-  // model has three (A slow robotaxi ramp 0.79, B aggressive scale-up 0.14,
+  // model has three (A slow robotaxi ramp 0.78, B aggressive scale-up 0.15,
   // C eyes-off FSD on all HW4 cars 0.07). The robotaxi curve mixes A and B;
   // B is its fat right shoulder toward 15,000 car-equivalents.
   return `Tesla forecast splits into two scenarios: the robotaxi (~${pct("robotaxi")}%) ` +
@@ -4265,13 +4323,13 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
   // The incident count on the miles' basis: the month's, or (cumulative
   // view) all through it, as vmtCume is.
   const incidentsOf = row => vmtCumulative ? row.incidentsCume : row.incidents.total;
-  // The partial-count note (vmtPartialLine) describes the month's own count,
+  // The partial-count note (partialCountLine) describes the month's own count,
   // so only the monthly view's tooltips carry it (decision #35 of the
   // 2026-10-04 audit, the human's "Monthly view only"): under the cumulative
   // view's running total, Waymo's 2026-09 read "2,135 incidents / Count above
   // only includes incidents received by 2026-09-15: ~8% of the month's
   // eventual incidents" until 2026-10-31.
-  const partialOf = row => vmtCumulative ? "" : vmtPartialLine(row);
+  const partialOf = row => vmtCumulative ? "" : partialCountLine(row, false);
 
   // Each line's error bars, its path, then its dots and (hitCircles, over
   // every line's) each month's targets: its range's low and high ends, then
@@ -4490,7 +4548,7 @@ function renderHumanBenchmarkTable() {
     .map(m => {
       const h = m.humanMPI[hh];
       // An AI's src (srcAiText) renders as AI text, the human's as plain text
-      // (the one branch); the links after it are neither's words.
+      // (the one branch); the links after it are not AI text.
       const src = h.srcAiText === true ? `<span class="ai-text">${escHtml(h.src)}</span>` : escHtml(h.src);
       const derivation = `${src} (${h.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)})`;
       // srcNote: an AI-authored precision note on the derivation (green).

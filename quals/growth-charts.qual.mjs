@@ -60,8 +60,9 @@ const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&g
 // 175,162,000], read "174M / Range: 174M – 175M" (the decision's example
 // reads "174.3M / Range: 173.6M – 175.2M"), and on 2026-10-31's data Waymo's
 // 2026-03 miles, 222,463,000 [221,553,000, 223,763,000], read "222M / Range:
-// 222M – 224M" (now "222.5M / Range: 221.6M – 223.8M"). Coded here, not read
-// from the app.
+// 222M – 224M" (then "222.5M / Range: 221.6M – 223.8M"; since 2026-11-02 the
+// point is 222,408,000, "222.4M / Range: 221.6M – 223.8M"). Coded here, not
+// read from the app.
 const SUFFIXES = ["", "K", "M", "B", "T"];
 const sigAt = (v, n) => Math.round(Number(v.toPrecision(n))); // n figures, not below whole units
 const digitsOf = v => String(Math.round(v)).length;

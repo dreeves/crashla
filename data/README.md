@@ -349,8 +349,8 @@ new no-monitor crash or row until they are re-pinned.
 Tesla reports carry against their `PASSENGER_OVERRIDE` entries (since
 2026-10-31; until then it pinned the list of Tesla reports with a rider,
 re-pinned each release); a Tesla narrative that says nothing about who was
-aboard (13781-16941, due in the Nov 2026 release) fails its narrative check
-whatever is stored, until a human decides what such a report stores.
+aboard (13781-16941, due in the Nov 2026 release) passes its narrative check
+only when stored as (filed code, "Unknown") (the human, 2026-11-02).
 
 ## VMT master
 

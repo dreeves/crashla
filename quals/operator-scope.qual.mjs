@@ -154,7 +154,7 @@ Expectata: an unlisted in-scope Waymo/Zoox report whose narrative says "a test d
 Resultata: ${JSON.stringify(S.sd)}.`);
 assert.deepEqual(S.sd.unclassified, [],
   `Replicata: run the safety-driver tripwire over every helmer report's latest version.
-Expectata: every in-scope Waymo/Zoox narrative with safety-driver language is classified -- re-coded in OPERATOR_TYPE_OVERRIDE or listed in SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN with its reason.
+Expectata: every in-scope Waymo/Zoox narrative with safety-driver language is classified -- re-coded in OPERATOR_TYPE_OVERRIDE or listed in SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN with the narrative's words the review rests on.
 Resultata: unclassified ${JSON.stringify(S.sd.unclassified)}.`);
 
 assert.ok(!ids.has("30610-9578"),

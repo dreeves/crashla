@@ -54,7 +54,10 @@
 //   5. the app accepts the extra partially received month(s) at the end of a
 //      window and still rejects a partial month followed by a full one;
 //   6. with a lagged helmer shown, the MPI chart's "?" and that helmer's dot
-//      tooltip mark the lagged month.
+//      tooltip mark the lagged month on a Monthly-track metric; on every
+//      five-day-track metric the "?" follows the receipt coverage alone, so
+//      it marks the data-through month and the lagged month carries neither
+//      a "?" nor a coverage note.
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { spawnSync } from "node:child_process";
@@ -488,47 +491,70 @@ assert.match(app.middle, /precedes/,
 // On All incidents, a Monthly-track metric that needs no fault ratings, so
 // every shown helmer-month with miles has a dot even before a release's
 // fault batch (on at-fault, an unrated month draws none).
+// On a five-day-track metric (each of METRIC_DEFS' fiveDay metrics is
+// checked; none needs fault ratings) the month's whole completeness is the
+// receipt coverage alone, so each month's "?" fades in by 1 - coverage_min:
+// the data-through month is marked, and the lagged month, whose receipt
+// coverage is 1 (the 5-Day reports arrive on the normal schedule), carries
+// neither a "?" nor a coverage note. Until 2026-11-02 that track drew every
+// "?" at opacity 0 (decision 23(a)), and until that day's review nothing here
+// pinned it.
 class EscStub { set textContent(v) { this.innerHTML = String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); } }
 const ctx6 = vm.createContext({ console, Math, Number,
   document: { getElementById() { return null; }, createElement() { return new EscStub(); } } });
 vm.runInContext(dataScript, ctx6, { filename: "data.js" });
 vm.runInContext(appScript, ctx6, { filename: "crashla.js" });
-const shown = JSON.parse(vm.runInContext(`(() => {
-  incidents = INCIDENT_DATA; ${injectLag}
+// The world is set up once: monthSeriesData computes every metric, so only
+// the selected metric changes between the renders below.
+vm.runInContext(`incidents = INCIDENT_DATA; ${injectLag}
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
-  monthHelmerEnabled.Zoox = true; selectedMetricKey = "all";
-  const s = monthSeriesData(), start = s.months.indexOf(DEFAULT_START_MONTH);
+  monthHelmerEnabled.Zoox = true;
+  var section6Series = monthSeriesData();`, ctx6);
+// The default-window chart on one metric with Zoox shown, and each month's
+// expected "?" opacity: the largest 1 - (the month's whole completeness at
+// worst for that metric's track) over the shown ADS helmers, read from the
+// coverage columns.
+const renderOn = key => JSON.parse(vm.runInContext(`(() => {
+  selectedMetricKey = ${JSON.stringify(key)};
+  const s = section6Series, start = s.months.indexOf(DEFAULT_START_MONTH);
   const metric = selectedMonthMetric();
   const ads = ADS_HELMERS.filter(h => monthHelmerEnabled[h]);
   const csv = vmtRows;
   const months = s.months.slice(start);
+  const track = metric.fiveDay === true
+    ? { worst: r => r.coverageMin, rule: "1 - coverage_min (the receipt coverage alone)" }
+    : { worst: r => r.coverage * r.incCovMin, rule: "1 - coverage x incident_coverage_min" };
   return JSON.stringify({
-    fiveDay: metric.fiveDay === true, metric: metric.key, ads,
+    fiveDay: metric.fiveDay === true, metric: metric.key, ads, rule: track.rule,
     html: renderAllHelmersMpiChart(sliceSeries(s, start, s.months.length - 1)),
     months,
-    expected: months.map(m => Math.max(0, ...csv.filter(r => r.month === m && ads.includes(r.helmer)).map(r => 1 - r.coverage * r.incCovMin))),
+    expected: months.map(m => Math.max(0, ...csv.filter(r => r.month === m && ads.includes(r.helmer)).map(r => 1 - track.worst(r)))),
   });
 })()`, ctx6));
-assert.ok(!shown.fiveDay && shown.ads.includes("Zoox"),
-  `Replicata: select All incidents and switch Zoox on. Expectata: a Monthly-track metric, Zoox shown. Resultata: ${shown.metric}, ${JSON.stringify(shown.ads)}.`);
 // A run of adjacent incomplete months shares one "?" (audit 2026-10-04 #36:
 // on a phone the lagged month's and the data-through month's glyphs sat 3.6
 // units apart and read "??"), centred on the run at its largest
 // incompleteness; every complete month keeps its own at opacity 0.
 // (The markers are the month-tick texts that carry an opacity, found by that
 // rather than by their glyph since 2026-10-29.)
-const qmarks = [...shown.html.matchAll(/<text class="month-tick" x="([\d.]+)"[^>]*style="opacity:([\d.]+);pointer-events:none">[^<]*<\/text>/g)]
-  .map(m => ({ x: Number(m[1]), opacity: m[2] }));
-const monthX = [...new Set([...shown.html.matchAll(/<circle class="month-dot" cx="([\d.]+)"/g)].map(m => Number(m[1])))].sort((a, b) => a - b);
-const groups = [];
-shown.expected.forEach((o, i) => { if (o > 0 && i > 0 && shown.expected[i - 1] > 0) groups[groups.length - 1].push(i); else groups.push([i]); });
-const wantQ = groups.map(g => ({ months: g.map(i => shown.months[i]).join("+"),
-  x: (monthX[g[0]] + monthX[g[g.length - 1]]) / 2, opacity: Math.max(...g.map(i => shown.expected[i])).toFixed(3) }));
-assert.ok(monthX.length === shown.months.length && qmarks.length === wantQ.length &&
-  qmarks.every((q, i) => q.opacity === wantQ[i].opacity && Math.abs(q.x - wantQ[i].x) <= 0.01),
-  `Replicata: the "?" markers of the default-window MPI chart with Zoox shown (metric ${shown.metric}).
-Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest 1 - coverage x incident_coverage_min over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
+const checkQmarks = chart => {
+  const qmarks = [...chart.html.matchAll(/<text class="month-tick" x="([\d.]+)"[^>]*style="opacity:([\d.]+);pointer-events:none">[^<]*<\/text>/g)]
+    .map(m => ({ x: Number(m[1]), opacity: m[2] }));
+  const monthX = [...new Set([...chart.html.matchAll(/<circle class="month-dot" cx="([\d.]+)"/g)].map(m => Number(m[1])))].sort((a, b) => a - b);
+  const groups = [];
+  chart.expected.forEach((o, i) => { if (o > 0 && i > 0 && chart.expected[i - 1] > 0) groups[groups.length - 1].push(i); else groups.push([i]); });
+  const wantQ = groups.map(g => ({ months: g.map(i => chart.months[i]).join("+"),
+    x: (monthX[g[0]] + monthX[g[g.length - 1]]) / 2, opacity: Math.max(...g.map(i => chart.expected[i])).toFixed(3) }));
+  assert.ok(monthX.length === chart.months.length && qmarks.length === wantQ.length &&
+    qmarks.every((q, i) => q.opacity === wantQ[i].opacity && Math.abs(q.x - wantQ[i].x) <= 0.01),
+    `Replicata: the "?" markers of the default-window MPI chart with Zoox shown (metric ${chart.metric}).
+Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest ${chart.rule} over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
 Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) => ({ ...q, at: wantQ[i] && wantQ[i].months })).filter(q => q.opacity !== "0.000"))}.`);
+};
+const shown = renderOn("all");
+assert.ok(!shown.fiveDay && shown.ads.includes("Zoox"),
+  `Replicata: select All incidents and switch Zoox on. Expectata: a Monthly-track metric, Zoox shown. Resultata: ${shown.metric}, ${JSON.stringify(shown.ads)}.`);
+checkQmarks(shown);
 // A month's ADS dot tooltips, each with its helmer: the targets whose
 // accessible name is the helmer's mark-name prefix (seriesMarkName) and the
 // tip. The coverage note's figures are ~best% then ~worst%. Until 2026-10-29
@@ -536,20 +562,46 @@ Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) 
 // words ("incident coverage", "worst case").
 const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const markPrefix = JSON.parse(vm.runInContext("JSON.stringify(Object.fromEntries(ADS_SERIES.map(h => [h, seriesMarkName(h, '')])))", ctx6));
-const tipsOf = month => [...shown.html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
+const tipsOf = (chart, month) => [...chart.html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
   .map(m => ({ tip: decode(m[1]), name: decode(m[2]) }))
-  .map(t => ({ ...t, helmer: shown.ads.find(h => t.name === markPrefix[h] + t.tip) }))
+  .map(t => ({ ...t, helmer: chart.ads.find(h => t.name === markPrefix[h] + t.tip) }))
   .filter(t => t.helmer !== undefined && t.tip.startsWith(month + "\n"));
 const percents = tip => (tip.match(/~\d+%/g) || []).map(p => Number(p.slice(1, -1)));
-for (const [key, [best, lo]] of Object.entries({ ...r.expectedLag, [`Zoox|${lagMonth}`]: [0.6, 0.25, 1] })) {
+const laggedTriples = { ...r.expectedLag, [`Zoox|${lagMonth}`]: [0.6, 0.25, 1] };
+for (const [key, [best, lo]] of Object.entries(laggedTriples)) {
   const [lagged, month] = key.split("|");
   const want = [Math.round(best * 100), Math.round(lo * 100)];
-  const tips = tipsOf(month);
+  const tips = tipsOf(shown, month);
   assert.ok(tips.length === shown.ads.length && new Set(tips.map(t => t.helmer)).size === tips.length
     && tips.every(t => JSON.stringify(percents(t.tip)) === JSON.stringify(t.helmer === lagged ? want : [])),
     `Replicata: the ${month} ADS dot tooltips of that chart.
 Expectata: ${shown.ads.length} tooltips, one per shown ADS helmer; the lagged helmer's (${key}) gives its coverage as ~${want[0]}% (worst case ~${want[1]}%), the others no coverage figures.
 Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
 }
+// Every five-day-track metric, in the same world: only the data-through month
+// is incomplete on that track (a precondition, so the "?" check has a
+// visible marker to find), its "?" fades in by the receipt coverage alone,
+// and no lagged month's ADS dot tooltip carries a coverage note.
+const fiveDayKeys = JSON.parse(vm.runInContext("JSON.stringify(METRIC_DEFS.filter(m => m.fiveDay === true).map(m => m.key))", ctx6));
+assert.ok(fiveDayKeys.length > 0,
+  `Replicata: list the five-day-track metrics of METRIC_DEFS. Expectata: at least one. Resultata: none.`);
+for (const metricKey of fiveDayKeys) {
+  const chart = renderOn(metricKey);
+  const marked = chart.months.filter((_m, i) => chart.expected[i] > 0);
+  assert.ok(chart.fiveDay && chart.ads.includes("Zoox") && JSON.stringify(marked) === JSON.stringify([dataThroughMonth]),
+    `Replicata: select ${metricKey}, switch Zoox on, and list the window's months in which a shown ADS helmer's receipt coverage at worst (coverage_min) is below 1.
+Expectata: a five-day-track metric, Zoox shown, and the data-through month ${dataThroughMonth} alone (Zoox's lagged ${lagMonth} has receipt coverage 1).
+Resultata: ${chart.metric}, five-day ${chart.fiveDay}, ${JSON.stringify(chart.ads)}, ${JSON.stringify(marked)}.`);
+  checkQmarks(chart);
+  for (const key of Object.keys(laggedTriples)) {
+    const month = key.split("|")[1];
+    const tips = tipsOf(chart, month);
+    assert.ok(tips.length === chart.ads.length && new Set(tips.map(t => t.helmer)).size === tips.length
+      && tips.every(t => percents(t.tip).length === 0),
+      `Replicata: the ${month} ADS dot tooltips of the ${metricKey} chart (${key} lagged).
+Expectata: ${chart.ads.length} tooltips, one per shown ADS helmer, none with coverage figures: a lag holds back Monthly-track reports only, and the month's receipt coverage is 1.
+Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
+  }
+}
 
-console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart`);
+console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart, on All incidents and on ${fiveDayKeys.length} five-day-track metrics`);

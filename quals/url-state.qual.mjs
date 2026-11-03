@@ -595,7 +595,10 @@ for (const [query, items, foreign] of REJECTIONS) {
   const rejectedText = p.bannerRejected.textContent;
   // Each item must stand as its own word of the sentence, the list in order
   // (so a bare "f" cannot be satisfied by a letter of some other word).
-  const words = text => text.split(/[\s,]+/);
+  // Spaces, commas and parentheses separate words: since d701706 the human's
+  // sentence wraps the list in parentheses (the human, 2026-11-02, to restate
+  // this qual to match).
+  const words = text => text.split(/[\s,()]+/);
   const listed = items.every(item => words(rejectedText).includes(item)) &&
     rejectedText.includes(items.join(", "));
   const got = {

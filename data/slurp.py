@@ -428,6 +428,12 @@ VEHICLES_INVOLVED = {
     "30270-11713": (3, "The Waymo AV and the motorcycle sustained damage. The "
                        "extent of the damage to the passenger car that left "
                        "the scene is unknown at this time."),
+    # Waymo AUG-2026 Dallas fatality: AV + the SUV that struck the pedestrian
+    # (the decedent, not a vehicle) = 2, the default, an entry so that a
+    # re-filing that changes the count is re-read (since 2026-11-02)
+    "30270-16196": (2, 'a Waymo Autonomous Vehicle ("Waymo AV") operating in '
+                       'Dallas, Texas was in a collision involving a '
+                       'pedestrian and an SUV'),
     # Batch below added 2026-08-22 (human-approved hygiene): narrative-verified
     # 3+-vehicle counts for NONFATAL incidents from the audit inventory (e.g.
     # "All three vehicles sustained damage"). Zero displayed-number change by
@@ -842,8 +848,8 @@ AIRBAG_OVERRIDE = {
 # #10), and check_passengers_reviewed() stops the run on a Tesla report
 # without one until its narrative is read. Not every Tesla narrative does:
 # 13781-16941's (on Tesla's Oct-18-2026 list, not yet in NHTSA's file) says
-# nothing about who was aboard, and what to store for such a report is for a
-# human to decide (audit 2026-10-30, R3).
+# nothing about who was aboard, and such a report is stored as (filed code,
+# "Unknown") (audit 2026-10-30, R3; the human, 2026-11-02, open question 18).
 #
 # Waymo and Zoox carry no in-car monitor, and their codes agree with their
 # narratives except where an entry below says otherwise; the occupancy
@@ -2452,7 +2458,8 @@ def is_public_service_incident(row):
 # operator code is supposed to carry this ("In-Vehicle ..."), and their
 # denominators hold driverless miles only, so an in-scope narrative that says
 # otherwise must be classified: re-coded in OPERATOR_TYPE_OVERRIDE, or listed
-# below as ADS-driven at impact with the reason. Tesla's monitor-aboard mode
+# below as ADS-driven at impact, with the narrative's words the review rests
+# on. Tesla's monitor-aboard mode
 # is in scope by design (its deck miles include it), so Tesla is exempt.
 # Calibrated 2026-09-26 on every in-scope Waymo/Zoox narrative, all versions:
 # exactly 30270-4881 (re-coded above) and 30270-7075 (below).

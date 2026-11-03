@@ -464,7 +464,7 @@ Resultata: {${rc.best}, ${rc.lo}, ${rc.hi}} weight ${rc.weight}.`);
   const a = { daily: heaviest(d.daily), miles: heaviest(d.miles.filter(c => c.scope === "robotaxi")),
     rides: heaviest(d.rides.filter(c => c.scope === "robotaxi")) };
   const want = {
-    fleet: Object.fromEntries(EDGES.map(k => [k, (a.daily[k] + d.eyesOff.milesPerDay[k]) / d.perCarDay])),
+    fleet: Object.fromEntries(EDGES.map(k => [k, (a.daily[k] + d.eyesOff.cars[k] * d.eyesOff.milesPerCarDay[k]) / d.perCarDay])),
     miles: Object.fromEntries(EDGES.map(k => [k, a.miles[k] + d.eyesOff.cumulative[k]])),
     rides: Object.fromEntries(EDGES.map(k => [k, a.rides[k] + d.eyesOff.cumulative[k] * d.eyesOff.ridesPerMile])),
   };
@@ -476,6 +476,6 @@ Resultata: {${rc.best}, ${rc.lo}, ${rc.hi}} weight ${rc.weight}.`);
   }
   assert.ok(problems.length === 0,
     `Replicata: read Tesla's scenario C component (scope "hw4") in FLEET_FORECAST, MILES_FORECAST and RIDES_FORECAST, with scenario A (the heaviest robotaxi component), TESLA_EYES_OFF and TESLA_MILES_PER_CAR_DAY.
-Expectata: one C component per table, weighted TESLA_EYES_OFF.weight, each edge A's plus the eyes-off part: fleet (A's daily miles + the eyes-off daily miles) / TESLA_MILES_PER_CAR_DAY, miles A's cumulative + the eyes-off cumulative, rides A's rides + the eyes-off cumulative x TESLA_EYES_OFF.ridesPerMile.
+Expectata: one C component per table, weighted TESLA_EYES_OFF.weight, each edge A's plus the eyes-off part: fleet (A's daily miles + the eyes-off daily miles, the eyes-off cars x their miles a car-day) / TESLA_MILES_PER_CAR_DAY, miles A's cumulative + the eyes-off cumulative, rides A's rides + the eyes-off cumulative x TESLA_EYES_OFF.ridesPerMile.
 Resultata: ${problems.join("; ")}.`);
 }

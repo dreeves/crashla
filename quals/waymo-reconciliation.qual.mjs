@@ -135,12 +135,15 @@ Resultata: ${JSON.stringify(row.ratio)}.`);
 // that constant to the hub's unrounded 0.01106. A literal "3.3x" (the value on
 // the 2026-09-15 data) would go red at the next NHTSA release with no code change.
 // The note under the table names the cause of the serious-injury+ gap: the
-// page counts SGO-alleged severity, Waymo police-report KABCO A+K.
+// page counts SGO-alleged severity, Waymo police-report KABCO A+K. Any span
+// counts: the human made the note their own text in d701706, out of the
+// ai-text span it was in (the human, 2026-11-02, to restate this qual to
+// match).
 const noteIds = ["30270-8968", "30270-10112", "30270-15547", "30270-13817"];
-const note = (section.match(/<span class="ai-text">[^<]*<\/span>/g) || []).find(s => noteIds.every(id => s.includes(id)));
+const note = (section.match(/<span[^>]*>[^<]*<\/span>/g) || []).find(s => noteIds.every(id => s.includes(id)));
 assert.ok(note,
   `Replicata: read the note under the Waymo cross-check table.
-Expectata: an ai-text note naming the three SGO "Serious" filings Waymo does not count as police-serious and the one awaiting a police crash report (${noteIds.join(", ")}).
+Expectata: a note naming the three SGO "Serious" filings Waymo does not count as police-serious and the one awaiting a police crash report (${noteIds.join(", ")}).
 Resultata: section ${section.slice(0, 600)}.`);
 
 console.log(`qual pass: full-history Waymo rates within bounds of Waymo's published figures (injury ${(stats.injury / pub.injury).toFixed(2)}x, airbag ${(stats.airbag / pub.airbag).toFixed(2)}x, serious+ ${(stats.ssi / pub.ssi).toFixed(2)}x); cross-check rows use their track's VMT and unrounded published rates`);

@@ -3,14 +3,15 @@
 // in the human benchmark derivations table too (decision 23(b) of the
 // 2026-11-01 open questions, the human's, 2026-11-02; audit copy-8). A
 // band's src (METRIC_DEFS humanMPI) is the human's unless it carries
-// srcAiText: true. Four srcs are an agent's own words, never reworded by the
-// human:
-//  - the AV-cities fatality band's, which the human labelled "Claude:" when
-//    committing it (f75b903, 2026-08-31);
+// srcAiText: true. Four srcs are AI text:
+//  - the AV-cities fatality band's, which the human committed labelled
+//    "Claude:" (f75b903, 2026-08-31), in place of the Latin an agent wrote
+//    on 2026-08-28;
 //  - the AV-cities injury, airbag and serious-injury+ bands' Waymo-hub
 //    derivations, which an agent wrote in English on 2026-08-22 (6ef93d6,
 //    the repin to the Waymo hub's per-area rates) and agents have since
-//    edited only in their figures (9c41e6d, 396df3c, db984d8).
+//    edited in their figures (9c41e6d, 396df3c, db984d8) and in "six
+//    cities" -> "five areas" (9c41e6d).
 // So:
 //  1. those four bands carry srcAiText: true;
 //  2. srcAiText is absent or true, nothing else (anti-Postel: a false or a
@@ -45,11 +46,11 @@ const app = JSON.parse(vm.runInContext(`JSON.stringify({
 })`, ctx));
 
 const problems = [];
-// 1. The four agent-written srcs are flagged.
+// 1. The four AI-text srcs are flagged.
 for (const [cohort, metric] of AI_WRITTEN) {
   const b = app.bands.find(x => x.cohort === cohort && x.metric === metric);
   if (b === undefined) problems.push(`no ${cohort} ${metric} band`);
-  else if (b.flag !== true) problems.push(`${cohort} ${metric}: srcAiText is ${JSON.stringify(b.flag)}, want true (its src is an agent's words)`);
+  else if (b.flag !== true) problems.push(`${cohort} ${metric}: srcAiText is ${JSON.stringify(b.flag)}, want true (its src is AI text)`);
 }
 // 2. The flag is absent or true.
 for (const b of app.bands) {
@@ -73,7 +74,7 @@ for (const b of app.bands) {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render the human benchmark derivations table (renderHumanBenchmarkTable) and read each band's srcAiText.
-Expectata: the AV-cities injury, airbag, serious-injury+ and fatality bands, whose srcs are an agent's words, carry srcAiText: true; every band's flag is absent or true; each derivation cell renders a flagged src inside one .ai-text span and an unflagged one as plain text, its links after it.
+Expectata: the AV-cities injury, airbag, serious-injury+ and fatality bands, whose srcs are AI text, carry srcAiText: true; every band's flag is absent or true; each derivation cell renders a flagged src inside one .ai-text span and an unflagged one as plain text, its links after it.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 8).join("\n")}`);
-console.log(`qual pass: ${AI_WRITTEN.length} agent-written derivation srcs render as AI text; the other ${app.bands.length - AI_WRITTEN.length} bands' srcs as plain text`);
+console.log(`qual pass: ${AI_WRITTEN.length} AI-text derivation srcs render as AI text; the other ${app.bands.length - AI_WRITTEN.length} bands' srcs as plain text`);
