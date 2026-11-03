@@ -547,16 +547,21 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //
 // srcAiText: true marks a src that is AI text, so the derivations table
 // renders it as AI text (.ai-text, green; the VMT sources table's legend:
-// "green text = AI-generated"), as it does srcNote; a src without it is meant
-// to be the human's, which not every one is yet: each questionable src and
-// srcNote carries a to-do comment for the human's review (open question 33,
-// since 2026-11-03). Four carry it (decision 23(b) of the 2026-11-01 open questions,
-// 2026-11-02; quals/ai-derivation-text.qual.mjs): the AV-cities fatality
-// band's, which the human committed labelled "Claude:" (2026-08-31, in place
-// of an agent's Latin of 2026-08-28), and the AV-cities injury, airbag and
+// "green text = AI-generated"); a src without it renders plain, as every
+// srcNote does (both srcNotes are the human's translations; plain since
+// 2026-11-03, open question 33). Five carry it
+// (quals/ai-derivation-text.qual.mjs): the four of decision 23(b) of the
+// 2026-11-01 open questions (2026-11-02), the AV-cities fatality band's,
+// which the human committed labelled "Claude:" (2026-08-31, in place of an
+// agent's Latin of 2026-08-28), and the AV-cities injury, airbag and
 // serious-injury+ bands' Waymo-hub derivations, an agent's English of
 // 2026-08-22, since edited by agents in their figures and in "six cities" ->
-// "five areas" (9c41e6d, 2026-09-04).
+// "five areas" (9c41e6d, 2026-09-04); and the US-average fatality band's,
+// which the human labelled "Claude:" on 2026-11-03. Every other src is the
+// human's: the human reviewed each one an agent wrote in whole or in part
+// on 2026-11-03 (open question 33), and a DONE comment above each of those
+// but the US-average injury src (whose to-do comment the review removed)
+// gives its history.
 //
 // fiveDay: true marks metrics whose qualifying incidents are structurally on
 // NHTSA's five-day reporting track — Third Amended SGO (Apr 24, 2025)
@@ -878,7 +883,7 @@ const METRIC_DEFS = [
       HumansAV: {lo: 159000, hi: 1026000,
         // DONE (open question 33): agent English (eeb59c0, 2026-06-12; agents changed only its figures since) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: injury lo (149k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (513k) / 50% legal-allocation floor',
-        // QUAL (open question 33): your translation (f75b903, 2026-08-31; on Nov 2 an agent changed "812115's" to "812 506's" under the link update you approved), yet it renders green: the table wraps every srcNote in .ai-text.
+        // DONE (open question 33): your translation (f75b903, 2026-08-31; on Nov 2 an agent changed "812115's" to "812 506's" under the link update you approved), yet it renders green: the table wraps every srcNote in .ai-text.
         srcNote: "94% = NHTSA 812 506's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
         // The injury band's source and the 94%'s (audit #41: Kusano Table 3
         // and NHTSA 813791, linked until 2026-10-03, feed no number here).
@@ -889,7 +894,7 @@ const METRIC_DEFS = [
       HumansUS: {lo: 830000, hi: 2180000,
         // DONE (open question 33): agent English (eeb59c0, 2026-06-12; agents changed only its figures since) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
-        // QUAL (open question 33): your translation (f75b903, 2026-08-31), yet it renders green, as the note above.
+        // DONE (open question 33): your translation (f75b903, 2026-08-31), yet it renders green, as the note above.
         srcNote: "[same as above for humans in AV cities]",
         // The US injury band's sources and the 94%'s (audit #41: the 94%'s
         // source was missing until 2026-10-03).
@@ -1145,7 +1150,8 @@ const METRIC_DEFS = [
         // whole — the very convention the AV side's 1/N division rejects —
         // so it was dropped as numerator-inconsistent (it was also the
         // AV-favorable edge).
-        src: "Claude: FARS 2024 national: 1.19 deaths per 100M VMT (39,254 deaths) to 1.10 fatal crashes per 100M VMT (36,297 crashes) — numerators matching the AV side's fractional-death count.",
+        src: "FARS 2024 national: 1.19 deaths per 100M VMT (39,254 deaths) to 1.10 fatal crashes per 100M VMT (36,297 crashes) — numerators matching the AV side's fractional-death count.",
+        srcAiText: true,
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
         ]},
@@ -1214,13 +1220,17 @@ for (const m of METRIC_DEFS) {
 // Anti-Postel: every band cites at least one source, and every source it
 // cites has its one label (sourceLink also asserts at render time; this
 // catches a mistyped URL at load). srcAiText is absent or true: a false or a
-// string would read as a flag and mean nothing.
+// string would read as a flag and mean nothing. srcNote is absent or a
+// non-empty string: an empty one, a null or a number would render as a stray
+// space or value after the links.
 for (const m of METRIC_DEFS) {
   for (const [cohort, h] of Object.entries(m.humanMPI || {})) {
     assert(Array.isArray(h.srcLinks) && h.srcLinks.length > 0, "human benchmark band without srcLinks",
       {metric: m.key, cohort});
     assert(h.srcAiText === undefined || h.srcAiText === true, "srcAiText must be absent or true",
       {metric: m.key, cohort, srcAiText: h.srcAiText});
+    assert(h.srcNote === undefined || (typeof h.srcNote === "string" && h.srcNote !== ""),
+      "srcNote must be absent or a non-empty string", {metric: m.key, cohort, srcNote: h.srcNote});
     for (const url of h.srcLinks) {
       assert(BENCHMARK_SOURCES[url] !== undefined, "srcLinks URL missing from BENCHMARK_SOURCES",
         {metric: m.key, cohort, url});
@@ -4569,8 +4579,10 @@ function renderHumanBenchmarkTable() {
       // (the one branch); the links after it are not AI text.
       const src = h.srcAiText === true ? `<span class="ai-text">${escHtml(h.src)}</span>` : escHtml(h.src);
       const derivation = `${src} (${h.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)})`;
-      // srcNote: an AI-authored precision note on the derivation (green).
-      const note = h.srcNote === undefined ? "" : ` <span class="ai-text">${escHtml(h.srcNote)}</span>`;
+      // srcNote: a note on the derivation, after its links, as plain text:
+      // both srcNotes are the human's translations (the table rendered them
+      // as AI text until 2026-11-03; open question 33).
+      const note = h.srcNote === undefined ? "" : ` ${escHtml(h.srcNote)}`;
       return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td class="num">${fmtMiles(h.lo)}</td><td class="num">${fmtMiles(h.hi)}</td><td class="derivation">${derivation}${note}</td></tr>`;
     })).join("");
   return `
