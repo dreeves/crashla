@@ -4,9 +4,11 @@
 // transcription slip, fixed 2026-09-04), and the Oct-15-2026 release's
 // 2026-08 row was first entered as (10, 47), counting an incident's track by
 // its surviving report's type, so 30270-16286 (a 5-Day report whose v2 is an
-// Update) dropped out of the denominator. An incident's track is its first
-// filing's Report Type (REPORT_TRACK, as monthly_track_counts() and the
-// arrival tables count it); a later Update does not change it, which is also
+// Update) dropped out of the denominator. An incident's track is its crash's
+// first filing's Report Type (REPORT_TRACK, as monthly_track_counts() and the
+// arrival tables count it; a re-filing under a new Report ID,
+// SUPERSEDED_REPORTS, takes the report it replaced, since 2026-11-02, open
+// question 26(a)); a later Update does not change it, which is also
 // what keeps every month's denominator final at its second normal release.
 //
 // Spec: for each month M in the table, the numerator is M's in-scope
@@ -53,8 +55,9 @@ def five_day_by_month(rows):
         assert iid not in by_inc, ('two in-scope reports under one Same Incident ID', iid, rid, by_inc[iid]['Report ID'])
         by_inc[iid] = r
     counts = {}
+    replaced_by = {new: old for old, new in slurp.SUPERSEDED_REPORTS.items()}
     for r in by_inc.values():
-        if first_type[r['Report ID']] in ('1-Day', '5-Day'):
+        if first_type[replaced_by.get(r['Report ID'], r['Report ID'])] in ('1-Day', '5-Day'):
             m = iso(r['Incident Date'].strip())
             counts[m] = counts.get(m, 0) + 1
     return counts

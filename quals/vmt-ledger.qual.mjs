@@ -23,7 +23,11 @@ const CUME_PINS = {
   // 2026-09-29: hub thru-Jun-2026 chain, Atlanta D withdrawn (Waymo's CSV4 v2);
   // 2026-10-03: 339,595,163 -> 339,495,163, September's Maricopa term less
   // ~0.1M for the measured Phoenix weather pauses (Sep 16-18 and Sep 29)
-  "waymo|2026-09": 339495163,
+  // 2026-11-02: 339,495,163 -> 339,440,163, the pre-series offset's central
+  // from its range's floor, 150,000, to its middle, 205,000 (open question
+  // 20(b), approved): every knot's cumulative central, and every one from
+  // December 2022 on, 55,000 lower
+  "waymo|2026-09": 339440163,
   // 2026-10-23: 3,630,000 -> 4,241,000, Jul-Sep re-pinned on Tesla's own
   // no-safety-monitor miles (robotaxi safety page + Q3-2026 deck) plus June's
   // measured monitor-aboard remainder (approved 2026-10-23)

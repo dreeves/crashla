@@ -185,7 +185,11 @@ Resultata: ${JSON.stringify(notes)}.`);
 // Blincoe inputs.
 {
   const CRSS = "https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/CRSS/2024/";
-  const IIHS = "https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison";
+  // IIHS's urban/rural comparison at its current address: the /topics/ one
+  // the page linked until 2026-11-02 answers with a permanent redirect
+  // (HTTP 301) to this one, which serves the same table (2024 urban 1.01
+  // deaths per 100M VMT; checked 2026-10-31 and 2026-11-02; 2026-10-30 audit, LNK-4).
+  const IIHS = "https://www.iihs.org/research-areas/fatality-statistics/detail/urban-rural-comparison";
   const N813791 = "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791";
   const want = {
     all: [CRSS], atfault: [CRSS], injury: [CRSS], atfaultInjury: [CRSS],

@@ -15,8 +15,9 @@ import fs from "node:fs";
 //     anchors)
 // The milestones carry real slack ("~"/">"/"approximately"), so centrals are
 // pinned within 15% and the kyoom band must contain the round published number.
-// The Mar knot and the Jul floor (2026-10-27) are pinned with the rest of
-// the 2026 rows by zoox-vmt-model.qual.
+// The Mar knot and the Jul floor (2026-10-27), and the Nov-2025 knot the 1M
+// crossing sets (2026-11-02, with the smooth 2025 path), are pinned with the
+// rest of the rows from June 2025 by zoox-vmt-model.qual.
 
 const MILESTONES = [
   { month: "2025-12", published: 1300000 },
@@ -71,7 +72,8 @@ Expectata: the Dec-2025 knot [${knotLo}, ${knotHi}] = [1.25M - (20,174 + 2 x 19,
 Resultata: [${dec.kmin}, ${dec.kmax}].`);
 }
 
-// The 1M crossing (added 2026-10-31, decision #12 of the 2026-10-04 audit).
+// The 1M crossing (added 2026-10-31, decision #12 of the 2026-10-04 audit;
+// since 2026-11-02 the smooth 2025 path keeps it in Dec 1-7 as a range).
 // Zoox's CTO Jesse Levinson, at Fortune Brainstorm AI in San Francisco on
 // Monday, Dec 8, 2025: "Zoox crossed the 1 million mile technical threshold
 // for autonomous rides just last week" (Fortune, Dec 8, 2025, and its Dec 9

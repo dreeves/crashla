@@ -133,8 +133,14 @@ function guard(n, width) {
 }
 for (const n of [2, 3, 4, 5, 6]) guard(n, quarterWidth * Math.sqrt((n - 1) / 2));
 // Every width the model uses past the calibrated lengths passes the guard at
-// its own length.
-for (const row of produced.filter(r => span(r) > CALIBRATED_MONTHS)) guard(span(row), row.allocation_log_halfwidth);
+// its own length, and is at most ln 2, half to twice the month's miles
+// (2026-11-02, open question 24(7)): the guard sets only a floor on coverage,
+// which any wider band also passes.
+for (const row of produced.filter(r => span(r) > CALIBRATED_MONTHS)) {
+  guard(span(row), row.allocation_log_halfwidth);
+  assert.ok(row.allocation_log_halfwidth <= Math.LN2 + 1e-12,
+    `Replicata: read the authoring model's ${span(row)}-month allowance at ${row.month}, an interval longer than the ${CALIBRATED_MONTHS} months the allowance is calibrated on.\nExpectata: a log half-width of at most ln 2 (${Math.LN2}), half to twice the month's miles.\nResultata: ${row.allocation_log_halfwidth}.`);
+}
 
 const smooth = reconstruct(sample, 3, smoothRate);
 const flat = reconstruct(sample, 3, flatRate);

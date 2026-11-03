@@ -85,7 +85,10 @@ for p in [snap / 'nhtsa-2025-jun-dec.csv', snap / 'nhtsa-2025-jun-2026-jan.csv']
     releases.setdefault(D, {r['Report ID'].strip() for r in rows if r['Report ID'].strip()})
 newest = slurp.newest_snapshot_rows()
 # In-scope incidents of the newest file, deduplicated as main() does; an
-# incident's track is its surviving report's version-1 Report Type.
+# incident's track is its crash's first filing's Report Type (a re-filing
+# under a new Report ID, SUPERSEDED_REPORTS, takes the report it replaced:
+# since 2026-11-02, open question 26(a); until then the surviving report's own
+# version 1).
 filed = [r for r in newest if r['Report ID'].strip() and r['Report Version'].strip()
          and r['Same Incident ID'].strip() and r['Incident Date'].strip()]
 first_type = {r['Report ID']: r['Report Type'].strip() for r in filed if int(r['Report Version']) == 1}
@@ -111,9 +114,11 @@ for _ver, r in by_rid.values():
 table_months = {m for t in slurp.MONTHLY_ARRIVAL_OBSERVATIONS.values() for m in t}
 arrivals = collections.defaultdict(collections.Counter)
 tracks = collections.Counter()
+replaced_by = {new: old for old, new in slurp.SUPERSEDED_REPORTS.items()}
 for r in by_inc.values():
     h, M = slurp.HELMER_SHORT[r['Reporting Entity'].strip()], iso(r['Incident Date'].strip())
-    track = {'1-Day': 'five_day', '5-Day': 'five_day', 'Monthly': 'monthly'}[first_type[r['Report ID']]]
+    first_report = replaced_by.get(r['Report ID'], r['Report ID'])
+    track = {'1-Day': 'five_day', '5-Day': 'five_day', 'Monthly': 'monthly'}[first_type[first_report]]
     tracks[(h, M, track)] += 1
     if track == 'monthly' and M in table_months:
         due = mnum(M) + 1

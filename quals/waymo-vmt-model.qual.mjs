@@ -32,12 +32,13 @@ Resultata: ${mismatches.join("; ")}.`);
 
 // Independently derive each knot's cumulative envelope from its published
 // figure's precision, explicitly excluded miles and the pre-series offset
-// (central 150,000, range 150,000-260,000; data/README.md, Waymo anchors):
-// central = figure - 150,000, bounds = [figure low - 260,000, figure high -
+// (central 205,000, range 150,000-260,000; data/README.md, Waymo anchors):
+// central = figure - 205,000, bounds = [figure low - 260,000, figure high -
 // 150,000]. Until 2026-10-31 the offset was a fixed 150,000 and the June,
 // July and December 2024 knots kept the rounded milestones' centrals (22M,
-// 25M, 50M less 150,000) inside envelopes stretched to hold them.
-const OFFSET = {central: 150000, lo: 150000, hi: 260000};
+// 25M, 50M less 150,000) inside envelopes stretched to hold them; until
+// 2026-11-02 its central was the range's floor, 150,000 (open question 20(b)).
+const OFFSET = {central: 205000, lo: 150000, hi: 260000};
 // [month, figure, minus, plus, residue]: the figure's range is [figure -
 // minus, figure + plus]; January 2025's central keeps the series' one-mile
 // ledger residue.

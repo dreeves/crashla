@@ -119,8 +119,8 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-6907,2,Pickup Truck,rear right,rear left,No Injuries Reported,0.15,"Waymo stopped behind an angle-parked pickup; as Waymo began to proceed at 2 mph, the pickup began reversing into it"
 30270-6906,23,Passenger Car,front + front right,rear left,Minor,0.1,"Cross car ran red, struck SUV ahead; spinning vehicle hit Waymo's front"
 30270-6879,2,Passenger Car,rear left + rear + rear right,front left + front + front right,Minor,0,Waymo braked at intersection; car behind rear-ended
-30270-7013,35,Pickup Truck,front left + front,front left + front,No Injuries Reported,0.5,Waymo struck pickup being towed backwards at angle partially in lane
-30270-6878,23,Pickup Truck,front left + front,front left + front,No Injuries Reported,0.5,Different Waymo struck same towed pickup at angle partially in lane
+30270-7013,35,Pickup Truck,front left + front,front left + front,No Injuries Reported,0.9,Waymo drove into a pickup towed backwards and angled partly into its lane
+30270-6878,23,Pickup Truck,front left + front,front left + front,No Injuries Reported,0.9,Second Waymo drove into the same towed pickup angled partly into its lane
 30270-7015,0,Heavy Truck,front,right,No Injuries Reported,0,Heavy truck reversed into stopped Waymo after both began left turn
 30270-7014,0,Passenger Car,front,left,No Injuries Reported,0,Waymo parked near garage exit; car turning out struck front and fled
 30270-7018,0,Pickup Truck,left,rear left,No Injuries Reported,0,Waymo parked at curb; pickup reversed from across-street driveway into door
@@ -461,11 +461,11 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-9372,25,"Other, see Narrative",bottom,unknown,No Injuries Reported,0.2,AV drove over rock in center of lane after left turn
 30270-9408,0,Passenger Car,rear right,front left,No Injuries Reported,0,AV stopped yielding; car lane-changing right clipped rear
 30270-9431,32,Pickup Truck,left,right,No Injuries Reported,0.1,AV passing on right; pickup re-entered lane from center turn lane
-30270-9420,3,Passenger Car,front right,left,No Injuries Reported,0.05,AV passing parked car; its door opened suddenly into AV
+30270-9420,3,Passenger Car,front right,left,No Injuries Reported,0,Parked car's driver door opened into AV passing it in a drop-off lane
 30270-9412,3,Passenger Car,rear,front,No Injuries Reported,0,AV proceeding from green; car behind accelerated into rear
 30270-9434,0,Van,rear left,right,No Injuries Reported,0,AV stopped exiting driveway; van passing clipped rear
 30270-9373,0,Bus,rear left,rear left,No Injuries Reported,0,AV stopped yielding; school bus right turn rear swung into it
-30270-9437,2,SUV,front right,left,No Injuries Reported,0.05,AV passing parked SUV; its door opened suddenly into AV
+30270-9437,2,SUV,front right,left,No Injuries Reported,0,Parked SUV's driver door opened into passing AV's passenger side
 30270-9400,0,Pickup Truck,rear left,front right,No Injuries Reported,0,AV stopped in queue; pickup passing to turn lane clipped rear
 30270-9430,0,Passenger Car,rear + rear right,front left + front,No Injuries Reported,0,AV stopped at red; rear-ended
 30270-9407,0,Bus,rear right,left,No Injuries Reported,0,AV stopped in queue; bus made wide left turn into rear side
@@ -564,12 +564,12 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-9851,0,Passenger Car,front left + left,front left + front,No Injuries Reported,0,AV stopped at red; wrong-way left-turning car hit front
 30270-9738,0,Passenger Car,rear left + rear + rear right,front left + front + front right + top,No Injuries Reported,0,"AV stopped at red; car at high speed rear-ended (airbag, towed)"
 30270-9843,0,SUV,rear,front,No Injuries Reported,0,AV stopped in queue; SUV rear-ended
-30270-9855,3,SUV,left + rear left,right,No Injuries Reported,0.05,AV passing SUV in dropoff lane; SUV door opened into AV
-30270-9764,17,SUV,front left,left,No Injuries Reported,0.05,AV passing double-parked SUV; its door opened suddenly into AV
+30270-9855,3,SUV,left + rear left,right,No Injuries Reported,0,SUV stopped in next drop-off lane; its rear door opened into passing AV's rear
+30270-9764,17,SUV,front left,left,No Injuries Reported,0,Double-parked SUV's rear door opened into AV passing on a narrow street
 30270-9737,0,Passenger Car,rear left,front + front right,No Injuries Reported,0,"AV stopped after dropoff; car rear-ended (airbag, towed)"
 30270-9735,21,Passenger Car,front left,right,No Injuries Reported,0.1,"Car ahead entered center turn lane then re-entered AV's lane, clipped"
 30270-9905,0,Passenger Car,front,rear,No Injuries Reported,0,AV pulled over; car ahead reversed into front
-30270-9883,2,Passenger Car,front left,right,No Injuries Reported,0.1,AV passing stopped car on right; its passenger doors opened into AV
+30270-9883,2,Passenger Car,front left,right,No Injuries Reported,0,Car stopped mid-road; its passengers opened doors into AV passing on its right
 30270-9878,0,Pickup Truck,front right,left,No Injuries Reported,0,AV parked for pickup; pickup reversed from garage into front
 30270-9565,0,Heavy Truck,rear left,left,No Injuries Reported,0,AV stopped to yield on narrow road; garbage truck clipped rear
 30270-9635,0,Passenger Car,rear right,front left,No Injuries Reported,0,AV stopped to yield; car behind rear-ended (towed)
@@ -2215,6 +2215,7 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 30270-16663,18,Passenger Car,front,right,Minor W/O Hospitalization,0.05,Car ran red at high speed into AV's lane on green; AV slowed but hit its side
 30270-14303,0,Passenger Car,right,front left,Property Damage. No Injured Reported,0.1,AV stopped for dropoff; passenger opened rear door into car passing on its right
 30270-9987-B,0,Non-Motorist: Cyclist,right,,Moderate,0,Waymo parked for dropoff; cyclist doored by the adjacent Waymo's rider fell into it
+30270-11224-B,0,SUV,left,front right + right,Property Damage. No Injured Reported,0,Stopped Waymo; a passing Waymo's rider opened a door into its side mirror
 30270-11424-B,,SUV,right,front left,Property Damage. No Injured Reported,0.3,"Waymo backed out of its stall beside a Waymo poised in the aisle, which pulled into it"
 30270-13817-B,0,Passenger Car,unknown,left,Unknown,0,Waymo stopped in a red-light queue; a red-runner careening off a crash hit it
 30270-14890-B,0,SUV,rear left,front right,Property Damage. No Injured Reported,0.1,Parked Waymo's own rider opened its rear door into a Waymo passing on the left

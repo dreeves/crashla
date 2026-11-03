@@ -216,6 +216,9 @@ Resultata: ${plain.byHelmer.Waymo[key].verdictKey} at ${plain.byHelmer.Waymo[key
 //     rebuilt on the per-day rate between its statements (0.821x in d73ce85,
 //     whose end-July knot still had a ceiling; 0.865x once the July
 //     statement became a floor only).
+//   - 2026-11-02: still worse, 0.8648x -> 0.8657x: the smooth 2025 path
+//     (open question 21) raised the Jan 1-Mar 24 rate, and with it the
+//     end-March knot's upper edge and every later one, by 5,833 miles.
 // Expect this assertion to keep alternating; re-pin it each release rather
 // than treating either direction as the stable truth.
 assert.ok(
@@ -239,6 +242,8 @@ Resultata: ${plain.byHelmer.Zoox.all.verdictKey} at ${plain.byHelmer.Zoox.all.ra
 //   - by 7b348ce (2026-10-27, after the Oct-15 release): still worse, 0.898x.
 //   - 2026-10-27 (later): still worse, 0.898x -> 0.926x, the Zoox 2026
 //     rebuild (0.874x in d73ce85, with the end-July ceiling).
+//   - 2026-11-02: still worse, 0.9258x -> 0.9269x, the smooth 2025 path (the
+//     same 5,833 miles on the window's upper edge).
 // Re-pin it like the full-history one when a release or a VMT re-pin moves it.
 const zooxDefault = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {

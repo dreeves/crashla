@@ -2,9 +2,9 @@
 // "Each AV involved"; implemented 2026-10-31): a crash between two of a
 // helmer's AVs counts once per AV, like the crashed-vehicle human benchmarks
 // and Waymo's own crash list (Safety Impact hub CSV2, through Jun 2026, lists
-// each of the reports below twice). Two AVs that each filed a report
-// (30270-16207 and -16174, Atlanta, AUG-2026) already counted twice; until
-// 2026-10-31 a crash one report filed for both AVs counted once.
+// each of the reports below twice but 30270-11224). Two AVs that each filed a
+// report (30270-16207 and -16174, Atlanta, AUG-2026) already counted twice;
+// until 2026-10-31 a crash one report filed for both AVs counted once.
 //
 // Spec: data/slurp.py's SECOND_INVOLVEMENTS lists each such report with the
 // narrative's words naming the second AV, and slurp adds a record for that AV
@@ -17,8 +17,12 @@
 // SECOND_AV_REVIEWED with the reason). The incident browser marks the second
 // AV's row, so it does not read as a duplicate filing of the same narrative.
 //
-// 30270-11224 (Mesa, JUN-2025) is held for the human: its narrative says both
-// Waymos' ADS were engaged and both were damaged, but hub CSV2 lists it once.
+// 30270-11224 (Mesa, JUN-2025), which hub CSV2 lists once, counts too since
+// 2026-11-02 (the human's answer to open question 19: the benchmarks count
+// crashed vehicles, each carrying the crash's outcome, so every AV a narrative
+// shows struck counts): its narrative says both Waymos' ADS were engaged and
+// both were damaged. Its second AV's contact areas are the report's swapped,
+// as for the other reports whose two AVs struck each other.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
@@ -34,6 +38,9 @@ const WANT = {
   // parked for its own dropoff; the doored cyclist fell into its passenger side
   "30270-9987": { speed: 0, svMovement: "Parked", cpMovement: "Proceeding Straight", crashWith: "Non-Motorist: Cyclist",
                   belted: PAX_UNKNOWN, svHit: "right", cpHit: "", faultfrac: 0 },
+  // stopped; the passing first Waymo's rider opened its front passenger door into its driver side mirror
+  "30270-11224": { speed: 0, svMovement: "Stopped", cpMovement: "Passing", crashWith: "SUV",
+                   belted: PAX_UNKNOWN, svHit: "left", cpHit: "front right + right", faultfrac: 0 },
   // reversing out of the stall beside the first Waymo, which pulled forward into its right side
   "30270-11424": { speed: null, svMovement: "Backing", cpMovement: "Proceeding Straight", crashWith: "SUV",
                    belted: PAX_UNKNOWN, svHit: "right", cpHit: "front left", faultfrac: 0.3 },
@@ -106,7 +113,7 @@ const S = JSON.parse(run.stdout.trim().split("\n").at(-1));
 // 1. The reviewed table: exactly these reports, each with the narrative's words.
 assert.deepEqual(Object.keys(S.second).sort(), Object.keys(WANT).sort(),
   `Replicata: list data/slurp.py's SECOND_INVOLVEMENTS.
-Expectata: the five single-report crashes of two Waymos that the narrative and Waymo's hub CSV2 both show (${Object.keys(WANT).join(", ")}).
+Expectata: the six single-report crashes of two Waymos that the narratives show, five of them listed twice in Waymo's hub CSV2 and 30270-11224 once (${Object.keys(WANT).join(", ")}).
 Resultata: ${JSON.stringify(Object.keys(S.second))}.`);
 assert.equal(S.suffix, "-B",
   `Replicata: read SECOND_INVOLVEMENT_SUFFIX in data/slurp.py.

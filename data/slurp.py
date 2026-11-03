@@ -110,7 +110,8 @@ NHTSA_DATA_THROUGH_DATE = "2026-09-15"
 # from data/snapshots history: (five-day-type public-service Waymo/Tesla/Zoox
 # incidents of month M present in the first release containing M) / (M's
 # eventual five-day-type total), deduplicated as main() does. An incident's
-# type is its first filing's Report Type (REPORT_TRACK), so a later Update
+# type is its crash's first filing's Report Type (REPORT_TRACK; a re-filing
+# under a new Report ID takes the report it replaced), so a later Update
 # leaves it in the count (2026-08's 30270-16286, a 5-Day report whose v2 is an
 # Update, first entered as 47). They set the band's high edge
 # (FIVE_DAY_RECEIPT_COVERAGE_MAX). Re-measure and re-review on each release;
@@ -169,7 +170,8 @@ RECEIPT_MONTHS_EXCLUDED = {
 #
 # MONTHLY_ARRIVAL_OBSERVATIONS: for each helmer and incident month M, its
 # in-scope Monthly-track incidents (deduplicated as main() does, in the newest
-# file; an incident's track is its surviving report's version-1 Report Type)
+# file; an incident's track is its crash's first filing's Report Type,
+# REPORT_TRACK)
 # counted by the release at which that report first appeared, as (by the
 # release whose data-through month is M+1, one release later, ...). Measured
 # from data/snapshots history; a month enters at the release whose
@@ -399,9 +401,15 @@ SUPERSEDED_REPORTS = {
 # check_overrides_apply() stops the run on an entry that names no in-scope
 # incident of the analysis window). The NHTSA CSV's "Crash With" field is
 # singular and doesn't capture multi-vehicle pileups, and no field counts
-# the vehicles, so these entries have no filed value to re-check on a
-# re-filing, unlike the severity, airbag and location overrides. Default is 2
-# (the AV + one crash partner). Only the
+# the vehicles, so each entry is (the count, the narrative's words that give
+# it, verbatim): those words are what the review read, and
+# check_reviewed_quotes() stops the run when the report's latest filing no
+# longer holds them, so a re-filing is re-counted (since 2026-11-02, open
+# question 26(c); until then an entry was a bare count with nothing to
+# re-check, unlike the severity, airbag and location overrides). Where the
+# narrative does not number the vehicles, the words are a run of it that names
+# each of them, and the AV, where they leave it out, is one more.
+# Default is 2 (the AV + one crash partner). Only the
 # fatality metric reads this field (fractional-death divisor) and
 # fatality-guard.qual forces a human count for each new fatality; the
 # narrative-verified nonfatal counts below are data hygiene so the field is
@@ -409,88 +417,156 @@ SUPERSEDED_REPORTS = {
 VEHICLES_INVOLVED = {
     # Waymo JAN-2025 SF fatality (report 30270-9724): chain collision — AV +
     # car stopped behind it + speeding SUV + a fourth car the AV rotated into,
-    # plus "at least two other vehicles" per SFPD ("the other three vehicles",
-    # "five passengers in four of the vehicles" injured) = 6 vehicles.
-    "30270-9724": 6,
+    # plus "at least two other vehicles" per SFPD ("five passengers in four of
+    # the vehicles" injured) = 6 vehicles: the three with severe damage and
+    # "the other three vehicles".
+    "30270-9724": (6, "The Waymo AV, the passenger vehicle behind the Waymo "
+                      "AV, and the SUV sustained severe damage. The extent of "
+                      "the damage to the other three vehicles is currently "
+                      "unknown."),
     # Waymo SEP-2025 Tempe fatality: AV + motorcycle + hit-and-run passenger car
-    "30270-11713": 3,
+    "30270-11713": (3, "The Waymo AV and the motorcycle sustained damage. The "
+                       "extent of the damage to the passenger car that left "
+                       "the scene is unknown at this time."),
     # Batch below added 2026-08-22 (human-approved hygiene): narrative-verified
     # 3+-vehicle counts for NONFATAL incidents from the audit inventory (e.g.
     # "All three vehicles sustained damage"). Zero displayed-number change by
     # construction — only the fatality metric reads this field — recorded so
     # the field is true where the narrative is explicit. Six bystander/
     # no-AV-contact rows with murky involvement semantics keep the default.
-    "30270-6579": 3,
-    "30270-8968": 3,
-    "30270-13817": 4,
-    "30270-13955": 5,
-    "30270-14986": 5,
-    "30270-15301": 4,
-    "30270-13605": 3,
-    "30270-13192": 3,
-    "30270-15246": 3,
-    "30270-15192": 4,
-    "30270-11791": 3,
-    "30270-14708": 3,
-    "30270-10695": 4,
-    "30270-9060": 3,
-    "30270-13399": 3,
-    "30270-13877": 3,
-    "30270-5997": 3,
-    "30270-6906": 3,
-    "30270-9761": 4,
-    "30270-13195": 3,
-    "30270-13585": 3,
-    "30270-14265": 3,
-    "30270-15105": 3,
-    "30270-7158": 4,
-    "30270-8620": 3,
-    "30270-8927": 3,
-    "30270-8982": 3,
-    "30270-9214": 3,
-    "30270-9791": 3,
-    "30270-9806": 3,
-    "30270-10360": 3,
-    "30270-10833": 3,
-    "30270-10899": 3,
-    "30270-11874": 3,
-    "30270-11929": 3,
-    "30270-13064": 4,
-    "30270-13092": 3,
-    "30270-13303": 3,
-    "30270-13369": 3,
-    "30270-13575": 3,
-    "30270-13860": 3,
-    "30270-13949": 3,
-    "30270-13985": 3,
-    "30270-13998": 3,
-    "30270-14271": 3,
-    "30270-14383": 3,
-    "30270-14586": 3,
-    "30270-14804": 3,
-    "30270-14905": 3,
-    "30270-14944": 3,
-    "30270-15106": 3,
-    "30270-15251": 3,
-    "30270-15346": 3,
-    "30270-15393": 3,
-    "30270-15659": 3,
-    "30270-15723": 3,
+    "30270-6579": (3, "All three vehicles sustained damage"),
+    "30270-8968": (3, "All three vehicles sustained damage"),
+    # both Waymo AVs (the second, 30270-13817-B) and the two passenger cars
+    "30270-13817": (4, "both Waymo AVs' Level 4 ADS were engaged in "
+                       "autonomous mode. The two passenger cars and the "
+                       "initial Waymo AV (VIN [XXX]) sustained damage."),
+    # the two passenger cars, the SUV, the Waymo AV and the heavy truck
+    "30270-13955": (5, "The second passenger car continued forward and made "
+                       "contact with an SUV stopped in the queue of traffic "
+                       "in the second from the left lane. As a result of the "
+                       "initial contact with the second passenger car, the "
+                       "first passenger car was pushed east across two lanes "
+                       "of travel, and entered the Waymo AV's lane of travel. "
+                       "The Waymo AV slowed and maneuvered to the right to "
+                       "avoid the oncoming passenger car and the front left "
+                       "side of the passenger car made contact with the left "
+                       "side of the Waymo AV. The Waymo AV rotated to the "
+                       "left and came to rest facing southwest in the second "
+                       "and third from the left lanes. During two subsequent "
+                       "maneuvers in which the Waymo AV pulled forward and to "
+                       "the right in an attempt to navigate off the freeway, "
+                       "the front left corner of the Waymo AV made contact "
+                       "with an \"Oversized Load\" sign attached to a heavy "
+                       "truck"),
+    "30270-14986": (5, "All five vehicles sustained damage"),
+    "30270-15301": (4, "the front right of the SUV made contact with the rear "
+                       "of the motorcycle, and the front left of the SUV made "
+                       "contact with the right side of a passenger car that "
+                       "was stopped behind the Waymo AV."),
+    "30270-13605": (3, "All three vehicles sustained damage"),
+    "30270-13192": (3, "All three vehicles sustained damage"),
+    "30270-15246": (3, "All three vehicles sustained damage"),
+    "30270-15192": (4, "Both passenger cars and the SUV sustained damage."),
+    "30270-11791": (3, "The Waymo AV, the first passenger car, and the second "
+                       "passenger car sustained damage."),
+    "30270-14708": (3, "The two passenger cars sustained damage."),
+    "30270-10695": (4, "The front of an SUV traveling directly behind the "
+                       "Waymo AV then made contact with the right rear of the "
+                       "stationary Waymo AV. A passenger car then braked to a "
+                       "stop behind the Waymo and to the left of the SUV. A "
+                       "second passenger car then made contact with the SUV "
+                       "and the first passenger car."),
+    "30270-9060": (3, "All three vehicles sustained damage"),
+    "30270-13399": (3, "All three vehicles sustained damage"),
+    "30270-13877": (3, "All three vehicles sustained damage"),
+    "30270-5997": (3, "a passenger vehicle behind the Waymo made contact with "
+                      "the rear of the Waymo AV. Moments later, an SUV behind "
+                      "the passenger vehicle made contact with the rear of "
+                      "the passenger vehicle."),
+    "30270-6906": (3, "All three involved vehicles sustained damage"),
+    "30270-9761": (4, "A motorcycle was stopped behind the Waymo AV, and a "
+                      "pickup truck was stopped behind the motorcycle. A "
+                      "passenger car approached the queue of stopped traffic "
+                      "from behind and made contact with the stopped pickup "
+                      "truck"),
+    "30270-13195": (3, "All three vehicles sustained damage"),
+    "30270-13585": (3, "All three vehicles sustained damage"),
+    "30270-14265": (3, "All three vehicles sustained damage"),
+    "30270-15105": (3, "All three vehicles sustained damage"),
+    "30270-7158": (4, "The three other vehicles sustained damage, but the "
+                      "Waymo AV did not."),
+    "30270-8620": (3, "The SUV following behind the Waymo AV slowed as it "
+                      "approached the queue of traffic, when it was rear "
+                      "ended by a pickup truck following behind the SUV that "
+                      "did not stop."),
+    "30270-8927": (3, "All three vehicles sustained damage"),
+    "30270-8982": (3, "All three vehicles sustained damage"),
+    "30270-9214": (3, "All three vehicles sustained damage"),
+    "30270-9791": (3, "The front left side of the passenger car that had been "
+                      "behind the Waymo AV made contact with the right side "
+                      "of the other passenger car and then made contact with "
+                      "the left part of the rear of the stationary Waymo AV."),
+    "30270-9806": (3, "The Waymo AV sustained damage from the wheel "
+                      "separation. The passenger car and the motorcycle "
+                      "sustained damage from contact with the separated wheel."),
+    "30270-10360": (3, "All three vehicles sustained damage"),
+    "30270-10833": (3, "While the Waymo AV and the passenger car remained "
+                       "stopped, a second passenger car traveling southbound "
+                       "on [XXX] approached the passenger car from behind"),
+    "30270-10899": (3, "The Waymo AV was parked on the curb on [XXX] facing "
+                       "southwest with a pickup truck parked directly behind. "
+                       "A pickup truck traveling southeast on [XXX] made a "
+                       "right turn onto [XXX] and the front of the pickup "
+                       "truck made contact with the rear driver side of the "
+                       "parked pickup truck"),
+    "30270-11874": (3, "All three vehicles sustained damage"),
+    "30270-11929": (3, "The Waymo AV, the first passenger car, and the second "
+                       "passenger car sustained damage."),
+    "30270-13064": (4, "The front right side of the Waymo AV then made "
+                       "contact with the front right side of an SUV that was "
+                       "stopped facing southeast on [XXX], and the front "
+                       "right side of the passenger car made contact with the "
+                       "rear left side of a pickup truck stopped facing "
+                       "southwest at the north curb of [XXX]."),
+    "30270-13092": (3, "All three vehicles sustained damage"),
+    "30270-13303": (3, "All three vehicles sustained damage"),
+    "30270-13369": (3, "All three vehicles sustained damage"),
+    "30270-13575": (3, "All three vehicles sustained damage"),
+    "30270-13860": (3, "All three vehicles sustained damage"),
+    "30270-13949": (3, "All three vehicles sustained damage"),
+    "30270-13985": (3, "All three vehicles sustained damage"),
+    "30270-13998": (3, "All three vehicles sustained damage"),
+    "30270-14271": (3, "All three vehicles sustained damage"),
+    "30270-14383": (3, "All three vehicles sustained damage"),
+    "30270-14586": (3, "All three vehicles sustained damage"),
+    "30270-14804": (3, "All three vehicles sustained damage"),
+    "30270-14905": (3, "All three vehicles sustained damage"),
+    "30270-14944": (3, "All three vehicles sustained damage"),
+    "30270-15106": (3, "a passenger car traveling westbound in the left lane "
+                       "on [XXX] approached the Waymo AV from behind and "
+                       "slowed, and a second passenger car traveling "
+                       "westbound in the left lane on [XXX] approached the "
+                       "slowing passenger car from behind"),
+    "30270-15251": (3, "All three vehicles sustained damage"),
+    "30270-15346": (3, "All three vehicles sustained damage"),
+    "30270-15393": (3, "All three vehicles sustained damage"),
+    "30270-15659": (3, "All three vehicles sustained damage"),
+    "30270-15723": (3, "All three vehicles sustained damage"),
     # Batch below added 2026-10-31 (decision of that day on open question 11,
     # "(b)"): the nonfatal Jul-Aug 2026 reports whose narratives count their
-    # vehicles, in their words; the six murky bystander rows of 2026-08-22
-    # keep the default (quals/vehicles-involved.qual.mjs).
-    "30270-15832": 3,   # "All three vehicles involved sustained damage."
-    "30270-15894": 3,   # "All three vehicles sustained damage."
-    "30270-16165": 3,   # "All three vehicles involved sustained damage."
-    "30270-16202": 3,   # "All three vehicles sustained damage."
-    "30270-16261": 3,   # "All three vehicles sustained damage."
-    "30270-16278": 4,   # "All four vehicles involved sustained damage."
-    "30270-16300": 4,   # "All four vehicles sustained damage."
-    "30270-16325": 3,   # "All three vehicles sustained damage."
-    "30270-16345": 3,   # "All three vehicles involved sustained damage."
-    "30270-16452": 3,   # "all three vehicles involved sustained damage."
-    "30270-16493": 3,   # "All three vehicles sustained damage."
+    # vehicles; the six murky bystander rows of 2026-08-22 keep the default
+    # (quals/vehicles-involved.qual.mjs).
+    "30270-15832": (3, "All three vehicles involved sustained damage"),
+    "30270-15894": (3, "All three vehicles sustained damage"),
+    "30270-16165": (3, "All three vehicles involved sustained damage"),
+    "30270-16202": (3, "All three vehicles sustained damage"),
+    "30270-16261": (3, "All three vehicles sustained damage"),
+    "30270-16278": (4, "All four vehicles involved sustained damage"),
+    "30270-16300": (4, "All four vehicles sustained damage"),
+    "30270-16325": (3, "All three vehicles sustained damage"),
+    "30270-16345": (3, "All three vehicles involved sustained damage"),
+    "30270-16452": (3, "all three vehicles involved sustained damage"),
+    "30270-16493": (3, "All three vehicles sustained damage"),
 }
 
 # Tesla appends this disclaimer to the front of every redacted-update narrative.
@@ -853,15 +929,20 @@ OCCUPANCY_PATTERN = re.compile(
     r"\b(?P<present>occupied\s+(?:Zoox|Waymo))\b", re.I)
 # In-scope reports whose narrative trips OCCUPANCY_PATTERN against their filed
 # code but whose filed code stands, keyed by Report ID with the narrative's
-# words that show why (none so far).
+# words that show why, verbatim, and the reason as a comment (none so far);
+# check_reviewed_quotes() stops the run when the report's latest filing no
+# longer holds the words (since 2026-11-02, open question 26(b)).
 OCCUPANCY_LANGUAGE_REVIEWED = {}
 
 # Crashes one report files for two of a helmer's AVs (decision #47, the
 # human's answer of 2026-10-04, "Each AV involved"; added 2026-10-31): every AV
 # involved counts once, like the crashed-vehicle human benchmarks and Waymo's
 # own crash list (Safety Impact hub CSV2, https://waymo.com/safety/impact/,
-# data through Jun 2026, read 2026-10-31, lists each report below twice;
-# 30270-11224, held below, once). Two AVs that each filed a report
+# data through Jun 2026, read 2026-10-31, lists each report below twice but
+# 30270-11224, which it lists once: counted since 2026-11-02, the human's
+# answer to open question 19, since the benchmarks count crashed vehicles,
+# each carrying the crash's outcome, so every AV a narrative shows struck
+# counts). Two AVs that each filed a report
 # (30270-16207 and -16174, Atlanta, AUG-2026) already counted twice. Keyed by
 # Report ID: the narrative's words naming the second AV ("quote"), and that
 # AV's own fields as the narrative gives them, under NHTSA's column names (a
@@ -883,6 +964,18 @@ SECOND_INVOLVEMENTS = {
         "CP Pre-Crash Movement": "Proceeding Straight",
         "Crash With": "Non-Motorist: Cyclist", "Were All Passengers Belted?": "Unknown",
         "SV Contact Area": ("Right",), "CP Contact Area": ()},
+    # JUN-2025 Mesa: stopped in the street as the reporting Waymo passed to
+    # its left, whose rider opened the front passenger door into this
+    # Waymo's driver side mirror (both Waymos' ADS engaged, both damaged)
+    "30270-11224": {
+        "quote": "While the first Waymo AV was passing the stopped Waymo AV, the "
+                 "passenger in the moving Waymo AV opened the front passenger "
+                 "side door, which then made contact with the driver side mirror "
+                 "of the stopped Waymo AV.",
+        "SV Precrash Speed (MPH)": "0", "SV Pre-Crash Movement": "Stopped",
+        "CP Pre-Crash Movement": "Passing",
+        "Crash With": "SUV", "Were All Passengers Belted?": "Unknown",
+        "SV Contact Area": ("Left",), "CP Contact Area": ("Front Right", "Right")},
     # JUL-2025 Phoenix (airport lot): reversing out of its stall, speed not
     # stated, when the reporting Waymo pulled forward into its right side
     "30270-11424": {
@@ -932,9 +1025,9 @@ SECOND_INVOLVEMENTS = {
 # Waymo AV" names the reporting AV, in 69 other in-scope narratives, and
 # "stopped" or "parked Waymo AV" in either case in 161). Calibrated 2026-10-31
 # on every in-scope narrative of the newest files, all three companies: it
-# matches exactly the 17 reports of the two tables (the five above, the two
-# Atlanta reports, the one held below, and nine that name an AV that was not
-# in the collision). check_second_av_classified() stops the run on any other.
+# matches exactly the 17 reports of the two tables (the six above, the two
+# Atlanta reports, and nine that name an AV that was not in the collision).
+# check_second_av_classified() stops the run on any other.
 SECOND_AV_PATTERN = re.compile(
     r"(?i:\b(?:second|another|different|additional|third|two|both|first|initial)\s+"
     r"(?:Waymo|Zoox|Tesla|robotaxi|Cybercab|ADS)\b|\bLevel\s+4\s+ADS\s+of\s+both\b)|"
@@ -953,13 +1046,6 @@ SECOND_AV_REVIEWED = {
     "30270-11715": "another Waymo stopped beside the truck, which reversed into the reporting Waymo only",
     "30270-14355": "the reporting Waymo yielded to a second Waymo ahead; a car rear-ended the reporting one only",
     "30270-14075": "\"the two Waymo AV passengers\": one Waymo",
-    # Held for the human (2026-10-31): the narrative says "the Level 4 ADS of
-    # both Waymo AVs were engaged" and "Both vehicles sustained damage" (the
-    # moving Waymo's passenger opened its door into the stopped Waymo's
-    # mirror), but Waymo's crash list (hub CSV2) lists the report once. Its
-    # second AV, if the human counts it, rates 0 (a stopped AV struck by
-    # another vehicle's opening door).
-    "30270-11224": "held for the human: both Waymos' ADS engaged and both damaged, but hub CSV2 lists the report once",
 }
 
 
@@ -1673,24 +1759,42 @@ def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
     return result
 
 
-# An incident's track is the Report Type of its first filing: 1-Day or 5-Day
-# (the prompt reports of SGO Request No. 1) or Monthly (Request No. 2).
+# An incident's track is the Report Type of its crash's first filing: 1-Day
+# or 5-Day (the prompt reports of SGO Request No. 1) or Monthly (Request No.
+# 2). A re-filing under a new Report ID (SUPERSEDED_REPORTS) takes the track
+# of the report it replaced, that report's version-1 filing (since
+# 2026-11-02, the human's answer to open question 26(a)): the receipt and
+# arrival tables count a month's crashes by track in its first release, from
+# before the re-filing, and again in the newest file, so a crash keeps one
+# track. Until then the track was the surviving report's own version 1, so an
+# "Update"-typed re-filing stopped the run and a Monthly re-filing of a 5-Day
+# report moved its crash between tracks (quals/refiling-track.qual.mjs).
 REPORT_TRACK = {"1-Day": "five_day", "5-Day": "five_day", "Monthly": "monthly"}
 
 
 def monthly_track_counts(rows):
     """Counter {(helmer, iso_month, track): incidents} over the in-scope
     incidents of <rows> (public_service_incidents()), by the track of the
-    surviving report's version-1 filing (REPORT_TRACK)."""
+    crash's first report's version-1 filing (REPORT_TRACK): the report a
+    re-filing under a new Report ID replaced (SUPERSEDED_REPORTS), else the
+    surviving report itself."""
     filed = filed_incident_rows(rows)
     first_type = {r["Report ID"]: r["Report Type"].strip()
                   for r in filed if int(r["Report Version"]) == 1}
+    replaced_by = {new: old for old, new in SUPERSEDED_REPORTS.items()}
     counts = Counter()
     for r in public_service_incidents(filed).values():
-        first = first_type.get(r["Report ID"])
+        first_report = replaced_by.get(r["Report ID"], r["Report ID"])
+        first = first_type.get(first_report)
         must(first in REPORT_TRACK,
-             "in-scope report has no version-1 filing of a known track",
-             reportId=r["Report ID"], firstReportType=first)
+             "in-scope report whose crash's first filing is of no known track "
+             "(its version 1 is not a 1-Day, 5-Day or Monthly report: if it "
+             "re-files another report under a new Report ID, list that report "
+             "in SUPERSEDED_REPORTS in data/slurp.py with the re-filing, so the "
+             "crash keeps that report's track: data/README.md, Each NHTSA "
+             "release, step 6)",
+             reportId=r["Report ID"], firstReport=first_report,
+             firstReportType=first)
         counts[(HELMER_SHORT[r["Reporting Entity"].strip()],
                 nhtsa_month_to_iso(r["Incident Date"].strip()),
                 REPORT_TRACK[first])] += 1
@@ -2158,6 +2262,9 @@ must(not set(SUPERSEDED_REPORTS) & (set(SUPERSEDED_REPORTS.values())
                                     | SPLIT_SAME_INCIDENT_REPORTS),
      "a replaced report (SUPERSEDED_REPORTS) cannot stand for another or be "
      "split")
+must(len(set(SUPERSEDED_REPORTS.values())) == len(SUPERSEDED_REPORTS),
+     "a re-filing (SUPERSEDED_REPORTS) replaces one report: its crash takes "
+     "that report's track (monthly_track_counts)")
 
 # Crashes in which a remote human, not the ADS, was driving, keyed by Report
 # ID with the narrative's own words (2026-09-26, human decision: the metrics
@@ -2167,6 +2274,8 @@ must(not set(SUPERSEDED_REPORTS) & (set(SUPERSEDED_REPORTS.values())
 # does not split them out), but they are walking-pace recoveries, so dropping
 # the crash while keeping those miles is nearly exact. The operator code cannot
 # find these -- two are coded "None" -- hence the narrative tripwire below.
+# check_reviewed_quotes() stops the run when a report's latest filing no
+# longer holds its entry's words (since 2026-10-31).
 TELEOP_DRIVEN_REPORTS = {
     "13781-11459": "The teleoperator took over vehicle control and gradually increased vehicle speed",
     "13781-14043": "took over vehicle control when the ADS was stopped and proceeded straight on the street",
@@ -2176,14 +2285,26 @@ TELEOP_DRIVEN_REPORTS = {
 }
 # In-scope reports that trip the tripwire below (remote-human language, or
 # the "Remote (Commercial / Test)" code itself) but in which the ADS was
-# driving at impact, keyed by Report ID with the reason.
+# driving at impact, keyed by Report ID with the narrative's words the review
+# rests on, verbatim, and the reason as a comment (until 2026-11-02 the entry
+# held the reason; open question 26(b)): check_reviewed_quotes() stops the
+# run when the report's latest filing no longer holds the words, so a
+# re-filing is re-read before it stays in scope.
 REMOTE_LANGUAGE_ADS_DRIVEN = {
-    # coded Remote; "Level 4 ADS was engaged in autonomous mode": stationary,
-    # yielding in a crosswalk, when a cyclist ran the red into it
-    "30270-13378": "ADS engaged; stationary AV struck by a red-running cyclist",
-    # coded Remote; "an unoccupied Zoox autonomous vehicle ... gradually slowed
-    # to a stop when it was rear ended"
-    "30610-11752": "ADS engaged; unoccupied AV slowing to a stop, rear-ended",
+    # coded Remote; the ADS engaged: stationary, yielding in a crosswalk, when
+    # a cyclist ran the red into it
+    "30270-13378": "As the cyclist entered the crosswalk, the front tire of the "
+                   "bicycle made contact with the right side of the stationary "
+                   "Waymo AV and the cyclist fell to the ground. At the time of "
+                   "the impact, the Waymo AV's Level 4 ADS was engaged in "
+                   "autonomous mode.",
+    # coded Remote; the ADS engaged: an unoccupied AV slowing to a stop,
+    # rear-ended
+    "30610-11752": "An unoccupied Zoox autonomous vehicle was operating at a "
+                   "reduced speed in lane #5 on westbound [XXX] towards Las "
+                   "Vegas Boulevard in Las Vegas, with a sedan (Vehicle 2) "
+                   "directly behind. The Zoox vehicle gradually slowed to a stop "
+                   "when it was rear ended by Vehicle 2.",
 }
 # Language saying a remote human may have been driving. Calibrated 2026-09-26
 # on every in-scope narrative (all versions), when it matched exactly the
@@ -2339,10 +2460,15 @@ SAFETY_DRIVER_PATTERN = re.compile(
     r"test driver|safety driver|safety operator|vehicle operator|"
     r"driver'?s seat|seating position|behind the wheel|manual mode|in manual",
     re.I)
+# Keyed by Report ID with the narrative's words the review rests on,
+# verbatim, and the reason as a comment (until 2026-11-02 the entry held the
+# reason; open question 26(b)); check_reviewed_quotes() stops the run when the
+# report's latest filing no longer holds the words.
 SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN = {
-    # "returned to the depot in manual mode" -- after the crash; the AV was
+    # manual mode only for the return to the depot after the crash; the AV was
     # driverless at impact (a cyclist struck it)
-    "30270-7075": "manual mode only for the return to the depot after the crash",
+    "30270-7075": "The Waymo AV did not require towing and was returned to the "
+                  "depot in manual mode.",
 }
 SAFETY_DRIVER_EXEMPT_ENTITIES = {"Tesla, Inc."}
 
@@ -2501,22 +2627,51 @@ def check_superseded_reviewed(rows):
          entries=bad)
 
 
-def check_teleop_quotes(rows):
-    """Stop the run unless each TELEOP_DRIVEN_REPORTS entry's quote is in its
-    report's latest filed narrative (<rows>): the exclusion rests on those
-    words, so a re-filing that drops them must be re-read before the crash
-    stays out of every metric (since 2026-10-31: open question 10's
-    reviewed-value rule, for the reviewed table that takes reports out of
-    scope)."""
+def reviewed_quotes():
+    """{table name: {Report ID: the narrative words the entry quotes}} for the
+    reviewed tables whose entries rest on a report's own words: which reports
+    a remote human drove (TELEOP_DRIVEN_REPORTS), which ones the ADS drove
+    though their narrative trips a tripwire (REMOTE_LANGUAGE_ADS_DRIVEN,
+    SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN), whose filed passenger code stands
+    against their narrative (OCCUPANCY_LANGUAGE_REVIEWED), and how many
+    vehicles a crash involved (VEHICLES_INVOLVED, the words of its (count,
+    words) entries)."""
+    return {"TELEOP_DRIVEN_REPORTS": TELEOP_DRIVEN_REPORTS,
+            "REMOTE_LANGUAGE_ADS_DRIVEN": REMOTE_LANGUAGE_ADS_DRIVEN,
+            "SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN": SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN,
+            "OCCUPANCY_LANGUAGE_REVIEWED": OCCUPANCY_LANGUAGE_REVIEWED,
+            "VEHICLES_INVOLVED": {rid: words for rid, (_count, words)
+                                  in VEHICLES_INVOLVED.items()}}
+
+
+must(all(isinstance(v, tuple) and len(v) == 2 and isinstance(v[0], int)
+         and v[0] >= 1 for v in VEHICLES_INVOLVED.values()),
+     "VEHICLES_INVOLVED entries must be (the vehicles involved, the "
+     "narrative's words that give the count)")
+must(all(isinstance(words, str) and words
+         for table in reviewed_quotes().values() for words in table.values()),
+     "a reviewed entry must quote its report's narrative words (a non-empty "
+     "string: an empty one is in every narrative)")
+
+
+def check_reviewed_quotes(rows):
+    """Stop the run unless each entry of the reviewed tables that rest on a
+    report's words (reviewed_quotes()) quotes words that are in its report's
+    latest filed narrative (<rows>): the review rests on those words, so a
+    re-filing that drops them must be re-read before the entry applies again
+    (TELEOP_DRIVEN_REPORTS since 2026-10-31, open question 10's
+    reviewed-value rule for the table that takes reports out of scope; the
+    other four since 2026-11-02, open question 26(b) and (c))."""
     latest = latest_filings(rows)
-    changed = sorted(rid for rid, quote in TELEOP_DRIVEN_REPORTS.items()
-                     if rid not in latest or quote not in latest[rid]["Narrative"])
-    must(not changed,
-         "a TELEOP_DRIVEN_REPORTS entry's quote is not in its report's latest "
-         "filed narrative (the report was re-filed or is gone: re-read it and "
+    stale = {name: sorted(rid for rid, words in table.items()
+                          if rid not in latest or words not in latest[rid]["Narrative"])
+             for name, table in reviewed_quotes().items()}
+    must(not any(stale.values()),
+         "a reviewed entry's quoted words are not in its report's latest filed "
+         "narrative (the report was re-filed or is gone: re-read it and "
          "update or drop the entry in data/slurp.py: data/README.md, Each "
          "NHTSA release, step 6)",
-         reports=changed)
+         stale=stale)
 
 
 def check_overrides_apply(incidents):
@@ -2639,7 +2794,7 @@ def main():
         valid_rows.append(r)
     rows = valid_rows
     check_superseded_reviewed(rows)
-    check_teleop_quotes(rows)
+    check_reviewed_quotes(rows)
 
     # Deduplicate by Report ID over every filed row, filter the surviving
     # versions to each entity's public-service operator types (see
@@ -2800,7 +2955,7 @@ def main():
         # None for an unrated incident: the unrated stop below lists them all
         # before anything is written.
         rec["fault"] = fault_data.get(rid)
-        rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(crash, 2)
+        rec["vehiclesInvolved"] = VEHICLES_INVOLVED.get(crash, (2, None))[0]
         filed_severity = rec["severity"]
         reviewed_severity, rec["severity"] = SEVERITY_OVERRIDE.get(
             crash, (filed_severity, filed_severity))

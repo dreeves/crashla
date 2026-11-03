@@ -1,5 +1,6 @@
-// Fault values decided on 2026-10-31 (data/faultfrac.csv; the criterion is
-// the probability an expert human driver would have avoided the crash).
+// Fault values decided on 2026-10-31 and 2026-11-02 (data/faultfrac.csv; the
+// criterion is the probability an expert human driver would have avoided the
+// crash).
 //
 // 1. The family "AV maneuvers past a stationary vehicle and strikes its body,
 // bed, protruding part or open door" under one rule (re-adjudicated after the
@@ -19,6 +20,27 @@
 // forklift was stopped when the AV committed and began reversing only after),
 // and 30610-16275 0.4 (open question 9, 2026-10-31: the Zoox struck a dog, then
 // resumed motion and its rear wheel apparently struck the dog again).
+// 3. The human's answers of 2026-11-02 and the adjudication they sent out
+// (3 assessors and an adjudicator, the same day):
+//   - open question 25, doors: the AV's own rider's door opened into another
+//     road user stays 0.1 (0.3 against a vulnerable road user; 0.2 after a
+//     prior cue, 30270-11224, above); a closed door that another vehicle's
+//     occupant opens into the AV as it passes scores 0, whatever the
+//     vehicle's state, the side or the speed on record (2-17 mph): no time to
+//     brake or steer, and the duty lies with the person opening the door
+//     (ARS 28-905). The two door crashes scored from both sides split so:
+//     30270-16174 (the passing Waymo) 0 and 30270-16207 (the parked Waymo
+//     whose rider opened the door) 0.1; 30270-14890 0 and 30270-14890-B 0.1.
+//     Five rows of the pattern held 0.05 or 0.1, drift inside the 2026-05-22
+//     rebuild, which scored eight others of it from MAY-2025 on at 0.
+//   - open question 25, the towed pickup: 30270-7013 and -6878, two Waymos
+//     that drove from behind into a pickup towed backwards and angled partly
+//     into their lane, in clear daylight: 0.9 (a vehicle body met at road
+//     speed in daylight, as 30270-8513's shopping cart at 20 mph; below the
+//     stationary body's 1.0, since a towed vehicle's angle can shift). The
+//     second Waymo's driver would not know of the first crash.
+//   - open question 19: 30270-11224-B, the stopped Waymo whose mirror the
+//     passing Waymo's rider's door struck, 0 (the stationary victim).
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
@@ -44,6 +66,18 @@ const WANT = {
   "30270-10912": [0.5, "evasive swerve from a pickup crossing the centerline into a parked truck"],
   "30270-8833": [0.15, "decision #44b: the forklift began reversing after the AV committed"],
   "30610-16275": [0.4, "open question 9: the Zoox resumed motion after striking the dog"],
+  "30270-9420": [0, "door victim: a parked car's driver door opened into the AV passing it in a drop-off lane"],
+  "30270-9437": [0, "door victim: a parked SUV's driver door opened into the passing AV"],
+  "30270-9764": [0, "door victim: a double-parked SUV's rear door opened into the AV passing on a narrow street"],
+  "30270-9855": [0, "door victim: an SUV stopped in the next drop-off lane opened its rear door into the passing AV"],
+  "30270-9883": [0, "door victim: a car stopped mid-road, its passengers' doors opened into the AV passing on its right"],
+  "30270-16174": [0, "door victim: the passing Waymo, doored by the parked Waymo's rider"],
+  "30270-16207": [0.1, "own rider's door: the parked Waymo whose rider doored the passing Waymo"],
+  "30270-14890": [0, "door victim: the passing Waymo, doored by the parked Waymo's rider"],
+  "30270-14890-B": [0.1, "own rider's door: the parked Waymo whose rider opened its rear door into the passing Waymo"],
+  "30270-7013": [0.9, "vehicle body at road speed in daylight: a pickup towed backwards, angled partly into the lane"],
+  "30270-6878": [0.9, "the same towed pickup, struck by a second Waymo two minutes later"],
+  "30270-11224-B": [0, "the stopped Waymo whose mirror a passing Waymo's rider's door struck"],
 };
 const [header, ...rows] = parseCsv(fs.readFileSync("data/faultfrac.csv", "utf8"));
 const iId = header.indexOf("reportID"), iFrac = header.indexOf("faultfrac");
@@ -54,7 +88,7 @@ const page = new Map(vm.runInContext("INCIDENT_DATA", ctx).map(r => [r.reportId,
 const off = Object.entries(WANT).filter(([rid, [v]]) => csv.get(rid) !== v || page.get(rid) !== v)
   .map(([rid, [v, why]]) => `${rid}: data/faultfrac.csv ${csv.get(rid)}, data/incidents.js ${page.get(rid)}, want ${v} (${why})`);
 assert.deepEqual(off, [],
-  `Replicata: read the fault values of the 2026-10-31 decisions in data/faultfrac.csv and data/incidents.js.
-Expectata: each as decided (the vehicle-body family's tiers, 30270-8833 0.15, 30610-16275 0.4).
+  `Replicata: read the fault values of the 2026-10-31 and 2026-11-02 decisions in data/faultfrac.csv and data/incidents.js.
+Expectata: each as decided (the vehicle-body family's tiers, 30270-8833 0.15, 30610-16275 0.4; a passing AV doored by another vehicle's occupant 0, the AV's own rider's door 0.1, the towed pickup 0.9, 30270-11224-B 0).
 Resultata: ${JSON.stringify(off, null, 1)}.`);
-console.log(`qual pass: the ${Object.keys(WANT).length} fault values decided on 2026-10-31 stand in data/faultfrac.csv and data/incidents.js`);
+console.log(`qual pass: the ${Object.keys(WANT).length} fault values decided on 2026-10-31 and 2026-11-02 stand in data/faultfrac.csv and data/incidents.js`);

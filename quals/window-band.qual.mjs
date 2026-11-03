@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 import { monthlyLagKeys } from "./monthly-lag.mjs";
@@ -18,6 +19,28 @@ import { monthlyLagKeys } from "./monthly-lag.mjs";
 // (data/slurp.py MONTHLY_ARRIVAL_LAG, since 2026-10-04). This qual recomputes
 // that from the CSV for the default window and pins that the anchors
 // actually bite for Waymo, Tesla and Zoox.
+//
+// The shared pre-series offset (2026-11-02, open question 20(c)). Every
+// lifetime statement includes the miles a line drove before its series
+// starts, so from the line's first lifetime knot on, every cumulative band in
+// the master is a lifetime band less that offset's range (the lifetime low
+// edge less the offset's high, the high edge less its low). The offset is one
+// number, the same at both ends of a window, and cancels in the window's
+// miles; differencing two such bands as if independent counts its range
+// once too often, widening the window by the range at each end (Waymo's
+// default window by 110,000). The window's kyoom difference therefore adds
+// the range back when the row before the window is at or after that first
+// knot. Before it nothing is added back: the series start is exactly zero,
+// every lower edge there is swept from it, and the knot narrows back only
+// some upper edges, so a window starting in the last few months before the
+// knot keeps an outer bound, up to the range wider at each edge than its band
+// on the lifetime basis. Recomputed here independently: the
+// ranges from their sources (data/waymo_vmt.py's OFFSET; Zoox's pre-series
+// band, data/README.md, Zoox anchors), and each line's first fully knotted
+// month from the master itself (the first month from which every cumulative
+// band lies strictly inside the plain running sums of the monthly bands, so a
+// knot shaped both edges), for the default window, a 2022 window and a Zoox
+// window after its knots.
 
 const ctx = vm.createContext({
   console, Math, Number,
@@ -33,6 +56,19 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const dataThroughMonth = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx).slice(0, 7);
 const lagged = monthlyLagKeys(dataThroughMonth);
 
+// The pre-series offsets' ranges, from their sources: Waymo's OFFSET (central,
+// low, high) in data/waymo_vmt.py; Zoox's band, California's measured 20,174.2
+// plus half to twice the 19,906.2-mile Las Vegas analog, floored (a valid
+// lower bound on the range); Tesla's lines start with their service, none.
+const waymoOffset = fs.readFileSync("data/waymo_vmt.py", "utf8").match(/^OFFSET = \((\d+), (\d+), (\d+)\)/m);
+assert.ok(waymoOffset, "Replicata: read OFFSET in data/waymo_vmt.py. Expectata: a (central, low, high) literal. Resultata: not found.");
+const OFFSET_RANGE = {
+  Tesla: 0, TeslaNoMonitor: 0,
+  Waymo: Number(waymoOffset[3]) - Number(waymoOffset[2]),
+  Zoox: Math.floor((20174.2 + 2 * 19906.2) - (20174.2 + 0.5 * 19906.2)),
+};
+ctx.OFFSET_RANGE = OFFSET_RANGE;
+
 const out = vm.runInContext(`
 (() => {
   incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
@@ -41,6 +77,39 @@ const out = vm.runInContext(`
   const start = full.months.indexOf(DEFAULT_START_MONTH);
   const series = sliceSeries(full, start, full.months.length - 1);
   const rows = monthlySummaryRows(series);
+  // Each line's first fully knotted month: from it on, every cumulative band
+  // lies strictly inside the plain running sums of the monthly bands from the
+  // series' zero, so both edges came through a knot.
+  const knottedFrom = {};
+  for (const helmer of ADS_SERIES) {
+    const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
+    let lo = 0, hi = 0, from = master[0].month;
+    master.forEach((r, i) => {
+      lo += r.vmtMin; hi += r.vmtMax;
+      if (!(r.kyoomMin > lo && r.kyoomMax < hi)) from = i + 1 < master.length ? master[i + 1].month : "9999-12";
+    });
+    knottedFrom[helmer] = from;
+  }
+  // The window band, recomputed: summed month bands ∩ the kyoom difference
+  // (with the shared offset's range added back after the first fully knotted
+  // month), plus the partially received months' own bands.
+  const windowBand = (helmer, pts, minOf, maxOf, isPartial) => {
+    const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
+    const fullPts = pts.filter(p => !isPartial(p)), partial = pts.filter(p => isPartial(p));
+    const before = master.filter(r => r.month < fullPts[0].month).at(-1) || {month: "", kyoomMin: 0, kyoomMax: 0};
+    const last = master.find(r => r.month === fullPts.at(-1).month);
+    const shared = before.month >= knottedFrom[helmer] ? OFFSET_RANGE[helmer] : 0;
+    const sum = (arr, f) => arr.reduce((s, p) => s + f(p), 0);
+    return {
+      min: Math.max(sum(fullPts, minOf), last.kyoomMin - before.kyoomMax + shared) + sum(partial, minOf),
+      max: Math.min(sum(fullPts, maxOf), last.kyoomMax - before.kyoomMin - shared) + sum(partial, maxOf),
+      unshared: {min: Math.max(sum(fullPts, minOf), last.kyoomMin - before.kyoomMax) + sum(partial, minOf),
+        max: Math.min(sum(fullPts, maxOf), last.kyoomMax - before.kyoomMin) + sum(partial, maxOf)},
+      shared,
+      sumMin: sum(pts, minOf), sumMax: sum(pts, maxOf),
+      partialMonths: partial.map(p => p.month),
+    };
+  };
   const res = {};
   for (const helmer of ADS_HELMERS) {
     const row = rows.find(r => r.helmer === helmer);
@@ -52,18 +121,7 @@ const out = vm.runInContext(`
     // its receipt or its Monthly-track incident coverage is.
     const short = (r, keys) => keys.some(k => r[k] < 1);
     const receipt = ["coverage", "coverageMin", "coverageMax"], incident = ["incCov", "incCovMin", "incCovMax"];
-    const sum = (arr, f) => arr.reduce((s, p) => s + f(p), 0);
-    const band = (minOf, maxOf, isPartial) => {
-      const fullPts = pts.filter(p => !isPartial(csv[p.month])), partial = pts.filter(p => isPartial(csv[p.month]));
-      const before = master.filter(r => r.month < fullPts[0].month).at(-1) || {kyoomMin: 0, kyoomMax: 0};
-      const last = master.find(r => r.month === fullPts.at(-1).month);
-      return {
-        min: Math.max(sum(fullPts, minOf), last.kyoomMin - before.kyoomMax) + sum(partial, minOf),
-        max: Math.min(sum(fullPts, maxOf), last.kyoomMax - before.kyoomMin) + sum(partial, maxOf),
-        sumMin: sum(pts, minOf), sumMax: sum(pts, maxOf),
-        partialMonths: partial.map(p => p.month),
-      };
-    };
+    const band = (minOf, maxOf, isPartial) => windowBand(helmer, pts, minOf, maxOf, p => isPartial(csv[p.month]));
     const expMonthly = band(p => p.vmtMin, p => p.vmtMax, r => short(r, [...receipt, ...incident]));
     const expFiveDay = band(p => p.vmtRawMin, p => p.vmtRawMax, r => short(r, receipt));
     res[helmer] = {
@@ -74,12 +132,42 @@ const out = vm.runInContext(`
       partialMonths: {monthly: expMonthly.partialMonths, fiveDay: expFiveDay.partialMonths},
     };
   }
-  return res;
+  // Windows that start after a knot, all months fully received: Waymo's 2022
+  // (the row before it, December 2021, is Waymo's first knot) and Zoox's
+  // January-August 2026 (after its November and December 2025 knots).
+  const after = {};
+  for (const [helmer, a, b] of [["Waymo", "2022-01", "2022-12"], ["Zoox", "2026-01", "2026-08"]]) {
+    const w = sliceSeries(full, full.months.indexOf(a), full.months.indexOf(b));
+    const row = monthlySummaryRows(w).find(r => r.helmer === helmer);
+    const pts = w.points.map(p => p.helmers[helmer]).filter(p => p !== null);
+    after[helmer + " " + a + ".." + b] = {row: {min: row.vmtMin, max: row.vmtMax},
+      exp: windowBand(helmer, pts, p => p.vmtMin, p => p.vmtMax, () => false)};
+  }
+  return {res, after, knottedFrom};
 })()`, ctx);
 
 const near = (a, b) => Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(b));
+// A window that starts after a knot carries no offset spread: its band is
+// the lifetime basis's (the kyoom difference with the offset's range added
+// back once), on both edges.
+for (const [name, w] of [["Waymo default window", out.res.Waymo.expMonthly && {row: out.res.Waymo.row, exp: out.res.Waymo.expMonthly}],
+  ...Object.entries(out.after)]) {
+  assert.ok(w.exp.shared > 0 && near(w.row.min, w.exp.min) && near(w.row.max, w.exp.max),
+    `Replicata: compute the VMT band of ${name}, a window whose month before it lies at or after the line's first fully knotted month, so both of the cumulative bands it differences carry the pre-series offset's range.
+Expectata: [${w.exp.min}, ${w.exp.max}], the offset's ${w.exp.shared}-mile range cancelling (differenced as if independent: [${w.exp.unshared.min}, ${w.exp.unshared.max}]).
+Resultata: [${w.row.min}, ${w.row.max}].`);
+}
+// The app's constants are these: each line's offset range and the first
+// month from which every cumulative band carries it.
+const appOffsets = JSON.parse(JSON.stringify(vm.runInContext("typeof PRE_SERIES_OFFSET === 'undefined' ? null : PRE_SERIES_OFFSET", ctx)));
+const wantOffsets = Object.fromEntries(Object.entries(OFFSET_RANGE).map(([h, range]) =>
+  [h, {from: range > 0 ? out.knottedFrom[h] : "", range}]));
+assert.deepEqual(appOffsets, wantOffsets,
+  `Replicata: read crashla.js's PRE_SERIES_OFFSET.
+Expectata: ${JSON.stringify(wantOffsets)} (each range from its source; each line's first fully knotted month from the master).
+Resultata: ${JSON.stringify(appOffsets)}.`);
 for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
-  const r = out[helmer];
+  const r = out.res[helmer];
   assert.ok(near(r.row.min, r.expMonthly.min) && near(r.row.max, r.expMonthly.max) &&
     near(r.all.min, r.expMonthly.min) && near(r.all.max, r.expMonthly.max),
     `Replicata: recompute ${helmer}'s default-window Monthly-track VMT band from data/vmt.js (summed month bands ∩ kyoom difference, plus the partially received months' thinned bands).
@@ -101,16 +189,16 @@ Resultata: ${JSON.stringify(r.partialMonths)}.`);
 // cumulative and (since 2026-10-03) Zoox's Dec-2025 knot on its official 1.3M
 // disclosure all tighten the window band on BOTH edges vs the plain sum.
 for (const helmer of ["Waymo", "Tesla", "Zoox"]) {
-  const r = out[helmer];
+  const r = out.res[helmer];
   assert.ok(r.row.min > r.expMonthly.sumMin && r.row.max < r.expMonthly.sumMax,
     `Replicata: compare ${helmer}'s window band to the plain sum of its month bands.
 Expectata: strictly tighter on both edges (sum [${r.expMonthly.sumMin}, ${r.expMonthly.sumMax}]).
 Resultata: [${r.row.min}, ${r.row.max}].`);
 }
 // Waymo: the summed bands ran 0.76x-1.28x of best; the anchors imply ~0.93x-1.12x.
-assert.ok(out.Waymo.row.max / out.Waymo.row.min < 1.3,
-  `Replicata: Waymo default-window band ratio hi/lo. Expectata: < 1.3 (was 1.68 with summed month bands). Resultata: ${(out.Waymo.row.max / out.Waymo.row.min).toFixed(3)}.`);
-console.log(`qual pass: window VMT band = summed month bands ∩ kyoom difference (+ the partially received months' thinned bands); Waymo default window ${(out.Waymo.row.min / 1e6).toFixed(1)}-${(out.Waymo.row.max / 1e6).toFixed(1)}M`);
+assert.ok(out.res.Waymo.row.max / out.res.Waymo.row.min < 1.3,
+  `Replicata: Waymo default-window band ratio hi/lo. Expectata: < 1.3 (was 1.68 with summed month bands). Resultata: ${(out.res.Waymo.row.max / out.res.Waymo.row.min).toFixed(3)}.`);
+console.log(`qual pass: window VMT band = summed month bands ∩ kyoom difference, the shared pre-series offset cancelling after each line's first knot (+ the partially received months' thinned bands); Waymo default window ${(out.res.Waymo.row.min / 1e6).toFixed(1)}-${(out.res.Waymo.row.max / 1e6).toFixed(1)}M`);
 
 // --- One month, one posterior (2026-10-03, audit #15) -----------------------
 // A one-month window's cards and distribution chart take that month's band

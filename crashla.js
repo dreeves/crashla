@@ -545,6 +545,15 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // srcLinks: the URLs of the sources a band's numbers come from; each URL's
 // one label is in BENCHMARK_SOURCES below.
 //
+// srcAiText: true marks a src whose words are an AI's, never the human's, so
+// the derivations table renders it as AI text (.ai-text, green; the VMT
+// sources table's legend: "green text = AI-generated"), as it does srcNote.
+// A src without it is the human's. Four carry it: the AV-cities fatality
+// band's, which the human labelled "Claude:" (2026-08-31), and the AV-cities
+// injury, airbag and serious-injury+ bands' Waymo-hub derivations, an agent's
+// English of 2026-08-22 since edited only in their figures (decision 23(b)
+// of the 2026-11-01 open questions, 2026-11-02; quals/ai-derivation-text.qual.mjs).
+//
 // fiveDay: true marks metrics whose qualifying incidents are structurally on
 // NHTSA's five-day reporting track — Third Amended SGO (Apr 24, 2025)
 // Request No. 1.D requires a report within 5 days of notice for a crash
@@ -596,7 +605,9 @@ const BENCHMARK_SOURCES = {
   "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013": "Blincoe et al. 2015 (underreporting)",
   "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403": "Blincoe et al. 2023",
   "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812506": "NHTSA critical reason (94%)",
-  "https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison": "IIHS urban/rural comparison",
+  // (at /topics/ until 2026-11-02, which now answers with a permanent
+  // redirect here; 2026-10-30 audit, LNK-4)
+  "https://www.iihs.org/research-areas/fatality-statistics/detail/urban-rural-comparison": "IIHS urban/rural comparison",
   "https://www.uber.com/us/en/about/reports/us-safety-report/": "Uber US Safety Report",
   "https://www.lyft.com/blog/posts/2024-safety-transparency-report": "Lyft Safety Transparency Report",
 };
@@ -804,6 +815,7 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 149000, hi: 513000,
         src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-injury 1.95 (Phoenix) to 6.71 (SF) IPMM, blended 3.77 (supersedes the Kusano 56.7M paper values 2.09-8.02)',
+        srcAiText: true,
         srcLinks: [
           'https://waymo.com/safety/impact/',
           'https://arxiv.org/abs/2505.01515',
@@ -1021,6 +1033,7 @@ const METRIC_DEFS = [
       // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 361000, hi: 813000,
         src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human any-vehicle airbag 1.23 (LA) to 2.77 (Atlanta) IPMM, blended 1.61 (supersedes the Kusano 56.7M paper values 1.42-2.31; Austin, Tesla\'s main market, sits at 2.32)',
+        srcAiText: true,
         srcLinks: [
           'https://waymo.com/safety/impact/',
           'https://arxiv.org/abs/2505.01515',
@@ -1037,7 +1050,7 @@ const METRIC_DEFS = [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
           'https://waymo.com/safety/impact/',
-          'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison',
+          'https://www.iihs.org/research-areas/fatality-statistics/detail/urban-rural-comparison',
         ]},
     },
   },
@@ -1058,6 +1071,7 @@ const METRIC_DEFS = [
       // HumansRideshare is computed from HumansAV by the loop below.
       HumansAV: {lo: 2530000, hi: 9710000,
         src: 'Waymo Safety Impact hub (thru Jun 2026, five areas): human SSI+ 0.103 (Phoenix) to 0.395 (SF) IPMM, blended 0.213 (supersedes the Kusano 56.7M paper values 0.12-0.46)',
+        srcAiText: true,
         srcLinks: [
           'https://waymo.com/safety/impact/',
           'https://arxiv.org/abs/2505.01515',
@@ -1074,7 +1088,7 @@ const METRIC_DEFS = [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812013',
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
           'https://waymo.com/safety/impact/',
-          'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison',
+          'https://www.iihs.org/research-areas/fatality-statistics/detail/urban-rural-comparison',
         ]},
     },
   },
@@ -1101,8 +1115,9 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 83000000, hi: 105000000,
         src: "Claude: IIHS urban all-road fatality rate, 2022–2024: 1.17 / 1.07 / 1.01 deaths per 100M VMT; band 0.95–1.20 (the 2021 urban peak 1.20 as the high-rate edge, 0.95 as a continued-improvement floor below the 2024 value)",
+        srcAiText: true,
         srcLinks: [
-          'https://www.iihs.org/topics/fatality-statistics/detail/urban-rural-comparison',
+          'https://www.iihs.org/research-areas/fatality-statistics/detail/urban-rural-comparison',
         ]},
       HumansUS: {lo: 84000000, hi: 91000000,
         // Re-derived 2026-08-24 on the numerators consistent with the AV
@@ -1182,11 +1197,14 @@ for (const m of METRIC_DEFS) {
 }
 // Anti-Postel: every band cites at least one source, and every source it
 // cites has its one label (sourceLink also asserts at render time; this
-// catches a mistyped URL at load).
+// catches a mistyped URL at load). srcAiText is absent or true: a false or a
+// string would read as a flag and mean nothing.
 for (const m of METRIC_DEFS) {
   for (const [cohort, h] of Object.entries(m.humanMPI || {})) {
     assert(Array.isArray(h.srcLinks) && h.srcLinks.length > 0, "human benchmark band without srcLinks",
       {metric: m.key, cohort});
+    assert(h.srcAiText === undefined || h.srcAiText === true, "srcAiText must be absent or true",
+      {metric: m.key, cohort, srcAiText: h.srcAiText});
     for (const url of h.srcLinks) {
       assert(BENCHMARK_SOURCES[url] !== undefined, "srcLinks URL missing from BENCHMARK_SOURCES",
         {metric: m.key, cohort, url});
@@ -1777,6 +1795,34 @@ function helmerMonthRows(series, helmer) {
 // needsFault gap would fall back to the plain sum). Until 2026-09-04 the
 // plain sum was used: Waymo's default window ran 0.76x-1.28x of best where
 // its anchors imply ~0.93x-1.12x (window-band.qual pins the recompute).
+//
+// The pre-series offset (2026-11-02, open question 20(c)): every lifetime
+// statement includes the miles a line drove before its series starts
+// (Waymo's before July 2021, range 150,000-260,000, data/waymo_vmt.py;
+// Zoox's before May 2024, 30,127-59,987, data/README.md, Zoox anchors;
+// Tesla's lines start with their service). From a line's first lifetime knot
+// on (from), every cumulative band in data/vmt.csv is a lifetime band less
+// that offset's range, so the two bands a window differences both carry it,
+// though the offset is one number and cancels in the window's miles: the
+// difference adds the range back once. Until then the range widened every
+// window starting after a knot at both ends (Waymo's default window by
+// 110,000 miles, its 2022 by ±110,000 on 524,000). Before the first knot
+// nothing is added back: the series start is exactly zero, every lower edge
+// there is swept from it, and the knot narrows back only some upper edges
+// (Waymo's October-November 2021, Zoox's August-October 2025), so a window
+// starting in the last few months before the knot (Waymo's
+// September-December 2021, Zoox's September-November 2025) keeps an outer
+// bound, up to the range wider at each edge than its band on the lifetime
+// basis (Waymo's December 2021-December 2022: 432,783-700,152, against
+// 542,783-590,962). Zoox's range, 29,859.3, is floored so the band stays an
+// outer bound. window-band.qual derives both constants from their sources and
+// the master.
+const PRE_SERIES_OFFSET = {
+  Tesla: {from: "", range: 0},
+  TeslaNoMonitor: {from: "", range: 0},
+  Waymo: {from: "2021-12", range: 110000},
+  Zoox: {from: "2025-11", range: 29859},
+};
 function windowVmtBand(helmer, metricRows, minOf, bestOf, maxOf) {
   // Fully received, for this metric: its triple is the authored month band
   // (no receipt or Monthly-track factor below 1 applies to it), which is what
@@ -1801,9 +1847,13 @@ function windowVmtBand(helmer, metricRows, minOf, bestOf, maxOf) {
     : master.filter(r => r.month >= first.month && r.month <= last.month).length;
   if (span > 0 && span === full.length) {
     const earlier = master.filter(r => r.month < first.month);
-    const before = earlier.length === 0 ? {kyoomMin: 0, kyoomMax: 0} : earlier[earlier.length - 1];
-    min = Math.max(min, last.kyoomMin - before.kyoomMax);
-    max = Math.min(max, last.kyoomMax - before.kyoomMin);
+    // The series start: exactly zero miles, none of the offset.
+    const before = earlier.length === 0 ? {month: "", kyoomMin: 0, kyoomMax: 0} : earlier[earlier.length - 1];
+    const offset = PRE_SERIES_OFFSET[helmer];
+    assert(offset !== undefined, "no pre-series offset for a line with VMT rows", {helmer});
+    const shared = before.month >= offset.from ? offset.range : 0;
+    min = Math.max(min, last.kyoomMin - before.kyoomMax + shared);
+    max = Math.min(max, last.kyoomMax - before.kyoomMin - shared);
   }
   for (const r of partial) { min += minOf(r); max += maxOf(r); }
   assert(min <= best && best <= max, "window VMT band does not bracket its best",
@@ -4429,7 +4479,10 @@ function renderHumanBenchmarkTable() {
     .filter(m => m.humanMPI && m.humanMPI[hh])
     .map(m => {
       const h = m.humanMPI[hh];
-      const derivation = `${escHtml(h.src)} (${h.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)})`;
+      // An AI's src (srcAiText) renders as AI text, the human's as plain text
+      // (the one branch); the links after it are neither's words.
+      const src = h.srcAiText === true ? `<span class="ai-text">${escHtml(h.src)}</span>` : escHtml(h.src);
+      const derivation = `${src} (${h.srcLinks.map(sourceLink).join(SOURCE_LIST_SEP)})`;
       // srcNote: an AI-authored precision note on the derivation (green).
       const note = h.srcNote === undefined ? "" : ` <span class="ai-text">${escHtml(h.srcNote)}</span>`;
       return `<tr><td>${escHtml(helmerLabel(hh))}</td><td>${escHtml(m.cardLabel)}</td><td class="num">${fmtMiles(h.lo)}</td><td class="num">${fmtMiles(h.hi)}</td><td class="derivation">${derivation}${note}</td></tr>`;

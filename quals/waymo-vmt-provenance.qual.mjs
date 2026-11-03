@@ -5,13 +5,14 @@ import fs from "node:fs";
 // mileage figures. The series counts SGO-era months only (2021-07 onward),
 // while the published lifetime figures count every rider-only mile, so each
 // pin below subtracts the pre-series offset, OFFSET (the rider-only miles
-// driven before 2021-07): central 150,000, range 150,000-260,000 since
-// 2026-10-31 (decision #49b): Kusano et al. 2025 Table 2 (arXiv 2505.01515)
+// driven before 2021-07): range 150,000-260,000 since 2026-10-31 (decision
+// #49b), central 205,000, the range's middle, since 2026-11-02 (open question
+// 20(b); 150,000, its floor, until then): Kusano et al. 2025 Table 2 (arXiv 2505.01515)
 // puts 94,400 in 2019-2020 and 328,000 in 2021; Schwall et al. 2020 (arXiv
 // 2011.00038) puts 65,000 in Jan 2019-Sep 2020, so Q4 2020 ran ~320 a day,
 // and Jan-Jun 2021 held between that rate and half of 2021 (152,200-258,400,
 // rounded outward). A series value is the lifetime value less the offset:
-// its central less 150,000, its band's low edge less the offset's high,
+// its central less 205,000, its band's low edge less the offset's high,
 // its high edge less its low. Figures (data/README.md, Waymo anchors and
 // Waymo monthly allocation):
 //   Kusano et al. 2025, Table 2: 0.4224M through 2021, 0.9464M through 2022,
@@ -59,7 +60,7 @@ import fs from "node:fs";
 // computed by a separate process, so the equality was by construction and
 // the published totals stand. The pins below are hub + E again.
 
-const OFFSET = {central: 150000, lo: 150000, hi: 260000};
+const OFFSET = {central: 205000, lo: 150000, hi: 260000};
 
 const rows = fs.readFileSync("data/vmt.csv", "utf8").trim().split("\n").slice(1)
   .map(l => l.split(",", 8))
@@ -92,7 +93,7 @@ const KNOTS = [
   ["2025-01", 56700000, 56699500, 56709750, [0, 0, 0], 0.001], // Kusano et al. 2025
   // Hub CSV1 202503: blended 71.432M; Atlanta 0.056M + Mountain View 0.132M
   // listed but excluded (exact E). Exact hub-CSV1 anchors carry ±0.1% on the
-  // central: the rows land on figure + E_best - 0.15M to within 400 mi.
+  // central: the rows land on figure + E_best - OFFSET.central to within 400 mi.
   ["2025-03", 71432000, 71432000, 71432000, [188000, 188000, 188000], 0.001],
   // Hub CSV1 202506: 95.965M (PHX/SF/LA/ATX); Atlanta + Santa Clara/MTV excluded
   ["2025-06", 95965000, 95965000, 95965000, [400000, 700000, 1300000], 0.001],

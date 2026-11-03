@@ -30,7 +30,7 @@ const fatalities = vm.runInContext(
   ctx);
 
 const SEEN = JSON.stringify(fatalities);
-const FIX = `=> A Fatality incident was added or changed. Read its narrative and count the vehicles involved, then record that count in VEHICLES_INVOLVED in data/slurp.py (it defaults to 2) and add it to EXPECTED_VEHICLES below. Assess its faultfrac under the criterion at the same time.`;
+const FIX = `=> A Fatality incident was added or changed. Read its narrative and count the vehicles involved, then record that count in VEHICLES_INVOLVED in data/slurp.py as (count, the narrative's words that give it) (it defaults to 2) and add it to EXPECTED_VEHICLES below. Assess its faultfrac under the criterion at the same time.`;
 
 assert.equal(fatalities.length, 3,
   `Replicata: count Fatality incidents in INCIDENT_DATA.\nExpectata: exactly 3.\nResultata: ${fatalities.length} — ${SEEN}.\n${FIX}`);

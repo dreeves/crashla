@@ -151,7 +151,7 @@ The slurp pipeline is:
 4. Deduplicate by `Report ID` over every filed row, keeping the highest
    `Report Version` (a report's `Same Incident ID` can change between
    versions, and a later version can retire a report from scope)
-5. Filter the surviving versions to the operator modes whose miles are in each company's VMT denominator (`PUBLIC_SERVICE_OPERATOR_TYPES` / `EXCLUDED_OPERATOR_TYPES` in `slurp.py`: `"None"` and `"Remote (Commercial / Test)"` for all three, plus `"In-Vehicle (Commercial / Test)"` for Tesla, whose deck miles include monitor-aboard miles; Waymo/Zoox safety-driver modes are excluded because their miles are not in those denominators; `"Other, see Narrative"` is classified per report via `OPERATOR_TYPE_OVERRIDE`), drop crashes in which a remote human was driving (`TELEOP_DRIVEN_REPORTS`, guarded by a narrative tripwire) and reports a re-filing under a new Report ID replaced (`SUPERSEDED_REPORTS`; only from rows that hold the re-filing, so an earlier release's snapshot, from before it, keeps the original when the quals recount it), then keep one report per `Same Incident ID`. Two in-scope reports under one Same Incident ID stop the run, and so does a helmer's out-of-scope filing under an in-scope report's Same Incident ID (a re-filing that may have moved the crash out of scope), until `SUPERSEDED_REPORTS` says which report stands or `SPLIT_SAME_INCIDENT_REPORTS` lists one as another crash or vehicle (since 2026-10-31; until then the higher `Report Version` won, though different Report IDs' versions share no scale). Other reporting entities' filings are never in scope, so a duplicate one files (Transdev, Waymo's fleet operator) can neither displace nor retire a helmer's report (`quals/same-incident-dedup.qual.mjs`). Then each crash one report files for two of a helmer's AVs gets a record for the second AV (`SECOND_INVOLVEMENTS`, since 2026-10-31; decision #47 of 2026-10-04: each AV involved counts, as in the crashed-vehicle human benchmarks and Waymo's own crash list, hub CSV2, which lists each such report twice; two AVs that each filed a report, as in Atlanta in August 2026, already counted twice): the report's crash-level fields and their overrides (severity, airbag, place, vehicles involved), the second AV's own speed, movements, crash partner, passengers and contact areas as the narrative gives them, the Report ID + "-B", `secondOf` naming the report (the incident browser marks the row), and a fault row of its own. A narrative that names a second AV of its company (`SECOND_AV_PATTERN`) stops the run until the report is in `SECOND_INVOLVEMENTS` or in `SECOND_AV_REVIEWED` with the reason (`quals/second-involvements.qual.mjs`). The receipt and Monthly-track coverage counts read the reports, since they measure when reports arrive
+5. Filter the surviving versions to the operator modes whose miles are in each company's VMT denominator (`PUBLIC_SERVICE_OPERATOR_TYPES` / `EXCLUDED_OPERATOR_TYPES` in `slurp.py`: `"None"` and `"Remote (Commercial / Test)"` for all three, plus `"In-Vehicle (Commercial / Test)"` for Tesla, whose deck miles include monitor-aboard miles; Waymo/Zoox safety-driver modes are excluded because their miles are not in those denominators; `"Other, see Narrative"` is classified per report via `OPERATOR_TYPE_OVERRIDE`), drop crashes in which a remote human was driving (`TELEOP_DRIVEN_REPORTS`, guarded by a narrative tripwire) and reports a re-filing under a new Report ID replaced (`SUPERSEDED_REPORTS`; only from rows that hold the re-filing, so an earlier release's snapshot, from before it, keeps the original when the quals recount it), then keep one report per `Same Incident ID`. Two in-scope reports under one Same Incident ID stop the run, and so does a helmer's out-of-scope filing under an in-scope report's Same Incident ID (a re-filing that may have moved the crash out of scope), until `SUPERSEDED_REPORTS` says which report stands or `SPLIT_SAME_INCIDENT_REPORTS` lists one as another crash or vehicle (since 2026-10-31; until then the higher `Report Version` won, though different Report IDs' versions share no scale). Other reporting entities' filings are never in scope, so a duplicate one files (Transdev, Waymo's fleet operator) can neither displace nor retire a helmer's report (`quals/same-incident-dedup.qual.mjs`). Then each crash one report files for two of a helmer's AVs gets a record for the second AV (`SECOND_INVOLVEMENTS`, since 2026-10-31; decision #47 of 2026-10-04: each AV involved counts, as in the crashed-vehicle human benchmarks and Waymo's own crash list, hub CSV2, which lists each such report twice but 30270-11224, counted since 2026-11-02 though the hub lists it once, since every AV a narrative shows struck counts, the human's answer to open question 19; two AVs that each filed a report, as in Atlanta in August 2026, already counted twice): the report's crash-level fields and their overrides (severity, airbag, place, vehicles involved), the second AV's own speed, movements, crash partner, passengers and contact areas as the narrative gives them, the Report ID + "-B", `secondOf` naming the report (the incident browser marks the row), and a fault row of its own. A narrative that names a second AV of its company (`SECOND_AV_PATTERN`) stops the run until the report is in `SECOND_INVOLVEMENTS` or in `SECOND_AV_REVIEWED` with the reason (`quals/second-involvements.qual.mjs`). The receipt and Monthly-track coverage counts read the reports, since they measure when reports arrive
 6. Read the VMT master from `data/vmt.csv`: an incident month newer than its
    newest month stops the run, and so does a missing ghost month (see "Ghost
    months" below): at least the month after the data-through month, a row
@@ -199,8 +199,12 @@ The slurp pipeline is:
    "had no occupants") against its filed passenger code, unreviewed, stops the
    run, as do an in-scope Tesla report from January 2026 on that is on neither
    of the two reviewed monitor lists and an incident on a line with no
-   `data/vmt.csv` row for its month (vehicles involved has no filed value to
-   re-check: no SGO field counts the vehicles)
+   `data/vmt.csv` row for its month. No SGO field counts the vehicles, so
+   each `VEHICLES_INVOLVED` entry is (the count, the narrative's words that
+   give it), and a re-filing whose narrative no longer holds those words
+   stops the run for a re-count, as it does for the words the narrative
+   reviews of checklist step 6 quote (since 2026-11-02; until then vehicles
+   involved had nothing to re-check)
 10. Stop on any in-scope incident of the window with no `data/faultfrac.csv`
     row (a second AV's record, Report ID + "-B", included), listing them all
     (since 2026-10-31, decision #4: until then an
@@ -233,7 +237,9 @@ release needs:
 2. `FIVE_DAY_RECEIPT_OBSERVATIONS`: the month that just became final (the
    one before the new data-through month), measured from the snapshots
    (`quals/receipt-observations.qual.mjs` recounts every row, an incident's
-   track being its first filing's Report Type). `FIVE_DAY_RECEIPT_COVERAGE_MAX`
+   track being its crash's first filing's Report Type: a re-filing under a
+   new Report ID, listed in `SUPERSEDED_REPORTS`, takes the track of the
+   report it replaced, since 2026-11-02). `FIVE_DAY_RECEIPT_COVERAGE_MAX`
    must stay at or above every observed share: raise it when a new
    observation (or the data-through month's own observed / expected)
    exceeds it. The run also stops when the data-through month holds no
@@ -286,7 +292,12 @@ Then what the release brings:
    out why, then delete the row, as for 30270-8403, -14625 and -4881. A
    fault value off the 0.05 grid, or outside 0-1, stops it too.
 6. The narrative reviews, each a table in `slurp.py` with the narrative's own
-   words beside its entry: a value outside a whitelist (`EXPECTED_*`; a new
+   words beside its entry (`TELEOP_DRIVEN_REPORTS`,
+   `REMOTE_LANGUAGE_ADS_DRIVEN`, `SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN`,
+   `OCCUPANCY_LANGUAGE_REVIEWED` and `VEHICLES_INVOLVED` store those words
+   verbatim, and a re-filing whose narrative no longer holds them stops the
+   run until the entry is re-read: since 2026-11-02 for all but the first):
+   a value outside a whitelist (`EXPECTED_*`; a new
    severity also needs `crashla.js`'s `SEVERITY_INFO`) or an unclassified
    operator mode (`PUBLIC_SERVICE_OPERATOR_TYPES` /
    `EXCLUDED_OPERATOR_TYPES`); the teleoperator, safety-driver and second-AV
@@ -301,7 +312,9 @@ Then what the release brings:
    Waymo, Tesla or Zoox crash report with a blank Same Incident ID or
    Incident Date; two
    in-scope reports, or a helmer's out-of-scope re-filing, under one Same
-   Incident ID (`SUPERSEDED_REPORTS` / `SPLIT_SAME_INCIDENT_REPORTS`); an
+   Incident ID (`SUPERSEDED_REPORTS` / `SPLIT_SAME_INCIDENT_REPORTS`), and
+   an in-scope report whose first filing is of no known track (a re-filing
+   under a new Report ID that `SUPERSEDED_REPORTS` does not list yet); an
    in-scope incident filed severity "Unknown" (a `SEVERITY_OVERRIDE` entry
    from its narrative, the 2026-07-15 convention: a hospital transport is
    "Minor W/ Hospitalization", an injury without one "Minor W/O
@@ -521,8 +534,9 @@ California estimate multiply it by 1.058 [1.040, 1.076].
 Pre-series offset (a range since 2026-10-31, decision #49b of the 2026-10-04
 audit). The series starts in July 2021, NHTSA's SGO reporting floor, so
 every lifetime figure Waymo publishes also holds the rider-only miles driven
-before it: the offset, central 150,000 (the series' convention since
-2026-07-01), range 150,000-260,000. Waymo's figures set the range. Table 2
+before it: the offset, range 150,000-260,000, central 205,000 (the range's
+middle since 2026-11-02, open question 20(b); from 2026-07-01 until then
+150,000, the range's floor). Waymo's figures set the range. Table 2
 of Kusano et al. 2025 ([arXiv 2505.01515](https://arxiv.org/pdf/2505.01515),
 pp. 10-11) gives 20,500 rider-only miles in 2019, 73,900 in 2020 and 328,000
 in 2021; Schwall et al. 2020 ([arXiv 2011.00038](https://arxiv.org/abs/2011.00038):
@@ -533,19 +547,30 @@ driverless mode in the metro Phoenix ODD") leaves 29,400 for Q4 2020, about
 half of 2021 (164,000, if 2021's rate did not fall), so the offset lies in
 152,200-258,400, rounded outward to 150,000-260,000. (The 2026-10-04 answer proposed
 100,000-200,000; Waymo's figures rule out its lower half and allow more
-above.) The central sits at the range's floor: the range's middle, 205,000,
-would lower every cumulative central by 55,000 miles and July-December 2021
-by as much, and move no later month. A knot's series band
+above.) A central on its band's floor is the least likely value in the
+band, so since 2026-11-02 the central is the middle: every knot's
+cumulative central, and every one from December 2022 on, is 55,000 miles
+lower, and so are July-December 2021's miles together (2021's lifetime
+total less the offset). 2022's twelve months keep
+their total, but their shape tilted toward the later months, because the
+allocation interpolates daily rates across the year boundary: January 2022
+4,058 miles lower, December 1,651 higher, and the two years now one rising
+ramp (from about 1,160 a day in July 2021 to about 1,520 in November 2022,
+where the floor central had put July-December 2021 above 2022's first
+months). No month from January 2023 on moved. A knot's series band
 is its lifetime band less the offset's range, [low - 260,000, high -
-150,000]: each series central sits as high in its band as the offset allows.
-The
-offset is the same at every knot and cancels between any two of them:
-`data/waymo_vmt.py` reconciles the monthly bands on the lifetime basis,
-where the series start is a knot of its own, so only July-December 2021
-(2021's lifetime total less the offset) and the cumulative bands carry it.
-The app's window band differences two cumulative bands (`windowVmtBand`),
-which cannot see that the offset is shared, so a window that starts after a
-knot is widened by up to the offset's range, 110,000 miles, at each end.
+150,000], and its central the figure less 205,000. The offset is the same
+at every knot and cancels between any two of them: `data/waymo_vmt.py`
+reconciles the monthly bands on the lifetime basis, where the series start
+is a knot of its own, so only July-December 2021 and the cumulative bands
+carry it. The app's window band differences two cumulative bands
+(`windowVmtBand`); since 2026-11-02 it adds the offset's range back once
+when the row before the window is at or after the first knot, December
+2021, where both bands carry it, so the shared offset cancels (until then
+every window starting after a knot was widened by the range, 110,000 miles,
+at each end: the default window to 217,587,237-257,586,873 from
+217,697,237-257,476,873, 2022 to 412,250-635,750 from Table 2's
+522,250-525,750).
 
 E derivation (2026-08-28): SGO crash-count proxy (the repo's own incident
 data shows 1/4/9 crashes in the excluded metros in Jan/Feb/Mar 2026 and
@@ -647,18 +672,18 @@ arithmetic envelopes are not empirically calibrated confidence intervals.
 
 | Knot | Published lifetime miles | Series central | Series bounds |
 |---|---:|---:|---:|
-| December 2021 | [Table 2: 422,400 ±600](https://arxiv.org/pdf/2505.01515) | 272,400 | 161,800–273,000 |
-| December 2022 | [Table 2: 946,400 ±1,150](https://arxiv.org/pdf/2505.01515) | 796,400 | 685,250–797,550 |
-| January 2023 | [1,000,000 on Jan 21](https://storage.googleapis.com/waymo-uploads/files/documents/safety/Safety%20Performance%20of%20Waymo%20RO%20at%201M%20miles.pdf), January at Jan 1-21's daily rate: 1,025,524 | 875,524 | 752,488–907,220 |
-| July 2023 | [Swiss Re: 3,868,506](https://arxiv.org/abs/2309.01206) | 3,718,506 | 3,572,946–3,718,506 |
-| October 2023 | ["over 7.14 million"](https://arxiv.org/abs/2312.12675) | 6,990,000 | 6,880,000–7,000,000 |
-| December 2023 | [Table 2: 10,066,400 ±11,650](https://arxiv.org/pdf/2505.01515) | 9,916,400 | 9,794,750–9,928,050 |
-| March 2024 (floor) | ["Over 14.8M"](https://x.com/Waymo/status/1803095329304088922) | 15,058,321 (allocated) | at least 14,540,000 |
-| June 2024 | [CSV1: 22,199,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202406-2022benchmark.csv) | 22,049,000 | 21,937,000–22,056,500 |
-| July 2024 | [CSV1: 25,308,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202407-2022benchmark.csv) | 25,158,000 | 25,046,000–25,165,500 |
-| September 2024 | [CSV1: 33,103,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202409-2022benchmark.csv) | 32,953,000 | 32,841,000–32,960,500 |
-| December 2024 | [CSV1: 50,083,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202412-2022benchmark.csv) | 49,933,000 | 49,821,000–49,940,500 |
-| January 2025 | [Paper: 56,700,000](https://arxiv.org/pdf/2505.01515) | 56,550,001 | 56,439,500–56,559,750 |
+| December 2021 | [Table 2: 422,400 ±600](https://arxiv.org/pdf/2505.01515) | 217,400 | 161,800–273,000 |
+| December 2022 | [Table 2: 946,400 ±1,150](https://arxiv.org/pdf/2505.01515) | 741,400 | 685,250–797,550 |
+| January 2023 | [1,000,000 on Jan 21](https://storage.googleapis.com/waymo-uploads/files/documents/safety/Safety%20Performance%20of%20Waymo%20RO%20at%201M%20miles.pdf), January at Jan 1-21's daily rate: 1,025,524 | 820,524 | 752,488–907,220 |
+| July 2023 | [Swiss Re: 3,868,506](https://arxiv.org/abs/2309.01206) | 3,663,506 | 3,572,946–3,718,506 |
+| October 2023 | ["over 7.14 million"](https://arxiv.org/abs/2312.12675) | 6,935,000 | 6,880,000–7,000,000 |
+| December 2023 | [Table 2: 10,066,400 ±11,650](https://arxiv.org/pdf/2505.01515) | 9,861,400 | 9,794,750–9,928,050 |
+| March 2024 (floor) | ["Over 14.8M"](https://x.com/Waymo/status/1803095329304088922) | 15,003,321 (allocated) | at least 14,540,000 |
+| June 2024 | [CSV1: 22,199,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202406-2022benchmark.csv) | 21,994,000 | 21,937,000–22,056,500 |
+| July 2024 | [CSV1: 25,308,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202407-2022benchmark.csv) | 25,103,000 | 25,046,000–25,165,500 |
+| September 2024 | [CSV1: 33,103,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202409-2022benchmark.csv) | 32,898,000 | 32,841,000–32,960,500 |
+| December 2024 | [CSV1: 50,083,000](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV1%20-%20RO%20Miles%20per%20Location%20202009-202412-2022benchmark.csv) | 49,878,000 | 49,821,000–49,940,500 |
+| January 2025 | [Paper: 56,700,000](https://arxiv.org/pdf/2505.01515) | 56,495,001 | 56,439,500–56,559,750 |
 
 Sources and readings. The first million rider-only miles were reached "on
 January 21, 2023" (Victor et al. 2023, Waymo, "Safety Performance of the Waymo
@@ -672,12 +697,17 @@ Angeles's rider-only miles came later in 2023: 46,700 through October); the low 
 2023's average, 35,560. Kusano et al. 2024 (arXiv 2312.12675) report "over
 7.14 million RO miles through the end of October 2023", read as 7.14M-7.15M
 (its city figures, 5.34M + 1.76M + 0.0467M, agree). Waymo's post of Jun 18,
-2024, "Over 14.8M rider-only miles driven through the end of March", is a
+2024, "Over 14.8M rider-only miles driven through the end of March, it was
+up to 3.5x better in avoiding crashes that cause injuries and 2x better in
+avoiding police-reported crashes than human drivers in SF & Phoenix", is a
 floor on March 2024's cumulative (and its band's low edge); the allocation
-puts 15.21M lifetime there, 2.8% above it. If "Over 14.8M" truncated a
-figure below 14.9M (a reading the decision that set the floor left open), the
-allocation holds about 0.3-0.4M too many miles in January-March 2024 and as
-many too few in April-June.
+puts 15.21M lifetime there, 2.8% above it. The sentence names San Francisco
+and Phoenix, so the figure may count those two cities only and leave out Los
+Angeles's rider-only miles (46,700 through October 2023, above, and more by
+March 2024). As a floor on the whole count it holds either way. It does not
+show the allocation too high: had the post truncated a figure below 14.9M,
+the allocation's 15.21M would sit about 0.3-0.4M above it, a gap Los
+Angeles's miles may fill.
 
 Until 2026-10-31 the June, July and December 2024 knots kept the rounded
 milestones' centrals (22M, 25M and 50M less 150,000) inside envelopes
@@ -702,14 +732,14 @@ as of Dec 31, 2025. The series starts in May 2024 (Zoox's first in-scope SGO
 crash), so the driverless miles before it come off: California DMV Feb
 2023-Apr 2024 (permit AVDT004) 20,174, measured, plus a Las Vegas analog of
 19,906 (equal to California's Jun 2023-Apr 2024) at the early rows' 0.5x-2x
-Las Vegas band, 30,127-59,987, central 40,080. The Dec-2025 cumulative is
-1,300,000 - 40,080 = 1,259,920, and its band (the knot, added 2026-10-03) is
-the rounding interval of "approximately 1.3 million", 1.25M-1.35M, less that
-offset band: 1,190,013-1,319,873. Later months' bands chain forward from the
-knot and earlier months' are narrowed back from it, which binds only November
-2025's since the 2026-10-31 reshape (below; until then October's too), so the
-band is the disclosure's own uncertainty rather than the running sum of the
-monthly bands. `quals/zoox-vmt-provenance.qual.mjs` pins the knot.
+Las Vegas band, 30,127-59,987, central 40,080. The Dec-2025 band (the knot,
+added 2026-10-03) is the rounding interval of "approximately 1.3 million",
+1.25M-1.35M, less that offset band: 1,190,013-1,319,873, the disclosure's own
+uncertainty rather than the running sum of the monthly bands; later months'
+bands chain forward from it. The Dec-2025 cumulative is where the smooth path
+below puts it, since 2026-11-02 the range's low end: 1,250,000 - 40,080 =
+1,209,920 (from 2026-10-03 until then the midpoint, 1,259,920).
+`quals/zoox-vmt-provenance.qual.mjs` pins the knot.
 
 Since 2026-10-27 the "nearly two million autonomous miles" statement (Zoox's
 journal post of Mar 23, public Mar 24, 2026) is a knot too, and the "more
@@ -733,53 +763,95 @@ Each statement is read as its rounding interval ("nearly X" as 0.94X to X,
 up to a week before its date, the as-of day counting at its end, less the
 pre-series miles at their own band (the unrounded 30,127.3-59,986.6), and
 carried to the month's end at 0.7x-1.3x the model's daily miles, edges
-rounded outward: end-March 1,859,918-2,121,276. "More than" sets only a
-floor: Zoox's own "more than one million autonomous miles" (Mar 11, 2026)
-came when the series stood near 1.84M, so the August statement gives
-end-July a floor of 2,880,483 (3.00M less the pre-series high edge and up
-to 1.3x the model's miles for Aug 1-5) and no ceiling; the upper edge
-chains on from March. Months between knots chain forward and narrow back
+rounded outward: end-March 1,859,918-2,127,109 (2,121,276 until 2026-11-02:
+its upper edge carries Mar 18-24 at the Jan 1-Mar 24 rate, which the smooth
+path raised). "More than" sets only a floor: Zoox's own "more than one
+million autonomous miles" (Mar 11, 2026) came when the series stood near
+1.84M, so the August statement gives end-July a floor of 2,880,483 (3.00M
+less the pre-series high edge and up to 1.3x the model's miles for Aug 1-5)
+and no ceiling; the upper edge chains on from March. Months between knots chain forward and narrow back
 from the next knot. The as-of window is a judgment: Zoox's mileage
 statements can lag, as the Mar 11 one shows.
 
-The 1M-mile crossing (reshaped 2026-10-31, decision #12 of the 2026-10-04
-audit). Zoox's CTO Jesse Levinson, at Fortune Brainstorm AI in San Francisco
-on Monday, Dec 8, 2025: "Zoox crossed the 1 million mile technical threshold
-for autonomous rides just last week" (Fortune, Dec 8, 2025,
+The 1M-mile crossing and the smooth path (2026-11-02, the human's answer to
+open question 21, "Smooth path, honest bands"; it replaced the 2026-10-31
+reshape of decision #12 of the 2026-10-04 audit). Zoox's CTO Jesse
+Levinson, at Fortune Brainstorm AI in San Francisco on Monday, Dec 8, 2025:
+"Zoox crossed the 1 million mile technical threshold for autonomous rides
+just last week" (Fortune, Dec 8, 2025,
 https://fortune.com/2025/12/08/amazon-robotaxi-service-zoox-plans-fees-vegas-san-francisco/,
 and its Dec 9 newsletter,
 https://fortune.com/2025/12/09/zooxs-road-to-revenue-begins-to-materialize/;
 Fortune's Dec 17 piece has "A few weeks ago",
 https://fortune.com/2025/12/17/amazon-zoox-cofounder-dramatically-more-social-rival-waymo-tesla-cybercab/).
 So the series plus its 40,080 pre-series miles passes 1,000,000 during Dec
-1-7: the Jun-Dec 2025 rows keep California (CA DMV; December estimated) and
-the Jun-Dec total, and the Las Vegas share keeps its earlier month-to-month
-shape tilted by a constant factor a month, 1.2459, which puts the crossing
-at Dec 4 (the middle of the week, each month's miles spread evenly over its
-days). The Dec-31 knot and every row outside Jun-Dec 2025 are unchanged, and
-so is every window holding all of Jun-Dec 2025 (its band too: the Las Vegas
-share's total is unchanged). Until then the crossing fell on about Nov 22,
-which Fortune's vaguer Dec 17 wording had seemed to allow.
-`quals/zoox-vmt-provenance.qual.mjs` pins the crossing.
+1-7, each month's miles spread evenly over its days. No one has measured
+Zoox's Las Vegas miles by month, so June-December 2025 is a model.
+California is the CA DMV's driverless miles; December, in no DMV report yet,
+is November's times CPUC's December/November ratio (48,480), within CPUC's
+December (36,482, a floor) and that over 0.6 (60,803, the 60% pilot-share
+reading). The Las Vegas share's miles per Las Vegas driving day take the
+smoothest path: the least sum of squared month-to-month changes in their
+logarithm, from May 2025 (fixed: the early rows' rule, Las Vegas equal to
+California) through the 2026 rows, which depend on the path through its
+Dec-31 cumulative (below), subject to the crossing during Dec 1-7 and the
+Dec-31 lifetime in 1.25M-1.35M. Smoothing only the Las Vegas share keeps
+California's measured months as measured, and counting per driving day
+keeps January's outage out of the criterion. The Dec-31 floor binds (the
+roughness rises across the whole range), the crossing falls early on Dec 1
+without binding, and the share runs 779, 1,233, 1,909, 2,860, 4,086, 5,439
+and 6,612 miles a day June-December, then 7,172 a day over Jan 1-Mar 24 and
+6,181 from Mar 25: June-December 45,892 / 64,849 / 95,252 / 120,825 /
+168,940 / 219,441 / 253,452 miles, December absorbing the rounding residue.
+The 2026-10-31 reshape had taken both statements as exact (the crossing on
+Dec 4, Dec 31 at 1.3M): December 338,181 miles, 10,909 a day against
+January's 6,774, and June 41% lower than its earlier shape; on the
+criterion above its path scores 1.45, the earlier shape (the crossing on
+about Nov 22, which Fortune's vaguer Dec 17 wording had seemed to allow)
+1.68, this one 1.06.
+
+The June-December 2025 bands are California plus half to twice the Las
+Vegas share, the allowance the early rows give an unmeasured Las Vegas
+split (and `data/waymo_vmt.py` an unmeasured split over more than six
+months), within what the statements allow: each month inside the
+difference of its lifetime cumulative bands, swept from May 2025's lifetime
+band (its series band plus the pre-series band) with knots at November (the
+crossing: not before Dec 1, and by the end of Dec 7 with December's miles at
+most its California high plus twice its Las Vegas share, 470,746, spread
+evenly: 893,702-1,000,000 lifetime)
+and December (1.25M-1.35M), edges rounded outward. They hold both earlier
+shapes of these months, the 10e2343 rows and the 2026-10-31 reshape, except
+December's 10e2343 value, 245,852, which the statements rule out: December
+is at least 250,000, 1.25M at Dec 31 less 1M at Nov 30. On the series basis
+November's cumulative band is that crossing knot, 833,715-969,873, and
+narrows August-October's upper edges back from it. From November 2025 on
+every Zoox cumulative band carries the pre-series band's width, 29,859 miles
+(floored), which the app's window band adds back once for a window whose
+month before it is November 2025 or later (Waymo anchors, above).
+`quals/zoox-vmt-model.qual.mjs` recomputes the path, its bands and every
+cumulative band; `quals/zoox-vmt-provenance.qual.mjs` pins the crossing.
 
 The 2026 rows follow one method, the per-day rate between consecutive
-statements. Midpoints give 640,000 miles over Jan 1-Mar 24 (83 days) and
-1,160,000 over Mar 25-Aug 5 (134 days). California is CPUC's driverless
-pilot miles × 1.19 for the DMV-reported driverless miles CPUC misses, an
-assumption: 1.19 is the midpoint of 1.05-1.33, the measured DMV/CPUC ratio
-having fallen from 3.97 to 1.33 over Apr-Nov 2025 (the Dec-2025 row,
-built on the DMV's own figures, implies 1.33). It is measured through June
+statements. Jan 1-Mar 24 (83 days) holds the March statement's midpoint,
+1.94M, less the smooth path's Dec-31 lifetime, 1.25M: 690,000 miles (from
+2026-10-27 until 2026-11-02 less the Dec-31 statement's midpoint, 1.30M:
+640,000); Mar 25-Aug 5 (134 days) holds the midpoints' difference,
+1,160,000. California is CPUC's driverless pilot miles × 1.19 for the
+DMV-reported driverless miles CPUC misses, an assumption: 1.19 is the
+midpoint of 1.05-1.33, the measured DMV/CPUC ratio having fallen from 3.97
+to 1.33 over Apr-Nov 2025 (the Dec-2025 row, built on the DMV's own figures,
+implies 1.33). It is measured through June
 and grown e^0.05 a calendar month after it, constant within a month. The
 rest, mostly Las Vegas, is each interval's remainder over its driving days
 (January's Las Vegas passenger outage, Jan 22-26, taken as 5 days without
-Las Vegas driving): 6,530.74 a day, then 6,180.83 a day, held flat after
-Aug 5. Months round to 10,000. Bands follow the formula in "Ghost months"
-above, with no growth term before October; h is in months of 30.44 days,
-from the governing window's midpoint (the mean of its first and last
-driving days: Feb 11, and the end of May 30) to the month's mean day (Jan
-16, Feb 14.5, ...); January-March are governed by Jan 1-Mar 24, April on
-by Mar 25-Aug 5. `quals/zoox-vmt-model.qual.mjs` recomputes every 2026
-row, band and cumulative band from these inputs.
+Las Vegas driving): 7,171.76 a day (6,530.74 until 2026-11-02), then
+6,180.83 a day, held flat after Aug 5. Months round to 10,000. Bands follow
+the formula in "Ghost months" above, with no growth term before October; h
+is in months of 30.44 days, from the governing window's midpoint (the mean
+of its first and last driving days: Feb 11, and the end of May 30) to the
+month's mean day (Jan 16, Feb 14.5, ...); January-March are governed by Jan 1-Mar 24, April on
+by Mar 25-Aug 5. `quals/zoox-vmt-model.qual.mjs` recomputes every row,
+band and cumulative band from June 2025 from these inputs.
 
 ### Tesla's no-monitor line
 

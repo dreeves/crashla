@@ -8,7 +8,8 @@
 // 0.21 in August, while September's own count, 7, was the lowest yet. Now,
 // parallel to the pooled Monthly-track incident coverage (incident_coverage):
 //   observed = the month's in-scope five-day-track incidents in this release
-//     (an incident's track is its first filing's Report Type, REPORT_TRACK);
+//     (an incident's track is its crash's first filing's Report Type,
+//     REPORT_TRACK);
 //   expected = each company's five-day-track count in its most recent month
 //     before the data-through month (final at this, its second normal
 //     release) with >= 3 such incidents and VMT, scaled by the VMT ratio,
@@ -88,12 +89,14 @@ out['synthetic'] = {
 }
 
 # --- This qual's own count of in-scope incidents per (company, month) -------
-# all of them, and the five-day track (first filing 1-Day or 5-Day,
-# REPORT_TRACK); deduplicated as main() does, by this code: each Report ID's
-# highest version, slurp's scope (is_public_service_incident) less the reports
-# a re-filing in the same rows replaced (SUPERSEDED_REPORTS: an earlier
-# release's rows, from before the re-filing, keep the original), one report
-# per Same Incident ID (per Report ID for SPLIT_SAME_INCIDENT_REPORTS).
+# all of them, and the five-day track (the crash's first filing 1-Day or
+# 5-Day, REPORT_TRACK: a re-filing under a new Report ID, SUPERSEDED_REPORTS,
+# takes the report it replaced); deduplicated as main() does, by this code:
+# each Report ID's highest version, slurp's scope (is_public_service_incident)
+# less the reports a re-filing in the same rows replaced (SUPERSEDED_REPORTS:
+# an earlier release's rows, from before the re-filing, keep the original),
+# one report per Same Incident ID (per Report ID for
+# SPLIT_SAME_INCIDENT_REPORTS).
 def own_counts(rows):
     filed = [r for r in rows if r['Report ID'].strip() and r['Report Version'].strip()
              and r['Same Incident ID'].strip() and r['Incident Date'].strip()]
@@ -110,10 +113,11 @@ def own_counts(rows):
         assert key not in by_inc, ('two in-scope reports under one Same Incident ID', key, rid, by_inc[key]['Report ID'])
         by_inc[key] = r
     every, five = collections.Counter(), collections.Counter()
+    replaced_by = {new: old for old, new in slurp.SUPERSEDED_REPORTS.items()}
     for r in by_inc.values():
         k = (slurp.HELMER_SHORT[r['Reporting Entity'].strip()], iso(r['Incident Date'].strip()))
         every[k] += 1
-        if first_type[r['Report ID']] in ('1-Day', '5-Day'): five[k] += 1
+        if first_type[replaced_by.get(r['Report ID'], r['Report ID'])] in ('1-Day', '5-Day'): five[k] += 1
     return every, five
 def mshift(m, n):
     y, mo = divmod(int(m[:4]) * 12 + int(m[5:]) - 1 + n, 12)

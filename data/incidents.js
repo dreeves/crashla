@@ -3784,8 +3784,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front left + front",
     "cpHit": "front left + front",
     "fault": {
-      "faultfrac": 0.5,
-      "reasoning": "Waymo struck pickup being towed backwards at angle partially in lane"
+      "faultfrac": 0.9,
+      "reasoning": "Waymo drove into a pickup towed backwards and angled partly into its lane"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -3818,8 +3818,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front left + front",
     "cpHit": "front left + front",
     "fault": {
-      "faultfrac": 0.5,
-      "reasoning": "Different Waymo struck same towed pickup at angle partially in lane"
+      "faultfrac": 0.9,
+      "reasoning": "Second Waymo drove into the same towed pickup angled partly into its lane"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -15446,8 +15446,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front right",
     "cpHit": "left",
     "fault": {
-      "faultfrac": 0.05,
-      "reasoning": "AV passing parked car; its door opened suddenly into AV"
+      "faultfrac": 0.0,
+      "reasoning": "Parked car's driver door opened into AV passing it in a drop-off lane"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -15582,8 +15582,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front right",
     "cpHit": "left",
     "fault": {
-      "faultfrac": 0.05,
-      "reasoning": "AV passing parked SUV; its door opened suddenly into AV"
+      "faultfrac": 0.0,
+      "reasoning": "Parked SUV's driver door opened into passing AV's passenger side"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -18948,8 +18948,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "left + rear left",
     "cpHit": "right",
     "fault": {
-      "faultfrac": 0.05,
-      "reasoning": "AV passing SUV in dropoff lane; SUV door opened into AV"
+      "faultfrac": 0.0,
+      "reasoning": "SUV stopped in next drop-off lane; its rear door opened into passing AV's rear"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -18982,8 +18982,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front left",
     "cpHit": "left",
     "fault": {
-      "faultfrac": 0.05,
-      "reasoning": "AV passing double-parked SUV; its door opened suddenly into AV"
+      "faultfrac": 0.0,
+      "reasoning": "Double-parked SUV's rear door opened into AV passing on a narrow street"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -19118,8 +19118,8 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "svHit": "front left",
     "cpHit": "right",
     "fault": {
-      "faultfrac": 0.1,
-      "reasoning": "AV passing stopped car on right; its passenger doors opened into AV"
+      "faultfrac": 0.0,
+      "reasoning": "Car stopped mid-road; its passengers opened doors into AV passing on its right"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -33168,6 +33168,41 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "series": [
       "Waymo"
     ]
+  },
+  {
+    "reportId": "30270-11224-B",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "JUN-2025",
+    "time": "17:34",
+    "incidentId": "4e9b36dcecf6185",
+    "city": "Mesa",
+    "state": "AZ",
+    "road": "Street",
+    "crashWith": "SUV",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Passing",
+    "narrative": "On June [XXX], 2025 at 5:34 PM MT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Mesa, Arizona was in a collision involving an autonomous vehicle on [XXX] near [XXX]. \nThe Waymo AV was parked facing east for a passenger pick-up on [XXX] adjacent to a parking lot at [XXX]. A passenger entered the Waymo AV and the Waymo AV began to proceed forward momentarily before the passenger opened the front passenger side door and exited the Waymo AV, prompting the Waymo AV to stop. The passenger then re-entered the Waymo AV and the Waymo AV proceeded to pass to the left of a different Waymo AV stopped facing east on [XXX]. While the first Waymo AV was passing the stopped Waymo AV, the passenger in the moving Waymo AV opened the front passenger side door, which then made contact with the driver side mirror of the stopped Waymo AV. The passenger in the moving Waymo AV was not belted at the time of the collision. At the time of the impact, the Level 4 ADS of both Waymo AVs were engaged in autonomous mode. Both vehicles sustained damage.\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Unknown",
+    "svHit": "left",
+    "cpHit": "front right + right",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Stopped Waymo; a passing Waymo's rider opened a door into its side mirror"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ],
+    "secondOf": "30270-11224"
   },
   {
     "reportId": "30270-11214",

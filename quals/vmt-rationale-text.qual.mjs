@@ -17,9 +17,9 @@ import { parseCsv } from "./csv-parse.mjs";
 //       use for the series' own cumulative anchors) equals that month's
 //       cumulative, and a published milestone listed as an "exact central
 //       minus ~0.15M" equals that month's cumulative plus 0.15M, each to the
-//       stated precision; the Zoox Dec-2025 and Mar-2026 knots, the Zoox
-//       Jul-2026 floor (both added 2026-10-27) and Tesla's Aug-2026 floor
-//       state the band edges their rows carry;
+//       stated precision; the Zoox Nov-2025 (added 2026-11-02), Dec-2025
+//       and Mar-2026 knots, the Zoox Jul-2026 floor (both added 2026-10-27)
+//       and Tesla's Aug-2026 floor state the band edges their rows carry;
 //   (4) the specific facts the audit corrected stay corrected;
 //   (5) Tesla's Sep 2025-Jun 2026 rationales disclose possible driver's-seat
 //       trips (decision of 2026-10-31, open question 13).
@@ -89,10 +89,11 @@ for (const r of rows.filter(x => x.helmer === "waymo")) {
   }
 }
 
-// (3c) knot and floor rows state the band edges they carry
+// (3c) knot and floor rows state the band edges they carry (Zoox's November
+// 2025 knot, the 1M crossing's, added 2026-11-02 with the smooth 2025 path)
 const unstated = [];
-for (const [helmer, month, edges] of [["zoox", "2025-12", ["kmin", "kmax"]], ["zoox", "2026-03", ["kmin", "kmax"]],
-  ["zoox", "2026-07", ["kmin"]], ["tesla", "2026-08", ["kmin"]]]) {
+for (const [helmer, month, edges] of [["zoox", "2025-11", ["kmin", "kmax"]], ["zoox", "2025-12", ["kmin", "kmax"]],
+  ["zoox", "2026-03", ["kmin", "kmax"]], ["zoox", "2026-07", ["kmin"]], ["tesla", "2026-08", ["kmin"]]]) {
   const r = rows.find(x => x.helmer === helmer && x.month === month);
   for (const e of edges) if (!r.rationale.includes(fmt(r[e]))) unstated.push(`${helmer} ${month}: ${fmt(r[e])}`);
 }
@@ -210,7 +211,7 @@ const problems = {
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0));
 assert.deepEqual(failing, {},
   `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations, (2) internal shorthand, (3) stated anchors and band edges against the rows, (4) the audit's corrected facts, (5) Tesla's driver's-seat disclosure.
-Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each Waymo "<x>M end-<Mon>-<YYYY>" and exact-central milestone equals the rows' cumulative to its stated precision, and the Zoox Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs; (5) every Tesla rationale of Sep 2025-Jun 2026 says those months may hold trips with a safety monitor in the driver's seat, whose crashes NHTSA may file in its Level 2 file, a bias the no-monitor line avoids.
+Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each Waymo "<x>M end-<Mon>-<YYYY>" and exact-central milestone equals the rows' cumulative to its stated precision, and the Zoox Nov-2025, Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs; (5) every Tesla rationale of Sep 2025-Jun 2026 says those months may hold trips with a safety monitor in the driver's seat, whose crashes NHTSA may file in its Level 2 file, a bias the no-monitor line avoids.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections, use no internal shorthand, and state the anchors their rows carry`);

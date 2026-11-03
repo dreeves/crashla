@@ -18,15 +18,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 # The series starts in July 2021 (NHTSA's SGO reporting floor), so every
 # lifetime figure Waymo publishes includes the rider-only miles driven before
-# it: the pre-series offset, central 150,000 (the series' convention since
-# 2026-07-01), range 150,000-260,000 since 2026-10-31 (decision #49b, on
-# Waymo's own figures). Kusano et al. 2025, Table 2 (arXiv 2505.01515, pp.
-# 10-11) puts 94,400 rider-only miles in 2019-2020 and 328,000 in 2021;
-# Schwall et al. 2020 (arXiv 2011.00038) puts 65,000 in Jan 2019-Sep 2020, so
-# Q4 2020 ran about 29,400 (320 a day). January-June 2021 then held between
-# that daily rate (57,800 miles) and half of 2021 (164,000, a year without a
-# decline): 152,200-258,400 in all, rounded outward.
-OFFSET = (150000, 150000, 260000)  # central, low, high
+# it: the pre-series offset, range 150,000-260,000 since 2026-10-31 (decision
+# #49b, on Waymo's own figures), central 205,000, the range's middle, since
+# 2026-11-02 (open question 20(b); from 2026-07-01 until then 150,000, the
+# range's floor, the least likely value in it). Kusano et al. 2025, Table 2
+# (arXiv 2505.01515, pp. 10-11) puts 94,400 rider-only miles in 2019-2020 and
+# 328,000 in 2021; Schwall et al. 2020 (arXiv 2011.00038) puts 65,000 in Jan
+# 2019-Sep 2020, so Q4 2020 ran about 29,400 (320 a day). January-June 2021
+# then held between that daily rate (57,800 miles) and half of 2021 (164,000,
+# a year without a decline): 152,200-258,400 in all, rounded outward.
+OFFSET = (205000, 150000, 260000)  # central, low, high
 # Lifetime knots on Waymo's published figures: month, central, low, high, the
 # value at the month's end. The first is the series start, whose lifetime
 # value is the offset; every series value is the lifetime value less the
@@ -112,7 +113,7 @@ EARLY_NOTE = ("US est.: Waymo's rider-only miles by calendar year (Kusano et al.
               "paper), spread over the months with daily rates interpolated linearly "
               "between those totals; January 2023 keeps Jan 1-21's daily rate for the whole "
               "month. The series starts in July 2021, so the miles driven before it, "
-              "150,000 (range 150,000-260,000), come off; July-December 2021's bands and "
+              "205,000 (range 150,000-260,000), come off; July-December 2021's bands and "
               "every cumulative band carry that range, and each month's band an allowance "
               "for the monthly split, half to twice a month's miles in 2022 (data/README.md, "
               "Waymo anchors; data/README.md, Waymo monthly allocation).")
