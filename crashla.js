@@ -4523,7 +4523,8 @@ function renderStressTestTable(series) {
     <p>
 How wrong Claude's fault judgments would have to be to change the verdicts.
 The multiplier is the smallest factor that the true at-fault fraction would need to exceed the judged at-fault fraction before changing the at-fault verdict.
-<span class="ai-text">Claude: "At-fault" here means, on the robotaxi side, the probability that an expert human driver would have avoided the collision (judged by Claude from the narratives); the human band bounds the same quantity using legal-fault shares (50% floor), since expert avoidability cannot be lower.</span>
+(We're defining fault as the probability, as judged by Claude from the incident narrative, that an expert human driver would've avoided the collision. And in the case of humans, we generously assume 50% fault.)
+<!-- Claude: the human band bounds the same quantity using legal-fault shares (50% floor), since expert avoidability cannot be lower. -->
     </p>
     <div class="table-wrap"><table class="source-table stress-table" id="sanity-fault-flip">
       <thead><tr><th>Company</th><th class="num">Judged fault</th><th>Current verdict</th><th class="num">Flip multiplier</th><th>Verdict after flip</th></tr></thead>
