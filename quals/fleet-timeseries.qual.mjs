@@ -231,7 +231,12 @@ Resultata: not found.`);
 // (decision 23(d) of the 2026-11-01 open questions, the human's, 2026-11-02:
 // "Yes, in Latin"; until then the fleet note was empty and the page did not
 // say it). Its words are not checked (no wording pins, 2026-10-28); the
-// figure is: the note must give TESLA_MILES_PER_CAR_DAY, read from the app.
+// figure is: the note must give TESLA_MILES_PER_CAR_DAY, read from the app,
+// as a whole number: no digit on either side, and no comma or period with a
+// digit after it (180,000 and 180.5 are other figures; "180, our" and a
+// sentence-ending "180." are the figure; since 0250d85 the human's note reads
+// "divided by 180, our assumed miles per car-day", the human, 2026-11-03, to
+// restate this check to match).
 const notes = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
   const out = {};
@@ -251,7 +256,7 @@ for (const key of METRICS) {
 Expectata: two plain-text notes, the scenario note then the metric's own note (growthMetricSpec("${key}").note, non-empty).
 Resultata: note ${JSON.stringify(note)}; paragraphs ${JSON.stringify(paragraphs)}.`);
 }
-assert.ok(new RegExp(`(^|[^\\d,.])${notes.perCarDay}([^\\d,.]|$)`).test(notes.out.fleet.note),
+assert.ok(new RegExp(`(^|[^\\d,.])${notes.perCarDay}(?!\\d|[.,]\\d)`).test(notes.out.fleet.note),
   `Replicata: read the fleet view's note (growthMetricSpec("fleet").note).
 Expectata: it gives Tesla's car-equivalent rate, TESLA_MILES_PER_CAR_DAY (${notes.perCarDay} miles a car-day).
 Resultata: ${JSON.stringify(notes.out.fleet.note)}.`);

@@ -478,18 +478,24 @@ ledger, 2026-10-27 (later)):
   28, 2026, "more than 300 million fully autonomous miles"
   (https://blog.google/company-news/inside-google/message-ceo/alphabet-earnings-q3-2026/),
   gave only a floor, which the series clears.
-- Zoox: the per-day rate between Zoox's two latest cumulative statements,
-  California (CPUC driverless miles × 1.19 for the DMV-reported miles CPUC
-  misses) grown e^0.05 (about 5.1%) a calendar month from its last CPUC
-  month and the rest held flat unless a dated, quantified change is known (a
+- Zoox: California (CPUC driverless miles × 1.19 for the DMV-reported miles
+  CPUC misses) grown e^0.05 (about 5.1%) a calendar month from its last CPUC
+  month, and the rest at the smooth path's Las Vegas rate (since 2026-11-03
+  one path through all four of Zoox's cumulative statements as ranges,
+  which holds December 2025's 6,500.65 miles a driving day on; until then
+  the per-day rate between Zoox's two latest statements, each held at its
+  midpoint), held flat unless a dated, quantified change is known (a
   reported pause of known length removes its days); band ×e^(-1.96σ) to
   ×e^(1.96σ′) on the month's rounded miles, edges rounded to 1,000, with
   σ = √(0.065² + 0.07²h + 0.09²) (statement rounding, drift, month noise),
   σ′ = √(σ² + 0.10²) while fleet growth is announced but unquantified, and h
   the months from the governing window's midpoint to the month's midpoint
-  (definitions in "Zoox anchors" below). Every Zoox constant is a prior: one
-  measured change in Zoox's rate exists. The same method sets Zoox's
-  analysis months from January 2026 ("Zoox anchors" below).
+  (definitions in "Zoox anchors" below). Every Zoox constant is a prior:
+  read as ranges, Zoox's statements allow one flat Las Vegas rate from
+  December 2025 on, so they show no change in it to test the constants
+  against (read at their midpoints, until 2026-11-03, they showed one). The
+  same path sets Zoox's analysis months from June 2025 ("Zoox anchors"
+  below).
 
 ### Waymo anchors
 
@@ -547,8 +553,10 @@ driverless mode in the metro Phoenix ODD") leaves 29,400 for Q4 2020, about
 half of 2021 (164,000, if 2021's rate did not fall), so the offset lies in
 152,200-258,400, rounded outward to 150,000-260,000. (The 2026-10-04 answer proposed
 100,000-200,000; Waymo's figures rule out its lower half and allow more
-above.) A central on its band's floor is the least likely value in the
-band, so since 2026-11-02 the central is the middle: every knot's
+above.) A central on the band's floor would hold January-June 2021 at about
+Q4 2020's 320 miles a day and then jump to about 1,480 a day for
+July-December; the middle gives a steadier ramp, so since 2026-11-02 the
+central is the middle: every knot's
 cumulative central, and every one from December 2022 on, is 55,000 miles
 lower, and so are July-December 2021's miles together (2021's lifetime
 total less the offset). 2022's twelve months keep
@@ -763,19 +771,23 @@ Each statement is read as its rounding interval ("nearly X" as 0.94X to X,
 up to a week before its date, the as-of day counting at its end, less the
 pre-series miles at their own band (the unrounded 30,127.3-59,986.6), and
 carried to the month's end at 0.7x-1.3x the model's daily miles, edges
-rounded outward: end-March 1,859,918-2,127,109 (2,121,276 until 2026-11-02:
-its upper edge carries Mar 18-24 at the Jan 1-Mar 24 rate, which the smooth
-path raised). "More than" sets only a floor: Zoox's own "more than one
+rounded outward: end-March 1,861,485-2,123,912 (1,859,918-2,127,109 until
+2026-11-03, when Mar 18-24 ran at the Jan 1-Mar 24 rate and Mar 25-31 at
+the Mar 25-Aug 5 rate; its upper edge was 2,121,276 until 2026-11-02).
+"More than" sets only a floor: Zoox's own "more than one
 million autonomous miles" (Mar 11, 2026) came when the series stood near
-1.84M, so the August statement gives end-July a floor of 2,880,483 (3.00M
-less the pre-series high edge and up to 1.3x the model's miles for Aug 1-5)
-and no ceiling; the upper edge chains on from March. Months between knots chain forward and narrow back
+1.84M, so the August statement gives end-July a floor of 2,878,404 (3.00M
+less the pre-series high edge and up to 1.3x the model's miles for Aug 1-5;
+2,880,483 until 2026-11-03) and no ceiling; the upper edge chains on from
+March. Months between knots chain forward and narrow back
 from the next knot. The as-of window is a judgment: Zoox's mileage
 statements can lag, as the Mar 11 one shows.
 
 The 1M-mile crossing and the smooth path (2026-11-02, the human's answer to
 open question 21, "Smooth path, honest bands"; it replaced the 2026-10-31
-reshape of decision #12 of the 2026-10-04 audit). Zoox's CTO Jesse
+reshape of decision #12 of the 2026-10-04 audit; since 2026-11-03, the
+human's answer to open question 29, "All four as ranges", one path through
+all four statements). Zoox's CTO Jesse
 Levinson, at Fortune Brainstorm AI in San Francisco on Monday, Dec 8, 2025:
 "Zoox crossed the 1 million mile technical threshold for autonomous rides
 just last week" (Fortune, Dec 8, 2025,
@@ -786,29 +798,45 @@ Fortune's Dec 17 piece has "A few weeks ago",
 https://fortune.com/2025/12/17/amazon-zoox-cofounder-dramatically-more-social-rival-waymo-tesla-cybercab/).
 So the series plus its 40,080 pre-series miles passes 1,000,000 during Dec
 1-7, each month's miles spread evenly over its days. No one has measured
-Zoox's Las Vegas miles by month, so June-December 2025 is a model.
+Zoox's Las Vegas miles by month, so the rows from June 2025 are a model.
 California is the CA DMV's driverless miles; December, in no DMV report yet,
 is November's times CPUC's December/November ratio (48,480), within CPUC's
 December (36,482, a floor) and that over 0.6 (60,803, the 60% pilot-share
-reading). The Las Vegas share's miles per Las Vegas driving day take the
-smoothest path: the least sum of squared month-to-month changes in their
-logarithm, from May 2025 (fixed: the early rows' rule, Las Vegas equal to
-California) through the 2026 rows, which depend on the path through its
-Dec-31 cumulative (below), subject to the crossing during Dec 1-7 and the
-Dec-31 lifetime in 1.25M-1.35M. Smoothing only the Las Vegas share keeps
-California's measured months as measured, and counting per driving day
-keeps January's outage out of the criterion. The Dec-31 floor binds (the
-roughness rises across the whole range), the crossing falls early on Dec 1
-without binding, and the share runs 779, 1,233, 1,909, 2,860, 4,086, 5,439
-and 6,612 miles a day June-December, then 7,172 a day over Jan 1-Mar 24 and
-6,181 from Mar 25: June-December 45,892 / 64,849 / 95,252 / 120,825 /
-168,940 / 219,441 / 253,452 miles, December absorbing the rounding residue.
-The 2026-10-31 reshape had taken both statements as exact (the crossing on
-Dec 4, Dec 31 at 1.3M): December 338,181 miles, 10,909 a day against
-January's 6,774, and June 41% lower than its earlier shape; on the
-criterion above its path scores 1.45, the earlier shape (the crossing on
-about Nov 22, which Fortune's vaguer Dec 17 wording had seemed to allow)
-1.68, this one 1.06.
+reading); from January 2026 it is CPUC's miles × 1.19 (below). The Las
+Vegas share runs at one rate a Las Vegas driving day each month, and the
+rates take the smoothest path: the least sum of squared month-to-month
+changes in their logarithm, from May 2025 (fixed: the early rows' rule, Las
+Vegas equal to California) through the series' last month, ghost months
+included, subject to all four statements read as ranges (the crossing
+during Dec 1-7, the lifetime in 1.25M-1.35M at Dec 31, 2025, in
+1.88M-2.00M at Mar 24, 2026 and in 3.00M-3.20M at Aug 5, 2026) and to the
+end-July floor above. Smoothing only the Las Vegas share keeps California's
+measured months as measured, and counting per driving day keeps January's
+outage out of the criterion. Two of the statements bind: the path's
+lifetime reaches 1M at the end of Nov 30 (the crossing falls at the start
+of Dec 1) and stands at 1.25M at Dec 31. The others hold with room:
+1,887,653 at Mar 24, 3,090,510 at Aug 5, and an end-July series of
+3,003,038 against the floor's 2,878,404. Since none after Dec 31 binds, the
+path holds December's rate from then on, so "held flat after Aug 5", the
+earlier rule, now follows from the criterion. The share runs 784, 1,246,
+1,934, 2,898, 4,123, 5,435 and 6,501 miles a day June-December, then
+6,500.65 a day through October 2026: June-December 46,024 / 65,241 /
+96,029 / 121,954 / 170,087 / 219,315 / 250,001 miles, December absorbing
+the rounding residue. `quals/zoox-vmt-model.qual.mjs` checks that the path
+is the smoothest near it (every other statement holds strictly, both
+binding ones' multipliers are positive, and the Lagrangian's Hessian is
+positive definite on the directions that keep them), and on 2026-11-03 a
+general constrained solver from 60 random starts found no smoother one. The
+path scores 1.032 on the criterion. The 2026-11-02 path, which smoothed
+2025 alone and held the two 2026 statements at their midpoints (Jan 1-Mar
+24 at 7,172 a day, 6,181 from Mar 25; June-December 45,892 / 64,849 /
+95,252 / 120,825 / 168,940 / 219,441 / 253,452), scored 1.056 on the same
+months. The 2026-10-31 reshape had taken both 2025 statements as exact (the
+crossing on Dec 4, Dec 31 at 1.3M): December 338,181 miles, 10,909 a day
+against January's 6,774, and June 41% lower than its earlier shape; on the
+2026-11-02 criterion its path scored 1.45 and the earlier shape (the
+crossing on about Nov 22, which Fortune's vaguer Dec 17 wording had seemed
+to allow) 1.68.
 
 The June-December 2025 bands are California plus half to twice the Las
 Vegas share, the allowance the early rows give an unmeasured Las Vegas
@@ -817,13 +845,13 @@ months), within what the statements allow: each month inside the
 difference of its lifetime cumulative bands, swept from May 2025's lifetime
 band (its series band plus the pre-series band) with knots at November (the
 crossing: not before Dec 1, and by the end of Dec 7 with December's miles at
-most its California high plus twice its Las Vegas share, 470,746, spread
-evenly: 893,702-1,000,000 lifetime)
+most its California high plus twice its Las Vegas share, 463,842, spread
+evenly: 895,261-1,000,000 lifetime)
 and December (1.25M-1.35M), edges rounded outward. They hold both earlier
 shapes of these months, the 10e2343 rows and the 2026-10-31 reshape, except
 December's 10e2343 value, 245,852, which the statements rule out: December
 is at least 250,000, 1.25M at Dec 31 less 1M at Nov 30. On the series basis
-November's cumulative band is that crossing knot, 833,715-969,873, and
+November's cumulative band is that crossing knot, 835,274-969,873, and
 narrows August-October's upper edges back from it. From November 2025 on
 every Zoox cumulative band carries the pre-series band's width, 29,859 miles
 (floored), which the app's window band adds back once for a window whose
@@ -831,27 +859,33 @@ month before it is November 2025 or later (Waymo anchors, above).
 `quals/zoox-vmt-model.qual.mjs` recomputes the path, its bands and every
 cumulative band; `quals/zoox-vmt-provenance.qual.mjs` pins the crossing.
 
-The 2026 rows follow one method, the per-day rate between consecutive
-statements. Jan 1-Mar 24 (83 days) holds the March statement's midpoint,
-1.94M, less the smooth path's Dec-31 lifetime, 1.25M: 690,000 miles (from
-2026-10-27 until 2026-11-02 less the Dec-31 statement's midpoint, 1.30M:
-640,000); Mar 25-Aug 5 (134 days) holds the midpoints' difference,
-1,160,000. California is CPUC's driverless pilot miles × 1.19 for the
+The 2026 rows are the same path's (since 2026-11-03): one Las Vegas rate a
+driving day each month, which the path holds at December 2025's 6,500.65
+from January on. California is CPUC's driverless pilot miles × 1.19 for the
 DMV-reported driverless miles CPUC misses, an assumption: 1.19 is the
 midpoint of 1.05-1.33, the measured DMV/CPUC ratio having fallen from 3.97
 to 1.33 over Apr-Nov 2025 (the Dec-2025 row, built on the DMV's own figures,
 implies 1.33). It is measured through June
-and grown e^0.05 a calendar month after it, constant within a month. The
-rest, mostly Las Vegas, is each interval's remainder over its driving days
-(January's Las Vegas passenger outage, Jan 22-26, taken as 5 days without
-Las Vegas driving): 7,171.76 a day (6,530.74 until 2026-11-02), then
-6,180.83 a day, held flat after Aug 5. Months round to 10,000. Bands follow
-the formula in "Ghost months" above, with no growth term before October; h
-is in months of 30.44 days, from the governing window's midpoint (the mean
-of its first and last driving days: Feb 11, and the end of May 30) to the
-month's mean day (Jan 16, Feb 14.5, ...); January-March are governed by Jan 1-Mar 24, April on
-by Mar 25-Aug 5. `quals/zoox-vmt-model.qual.mjs` recomputes every row,
-band and cumulative band from June 2025 from these inputs.
+and grown e^0.05 a calendar month after it, constant within a month.
+January's Las Vegas passenger outage, Jan 22-26, counts as 5 days without
+Las Vegas driving. Months round to 10,000: January-October 210,000 /
+230,000 / 260,000 / 250,000 / 280,000 / 280,000 / 290,000 / 290,000 /
+290,000 / 300,000. Until 2026-11-03 the 2026 rows were the per-day rate
+between consecutive statements, each held at its midpoint: Jan 1-Mar 24 (83
+days) the March statement's midpoint, 1.94M, less the smooth path's Dec-31
+lifetime, 1.25M, 690,000 miles, 7,171.76 a Las Vegas driving day (from
+2026-10-27 until 2026-11-02 less the Dec-31 statement's midpoint, 1.30M:
+640,000, 6,530.74 a day), and Mar 25-Aug 5 (134 days) the midpoints'
+difference, 1,160,000, 6,180.83 a day, held flat after Aug 5 (220,000 /
+250,000 / 280,000 / 240,000 / 270,000 / 270,000 / 280,000 / 280,000 /
+280,000 / 290,000). Bands follow the formula in "Ghost months" above, with
+no growth term before October; h is in months of 30.44 days, from the
+midpoint of the stretch between the two statements around the month (the
+mean of its first and last days: Feb 11 for Jan 1-Mar 24, which governs
+January-March, and the end of May 30 for Mar 25-Aug 5, which governs April
+on) to the month's mean day (Jan 16, Feb 14.5, ...).
+`quals/zoox-vmt-model.qual.mjs` recomputes every row, band and cumulative
+band from June 2025 from these inputs.
 
 ### Tesla's no-monitor line
 

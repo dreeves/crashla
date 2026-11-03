@@ -57,7 +57,12 @@
 //      tooltip mark the lagged month on a Monthly-track metric; on every
 //      five-day-track metric the "?" follows the receipt coverage alone, so
 //      it marks the data-through month and the lagged month carries neither
-//      a "?" nor a coverage note.
+//      a "?" nor a coverage note; and (since 2026-11-03, open question 31) on
+//      every metric, in the default window and in the data-through month's
+//      one-month window, with the default lines and with Zoox added, every
+//      dot and error bar fades by its month's whole completeness at worst, as
+//      the chart's "?" markers (checked there too) do, and a partly received
+//      month lifts the y axis only to its posterior median.
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { spawnSync } from "node:child_process";
@@ -504,10 +509,12 @@ const ctx6 = vm.createContext({ console, Math, Number,
   document: { getElementById() { return null; }, createElement() { return new EscStub(); } } });
 vm.runInContext(dataScript, ctx6, { filename: "data.js" });
 vm.runInContext(appScript, ctx6, { filename: "crashla.js" });
-// The world is set up once: monthSeriesData computes every metric, so only
-// the selected metric changes between the renders below.
+// The world is set up once: monthSeriesData computes every metric and every
+// line, so only the selected metric (and, in the last part, the shown lines
+// and the window) changes between the renders below.
 vm.runInContext(`incidents = INCIDENT_DATA; ${injectLag}
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
+  var section6DefaultLines = {...monthHelmerEnabled};
   monthHelmerEnabled.Zoox = true;
   var section6Series = monthSeriesData();`, ctx6);
 // The default-window chart on one metric with Zoox shown, and each month's
@@ -547,7 +554,7 @@ const checkQmarks = chart => {
     x: (monthX[g[0]] + monthX[g[g.length - 1]]) / 2, opacity: Math.max(...g.map(i => chart.expected[i])).toFixed(3) }));
   assert.ok(monthX.length === chart.months.length && qmarks.length === wantQ.length &&
     qmarks.every((q, i) => q.opacity === wantQ[i].opacity && Math.abs(q.x - wantQ[i].x) <= 0.01),
-    `Replicata: the "?" markers of the default-window MPI chart with Zoox shown (metric ${chart.metric}).
+    `Replicata: the "?" markers of the ${chart.where ?? "default-window MPI chart with Zoox shown"} (metric ${chart.metric}).
 Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest ${chart.rule} over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
 Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) => ({ ...q, at: wantQ[i] && wantQ[i].months })).filter(q => q.opacity !== "0.000"))}.`);
 };
@@ -604,4 +611,151 @@ Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
   }
 }
 
-console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart, on All incidents and on ${fiveDayKeys.length} five-day-track metrics`);
+// The dots, error bars and y axis (open question 31; added 2026-11-03, when
+// nothing pinned them). Since 0250d85 (2026-11-02, decision 23(a)) a month's
+// dots and error bars fade by the quantity its "?" does, the month's whole
+// completeness at worst, w (receivedShare's worst: coverage x
+// incident_coverage_min on a Monthly-track metric, coverage_min on a five-day
+// one, 1 for a human cohort), each drawn at opacity 0.35 + 0.65 x w (a dot
+// through the group around it), so a fully received month's are opaque.
+// Until then w was incident_coverage_min alone on the Monthly track and 1 on
+// the five-day track: 2026-09's company marks drew at 0.528 on a
+// Monthly-track metric, where 0.374 is due, and at 1.000 on a five-day one,
+// where 0.390 is. And a partly received month lifts the y axis only to
+// its posterior median: the axis tops out at the first rung of its tick
+// ladder at or above the chart's maximum, to which a fully received month (w
+// above 0.99, the chart's test) contributes its mpiMax when that is finite
+// (the high edge of a company line's effective miles over its incident count,
+// infinite at k = 0; a human cohort's band high edge) and every other month
+// its median. (crashla.js's comment there says "k≥1 months", but the code
+// takes any finite mpiMax, so a fault mass or fatality share under 1 counts
+// too, at up to 20 times the month's miles: on 2026-11-03 the default
+// at-fault-injury chart topped out at 500M on Waymo 2026-05's 0.05, its dots
+// in the bottom 15% of the plot. This qual follows the code; which of the two
+// is meant is the human's question, raised that day.)
+// Until 0250d85 a five-day metric's partial month counted as fully received,
+// so the one-month 2026-09 airbag chart topped out at 8M where 2M is due.
+// Checked on every metric, in the default window and in the data-through
+// month's one-month window, with the default lines and with Zoox added (whose
+// synthetic lagged month, section 5, is a second partly received month on
+// the Monthly track), with the "?" markers of each of those charts. A line's
+// month has a dot and an error bar where the series gives it a posterior for
+// the metric (an unrated month on an at-fault metric gets none), and the
+// medians and mpiMax the rule takes are the series' own; the marks' colours
+// tell the lines apart and their x positions the months. w is read from the
+// coverage columns of parseVmtCsv's rows, as for the "?" above.
+const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() => {
+  const saved = [selectedMetricKey, monthHelmerEnabled];
+  selectedMetricKey = ${JSON.stringify(key)};
+  monthHelmerEnabled = {...section6DefaultLines${withZoox ? ", Zoox: true" : ""}};
+  const s = section6Series, end = s.months.indexOf(${JSON.stringify(dataThroughMonth)});
+  const start = ${oneMonth ? "end" : "s.months.indexOf(DEFAULT_START_MONTH)"};
+  const metric = selectedMonthMetric();
+  const html = renderAllHelmersMpiChart(sliceSeries(s, start, end));
+  const months = s.months.slice(start, end + 1);
+  const lines = includedHelmers().map(line => ({ line, human: HUMAN_HELMERS.includes(line), color: HELMER_COLORS[line],
+    points: months.map((month, j) => {
+      const row = s.points[start + j].helmers[line];
+      const mpi = row ? row.mpiByMetric[metric.key] : null;
+      const csv = vmtRows.find(x => x.helmer === line && x.month === month);
+      return { month, dot: Boolean(mpi), median: mpi ? mpi.mpiMedian : null,
+        max: mpi && Number.isFinite(mpi.mpiMax) ? mpi.mpiMax : null,
+        csv: csv ? { coverage: csv.coverage, coverageMin: csv.coverageMin, incCovMin: csv.incCovMin } : null };
+    }) }));
+  [selectedMetricKey, monthHelmerEnabled] = saved;
+  return JSON.stringify({ metric: metric.key, fiveDay: metric.fiveDay === true, newest: s.months.length - 1, end,
+    defaultStart: DEFAULT_START_MONTH, months, lines, html });
+})()`, ctx6));
+const TICK_UNIT = { "": 1, K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
+const tickValue = label => { const m = /^([\d,.]+)([KMBT]?)$/.exec(label); return m ? Number(m[1].replace(/,/g, "")) * TICK_UNIT[m[2]] : NaN; };
+const styleOf = (style, prop) => (new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(style) || [])[1];
+const miles = v => Number.isFinite(v) ? Math.round(v).toLocaleString("en-US") : String(v);
+const fadeOf = w => 0.35 + 0.65 * w;
+const metricKeys = JSON.parse(vm.runInContext("JSON.stringify(METRIC_DEFS.map(m => m.key))", ctx6));
+const frameProblems = [], fadeProblems = { dot: [], "error bar": [] }, axisProblems = [], qmarkCharts = [];
+let markCount = 0;
+for (const key of metricKeys) for (const oneMonth of [false, true]) for (const withZoox of [false, true]) {
+  const c = chartCase(key, oneMonth, withZoox);
+  const where = `MPI chart ${oneMonth ? `in the one-month ${dataThroughMonth} window` : "in the default window"} with the default lines${withZoox ? " and Zoox" : ""}`;
+  const at = `${c.metric}, ${where.slice("MPI chart ".length)}`;
+  if (c.end !== c.newest || !(oneMonth ? c.months.length === 1 : c.months[0] === c.defaultStart && c.months.length >= 2)
+    || (withZoox && !c.lines.some(l => l.line === "Zoox"))) {
+    frameProblems.push(`${at}: months ${c.months[0]}..${c.months.at(-1)} (the data-through month at index ${c.end}, the series' newest at ${c.newest}), lines ${c.lines.map(l => l.line).join(", ")}`);
+    continue;
+  }
+  // Each shown line-month with a dot: w, its median and its mpiMax.
+  const want = new Map();
+  for (const l of c.lines) for (const p of l.points) {
+    if (!p.dot) continue;
+    if (!l.human && p.csv === null) { frameProblems.push(`${at}: ${l.line} ${p.month} has a dot and no data/vmt.js row`); continue; }
+    const w = l.human ? 1 : c.fiveDay ? p.csv.coverageMin : p.csv.coverage * p.csv.incCovMin;
+    want.set(`${l.line} ${p.month}`, { month: p.month, w, median: p.median, max: p.max });
+  }
+  const lineOf = new Map(c.lines.map(l => [l.color, l.line]));
+  const marks = {
+    dot: [...c.html.matchAll(/<g opacity="([^"]*)">\s*<circle class="month-dot" cx="([^"]*)"[^>]*\sstyle="([^"]*)"[^>]*><\/circle>\s*<\/g>/g)]
+      .map(m => ({ opacity: m[1], x: Number(m[2]), color: styleOf(m[3], "stroke") })),
+    "error bar": [...c.html.matchAll(/<line class="month-err" x1="([^"]*)"[^>]*\sstyle="([^"]*)"[^>]*>/g)]
+      .map(m => ({ opacity: styleOf(m[2], "opacity"), x: Number(m[1]), color: styleOf(m[2], "stroke") })),
+  };
+  const drawn = { dot: (c.html.match(/class="month-dot"/g) || []).length, "error bar": (c.html.match(/class="month-err"/g) || []).length };
+  const monthX = [...new Set(marks.dot.map(d => d.x))].sort((a, b) => a - b);
+  if (lineOf.size !== c.lines.length || marks.dot.length !== drawn.dot || marks["error bar"].length !== drawn["error bar"]
+    || monthX.length !== c.months.length) {
+    frameProblems.push(`${at}: ${c.lines.length} lines in ${lineOf.size} colours; ${marks.dot.length} of ${drawn.dot} dots in an opacity group; ${marks["error bar"].length} of ${drawn["error bar"]} error bars read; dots in ${monthX.length} columns for ${c.months.length} months`);
+    continue;
+  }
+  for (const [kind, glyphs] of Object.entries(marks)) {
+    const seen = new Map();
+    for (const g of glyphs) {
+      const i = monthX.findIndex(x => Math.abs(x - g.x) <= 0.006);
+      const id = `${lineOf.get(g.color)} ${c.months[i]}`;
+      const p = want.get(id);
+      if (!lineOf.has(g.color) || i < 0 || p === undefined) {
+        fadeProblems[kind].push(`${at}: a ${kind} (${g.color} at x ${g.x}) on no shown line's month with a dot`);
+        continue;
+      }
+      seen.set(id, (seen.get(id) || 0) + 1);
+      markCount++;
+      if (!(Math.abs(Number(g.opacity) - fadeOf(p.w)) <= 5e-4 + 1e-12))
+        fadeProblems[kind].push(`${at}: ${id}'s ${kind} at opacity ${g.opacity}, where 0.35 + 0.65 x ${+p.w.toFixed(4)} = ${fadeOf(p.w).toFixed(3)} is due`);
+    }
+    for (const id of want.keys()) if (seen.get(id) !== 1) fadeProblems[kind].push(`${at}: ${id} has ${seen.get(id) || 0} ${kind}s, where one is due`);
+  }
+  // The rule's maximum, and the rendered tick ladder's top.
+  let top = { v: 0, id: "no line-month", by: "nothing" };
+  for (const [id, p] of want) {
+    const full = p.w > 0.99 && p.max !== null;
+    const v = full ? p.max : p.median;
+    if (v > top.v) top = { v, id, by: full ? `mpiMax (w ${+p.w.toFixed(4)})` : `median (w ${+p.w.toFixed(4)}${p.max === null ? ", mpiMax infinite" : ""})` };
+  }
+  const ticks = [...c.html.matchAll(/<text class="month-tick" x="[^"]*" y="[^"]*" text-anchor="end">([^<]*)<\/text>/g)]
+    .map(m => tickValue(m[1])).sort((a, b) => a - b);
+  const step = ticks[1] - ticks[0];
+  const ladder = ticks.length >= 2 && ticks[0] === 0 && step > 0 && ticks.every((t, i) => Math.abs(t - i * step) <= 1e-9 * step);
+  const due = ladder ? Math.ceil(top.v / step - 1e-9) * step : NaN;
+  if (!(ladder && Math.abs(ticks.at(-1) - due) <= 1e-9 * step))
+    axisProblems.push(`${at}: y ticks ${ticks.map(miles).join(", ")}, where the top is due at ${miles(due)}: the first rung of that ${miles(step)} ladder at or above the rule's maximum, ${miles(top.v)} (${top.id}'s ${top.by})`);
+  // The chart's "?" markers, from the same w: each month's largest 1 - w over
+  // the shown lines' dots (a human cohort's is 0).
+  qmarkCharts.push({ ...c, where, rule: c.fiveDay ? "1 - coverage_min (the receipt coverage alone)" : "1 - coverage x incident_coverage_min",
+    expected: c.months.map(m => Math.max(0, ...[...want.values()].filter(p => p.month === m).map(p => 1 - p.w))) });
+}
+const caseCount = metricKeys.length * 2 * 2;
+assert.deepEqual(frameProblems, [],
+  `Replicata: render the MPI chart on each of the ${metricKeys.length} metrics, in the default window (${dataThroughMonth} its newest month) and in the one-month ${dataThroughMonth} window, with the default lines and with Zoox added (Zoox's ${lagMonth} lagged, as in section 5): ${caseCount} charts.
+Expectata: each window ends at the data-through month, the series' newest; each shown line in its own colour; every dot in a group carrying its opacity; every error bar read; one column of dots per month (the human cohort has a dot in every month).
+Resultata: ${frameProblems.length} problems: ${frameProblems.slice(0, 8).join("; ")}.`);
+for (const [kind, problems] of Object.entries(fadeProblems)) {
+  assert.deepEqual(problems, [],
+    `Replicata: those ${caseCount} charts' ${kind}s, each matched to its line by colour and to its month by x.
+Expectata: one ${kind} per shown line-month with a posterior, each at opacity 0.35 + 0.65 x w to 3 decimals, w the month's whole completeness at worst for the metric's track (coverage x incident_coverage_min on the Monthly track, coverage_min on the five-day track, 1 for a human cohort), so ${dataThroughMonth}'s company ${kind}s fade with the month's "?" and every fully received month's are opaque.
+Resultata: ${problems.length} problems: ${problems.slice(0, 10).join("; ")}.`);
+}
+assert.deepEqual(axisProblems, [],
+  `Replicata: those ${caseCount} charts' y tick labels.
+Expectata: 0 and evenly spaced rungs, the top one the first at or above the chart's maximum under its y-range rule: a fully received month (w above 0.99) contributes its mpiMax where that is finite (a company line's top effective miles over its incident count; a human cohort's band high edge), every other month, a partly received one included, only its posterior median.
+Resultata: ${axisProblems.length} of ${caseCount} charts wrong: ${axisProblems.slice(0, 8).join("; ")}.`);
+for (const chart of qmarkCharts) checkQmarks(chart);
+
+console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart, on All incidents and on ${fiveDayKeys.length} five-day-track metrics; on ${caseCount} MPI charts (every metric, two windows, two line sets) ${markCount} dots and error bars fade by their month's whole completeness, the y axis tops out where partly received months count only their medians, and the "?" markers follow the same completeness`);

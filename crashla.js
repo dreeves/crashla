@@ -547,8 +547,10 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //
 // srcAiText: true marks a src that is AI text, so the derivations table
 // renders it as AI text (.ai-text, green; the VMT sources table's legend:
-// "green text = AI-generated"), as it does srcNote; a src without it is the
-// human's. Four carry it (decision 23(b) of the 2026-11-01 open questions,
+// "green text = AI-generated"), as it does srcNote; a src without it is meant
+// to be the human's, which not every one is yet: each questionable src and
+// srcNote carries a to-do comment for the human's review (open question 33,
+// since 2026-11-03). Four carry it (decision 23(b) of the 2026-11-01 open questions,
 // 2026-11-02; quals/ai-derivation-text.qual.mjs): the AV-cities fatality
 // band's, which the human committed labelled "Claude:" (2026-08-31, in place
 // of an agent's Latin of 2026-08-28), and the AV-cities injury, airbag and
@@ -638,6 +640,7 @@ const METRIC_DEFS = [
     humanMPI: {
       HumansAV: {lo: 103000, hi: 214000,
         // Kusano Blincoe-adj (9.67 IPMM) to police-reported (4.68 IPMM)
+        // DONE (open question 33): mixed authorship. The text before "caveat:" dates from 4af9946 (2026-02-26), its author not recorded; the caveat is your translation (d7c0e20). Renders plain.
         src: 'lo: 1M/9.67 Blincoe-adj IPMM; hi: 1M/4.68 police-reported IPMM; caveat: since June 16, 2025 (Third Amended SGO) minor crashes where another vehicle struck the AV (under $1,000 damage, no severity trigger) are exempt from AV reporting; this deflates AV all-incident counts vs any human benchmark; Waymo now calls this comparison impossible.',
         // Kusano's 9.67 is Blincoe et al. 2023-adjusted (its p. 5); the release
         // notes are the current (Oct 2, 2026) edition, the one the hub links,
@@ -709,6 +712,7 @@ const METRIC_DEFS = [
         // US-average all-crash range
         // divided by (1 - 12.9%), the CRSS 2024 share of crashed in-transport
         // vehicles stopped in the roadway at impact (all vehicles, all roads).
+        // DONE (open question 33): you adopted an agent's to-do recap word for word (b068a10), with no "Claude:" label. Renders plain.
         src: "US-average all-crash range divided by (1 - 12.9%), the CRSS 2024 share of crashed in-transport vehicles stopped in the roadway at impact (all vehicles, all roads).",
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
@@ -786,6 +790,7 @@ const METRIC_DEFS = [
     // share rises toward ~1 and the lo anchor collapses to the all-crash lo.
     humanMPI: {
       HumansAV: {lo: 103000, hi: 430000,
+        // DONE (open question 33): agent English (1539fb6, 2026-06-12) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity; marginal unreported contacts are mostly self-inflicted); hi: all-crash hi / 50% police-reported-universe share',
         // Blincoe et al. 2023, the edition behind Kusano's 9.67 (until
         // 2026-10-03 this linked the 2015 edition; audit #42).
@@ -794,6 +799,7 @@ const METRIC_DEFS = [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813403',
         ]},
       HumansUS: {lo: 140000, hi: 600000,
+        // DONE (open question 33): agent English (1539fb6, 2026-06-12) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: US-average all-crash lo (at-fault share \u2192 ~1 at any-property-damage severity); hi: US-average all-crash hi / 50% police-reported-universe share',
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
@@ -870,7 +876,9 @@ const METRIC_DEFS = [
     //   blended anchors, 272k–1,050k.)
     humanMPI: {
       HumansAV: {lo: 159000, hi: 1026000,
+        // DONE (open question 33): agent English (eeb59c0, 2026-06-12; agents changed only its figures since) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: injury lo (149k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (513k) / 50% legal-allocation floor',
+        // QUAL (open question 33): your translation (f75b903, 2026-08-31; on Nov 2 an agent changed "812115's" to "812 506's" under the link update you approved), yet it renders green: the table wraps every srcNote in .ai-text.
         srcNote: "94% = NHTSA 812 506's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
         // The injury band's source and the 94%'s (audit #41: Kusano Table 3
         // and NHTSA 813791, linked until 2026-10-03, feed no number here).
@@ -879,7 +887,9 @@ const METRIC_DEFS = [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812506',
         ]},
       HumansUS: {lo: 830000, hi: 2180000,
+        // DONE (open question 33): agent English (eeb59c0, 2026-06-12; agents changed only its figures since) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
+        // QUAL (open question 33): your translation (f75b903, 2026-08-31), yet it renders green, as the note above.
         srcNote: "[same as above for humans in AV cities]",
         // The US injury band's sources and the 94%'s (audit #41: the 94%'s
         // source was missing until 2026-10-03).
@@ -1041,6 +1051,7 @@ const METRIC_DEFS = [
           'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 920000, hi: 2700000,
+        // DONE (open question 33): mixed authorship. Through "inside this band" it is your translation (a5fa708, 2026-11-02); from "log-interpolated" on it is agent English (51dc8a9, 2026-06-18). Renders plain.
         src: 'CRSS 2024 directly measures this rate (police-reported, all vehicles, all roads): 0.740 vehicles in airbag-deployment crashes per million miles (1.35M MPI) which lies inside this band; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban→national severity-mix shift',
         // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
         // centres (the hub's injury and this band's, IIHS's fatality), the
@@ -1079,6 +1090,7 @@ const METRIC_DEFS = [
           'https://arxiv.org/abs/2505.01515',
         ]},
       HumansUS: {lo: 4000000, hi: 19000000,
+        // DONE (open question 33): mixed authorship. Through "inside this band" it is your translation (a5fa708, 2026-11-02); from "log-interpolated" on it is agent English (51dc8a9, 2026-06-18). Renders plain.
         src: 'CRSS 2024 directly measures this rate (police-reported, all vehicles, all roads): 0.086 vehicles in crashes with a suspected serious or fatal injury (KABCO A+K) per million miles (11.6M MPI), which lies inside this band; log-interpolated between the national injury and fatality anchors by AV-cities severity position, widened for the urban\u2192national severity-mix shift',
         // The interpolation's inputs (audit 2026-10-04 #34): the AV-cities
         // centres (the hub's injury and this band's, IIHS's fatality), the
@@ -1133,7 +1145,7 @@ const METRIC_DEFS = [
         // whole — the very convention the AV side's 1/N division rejects —
         // so it was dropped as numerator-inconsistent (it was also the
         // AV-favorable edge).
-        src: "FARS 2024 national: 1.19 deaths per 100M VMT (39,254 deaths) to 1.10 fatal crashes per 100M VMT (36,297 crashes) — numerators matching the AV side's fractional-death count.",
+        src: "Claude: FARS 2024 national: 1.19 deaths per 100M VMT (39,254 deaths) to 1.10 fatal crashes per 100M VMT (36,297 crashes) — numerators matching the AV side's fractional-death count.",
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
         ]},
@@ -1145,6 +1157,7 @@ const METRIC_DEFS = [
       // said 0.94, the plain mean (audit #71). lo = 1e8/0.946 = 105.7M, kept
       // at 106M (3 significant figures; 1e8/0.94 = 106.4M rounds the same).
       HumansRideshare: {lo: 106000000, hi: 161000000,
+        // DONE (open question 33): agent English (9f40442, 2026-06-16), rewritten by an agent in 9c41e6d (2026-09-04), its 0.94 made 0.95 by an agent on 2026-10-03; you never translated or edited it. Renders plain (rule 7 wanted Latin with a recap).
         src: 'Uber & Lyft US Safety Reports: 0.62 (Uber, 2019-2020) to 0.95 (Lyft, 2021-2022 mile-weighted average of its 0.86 and 1.02 yearly rates) fatalities per 100M VMT',
         srcLinks: [
           'https://www.uber.com/us/en/about/reports/us-safety-report/',
@@ -1192,6 +1205,7 @@ for (const m of METRIC_DEFS) {
       // and 50.5). Each is less safe than the matching derived band's
       // least-safe edge (all incidents: 86K MPI); the 1.2x/1.5x lean stays
       // as settled.
+      // DONE (open question 33): agent English of 2026-06-16 that you edited: "Computed from" is your wording (2026-08-19), and you cut a clause in a3c39bb (2026-10-05). Renders plain, on nine rows.
       src: 'Computed from the AV-cities human rate (~1.2× worse to ~1.5× safer): sober/professional drivers vs heavy urban exposure & in-app distraction',
       srcLinks: h.HumansAV.srcLinks,
     };
@@ -1818,8 +1832,8 @@ function helmerMonthRows(series, helmer) {
 // statement includes the miles a line drove before its series starts
 // (Waymo's before July 2021, range 150,000-260,000, data/waymo_vmt.py;
 // Zoox's before May 2024, 30,127-59,987, data/README.md, Zoox anchors;
-// Tesla's lines start with their service). From a line's first lifetime knot
-// on (from), every cumulative band in data/vmt.csv is a lifetime band less
+// Tesla's lines start with their service). From a line's first fully knotted
+// month on (from), every cumulative band in data/vmt.csv is a lifetime band less
 // that offset's range, so the two bands a window differences both carry it,
 // though the offset is one number and cancels in the window's miles: the
 // difference adds the range back once. Until then the range widened every
@@ -3678,7 +3692,9 @@ function renderFleetForecastChart() {
 // re-derives each point, so re-derive them whenever a month's miles row
 // changes. It is miles in car units, so utilization moves it: Q2 2026's slump
 // reads 78 (March) to 29 (June). June 2025 keeps the launch count, about a
-// dozen cars, since its miles give 0.4. Until 2026-10-29 the line mixed
+// dozen cars (the human's choice, 2026-10-29): its 683 miles give 0.13
+// car-equivalents over the month's 30 days (0.4 over the 9 days from the Jun
+// 22 launch), under the axis's floor. Until 2026-10-29 the line mixed
 // reported counts (Dec 2025 ~20; Apr 2026 ~25, the no-monitor count; Jun 2026
 // ~28 active) with robotaxitracker's count of distinct cars seen in August
 // (150 [90, 220], against its 175).
@@ -3962,7 +3978,8 @@ function growthMetricSpec(key) {
       // divided by TESLA_MILES_PER_CAR_DAY, 180 miles a car-day), while
       // Waymo's and Zoox's lines count cars (decision 23(d), the human's
       // "Yes, in Latin", 2026-11-02).
-      note: `For number of vehicles, the scenario where all HW4 Teslas with "Full Self-Driving" become unsupervised is actually counting "car equivalents": ADS miles per day day divided by ${TESLA_MILES_PER_CAR_DAY}, our assumed miles per car-day. Waymo and Zoox count actual number of vehicles. This is an attempt to be more apples-to-apples since a private Tesla that takes one short trip a month shouldn't count for as much as a full-time robotaxi.`,
+      // DONE (open question 32): the note names only the all-HW4 scenario as car-equivalents, but Tesla's robotaxi line counts them too (miles a day / TESLA_MILES_PER_CAR_DAY at every point from Sep 2025; only June 2025's 12, the launch fleet, is a car count); and it says "per day day". fleet-timeseries.qual requires the note to state the figure (${TESLA_MILES_PER_CAR_DAY}).
+      note: `For number of vehicles, the scenario where all HW4 Teslas with "Full Self-Driving" become unsupervised is, perhaps confusingly, counting "car equivalents": ADS miles per car-day divided by ${TESLA_MILES_PER_CAR_DAY}, our assumed miles per car-day. Waymo and Zoox count actual number of vehicles. This is an attempt to be more apples-to-apples since a private Tesla that takes one short trip a month shouldn't count for as much as a full-time robotaxi.`,
       lanes: () => trajectoryLanes(fleetForecastCurves(), h => FLEET_HISTORY[h], FLEET_TS_END_MONTH)},
     rides: {label: "Rides (cumulative)", yLabel: "Cumulative rides", valueLabel: "Rides", fmt: fmtWhole,
       tipAt: wholeAtSigFigs,
@@ -6240,7 +6257,8 @@ Claude notes:
   // this page link, p. 2 on 30270-13817 and p. 9 on relying on the police
   // crash report (pp. 2 and 8 in the Sep-24 edition).
   // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
-  const waySsiNote = `The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports; three SGO "Serious" filings (30270-8968, 30270-10112, 30270-15547) are not serious per the police reports, and one (30270-13817) still awaits a police crash report.`;
+  // DONE (open question 27): "and one (30270-13817) still awaits a police crash report" reads as a fourth SGO "Serious" filing. It isn't one: Waymo filed it with severity "Unknown", and the page counts it as serious from the police General Offense Report quoted in Waymo's release notes (the other driver "was treated at a hospital for injuries described as life threatening"), while Waymo waits for the police crash report. waymo-reconciliation.qual requires the note to name 30270-8968, -10112, -15547 and -13817 in one span.
+  const waySsiNote = `The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports.`;
   sections.push(`
 <h3>Waymo cross-check</h3>
 <p>

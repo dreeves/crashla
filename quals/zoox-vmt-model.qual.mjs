@@ -5,63 +5,68 @@ import { parseCsv } from "./csv-parse.mjs";
 // Zoox's rows from June 2025 on follow one model (data/README.md, Zoox
 // anchors), which this qual recomputes from its inputs.
 //
-// June-December 2025 (2026-11-02, the human's answer to open question 21,
-// "Smooth path, honest bands"; until then a constant tilt put the 1M crossing
-// on Dec 4 and held Dec 31 at exactly 1.3M, a December spike):
-//   - California: the CA DMV's driverless miles (permit AVDT004), June-
-//     November measured; December, in no DMV report yet, is November's times
-//     CPUC's December/November ratio, its range CPUC's December (a floor) to
-//     that figure over 0.6 (the 60% pilot-share reading).
-//   - The rest, mostly Las Vegas: the smoothest path, the one whose miles per
-//     Las Vegas driving day change least from month to month (the least sum
-//     of squared month-to-month changes in their logarithm), from May 2025
-//     (fixed: the early rows' rule, Las Vegas = California) through the 2026
-//     rows below, that keeps every Zoox statement within its range: the 1M
-//     lifetime mark crossed during Dec 1-7 (Fortune, Dec 8, 2025: "just last
-//     week") and "approximately 1.3 million" at Dec 31 read as [1.25M, 1.35M],
-//     lifetime being the series plus the 40,080 pre-series driverless miles.
-//     Each month's miles count as spread evenly over its days. The 2026 rows
-//     depend on the path through its Dec-31 cumulative (below), so the
-//     criterion runs through April 2026; past it every step is fixed.
-//   - Months round to whole miles, December absorbing the residue.
-//   - Band: California plus half to twice the Las Vegas share (the allowance
-//     the early rows give an unmeasured Las Vegas split), within what the
-//     statements allow: each month inside the difference of its lifetime
-//     cumulative bands, swept from May's lifetime band (its series band plus
-//     the pre-series miles' band) with knots at November (the crossing: not
-//     before Dec 1, by the end of Dec 7 with December's miles at most its
-//     California high plus twice its Las Vegas share) and December (the 1.3M
-//     statement). Edges round outward.
+// The miles (2026-11-03, the human's answer to open question 29, "All four as
+// ranges"; from 2026-11-02 until then the smooth path ran through 2025 only,
+// the 2026 rows holding the March and August statements at their midpoints
+// between the path's Dec-31 lifetime and each other; until 2026-11-02 a
+// constant tilt put the 1M crossing on Dec 4 and held Dec 31 at exactly 1.3M,
+// a December spike):
+//   - California: June-November 2025, the CA DMV's driverless miles (permit
+//     AVDT004); December 2025, in no DMV report yet, November's times CPUC's
+//     December/November ratio, its range CPUC's December (a floor) to that
+//     figure over 0.6 (the 60% pilot-share reading); from January 2026,
+//     CPUC's driverless pilot miles (TCP 0038380-P) x 1.19 for the
+//     DMV-reported driverless miles CPUC misses (an assumption: the midpoint
+//     of 1.05-1.33, the DMV/CPUC ratio having fallen from 3.97 to 1.33 over
+//     Apr-Nov 2025), measured through June and grown e^0.05 a calendar month
+//     after it.
+//   - The rest, mostly Las Vegas: one rate per Las Vegas driving day each
+//     month (January 2026's outage, Jan 22-26, taken as 5 days without Las
+//     Vegas driving), on the smoothest path, the one whose rates change least
+//     from month to month (the least sum of squared month-to-month changes in
+//     their logarithm), from May 2025 (fixed: the early rows' rule, Las Vegas
+//     = California) through the series' last month, ghost months included,
+//     that keeps all four of Zoox's cumulative statements within their ranges
+//     and the end-July floor below, lifetime being the series plus the 40,080
+//     pre-series driverless miles and each month's miles counting as spread
+//     evenly over its days:
+//       the 1M lifetime mark crossed during Dec 1-7, 2025 (Fortune, Dec 8,
+//         2025: "just last week");
+//       "approximately 1.3 million driverless autonomous miles" at Dec 31,
+//         2025 (letter to NHTSA, Jan 28, 2026), read as [1.25M, 1.35M];
+//       "nearly two million autonomous miles" at Mar 24, 2026, read as
+//         [1.88M, 2.00M];
+//       "more than 3 million miles on public roads" at Aug 5, 2026, read as
+//         [3.00M, 3.20M].
+//     No statement comes after Aug 5, so the path holds August's rate from
+//     then on (the old rule, "held flat after Aug 5", now a consequence).
+//     The binding statements are listed (BINDING below) and checked: the qual
+//     solves the path with them held as equalities and checks that this is a
+//     strict local minimum of the whole problem (every other statement holds
+//     strictly, each binding one's multiplier is positive, and the
+//     Lagrangian's Hessian is positive definite on the directions that keep
+//     them), which a wrong list fails. (On 2026-11-03 a general constrained
+//     solver from 60 random starts found no smoother path.)
+//   - Rounding: 2025's months to whole miles, December absorbing the residue;
+//     2026's to 10,000 (the statements are rounded by 3-7%).
+//   - Bands, June-December 2025: California plus half to twice the Las Vegas
+//     share (the allowance the early rows give an unmeasured Las Vegas
+//     split), within what the statements allow: each month inside the
+//     difference of its lifetime cumulative bands, swept from May's lifetime
+//     band (its series band plus the pre-series miles' band) with knots at
+//     November (the crossing: not before Dec 1, by the end of Dec 7 with
+//     December's miles at most its California high plus twice its Las Vegas
+//     share) and December (the 1.3M statement). Edges round outward.
 //   - Both earlier shapes stay inside the June-November bands, the 10e2343
 //     rows and the 2026-10-31 reshape; December's 10e2343 value is ruled out
 //     by the statements (at least 250,000: 1.25M at Dec 31 less 1M at Nov 30).
-//
-// 2026 (2026-10-27; restated 2026-11-02):
-//   - Zoox's three cumulative statements (company basis): "approximately 1.3
-//     million driverless autonomous miles" at Dec 31, 2025 (letter to NHTSA,
-//     Jan 28, 2026), "nearly two million autonomous miles" (Mar 24, 2026) and
-//     "more than 3 million miles on public roads" (Aug 5, 2026), read as
-//     [1.25M, 1.35M], [1.88M, 2.00M] and [3.00M, 3.20M]. Jan 1-Mar 24 (83
-//     days) holds the March statement's midpoint less the smooth path's Dec-31
-//     lifetime (until 2026-11-02: less the Dec-31 statement's midpoint, 1.30M,
-//     640,000 miles), Mar 25-Aug 5 (134 days) the midpoints' difference,
-//     1,160,000.
-//   - California: CPUC's driverless pilot miles (TCP 0038380-P) x 1.19 for
-//     the DMV-reported driverless miles CPUC misses (an assumption: the
-//     midpoint of 1.05-1.33, the DMV/CPUC ratio having fallen from 3.97 to
-//     1.33 over Apr-Nov 2025), measured through June and grown e^0.05 a
-//     calendar month after it.
-//   - The rest, mostly Las Vegas: each interval's remainder spread evenly
-//     over its driving days (January's Las Vegas outage, Jan 22-26, taken as
-//     5 days without it), held flat after Aug 5.
-//   - Each month rounds to 10,000 (the statements are rounded by 3-7%).
-//   - Band: vmt x e^(-1.96 sigma) to vmt x e^(1.96 sigma'), sigma =
+//   - Bands, 2026: vmt x e^(-1.96 sigma) to vmt x e^(1.96 sigma'), sigma =
 //     sqrt(0.065^2 + 0.07^2 h + 0.09^2) (statement rounding, drift, month
-//     noise), h = months from the governing interval's midpoint to the
-//     month's (January-March: Jan 1-Mar 24; April on: Mar 25-Aug 5); sigma'
-//     adds 0.10 in quadrature from October, when fleet growth was announced
-//     but not quantified (the NTA's 100-vehicle cap expired Sep 25). Edges
-//     round to 1,000.
+//     noise), h = months from the midpoint of the stretch between the
+//     statements around the month (January-March: Jan 1-Mar 24; April on:
+//     Mar 25-Aug 5) to the month's; sigma' adds 0.10 in quadrature from
+//     October, when fleet growth was announced but not quantified (the NTA's
+//     100-vehicle cap expired Sep 25). Edges round to 1,000.
 //
 // Cumulative bands: one sweep over the whole series from its exact zero
 // (May 2024), forward with the monthly bands and back from each knot: the
@@ -84,8 +89,8 @@ assert.ok(rows.length > 0 && rows[0].month === "2024-05" && rows.every((r, i) =>
   `Replicata: list data/vmt.csv's zoox months.
 Expectata: consecutive months starting at 2024-05.
 Resultata: ${JSON.stringify(rows.map(r => r.month))}.`);
-const mid = ([a, b]) => (a + b) / 2;
 const daysIn = m => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).getUTCDate();
+const monthNo = m => +m.slice(0, 4) * 12 + +m.slice(5, 7);
 const round = (x, unit) => Math.round(x / unit) * unit;
 
 const PRE = [20174.2 + 0.5 * 19906.2, 20174.2 + 2 * 19906.2]; // pre-series driverless miles' band
@@ -95,142 +100,165 @@ const S1 = [1880000, 2000000];
 const S2 = [3000000, 3200000];
 const CROSS = 1000000;
 
-// --- 2026 inputs --------------------------------------------------------------
+// --- Inputs ---------------------------------------------------------------------
+// California: the CA DMV's driverless miles (permit AVDT004) June-November
+// 2025, December from CPUC's December/November ratio; CPUC's driverless
+// miles x 1.19 from January 2026, measured through June, then June's daily
+// rate grown e^GROWTH a calendar month.
+const CA_DMV = { "2025-06": 22507.9, "2025-07": 26629.5, "2025-08": 36071.5, "2025-09": 35016.9, "2025-10": 42285.5, "2025-11": 56274.8 };
+const CPUC_NOV_2025 = 42347.31, CPUC_DEC_2025 = 36481.55;
+const CA_2025 = { ...CA_DMV, "2025-12": CA_DMV["2025-11"] * CPUC_DEC_2025 / CPUC_NOV_2025 };
+const CA_2025_LO = { ...CA_DMV, "2025-12": CPUC_DEC_2025 };
+const CA_2025_HI = { ...CA_DMV, "2025-12": CPUC_DEC_2025 / 0.6 };
 const CPUC = {
   "2026-01": 31996.94, "2026-02": 38162.55, "2026-03": 51137.72,
   "2026-04": 47322.83, "2026-05": 65708.40, "2026-06": 67922.81,
 };
 const DMV_FACTOR = 1.19;
 const GROWTH = 0.05;
-const LV_PAUSE_JAN = 5;
-// The months the model covers: every zoox row of data/vmt.csv from January
-// 2026 on, ghost months included, each with its calendar length. Until
-// 2026-10-31 this was a fixed list ending at 2026-10, so the November row each
-// release adds went unchecked (audit 2026-10-30, QT-10 and R8).
-const MONTHS = rows.map(r => r.month).filter(m => m >= "2026-01");
-assert.ok(MONTHS.length > 0 && MONTHS[0] === "2026-01",
-  `Replicata: list data/vmt.csv's zoox months from 2026-01 on.
-Expectata: consecutive months starting at 2026-01.
-Resultata: ${JSON.stringify(MONTHS)}.`);
-const DAYS = Object.fromEntries(MONTHS.map(m => [m, daysIn(m)]));
-
-// Day of year of each month's first day, and of its mean day (Jan 16).
-const FIRST = {};
-{ let d = 1; for (const m of MONTHS) { FIRST[m] = d; d += DAYS[m]; } }
-const monthMid = m => FIRST[m] + (DAYS[m] - 1) / 2;
-const Q1 = { first: 1, last: 83, days: 83 };   // Jan 1 - Mar 24
-const W2 = { first: 84, last: 217, days: 134 }; // Mar 25 - Aug 5
-const winMid = w => (w.first + w.last) / 2;
-
-// California's miles a day, CPUC basis: measured through June, then June's
-// daily rate grown e^GROWTH a month.
-const caDay = m => m <= "2026-06" ? CPUC[m] / DAYS[m]
-  : CPUC["2026-06"] / 30 * Math.exp(GROWTH * (MONTHS.indexOf(m) - MONTHS.indexOf("2026-06")));
-const caQ1 = DMV_FACTOR * (CPUC["2026-01"] + CPUC["2026-02"] + 24 * caDay("2026-03"));
-const caW2 = DMV_FACTOR * (7 * caDay("2026-03") + CPUC["2026-04"] + CPUC["2026-05"] + CPUC["2026-06"]
-  + 31 * caDay("2026-07") + 5 * caDay("2026-08"));
-// The Las Vegas share per driving day over Jan 1-Mar 24, given the series'
-// Dec-31 cumulative, and over Mar 25-Aug 5.
-const lvQ1Of = decCume => (mid(S1) - (decCume + PRE_C) - caQ1) / (Q1.days - LV_PAUSE_JAN);
-const lvW2 = (mid(S2) - mid(S1) - caW2) / W2.days;
-
-// --- June-December 2025: the smooth path --------------------------------------
-const M25 = ["2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12"];
-const D25 = M25.map(daysIn);
-const CA_DMV = [22507.9, 26629.5, 36071.5, 35016.9, 42285.5, 56274.8]; // CA DMV, permit AVDT004, Jun-Nov 2025
-const CPUC_NOV_2025 = 42347.31, CPUC_DEC_2025 = 36481.55;
-const CA = [...CA_DMV, CA_DMV[5] * CPUC_DEC_2025 / CPUC_NOV_2025];
-const CA_LO = [...CA_DMV, CPUC_DEC_2025], CA_HI = [...CA_DMV, CPUC_DEC_2025 / 0.6];
+const caDay = m => m <= "2026-06" ? CPUC[m] / daysIn(m)
+  : CPUC["2026-06"] / 30 * Math.exp(GROWTH * (monthNo(m) - monthNo("2026-06")));
+// Days without Las Vegas driving: January 2026's passenger outage, Jan 22-26.
+const LV_PAUSE = { "2026-01": 5 };
 const may = byMonth["2025-05"];
 assert.ok(may !== undefined, "Replicata: find zoox 2025-05 in data/vmt.csv. Expectata: present. Resultata: missing.");
 const LV_MAY_RATE = may.vmt / 2 / daysIn("2025-05"); // the early rows' rule: Las Vegas = California
 
-// The Las Vegas share per driving day through the 2026 rows: January and
-// February at the Jan 1-Mar 24 rate, March 24 days at it and 7 at the Mar
-// 25-Aug 5 rate, April on at the latter (constant past April).
-const tailRates = lvq1 => [lvq1, lvq1, (24 * lvq1 + 7 * lvW2) / 31, lvW2];
-const roughness = (u, lvq1) => {
-  const seq = [Math.log(LV_MAY_RATE), ...u, ...tailRates(lvq1).map(Math.log)];
-  return seq.slice(1).reduce((s, x, i) => s + (x - seq[i]) ** 2, 0);
+// The path's months: every zoox row from June 2025 on, ghost months included
+// (until 2026-10-31 the 2026 list was fixed, ending at 2026-10, so the
+// November row each release adds went unchecked: audit 2026-10-30, QT-10 and
+// R8).
+const M = rows.map(r => r.month).filter(m => m >= "2025-06");
+assert.ok(M[0] === "2025-06" && M.includes("2026-08"),
+  `Replicata: list data/vmt.csv's zoox months from 2025-06 on.
+Expectata: consecutive months from 2025-06 through at least 2026-08 (the last statement's month).
+Resultata: ${JSON.stringify(M)}.`);
+const N = M.length;
+const CA = M.map(m => CA_2025[m] ?? DMV_FACTOR * caDay(m) * daysIn(m));
+const LV_DAYS = M.map(m => daysIn(m) - (LV_PAUSE[m] ?? 0));
+
+// --- The path ---------------------------------------------------------------------
+// Every quantity a statement bounds is linear in the monthly Las Vegas rates
+// x (miles a Las Vegas driving day): a form {a, c} stands for a + sum c_k x_k.
+const lin = (a, c = new Array(N).fill(0)) => ({ a, c });
+const add = (...fs) => lin(fs.reduce((s, f) => s + f.a, 0), M.map((_, k) => fs.reduce((s, f) => s + f.c[k], 0)));
+const scale = (f, s) => lin(s * f.a, f.c.map(v => s * v));
+const value = (f, x) => f.a + f.c.reduce((s, v, k) => s + v * x[k], 0);
+const monthMiles = m => { const c = new Array(N).fill(0); c[M.indexOf(m)] = LV_DAYS[M.indexOf(m)]; return lin(CA[M.indexOf(m)], c); };
+// The lifetime at the end of day d of month m.
+const lifetimeAt = (m, d) => add(lin(may.cume + PRE_C), ...M.slice(0, M.indexOf(m)).map(monthMiles), scale(monthMiles(m), d / daysIn(m)));
+// The end-July floor (Cumulative bands, below): 3.00M less the pre-series
+// miles' high edge and up to 1.3x the model's miles for Aug 1-5.
+const JULY_FLOOR = add(lin(S2[0] - PRE[1]), scale(monthMiles("2026-08"), -1.3 * 5 / daysIn("2026-08")));
+// Each statement as h >= 0, h a form.
+const atLeast = (f, v) => add(f, lin(-v));
+const atMost = (f, v) => add(lin(v), scale(f, -1));
+const CONSTRAINTS = {
+  "1M not crossed before Dec 1, 2025": atMost(lifetimeAt("2025-11", 30), CROSS),
+  "1M crossed by the end of Dec 7, 2025": atLeast(lifetimeAt("2025-12", 7), CROSS),
+  "Dec 31, 2025 at least 1.25M": atLeast(lifetimeAt("2025-12", 31), S0[0]),
+  "Dec 31, 2025 at most 1.35M": atMost(lifetimeAt("2025-12", 31), S0[1]),
+  "Mar 24, 2026 at least 1.88M": atLeast(lifetimeAt("2026-03", 24), S1[0]),
+  "Mar 24, 2026 at most 2.00M": atMost(lifetimeAt("2026-03", 24), S1[1]),
+  "Aug 5, 2026 at least 3.00M": atLeast(lifetimeAt("2026-08", 5), S2[0]),
+  "Aug 5, 2026 at most 3.20M": atMost(lifetimeAt("2026-08", 5), S2[1]),
+  "end-July 2026 series at least its floor": add(lifetimeAt("2026-07", 31), lin(-PRE_C), scale(JULY_FLOOR, -1)),
 };
-// The smoothest Jun-Dec log daily rates u given the Dec-31 series cumulative
-// S: Newton on the Lagrange conditions 2(2u_m - u_{m-1} - u_{m+1}) = nu x
-// (month m's miles) and the month sum, from the straight line in log rate
-// between May and January shifted to that sum.
-function solveAt(S) {
-  const lvq1 = lvQ1Of(S);
-  assert.ok(lvq1 > 0, `Replicata: the Jan 1-Mar 24 Las Vegas rate at a Dec-31 cumulative of ${S}. Expectata: positive. Resultata: ${lvq1}.`);
-  const lo = Math.log(LV_MAY_RATE), hi = Math.log(lvq1), n = 7;
-  const target = S - may.cume - CA.reduce((a, b) => a + b, 0);
-  const line = Array.from({length: n}, (_, k) => lo + (hi - lo) * (k + 1) / (n + 1));
-  const shift = Math.log(target / line.reduce((a, x, k) => a + D25[k] * Math.exp(x), 0));
-  let u = line.map(x => x + shift);
-  let nu = 0;
-  for (let it = 0; it < 200; it++) {
-    const e = u.map((x, k) => D25[k] * Math.exp(x));
-    const full = [lo, ...u, hi];
-    const F = [...u.map((_, k) => 2 * (2 * full[k + 1] - full[k] - full[k + 2]) - nu * e[k]), e.reduce((a, b) => a + b, 0) - target];
-    const A = Array.from({length: n + 1}, () => new Array(n + 2).fill(0));
-    for (let k = 0; k < n; k++) {
-      A[k][k] = 4 - nu * e[k];
-      if (k > 0) A[k][k - 1] = -2;
-      if (k < n - 1) A[k][k + 1] = -2;
-      A[k][n] = -e[k];
-      A[n][k] = e[k];
+const BINDING = ["1M not crossed before Dec 1, 2025", "Dec 31, 2025 at least 1.25M"];
+
+// Roughness: the sum of squared month-to-month changes in ln x from May 2025.
+const U_MAY = Math.log(LV_MAY_RATE);
+const roughness = u => u.reduce((s, v, k) => s + (v - (k === 0 ? U_MAY : u[k - 1])) ** 2, 0);
+const gradR = u => u.map((v, k) => 2 * (v - (k === 0 ? U_MAY : u[k - 1])) - 2 * ((k < N - 1 ? u[k + 1] : v) - v));
+const hessR = M.map((_, k) => M.map((_, l) => k === l ? (k < N - 1 ? 4 : 2) : Math.abs(k - l) === 1 ? -2 : 0));
+function solveLinear(A, b) {
+  const n = b.length, X = A.map((row, r) => [...row, b[r]]);
+  for (let c = 0; c < n; c++) {
+    let p = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(X[r][c]) > Math.abs(X[p][c])) p = r;
+    [X[c], X[p]] = [X[p], X[c]];
+    for (let r = 0; r < n; r++) {
+      if (r === c) continue;
+      const f = X[r][c] / X[c][c];
+      for (let cc = c; cc <= n; cc++) X[r][cc] -= f * X[c][cc];
     }
-    F.forEach((f, r) => { A[r][n + 1] = -f; });
-    for (let c = 0; c <= n; c++) {
-      let p = c;
-      for (let r = c + 1; r <= n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
-      [A[c], A[p]] = [A[p], A[c]];
-      for (let r = 0; r <= n; r++) {
-        if (r === c) continue;
-        const f = A[r][c] / A[c][c];
-        for (let cc = c; cc <= n + 1; cc++) A[r][cc] -= f * A[c][cc];
-      }
-    }
-    const dx = A.map((row, r) => row[n + 1] / row[r]);
-    u = u.map((x, k) => x + dx[k]);
-    nu += dx[n];
-    if (Math.max(...dx.slice(0, n).map(Math.abs)) < 1e-13) break;
   }
-  return {u, lvq1, rough: roughness(u, lvq1)};
+  return X.map((row, r) => row[n] / row[r]);
 }
-// The Dec-31 series cumulative the statement allows, and the roughness of
-// the smoothest path at each: the minimum over the range (grid, then
-// golden-section in the best cell; an end of the range when it is lowest).
-const S_RANGE = [S0[0] - PRE_C, S0[1] - PRE_C];
-const grid = [];
-for (let i = 0; i <= 200; i++) {
-  const S = S_RANGE[0] + (S_RANGE[1] - S_RANGE[0]) * i / 200;
-  grid.push({S, rough: solveAt(S).rough});
+// Newton on the Lagrange conditions grad R = sum_i lambda_i grad h_i, h_i = 0
+// (i in BINDING), from a flat path at 5,000 a day. In u = ln x each h_i is
+// a + sum_k c_k e^(u_k), so its gradient and its Hessian's diagonal are the
+// same vector, c_k x_k, and so are their multiplier-weighted sums (pull).
+const B = BINDING.map(name => CONSTRAINTS[name]);
+let u = M.map(() => Math.log(5000)), lambda = B.map(() => 0);
+const pull = x => M.map((_, k) => B.reduce((s, f, i) => s + lambda[i] * f.c[k] * x[k], 0));
+const lagrangeHess = x => { const p = pull(x); return hessR.map((row, k) => row.map((h, l) => h - (k === l ? p[k] : 0))); };
+for (let it = 0; it < 100; it++) {
+  const x = u.map(Math.exp), g = gradR(u), p = pull(x);
+  const J = [...lagrangeHess(x).map((row, k) => [...row, ...B.map(f => -f.c[k] * x[k])]),
+    ...B.map(f => [...f.c.map((c, l) => c * x[l]), ...B.map(() => 0)])];
+  const d = solveLinear(J, [...g.map((v, k) => p[k] - v), ...B.map(f => -value(f, x))]);
+  u = u.map((v, k) => v + d[k]);
+  lambda = lambda.map((v, i) => v + d[N + i]);
+  if (Math.max(...d.slice(0, N).map(Math.abs)) < 1e-13) break;
 }
-let iBest = grid.reduce((b, g, i) => g.rough < grid[b].rough ? i : b, 0);
-let sBest = grid[iBest].S;
-if (iBest > 0 && iBest < grid.length - 1) {
-  let a = grid[iBest - 1].S, b = grid[iBest + 1].S;
-  const phi = (Math.sqrt(5) - 1) / 2;
-  for (let it = 0; it < 80; it++) {
-    const c = b - phi * (b - a), d = a + phi * (b - a);
-    if (solveAt(c).rough < solveAt(d).rough) b = d; else a = c;
+const x = u.map(Math.exp);
+// The strict-local-minimum checks: (a) the binding statements hold exactly,
+// (b) every other one strictly, (c) each binding one's multiplier is
+// positive (with it dropped, a smoother path would break it), (d) the
+// Lagrangian's Hessian is positive definite on the directions that keep the
+// binding statements (Cholesky on an orthonormal basis of their gradients'
+// null space).
+const slack = Object.fromEntries(Object.entries(CONSTRAINTS).map(([name, f]) => [name, value(f, x)]));
+const minPivot = (() => {
+  const dot = (a, b) => a.reduce((s, v, k) => s + v * b[k], 0);
+  const H = lagrangeHess(x);
+  const basis = [];
+  for (const v0 of [...B.map(f => f.c.map((c, k) => c * x[k])), ...M.map((_, k) => M.map((_, l) => k === l ? 1 : 0))]) {
+    const v = basis.reduce((w, b) => w.map((wk, k) => wk - dot(w, b) * b[k]), v0);
+    const n = Math.sqrt(dot(v, v));
+    if (n > 1e-9 * Math.sqrt(dot(v0, v0))) basis.push(v.map(vk => vk / n));
   }
-  sBest = Math.round((a + b) / 2);
-}
-const path = solveAt(sBest);
-const LV = path.u.map((x, k) => D25[k] * Math.exp(x));
-const T = LV.map((l, k) => CA[k] + l);
-const want25 = T.map(t => Math.round(t));
-want25[6] += sBest - may.cume - want25.reduce((a, b) => a + b, 0);
+  const Z = basis.slice(B.length);
+  assert.equal(Z.length, N - B.length,
+    `Replicata: take the binding statements' gradients at the path. Expectata: linearly independent (${B.length} of them). Resultata: they span ${N - Z.length} dimensions.`);
+  const R = Z.map(z => Z.map(w => dot(z, H.map(row => dot(row, w)))));
+  const L = R.map(() => new Array(R.length).fill(0));
+  const pivots = [];
+  for (let i = 0; i < R.length; i++) for (let j = 0; j <= i; j++) {
+    const s = R[i][j] - L[i].slice(0, j).reduce((t, v, k) => t + v * L[j][k], 0);
+    if (i === j) { pivots.push(s); L[i][i] = Math.sqrt(s); } else L[i][j] = s / L[j][j];
+  }
+  return pivots.find(s => !(s > 1e-9)) ?? Math.min(...pivots);
+})();
+const problems = [
+  ...BINDING.filter(name => Math.abs(slack[name]) > 1e-3).map(name => `(a) ${name} off by ${slack[name]}`),
+  ...Object.keys(CONSTRAINTS).filter(name => !BINDING.includes(name) && !(slack[name] > 0)).map(name => `(b) ${name} broken by ${-slack[name]}`),
+  ...BINDING.filter((name, i) => !(lambda[i] > 0)).map(name => `(c) ${name}'s multiplier ${lambda[BINDING.indexOf(name)]}`),
+  ...(minPivot > 1e-9 ? [] : [`(d) a Cholesky pivot of ${minPivot}`]),
+];
+assert.deepEqual(problems, [],
+  `Replicata: solve Zoox's smoothest Las Vegas path (one rate per driving day per month, June 2025 through ${M[N - 1]}) with BINDING (${BINDING.join("; ")}) held as equalities.
+Expectata: a strict local minimum of the whole problem: (a) the binding statements hold exactly, (b) every other statement and the end-July floor strictly (else add it to BINDING), (c) each binding statement's multiplier positive (else drop it from BINDING), (d) the Lagrangian's Hessian positive definite on the directions that keep the binding statements.
+Resultata: ${problems.join("; ")}.`);
+
+// --- Rows -------------------------------------------------------------------------
+const T = M.map(m => value(monthMiles(m), x));
+const M25 = M.filter(m => m <= "2025-12");
+const decCume = Math.round(value(lifetimeAt("2025-12", 31), x) - PRE_C);
+const want25 = M25.map((m, k) => Math.round(T[k]));
+want25[6] += decCume - may.cume - want25.reduce((a, b) => a + b, 0);
 const novCume = may.cume + want25.slice(0, 6).reduce((a, b) => a + b, 0);
 const crossingDay = daysIn("2025-12") * (CROSS - PRE_C - novCume) / want25[6];
-assert.ok(crossingDay > 0 && crossingDay <= 7 && sBest + PRE_C >= S0[0] && sBest + PRE_C <= S0[1],
-  `Replicata: take the smoothest path's Dec-31 cumulative (${sBest}) and its 1M crossing.
-Expectata: the crossing during Dec 1-7, 2025 and the Dec-31 lifetime in [${S0}], the statements' ranges (the roughness minimum need not hold the crossing; if it does not, the model must add it as a constraint).
-Resultata: crossing on Dec ${crossingDay.toFixed(2)}, Dec-31 lifetime ${sBest + PRE_C}.`);
+assert.ok(crossingDay > 0 && crossingDay <= 7 && decCume + PRE_C >= S0[0] && decCume + PRE_C <= S0[1],
+  `Replicata: take the rows' 1M crossing and Dec-31 lifetime (the path's months rounded to whole miles, December absorbing the residue).
+Expectata: the crossing during Dec 1-7, 2025 and the Dec-31 lifetime in [${S0}], the statements' ranges, as the path holds them.
+Resultata: crossing on Dec ${crossingDay.toFixed(4)}, Dec-31 lifetime ${decCume + PRE_C}.`);
 
 // Bands: California plus half to twice the Las Vegas share, within what the
 // statements allow on the lifetime basis.
-const band0 = LV.map((l, k) => [CA_LO[k] + 0.5 * l, CA_HI[k] + 2 * l]);
+const LV = M25.map((m, k) => LV_DAYS[k] * x[k]);
+const band0 = M25.map((m, k) => [CA_2025_LO[m] + 0.5 * LV[k], CA_2025_HI[m] + 2 * LV[k]]);
 const crossLo = CROSS - 7 / 31 * band0[6][1];
 const knotLife = {"2025-11": [crossLo, CROSS], "2025-12": S0};
 const life = [[may.kmin + PRE[0], may.kmax + PRE[1]], ...M25.map(m => knotLife[m] ?? [-Infinity, Infinity])];
@@ -275,16 +303,17 @@ assert.ok(byMonth["2025-12"].vmin >= decMin,
 Expectata: at least ${decMin} (1.25M at Dec 31 less 1M at Nov 30: the statements' least December).
 Resultata: ${byMonth["2025-12"].vmin}.`);
 
-// --- 2026 rows -----------------------------------------------------------------
-const lvQ1 = lvQ1Of(sBest);
-const lvMiles = {
-  "2026-01": lvQ1 * (DAYS["2026-01"] - LV_PAUSE_JAN),
-  "2026-02": lvQ1 * DAYS["2026-02"],
-  "2026-03": lvQ1 * 24 + lvW2 * 7,
-};
-const model = m => DMV_FACTOR * caDay(m) * DAYS[m] + (lvMiles[m] ?? lvW2 * DAYS[m]);
-for (const m of MONTHS) {
-  const vmt = round(model(m), 10000);
+// 2026 on: each month rounds to 10,000, its band from the formula above.
+// Day of year of each 2026 month's first day, and of its mean day (Jan 16).
+const M26 = M.filter(m => m >= "2026-01");
+const FIRST = {};
+{ let d = 1; for (const m of M26) { FIRST[m] = d; d += daysIn(m); } }
+const monthMid = m => FIRST[m] + (daysIn(m) - 1) / 2;
+const Q1 = { first: 1, last: 83 };   // Jan 1 - Mar 24
+const W2 = { first: 84, last: 217 }; // Mar 25 - Aug 5
+const winMid = w => (w.first + w.last) / 2;
+for (const m of M26) {
+  const vmt = round(T[M.indexOf(m)], 10000);
   const h = Math.abs(monthMid(m) - winMid(m <= "2026-03" ? Q1 : W2)) / 30.44;
   const sigma = Math.sqrt(0.065 ** 2 + 0.07 ** 2 * h + 0.09 ** 2);
   const sigmaUp = m >= "2026-10" ? Math.sqrt(sigma ** 2 + 0.10 ** 2) : sigma;
@@ -294,25 +323,17 @@ for (const m of MONTHS) {
     vmax: round(vmt * Math.exp(1.96 * sigmaUp), 1000),
   };
 }
-// The statements' midpoints, as the 2026 rows read them, stay in range.
-{
-  const mar24 = sBest + PRE_C + caQ1 + lvQ1 * (Q1.days - LV_PAUSE_JAN);
-  assert.ok(Math.abs(mar24 - mid(S1)) < 1e-6 && mar24 >= S1[0] && mar24 <= S1[1],
-    `Replicata: the lifetime at Mar 24, 2026 on the model (Dec-31 lifetime plus Jan 1-Mar 24's California and Las Vegas miles).
-Expectata: ${mid(S1)}, inside "nearly two million" read as [${S1}].
-Resultata: ${mar24}.`);
-}
 
 // --- Cumulative bands ------------------------------------------------------------
-const dayTotal = (m, lv) => DMV_FACTOR * caDay(m) + lv;
+const perDay = m => T[M.indexOf(m)] / daysIn(m); // the model's miles a day
 const knots = {
   "2025-11": [Math.floor(crossLo - PRE[1]), Math.ceil(CROSS - PRE[0])],
   "2025-12": [Math.floor(S0[0] - PRE[1]), Math.ceil(S0[1] - PRE[0])],
   "2026-03": [
-    Math.floor(S1[0] - PRE[1] + 0.7 * 7 * dayTotal("2026-03", lvW2)),
-    Math.ceil(S1[1] - PRE[0] + 1.3 * (7 * dayTotal("2026-03", lvQ1) + 7 * dayTotal("2026-03", lvW2))),
+    Math.floor(S1[0] - PRE[1] + 0.7 * 7 * perDay("2026-03")),
+    Math.ceil(S1[1] - PRE[0] + 1.3 * 14 * perDay("2026-03")),
   ],
-  "2026-07": [Math.floor(S2[0] - PRE[1] - 1.3 * 5 * dayTotal("2026-08", lvW2)), Infinity],
+  "2026-07": [Math.floor(value(JULY_FLOOR, x)), Infinity],
 };
 const bandOf = m => expected[m] ?? byMonth[m];
 const chain = rows.map(() => ({}));
@@ -345,8 +366,9 @@ rows.forEach((r, i) => {
   }
 });
 assert.deepEqual(mismatches, [],
-  `Replicata: recompute Zoox's rows from June 2025 (the smooth 2025 path, the 2026 statement-window model, one cumulative sweep) from its statements and California's miles (this file's header; data/README.md, Zoox anchors).
+  `Replicata: recompute Zoox's rows from June 2025 (the one smooth path through all four statements, one cumulative sweep) from its statements and California's miles (this file's header; data/README.md, Zoox anchors).
 Expectata: each month's miles, band, cumulative and cumulative band equal the model's.
 Resultata: ${mismatches.join("; ")}.`);
 
-console.log(`qual pass: Zoox's rows from June 2025 follow the model: the smoothest 2025 path (Dec-31 lifetime ${sBest + PRE_C}, the 1M crossing on Dec ${crossingDay.toFixed(2)}, December ${want25[6]}), bands holding both earlier shapes, the 2026 statement windows (rest ${Math.round(lvQ1)} a day Jan 1-Mar 24, ${Math.round(lvW2)} a day from Mar 25), knots at end-November [${knots["2025-11"]}], end-December [${knots["2025-12"]}] and end-March [${knots["2026-03"]}], a floor at end-July (${knots["2026-07"][0]})`);
+const fmt = v => Math.round(v).toLocaleString("en-US");
+console.log(`qual pass: Zoox's rows from June 2025 follow the model: the smoothest path through all four statements (roughness ${roughness(u).toFixed(7)}; binding ${BINDING.join(", ")}; Mar 24 at ${fmt(slack["Mar 24, 2026 at least 1.88M"] + S1[0])}, Aug 5 at ${fmt(slack["Aug 5, 2026 at least 3.00M"] + S2[0])}; Las Vegas ${x.slice(0, 7).map(fmt).join(" / ")} a driving day June-December 2025, then ${fmt(x[N - 1])}), the 1M crossing on Dec ${crossingDay.toFixed(4)}, December ${want25[6]}, bands holding both earlier shapes, knots at end-November [${knots["2025-11"]}], end-December [${knots["2025-12"]}] and end-March [${knots["2026-03"]}], a floor at end-July (${knots["2026-07"][0]})`);

@@ -22,7 +22,7 @@ import { monthlyLagKeys } from "./monthly-lag.mjs";
 //
 // The shared pre-series offset (2026-11-02, open question 20(c)). Every
 // lifetime statement includes the miles a line drove before its series
-// starts, so from the line's first lifetime knot on, every cumulative band in
+// starts, so from the line's first fully knotted month on, every cumulative band in
 // the master is a lifetime band less that offset's range (the lifetime low
 // edge less the offset's high, the high edge less its low). The offset is one
 // number, the same at both ends of a window, and cancels in the window's

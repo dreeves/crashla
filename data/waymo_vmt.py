@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parent
 # it: the pre-series offset, range 150,000-260,000 since 2026-10-31 (decision
 # #49b, on Waymo's own figures), central 205,000, the range's middle, since
 # 2026-11-02 (open question 20(b); from 2026-07-01 until then 150,000, the
-# range's floor, the least likely value in it). Kusano et al. 2025, Table 2
+# range's floor, which holds January-June 2021 at about Q4 2020's 320 miles a
+# day and then jumps to about 1,480 a day). Kusano et al. 2025, Table 2
 # (arXiv 2505.01515, pp. 10-11) puts 94,400 rider-only miles in 2019-2020 and
 # 328,000 in 2021; Schwall et al. 2020 (arXiv 2011.00038) puts 65,000 in Jan
 # 2019-Sep 2020, so Q4 2020 ran about 29,400 (320 a day). January-June 2021
@@ -106,14 +107,18 @@ ALLOCATION_NOTE = ("US est.: each month's California part is CPUC's measured dri
                    "(data/README.md, Waymo monthly allocation).")
 # July 2021-January 2023, before CPUC's monthly California series (December
 # 2022 on, which counts in its month). English: the human's rule for
-# AI-labeled text (2026-10-30).
+# AI-labeled text (2026-10-30). The offset's figures come from OFFSET (typed
+# out until 2026-11-03), so the note follows it; the Apr-Jun 2026 rows of
+# data/vmt.csv state it by hand, and quals/vmt-rationale-text.qual.mjs (3b)
+# checks every statement of it against OFFSET.
 EARLY_NOTE = ("US est.: Waymo's rider-only miles by calendar year (Kusano et al. 2025, "
               "Table 2, from its Safety Impact hub: 328,000 in 2021, 524,000 in 2022) and "
               "its first million rider-only miles on Jan 21, 2023 (Waymo's one-million-mile "
               "paper), spread over the months with daily rates interpolated linearly "
               "between those totals; January 2023 keeps Jan 1-21's daily rate for the whole "
               "month. The series starts in July 2021, so the miles driven before it, "
-              "205,000 (range 150,000-260,000), come off; July-December 2021's bands and "
+              f"{OFFSET[0]:,} (range {OFFSET[1]:,}-{OFFSET[2]:,}), come off; "
+              "July-December 2021's bands and "
               "every cumulative band carry that range, and each month's band an allowance "
               "for the monthly split, half to twice a month's miles in 2022 (data/README.md, "
               "Waymo anchors; data/README.md, Waymo monthly allocation).")

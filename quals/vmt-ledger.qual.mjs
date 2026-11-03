@@ -37,7 +37,10 @@ const CUME_PINS = {
   // driverless miles from the official ~1.3M as of Dec 31, 2025
   // 2026-10-27: 3,530,920 -> 3,579,920, Zoox's 2026 rows rebuilt on one
   // method, the per-day rate between its statements (zoox-vmt-model.qual)
-  "zoox|2026-09": 3579920,
+  // 2026-11-03: 3,579,920 -> 3,589,920, one smooth path through all four of
+  // Zoox's statements as ranges (open question 29, approved): the 2026 rows
+  // at December 2025's Las Vegas rate, January-September 10,000 higher
+  "zoox|2026-09": 3589920,
   // 2026-10-23: Tesla's weekly no-monitor miles (tesla.com/robotaxi/safety)
   // summed by month, Jan-Sep 2026
   "teslanomonitor|2026-09": 1933209,

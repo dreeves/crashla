@@ -19,8 +19,9 @@ import { parseCsv } from "./csv-parse.mjs";
 // they are re-derived here, and go red when that row changes:
 //  - Fleet: cars driving on a typical day of the month (the human's choice:
 //    2026-10-28 for October's point, 2026-10-29 for the whole line from
-//    September 2025 on; June 2025's launch count of ~12 stays, since miles
-//    then give 0.4): the month's miles over its days at ~180 miles per car per
+//    September 2025 on; June 2025's launch count of ~12 stays, since its 683
+//    miles give 0.13 over the month's 30 days, 0.4 over the 9 days from the
+//    Jun 22 launch): the month's miles over its days at ~180 miles per car per
 //    day, Tesla's Q2 2026 utilization; its range covers at least the month's
 //    miles band at that rate. There is a point for every month from 2025-09
 //    to the newest ghost month, each checked, not only ghost months, so a

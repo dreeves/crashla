@@ -15,11 +15,18 @@ import { parseCsv } from "./csv-parse.mjs";
 //   (3) every cumulative value a rationale states for a row is the value the
 //       rows carry: a Waymo "<x>M end-<Mon>-<YYYY>" (the form the rationales
 //       use for the series' own cumulative anchors) equals that month's
-//       cumulative, and a published milestone listed as an "exact central
-//       minus ~0.15M" equals that month's cumulative plus 0.15M, each to the
-//       stated precision; the Zoox Nov-2025 (added 2026-11-02), Dec-2025
-//       and Mar-2026 knots, the Zoox Jul-2026 floor (both added 2026-10-27)
-//       and Tesla's Aug-2026 floor state the band edges their rows carry;
+//       cumulative to the stated precision; every figure a Waymo rationale
+//       states for the pre-series offset (the builder's "<central> (range
+//       <low>-<high>)", the Apr-Jun 2026 rows' "<x>M pre-series miles" and
+//       June's "pre-series miles' range, <low>M-<high>M") equals
+//       data/waymo_vmt.py's OFFSET, each form is found at least once and
+//       every "pre-series" in a Waymo rationale lies in one (since
+//       2026-11-03; until then this checked milestones listed as "exact
+//       centrals minus ~0.15M", a wording gone from the rows since
+//       2026-10-31, against the cumulative plus 0.15M); the Zoox Nov-2025
+//       (added 2026-11-02), Dec-2025 and Mar-2026 knots, the Zoox Jul-2026
+//       floor (both added 2026-10-27) and Tesla's Aug-2026 floor state the
+//       band edges their rows carry;
 //   (4) the specific facts the audit corrected stay corrected;
 //   (5) Tesla's Sep 2025-Jun 2026 rationales disclose possible driver's-seat
 //       trips (decision of 2026-10-31, open question 13).
@@ -77,16 +84,58 @@ for (const r of rows.filter(x => x.helmer === "waymo")) {
       anchorErrors.push(`${r.month}: "${m[0]}" vs cumulative ${cume}`);
     }
   }
-  // (3b) milestones claimed as exact centrals minus the ~0.15M pre-series miles
-  for (const list of r.rationale.matchAll(/\(([^()]*)\) are exact centrals minus ~0\.15M/g)) {
-    for (const m of list[1].matchAll(/(\d+(?:\.\d+)?)M (?:end-(\d{4})|([A-Z][a-z]{2})-(\d{4}))/g)) {
-      const month = m[2] ? `${m[2]}-12` : `${m[4]}-${MON[m[3]]}`;
-      const cume = cumeOf("waymo", month);
-      if (cume === undefined || Math.abs(cume + 150000 - Number(m[1]) * 1e6) > halfUnit(m[1])) {
-        anchorErrors.push(`${r.month}: milestone "${m[0]}" as an exact central vs cumulative ${cume} + 0.15M`);
+}
+
+// (3b) The pre-series offset as Waymo rationales state it: the rider-only
+// miles Waymo drove before the series starts, which every lifetime figure
+// includes, data/waymo_vmt.py's OFFSET (central, low, high). Each stated
+// figure equals it, whole miles exactly and millions to their stated
+// precision. Each form is found at least once, and every "pre-series" in a
+// Waymo rationale lies in a form's match, so a figure stated in a new wording
+// stops the check rather than escaping it. Until 2026-11-03 this check
+// looked instead for milestones listed as "(...) are exact centrals minus
+// ~0.15M" and held each to the month's cumulative plus 150,000, the offset's
+// central until 2026-11-02; no rationale had used that wording since
+// 2026-10-31, so it checked nothing (open question 35(a)).
+const offsetLine = fs.readFileSync("data/waymo_vmt.py", "utf8").match(/^OFFSET = \((\d+), (\d+), (\d+)\)/m);
+assert.ok(offsetLine, "Replicata: read OFFSET in data/waymo_vmt.py. Expectata: a (central, low, high) literal. Resultata: not found.");
+const OFFSET = { central: Number(offsetLine[1]), low: Number(offsetLine[2]), high: Number(offsetLine[3]) };
+const wholeMiles = s => ({ stated: s, miles: Number(s.replace(/,/g, "")), slack: 0 });
+const millions = s => ({ stated: `${s}M`, miles: Number(s) * 1e6, slack: halfUnit(s) });
+const OFFSET_FORMS = [
+  // data/waymo_vmt.py's EARLY_NOTE, July 2021-January 2023: "<central>
+  // (range <low>-<high>)" in whole miles
+  { form: "builder", re: /(\d{1,3}(?:,\d{3})+) \(range (\d{1,3}(?:,\d{3})+)-(\d{1,3}(?:,\d{3})+)\)/g,
+    figures: m => [["central", wholeMiles(m[1])], ["low", wholeMiles(m[2])], ["high", wholeMiles(m[3])]] },
+  // April-June 2026, the June anchor's central: "less the <x>M pre-series miles"
+  { form: "central in millions", re: /(\d+(?:\.\d+)?)M pre-series miles\b/g,
+    figures: m => [["central", millions(m[1])]] },
+  // June 2026, its cumulative band: "less the pre-series miles' range, <low>M-<high>M"
+  { form: "range in millions", re: /pre-series miles' range, (\d+(?:\.\d+)?)M-(\d+(?:\.\d+)?)M/g,
+    figures: m => [["low", millions(m[1])], ["high", millions(m[2])]] },
+];
+const offsetErrors = [], offsetForms = Object.fromEntries(OFFSET_FORMS.map(f => [f.form, []]));
+for (const r of rows.filter(x => x.helmer === "waymo")) {
+  const read = [];
+  for (const { form, re, figures } of OFFSET_FORMS) {
+    for (const m of r.rationale.matchAll(re)) {
+      offsetForms[form].push(r.month);
+      read.push([m.index, m.index + m[0].length]);
+      for (const [field, f] of figures(m)) {
+        if (!(Math.abs(f.miles - OFFSET[field]) <= f.slack)) {
+          offsetErrors.push(`${r.month}: the ${form} form's ${field} "${f.stated}" in "${m[0]}", where OFFSET's ${field} is ${fmt(OFFSET[field])}`);
+        }
       }
     }
   }
+  for (const m of r.rationale.matchAll(/pre-series/g)) {
+    if (!read.some(([a, b]) => a <= m.index && m.index < b)) {
+      offsetErrors.push(`${r.month}: "pre-series" at "${r.rationale.slice(Math.max(0, m.index - 40), m.index + 40)}" in no form this check reads`);
+    }
+  }
+}
+for (const [form, months] of Object.entries(offsetForms)) {
+  if (months.length === 0) offsetErrors.push(`the ${form} form is in no Waymo rationale`);
 }
 
 // (3c) knot and floor rows state the band edges they carry (Zoox's November
@@ -204,14 +253,15 @@ const problems = {
   unresolvedCitations: [...new Set(badCites)],
   internalShorthand: jargon,
   anchorsNotTheRows: [...new Set(anchorErrors)],
+  preSeriesOffsetNotOffset: offsetErrors,
   bandEdgesNotStated: unstated,
   correctedFactsRecur: factErrors,
   driversSeatUndisclosed: undisclosed,
 };
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0));
 assert.deepEqual(failing, {},
-  `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations, (2) internal shorthand, (3) stated anchors and band edges against the rows, (4) the audit's corrected facts, (5) Tesla's driver's-seat disclosure.
-Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each Waymo "<x>M end-<Mon>-<YYYY>" and exact-central milestone equals the rows' cumulative to its stated precision, and the Zoox Nov-2025, Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs; (5) every Tesla rationale of Sep 2025-Jun 2026 says those months may hold trips with a safety monitor in the driver's seat, whose crashes NHTSA may file in its Level 2 file, a bias the no-monitor line avoids.
+  `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations, (2) internal shorthand, (3) stated anchors and band edges against the rows, and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts, (5) Tesla's driver's-seat disclosure.
+Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each Waymo "<x>M end-<Mon>-<YYYY>" equals the rows' cumulative to its stated precision; every figure a Waymo rationale states for the pre-series offset (the builder's "<central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision, each form is found at least once, and every "pre-series" in a Waymo rationale lies in one; the Zoox Nov-2025, Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs; (5) every Tesla rationale of Sep 2025-Jun 2026 says those months may hold trips with a safety monitor in the driver's seat, whose crashes NHTSA may file in its Level 2 file, a bias the no-monitor line avoids.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
-console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections, use no internal shorthand, and state the anchors their rows carry`);
+console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections, use no internal shorthand, and state the anchors their rows carry; ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);
