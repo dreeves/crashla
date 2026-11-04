@@ -547,21 +547,29 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 //
 // srcAiText: true marks a src that is AI text, so the derivations table
 // renders it as AI text (.ai-text, green; the VMT sources table's legend:
-// "green text = AI-generated"); a src without it renders plain, as every
+// "green text = AI-generated"), and a card's [?] tooltip, plain text, opens
+// it with AI_TEXT_PREFIX (2026-11-03); a src without it renders plain, as every
 // srcNote does (both srcNotes are the human's translations; plain since
 // 2026-11-03, open question 33). Five carry it
 // (quals/ai-derivation-text.qual.mjs): the four of decision 23(b) of the
-// 2026-11-01 open questions (2026-11-02), the AV-cities fatality band's,
-// which the human committed labelled "Claude:" (2026-08-31, in place of an
-// agent's Latin of 2026-08-28), and the AV-cities injury, airbag and
+// 2026-11-01 open questions (2026-11-02), namely the AV-cities fatality
+// band's, which the human committed labelled "Claude:" (2026-08-31, in place
+// of an agent's Latin of 2026-08-28; the label dropped from its text on
+// 2026-11-03 at the human's word, its tooltip taking it from
+// AI_TEXT_PREFIX), and the AV-cities injury, airbag and
 // serious-injury+ bands' Waymo-hub derivations, an agent's English of
 // 2026-08-22, since edited by agents in their figures and in "six cities" ->
 // "five areas" (9c41e6d, 2026-09-04); and the US-average fatality band's,
-// which the human labelled "Claude:" on 2026-11-03. Every other src is the
-// human's: the human reviewed each one an agent wrote in whole or in part
-// on 2026-11-03 (open question 33), and a DONE comment above each of those
-// but the US-average injury src (whose to-do comment the review removed)
-// gives its history.
+// which the human labelled "Claude:" on 2026-11-03 (and took the label off
+// again in 80b73d9, the commit that gave it this flag). On 2026-11-03 the
+// human reviewed each src that day's to-do pass marked as an agent's in
+// whole or in part (open question 33), and a DONE comment above each of
+// those gives its history, but for the US-average injury and fatality srcs,
+// whose to-do comments the review removed (the fatality one in favour of
+// the "Claude:" label). That pass missed one, the US-average all-incidents
+// src (agent English with the human's caveat), which the human reviewed
+// later that day without an edit: it renders plain, under a DONE comment
+// like the others. Every other src is the human's.
 //
 // fiveDay: true marks metrics whose qualifying incidents are structurally on
 // NHTSA's five-day reporting track — Third Amended SGO (Apr 24, 2025)
@@ -663,6 +671,7 @@ const METRIC_DEFS = [
       // (Blincoe 2023, 813403) of injury crashes unreported) roughly doubles
       // that -> ~7.1 per M mi.
       HumansUS: {lo: 140000, hi: 300000,
+        // DONE (open question 33): mixed authorship, missed by the 2026-11-03 to-do pass. The text before "caveat:" is agent English (f4c89ef, 2026-06-11), its "~7.1" and "~3.3" made "~7" and "~3" in a3c39bb (2026-10-05), resolving the 2026-10-04 audit's to-do #41; the caveat is your translation (d7c0e20). Renders plain.
         src: 'lo: ~7 IPMM Blincoe-adjusted crashed-vehicle rate; hi: ~3 IPMM police-reported (CRSS national, all road types); caveat: same as for humans in AV cities above',
         srcLinks: [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
@@ -883,7 +892,7 @@ const METRIC_DEFS = [
       HumansAV: {lo: 159000, hi: 1026000,
         // DONE (open question 33): agent English (eeb59c0, 2026-06-12; agents changed only its figures since) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: injury lo (149k) / ~94% expert-avoidability share (NHTSA critical reason); hi: injury hi (513k) / 50% legal-allocation floor',
-        // DONE (open question 33): your translation (f75b903, 2026-08-31; on Nov 2 an agent changed "812115's" to "812 506's" under the link update you approved), yet it renders green: the table wraps every srcNote in .ai-text.
+        // DONE (open question 33): your translation (f75b903, 2026-08-31; on Nov 2 an agent changed "812115's" to "812 506's" under the link update you approved), yet it renders green: the table wraps every srcNote in .ai-text. Renders plain since 2026-11-03, when the table stopped wrapping srcNotes.
         srcNote: "94% = NHTSA 812 506's share of crashes critically attributed to the driver (neither cause nor fault, per NHTSA) which we use here as an upper bound on expert avoidability.",
         // The injury band's source and the 94%'s (audit #41: Kusano Table 3
         // and NHTSA 813791, linked until 2026-10-03, feed no number here).
@@ -894,7 +903,7 @@ const METRIC_DEFS = [
       HumansUS: {lo: 830000, hi: 2180000,
         // DONE (open question 33): agent English (eeb59c0, 2026-06-12; agents changed only its figures since) you never translated or edited; renders plain (rule 7 wanted Latin with a recap).
         src: 'lo: US injury lo (780k) / ~94% expert-avoidability share (NHTSA critical reason); hi: US injury hi (1.09M) / 50% legal-allocation floor',
-        // DONE (open question 33): your translation (f75b903, 2026-08-31), yet it renders green, as the note above.
+        // DONE (open question 33): your translation (f75b903, 2026-08-31), yet it renders green, as the note above. Renders plain since 2026-11-03, as the note above.
         srcNote: "[same as above for humans in AV cities]",
         // The US injury band's sources and the 94%'s (audit #41: the 94%'s
         // source was missing until 2026-10-03).
@@ -1133,7 +1142,7 @@ const METRIC_DEFS = [
     // deaths..fatal-crashes numerators (FARS 2024).
     humanMPI: {
       HumansAV: {lo: 83000000, hi: 105000000,
-        src: "Claude: IIHS urban all-road fatality rate, 2022–2024: 1.17 / 1.07 / 1.01 deaths per 100M VMT; band 0.95–1.20 (the 2021 urban peak 1.20 as the high-rate edge, 0.95 as a continued-improvement floor below the 2024 value)",
+        src: "IIHS urban all-road fatality rate, 2022–2024: 1.17 / 1.07 / 1.01 deaths per 100M VMT; band 0.95–1.20 (the 2021 urban peak 1.20 as the high-rate edge, 0.95 as a continued-improvement floor below the 2024 value)",
         srcAiText: true,
         srcLinks: [
           'https://www.iihs.org/research-areas/fatality-statistics/detail/urban-rural-comparison',
@@ -2319,7 +2328,7 @@ function monthSeriesData() {
         const h = m.humanMPI[cohort];
         const geo = Math.sqrt(h.lo * h.hi);
         return [m.key, {
-          mpiBest: geo, mpiMedian: geo, mpiMax: h.hi,
+          mpiBest: geo, mpiMedian: geo,
           incidentCount: null,
           bands: CI_FAN_LEVELS.map(() => ({lo: h.lo, hi: h.hi})),
         }];
@@ -2459,7 +2468,6 @@ function monthSeriesData() {
         return [m.key, {
           mpiBest: vBest / k,
           mpiMedian: post.median,
-          mpiMax:  vMax  / k,
           incidentCount: k,
           vmtMin: vMin, vmtBest: vBest, vmtMax: vMax, // the VMT band behind this posterior
           bands: post.bands.map(b => ({...b})),
@@ -2765,10 +2773,18 @@ function renderAllHelmersMpiChart(series) {
       // min) x incCovMin, i.e. 24% where the sanity table said 17.3%.
       const fiveDay = metric.fiveDay === true;
       const covRatio = receivedShare(row, fiveDay).worst;
-      // Y-range: every point's median dot is on-scale; fully-reported k≥1 months
-      // also contribute their finite VMT spread (mpiMax = ∞ at k=0, so excluded).
-      yMax = Math.max(yMax, covRatio > 0.99 && Number.isFinite(mpi.mpiMax)
-                           ? mpi.mpiMax : mpi.mpiMedian);
+      // Y-range: the axis tops out at the first tick at or above the largest
+      // posterior median among the drawn dots, every month's counting alike
+      // whatever its completeness (the human's choice of 2026-11-03), so
+      // every dot is on-scale; an error bar or fan band that runs past the
+      // top is cut at the plot's edge (clampY). Until then a fully received
+      // month (covRatio above 0.99) lifted the axis to its top effective
+      // miles over its incident count (a human cohort's band high edge)
+      // wherever that was finite, a fault mass or fatality share under 1
+      // included, at up to 20 times the month's miles: Waymo 2026-05's 0.05
+      // at-fault injuries put the default view's at-fault-injury top at
+      // 500M, its 48 dots in the bottom 15% of the plot.
+      yMax = Math.max(yMax, mpi.mpiMedian);
       return {...mpi, covRatio, partialLine: partialCountLine(row, fiveDay)};
     });
     seriesRows.push({helmer, metric, vals});
@@ -4496,8 +4512,9 @@ function renderMpiSummaryCards(series) {
           // The "[?]" only marks the hint, so the hint is named by its
           // derivation alone and the glyph is hidden from assistive technology
           // (until 2026-10-04 it read "[?]" glued to the derivation; audit #63).
+          // An AI's src opens with AI_TEXT_PREFIX there (srcTipText).
           const srcHint = (est.k === null && humanBench && humanBench.src)
-            ? ` <span class="mpi-card-src"${htmlTipAttrs(humanBench.src, humanBench.src)}><span aria-hidden="true">[?]</span></span>`
+            ? ` <span class="mpi-card-src"${htmlTipAttrs(srcTipText(humanBench), srcTipText(humanBench))}><span aria-hidden="true">[?]</span></span>`
             : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
@@ -5071,14 +5088,40 @@ function faultColor(frac) {
   return `rgb(220, ${g}, 50)`;
 }
 
-function faultTooltip(inc) {
+// The label that opens AI text where the page cannot draw it as AI text: a
+// tooltip, plain text on a dark box. It is the human's own label for AI text
+// in plain contexts (the card tooltip's five-day line opens with it, and the
+// AV-cities fatality src's text did from 2026-08-31), chosen for tooltips on
+// 2026-11-03.
+const AI_TEXT_PREFIX = "Claude: ";
+
+// A human band's src as a tooltip shows it: an AI's src (srcAiText) opens
+// with AI_TEXT_PREFIX, the human's reads as written (the one branch, the
+// derivations table's own).
+function srcTipText(h) {
+  return h.srcAiText === true ? `${AI_TEXT_PREFIX}${h.src}` : h.src;
+}
+
+// A fault judgment's text in three parts: its fraction, its reasoning (an
+// agent's words under the faultfrac criterion: AI text, so it opens with
+// AI_TEXT_PREFIX) and the contact areas on a line of their own. The fault
+// cell's tooltip joins them as plain text; the opened narrative shows the
+// labelled reasoning as AI text too (the human's answers of 2026-11-03). An
+// incident without a judgment, which no passing build has
+// (fault-coverage.qual), has three empty parts.
+function faultParts(inc) {
   const fd = faultData[inc.reportId];
-  if (!fd) return "";
-  const lines = [`${fd.faultfrac.toFixed(2)} — ${fd.reasoning}`];
-  if (inc.svHit || inc.cpHit) {
-    lines.push(`${inc.svHit || "n/a"} \u{1F4A5} ${inc.cpHit || "n/a"}`);
-  }
-  return lines.join("\n");
+  if (!fd) return {lead: "", ai: "", contact: ""};
+  return {
+    lead: `${fd.faultfrac.toFixed(2)} — `,
+    ai: `${AI_TEXT_PREFIX}${fd.reasoning}`,
+    contact: inc.svHit || inc.cpHit ? `\n${inc.svHit || "n/a"} \u{1F4A5} ${inc.cpHit || "n/a"}` : "",
+  };
+}
+
+function faultTooltip(inc) {
+  const p = faultParts(inc);
+  return `${p.lead}${p.ai}${p.contact}`;
 }
 
 
@@ -5551,6 +5594,7 @@ function renderTable() {
       ? `<span class="fault-bar" style="width:${Math.round(fault * 40)}px;background:${faultColor(fault)}"></span>${fault.toFixed(2)}`
       : "—";
     const faultTip = faultTooltip(r);
+    const fp = faultParts(r);
 
     // The narrative is the row's disclosure button, inside its cell
     // (role="button" on the <td> itself would take the cell out of the table's
@@ -5563,9 +5607,12 @@ function renderTable() {
     // "Fault fraction:" line (hidden until the narrative opens; a description
     // may point at hidden text): until 2026-10-04 it held a visually hidden
     // second copy of its tip, which every rebuild of the table laid out
-    // (14-27% of a sort's or a filter's time; audit #26). A row's ids and its
-    // focus key come from its report id, unique among the incidents
-    // (buildFaultDataFromIncidents asserts it).
+    // (14-27% of a sort's or a filter's time; audit #26). In that line the
+    // reasoning, an agent's words, renders as AI text, and in the tooltip,
+    // plain text, it opens with AI_TEXT_PREFIX, as it does here (2026-11-03).
+    // A row's ids and its focus key come from its
+    // report id, unique among the incidents (buildFaultDataFromIncidents
+    // asserts it).
     const rid = escAttr(r.reportId);
     tr.innerHTML = `
       <td>${escHtml(r.helmer)}</td>
@@ -5575,7 +5622,7 @@ function renderTable() {
       <td>${r.speed !== null ? escHtml(String(r.speed)) : '<span aria-hidden="true">?</span>'}</td>
       <td class="fault-cell" data-tip="${escAttr(faultTip)}" aria-describedby="narr-fault-${rid}">${faultHtml}</td>
       <td>${escHtml(shortenSeverity(r.severity))}</td>
-      <td class="${narrativeClass}"><span class="narrative-toggle" role="button" tabindex="0" aria-expanded="false" aria-label="${escAttr(narrativeToggleName(r.reportId))}" aria-describedby="narr-text-${rid}" data-focus-key="narrative-${rid}"><span id="narr-text-${rid}">${escHtml(narrativeText)}</span></span><span class="narrative-fault" id="narr-fault-${rid}">${NARRATIVE_FAULT_LABEL} ${escHtml(faultTip)}</span></td>
+      <td class="${narrativeClass}"><span class="narrative-toggle" role="button" tabindex="0" aria-expanded="false" aria-label="${escAttr(narrativeToggleName(r.reportId))}" aria-describedby="narr-text-${rid}" data-focus-key="narrative-${rid}"><span id="narr-text-${rid}">${escHtml(narrativeText)}</span></span><span class="narrative-fault" id="narr-fault-${rid}">${NARRATIVE_FAULT_LABEL} ${escHtml(fp.lead)}<span class="ai-text">${escHtml(fp.ai)}</span>${escHtml(fp.contact)}</span></td>
     `;
     // Click, Enter or Space expands/collapses the narrative.
     const narrativeTd = tr.querySelector(".narrative-cell");

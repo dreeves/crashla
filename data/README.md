@@ -957,6 +957,11 @@ The rule is:
   values in twentieths and refuses any other value, rendering nothing, so
   `data/slurp.py` stops on a value off the grid or outside 0-1
   (`quals/fault-grid.qual.mjs`)
+- `reasoning` is an agent's English (every row's judgment was written by
+  agents under the faultfrac criterion), so the page shows it as AI text:
+  green under the opened narrative, and opened with `AI_TEXT_PREFIX`
+  ("Claude: ") in the fault cell's tooltip, which is plain text
+  (`quals/ai-text-labels.qual.mjs`; the human's answers of 2026-11-03)
 
 When `data/slurp.py` runs, it loads the fault fractions first, and
 synchronizes the first six columns of `faultfrac.csv` from the live NHTSA

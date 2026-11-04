@@ -61,8 +61,11 @@
 //      every metric, in the default window and in the data-through month's
 //      one-month window, with the default lines and with Zoox added, every
 //      dot and error bar fades by its month's whole completeness at worst, as
-//      the chart's "?" markers (checked there too) do, and a partly received
-//      month lifts the y axis only to its posterior median.
+//      the chart's "?" markers (checked there too) do, and the y axis tops
+//      out at the first rung at or above the largest posterior median among
+//      the chart's dots, whatever each month's completeness (since
+//      2026-11-03, the human's choice; until then a fully received month
+//      lifted it to its top effective miles over its incident count).
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { spawnSync } from "node:child_process";
@@ -621,27 +624,28 @@ Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
 // Until then w was incident_coverage_min alone on the Monthly track and 1 on
 // the five-day track: 2026-09's company marks drew at 0.528 on a
 // Monthly-track metric, where 0.374 is due, and at 1.000 on a five-day one,
-// where 0.390 is. And a partly received month lifts the y axis only to
-// its posterior median: the axis tops out at the first rung of its tick
-// ladder at or above the chart's maximum, to which a fully received month (w
-// above 0.99, the chart's test) contributes its mpiMax when that is finite
-// (the high edge of a company line's effective miles over its incident count,
-// infinite at k = 0; a human cohort's band high edge) and every other month
-// its median. (crashla.js's comment there says "k≥1 months", but the code
-// takes any finite mpiMax, so a fault mass or fatality share under 1 counts
-// too, at up to 20 times the month's miles: on 2026-11-03 the default
-// at-fault-injury chart topped out at 500M on Waymo 2026-05's 0.05, its dots
-// in the bottom 15% of the plot. This qual follows the code; which of the two
-// is meant is the human's question, raised that day.)
-// Until 0250d85 a five-day metric's partial month counted as fully received,
-// so the one-month 2026-09 airbag chart topped out at 8M where 2M is due.
+// where 0.390 is. And the y axis tops out at the first rung of its tick
+// ladder at or above the largest posterior median among the chart's dots,
+// whatever each month's completeness, so every dot is on-scale and an error
+// bar that runs past the top is cut at the plot's edge. That is the human's
+// choice of 2026-11-03 ("Medians only"), when this check was restated. Until
+// then a fully received month (w above 0.99) lifted the axis to its mpiMax,
+// a field crashla.js dropped that day, where that was finite (its top
+// effective miles over its incident count; a human cohort's band high edge),
+// and a fault mass or fatality share under 1 is finite too, at up to 20
+// times the month's miles: the default at-fault-injury chart topped out at
+// 500M on Waymo 2026-05's 0.05, its 48 dots in the bottom 15% of the plot,
+// where 80M is due. And until 0250d85
+// (2026-11-02) a five-day metric's partly received month counted as fully
+// received there, so the one-month 2026-09 airbag chart topped out at 8M
+// where 2M is due.
 // Checked on every metric, in the default window and in the data-through
 // month's one-month window, with the default lines and with Zoox added (whose
 // synthetic lagged month, section 5, is a second partly received month on
 // the Monthly track), with the "?" markers of each of those charts. A line's
 // month has a dot and an error bar where the series gives it a posterior for
 // the metric (an unrated month on an at-fault metric gets none), and the
-// medians and mpiMax the rule takes are the series' own; the marks' colours
+// medians the rule takes are the series' own; the marks' colours
 // tell the lines apart and their x positions the months. w is read from the
 // coverage columns of parseVmtCsv's rows, as for the "?" above.
 const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() => {
@@ -659,7 +663,6 @@ const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() =
       const mpi = row ? row.mpiByMetric[metric.key] : null;
       const csv = vmtRows.find(x => x.helmer === line && x.month === month);
       return { month, dot: Boolean(mpi), median: mpi ? mpi.mpiMedian : null,
-        max: mpi && Number.isFinite(mpi.mpiMax) ? mpi.mpiMax : null,
         csv: csv ? { coverage: csv.coverage, coverageMin: csv.coverageMin, incCovMin: csv.incCovMin } : null };
     }) }));
   [selectedMetricKey, monthHelmerEnabled] = saved;
@@ -683,13 +686,13 @@ for (const key of metricKeys) for (const oneMonth of [false, true]) for (const w
     frameProblems.push(`${at}: months ${c.months[0]}..${c.months.at(-1)} (the data-through month at index ${c.end}, the series' newest at ${c.newest}), lines ${c.lines.map(l => l.line).join(", ")}`);
     continue;
   }
-  // Each shown line-month with a dot: w, its median and its mpiMax.
+  // Each shown line-month with a dot: w and its median.
   const want = new Map();
   for (const l of c.lines) for (const p of l.points) {
     if (!p.dot) continue;
     if (!l.human && p.csv === null) { frameProblems.push(`${at}: ${l.line} ${p.month} has a dot and no data/vmt.js row`); continue; }
     const w = l.human ? 1 : c.fiveDay ? p.csv.coverageMin : p.csv.coverage * p.csv.incCovMin;
-    want.set(`${l.line} ${p.month}`, { month: p.month, w, median: p.median, max: p.max });
+    want.set(`${l.line} ${p.month}`, { month: p.month, w, median: p.median });
   }
   const lineOf = new Map(c.lines.map(l => [l.color, l.line]));
   const marks = {
@@ -722,20 +725,18 @@ for (const key of metricKeys) for (const oneMonth of [false, true]) for (const w
     }
     for (const id of want.keys()) if (seen.get(id) !== 1) fadeProblems[kind].push(`${at}: ${id} has ${seen.get(id) || 0} ${kind}s, where one is due`);
   }
-  // The rule's maximum, and the rendered tick ladder's top.
-  let top = { v: 0, id: "no line-month", by: "nothing" };
-  for (const [id, p] of want) {
-    const full = p.w > 0.99 && p.max !== null;
-    const v = full ? p.max : p.median;
-    if (v > top.v) top = { v, id, by: full ? `mpiMax (w ${+p.w.toFixed(4)})` : `median (w ${+p.w.toFixed(4)}${p.max === null ? ", mpiMax infinite" : ""})` };
-  }
+  // The rule's maximum, the largest median among the chart's dots (a fully
+  // received month's counts as a partly received one's does), and the
+  // rendered tick ladder's top.
+  let top = { v: 0, id: "no line-month", w: null };
+  for (const [id, p] of want) if (p.median > top.v) top = { v: p.median, id, w: p.w };
   const ticks = [...c.html.matchAll(/<text class="month-tick" x="[^"]*" y="[^"]*" text-anchor="end">([^<]*)<\/text>/g)]
     .map(m => tickValue(m[1])).sort((a, b) => a - b);
   const step = ticks[1] - ticks[0];
   const ladder = ticks.length >= 2 && ticks[0] === 0 && step > 0 && ticks.every((t, i) => Math.abs(t - i * step) <= 1e-9 * step);
   const due = ladder ? Math.ceil(top.v / step - 1e-9) * step : NaN;
   if (!(ladder && Math.abs(ticks.at(-1) - due) <= 1e-9 * step))
-    axisProblems.push(`${at}: y ticks ${ticks.map(miles).join(", ")}, where the top is due at ${miles(due)}: the first rung of that ${miles(step)} ladder at or above the rule's maximum, ${miles(top.v)} (${top.id}'s ${top.by})`);
+    axisProblems.push(`${at}: y ticks ${ticks.map(miles).join(", ")}, where the top is due at ${miles(due)}: the first rung of that ${miles(step)} ladder at or above the largest median, ${top.id}'s ${miles(top.v)} (w ${top.w === null ? "none" : +top.w.toFixed(4)})`);
   // The chart's "?" markers, from the same w: each month's largest 1 - w over
   // the shown lines' dots (a human cohort's is 0).
   qmarkCharts.push({ ...c, where, rule: c.fiveDay ? "1 - coverage_min (the receipt coverage alone)" : "1 - coverage x incident_coverage_min",
@@ -754,8 +755,8 @@ Resultata: ${problems.length} problems: ${problems.slice(0, 10).join("; ")}.`);
 }
 assert.deepEqual(axisProblems, [],
   `Replicata: those ${caseCount} charts' y tick labels.
-Expectata: 0 and evenly spaced rungs, the top one the first at or above the chart's maximum under its y-range rule: a fully received month (w above 0.99) contributes its mpiMax where that is finite (a company line's top effective miles over its incident count; a human cohort's band high edge), every other month, a partly received one included, only its posterior median.
+Expectata: 0 and evenly spaced rungs, the top one the first at or above the largest posterior median among the chart's dots, every month counting only its median whatever its completeness (an error bar running past the top is cut at the plot's edge).
 Resultata: ${axisProblems.length} of ${caseCount} charts wrong: ${axisProblems.slice(0, 8).join("; ")}.`);
 for (const chart of qmarkCharts) checkQmarks(chart);
 
-console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart, on All incidents and on ${fiveDayKeys.length} five-day-track metrics; on ${caseCount} MPI charts (every metric, two windows, two line sets) ${markCount} dots and error bars fade by their month's whole completeness, the y axis tops out where partly received months count only their medians, and the "?" markers follow the same completeness`);
+console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart, on All incidents and on ${fiveDayKeys.length} five-day-track metrics; on ${caseCount} MPI charts (every metric, two windows, two line sets) ${markCount} dots and error bars fade by their month's whole completeness, the y axis tops out at the first rung at or above the largest median, and the "?" markers follow the same completeness`);
