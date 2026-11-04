@@ -12,17 +12,31 @@ import { parseCsv } from "./csv-parse.mjs";
 //   (2) no repo-internal column name or shorthand (kyoom, vmt_min/vmt_max,
 //       TotalVMTZEV, "hub + E", "E lo/hi", "D/H"), none of which the page
 //       defines (rule 13);
-//   (3) every cumulative value a rationale states for a row is the value the
-//       rows carry: a Waymo "<x>M end-<Mon>-<YYYY>" (the form the rationales
-//       use for the series' own cumulative anchors) equals that month's
-//       cumulative to the stated precision; every figure a Waymo rationale
-//       states for the pre-series offset (the builder's "<central> (range
-//       <low>-<high>)", the Apr-Jun 2026 rows' "<x>M pre-series miles" and
-//       June's "pre-series miles' range, <low>M-<high>M") equals
-//       data/waymo_vmt.py's OFFSET, each form is found at least once and
-//       every "pre-series" in a Waymo rationale lies in one (since
-//       2026-11-03; until then this checked milestones listed as "exact
-//       centrals minus ~0.15M", a wording gone from the rows since
+//   (3) every figure a rationale states in a form (3a) reads (a cumulative
+//       or cumulative band, a hub figure, a calendar year's miles, a
+//       milestone day, a row's miles, its daily or weekly rate or its band's
+//       multipliers, a named month's or quarter's daily rate, a public floor
+//       the series clears) is the rows' value to its stated precision, or for
+//       a floor one the rows' lifetime meets. Figures are checked where their
+//       wording appears and no wording is required, so a statement reworded
+//       out of its form goes unchecked: no qual may enforce the wording of
+//       text the human might edit (the human's rule of 2026-11-03). Earlier
+//       on 2026-11-03 six of the seven forms (3a) then read each had to be
+//       found at least once, which turned the qual red on a rewording alone;
+//       before that (3a) read one form, a Waymo "<x>M end-<Mon>-<YYYY>",
+//       which no Waymo rationale had used since 2026-10-31, and which now
+//       reads every line. That form, "end of a month or year", reads each
+//       line's series cumulative, which leaves out the line's pre-series
+//       miles, the miles its company drove before the series starts
+//       (Waymo's, OFFSET below; Zoox's 40,080), so a Waymo or Zoox lifetime
+//       figure written in that form would fail; no rationale states one
+//       today. Every figure a Waymo rationale states for the pre-series
+//       offset (the builder's "<central> (range <low>-<high>)", the Apr-Jun
+//       2026 rows' "<x>M pre-series miles" and June's "pre-series miles'
+//       range, <low>M-<high>M") equals data/waymo_vmt.py's OFFSET, each form is
+//       found at least once and every "pre-series" in a Waymo rationale lies
+//       in one (since 2026-11-03; until then this checked milestones listed
+//       as "exact centrals minus ~0.15M", a wording gone from the rows since
 //       2026-10-31, against the cumulative plus 0.15M); the Zoox Nov-2025
 //       (added 2026-11-02), Dec-2025 and Mar-2026 knots, the Zoox Jul-2026
 //       floor (both added 2026-10-27) and Tesla's Aug-2026 floor state the
@@ -33,9 +47,9 @@ import { parseCsv } from "./csv-parse.mjs";
 
 const raw = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const rows = raw.slice(1).map(p => ({
-  helmer: p[0], month: p[1], cume: +p[3], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7], rationale: p[8],
+  helmer: p[0], month: p[1], vmt: +p[2], cume: +p[3], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7], rationale: p[8],
 }));
-const cumeOf = (helmer, month) => rows.find(r => r.helmer === helmer && r.month === month)?.cume;
+const rowOf = (helmer, month) => rows.find(r => r.helmer === helmer && r.month === month);
 // The months before `knot` whose cumulative band a later constraint narrowed:
 // narrower than the month before's band plus the month's own band, the chain
 // forward (a series' first month chains from zero, the band before it).
@@ -49,8 +63,19 @@ const MON = { Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
   Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12" };
 // Half a unit of the last stated decimal, in miles ("174.26M" -> 5,000), plus
 // one mile of float slack.
-const halfUnit = num => 0.5 * 10 ** (6 - (num.split(".")[1] || "").length) + 1;
+const decimals = num => num.replace(/^[^.]*\.?/, "").length; // "174.26" -> 2, "524" -> 0
+const halfUnit = num => 0.5 * 10 ** (6 - decimals(num)) + 1;
 const fmt = n => n.toLocaleString("en-US");
+// data/waymo_vmt.py's OFFSET (central, low, high), the rider-only miles Waymo
+// drove before the series starts, which (3a) and (3b) read; and a stated
+// figure as miles with its slack: whole miles exactly ("205,000"), thousands
+// and millions to their stated precision ("658k", "0.205M").
+const offsetLine = fs.readFileSync("data/waymo_vmt.py", "utf8").match(/^OFFSET = \((\d+), (\d+), (\d+)\)/m);
+assert.ok(offsetLine, "Replicata: read OFFSET in data/waymo_vmt.py. Expectata: a (central, low, high) literal. Resultata: not found.");
+const OFFSET = { central: Number(offsetLine[1]), low: Number(offsetLine[2]), high: Number(offsetLine[3]) };
+const wholeMiles = s => ({ stated: s, miles: Number(s.replace(/,/g, "")), slack: 0 });
+const thousands = s => ({ stated: `${s}k`, miles: Number(s) * 1e3, slack: 0.5 * 10 ** (3 - decimals(s)) + 1 });
+const millions = s => ({ stated: `${s}M`, miles: Number(s) * 1e6, slack: halfUnit(s) });
 
 // (1) citations resolve
 const headingsOf = path => fs.readFileSync(path, "utf8").split("\n")
@@ -74,14 +99,202 @@ for (const r of rows) for (const re of BANNED) {
   if (m) jargon.push(`${r.helmer} ${r.month}: ${JSON.stringify(m[0])}`);
 }
 
-// (3a) Waymo anchors as stated equal the rows' cumulatives
-const anchorErrors = [];
-for (const r of rows.filter(x => x.helmer === "waymo")) {
-  for (const m of r.rationale.matchAll(/(\d+(?:\.\d+)?)M end-([A-Z][a-z]{2})-(\d{4})/g)) {
-    const month = `${m[3]}-${MON[m[2]]}`;
-    const cume = cumeOf("waymo", month);
-    if (cume === undefined || Math.abs(cume - Number(m[1]) * 1e6) > halfUnit(m[1])) {
-      anchorErrors.push(`${r.month}: "${m[0]}" vs cumulative ${cume}`);
+// (3a) Figures as the rationales state them are the values the rows give,
+// each to its stated precision. Each form is located by the frame its figures
+// sit in, and its figures are checked wherever that frame appears. No form is
+// required: a statement reworded out of its frame goes unchecked rather than
+// failing, since no qual may enforce the wording of text the human might edit
+// (the human's rule of 2026-11-03), and the pass line counts each form's
+// checked statements, so a form gone idle shows. Earlier on 2026-11-03 six of
+// the first seven forms each had to be found at least once, which turned the
+// qual red on a rewording alone with every figure right ("thru" made
+// "through" and "lands on the anchor: the hub's" made "lands on the anchor,
+// the hub's" gave three problems). Before that this read one form, a Waymo
+// "<x>M end-<Mon>-<YYYY>", which no Waymo rationale had used since 2026-10-31,
+// so it checked nothing; that form now reads every line's rationales (Tesla's
+// deck rows give "658k end-2025, 1.717M end-Mar-2026").
+//   end of a month or year (every line): "<x>k" or "<x>M" then "end-<Mon>-<YYYY>"
+//     or "end-<YYYY>" is that month's (for a year, December's) series
+//     cumulative, which leaves out the line's pre-series miles (header, (3));
+//   Waymo's anchor: "The <Mon>-<YYYY> cumulative lands on the anchor: the
+//     hub's <h>M plus <e>M ..., less the <o>M pre-series miles" is that
+//     month's cumulative, h + e - o (the April-June 2026 rows);
+//   its band: "its cumulative band is the hub total plus <a>M to <b>M ...,
+//     less the pre-series miles' range, <l>M-<u>M", after an anchor in the same
+//     rationale, is that month's cumulative band, h + a - u to h + b - l
+//     (June's row); with no anchor before it in its rationale its hub total
+//     is unstated, so it goes unchecked (the pass line counts it so);
+//   the hub's figure: "<h>M rider-only miles thru <Mon>-<YYYY>" is the hub
+//     figure every anchor for that month uses (the April-June 2026 rows); with
+//     no anchor for that month in any rationale it goes unchecked (the pass
+//     line counts it so);
+//   calendar years: each "<n> in <YYYY>" inside "by calendar year (...)" is
+//     that year's miles, its months summed, for each year whose January the
+//     series holds (2021's total includes January-June 2021, before the series
+//     starts, which only the pre-series offset holds; the builder's July
+//     2021-January 2023 rows);
+//   a milestone day: "first million rider-only miles on <Mon> <D>, <YYYY>": the
+//     lifetime (the cumulative plus OFFSET's central, the month's miles
+//     spread evenly over its days) reaches 1,000,000 during that day, to a
+//     mile (the same rows);
+//   a floor the series clears: in a Waymo row, "floor the series clears,
+//     ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon>
+//     <D>, <YYYY>)", with no stop, semicolon or quote in the "...": the
+//     lifetime at the end of that day, reckoned as for the milestone day, is
+//     at least N million, to a mile (a floor, so no rounding slack), the
+//     day's month being any month data/vmt.csv has a row for, a ghost month
+//     included (the July-September 2026 rows, for Alphabet's Oct 28, 2026
+//     remarks; October's ghost row gives the same floor with its date before
+//     the quote and no year, which this does not read). The frame starts at
+//     "floor the series clears" because a rationale may also quote a floor
+//     the series does not clear, to say so;
+//   a Waymo row's total: "Total <x>M" is its miles (October 2026's ghost row);
+//   its daily rate: "Total <x>M, about <y>k a day" is its miles over its days,
+//     and in the parenthesis right after it each "<Monthname>'s row <z>k" is
+//     the miles over the days of the latest month of that name at or before
+//     the row's, and each "measured Q<n> <w>k" that quarter's miles, in the
+//     row's year, over its days (the same row: "Total 22.25M, about 718k a day
+//     (September's row 714k; measured Q2 608k)"); the frame starts at the
+//     total so that no component's daily rate, and no month's miles in
+//     thousands (as Waymo's early months are), is read as a row's;
+//   a month and its week: "Cross-check: <x>M/mo ≈ <y>M/wk" in a Waymo row is
+//     its miles and its miles times 7 over its days (September 2026's row,
+//     against Waymo's weekly floor; the rationales give components' monthly
+//     rates as "<x>M/mo" too, so the frame starts at "Cross-check:");
+//   band multipliers: a Waymo row's "Band x<lo> to x<hi>" is its band over
+//     its miles (October 2026's ghost row).
+const figureErrors = [];
+const figureForms = Object.fromEntries(["end of a month or year", "Waymo anchor", "Waymo anchor band", "hub figure",
+  "calendar year", "milestone day", "floor the series clears", "Waymo total", "Waymo daily rate",
+  "a month's daily rate", "a quarter's daily rate", "a month and its week", "band multipliers"].map(f => [f, []]));
+// statements found in their frames but with no anchor sentence to read them against
+const unchecked = { "Waymo anchor band": [], "hub figure": [] };
+const UNIT = { k: thousands, M: millions };
+const within = (stated, actual, slack) => Math.abs(stated - actual) <= slack;
+const daysIn = m => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).getUTCDate();
+const waymo = rows.filter(x => x.helmer === "waymo");
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+  "October", "November", "December"];
+// A Waymo lifetime at the end of day d of a row's month: the cumulative
+// through the month before, plus the month's miles spread evenly over its
+// days, plus OFFSET's central, the miles before the series starts.
+const lifetimeAt = (row, d) => row.cume - row.vmt + row.vmt * d / daysIn(row.month) + OFFSET.central;
+const milesOf = x => x.toLocaleString("en-US", { maximumFractionDigits: 1 });
+for (const r of rows) {
+  for (const m of r.rationale.matchAll(/(\d+(?:\.\d+)?)([kM]) end-(?:([A-Z][a-z]{2})-)?(\d{4})\b/g)) {
+    figureForms["end of a month or year"].push(`${r.helmer} ${r.month}`);
+    const month = `${m[4]}-${m[3] === undefined ? "12" : MON[m[3]]}`, stated = UNIT[m[2]](m[1]), row = rowOf(r.helmer, month);
+    if (row === undefined || !within(stated.miles, row.cume, stated.slack)) {
+      figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" vs ${month}'s cumulative ${row === undefined ? "(no row)" : fmt(row.cume)}`);
+    }
+  }
+}
+const hubFigures = []; // each anchor's month and hub figure
+for (const r of waymo) {
+  const anchors = [...r.rationale.matchAll(/The ([A-Z][a-z]{2})-(\d{4}) cumulative lands on the anchor: the hub's (\d+(?:\.\d+)?)M plus (\d+(?:\.\d+)?)M\b[^;]*?, less the (\d+(?:\.\d+)?)M pre-series miles/g)]
+    .map(m => ({ text: m[0], end: m.index + m[0].length, month: `${m[2]}-${MON[m[1]]}`, hub: millions(m[3]), metros: millions(m[4]), offset: millions(m[5]) }));
+  for (const a of anchors) {
+    figureForms["Waymo anchor"].push(r.month);
+    hubFigures.push({ month: a.month, hub: a.hub });
+    const row = rowOf("waymo", a.month), want = a.hub.miles + a.metros.miles - a.offset.miles;
+    if (row === undefined || !within(want, row.cume, a.hub.slack + a.metros.slack + a.offset.slack)) {
+      figureErrors.push(`waymo ${r.month}: "${a.text}" gives ${fmt(want)}, vs ${a.month}'s cumulative ${row === undefined ? "(no row)" : fmt(row.cume)}`);
+    }
+  }
+  for (const m of r.rationale.matchAll(/its cumulative band is the hub total plus (\d+(?:\.\d+)?)M to (\d+(?:\.\d+)?)M\b[^;]*?, less the pre-series miles' range, (\d+(?:\.\d+)?)M-(\d+(?:\.\d+)?)M/g)) {
+    const a = anchors.filter(x => x.end <= m.index).at(-1);
+    if (a === undefined) { // no anchor before it names the hub total
+      unchecked["Waymo anchor band"].push(r.month);
+      continue;
+    }
+    figureForms["Waymo anchor band"].push(r.month);
+    const [plusLo, plusHi, rangeLo, rangeHi] = [m[1], m[2], m[3], m[4]].map(millions), row = rowOf("waymo", a.month);
+    const wantMin = a.hub.miles + plusLo.miles - rangeHi.miles, wantMax = a.hub.miles + plusHi.miles - rangeLo.miles;
+    if (row === undefined || !within(wantMin, row.kmin, a.hub.slack + plusLo.slack + rangeHi.slack) || !within(wantMax, row.kmax, a.hub.slack + plusHi.slack + rangeLo.slack)) {
+      figureErrors.push(`waymo ${r.month}: "${m[0]}" gives ${fmt(wantMin)} to ${fmt(wantMax)}, vs ${a.month}'s cumulative band ${row === undefined ? "(no row)" : `${fmt(row.kmin)} to ${fmt(row.kmax)}`}`);
+    }
+  }
+}
+for (const r of waymo) {
+  for (const m of r.rationale.matchAll(/(\d+(?:\.\d+)?)M rider-only miles thru ([A-Z][a-z]{2})-(\d{4})/g)) {
+    const month = `${m[3]}-${MON[m[2]]}`, stated = millions(m[1]), used = hubFigures.filter(h => h.month === month).map(h => h.hub);
+    if (used.length === 0) { // no anchor for that month states a hub figure
+      unchecked["hub figure"].push(r.month);
+      continue;
+    }
+    figureForms["hub figure"].push(r.month);
+    if (!used.every(h => within(h.miles, stated.miles, h.slack + stated.slack))) {
+      figureErrors.push(`waymo ${r.month}: "${m[0]}", where the anchors for ${month} use ${JSON.stringify(used.map(h => h.stated))}`);
+    }
+  }
+  for (const frame of r.rationale.matchAll(/by calendar year \(([^)]*)\)/g)) {
+    for (const m of frame[1].matchAll(/(\d{1,3}(?:,\d{3})+) in (\d{4})\b/g)) {
+      if (`${m[2]}-01` < waymo[0].month) continue; // a year that began before the series
+      figureForms["calendar year"].push(r.month);
+      const year = waymo.filter(x => x.month.startsWith(`${m[2]}-`)), stated = wholeMiles(m[1]);
+      const miles = year.reduce((s, x) => s + x.vmt, 0);
+      if (year.length !== 12 || miles !== stated.miles) {
+        figureErrors.push(`waymo ${r.month}: "${m[0]}" vs ${year.length} months of ${m[2]} summing to ${fmt(miles)}`);
+      }
+    }
+  }
+  for (const m of r.rationale.matchAll(/first million rider-only miles on ([A-Z][a-z]{2}) (\d{1,2}), (\d{4})/g)) {
+    figureForms["milestone day"].push(r.month);
+    const day = Number(m[2]), row = rowOf("waymo", `${m[3]}-${MON[m[1]]}`);
+    if (row === undefined || !(lifetimeAt(row, day - 1) < 1e6 && 1e6 <= lifetimeAt(row, day) + 1)) {
+      figureErrors.push(`waymo ${r.month}: "${m[0]}" vs the lifetime ${row === undefined ? "(no row)" : `${milesOf(lifetimeAt(row, day - 1))} at the end of the day before and ${milesOf(lifetimeAt(row, day))} at the end of the day`}`);
+    }
+  }
+  for (const m of r.rationale.matchAll(/\bfloor the series clears, [^.;']*'more than (\d+(?:\.\d+)?) million fully autonomous miles' \((?:[^()]+?, )?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2}), (\d{4})\)/g)) {
+    figureForms["floor the series clears"].push(r.month);
+    const floor = Number(m[1]) * 1e6, day = Number(m[3]), month = `${m[4]}-${MON[m[2]]}`, row = rowOf("waymo", month);
+    if (row === undefined || !(1 <= day && day <= daysIn(month) && floor <= lifetimeAt(row, day) + 1)) {
+      figureErrors.push(`waymo ${r.month}: "${m[0]}" vs the lifetime ${row === undefined ? `(no row for ${month})` : `${milesOf(lifetimeAt(row, day))} at the end of day ${day} of ${month}, a month of ${daysIn(month)} days`}`);
+    }
+  }
+  for (const m of r.rationale.matchAll(/\bTotal (\d+(?:\.\d+)?)M\b/g)) {
+    figureForms["Waymo total"].push(r.month);
+    const stated = millions(m[1]);
+    if (!within(stated.miles, r.vmt, stated.slack)) figureErrors.push(`waymo ${r.month}: "${m[0]}" vs its miles, ${fmt(r.vmt)}`);
+  }
+  for (const m of r.rationale.matchAll(/\bTotal \d+(?:\.\d+)?M, about (\d+(?:\.\d+)?)k a day\b/g)) {
+    figureForms["Waymo daily rate"].push(r.month);
+    const stated = thousands(m[1]), perDay = r.vmt / daysIn(r.month);
+    if (!within(stated.miles, perDay, stated.slack)) {
+      figureErrors.push(`waymo ${r.month}: "${m[0]}" vs its miles over its ${daysIn(r.month)} days, ${milesOf(perDay)}`);
+    }
+  }
+  for (const frame of r.rationale.matchAll(/\bTotal \d+(?:\.\d+)?M, about \d+(?:\.\d+)?k a day \(([^()]*)\)/g)) {
+    for (const m of frame[1].matchAll(/\b(January|February|March|April|May|June|July|August|September|October|November|December)'s row (\d+(?:\.\d+)?)k\b/g)) {
+      figureForms["a month's daily rate"].push(r.month);
+      const mm = String(MONTH_NAMES.indexOf(m[1]) + 1).padStart(2, "0"), stated = thousands(m[2]);
+      const row = rowOf("waymo", waymo.map(x => x.month).filter(x => x.endsWith(`-${mm}`) && x <= r.month).sort().at(-1));
+      if (row === undefined || !within(stated.miles, row.vmt / daysIn(row.month), stated.slack)) {
+        figureErrors.push(`waymo ${r.month}: "${m[0]}" vs ${row === undefined ? `no ${m[1]} row at or before ${r.month}` : `${row.month}'s miles over its ${daysIn(row.month)} days, ${milesOf(row.vmt / daysIn(row.month))}`}`);
+      }
+    }
+    for (const m of frame[1].matchAll(/\bmeasured Q([1-4]) (\d+(?:\.\d+)?)k\b/g)) {
+      figureForms["a quarter's daily rate"].push(r.month);
+      const months = [1, 2, 3].map(i => `${r.month.slice(0, 4)}-${String(3 * (Number(m[1]) - 1) + i).padStart(2, "0")}`);
+      const quarter = waymo.filter(x => months.includes(x.month)), stated = thousands(m[2]);
+      const perDay = quarter.reduce((s, x) => s + x.vmt, 0) / months.reduce((s, x) => s + daysIn(x), 0);
+      if (quarter.length !== 3 || !within(stated.miles, perDay, stated.slack)) {
+        figureErrors.push(`waymo ${r.month}: "${m[0]}" vs ${quarter.length} of the 3 rows for ${months.join(", ")}, ${milesOf(perDay)} a day`);
+      }
+    }
+  }
+  for (const m of r.rationale.matchAll(/Cross-check: (\d+(?:\.\d+)?)M\/mo ≈ (\d+(?:\.\d+)?)M\/wk\b/g)) {
+    figureForms["a month and its week"].push(r.month);
+    const [perMonth, perWeek] = [m[1], m[2]].map(millions), week = r.vmt * 7 / daysIn(r.month);
+    if (!within(perMonth.miles, r.vmt, perMonth.slack) || !within(perWeek.miles, week, perWeek.slack)) {
+      figureErrors.push(`waymo ${r.month}: "${m[0]}" vs its miles, ${fmt(r.vmt)}, and its miles times 7 over its ${daysIn(r.month)} days, ${milesOf(week)}`);
+    }
+  }
+  for (const m of r.rationale.matchAll(/Band x(\d+(?:\.\d+)?) to x(\d+(?:\.\d+)?)/g)) {
+    figureForms["band multipliers"].push(r.month);
+    const slack = s => 0.5 * 10 ** -decimals(s) + 1e-9;
+    if (!within(Number(m[1]), r.vmin / r.vmt, slack(m[1])) || !within(Number(m[2]), r.vmax / r.vmt, slack(m[2]))) {
+      figureErrors.push(`waymo ${r.month}: "${m[0]}" vs its band over its miles, x${(r.vmin / r.vmt).toFixed(4)} to x${(r.vmax / r.vmt).toFixed(4)}`);
     }
   }
 }
@@ -97,11 +310,6 @@ for (const r of rows.filter(x => x.helmer === "waymo")) {
 // ~0.15M" and held each to the month's cumulative plus 150,000, the offset's
 // central until 2026-11-02; no rationale had used that wording since
 // 2026-10-31, so it checked nothing (open question 35(a)).
-const offsetLine = fs.readFileSync("data/waymo_vmt.py", "utf8").match(/^OFFSET = \((\d+), (\d+), (\d+)\)/m);
-assert.ok(offsetLine, "Replicata: read OFFSET in data/waymo_vmt.py. Expectata: a (central, low, high) literal. Resultata: not found.");
-const OFFSET = { central: Number(offsetLine[1]), low: Number(offsetLine[2]), high: Number(offsetLine[3]) };
-const wholeMiles = s => ({ stated: s, miles: Number(s.replace(/,/g, "")), slack: 0 });
-const millions = s => ({ stated: `${s}M`, miles: Number(s) * 1e6, slack: halfUnit(s) });
 const OFFSET_FORMS = [
   // data/waymo_vmt.py's EARLY_NOTE, July 2021-January 2023: "<central>
   // (range <low>-<high>)" in whole miles
@@ -252,7 +460,7 @@ for (const r of rows) for (const [bad, what] of FACTS) if (bad(r)) factErrors.pu
 const problems = {
   unresolvedCitations: [...new Set(badCites)],
   internalShorthand: jargon,
-  anchorsNotTheRows: [...new Set(anchorErrors)],
+  figuresNotTheRows: [...new Set(figureErrors)],
   preSeriesOffsetNotOffset: offsetErrors,
   bandEdgesNotStated: unstated,
   correctedFactsRecur: factErrors,
@@ -260,8 +468,8 @@ const problems = {
 };
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0));
 assert.deepEqual(failing, {},
-  `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations, (2) internal shorthand, (3) stated anchors and band edges against the rows, and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts, (5) Tesla's driver's-seat disclosure.
-Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each Waymo "<x>M end-<Mon>-<YYYY>" equals the rows' cumulative to its stated precision; every figure a Waymo rationale states for the pre-series offset (the builder's "<central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision, each form is found at least once, and every "pre-series" in a Waymo rationale lies in one; the Zoox Nov-2025, Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs; (5) every Tesla rationale of Sep 2025-Jun 2026 says those months may hold trips with a safety monitor in the driver's seat, whose crashes NHTSA may file in its Level 2 file, a bias the no-monitor line avoids.
+  `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations, (2) internal shorthand, (3) stated figures and band edges against the rows, and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts, (5) Tesla's driver's-seat disclosure.
+Expectata: (1) each citation names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "E lo/hi" or "D/H"; (3) each figure in a form below is the rows' value, to its stated precision, checked where its wording appears, no form being required (a statement reworded out of its form goes unchecked, the human's rule of 2026-11-03): each "<x>k" or "<x>M" "end-[<Mon>-]<YYYY>" is that line's series cumulative; each Waymo anchor ("The <Mon>-<YYYY> cumulative lands on the anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles") is that month's cumulative, h + e - o; each band after an anchor in its rationale ("its cumulative band is the hub total plus <a>M to <b>M ..., less the pre-series miles' range, <l>M-<u>M") that month's cumulative band; each "<h>M rider-only miles thru <Mon>-<YYYY>" the hub figure every anchor for that month uses, where one exists; each "<n> in <YYYY>" of "by calendar year (...)" that year's summed months, for each year whose January the series holds; each "first million rider-only miles on <Mon> <D>, <YYYY>" the day the lifetime (the cumulative plus OFFSET's central, the month's miles spread evenly) reaches 1,000,000; each Waymo "floor the series clears, ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon> <D>, <YYYY>)" with N million no more than the lifetime at the end of that day, to a mile; each Waymo "Total <x>M" its miles; each Waymo "Total <x>M, about <y>k a day" its miles over its days, and in the parenthesis after it each "<Monthname>'s row <z>k" the latest such month's miles over its days and each "measured Q<n> <w>k" that quarter's miles, in the row's year, over its days; each Waymo "Cross-check: <x>M/mo ≈ <y>M/wk" its miles and its miles times 7 over its days; each Waymo "Band x<lo> to x<hi>" its row's band over its miles; every figure a Waymo rationale states for the pre-series offset (the builder's "<central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision, each form is found at least once, and every "pre-series" in a Waymo rationale lies in one; the Zoox Nov-2025, Dec-2025 and Mar-2026 knots, the Zoox Jul-2026 floor and Tesla's Aug-2026 floor state the band edges their rows carry; (4) none of the corrected statements recurs; (5) every Tesla rationale of Sep 2025-Jun 2026 says those months may hold trips with a safety monitor in the driver's seat, whose crashes NHTSA may file in its Level 2 file, a bias the no-monitor line avoids.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
-console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections, use no internal shorthand, and state the anchors their rows carry; ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);
+console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections, use no internal shorthand, and give the rows' figures in every form read here (${Object.entries(figureForms).map(([f, found]) => `${found.length} ${f}`).join(", ")}; found with no anchor sentence to read them against, so unchecked: ${Object.entries(unchecked).map(([f, found]) => `${found.length} ${f}`).join(", ")}); ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);

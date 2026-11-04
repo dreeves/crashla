@@ -57,9 +57,11 @@ import { parseCsv } from "./csv-parse.mjs";
 //     November (the crossing: not before Dec 1, by the end of Dec 7 with
 //     December's miles at most its California high plus twice its Las Vegas
 //     share) and December (the 1.3M statement). Edges round outward.
-//   - Both earlier shapes stay inside the June-November bands, the 10e2343
-//     rows and the 2026-10-31 reshape; December's 10e2343 value is ruled out
-//     by the statements (at least 250,000: 1.25M at Dec 31 less 1M at Nov 30).
+//   - The three earlier shapes stay inside the June-December bands, the
+//     10e2343 rows, the 2026-10-31 reshape and the 2026-11-02 smooth path
+//     (2025's statements only), except December's 10e2343 value, which the
+//     statements rule out (at least 250,000: 1.25M at Dec 31 less 1M at Nov
+//     30). (Until 2026-11-03 this held the first two only.)
 //   - Bands, 2026: vmt x e^(-1.96 sigma) to vmt x e^(1.96 sigma'), sigma =
 //     sqrt(0.065^2 + 0.07^2 h + 0.09^2) (statement rounding, drift, month
 //     noise), h = months from the midpoint of the stretch between the
@@ -279,11 +281,15 @@ M25.forEach((m, k) => {
 
 // The earlier shapes, which the bands must hold unless a statement rules one
 // out: the 10e2343 rows (crossing about Nov 22, before the Fortune statement
-// allows) and the 2026-10-31 reshape (crossing Dec 4, Dec 31 at 1.3M; the
-// first fix run, AGENTS.md ledger 2026-11-01).
+// allows), the 2026-10-31 reshape (crossing Dec 4, Dec 31 at 1.3M; the first
+// fix run, AGENTS.md ledger 2026-11-01) and the 2026-11-02 smooth path, the
+// least-rough path through 2025's statements only, the 2026 rows then holding
+// the March and August statements at their midpoints (9a8f81e's rows; the
+// second fix run, AGENTS.md ledger 2026-11-02 (later 2)).
 const SHAPES = {
   "10e2343": [68653, 86733, 109852, 136097, 166865, 204599, 245852],
   "2026-10-31": [40616, 56015, 81014, 111730, 160082, 231013, 338181],
+  "2026-11-02": [45892, 64849, 95252, 120825, 168940, 219441, 253452],
 };
 const decMin = S0[0] - CROSS; // December at least 1.25M at Dec 31 less 1M at Nov 30
 const outside = [];
@@ -295,7 +301,7 @@ for (const [name, vals] of Object.entries(SHAPES)) {
   });
 }
 assert.deepEqual(outside, [],
-  `Replicata: compare Zoox's June-December 2025 monthly bands with the two earlier shapes of those months (the 10e2343 rows and the 2026-10-31 reshape).
+  `Replicata: compare Zoox's June-December 2025 monthly bands with the ${Object.keys(SHAPES).length} earlier shapes of those months (${Object.keys(SHAPES).join(", ")}: the 10e2343 rows, the 2026-10-31 reshape and the 2026-11-02 smooth path through 2025's statements).
 Expectata: every value inside its month's band unless the statements rule it out (December below ${decMin}).
 Resultata: ${outside.join("; ")}.`);
 assert.ok(byMonth["2025-12"].vmin >= decMin,
@@ -371,4 +377,4 @@ Expectata: each month's miles, band, cumulative and cumulative band equal the mo
 Resultata: ${mismatches.join("; ")}.`);
 
 const fmt = v => Math.round(v).toLocaleString("en-US");
-console.log(`qual pass: Zoox's rows from June 2025 follow the model: the smoothest path through all four statements (roughness ${roughness(u).toFixed(7)}; binding ${BINDING.join(", ")}; Mar 24 at ${fmt(slack["Mar 24, 2026 at least 1.88M"] + S1[0])}, Aug 5 at ${fmt(slack["Aug 5, 2026 at least 3.00M"] + S2[0])}; Las Vegas ${x.slice(0, 7).map(fmt).join(" / ")} a driving day June-December 2025, then ${fmt(x[N - 1])}), the 1M crossing on Dec ${crossingDay.toFixed(4)}, December ${want25[6]}, bands holding both earlier shapes, knots at end-November [${knots["2025-11"]}], end-December [${knots["2025-12"]}] and end-March [${knots["2026-03"]}], a floor at end-July (${knots["2026-07"][0]})`);
+console.log(`qual pass: Zoox's rows from June 2025 follow the model: the smoothest path through all four statements (roughness ${roughness(u).toFixed(7)}; binding ${BINDING.join(", ")}; Mar 24 at ${fmt(slack["Mar 24, 2026 at least 1.88M"] + S1[0])}, Aug 5 at ${fmt(slack["Aug 5, 2026 at least 3.00M"] + S2[0])}; Las Vegas ${x.slice(0, 7).map(fmt).join(" / ")} a driving day June-December 2025, then ${fmt(x[N - 1])}), the 1M crossing on Dec ${crossingDay.toFixed(4)}, December ${want25[6]}, bands holding the ${Object.keys(SHAPES).length} earlier shapes, knots at end-November [${knots["2025-11"]}], end-December [${knots["2025-12"]}] and end-March [${knots["2026-03"]}], a floor at end-July (${knots["2026-07"][0]})`);

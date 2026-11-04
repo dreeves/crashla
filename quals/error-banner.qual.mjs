@@ -15,7 +15,14 @@
 //  - on a page that drew, an error thrown from a timer, then an unhandled
 //    promise rejection: the banner shows each one's message in turn, and its
 //    button dismisses it;
-//  - a page that drew with no error keeps the banner hidden.
+//  - a page that drew with no error keeps the banner hidden;
+//  - a data/vmt.js from a release that moved Waymo's first knot (since
+//    2026-11-03): the cumulative band of Waymo's first fully knotted month
+//    widened at its top to the running sum of the monthly bands, so that month
+//    is no longer knotted while crashla.js's PRE_SERIES_OFFSET still names it;
+//    init stops at checkPreSeriesOffsets, and the banner shows its message,
+//    which names Waymo, the month the data gives and the constant's, and its
+//    button dismisses it.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
@@ -23,6 +30,21 @@ import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
 const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 const skewedVmt = fs.readFileSync("data/vmt.js", "utf8").replace(/const GHOST_VMT_CSV_TEXT\b/, "const GHOST_VMT_CSV_TEXT_NOT_IN_THIS_RELEASE");
 assert.ok(skewedVmt !== fs.readFileSync("data/vmt.js", "utf8"), "data/vmt.js declares GHOST_VMT_CSV_TEXT (the qual's skew removes it)");
+// The moved knot: Waymo's analysis rows (VMT_CSV_TEXT, before the ghost
+// segment), the first fully knotted month found as checkPreSeriesOffsets and
+// window-band.qual find it (the month after the last whose cumulative band is
+// not strictly inside the running sums of the monthly bands), and that month's
+// kyoom_max set to its running sum, which makes the next month the first.
+const vmtJs = fs.readFileSync("data/vmt.js", "utf8");
+const waymoRows = vmtJs.slice(0, vmtJs.indexOf("const GHOST_VMT_CSV_TEXT")).split("\n").filter(l => l.startsWith("waymo,"))
+  .map(line => { const p = line.split(","); return { line, month: p[1], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7] }; })
+  .sort((a, b) => (a.month < b.month ? -1 : 1));
+let runLo = 0, runHi = 0, lastLoose = -1;
+waymoRows.forEach((r, i) => { runLo += r.vmin; runHi += r.vmax; r.runHi = runHi; if (!(r.kmin > runLo && r.kmax < runHi)) lastLoose = i; });
+const knot = waymoRows[lastLoose + 1], nextKnot = waymoRows[lastLoose + 2];
+assert.ok(knot !== undefined && nextKnot !== undefined, "data/vmt.js holds Waymo rows with a first fully knotted month and a month after it");
+const movedKnotVmt = vmtJs.replace(knot.line, knot.line.split(",").map((f, i) => (i === 5 ? String(knot.runHi) : f)).join(","));
+assert.ok(movedKnotVmt !== vmtJs, "the qual's moved knot changes data/vmt.js");
 
 const banner = () => {
   const b = document.getElementById("url-banner");
@@ -55,6 +77,25 @@ try {
         // could not be dismissed).
         await page.evaluate(() => document.getElementById("url-banner-dismiss").click());
         if ((await page.evaluate(banner)).shown) problems.push(`${engineName}, data/vmt.js without GHOST_VMT_CSV_TEXT: the banner's button does not dismiss the error banner`);
+        await ctx.close();
+      }
+      // --- a release that moved Waymo's first knot ---------------------------
+      {
+        const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+        await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
+        await ctx.route(/\/data\/vmt\.js$/, route => route.fulfill({ status: 200, contentType: "text/javascript", body: movedKnotVmt }));
+        const page = await ctx.newPage();
+        const errors = [];
+        page.on("pageerror", err => errors.push(err.message));
+        await page.goto(server.url + DEF, { waitUntil: "load" });
+        await page.waitForTimeout(500);
+        const b = await page.evaluate(banner);
+        const names = [`"helmer":"Waymo"`, `"expected":"${nextKnot.month}"`, `"found":"${knot.month}"`];
+        if (!(errors.length > 0 && b.shown && b.errorShown && b.lead !== null && b.error.startsWith(b.lead) &&
+              names.every(n => b.error.includes(n))))
+          problems.push(`${engineName}, data/vmt.js with Waymo's ${knot.month} band top widened to ${knot.runHi}: page errors ${JSON.stringify(errors)}; banner ${JSON.stringify(b)}; want the banner naming ${names.join(", ")}`);
+        await page.evaluate(() => document.getElementById("url-banner-dismiss").click());
+        if ((await page.evaluate(banner)).shown) problems.push(`${engineName}, data/vmt.js with Waymo's ${knot.month} band top widened: the banner's button does not dismiss the error banner`);
         await ctx.close();
       }
       // --- errors on a page that drew -------------------------------------
@@ -92,8 +133,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data); then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
-Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
+  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data), and with Waymo's first fully knotted month's band top widened to its running sum (a release that moved the knot); then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
+Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; for the moved knot checkPreSeriesOffsets's, naming Waymo, the month the data gives and PRE_SERIES_OFFSET's; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: an uncaught error or unhandled rejection, at init or after it, shows the page's banner with its message, in three engines");

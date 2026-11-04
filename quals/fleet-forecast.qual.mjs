@@ -346,6 +346,10 @@ Resultata: ${below.join("; ")}.`);
       .map(c => [c.key, bandMixtureQuantiles(c.components, ${JSON.stringify(ps)})]))})))`, ctx));
   const below = [];
   for (const {metric, q} of lanes) {
+    assert.ok(Array.isArray(q.hw4) && Array.isArray(q.robotaxi),
+      `Replicata: build Tesla's ${metric} forecast lanes.
+Expectata: a robotaxi lane and an all-HW4 lane.
+Resultata: lanes ${JSON.stringify(Object.keys(q))}.`);
     const under = ps.filter((_, i) => !(q.hw4[i] >= q.robotaxi[i]));
     if (under.length > 0) below.push(`${metric}: under at ${under.map(p => `${Math.round(100 * p)}%`).join(", ")}`);
   }

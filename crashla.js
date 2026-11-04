@@ -1874,6 +1874,31 @@ const PRE_SERIES_OFFSET = {
   Waymo: {from: "2021-12", range: 110000},
   Zoox: {from: "2025-11", range: 29859},
 };
+// PRE_SERIES_OFFSET checked against the master at load (init runs it right
+// after checkGhostVmtRows; since 2026-11-03, rule 12): one entry for each line
+// the master holds, and each line with a range starting it at its first fully
+// knotted month, the month after the last one whose cumulative band is not
+// strictly inside the running sums of the monthly bands from the series'
+// zero (quals/window-band.qual.mjs derives it the same way). windowVmtBand
+// adds the range back from that month on, right only while both edges of
+// every cumulative band from it on came through a knot. A line with no range
+// (Tesla's) adds nothing back, so its month is not checked.
+function checkPreSeriesOffsets() {
+  const entries = Object.keys(PRE_SERIES_OFFSET).sort();
+  const lines = [...new Set(vmtRows.map(r => r.helmer))].sort();
+  assert(JSON.stringify(entries) === JSON.stringify(lines),
+    "PRE_SERIES_OFFSET must have one entry for each line with VMT rows", {entries, lines});
+  for (const [helmer, offset] of Object.entries(PRE_SERIES_OFFSET).filter(entry => entry[1].range > 0)) {
+    const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
+    let lo = 0, hi = 0;
+    const inside = master.map(r => { lo += r.vmtMin; hi += r.vmtMax; return r.kyoomMin > lo && r.kyoomMax < hi; });
+    const knotted = master.slice(inside.lastIndexOf(false) + 1);
+    assert(knotted.length > 0, "a line with a pre-series offset range has no fully knotted month", {helmer});
+    assert(knotted[0].month === offset.from,
+      "a line's PRE_SERIES_OFFSET month must be its first fully knotted month",
+      {helmer, expected: knotted[0].month, found: offset.from});
+  }
+}
 function windowVmtBand(helmer, metricRows, minOf, bestOf, maxOf) {
   // Fully received, for this metric: its triple is the authored month band
   // (no receipt or Monthly-track factor below 1 applies to it), which is what
@@ -7118,6 +7143,7 @@ function loadPredmarketData() {
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
   checkGhostVmtRows();
+  checkPreSeriesOffsets();
   faultData = buildFaultDataFromIncidents(incidentData);
   // Everything that is not a chart first (the URL state, the colophon, the
   // listeners, the markets), then the charts' column, then the views, which

@@ -40,7 +40,9 @@ import { monthlyLagKeys } from "./monthly-lag.mjs";
 // month from the master itself (the first month from which every cumulative
 // band lies strictly inside the plain running sums of the monthly bands, so a
 // knot shaped both edges), for the default window, a 2022 window and a Zoox
-// window after its knots.
+// window after its knots. The last section holds the app's own load-time
+// check of PRE_SERIES_OFFSET (checkPreSeriesOffsets, since 2026-11-03) to the
+// same months.
 
 const ctx = vm.createContext({
   console, Math, Number,
@@ -240,3 +242,105 @@ assert.ok(oneMonth.compared > 1000 && oneMonth.diffs.length === 0,
 Expectata: identical (one posterior per month on the page); ${oneMonth.compared} pairs compared.
 Resultata: ${oneMonth.diffs.length} differ, e.g. ${JSON.stringify(oneMonth.diffs.slice(0, 4))}.`);
 console.log(`qual pass: every one of ${oneMonth.compared} per-month chart posteriors equals its one-month window's card`);
+
+// --- The app checks the offset's months at load (2026-11-03) ----------------
+// windowVmtBand adds a line's range back only from its PRE_SERIES_OFFSET
+// month (`from`) on, which is right only while that month is the line's first
+// fully knotted month, so the app asserts it at load (rule 12):
+// checkPreSeriesOffsets, which init runs right after checkGhostVmtRows. Here
+// it must be silent on the data, leave a line with no range (Tesla's)
+// unchecked whatever its month, and throw, naming the line, the month the
+// master gives (expected) and the month the constant holds (found), when a
+// line's month moves a month either way; when a knot's band edge widens to the
+// running sum of the monthly bands (the knot no longer shapes it, so the
+// first fully knotted month moves later); when the month before a line's
+// first knot is narrowed strictly inside the running sums (so it moves
+// earlier); and when a line's entry is missing or a line with no rows has one.
+// The months are re-derived here as in the first section, from the mutated
+// rows.
+{
+  const initBlock = fs.readFileSync("crashla.js", "utf8").split("// --- Init ---")[1];
+  assert.ok(initBlock !== undefined && /checkGhostVmtRows\(\);\s*checkPreSeriesOffsets\(\);/.test(initBlock),
+    `Replicata: read crashla.js's init block (after "// --- Init ---").
+Expectata: checkGhostVmtRows(); followed directly by checkPreSeriesOffsets();, so the page checks the offset's months at every load, right after the ghost rows.
+Resultata: ${initBlock === undefined ? "no init block" : "no such call"}.`);
+  const load = vm.runInContext(`
+  (() => {
+    const run = () => { try { checkPreSeriesOffsets(); return null; } catch (e) { return e.message; } };
+    const shift = (month, by) => { const n = +month.slice(0, 4) * 12 + +month.slice(5, 7) - 1 + by; return Math.floor(n / 12) + "-" + String(n % 12 + 1).padStart(2, "0"); };
+    const lineRows = helmer => vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
+    const runningSums = (helmer, month) => lineRows(helmer).filter(r => r.month <= month)
+      .reduce((s, r) => ({lo: s.lo + r.vmtMin, hi: s.hi + r.vmtMax}), {lo: 0, hi: 0});
+    // The first section's derivation: the month after the last whose cumulative
+    // band is not strictly inside the running sums of the monthly bands.
+    const knotted = helmer => {
+      const master = lineRows(helmer);
+      let lo = 0, hi = 0, from = master[0].month;
+      master.forEach((r, i) => {
+        lo += r.vmtMin; hi += r.vmtMax;
+        if (!(r.kyoomMin > lo && r.kyoomMax < hi)) from = i + 1 < master.length ? master[i + 1].month : "9999-12";
+      });
+      return from;
+    };
+    const cases = [{what: "the data as it stands", line: null, got: run()}];
+    // A mutation, the derived month after it, the constant's month, and what
+    // the check said; then the rows or the constant restored.
+    const mutate = (what, line, apply, undo) => {
+      apply();
+      cases.push({what, line, expected: knotted(line), found: PRE_SERIES_OFFSET[line].from, got: run()});
+      undo();
+    };
+    for (const line of ["Waymo", "Zoox"]) {
+      const from = PRE_SERIES_OFFSET[line].from;
+      for (const by of [1, -1]) {
+        mutate(line + "'s month moved " + (by > 0 ? "a month later" : "a month earlier"), line,
+          () => { PRE_SERIES_OFFSET[line].from = shift(from, by); }, () => { PRE_SERIES_OFFSET[line].from = from; });
+      }
+      const knot = lineRows(line).find(r => r.month === from);
+      const top = knot.kyoomMax;
+      mutate(line + "'s " + from + " cumulative band's top widened to the running sum", line,
+        () => { knot.kyoomMax = runningSums(line, from).hi; }, () => { knot.kyoomMax = top; });
+      const before = lineRows(line).find(r => r.month === shift(from, -1));
+      const floor = before.kyoomMin;
+      mutate(line + "'s " + before.month + " cumulative band's floor narrowed a mile inside the running sum", line,
+        () => { before.kyoomMin = runningSums(line, before.month).lo + 1; }, () => { before.kyoomMin = floor; });
+    }
+    // A line with no range adds nothing back, so its month is not checked.
+    const teslaFrom = PRE_SERIES_OFFSET.Tesla.from;
+    PRE_SERIES_OFFSET.Tesla.from = "2099-01";
+    cases.push({what: "Tesla's month (range 0) set to 2099-01", line: null, got: run()});
+    PRE_SERIES_OFFSET.Tesla.from = teslaFrom;
+    // The entries are the master's lines.
+    const saved = Object.entries(PRE_SERIES_OFFSET);
+    const restore = () => { for (const k of Object.keys(PRE_SERIES_OFFSET)) delete PRE_SERIES_OFFSET[k]; for (const [k, v] of saved) PRE_SERIES_OFFSET[k] = v; };
+    delete PRE_SERIES_OFFSET.TeslaNoMonitor;
+    cases.push({what: "TeslaNoMonitor's entry removed", line: null, entries: true, got: run()});
+    restore();
+    PRE_SERIES_OFFSET.Cruise = {from: "", range: 0};
+    cases.push({what: "an entry for a line with no rows (Cruise)", line: null, entries: true, got: run()});
+    restore();
+    cases.push({what: "the data restored", line: null, got: run()});
+    return {cases, lines: [...new Set(vmtRows.map(r => r.helmer))].sort()};
+  })()`, ctx);
+  const bad = [];
+  for (const c of load.cases) {
+    if (c.line === null && c.entries === undefined) {
+      if (c.got !== null) bad.push(`${c.what}: threw ${JSON.stringify(c.got)}, want silent`);
+    } else if (c.entries) {
+      if (c.got === null || !c.got.includes(`"lines":${JSON.stringify(load.lines)}`)) bad.push(`${c.what}: ${c.got === null ? "silent" : "threw " + JSON.stringify(c.got)}, want a throw naming the master's lines, ${JSON.stringify(load.lines)}`);
+    } else {
+      const named = c.got !== null && c.got.includes(`"helmer":"${c.line}"`) &&
+        c.got.includes(`"expected":"${c.expected}"`) && c.got.includes(`"found":"${c.found}"`);
+      if (c.expected === c.found) bad.push(`${c.what}: the mutation left the first fully knotted month at the constant's (${c.found}), so it tests nothing`);
+      if (!named) bad.push(`${c.what}: ${c.got === null ? "silent" : "threw " + JSON.stringify(c.got)}, want a throw naming ${c.line}, expected ${c.expected}, found ${c.found}`);
+    }
+  }
+  assert.deepEqual(bad, [],
+    `Replicata: in the app loaded in vm, vmtRows parsed from data/vmt.js as init parses them, run checkPreSeriesOffsets on the data, then on each mutation (restoring after each): Waymo's and Zoox's PRE_SERIES_OFFSET month moved a month either way; their knotted month's cumulative band top widened to the running sum of the monthly bands; the month before it narrowed strictly inside the running sums; Tesla's month (range 0) moved; an entry removed; an entry added for a line with no rows.
+Expectata: silent on the data, after the Tesla move and after restoring; on every other mutation a throw, naming for a moved month or knot the line, the month the master gives ("expected") and the constant's ("found"), and for a missing or extra entry the master's lines.
+Resultata: ${bad.join("; ")}.`);
+  const t0 = process.hrtime.bigint();
+  vm.runInContext("for (let i = 0; i < 1000; i++) checkPreSeriesOffsets();", ctx);
+  const perCall = Number(process.hrtime.bigint() - t0) / 1e6 / 1000;
+  console.log(`qual pass: the app's load-time check of the pre-series offset's months (checkPreSeriesOffsets) is silent on the data, skips the range-0 lines, and throws on ${load.cases.filter(c => c.got !== null).length} mutations, naming the line and both months; ${perCall.toFixed(3)} ms a call`);
+}
