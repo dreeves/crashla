@@ -53,8 +53,11 @@
   /* AI-generated prose (the "green text" legend): a desaturated sage, sitting
      at --ink-soft's weight so it DEemphasizes relative to body ink while still
      reading as green. Deliberately grayer than --safer so it can't be mistaken
-     for a verdict color. #59765b clears WCAG AA (4.5:1) even on --wash. */
-  --ai-ink: #59765b;
+     for a verdict color. It clears WCAG AA (4.5:1) on every ground AI text
+     sits on, a hovered table row's (--accent-wash, 4.54:1) included; until
+     2026-11-03 it was #59765b, 4.36:1 there (Delta E 2000 1.13 apart, nearly
+     all lightness: no visible change). */
+  --ai-ink: #577359;
 
   /* Wobbles. border-radius takes a different horizontal and vertical radius
      per corner; pairing a huge one with a tiny one bends each side into an arc

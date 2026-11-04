@@ -413,10 +413,13 @@ Resultata: ${strays.join("; ")}.`,
 // is exactly when a palette drifts under the line, so the tokens that carry
 // meaning are measured here rather than eyeballed. --ink-faint is deliberately
 // absent: it is the de-emphasised meta text (VMT parentheticals, source
-// footnotes) and has always sat under AA by design.
+// footnotes) and has always sat under AA by design. --accent-wash is a hovered
+// table row's ground (tbody tr:hover), behind every ink a row paints: AI text
+// in the derivations, VMT sources and incident tables among them (added
+// 2026-11-03, when the AI ink, #59765b, read 4.36:1 there).
 const CARRIES_MEANING = ["--accent", "--accent-ink", "--safer", "--worse", "--iffy",
                          "--ai-ink", "--ink", "--ink-soft"];
-const GROUNDS = ["--paper", "--card", "--wash"];
+const GROUNDS = ["--paper", "--card", "--wash", "--accent-wash"];
 
 const hexOf = name => {
   const value = onlyDecl(root, name, ":root");
