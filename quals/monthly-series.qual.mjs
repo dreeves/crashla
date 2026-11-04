@@ -420,8 +420,9 @@ Expectata: header reuses the exact selected metric label: the all-incident heade
 Resultata: header was ${JSON.stringify(airbagHeading)}.`,
 );
 
-// k=0 months have no point estimate (MLE = miles/0 = ∞); they render a marker
-// whose tooltip gives the count 0 (in parentheses after the MPI figure, on
+// k=0 months have no MLE (miles/0 = ∞); they render a hollow dot at the
+// posterior median (since 2026-06-20; an up-arrow until then), whose tooltip
+// gives the count 0 (in parentheses after the MPI figure, on
 // its second line), and are never skipped (e.g. a month whose incidents are
 // all 0% at-fault). Until 2026-10-29 the count was found with the word after
 // it ("(0 incidents)").
@@ -533,8 +534,9 @@ Resultata: bar lengths were ${JSON.stringify(allZeroK.barLens.map(Math.round))}.
 );
 
 // A PARTIAL month that HAS incidents (k>0) is not a k=0 case: it keeps a finite
-// MLE point — rendered as a dot, not a "≥ lo" up-arrow — pessimistically lowered
-// by the incomplete reporting (incident_coverage shrinks the effective VMT).
+// MLE (miles/k), pessimistically lowered by the incomplete reporting
+// (incident_coverage shrinks the effective VMT), and its dot, at the posterior
+// median, stays filled, never the k=0 hollow dot.
 // Guards the case that arrives the moment NHTSA partially reports a month that
 // had crashes (which is when the partial-coverage path actually fires for k>0).
 const partialK = vm.runInContext(`
@@ -558,26 +560,29 @@ const partialK = vm.runInContext(`
     const partK = partSeries.points.find(p => p.month === tgt).helmers.Tesla.mpiByMetric.all;
     const partHtml = renderAllHelmersMpiChart(partSeries);
     vmtRows = savedRows; selectedMetricKey = savedMetric; monthHelmerEnabled = savedEnabled;
-    const arrows = h => (h.match(/path class="month-dot"/g) || []).length;
-    const dots = h => (h.match(/circle class="month-dot"/g) || []).length;
+    // k=0's glyph is a hollow dot (fill none) since 2026-06-20; until 2026-11-04
+    // this counted the up-arrow it replaced, which nothing draws, so 0 === 0.
+    const hollow = h => [...h.matchAll(/<circle class="month-dot"[^>]*style="fill:none;/g)].length;
+    const dots = h => [...h.matchAll(/<circle class="month-dot"/g)].length;
     return {
       tgt, k: partK.incidentCount, finite: Number.isFinite(partK.mpiBest),
       partMpi: partK.mpiBest, fullMpi: fullK.mpiBest,
-      glyphsUnchanged: arrows(partHtml) === arrows(fullHtml) && dots(partHtml) === dots(fullHtml),
+      glyphs: {part: {dots: dots(partHtml), hollow: hollow(partHtml)}, full: {dots: dots(fullHtml), hollow: hollow(fullHtml)}},
+      glyphsUnchanged: hollow(partHtml) === hollow(fullHtml) && dots(partHtml) === dots(fullHtml),
     };
   })()
 `, ctx);
 assert.ok(
   partialK.k > 0 && partialK.finite,
   `Replicata: mark the first k>0 Tesla month (${partialK.tgt}) as partially reported (incCov 0.4) and read its point.
-Expectata: k>0 ⇒ a finite MLE point (an up-arrow is reserved for k=0, where there is no point).
+Expectata: k>0 ⇒ a finite MLE point (the hollow dot is reserved for k=0, which has none).
 Resultata: k=${partialK.k}, finite=${partialK.finite}.`,
 );
 assert.ok(
   partialK.glyphsUnchanged,
-  `Replicata: compare up-arrow/dot glyph counts for ${partialK.tgt} partially-reported vs fully-reported.
-Expectata: unchanged — a partially-reported k>0 month stays a dot, never flips to a k=0 up-arrow.
-Resultata: glyphsUnchanged was ${partialK.glyphsUnchanged}.`,
+  `Replicata: compare the MPI chart's dot and hollow-dot counts for ${partialK.tgt} partially-reported vs fully-reported.
+Expectata: unchanged — a partially-reported k>0 month stays a filled dot, never flips to the k=0 hollow dot.
+Resultata: ${JSON.stringify(partialK.glyphs)}.`,
 );
 assert.ok(
   partialK.partMpi < partialK.fullMpi,

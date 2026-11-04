@@ -7,11 +7,50 @@ import { parseCsv } from "./csv-parse.mjs";
 // ends at the newest NHTSA month; data/README.md, Ghost months), so the
 // rationales are page text. Added 2026-10-03 for the 2026-10-02 audit
 // findings #38, #39, #47 and #76-#80:
-//   (1) every citation of a section ("<file>, <section>") resolves: the file
-//       is data/README.md or IGNOREME.md (a bare "README" is ambiguous) and
-//       the section a heading that exists in it (a mention of a file with no
-//       section in that form goes unchecked since 2026-11-03; until then
-//       every mention of one of the three names had to be such a citation);
+//   (1) every citation of a section resolves. A citation is a document's
+//       name, a comma, and text starting with a capital letter, as a section
+//       name does ("data/README.md, Zoox anchors"), or with "[AI TEXT] " and
+//       a capital, as some IGNOREME.md headings do. The documents are the
+//       repo's READMEs and IGNOREME.md: every file named README, README.md or
+//       IGNOREME.md outside the repo's dot-directories and node_modules
+//       (today data/README.md, data/snapshots/README.md, IGNOREME.md,
+//       quals/README and README.md), each named by its path from the repo
+//       root, with or without a leading "./". A bare "README" is a name too,
+//       of no file: the top-level README is README.md, and a bare "README"
+//       could mean any of them. A name inside a longer path or a URL
+//       (data/README.md in foo/data/README.md, README.md in
+//       https://github.com/x/README.md) starts no citation, and each name and
+//       comma starts a citation of its own, so one that follows another in a
+//       clause is read too. Its text, less a leading "[AI TEXT] ", starts
+//       with a heading of its file and ends there or goes on after a space or
+//       punctuation ("Zoox anchors." and "Zoox anchors, which ..." cite
+//       "Zoox anchors"). Text and heading compare in either case, with
+//       markdown's code marks dropped, a curly apostrophe read as a straight
+//       one, each run of white space as one space, and a heading's closing
+//       ?, ., ! or : optional ("README.md, How safe are robotaxis" cites "How
+//       safe are robotaxis?"). No heading of these files begins another of
+//       its file at a word's end today; one that did would let a typo past
+//       its end in the longer one pass. Any other mention of a file goes
+//       unchecked: a clause that continues the sentence ("data/README.md,
+//       which ..."), a list of the names ("data/README.md, IGNOREME.md"), and
+//       any other file's name (data/waymo-ca.csv, AGENTS.md, data/README, a
+//       README outside the repo); so does a second section named without its
+//       file ("data/README.md, Ghost months and Zoox anchors" reads "Ghost
+//       months" only). This reading dates from 2026-11-04. On 2026-11-03 every
+//       "<file>, <text>" was read and its text had to be exactly a heading as
+//       written; until then every mention of data/README.md, IGNOREME.md or
+//       "README" had to be a citation. Earlier on 2026-11-04 the names were
+//       data/README.md and IGNOREME.md, matched anywhere (so inside a longer
+//       path too), and a bare "README", matched at the end of any path (so
+//       quals/README and data/README were read as it, red), and a citation's
+//       text ran to the next ";" or ")", so a second citation inside it went
+//       unread; README.md and text tagged "[AI TEXT] " went unchecked; and a
+//       list of the names, or a heading typed in another case, with a curly
+//       apostrophe or a no-break space or without its code marks, turned the
+//       qual red. Later that day README.md was read too, also anywhere, so
+//       any path ending in it (data/snapshots/README.md) was read as
+//       README.md, and README.md's heading "How safe are robotaxis?" cited
+//       without its "?" turned the qual red;
 //   (2) no repo-internal column name or shorthand (kyoom, vmt_min/vmt_max,
 //       TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best", "D/H"), none
 //       of which the page defines (rule 13);
@@ -77,11 +116,15 @@ import { parseCsv } from "./csv-parse.mjs";
 // "granted Jul 30", "exemption Jul 30" and "Nov 22"; and in the no-monitor
 // line's rationales "the mean of holding the last week flat" and "plus the
 // 4.8% gap". And a frame of (3a) or (3b) takes any figure set in its words
-// for the figure it names, and (1) any "<file>, <text>" for a citation, so a
-// correct figure that means something else can fail there, as a lifetime
-// written in the end-of-month form would (item (3) above), and so can a file
-// name followed by a comma and other words. Relaxing any of them is the
-// human's call (rule 5).
+// for the figure it names, and (1) any of its names, a comma and capitalized
+// text for a citation, so a correct figure that means something else can fail
+// there, as a lifetime written in the end-of-month form would (item (3)
+// above), and so can a correct mention that starts with no section name: a
+// capitalized word before the section's ("data/README.md, The Ghost months
+// section") or a list of sources whose next item is no name (1) reads
+// ("data/README.md, CPUC quarterly filings"); and a citation of README.md
+// written as a bare "README" ("README, Related Links") fails, a bare "README"
+// naming no file. Relaxing any of them is the human's call (rule 5).
 
 const raw = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const rows = raw.slice(1).map(p => ({
@@ -116,16 +159,53 @@ const thousands = s => ({ stated: `${s}k`, miles: Number(s) * 1e3, slack: 0.5 * 
 const millions = s => ({ stated: `${s}M`, miles: Number(s) * 1e6, slack: halfUnit(s) });
 
 // (1) citations resolve
+// The documents a citation can name: the repo's READMEs and IGNOREME.md,
+// every file named README, README.md or IGNOREME.md outside the repo's
+// dot-directories and node_modules, each by its path from the repo root.
+const walk = dir => fs.readdirSync(dir, { withFileTypes: true })
+  .filter(e => !e.name.startsWith(".") && e.name !== "node_modules")
+  .flatMap(e => {
+    const p = dir === "." ? e.name : `${dir}/${e.name}`;
+    return e.isDirectory() ? walk(p) : [p];
+  });
+const DOCS = walk(".").filter(p => /(?:^|\/)(?:README(?:\.md)?|IGNOREME\.md)$/.test(p));
+assert.ok(["data/README.md", "IGNOREME.md", "README.md"].every(f => DOCS.includes(f)),
+  `Replicata: list the repo's files named README, README.md or IGNOREME.md (outside dot-directories and node_modules).
+Expectata: data/README.md, IGNOREME.md and README.md among them, the documents the rationales cite by section.
+Resultata: ${JSON.stringify(DOCS)}.`);
+// A heading or a citation's text as compared: markdown's code marks dropped,
+// a curly apostrophe read as a straight one, each run of white space as one
+// space, in lower case; a heading also less its "[AI TEXT] " tag and its
+// closing ?, ., ! or : ("How safe are robotaxis?" is cited with or without
+// its "?").
+const norm = s => s.replace(/`/g, "").replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
 const headingsOf = path => fs.readFileSync(path, "utf8").split("\n")
-  .filter(l => /^#+ /.test(l)).map(l => l.replace(/^#+ /, "").replace(/^\[AI TEXT\] /, "").trim());
-const HEADINGS = { "data/README.md": headingsOf("data/README.md"), "IGNOREME.md": headingsOf("IGNOREME.md") };
+  .filter(l => /^#+ /.test(l)).map(l => norm(l.replace(/^#+ /, "").replace(/^\[AI TEXT\] /, "")).replace(/[?.!:]+$/, ""));
+const HEADINGS = Object.fromEntries(DOCS.map(f => [f, headingsOf(f)]));
+// A citation's name: one of those paths, with or without a leading "./", or a
+// bare "README", which names no file (the top-level one is README.md); never
+// the end of a longer path or of a URL (the lookbehind), so
+// data/snapshots/README.md is read as itself, not as README.md.
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+const NAME = `(?:\\.\\/)?(?:${[...DOCS, "README"].sort((a, b) => b.length - a.length).map(escRe).join("|")})`;
+const CITATION = new RegExp(`(?<![\\w./:-])(${NAME}), (?=((?:\\[AI TEXT\\] )?[A-Z][^;)]*))`, "g");
+const LIST = new RegExp(`^${NAME}(?![\\w./-])`);
 const badCites = [];
+let citations = 0;
 for (const r of rows) {
-  for (const m of r.rationale.matchAll(/(data\/README\.md|IGNOREME\.md|README), ([^;)]+)/g)) {
-    const [whole, file, section] = m;
-    if (!(file in HEADINGS) || !HEADINGS[file].includes(section.trim())) {
-      badCites.push(`${r.helmer} ${r.month}: ${JSON.stringify(whole)}`);
-    }
+  // The text is read in a lookahead, so a name and comma inside it start a
+  // match of their own (until 2026-11-04 the text was consumed, and a
+  // citation after another in one clause went unread).
+  for (const m of r.rationale.matchAll(CITATION)) {
+    const [, name, text] = m;
+    // A list of the names ("data/README.md, IGNOREME.md") cites no section.
+    if (LIST.test(text)) continue;
+    citations++;
+    const file = name.replace(/^\.\//, ""), t = norm(text.replace(/^\[AI TEXT\] /, ""));
+    const why = !(file in HEADINGS) ? "no file of the repo has that path; the top-level README is README.md"
+      : HEADINGS[file].some(h => t.startsWith(h) && /^(\W|$)/.test(t.slice(h.length))) ? null
+      : `no heading of ${file} begins it`;
+    if (why !== null) badCites.push(`${r.helmer} ${r.month}: ${JSON.stringify(`${name}, ${text}`)} (${why})`);
   }
 }
 
@@ -483,7 +563,7 @@ const problems = {
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0));
 assert.deepEqual(failing, {},
   `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations of a section, (2) internal shorthand, (3) stated figures against the rows, and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts.
-Expectata: (1) each citation of a section, "<file>, <section>", names data/README.md or IGNOREME.md and a section heading that exists there; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best" or "D/H"; (3) each figure stated in one of the forms that follow passes its form's test, to its stated precision, and is checked where its wording appears, none of these forms being required (a statement reworded out of its form goes unchecked, the human's rule of 2026-11-03): each "<x>k" or "<x>M" "end-[<Mon>-]<YYYY>" is that line's series cumulative; each Waymo anchor ("The <Mon>-<YYYY> cumulative lands on the anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles") is that month's cumulative, h + e - o; each band after an anchor in its rationale ("its cumulative band is the hub total plus <a>M to <b>M ..., less the pre-series miles' range, <l>M-<u>M") that month's cumulative band; each "<h>M rider-only miles thru <Mon>-<YYYY>" the hub figure every anchor for that month uses, where one exists; each "<n> in <YYYY>" of "by calendar year (...)" that year's summed months, for each year whose January the series holds; each "first million rider-only miles on <Mon> <D>, <YYYY>" the day the lifetime (the cumulative plus OFFSET's central, the month's miles spread evenly) reaches 1,000,000; each Waymo "floor the series clears, ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon> <D>, <YYYY>)" with N million no more than the lifetime at the end of that day, to a mile; each Waymo "Total <x>M, about <y>k a day" its miles and its miles over its days, and in the parenthesis after it each "<Monthname>'s row <z>k" the miles over the days of the latest month of that name at or before the row's, and each "measured Q<n> <w>k" those of the latest quarter n ending at or before the row's month; each Waymo "Cross-check: <x>M/mo ≈ <y>M/wk" its miles and its miles times 7 over its days; each Waymo "Band x<lo> to x<hi>" its row's band over its miles; every figure a Waymo rationale states for the pre-series offset (the builder's "<central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision.; (4) none of the corrected statements recurs.
+Expectata: (1) each citation of a section (a document's name: the path from the repo root, with or without "./", of one of its files named README, README.md or IGNOREME.md, ${JSON.stringify(DOCS)}, or a bare "README"; then a comma and text starting with a capital letter, or with "[AI TEXT] " and one; each name and comma starting one, a name inside a longer path or a URL starting none, and a list of the names citing no section) names a file of the repo (a bare "README" names none) and, less a leading "[AI TEXT] ", starts with a section heading that exists there (compared in either case, with code marks dropped, a curly apostrophe read as a straight one, each run of white space as one space and a heading's closing ?, ., ! or : optional), ending there or going on after a space or punctuation; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best" or "D/H"; (3) each figure stated in one of the forms that follow passes its form's test, to its stated precision, and is checked where its wording appears, none of these forms being required (a statement reworded out of its form goes unchecked, the human's rule of 2026-11-03): each "<x>k" or "<x>M" "end-[<Mon>-]<YYYY>" is that line's series cumulative; each Waymo anchor ("The <Mon>-<YYYY> cumulative lands on the anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles") is that month's cumulative, h + e - o; each band after an anchor in its rationale ("its cumulative band is the hub total plus <a>M to <b>M ..., less the pre-series miles' range, <l>M-<u>M") that month's cumulative band; each "<h>M rider-only miles thru <Mon>-<YYYY>" the hub figure every anchor for that month uses, where one exists; each "<n> in <YYYY>" of "by calendar year (...)" that year's summed months, for each year whose January the series holds; each "first million rider-only miles on <Mon> <D>, <YYYY>" the day the lifetime (the cumulative plus OFFSET's central, the month's miles spread evenly) reaches 1,000,000; each Waymo "floor the series clears, ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon> <D>, <YYYY>)" with N million no more than the lifetime at the end of that day, to a mile; each Waymo "Total <x>M, about <y>k a day" its miles and its miles over its days, and in the parenthesis after it each "<Monthname>'s row <z>k" the miles over the days of the latest month of that name at or before the row's, and each "measured Q<n> <w>k" those of the latest quarter n ending at or before the row's month; each Waymo "Cross-check: <x>M/mo ≈ <y>M/wk" its miles and its miles times 7 over its days; each Waymo "Band x<lo> to x<hi>" its row's band over its miles; every figure a Waymo rationale states for the pre-series offset (the builder's "<central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision; (4) none of the corrected statements recurs.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
-console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections, use no internal shorthand, and give the rows' figures in every form read here (${Object.entries(figureForms).map(([f, found]) => `${found.length} ${f}`).join(", ")}; found with no anchor sentence to read them against, so unchecked: ${Object.entries(unchecked).map(([f, found]) => `${found.length} ${f}`).join(", ")}); ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);
+console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections (${citations} citations, of ${DOCS.length} documents), use no internal shorthand, and give the rows' figures in every form read here (${Object.entries(figureForms).map(([f, found]) => `${found.length} ${f}`).join(", ")}; found with no anchor sentence to read them against, so unchecked: ${Object.entries(unchecked).map(([f, found]) => `${found.length} ${f}`).join(", ")}); ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);

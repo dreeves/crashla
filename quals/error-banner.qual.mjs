@@ -22,7 +22,12 @@
 //    is no longer knotted while crashla.js's PRE_SERIES_OFFSET still names it;
 //    init stops at checkPreSeriesOffsets, and the banner shows its message,
 //    which names Waymo, the month the data gives and the constant's, and its
-//    button dismisses it.
+//    button dismisses it;
+//  - a crashla.js whose PRE_SERIES_OFFSET gives Waymo a range of NaN (since
+//    2026-11-04, when the range assert began naming the range's type; it has
+//    named the line and the range since 2026-11-03): init stops at the range
+//    assert, and the banner shows its message, which names Waymo, the range
+//    as String() writes it and its type, and its button dismisses it.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
@@ -45,6 +50,19 @@ const knot = waymoRows[lastLoose + 1], nextKnot = waymoRows[lastLoose + 2];
 assert.ok(knot !== undefined && nextKnot !== undefined, "data/vmt.js holds Waymo rows with a first fully knotted month and a month after it");
 const movedKnotVmt = vmtJs.replace(knot.line, knot.line.split(",").map((f, i) => (i === 5 ? String(knot.runHi) : f)).join(","));
 assert.ok(movedKnotVmt !== vmtJs, "the qual's moved knot changes data/vmt.js");
+// The malformed entry: Waymo's range in PRE_SERIES_OFFSET set to NaN by a
+// statement served just before crashla.js's init block, at its one
+// "// --- Init ---" line (where quals/load-app.mjs splits the app too), so the
+// constant's layout does not matter (first written on 2026-11-04 as a regex on
+// the literal's Waymo line, which a comment before that line, an entry over
+// two lines or a range written 110_000 would have broken).
+const appJs = fs.readFileSync("crashla.js", "utf8");
+const INIT = "\n// --- Init ---\n";
+assert.ok(appJs.split(INIT).length === 2,
+  `Replicata: find crashla.js's init block, before which the qual serves Waymo's PRE_SERIES_OFFSET range set to NaN.
+Expectata: one "// --- Init ---" line, the one quals/load-app.mjs splits the app at.
+Resultata: ${appJs.split(INIT).length - 1} such lines.`);
+const nanRangeApp = appJs.replace(INIT, `\nPRE_SERIES_OFFSET.Waymo.range = NaN;${INIT}`);
 
 const banner = () => {
   const b = document.getElementById("url-banner");
@@ -54,50 +72,41 @@ const banner = () => {
 };
 const server = await serveRepo();
 const problems = [];
+// A load that init stops: the default view with one file served changed. The
+// banner must show the lead-in and a message naming each of `names`, and its
+// button must dismiss it, which works even though init stopped early (until
+// 2026-11-01 its handler was wired late in init, so a skewed deploy's banner
+// could not be dismissed).
+const stoppedLoad = async (browser, engineName, what, file, body, names) => {
+  const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
+  await ctx.route(file, route => route.fulfill({ status: 200, contentType: "text/javascript", body }));
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", err => errors.push(err.message));
+  await page.goto(server.url + DEF, { waitUntil: "load" });
+  await page.waitForTimeout(500);
+  const b = await page.evaluate(banner);
+  if (!(errors.length > 0 && b.shown && b.errorShown && b.lead !== null && b.lead.trim() !== "" &&
+        b.error.startsWith(b.lead) && names.every(n => b.error.includes(n))))
+    problems.push(`${engineName}, ${what}: page errors ${JSON.stringify(errors)}; banner ${JSON.stringify(b)}; want the banner naming ${names.join(", ")}`);
+  await page.evaluate(() => document.getElementById("url-banner-dismiss").click());
+  if ((await page.evaluate(banner)).shown) problems.push(`${engineName}, ${what}: the banner's button does not dismiss the error banner`);
+  await ctx.close();
+};
 try {
   for (const [engineName, engine] of Object.entries(ENGINES)) {
     const browser = await engine.launch();
     try {
       // --- the skewed deploy -------------------------------------------------
-      {
-        const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
-        await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
-        await ctx.route(/\/data\/vmt\.js$/, route => route.fulfill({ status: 200, contentType: "text/javascript", body: skewedVmt }));
-        const page = await ctx.newPage();
-        const errors = [];
-        page.on("pageerror", err => errors.push(err.message));
-        await page.goto(server.url + DEF, { waitUntil: "load" });
-        await page.waitForTimeout(500);
-        const b = await page.evaluate(banner);
-        if (!(errors.length > 0 && b.shown && b.errorShown && b.lead !== null && b.lead.trim() !== "" &&
-              b.error.startsWith(b.lead) && b.error.includes("GHOST_VMT_CSV_TEXT")))
-          problems.push(`${engineName}, data/vmt.js without GHOST_VMT_CSV_TEXT: page errors ${JSON.stringify(errors)}; banner ${JSON.stringify(b)}`);
-        // The button works even though init stopped early (until 2026-11-01
-        // its handler was wired late in init, so a skewed deploy's banner
-        // could not be dismissed).
-        await page.evaluate(() => document.getElementById("url-banner-dismiss").click());
-        if ((await page.evaluate(banner)).shown) problems.push(`${engineName}, data/vmt.js without GHOST_VMT_CSV_TEXT: the banner's button does not dismiss the error banner`);
-        await ctx.close();
-      }
+      await stoppedLoad(browser, engineName, "data/vmt.js without GHOST_VMT_CSV_TEXT", /\/data\/vmt\.js$/, skewedVmt,
+        ["GHOST_VMT_CSV_TEXT"]);
       // --- a release that moved Waymo's first knot ---------------------------
-      {
-        const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
-        await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
-        await ctx.route(/\/data\/vmt\.js$/, route => route.fulfill({ status: 200, contentType: "text/javascript", body: movedKnotVmt }));
-        const page = await ctx.newPage();
-        const errors = [];
-        page.on("pageerror", err => errors.push(err.message));
-        await page.goto(server.url + DEF, { waitUntil: "load" });
-        await page.waitForTimeout(500);
-        const b = await page.evaluate(banner);
-        const names = [`"helmer":"Waymo"`, `"expected":"${nextKnot.month}"`, `"found":"${knot.month}"`];
-        if (!(errors.length > 0 && b.shown && b.errorShown && b.lead !== null && b.error.startsWith(b.lead) &&
-              names.every(n => b.error.includes(n))))
-          problems.push(`${engineName}, data/vmt.js with Waymo's ${knot.month} band top widened to ${knot.runHi}: page errors ${JSON.stringify(errors)}; banner ${JSON.stringify(b)}; want the banner naming ${names.join(", ")}`);
-        await page.evaluate(() => document.getElementById("url-banner-dismiss").click());
-        if ((await page.evaluate(banner)).shown) problems.push(`${engineName}, data/vmt.js with Waymo's ${knot.month} band top widened: the banner's button does not dismiss the error banner`);
-        await ctx.close();
-      }
+      await stoppedLoad(browser, engineName, `data/vmt.js with Waymo's ${knot.month} band top widened to ${knot.runHi}`,
+        /\/data\/vmt\.js$/, movedKnotVmt, [`"helmer":"Waymo"`, `"expected":"${nextKnot.month}"`, `"found":"${knot.month}"`]);
+      // --- a malformed PRE_SERIES_OFFSET entry --------------------------------
+      await stoppedLoad(browser, engineName, "crashla.js with Waymo's PRE_SERIES_OFFSET range NaN",
+        /\/crashla\.js$/, nanRangeApp, [`"helmer":"Waymo"`, `"range":"NaN"`, `"type":"number"`]);
       // --- errors on a page that drew -------------------------------------
       {
         const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
@@ -133,8 +142,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data), and with Waymo's first fully knotted month's band top widened to its running sum (a release that moved the knot); then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
-Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; for the moved knot checkPreSeriesOffsets's, naming Waymo, the month the data gives and PRE_SERIES_OFFSET's; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
+  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data), with Waymo's first fully knotted month's band top widened to its running sum (a release that moved the knot), and with crashla.js served with Waymo's PRE_SERIES_OFFSET range set to NaN; then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
+Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; for the moved knot checkPreSeriesOffsets's, naming Waymo, the month the data gives and PRE_SERIES_OFFSET's; for the NaN range its range assert's, naming Waymo, "NaN" and the type "number"; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: an uncaught error or unhandled rejection, at init or after it, shows the page's banner with its message, in three engines");

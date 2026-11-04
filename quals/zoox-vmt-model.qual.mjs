@@ -280,20 +280,37 @@ M25.forEach((m, k) => {
 });
 
 // The earlier shapes, which the bands must hold unless a statement rules one
-// out: the 10e2343 rows (crossing about Nov 22, before the Fortune statement
-// allows), the 2026-10-31 reshape (crossing Dec 4, Dec 31 at 1.3M; the first
-// fix run, AGENTS.md ledger 2026-11-01) and the 2026-11-02 smooth path, the
-// least-rough path through 2025's statements only, the 2026 rows then holding
-// the March and August statements at their midpoints (9a8f81e's rows; the
-// second fix run, AGENTS.md ledger 2026-11-02 (later 2)).
+// out, each described beside its figures (the assert below lists the
+// descriptions from here, so a shape added here is described there too;
+// until 2026-11-04 its message wrote out three of them).
 const SHAPES = {
-  "10e2343": [68653, 86733, 109852, 136097, 166865, 204599, 245852],
-  "2026-10-31": [40616, 56015, 81014, 111730, 160082, 231013, 338181],
-  "2026-11-02": [45892, 64849, 95252, 120825, 168940, 219441, 253452],
+  // Crossing about Nov 22, before the Fortune statement allows.
+  "10e2343": { what: "the 10e2343 rows",
+    vals: [68653, 86733, 109852, 136097, 166865, 204599, 245852] },
+  // Crossing Dec 4, Dec 31 at 1.3M; the first fix run, AGENTS.md ledger
+  // 2026-11-01.
+  "2026-10-31": { what: "the 2026-10-31 reshape",
+    vals: [40616, 56015, 81014, 111730, 160082, 231013, 338181] },
+  // The least-rough path through 2025's statements only, the 2026 rows then
+  // holding the March and August statements at their midpoints (9a8f81e's
+  // rows; the second fix run, AGENTS.md ledger 2026-11-02 (later 2)).
+  "2026-11-02": { what: "the 2026-11-02 smooth path through 2025's statements",
+    vals: [45892, 64849, 95252, 120825, 168940, 219441, 253452] },
 };
+// Each shape a description and one finite value for each June-December 2025
+// month (rule 12: a short entry would compare undefined against its month's
+// band, false both ways, and pass silently). The message writes NaN and the
+// infinities by name (JSON.stringify alone writes them as null).
+for (const [name, shape] of Object.entries(SHAPES)) {
+  assert.ok(typeof shape.what === "string" && shape.what !== "" && Array.isArray(shape.vals) &&
+    shape.vals.length === M25.length && shape.vals.every(Number.isFinite),
+    `Replicata: read SHAPES' entry ${JSON.stringify(name)}.
+Expectata: a non-empty "what" and ${M25.length} finite values, one for each of ${M25.join(", ")}.
+Resultata: ${JSON.stringify(shape, (key, v) => (typeof v === "number" && !Number.isFinite(v) ? String(v) : v))}.`);
+}
 const decMin = S0[0] - CROSS; // December at least 1.25M at Dec 31 less 1M at Nov 30
 const outside = [];
-for (const [name, vals] of Object.entries(SHAPES)) {
+for (const [name, { vals }] of Object.entries(SHAPES)) {
   M25.forEach((m, k) => {
     const r = byMonth[m];
     const ruledOut = m === "2025-12" && vals[k] < decMin;
@@ -301,7 +318,7 @@ for (const [name, vals] of Object.entries(SHAPES)) {
   });
 }
 assert.deepEqual(outside, [],
-  `Replicata: compare Zoox's June-December 2025 monthly bands with the ${Object.keys(SHAPES).length} earlier shapes of those months (${Object.keys(SHAPES).join(", ")}: the 10e2343 rows, the 2026-10-31 reshape and the 2026-11-02 smooth path through 2025's statements).
+  `Replicata: compare Zoox's June-December 2025 monthly bands with the ${Object.keys(SHAPES).length} earlier shapes of those months (${Object.entries(SHAPES).map(([name, shape]) => `${name}: ${shape.what}`).join("; ")}).
 Expectata: every value inside its month's band unless the statements rule it out (December below ${decMin}).
 Resultata: ${outside.join("; ")}.`);
 assert.ok(byMonth["2025-12"].vmin >= decMin,

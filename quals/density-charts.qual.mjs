@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 
-// The two density charts (the MPI distribution chart and the Jan-2027
-// forecast) as each engine draws them, at desktop and phone width
+// The two density charts (the MPI distribution chart and the growth
+// forecast's) as each engine draws them, at desktop and phone width
 // (2026-10-03, audit #25, #26, #27, #50). The DOM-stub quals model text with
 // a per-glyph bound and markers by their attributes; this one asks the
 // browsers:

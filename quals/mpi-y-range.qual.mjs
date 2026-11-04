@@ -100,9 +100,9 @@ const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&g
 // A mark's style property. Each mark sets the ones read here (a line's
 // colour; a fan band's opacity, its credible level), so one without is an
 // error, not a mark on no line.
-const styleOf = (style, prop) => {
+const styleOf = (style, prop, at) => {
   const m = new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(style);
-  assert.ok(m, `Replicata: read the ${prop} of an MPI-chart mark styled ${JSON.stringify(style)}.
+  assert.ok(m, `Replicata: render the MPI chart (${at}) and read the ${prop} of its mark styled ${JSON.stringify(style)}.
 Expectata: its style sets ${prop}: the marks are matched to their lines by colour, and a fan band to its credible level by its opacity.
 Resultata: no ${prop} in it.`);
   return m[1].trim();
@@ -189,7 +189,7 @@ function check(key, a, b, lines, view) {
 
   // 2. Dots: at their medians, unclamped.
   const dots = [...c.html.matchAll(/<circle class="month-dot" cx="([^"]*)" cy="([^"]*)" r="[^"]*" style="([^"]*)"><\/circle>/g)]
-    .map(m => ({ x: Number(m[1]), y: Number(m[2]), line: lineOfColor[styleOf(m[3], "stroke")] }));
+    .map(m => ({ x: Number(m[1]), y: Number(m[2]), line: lineOfColor[styleOf(m[3], "stroke", at)] }));
   const dotSeen = new Set();
   for (const d of dots) {
     const p = monthAt(d.line, d.x);
@@ -201,7 +201,7 @@ function check(key, a, b, lines, view) {
 
   // 3. Error bars: the 95% credible interval (the widest level), clamped.
   const errs = [...c.html.matchAll(/<line class="month-err" x1="([^"]*)" y1="([^"]*)" x2="([^"]*)" y2="([^"]*)" style="([^"]*)"><\/line>/g)]
-    .map(m => ({ x: Number(m[1]), x2: Number(m[3]), y1: Number(m[2]), y2: Number(m[4]), line: lineOfColor[styleOf(m[5], "stroke")] }));
+    .map(m => ({ x: Number(m[1]), x2: Number(m[3]), y1: Number(m[2]), y2: Number(m[4]), line: lineOfColor[styleOf(m[5], "stroke", at)] }));
   const barSeen = new Set();
   for (const e of errs) {
     const p = monthAt(e.line, e.x);
@@ -218,7 +218,7 @@ function check(key, a, b, lines, view) {
   // low edges back; one opacity per level, so a line's paths of one opacity
   // are one level's segments.
   const fans = [...c.html.matchAll(/<path d="([^"]*)" style="([^"]*)"><\/path>/g)]
-    .map(m => ({ v: vertices(m[1]), closed: m[1].trim().endsWith("Z"), line: lineOfColor[styleOf(m[2], "fill")], group: `${styleOf(m[2], "fill")} ${styleOf(m[2], "opacity")}` }));
+    .map(m => ({ v: vertices(m[1]), closed: m[1].trim().endsWith("Z"), line: lineOfColor[styleOf(m[2], "fill", at)], group: `${styleOf(m[2], "fill", at)} ${styleOf(m[2], "opacity", at)}` }));
   const groups = new Map();
   for (const f of fans) {
     const n = f.v.length / 2;
@@ -252,7 +252,7 @@ function check(key, a, b, lines, view) {
 
   // 5. Line paths: through the dots of the months with a count other than 0.
   const paths = [...c.html.matchAll(/<path class="month-mpi-all-line" d="([^"]*)" style="([^"]*)"><\/path>/g)]
-    .map(m => ({ v: vertices(m[1]), line: lineOfColor[styleOf(m[2], "stroke")] }));
+    .map(m => ({ v: vertices(m[1]), line: lineOfColor[styleOf(m[2], "stroke", at)] }));
   for (const line of c.shown) {
     const own = paths.filter(q => q.line === line);
     const drawn = c.pts.filter(p => p.line === line && p.k !== 0);

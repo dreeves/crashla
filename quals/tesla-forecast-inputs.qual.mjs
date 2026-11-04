@@ -33,13 +33,16 @@
 // 3. Scenario C's cumulative eyes-off miles through Dec 31, 2027
 //    (TESLA_EYES_OFF.cumulative) follow its eyes-off cars and their miles a
 //    car-day. The 2026-10-29 research paired its ~600M [~20M, ~6B] with 400k
-//    eyes-off cars on the forecast date [60k, 2.0M] at 20 miles a car-day
-//    [15, 30] (AGENTS.md open question 30, settled 2026-11-03; the band of
-//    cars and the 15-30 a car-day are in crashla.js's comments since
-//    2026-10-30), i.e. each edge's cumulative is so many days of the
-//    forecast date's eyes-off miles a day: 75 at the best (600M over 400k x
-//    20, the research's ramp of ~75 days of December-2027 rates), ~22 at the
-//    low edge and 100 at the high one (a launch anywhere in Apr-Dec 2027).
+//    eyes-off cars on the forecast date at 20 miles a car-day (AGENTS.md
+//    open question 30, settled 2026-11-03). The pairing of its edges with
+//    the band of cars, [60k, 2.0M], and of miles a car-day, [15, 30], low
+//    with low and high with high, is inferred from crashla.js's comments of
+//    2026-10-30, which give the three bands, the cars' and the cumulative's
+//    each from a launch anywhere in Apr-Dec 2027. So each edge's cumulative
+//    is so many days of the forecast date's eyes-off miles a day: 75 at the
+//    best (600M over 400k x 20, the research's ramp of ~75 days of
+//    December-2027 rates), and ~22 at the low edge and 100 at the high one,
+//    the two edges together spanning that window of launches.
 //    Each edge must stay those days of its cars x its miles a car-day, so a
 //    new rate or count moves the cumulative with it: at Tesla's 25 a car-day
 //    the best is 750M (the human's decision, 2026-11-03). From 2026-11-02 to
@@ -120,7 +123,11 @@ console.log(`Q3-2026 FSD (Supervised) miles per active FSD car-day: ${sourced.to
 
 // --- 3. C's cumulative eyes-off miles follow its cars and miles a car-day ---
 const EDGES = ["best", "lo", "hi"];
-const RESEARCH = { // the 2026-10-29 research's pairing (header, point 3)
+// The best's pairing, 600M from 400k cars at 20 miles a car-day over ~75
+// days, is the 2026-10-29 research's; the 20M and 6B edges' pairing with the
+// [60k, 2.0M] cars and the [15, 30] miles a car-day is inferred from
+// crashla.js's comments of 2026-10-30 (header, point 3).
+const RESEARCH = {
   cumulative: { best: 600e6, lo: 20e6, hi: 6e9 },
   cars: { best: 400e3, lo: 60e3, hi: 2e6 },
   milesPerCarDay: { best: 20, lo: 15, hi: 30 },
@@ -132,17 +139,17 @@ else {
   const want = Object.fromEntries(EDGES.map(k => [k, cars[k] * perCarDay[k] * rampDays[k]]));
   for (const k of EDGES) {
     if (!(Math.abs(cumulative[k] - want[k]) <= 1e-9 * want[k]))
-      problems.push(`TESLA_EYES_OFF.cumulative.${k} is ${cumulative[k].toLocaleString("en-US")}; want ${Math.round(want[k]).toLocaleString("en-US")}, its ${cars[k].toLocaleString("en-US")} cars x ${perCarDay[k]} miles a car-day x the research's ${rampDays[k].toFixed(2)} days`);
+      problems.push(`TESLA_EYES_OFF.cumulative.${k} is ${cumulative[k].toLocaleString("en-US")}; want ${Math.round(want[k]).toLocaleString("en-US")}, its ${cars[k].toLocaleString("en-US")} cars x ${perCarDay[k]} miles a car-day x RESEARCH's ${rampDays[k].toFixed(2)} days at that edge (header, point 3)`);
   }
   if (!(0 < cumulative.lo && cumulative.lo <= cumulative.best && cumulative.best <= cumulative.hi))
     problems.push(`TESLA_EYES_OFF.cumulative ${JSON.stringify(cumulative)} must satisfy 0 < lo <= best <= hi`);
 }
-console.log(`C's cumulative eyes-off miles: ${JSON.stringify(cumulative)}; the research's days of the forecast date's eyes-off miles a day: ${JSON.stringify(rampDays)}`);
+console.log(`C's cumulative eyes-off miles: ${JSON.stringify(cumulative)}; RESEARCH's days of the forecast date's eyes-off miles a day (the best's from the 2026-10-29 research's ramp, the edges' from the pairing inferred from crashla.js's comments of 2026-10-30; header, point 3): ${JSON.stringify(rampDays)}`);
 
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: read Tesla's scenario components (FLEET_FORECAST) and TESLA_EYES_OFF, and recompute the market fit, the Q3-2026 FSD miles a car-day and C's cumulative eyes-off miles from the figures this qual records.
-Expectata: the weights reproduce the market's 2026-11-02 price, ${MARKET_PRICE}, within half a 0.01 step of B's weight, with C's components at their judged ${C_WEIGHT} in all; C's eyes-off miles a car-day has its best at ${Number(sourced.toPrecision(2))} (${sourced.toFixed(2)}, Tesla's Q3-2026 FSD (Supervised) miles per active FSD car-day); each edge of C's cumulative eyes-off miles is its eyes-off cars x their miles a car-day x the 2026-10-29 research's days (${EDGES.map(k => `${k} ${rampDays[k].toFixed(2)}`).join(", ")}).
+Expectata: the weights reproduce the market's 2026-11-02 price, ${MARKET_PRICE}, within half a 0.01 step of B's weight, with C's components at their judged ${C_WEIGHT} in all; C's eyes-off miles a car-day has its best at ${Number(sourced.toPrecision(2))} (${sourced.toFixed(2)}, Tesla's Q3-2026 FSD (Supervised) miles per active FSD car-day); each edge of C's cumulative eyes-off miles is its eyes-off cars x their miles a car-day x RESEARCH's days at that edge (best ${rampDays.best.toFixed(2)}, the 2026-10-29 research's ramp; lo ${rampDays.lo.toFixed(2)} and hi ${rampDays.hi.toFixed(2)}, from the edges' pairing inferred from crashla.js's comments of 2026-10-30, header point 3).
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: Tesla's scenario weights reproduce their 2026-11-02 market fit, C's eyes-off miles a car-day is Tesla's Q3-2026 FSD miles per active FSD car-day, and C's cumulative eyes-off miles follow its cars and miles a car-day");

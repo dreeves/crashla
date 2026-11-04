@@ -355,17 +355,13 @@ re-pinned each release); a Tesla narrative that says nothing about who was
 aboard (13781-16941, due in the Nov 2026 release) passes its narrative check
 only when stored as (filed code, "Unknown") (the human, 2026-11-02).
 
-A data change that moves a line's first fully knotted month (the month from
-which every cumulative band lies strictly inside the running sums of the
-monthly bands, a knot having shaped both its edges), such as a new knot or a
-re-banded month before it, stops the page at load with the error banner
-(`crashla.js` `checkPreSeriesOffsets`, since 2026-11-03) when the line has a
-pre-series offset range (today Waymo and Zoox, in `PRE_SERIES_OFFSET`),
-until the entry's `from` moves with it; one that leaves such a line no fully
-knotted month at all stops it too, naming the line.
-`quals/window-band.qual.mjs` goes red on either first. Tesla's two lines
-have no range: their `from` stays `""` whatever their knots, and the page
-stops if it is anything else.
+A data change that moves the first fully knotted month of a line with a
+pre-series offset range (today Waymo and Zoox; the definition is above
+`checkPreSeriesOffsets` in `crashla.js`), as a new knot can, stops the page
+at load with the error banner until that line's `from` in
+`PRE_SERIES_OFFSET` moves with it, and one that leaves such a line no fully
+knotted month stops it too, naming the line; `quals/window-band.qual.mjs`
+goes red first on either.
 
 ## VMT master
 
@@ -396,9 +392,10 @@ Editing rules:
 - `rationale` is free text explaining the estimate's source and uncertainty.
   The page shows it verbatim (sanity section, "VMT sources"), so it cites
   documents by file and section ("data/README.md, Waymo anchors";
-  "IGNOREME.md, Waymo VMT Methodology"), avoids this file's column names and
-  other repo shorthand, and states the anchors its rows carry
-  (`quals/vmt-rationale-text.qual.mjs`)
+  "IGNOREME.md, Waymo VMT Methodology") and avoids this file's column names
+  and other repo shorthand. `quals/vmt-rationale-text.qual.mjs` checks each
+  section citation and each figure stated in a form it reads, where that
+  wording appears, and requires no wording (the human's rule of 2026-11-03)
 
 To change VMT data: edit `data/vmt.csv`, run `python3 data/slurp.py`, and
 commit the master together with the regenerated artifacts.
@@ -438,7 +435,14 @@ after that month, the month's cumulative, and its late-month rate, the
 no-monitor line's projection of the days after Tesla's page was last
 measured plus the monitor-aboard remainder (the all-modes row less the
 no-monitor row) at its average for the month; re-derive it with the rows.
-`quals/growth-ghost-month.qual.mjs` pins all of it.
+`quals/growth-ghost-month.qual.mjs` pins all of it. Waymo's and Zoox's
+miles forecasts rest on their newest month too: each one's low edge in
+`MILES_FORECAST` is its newest `data/vmt.csv` month's cumulative plus that
+month's miles a day held flat from the first day after it through the day
+before `GROWTH_FORECAST_DATE`, at three significant figures, so re-derive
+both edges with each new month's rows and whenever the newest month's row
+changes; `quals/fleet-forecast.qual.mjs`'s flat-hold check re-derives them
+from `data/vmt.csv` and goes red until they match (since 2026-11-03).
 
 So each release adds every line's estimate for the month after its
 data-through month, a month that has begun by release day. When the next
@@ -973,9 +977,13 @@ The rule is:
   `data/slurp.py` stops on a value off the grid or outside 0-1
   (`quals/fault-grid.qual.mjs`)
 - `reasoning` is an agent's English (every row's judgment was written by
-  agents under the faultfrac criterion), so the page shows it as AI text:
-  green under the opened narrative, and opened with `AI_TEXT_PREFIX`
-  ("Claude: ") in the fault cell's tooltip, which is plain text
+  agents under the faultfrac criterion), so the page shows it as AI text,
+  opened with `AI_TEXT_PREFIX` ("Claude: ") in both places it appears: the
+  fault cell's tooltip, which is plain text, and the fault line under the
+  opened narrative, which is the line's own label (`NARRATIVE_FAULT_LABEL`),
+  a space and the tooltip's text, with the labelled reasoning green
+  (`AI_TEXT_PREFIX` inside the green span; `NARRATIVE_FAULT_LABEL`, the
+  fault fraction and the contact areas outside it, plain)
   (`quals/ai-text-labels.qual.mjs`; the human's answers of 2026-11-03)
 
 When `data/slurp.py` runs, it loads the fault fractions first, and

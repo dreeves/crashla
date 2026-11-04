@@ -576,7 +576,7 @@ const tipsOf = (chart, month) => [...chart.html.matchAll(/data-tip="([^"]*)" tab
   .map(m => ({ tip: decode(m[1]), name: decode(m[2]) }))
   .map(t => ({ ...t, helmer: chart.ads.find(h => t.name === markPrefix[h] + t.tip) }))
   .filter(t => t.helmer !== undefined && t.tip.startsWith(month + "\n"));
-const percents = tip => (tip.match(/~\d+%/g) || []).map(p => Number(p.slice(1, -1)));
+const percents = tip => [...tip.matchAll(/~(\d+)%/g)].map(m => Number(m[1]));
 const laggedTriples = { ...r.expectedLag, [`Zoox|${lagMonth}`]: [0.6, 0.25, 1] };
 for (const [key, [best, lo]] of Object.entries(laggedTriples)) {
   const [lagged, month] = key.split("|");
@@ -647,7 +647,15 @@ Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
 // the metric (an unrated month on an at-fault metric gets none), and the
 // medians the rule takes are the series' own; the marks' colours
 // tell the lines apart and their x positions the months. w is read from the
-// coverage columns of parseVmtCsv's rows, as for the "?" above.
+// coverage columns of parseVmtCsv's rows, as for the "?" above. The chart's
+// tick requests (linearTicks(min, max, count)) are recorded while it renders,
+// for the axis check's message: it states the ladder linearTicks gives for
+// the largest median at the chart's own count, as mpi-y-range.qual's check
+// 1b does. Until 2026-11-04 the message took the due top from the rendered
+// ladder's step, so on the axis the rule before 2026-11-03 drew for the
+// default at-fault-injury chart, 0-500M by 100M, it named 100M as due, where
+// linearTicks on that chart's largest median, 74.1M, draws 0-80M by 20M.
+const appLinearTicks = vm.runInContext("linearTicks", ctx6);
 const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() => {
   const saved = [selectedMetricKey, monthHelmerEnabled];
   selectedMetricKey = ${JSON.stringify(key)};
@@ -655,7 +663,10 @@ const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() =
   const s = section6Series, end = s.months.indexOf(${JSON.stringify(dataThroughMonth)});
   const start = ${oneMonth ? "end" : "s.months.indexOf(DEFAULT_START_MONTH)"};
   const metric = selectedMonthMetric();
+  const appTicks = linearTicks, tickCalls = [];
+  linearTicks = (min, max, count) => { tickCalls.push({ min, max, count }); return appTicks(min, max, count); };
   const html = renderAllHelmersMpiChart(sliceSeries(s, start, end));
+  linearTicks = appTicks;
   const months = s.months.slice(start, end + 1);
   const lines = includedHelmers().map(line => ({ line, human: HUMAN_HELMERS.includes(line), color: HELMER_COLORS[line],
     points: months.map((month, j) => {
@@ -667,11 +678,22 @@ const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() =
     }) }));
   [selectedMetricKey, monthHelmerEnabled] = saved;
   return JSON.stringify({ metric: metric.key, fiveDay: metric.fiveDay === true, newest: s.months.length - 1, end,
-    defaultStart: DEFAULT_START_MONTH, months, lines, html });
+    defaultStart: DEFAULT_START_MONTH, months, lines, html, tickCalls });
 })()`, ctx6));
 const TICK_UNIT = { "": 1, K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
 const tickValue = label => { const m = /^([\d,.]+)([KMBT]?)$/.exec(label); return m ? Number(m[1].replace(/,/g, "")) * TICK_UNIT[m[2]] : NaN; };
-const styleOf = (style, prop) => (new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(style) || [])[1];
+// A mark's style property. Each mark read here sets the ones read (a dot's
+// and an error bar's stroke, its line's colour; an error bar's opacity), so
+// one without is an error (until 2026-11-04 a missing one read as undefined,
+// and the mark was reported as on no shown line's month, or at opacity
+// undefined).
+const styleOf = (style, prop, at) => {
+  const m = new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(style);
+  assert.ok(m !== null, `Replicata: render the MPI chart (${at}) and read the ${prop} of its mark styled ${JSON.stringify(style)} (section 6).
+Expectata: its style sets ${prop}: the dots and error bars are matched to their lines by their stroke colour, and an error bar's fade is its opacity.
+Resultata: no ${prop} in it.`);
+  return m[1];
+};
 const miles = v => Number.isFinite(v) ? Math.round(v).toLocaleString("en-US") : String(v);
 const fadeOf = w => 0.35 + 0.65 * w;
 const metricKeys = JSON.parse(vm.runInContext("JSON.stringify(METRIC_DEFS.map(m => m.key))", ctx6));
@@ -697,11 +719,11 @@ for (const key of metricKeys) for (const oneMonth of [false, true]) for (const w
   const lineOf = new Map(c.lines.map(l => [l.color, l.line]));
   const marks = {
     dot: [...c.html.matchAll(/<g opacity="([^"]*)">\s*<circle class="month-dot" cx="([^"]*)"[^>]*\sstyle="([^"]*)"[^>]*><\/circle>\s*<\/g>/g)]
-      .map(m => ({ opacity: m[1], x: Number(m[2]), color: styleOf(m[3], "stroke") })),
+      .map(m => ({ opacity: m[1], x: Number(m[2]), color: styleOf(m[3], "stroke", at) })),
     "error bar": [...c.html.matchAll(/<line class="month-err" x1="([^"]*)"[^>]*\sstyle="([^"]*)"[^>]*>/g)]
-      .map(m => ({ opacity: styleOf(m[2], "opacity"), x: Number(m[1]), color: styleOf(m[2], "stroke") })),
+      .map(m => ({ opacity: styleOf(m[2], "opacity", at), x: Number(m[1]), color: styleOf(m[2], "stroke", at) })),
   };
-  const drawn = { dot: (c.html.match(/class="month-dot"/g) || []).length, "error bar": (c.html.match(/class="month-err"/g) || []).length };
+  const drawn = { dot: [...c.html.matchAll(/class="month-dot"/g)].length, "error bar": [...c.html.matchAll(/class="month-err"/g)].length };
   const monthX = [...new Set(marks.dot.map(d => d.x))].sort((a, b) => a - b);
   if (lineOf.size !== c.lines.length || marks.dot.length !== drawn.dot || marks["error bar"].length !== drawn["error bar"]
     || monthX.length !== c.months.length) {
@@ -725,9 +747,16 @@ for (const key of metricKeys) for (const oneMonth of [false, true]) for (const w
     }
     for (const id of want.keys()) if (seen.get(id) !== 1) fadeProblems[kind].push(`${at}: ${id} has ${seen.get(id) || 0} ${kind}s, where one is due`);
   }
+  // The chart asks linearTicks for its ladder at least once while it renders
+  // (a failure below states the ladder for each count asked for, so with none
+  // it would state no ladder).
+  assert.ok(c.tickCalls.length > 0, `Replicata: render the MPI chart (${at}) with its linearTicks requests recorded (section 6).
+Expectata: at least one request, the ladder its y ticks come from.
+Resultata: none.`);
   // The rule's maximum, the largest median among the chart's dots (a fully
   // received month's counts as a partly received one's does), and the
-  // rendered tick ladder's top.
+  // rendered tick ladder's top. A failure states the ladder linearTicks gives
+  // for that median at each count the chart asked for (one, today).
   let top = { v: 0, id: "no line-month", w: null };
   for (const [id, p] of want) if (p.median > top.v) top = { v: p.median, id, w: p.w };
   const ticks = [...c.html.matchAll(/<text class="month-tick" x="[^"]*" y="[^"]*" text-anchor="end">([^<]*)<\/text>/g)]
@@ -736,7 +765,8 @@ for (const key of metricKeys) for (const oneMonth of [false, true]) for (const w
   const ladder = ticks.length >= 2 && ticks[0] === 0 && step > 0 && ticks.every((t, i) => Math.abs(t - i * step) <= 1e-9 * step);
   const due = ladder ? Math.ceil(top.v / step - 1e-9) * step : NaN;
   if (!(ladder && Math.abs(ticks.at(-1) - due) <= 1e-9 * step))
-    axisProblems.push(`${at}: y ticks ${ticks.map(miles).join(", ")}, where the top is due at ${miles(due)}: the first rung of that ${miles(step)} ladder at or above the largest median, ${top.id}'s ${miles(top.v)} (w ${top.w === null ? "none" : +top.w.toFixed(4)})`);
+    axisProblems.push(`${at}: y ticks ${ticks.map(miles).join(", ")} (ticks asked for up to ${c.tickCalls.map(t => miles(t.max)).join(", ")}), where the top is due at the first rung at or above the largest median, ${top.id}'s ${miles(top.v)} (w ${top.w === null ? "none" : +top.w.toFixed(4)}), on the ladder linearTicks gives for that median: ${[...new Set(c.tickCalls.map(t => t.count))]
+      .map(n => `linearTicks(0, ${miles(top.v)}, ${n}) gives ${Array.from(appLinearTicks(0, top.v, n)).map(miles).join(", ")}`).join("; ")}`);
   // The chart's "?" markers, from the same w: each month's largest 1 - w over
   // the shown lines' dots (a human cohort's is 0).
   qmarkCharts.push({ ...c, where, rule: c.fiveDay ? "1 - coverage_min (the receipt coverage alone)" : "1 - coverage x incident_coverage_min",

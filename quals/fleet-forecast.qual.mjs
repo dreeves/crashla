@@ -178,7 +178,7 @@ Resultata: ${s.lo90} / ${s.median} / ${s.hi90}.`,
   );
 }
 
-// --- 4. The forecast's qualitative shape is the one we drew ---
+// --- 4. The forecast's qualitative shape is the authored one ---
 
 const byKey = Object.fromEntries(stats.map(s => [s.key, s]));
 
@@ -307,11 +307,11 @@ Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
 // forecast's numbers, and its miles counted customer cars alone. Since
 // 2026-11-03 C's robotaxi part is the robotaxi lane's own A/B mix (the
 // section after the rides-corridor check below), so the distribution of C's
-// sum lies above the robotaxi lane at every percentile; the lanes drawn here
-// put each C component's two parts in one two-piece band through their
-// summed edges, whose low side is wider, so this checks the drawn lanes at
-// the three percentiles the charts print. (On the 2026-11-03 tables the drawn
-// all-HW4 lane falls under the robotaxi lane only below about the 3rd
+// sum lies at or above the robotaxi lane at every percentile; the lanes
+// drawn here put each C component's two parts in one two-piece band through
+// their summed edges, whose low side is wider, so this checks the drawn lanes
+// at the three percentiles the charts print. (On the 2026-11-03 tables the
+// drawn all-HW4 lane falls under the robotaxi lane only below about the 3rd
 // percentile: miles 2.8%, rides 2.7%, the fleet under 0.001%.)
 {
   const lanes = JSON.parse(vm.runInContext(`JSON.stringify(["fleet", "rides", "miles"].map(metric => ({metric,
@@ -355,6 +355,231 @@ Resultata: lanes ${JSON.stringify(Object.keys(q))}.`);
   }
   assert.ok(below.length === 0,
     `Replicata: build Tesla's robotaxi and all-HW4 lanes for the fleet, rides and miles forecasts and read each lane's quantiles at every whole percentile from the 5th to the 95th (bandMixtureQuantiles).
+Expectata: at each, the all-HW4 lane's at or above the robotaxi lane's.
+Resultata: ${below.join("; ")}.`);
+}
+
+// --- 4e. Every lane is drawn as its own density, and each with one peak is
+// drawn with one (2026-11-04) ---------------------------------------------
+// The distribution chart (renderFleetForecastChart) samples each lane's
+// density on one grid of points evenly spaced in ln x and draws the samples
+// as a stroke, a fill under it and a median marker. The chart's densities are
+// read by keeping the curves it builds (fleetDistributionCurves, wrapped for
+// this check and restored after it, as selectedGrowthMetric is to the metric
+// it held before the check), each lane's density wrapped to record the
+// points the chart asks it for; the grid is the points every lane is asked
+// for (each lane is also asked for its density at its median, for the scale
+// and its marker). Then, on every metric, for every lane:
+//   - the grid has as many points as each stroke, evenly spaced in ln x, and
+//     its two ends lie past every lane's 5th and 95th percentiles (the chart
+//     frames the lanes' 90% intervals, with a margin);
+//   - the lane's samples (the ys the chart keeps on each curve) are its own
+//     density, as fleetDistributionCurves built it, at the grid's points;
+//   - with x mapped evenly in ln x from the grid's first point at the frame's
+//     left edge to its last at the frame's right edge, and y linearly from 0
+//     at the frame's bottom to DENSITY_HEADROOM times the tallest of every
+//     lane's samples and densities at their medians at its top (the scale the
+//     chart's comment states), each point of the lane's stroke is its own
+//     density at its grid point, to the path's 0.01 rounding; its fill runs
+//     through its stroke's points, closed along the frame's bottom; and its
+//     median marker sits at its median and its density there, to the same
+//     rounding. Strokes, fills and markers come in the order of the lanes,
+//     each in its lane's colour.
+// So a fault in how the chart samples, scales or draws any lane turns this
+// red. Until later on 2026-11-04 4e read only the samples, matched each lane
+// to its stroke by their point counts, and caught only a fault that changed
+// the sign of a slope, so a stroke point drawn off its sample (the review's
+// mutant STROKEY, Waymo's fleet point 125 drawn at half its sample) passed
+// this qual and growth-charts, chart-targets, axis-ticks, fleet-timeseries
+// and density-charts; so did a sample off its density that left the slope's
+// signs as they were (WAYFLEET2, a 3% dent on the rising side of Waymo's
+// fleet lane), and any sample fault on a lane 4e did not read for shape
+// (Tesla's robotaxi lanes, and its rides and miles all-HW4 lanes).
+// And each lane whose density has one peak, by its construction or by this
+// qual's requirement, must rise then fall on the chart's grid: its slope
+// changes sign once, from up to down, a step under a millionth of the lane's
+// peak carrying the sign before it, as in section 3's count of sign changes
+// (which runs on each lane's own grid of 600 points). The lanes read for
+// shape: every lane drawn from one band (one two-piece band has one peak;
+// today Waymo's rides and miles lanes and Zoox's on all three metrics), and
+// the lanes ONE_PEAK_KEYS names: on the fleet metric those whose one peak
+// section 4 requires (Waymo's, from its base and plan bands, Zoox's and
+// Tesla's all-HW4 lane), and on rides and miles Tesla's all-HW4 lanes, built
+// as the fleet's (C on A and C on B since 2026-11-03), each with one peak at
+// every share of B in the lane from 0 to 0.95 on today's tables. Tesla's
+// robotaxi lanes (A and B) are not read for shape: they have the peaks A's
+// and B's bands and weights give, on today's tables (on a fine grid) a second
+// hump on the fleet metric for B's share of the lane (0.16 today) from about
+// 0.34 to 0.63 and on miles from about 0.38 to 0.68, none on rides at any
+// share up to 0.95, and nothing requires their shape since section 4
+// stopped requiring a second hump of the fleet's robotaxi lane on 2026-10-29
+// (the human's re-pin, B then a shoulder). On 2026-11-04 this first required
+// one sign change of every drawn lane; later that day it read only the lanes
+// drawn from one band, which left out Waymo's fleet lane, then those and the
+// fleet lanes section 4 requires one peak of, and then, with the drawing
+// checks above, Tesla's rides and miles all-HW4 lanes too.
+{
+  const drawn = JSON.parse(vm.runInContext(`JSON.stringify((() => {
+    const build = fleetDistributionCurves;
+    const shown = selectedGrowthMetric;
+    let built = null;
+    fleetDistributionCurves = metric => (built = build(metric).map(c => {
+      const own = c.densityFn, calls = [];
+      return {...c, own, calls, densityFn: x => { calls.push(x); return own(x); }};
+    }));
+    try {
+      return ["fleet", "rides", "miles"].map(metric => {
+        selectedGrowthMetric = metric;
+        built = null;
+        const svg = renderFleetForecastChart();
+        return {metric, svg, lanes: built?.map(c => ({key: c.key, label: c.legendLabel, color: c.color,
+          bands: c.components.length, median: c.median, lo90: c.lo90, hi90: c.hi90, ys: c.ys,
+          calls: c.calls, ownAtCalls: c.calls.map(x => c.own(x)), ownAtMedian: c.own(c.median)}))};
+      });
+    } finally {
+      fleetDistributionCurves = build;
+      selectedGrowthMetric = shown;
+    }
+  })())`, ctx));
+  const HEADROOM = vm.runInContext("DENSITY_HEADROOM", ctx);
+  // toFixed(2)'s rounding, plus float slack.
+  const ROUNDING = 0.005 + 1e-9;
+  const near = (a, b) => Math.abs(a - b) <= ROUNDING;
+  const num = v => Number(v.toFixed(4));
+  for (const {metric, svg, lanes} of drawn) {
+    const clip = (svg.match(/<clipPath id="fleet-clip"><rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/) || []).slice(1).map(Number);
+    const strokes = [...svg.matchAll(/<path d="(M [^"]*)" style="stroke:([^;"]*)[;"]/g)]
+      .map(m => ({d: m[1], color: m[2], points: m[1].slice(2).split(" L ").map(p => p.split(" ").map(Number))}));
+    const fills = [...svg.matchAll(/<path d="(M [^"]*)" style="fill:([^;"]*)[;"]/g)].map(m => ({d: m[1], color: m[2]}));
+    const markers = [...svg.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="[\d.]+" class="month-dot" style="fill:([^"]*)"/g)]
+      .map(m => ({cx: Number(m[1]), cy: Number(m[2]), color: m[3]}));
+    const counts = {lanes: lanes?.length, strokes: strokes.length, fills: fills.length, markers: markers.length};
+    assert.ok(Array.isArray(lanes) && lanes.length > 0 && clip.length === 4
+      && [strokes, fills, markers].every(marks => marks.length === lanes.length),
+      `Replicata: render the ${metric} distribution chart (renderFleetForecastChart), keep the curves it builds through fleetDistributionCurves, and read its frame (the fleet-clip rectangle), strokes, fills and median markers.
+Expectata: a frame, and one stroke, one fill and one marker per curve.
+Resultata: frame ${JSON.stringify(clip)}, counts ${JSON.stringify(counts)}.`);
+    const [left, top, width, height] = clip, bottom = top + height;
+    // The grid: the points every lane's density was asked for, in the order
+    // the first lane was asked for them.
+    const asked = lanes.map(l => new Set(l.calls));
+    const grid = [...new Set(lanes[0].calls.filter(x => asked.every(s => s.has(x))))];
+    const n = grid.length, span = Math.log(grid[n - 1]) - Math.log(grid[0]), step = span / (n - 1);
+    const uneven = grid.slice(1).map((x, i) => i).filter(i => !(Math.abs(Math.log(grid[i + 1]) - Math.log(grid[i]) - step) <= 1e-9 * step));
+    const unframed = lanes.filter(l => !(grid[0] < l.lo90 && l.hi90 < grid[n - 1]));
+    // Not finite: a sample, or the lane's own density at a point it was asked for or at its median.
+    const nonFinite = lanes.filter(l => ![...(l.ys ?? [NaN]), ...l.ownAtCalls, l.ownAtMedian].every(Number.isFinite));
+    assert.ok(n > 1 && strokes.every(s => s.points.length === n) && lanes.every(l => l.ys?.length === n)
+      && uneven.length === 0 && unframed.length === 0 && nonFinite.length === 0,
+      `Replicata: render the ${metric} distribution chart (renderFleetForecastChart) and record the points it asks each lane's density for.
+Expectata: a grid (the points every lane is asked for) with as many points as each stroke and each lane's samples, evenly spaced in ln x, its ends past every lane's 5th and 95th percentiles; every sample, and each lane's own density at each point it was asked for, finite.
+Resultata: ${n} grid points from ${grid[0]} to ${grid[n - 1]}; stroke points ${JSON.stringify(strokes.map(s => s.points.length))}; samples ${JSON.stringify(lanes.map(l => l.ys?.length))}; uneven steps after points ${JSON.stringify(uneven.slice(0, 10))}; lanes whose 5th-95th percentiles reach past the grid ${JSON.stringify(unframed.map(l => [l.label, l.lo90, l.hi90]))}; lanes with a value not finite ${JSON.stringify(nonFinite.map(l => l.label))}.`);
+    // Each lane's own density at the grid's points, from its recorded calls.
+    const own = lanes.map(l => grid.map(x => l.ownAtCalls[l.calls.indexOf(x)]));
+    const yMax = Math.max(...lanes.flatMap((l, i) => [...own[i], l.ownAtMedian]));
+    const mapX = x => left + (Math.log(x) - Math.log(grid[0])) / span * width;
+    const mapY = y => top + height * (1 - y / (yMax * HEADROOM));
+    const problems = [];
+    lanes.forEach((l, i) => {
+      const peak = Math.max(...own[i]);
+      const offSamples = own[i].map((y, j) => j).filter(j => !(Math.abs(l.ys[j] - own[i][j]) <= 1e-9 * Math.abs(own[i][j]) + 1e-15 * peak));
+      if (offSamples.length > 0) problems.push(`${l.label}: samples off its density at grid points ${JSON.stringify(offSamples.slice(0, 5))} (first: ${l.ys[offSamples[0]]} against ${own[i][offSamples[0]]})`);
+      const stroke = strokes[i], fill = fills[i], marker = markers[i];
+      for (const [what, mark] of [["stroke", stroke], ["fill", fill], ["marker", marker]]) {
+        if (mark.color !== l.color) problems.push(`${l.label}: ${what} ${i + 1} in ${mark.color}, the lane's colour ${l.color}`);
+      }
+      const offPoints = stroke.points.map((p, j) => j).filter(j => !(near(stroke.points[j][0], mapX(grid[j])) && near(stroke.points[j][1], mapY(own[i][j]))));
+      if (offPoints.length > 0) {
+        const j = offPoints[0];
+        problems.push(`${l.label}: stroke points ${JSON.stringify(offPoints.slice(0, 5))} off the lane's density (first: (${stroke.points[j].join(", ")}) against (${num(mapX(grid[j]))}, ${num(mapY(own[i][j]))}))`);
+      }
+      const wantFill = `M ${stroke.points[0][0].toFixed(2)} ${bottom.toFixed(2)} L ${stroke.d.slice(2)} L ${stroke.points[n - 1][0].toFixed(2)} ${bottom.toFixed(2)} Z`;
+      if (fill.d !== wantFill) problems.push(`${l.label}: its fill is not its stroke's points closed along the frame's bottom (y ${bottom})`);
+      if (!(near(marker.cx, mapX(l.median)) && near(marker.cy, mapY(l.ownAtMedian)))) {
+        problems.push(`${l.label}: median marker at (${marker.cx}, ${marker.cy}) against its median and its density there (${num(mapX(l.median))}, ${num(mapY(l.ownAtMedian))})`);
+      }
+    });
+    assert.ok(problems.length === 0,
+      `Replicata: render the ${metric} distribution chart (renderFleetForecastChart), keep the curves it builds and record the points it asks each lane's density for, then compare each lane's samples, stroke, fill and median marker with its own density.
+Expectata: for every lane, its samples are its own density at the grid's points, and, with x evenly in ln x from the grid's first point at the frame's left edge (${left}) to its last at the right edge (${left + width}) and y linear from 0 at the frame's bottom (${bottom}) to DENSITY_HEADROOM (${HEADROOM}) times the tallest sample or median density of any lane (${yMax}) at its top (${top}), its stroke's points are its density at the grid points, its fill runs through them closed along the bottom, and its median marker sits at its median and its density there, each to the path's 0.01 rounding; strokes, fills and markers in the order of the lanes and in each lane's colour.
+Resultata: ${problems.join("; ")}.`);
+  }
+  // The slope's runs on the grid: a new run starts where a step's sign
+  // differs from the run before it; a step under a millionth of the lane's
+  // peak carries the run before it.
+  const slopeRuns = ys => {
+    const peak = Math.max(...ys);
+    const runs = [];
+    for (let i = 1; i < ys.length; i++) {
+      const step = ys[i] - ys[i - 1];
+      if (Math.abs(step) < peak * 1e-6) continue;
+      if (runs.length === 0 || runs.at(-1).sign !== Math.sign(step)) runs.push({sign: Math.sign(step), from: i});
+    }
+    return runs;
+  };
+  const SLOPE = {"1": "up", "-1": "down", "0": "flat"};
+  // The lanes drawn from several bands that must have one peak, by metric:
+  // on the fleet metric those section 4 requires one sign change of (its
+  // Waymo, Zoox and all-HW4 asserts); on rides and miles Tesla's all-HW4
+  // lanes, built as the fleet's.
+  const ONE_PEAK_KEYS = {fleet: ["Waymo", "Zoox", "hw4"], rides: ["hw4"], miles: ["hw4"]};
+  const onePeak = l => l.bands === 1 || ONE_PEAK_KEYS[l.metric].includes(l.key);
+  const all = drawn.flatMap(({metric, lanes}) => lanes.map(lane => ({metric, key: lane.key, label: lane.label, bands: lane.bands, ys: lane.ys})));
+  const read = all.filter(onePeak).map(l => ({...l, points: l.ys.length, runs: slopeRuns(l.ys)}));
+  const skipped = all.filter(l => !onePeak(l));
+  // Each lane ONE_PEAK_KEYS names is drawn (rule 12: a renamed key or metric
+  // would leave it unread and pass silently); each metric so has a lane read.
+  const unread = Object.entries(ONE_PEAK_KEYS).flatMap(([metric, keys]) => keys
+    .filter(key => !read.some(l => l.metric === metric && l.key === key)).map(key => `${metric}: no lane keyed ${key}`));
+  assert.ok(unread.length === 0,
+    `Replicata: render the growth section's distribution chart (renderFleetForecastChart) for the fleet, rides and miles metrics, and list the drawn lanes read for shape (those drawn from one band, and those ONE_PEAK_KEYS names: ${JSON.stringify(ONE_PEAK_KEYS)}).
+Expectata: on each metric, a lane keyed each of its ONE_PEAK_KEYS.
+Resultata: ${unread.join("; ")} (the lanes drawn, by key, and their band counts: ${all.map(l => `${l.metric} ${l.key} ${l.bands}`).join(", ")}).`);
+  const failing = read.filter(l => !(l.runs.length === 2 && l.runs[0].sign === 1 && l.runs[1].sign === -1));
+  assert.ok(failing.length === 0,
+    `Replicata: render the growth section's distribution chart (renderFleetForecastChart) for the fleet, rides and miles metrics, and read each drawn lane's density on the chart's grid (the curves the chart builds).
+Expectata: each of the ${read.length} lanes whose density has one peak (${read.map(l => `${l.metric} ${l.label}`).join(", ")}: those drawn from one band, and those ONE_PEAK_KEYS names) rises then falls on that grid: its slope changes sign once, from up to down, a step under a millionth of the lane's peak carrying the sign before it. The ${skipped.length} other lanes (${skipped.map(l => `${l.metric} ${l.label}`).join(", ")}), each drawn from several bands and named nowhere in ONE_PEAK_KEYS, are not read for shape.
+Resultata: ${failing.map(l => `${l.metric} ${l.label}: ${l.runs.map(r => `${SLOPE[r.sign]} from grid point ${r.from}`).join(", ")} (of ${l.points})`).join("; ")}.`);
+}
+
+// --- 4f. 4d's rule from the 4th percentile to the 99.9th (2026-11-04) ------
+// 4d reads Tesla's two lanes at the whole percentiles of the charts' 90%
+// interval. The drawn all-HW4 lane departs from the rule 4d states (C's curve
+// never below the robotaxi curve) only in the low tail (crashla.js's comment
+// above TESLA_ROBOTAXI_SCENARIOS): on the 2026-11-03 tables it falls under
+// the robotaxi lane below about the 3rd percentile (miles 2.8%, rides 2.7%,
+// the fleet under 0.001%) and sits at or above it everywhere above that. So
+// at every tenth of a percentile from the 4th to the 99.9th it must sit at or
+// above the robotaxi lane, by the quantile function the charts use
+// (bandMixtureQuantiles): a crossing between whole percentiles, one past the
+// 95th, or the low tail's crossing moving up past the 4th turns this red
+// where 4d stays green.
+{
+  const ps = Array.from({length: 960}, (_, i) => (40 + i) / 1000);
+  const lanes = JSON.parse(vm.runInContext(`JSON.stringify(["fleet", "rides", "miles"].map(metric => ({metric,
+    q: Object.fromEntries(fleetDistributionCurves(metric).filter(c => c.historyHelmer === "Tesla")
+      .map(c => [c.key, bandMixtureQuantiles(c.components, ${JSON.stringify(ps)})]))})))`, ctx));
+  const pct = p => `${(100 * p).toFixed(1)}%`;
+  // Runs of consecutive grid points, printed as their spans of percentiles.
+  const spans = idx => idx.reduce((runs, i) => {
+    if (runs.length > 0 && runs.at(-1)[1] === i - 1) runs.at(-1)[1] = i;
+    else runs.push([i, i]);
+    return runs;
+  }, []).map(([a, b]) => `${pct(ps[a])} to ${pct(ps[b])}`).join(", ");
+  const below = [];
+  for (const {metric, q} of lanes) {
+    assert.ok(Array.isArray(q.hw4) && q.hw4.length === ps.length && Array.isArray(q.robotaxi) && q.robotaxi.length === ps.length,
+      `Replicata: build Tesla's ${metric} forecast lanes and read their quantiles at ${ps.length} percentiles (bandMixtureQuantiles).
+Expectata: a robotaxi lane and an all-HW4 lane, ${ps.length} quantiles each.
+Resultata: quantiles per lane ${JSON.stringify(Object.fromEntries(Object.entries(q).map(([key, v]) => [key, v.length])))}.`);
+    const under = ps.map((_, i) => i).filter(i => !(q.hw4[i] >= q.robotaxi[i]));
+    if (under.length > 0) {
+      const farthest = under.reduce((a, i) => (q.hw4[i] / q.robotaxi[i] < q.hw4[a] / q.robotaxi[a] ? i : a));
+      below.push(`${metric}: under at ${under.length} of ${ps.length} percentiles (${spans(under)}), farthest at ${pct(ps[farthest])}: all-HW4 ${Math.round(q.hw4[farthest]).toLocaleString("en-US")} against robotaxi ${Math.round(q.robotaxi[farthest]).toLocaleString("en-US")}`);
+    }
+  }
+  assert.ok(below.length === 0,
+    `Replicata: build Tesla's robotaxi and all-HW4 lanes for the fleet, rides and miles forecasts and read each lane's quantiles at every tenth of a percentile from the 4th to the 99.9th (bandMixtureQuantiles).
 Expectata: at each, the all-HW4 lane's at or above the robotaxi lane's.
 Resultata: ${below.join("; ")}.`);
 }
@@ -455,7 +680,7 @@ Expectata: immediate throw (the weights are a hard invariant).
 Resultata: no throw.`,
 );
 
-console.log("qual pass: fleet forecast draws four normalized curves; Tesla split into its robotaxi and all-HW4-ADS scopes");
+console.log("qual pass: fleet forecast draws four normalized curves; Tesla split into its robotaxi and all-HW4-ADS scopes; on every metric every lane is drawn as its own density on the chart's grid and scale (its samples, stroke, fill and median marker), and every lane with one peak (each drawn from one band, the fleet's Waymo lane and every all-HW4 lane) rises then falls on that grid; Tesla's all-HW4 lane sits at or above its robotaxi lane from the 4th percentile to the 99.9th");
 
 // --- Tesla's rides scenarios are the miles scenarios over the ride corridor -
 // RIDES_FORECAST Tesla A stayed at the 2026-07-22 miles figures when

@@ -28,7 +28,13 @@
 //     of the five AI srcs is some hint's;
 //  6. no fault line's AI text and no card hint's tooltip opens with the label
 //     twice (an AI src or a reasoning whose own text opened with it: the
-//     AV-cities fatality src's did until the human dropped it, 2026-11-03).
+//     AV-cities fatality src's did until the human dropped it, 2026-11-03);
+//  7. no tooltip on the page (every data-tip) and no element's name
+//     (aria-label) holds the label twice in a row anywhere in it (added
+//     2026-11-04, when the five-day line in the Effective VMT tooltip of each
+//     ADS line's card began taking its label from AI_TEXT_PREFIX: the label
+//     typed back into that line's text would read twice, mid-tooltip, where
+//     check 6 does not look).
 // No words are checked (no wording pins, 2026-10-28): the reasoning and the
 // srcs are compared with the app's own, and the label and the line's label
 // are read from the app.
@@ -123,21 +129,29 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     }
     const shown = new Set(hints.map(h => h.getAttribute("data-tip")));
     for (const b of bands.filter(x => x.flagged)) if (!shown.has(tipOf(b))) bad.push(`${b.who}: its AI src, labelled, is no card hint's tooltip`);
-    return { rows: rows.length, hints: hints.length, aiHints: hints.filter(h => h.getAttribute("data-tip").startsWith(prefix)).length, flagged: bands.filter(b => b.flagged).length, bad };
+    // 7. The label twice in a row in any tooltip or name on the page.
+    const texts = [...document.querySelectorAll("[data-tip]")].map(e => ({ attr: "data-tip", v: e.getAttribute("data-tip") }))
+      .concat([...document.querySelectorAll("[aria-label]")].map(e => ({ attr: "aria-label", v: e.getAttribute("aria-label") })));
+    for (const t of texts.filter(x => x.v.includes(twice))) {
+      const at = t.v.indexOf(twice);
+      bad.push(`an element's ${t.attr} holds the AI label twice in a row: ${JSON.stringify(t.v.slice(Math.max(0, at - 40), at + twice.length + 30))}`);
+    }
+    return { rows: rows.length, hints: hints.length, aiHints: hints.filter(h => h.getAttribute("data-tip").startsWith(prefix)).length, flagged: bands.filter(b => b.flagged).length,
+      texts: texts.length, labelled: texts.filter(x => x.v.includes(prefix)).length, bad };
   }, MARKUP);
   if (r.rows < 100) problems.push(`[${engine}] ${r.rows} incident rows; want the default view's table (over 1,000)`);
   if (r.hints === 0 || r.flagged === 0) problems.push(`[${engine}] ${r.hints} card hints and ${r.flagged} flagged srcs; want some of each`);
   for (const b of r.bad) problems.push(`[${engine}] ${b}`);
   for (const e of page.errors) problems.push(`[${engine}] page error: ${e}`);
-  counts.push(`${engine} ${r.rows} rows, ${r.hints} hints (${r.aiHints} labelled)`);
+  counts.push(`${engine} ${r.rows} rows, ${r.hints} hints (${r.aiHints} labelled), ${r.texts} tooltips and names (${r.labelled} holding the label)`);
   await browser.close();
 }
 await server.close();
 
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: load the page in Chromium, Firefox and WebKit; read every incident row's fault line (.narrative-fault, shown under the opened narrative), its markup, computed colours and decorations, and its fault cell's tooltip; render the table once with markup in the first row's reasoning; read every card [?] hint's tooltip and name.
-Expectata: each fault line holds exactly one .ai-text element, holding AI_TEXT_PREFIX and the incident's reasoning and nothing else of the line; the line's text is the label, a space and the fault cell's tooltip; the reasoning is drawn in the AI ink with a dotted underline and the line's other runs are not, under no dotted underline; markup in a reasoning renders as text inside the one .ai-text element, and the table is as before once restored; each card hint's tooltip and name are a band's src, AI_TEXT_PREFIX before it exactly when the band carries srcAiText, and each AI src is some hint's; no tooltip or fault line opens with the label twice; no page errors.
+  `Replicata: load the page in Chromium, Firefox and WebKit; read every incident row's fault line (.narrative-fault, shown under the opened narrative), its markup, computed colours and decorations, and its fault cell's tooltip; render the table once with markup in the first row's reasoning; read every card [?] hint's tooltip and name; read every tooltip (data-tip) and every element's name (aria-label) on the page.
+Expectata: each fault line holds exactly one .ai-text element, holding AI_TEXT_PREFIX and the incident's reasoning and nothing else of the line; the line's text is the label, a space and the fault cell's tooltip; the reasoning is drawn in the AI ink with a dotted underline and the line's other runs are not, under no dotted underline; markup in a reasoning renders as text inside the one .ai-text element, and the table is as before once restored; each card hint's tooltip and name are a band's src, AI_TEXT_PREFIX before it exactly when the band carries srcAiText, and each AI src is some hint's; no tooltip or fault line opens with the label twice, and no tooltip or name on the page holds it twice in a row anywhere; no page errors.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 8).join("\n")}`);
-console.log(`qual pass: ${counts.join("; ")}; every fault line's reasoning renders as labelled AI text (the AI ink, a dotted underline) and its tooltip holds the same label; card hints label exactly the AI srcs; markup in a reasoning renders escaped`);
+console.log(`qual pass: ${counts.join("; ")}; every fault line's reasoning renders as labelled AI text (the AI ink, a dotted underline) and its tooltip holds the same label; card hints label exactly the AI srcs; markup in a reasoning renders escaped; no tooltip or name holds the label twice in a row`);

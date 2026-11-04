@@ -1876,10 +1876,13 @@ const PRE_SERIES_OFFSET = {
 };
 // PRE_SERIES_OFFSET checked against the master at load (init runs it right
 // after checkGhostVmtRows; since 2026-11-03, rule 12): one entry for each line
-// the master holds; each entry an object (since 2026-11-04: a null one threw
-// a TypeError naming no line), its range a finite number of miles, 0 or more,
-// and its month "" with a range of 0 and a YYYY-MM month with a range above 0
-// (the range filter below would skip a NaN or negative range silently); and
+// the master holds; each entry an object (checked since 2026-11-04; until then
+// a null one threw a TypeError naming no line), its range a finite number of
+// miles, 0 or more,
+// and its month "" with a range of 0 and a YYYY-MM month string with a range
+// above 0 (the range filter below would skip a NaN or negative range
+// silently; the regex converts its argument to a string, so until 2026-11-04
+// an array or String object holding a month passed it); and
 // each line with a range starting it at its first fully knotted month, the
 // month after the last one whose cumulative band is not strictly inside the
 // running sums of the monthly bands from the series' zero
@@ -1893,7 +1896,8 @@ function checkPreSeriesOffsets() {
   assert(JSON.stringify(entries) === JSON.stringify(lines),
     "PRE_SERIES_OFFSET must have one entry for each line with VMT rows", {entries, lines});
   // String() names a value JSON cannot write (NaN, Infinity, a missing one);
-  // typeof, the type String() hides (a string of digits for a range).
+  // typeof, the type String() hides (a string of digits for a range, an array
+  // holding a month for a month).
   for (const [helmer, entry] of Object.entries(PRE_SERIES_OFFSET)) {
     assert(entry !== null && typeof entry === "object",
       "a PRE_SERIES_OFFSET entry must be an object with a range and a month", {helmer, entry: String(entry)});
@@ -1901,9 +1905,9 @@ function checkPreSeriesOffsets() {
     assert(Number.isFinite(range) && range >= 0,
       "a PRE_SERIES_OFFSET range must be a finite number of miles, 0 or more",
       {helmer, range: String(range), type: typeof range});
-    assert(range === 0 ? from === "" : /^\d{4}-(?:0[1-9]|1[0-2])$/.test(from),
+    assert(range === 0 ? from === "" : typeof from === "string" && /^\d{4}-(?:0[1-9]|1[0-2])$/.test(from),
       "a PRE_SERIES_OFFSET month must be \"\" with a range of 0 and a YYYY-MM month with a range above 0",
-      {helmer, range, from: String(from)});
+      {helmer, range, from: String(from), type: typeof from});
   }
   for (const [helmer, offset] of Object.entries(PRE_SERIES_OFFSET).filter(entry => entry[1].range > 0)) {
     const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
@@ -3277,16 +3281,19 @@ function logUniformGrid(lo, hi, n) {
 //      2026-11-03 C carried A's robotaxi ramp alone). The rule that C's lane
 //      sits at or above the robotaxi lane's at the 5th percentile, the median
 //      and the 95th percentile (the human's decision, 2026-10-30;
-//      fleet-forecast.qual.mjs) follows from that definition: C's robotaxi
-//      drives as the robotaxi lane does, with the eyes-off miles on top, so
-//      the distribution of C's sum sits at or above the robotaxi lane at
-//      every percentile. The page draws each C component as one two-piece
-//      band through its two parts' summed edges (not the distribution of
-//      their sum), whose low side is wider in ln x than its robotaxi part's,
-//      so below about the 3rd percentile (miles 2.8%, rides 2.7%; the fleet
-//      only under 0.001%) the drawn lane's quantiles fall under the robotaxi
-//      lane's (until 2026-11-03, with C on A alone, miles 2.9% and rides
-//      3.5%).
+//      fleet-forecast.qual.mjs) follows from that definition for the
+//      distribution of C's sum: C's robotaxi part is distributed as the
+//      robotaxi lane is, with the eyes-off miles on top, so that distribution
+//      sits at or above the robotaxi lane at every percentile. The drawn
+//      lanes, each C component one two-piece band through its two parts'
+//      summed edges (not the distribution of their sum), hold the rule by a
+//      margin, not by that argument: a drawn lane sits at or above the
+//      robotaxi lane above about the 3rd percentile, but such a band's low
+//      side is wider in ln x than its robotaxi part's, so below that point
+//      (miles 2.8%, rides 2.7%; the fleet only under 0.001%) the drawn lane's
+//      quantiles fall under the robotaxi lane's (with C on A alone, from
+//      2026-10-31 to 2026-11-03, miles 2.9% and rides 3.4% before the
+//      2026-11-02 refit and 3.5% after it).
 // Tesla's robotaxi fleet is cars driving on a typical day, from miles (the
 // human's choice, 2026-10-29; FLEET_HISTORY), so A and B are authored as daily
 // robotaxi miles on the forecast date (TESLA_ROBOTAXI_SCENARIOS): the fleet
@@ -4056,9 +4063,10 @@ function growthMetricSpec(key) {
   const specs = {
     fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipAt: wholeAtSigFigs,
       // yMax 1,000,000, the decade above the largest value drawn (the all-HW4
-      // lane's 95th percentile, ~324,000 since 2026-11-03, ~317,000 before
-      // C's robotaxi part became the A/B mix; decision 23(g) of the 2026-11-01
-      // open questions; quals/fleet-timeseries.qual.mjs). 4,000,000 until
+      // lane's 95th percentile, ~324,000 since C's robotaxi part became the
+      // A/B mix on 2026-11-03, ~317,000 on the 2026-11-02 refit's tables and
+      // ~358,000 from 2026-10-31 until that refit; decision 23(g) of the
+      // 2026-11-01 open questions; quals/fleet-timeseries.qual.mjs). 4,000,000 until
       // 2026-11-02, set when that lane counted distinct customer cars (its
       // 95th percentile 2.86M for Jan 1, 2027, 1.92M for Jan 1, 2028 on
       // 2026-10-29), before it counted car-equivalents (2026-10-31).
@@ -4525,7 +4533,7 @@ function renderMpiSummaryCards(series) {
   const rows = windowSummaryRows(series);
   return rows.map(row => {
     const fiveDayLabels = METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ");
-    const fiveDayLine = est => `Claude: Five-day-tracked VMT denominator (${fiveDayLabels}: raw VMT times the data-through month's receipt coverage): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
+    const fiveDayLine = est => `${AI_TEXT_PREFIX}Five-day-tracked VMT denominator (${fiveDayLabels}: raw VMT times the data-through month's receipt coverage): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
     // The tooltip states the denominators only; the per-month VMT rationales
     // are in the sanity section's VMT-sources table (embedded here they made
     // the tooltip 7,000-8,700px tall).
@@ -5154,9 +5162,10 @@ function faultColor(frac) {
 
 // The label that opens AI text where the page cannot draw it as AI text: a
 // tooltip, plain text on a dark box. It is the human's own label for AI text
-// in plain contexts (the card tooltip's five-day line opens with it, and the
-// AV-cities fatality src's text did from 2026-08-31), chosen for tooltips on
-// 2026-11-03.
+// in plain contexts (the card tooltip's five-day line, renderMpiSummaryCards'
+// fiveDayLine, opens with it: written out in its text from 2026-08-31, this
+// constant since 2026-11-04; the AV-cities fatality src's text did from
+// 2026-08-31 until 2026-11-03), chosen for tooltips on 2026-11-03.
 const AI_TEXT_PREFIX = "Claude: ";
 
 // A human band's src as a tooltip shows it: an AI's src (srcAiText) opens
@@ -6380,7 +6389,7 @@ Claude notes:
   // this page link, p. 2 on 30270-13817 and p. 9 on relying on the police
   // crash report (pp. 2 and 8 in the Sep-24 edition).
   // The AV SSI+ numerator stays SGO-alleged: the human's open method call.)
-  // DONE (open question 27): "and one (30270-13817) still awaits a police crash report" reads as a fourth SGO "Serious" filing. It isn't one: Waymo filed it with severity "Unknown", and the page counts it as serious from the police General Offense Report quoted in Waymo's release notes (the other driver "was treated at a hospital for injuries described as life threatening"), while Waymo waits for the police crash report. waymo-reconciliation.qual requires the note to name 30270-8968, -10112, -15547 and -13817 in one span.
+  // DONE (open question 27): "and one (30270-13817) still awaits a police crash report" reads as a fourth SGO "Serious" filing. It isn't one: Waymo filed it with severity "Unknown", and the page counts it as serious from the police General Offense Report quoted in Waymo's release notes (the other driver "was treated at a hospital for injuries described as life threatening"), while Waymo waits for the police crash report. Until 2026-11-03 waymo-reconciliation.qual required the note to name 30270-8968, -10112, -15547 and -13817 in one span; the human's edit that day cut the IDs from the note, and no qual checks its wording.
   const waySsiNote = `The serious-injury+ ratio is far from 1 because, for one thing, the page counts the severity alleged in the SGO filing, while Waymo counts police reports.`;
   sections.push(`
 <h3>Waymo cross-check</h3>
