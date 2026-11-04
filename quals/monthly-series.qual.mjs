@@ -487,7 +487,7 @@ const clampedBars = vm.runInContext(`
 assert.ok(
   clampedBars.dotCount > 0 && clampedBars.barCount === clampedBars.dotCount,
   `Replicata: render the at-fault MPI chart with Waymo deselected (Tesla + HumansAV only).
-Expectata: exactly one error bar per rendered dot, including Tesla's k=0 months above the y-range.
+Expectata: exactly one error bar per rendered dot, Tesla's k=0 months included (their dots sit on the axis; a bar may run past its top, cut at the plot's edge).
 Resultata: ${clampedBars.barCount} bars for ${clampedBars.dotCount} dots.`,
 );
 assert.equal(

@@ -633,9 +633,9 @@ Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
 // a field crashla.js dropped that day, where that was finite (its top
 // effective miles over its incident count; a human cohort's band high edge),
 // and a fault mass or fatality share under 1 is finite too, at up to 20
-// times the month's miles: the default at-fault-injury chart topped out at
-// 500M on Waymo 2026-05's 0.05, its 48 dots in the bottom 15% of the plot,
-// where 80M is due. And until 0250d85
+// times its top effective miles: the default at-fault-injury chart topped
+// out at 500M on Waymo 2026-05's 0.05 (20,544,572 / 0.05 = 411M), its 48
+// dots in the bottom 15% of the plot, where 80M is due. And until 0250d85
 // (2026-11-02) a five-day metric's partly received month counted as fully
 // received there, so the one-month 2026-09 airbag chart topped out at 8M
 // where 2M is due.

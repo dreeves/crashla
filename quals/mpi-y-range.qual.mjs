@@ -16,17 +16,22 @@ import { appScript, dataScript } from "./load-app.mjs";
 // Resultata, until 2026-11-03: the axis topped out at 500M, all 48 dots in
 // the bottom 15% of the plot. A fully received month lifted the axis to its
 // top effective miles over its incident count wherever that was finite, and
-// Waymo 2026-05's at-fault injury count is a fault mass of 0.05, so its 20x
-// the month's miles set the top. Only quals/monthly-arrival-lag.qual.mjs
-// section 6 checked the rule (40 charts, restated the same day); this qual
-// checks it, and where each mark is drawn against it, in every slider window.
+// Waymo 2026-05's at-fault injury count is a fault mass of 0.05, so 20 times
+// its top effective miles (20,544,572 / 0.05 = 411M) set the top. Only
+// quals/monthly-arrival-lag.qual.mjs section 6 checked the rule (40 charts,
+// restated the same day); this qual checks it, and where each mark is drawn
+// against it, in every slider window.
 //
 // On every metric, in every slider window (start <= end, 2,016 windows) with
 // the default lines, and with every line shown in every window ending at the
 // data-through month and every one-month window (a chart with no line shown,
 // checked in two windows, has its axis labelled 0 alone and no marks):
 //   1. the y ticks are 0 and evenly spaced rungs, the top one the first at or
-//      above the largest posterior median among the chart's dots;
+//      above the largest posterior median among the chart's dots, and (1b)
+//      they are the ticks linearTicks gives for that median at the count the
+//      chart asks for, so the largest median sets the ladder's step as well
+//      as its top (a range pushed from a largest median of 56.4M to 57M keeps
+//      the 60M top but draws it by 20M where 10M is due);
 //   2. every shown line-month with a posterior has one tooltip target, one
 //      dot and one error bar, and every dot sits at its median's position on
 //      the rendered axis, unclamped (cy), its target at the same position;
@@ -58,15 +63,24 @@ const app = JSON.parse(run(`JSON.stringify({
   months: yRangeSeries.months, metrics: METRIC_DEFS.map(m => m.key), levels: CI_FAN_LEVELS.length,
   lines: ALL_HELMERS, defaultLines: ALL_HELMERS.filter(h => monthHelmerEnabled[h]), defaultStart: DEFAULT_START_MONTH,
   colors: HELMER_COLORS, prefix: Object.fromEntries(ALL_HELMERS.map(h => [h, seriesMarkName(h, "")])) })`));
-// One chart: its markup and, for each shown line, each month of the window
-// with a posterior for the metric (its index in the window, median, count and
-// credible intervals, narrowest first, as CI_FAN_LEVELS orders them).
+// The chart's tick requests, recorded as it renders (linearTicks(min, max,
+// count)): check 1b takes the tick count from them, so this qual follows the
+// chart's count rather than restating it.
+run(`var yRangeTickCalls = [], yRangeLinearTicks = linearTicks;
+  linearTicks = (min, max, count) => { yRangeTickCalls.push({ min, max, count }); return yRangeLinearTicks(min, max, count); };`);
+const appLinearTicks = run("yRangeLinearTicks");
+// One chart: its markup, its tick requests and, for each shown line, each
+// month of the window with a posterior for the metric (its index in the
+// window, median, count and credible intervals, narrowest first, as
+// CI_FAN_LEVELS orders them).
 const chartOf = run(`(key, a, b, lines) => {
   const saved = [selectedMetricKey, monthHelmerEnabled];
   selectedMetricKey = key;
   monthHelmerEnabled = Object.fromEntries(ALL_HELMERS.map(h => [h, lines.includes(h)]));
   const sl = sliceSeries(yRangeSeries, a, b);
+  yRangeTickCalls = [];
   const html = renderAllHelmersMpiChart(sl);
+  const tickCalls = yRangeTickCalls;
   const shown = includedHelmers();
   const pts = [];
   for (const h of shown) helmerMonthRows(sl, h).forEach((row, j) => {
@@ -75,7 +89,7 @@ const chartOf = run(`(key, a, b, lines) => {
       bands: mpi.bands.map(band => [band.lo, band.hi]) });
   });
   [selectedMetricKey, monthHelmerEnabled] = saved;
-  return { html, pts, shown };
+  return { html, pts, shown, tickCalls };
 }`);
 assert.ok(new Set(Object.values(app.colors)).size === app.lines.length && app.levels >= 1,
   `Replicata: read HELMER_COLORS and CI_FAN_LEVELS. Expectata: one colour per line (${app.lines.length}) and at least one credible level. Resultata: ${JSON.stringify(app.colors)}, ${app.levels} levels.`);
@@ -83,13 +97,22 @@ assert.ok(new Set(Object.values(app.colors)).size === app.lines.length && app.le
 const UNIT = { "": 1, K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
 const tickValue = label => { const m = /^([\d,.]+)([KMBT]?)$/.exec(label); return m ? Number(m[1].replace(/,/g, "")) * UNIT[m[2]] : NaN; };
 const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-const styleOf = (style, prop) => ((new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(style) || [])[1] || "").trim();
+// A mark's style property. Each mark sets the ones read here (a line's
+// colour; a fan band's opacity, its credible level), so one without is an
+// error, not a mark on no line.
+const styleOf = (style, prop) => {
+  const m = new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(style);
+  assert.ok(m, `Replicata: read the ${prop} of an MPI-chart mark styled ${JSON.stringify(style)}.
+Expectata: its style sets ${prop}: the marks are matched to their lines by colour, and a fan band to its credible level by its opacity.
+Resultata: no ${prop} in it.`);
+  return m[1].trim();
+};
 const lineOfColor = Object.fromEntries(Object.entries(app.colors).map(([line, color]) => [color, line]));
 const vertices = d => [...d.matchAll(/([ML]) (-?[\d.]+) (-?[\d.]+)/g)].map(m => ({ cmd: m[1], x: Number(m[2]), y: Number(m[3]) }));
 const miles = v => Number.isFinite(v) ? Math.round(v).toLocaleString("en-US") : String(v);
 const NEAR = 0.006; // a mark's coordinates are printed to 2 decimals (dots' cy in full)
 
-const problems = { frame: [], top: [], dots: [], bars: [], bands: [], paths: [] };
+const problems = { frame: [], top: [], ladder: [], dots: [], bars: [], bands: [], paths: [] };
 const counts = Object.fromEntries(Object.keys(problems).map(kind => [kind, 0]));
 const note = (kind, at, text) => { counts[kind]++; if (problems[kind].length < 50) problems[kind].push(`${at}: ${text}`); };
 let charts = 0, marks = 0, cutBars = 0, bars = 0;
@@ -102,12 +125,19 @@ function check(key, a, b, lines, view) {
     .map(m => m.slice(1).map(Number)).filter(([x1, , x2]) => x1 === x2);
   const ticks = [...c.html.matchAll(/<text class="month-tick" x="[^"]*" y="[^"]*" text-anchor="end">([^<]*)<\/text>/g)]
     .map(m => tickValue(m[1])).sort((p, q) => p - q);
+  // The chart's tick requests while it rendered: at least one, all at one
+  // count (the count check 1b uses).
+  const requested = new Set(c.tickCalls.map(t => t.count));
+  if (requested.size !== 1) {
+    note("frame", at, `${c.tickCalls.length} linearTicks requests while the chart rendered, at counts ${JSON.stringify([...requested])}, where at least one is due, all at one count`);
+    return;
+  }
   // A chart with no posterior (no line shown, or none with a posterior in
   // the window) has no median to scale to: its axis is labelled 0 alone and
   // it draws no marks.
   if (c.pts.length === 0) {
     if (JSON.stringify(ticks) !== "[0]" || /class="month-(?:dot|err)"/.test(c.html))
-      note("frame", at, `no line-month with a posterior, y ticks ${JSON.stringify(ticks)} and ${(c.html.match(/class="month-(?:dot|err)"/g) || []).length} dots and error bars, where 0 alone and none are due`);
+      note("frame", at, `no line-month with a posterior, y ticks ${JSON.stringify(ticks)} and ${[...c.html.matchAll(/class="month-(?:dot|err)"/g)].length} dots and error bars, where 0 alone and none are due`);
     return;
   }
   if (axis.length !== 1 || !(axis[0][1] < axis[0][3]) || ticks.length < 2 || ticks.some(t => !Number.isFinite(t))) {
@@ -126,6 +156,17 @@ function check(key, a, b, lines, view) {
   const due = Math.ceil(largest.median / step - 1e-9) * step;
   if (!(ladder && Math.abs(topValue - due) <= 1e-9 * step))
     note("top", at, `y ticks ${ticks.map(miles).join(", ")}, where ${ladder ? `the ${miles(step)} ladder's first rung at or above the largest median, ${largest.line} ${largest.month}'s ${miles(largest.median)}, is ${miles(due)}` : "0 and evenly spaced rungs are due"}`);
+
+  // 1b. The ladder: the ticks linearTicks gives for the largest median at the
+  // chart's own count, so the largest median sets the step as well as the
+  // top. (Check 1 reads the step off the rendered ticks, so a range pushed
+  // past the largest median that keeps the top passes it: 56.4M draws 0-60M
+  // by 10M, 57M by 20M.)
+  const count = [...requested][0];
+  const dueTicks = Array.from(appLinearTicks(0, largest.median, count));
+  const dueStep = dueTicks[1] - dueTicks[0];
+  if (!(dueTicks.length === ticks.length && dueTicks.every((t, i) => Math.abs(t - ticks[i]) <= 1e-9 * dueStep)))
+    note("ladder", at, `y ticks ${ticks.map(miles).join(", ")} (ticks asked for up to ${c.tickCalls.map(t => miles(t.max)).join(", ")}), where linearTicks(0, ${miles(largest.median)}, ${count}), for the largest median, ${largest.line} ${largest.month}'s, gives ${dueTicks.map(miles).join(", ")}`);
 
   // The marks, each matched to its line by colour and to its month by x (the
   // line's tooltip targets give each month's x).
@@ -237,11 +278,14 @@ for (const key of app.metrics) for (const [a, b] of [[defaultStart, last], [last
 const windowCount = (last + 1) * (last + 2) / 2;
 const replicata = `Replicata: render the MPI-over-time chart on each of the ${app.metrics.length} metrics in every slider window (${windowCount}) with the default lines (${app.defaultLines.join(", ")}), with every line in the ${everyLineWindows.length} windows ending at ${app.months[last]} or one month long, and with no line in the default window and in ${app.months[last]} alone: ${charts} charts.`;
 assert.ok(counts.frame === 0, `${replicata}
-Expectata: in each chart with a line-month with a posterior, one vertical y-axis line and at least two y ticks; in each without one, the y axis labelled 0 alone and no dot or error bar.
+Expectata: in each, at least one tick request (linearTicks), all at one count; in each chart with a line-month with a posterior, one vertical y-axis line and at least two y ticks; in each without one, the y axis labelled 0 alone and no dot or error bar.
 Resultata: ${counts.frame} charts wrong: ${problems.frame.slice(0, 6).join("; ")}.`);
 assert.ok(counts.top === 0, `${replicata}
 Expectata: in each, y ticks of 0 and evenly spaced rungs, the top one the first at or above the largest posterior median among the chart's dots, whatever each month's completeness (an error bar or fan band running past it is cut at the plot's edge).
 Resultata: ${counts.top} of ${charts} charts wrong: ${problems.top.slice(0, 6).join("; ")}.`);
+assert.ok(counts.ladder === 0, `${replicata}
+Expectata: in each, the y ticks exactly those linearTicks gives for the largest posterior median among the chart's dots at the count the chart asks for, so that median sets the ladder's step as well as its top.
+Resultata: ${counts.ladder} of ${charts} charts wrong: ${problems.ladder.slice(0, 6).join("; ")}.`);
 assert.ok(counts.dots === 0, `${replicata}
 Expectata: one tooltip target and one dot per shown line-month with a posterior, each dot (and its target) at its median's position on the rendered axis, none clamped at the plot's edge.
 Resultata: ${counts.dots} problems: ${problems.dots.slice(0, 6).join("; ")}.`);
@@ -254,4 +298,4 @@ Resultata: ${counts.bands} problems: ${problems.bands.slice(0, 6).join("; ")}.`)
 assert.ok(counts.paths === 0, `${replicata}
 Expectata: one line path per shown line, through its dots of the months with an incident count other than 0 in month order, a new stroke after each month without one.
 Resultata: ${counts.paths} problems: ${problems.paths.slice(0, 6).join("; ")}.`);
-console.log(`qual pass: on ${charts} MPI charts (every metric, every slider window with the default lines, every line in ${everyLineWindows.length} windows, no line in 2) the y axis tops out at the first rung at or above the largest median; ${marks} dots and error bars sit at their medians and clamped 95% intervals (${cutBars} of ${bars} error bars cut at the top), and every fan band and line path follows its posteriors`);
+console.log(`qual pass: on ${charts} MPI charts (every metric, every slider window with the default lines, every line in ${everyLineWindows.length} windows, no line in 2) the y axis tops out at the first rung at or above the largest median, on the ladder linearTicks gives for it; ${marks} dots and error bars sit at their medians and clamped 95% intervals (${cutBars} of ${bars} error bars cut at the top), and every fan band and line path follows its posteriors`);

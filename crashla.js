@@ -2781,9 +2781,10 @@ function renderAllHelmersMpiChart(series) {
       // month (covRatio above 0.99) lifted the axis to its top effective
       // miles over its incident count (a human cohort's band high edge)
       // wherever that was finite, a fault mass or fatality share under 1
-      // included, at up to 20 times the month's miles: Waymo 2026-05's 0.05
-      // at-fault injuries put the default view's at-fault-injury top at
-      // 500M, its 48 dots in the bottom 15% of the plot.
+      // included, at up to 20 times its top effective miles: Waymo
+      // 2026-05's 0.05 at-fault injuries (20,544,572 / 0.05 = 411M) put the
+      // default view's at-fault-injury top at 500M, its 48 dots in the
+      // bottom 15% of the plot.
       yMax = Math.max(yMax, mpi.mpiMedian);
       return {...mpi, covRatio, partialLine: partialCountLine(row, fiveDay)};
     });
