@@ -3227,15 +3227,24 @@ function logUniformGrid(lo, hi, n) {
 //      counted under, so A+B (scope "robotaxi") and C (scope "hw4") are drawn
 //      as two SEPARATE Tesla curves. Customer cars carrying riders in Tesla's
 //      network (from ~Q2 2027, Q3-2026 call, Oct 21) count in C, as before.
-//      C is Tesla's whole ADS service in that world: A's robotaxi ramp plus
-//      the customer cars' eyes-off driving (TESLA_EYES_OFF), edge by edge, so
-//      in every table its lane's 5th percentile, median and 95th percentile
-//      sit at or above the robotaxi lane's (the human's decision, 2026-10-30;
-//      fleet-forecast.qual.mjs). Further down its miles and rides do not: the
-//      two-piece band drawn through C's summed edges (not the distribution of
-//      the sum itself) has a wider low side in ln x than A's, so below about
-//      the 3rd percentile (rides 3.4%, miles 2.9%) its quantiles fall under
-//      the robotaxi lane's.
+//      C is Tesla's whole ADS service in that world: the robotaxi lane's own
+//      mix, A or B at their relative weights (0.78 and 0.15 of 0.93), each
+//      plus the customer cars' eyes-off driving (TESLA_EYES_OFF), edge by
+//      edge: one C component per robotaxi scenario in every table (the
+//      human's decisions, 2026-10-30 and 2026-11-03; from 2026-10-31 to
+//      2026-11-03 C carried A's robotaxi ramp alone). The rule that C's lane
+//      sits at or above the robotaxi lane's at the 5th percentile, the median
+//      and the 95th percentile (the human's decision, 2026-10-30;
+//      fleet-forecast.qual.mjs) follows from that definition: C's robotaxi
+//      drives as the robotaxi lane does, with the eyes-off miles on top, so
+//      the distribution of C's sum sits at or above the robotaxi lane at
+//      every percentile. The page draws each C component as one two-piece
+//      band through its two parts' summed edges (not the distribution of
+//      their sum), whose low side is wider in ln x than its robotaxi part's,
+//      so below about the 3rd percentile (miles 2.8%, rides 2.7%; the fleet
+//      only under 0.001%) the drawn lane's quantiles fall under the robotaxi
+//      lane's (until 2026-11-03, with C on A alone, miles 2.9% and rides
+//      3.5%).
 // Tesla's robotaxi fleet is cars driving on a typical day, from miles (the
 // human's choice, 2026-10-29; FLEET_HISTORY), so A and B are authored as daily
 // robotaxi miles on the forecast date (TESLA_ROBOTAXI_SCENARIOS): the fleet
@@ -3271,7 +3280,8 @@ function logUniformGrid(lo, hi, n) {
 // guidance (customer cars only inside its network, from ~Q2 2027) and its
 // record on this promise (end-2025, then Q4 2026, now Q2 2027). Checks: the
 // mixture puts ~0.74 on Tesla's cumulative miles reaching 100M before 2028 (A
-// ~0.67, B ~1.0, C ~0.93), against 0.50 for "Before 2028" on Manifold's "When
+// ~0.67, B ~1.0, C ~0.94; ~0.93 until 2026-11-03, with C on A alone and 600M
+// eyes-off), against 0.50 for "Before 2028" on Manifold's "When
 // will vision-only level 4 self-driving be widely deployed?" (2026-10-31;
 // https://manifold.markets/dreev/when-will-visiononly-level-4-selfdr), whose
 // FAQ defines widely deployed as "100 million autonomous miles, with zero
@@ -3315,9 +3325,10 @@ const TESLA_ROBOTAXI_SCENARIOS = [
   { weight: 0.78, best: 504000,  lo: 162000, hi: 1440000 }, // A: slow ramp
   { weight: 0.15, best: 2700000, lo: 900000, hi: 7200000 }, // B: aggressive Cybercab scale-up
 ];
-// Scenario C's eyes-off driving on customer HW4 cars, which C adds to A's
-// robotaxi ramp edge by edge in all three tables (the human's decision,
-// 2026-10-30). ~1M US HW4 cars with paid FSD today and ~1.5M by end-2027
+// Scenario C's eyes-off driving on customer HW4 cars, which C adds edge by
+// edge to each robotaxi scenario's own band, A's and B's, in all three tables
+// (the human's decisions, 2026-10-30 and 2026-11-03; to A's alone until
+// 2026-11-03). ~1M US HW4 cars with paid FSD today and ~1.5M by end-2027
 // (1.74M FSD subscriptions and purchases worldwide, HW3 included; Q3-2026
 // deck): 400k cars eyes-off on the forecast date [60k; 2.0M, more than the
 // ~1.5M with paid FSD by end-2027, which needs eyes-off on HW4 cars without
@@ -3343,22 +3354,20 @@ const TESLA_ROBOTAXI_SCENARIOS = [
 // US fleet's "size (over three million U.S. vehicles)" and "activity (over 30
 // billion miles annually in the U.S.)"), since a car's eyes-off miles cannot
 // exceed its miles, though the cars on FSD are driven more than the average.
-// Through Dec 31, 2027 they drive ~600M eyes-off miles [20M, 6B], and
-// Tesla-Network rides carry ~10% of those miles at ~6 miles a ride. The 600M
-// was derived on 2026-10-30 at ~16 a car-day and is not re-derived at 25:
-// the same ramp of cars at 25 gives ~940M, which puts the all-HW4 rides
-// lane's 5th percentile (7.97M) under the robotaxi lane's (8.06M), against
-// the rule that the all-HW4 lane sits nowhere below it (the human's decision,
-// 2026-10-30; quals/fleet-forecast.qual.mjs). Which gives is the human's call
-// (2026-11-02). (The exact sum of A's rides and the eyes-off rides, moving
-// together, has its 5th percentile under the robotaxi lane's at either
-// figure, ~7.97M at 600M and ~7.93M at 940M: the two-piece band through C's
-// summed edges, with its narrower low side, kept the rule at 600M.)
+// Through Dec 31, 2027 they drive ~750M eyes-off miles [20M, 6B], and
+// Tesla-Network rides carry ~10% of those miles at ~6 miles a ride (12.5M
+// [0.33M, 100M]). The research of 2026-10-29 paired its ~600M [~20M, ~6B]
+// with 400k eyes-off cars at 20 miles a car-day over a ~75-day ramp of
+// December-2027 rates; at Tesla's 25 the same ramp gives 750M (the human's
+// decision, 2026-11-03, open question 30), and the 20M and 6B edges, at 15
+// and 30 a car-day, stay (quals/tesla-forecast-inputs.qual.mjs re-derives
+// each edge from the cars and miles a car-day). From 2026-11-02 to 2026-11-03
+// the 600M stood beside the 25, read then as derived at ~16 a car-day.
 const TESLA_EYES_OFF = {
   weight: 0.07,
   cars: { best: 400000, lo: 60000, hi: 2000000 },               // eyes-off on the forecast date
   milesPerCarDay: { best: 25, lo: 15, hi: 30 },                 // each one's eyes-off miles a day
-  cumulative: { best: 600000000, lo: 20000000, hi: 6000000000 }, // through the day before
+  cumulative: { best: 750000000, lo: 20000000, hi: 6000000000 }, // through the day before
   ridesPerMile: 0.1 / 6,                                         // Tesla-Network rides
 };
 // Two {best, lo, hi} bands summed edge by edge (scenario C's robotaxi part
@@ -3408,10 +3417,13 @@ function teslaCumulativeMiles(band) {
 const FLEET_FORECAST = [
   // Every Tesla scenario's fleet is its ADS miles a day on the forecast date
   // over TESLA_MILES_PER_CAR_DAY: car-equivalents, the unit of Tesla's line.
-  // C is A's robotaxi miles plus the eyes-off miles (TESLA_EYES_OFF).
+  // C is each robotaxi scenario's daily miles plus the eyes-off daily miles
+  // (TESLA_EYES_OFF), one component per scenario at its share of the robotaxi
+  // weights, so C's lane holds the robotaxi lane's own A/B mix.
   { helmer: "Tesla", components: [
     ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ ...c, scope: "robotaxi" })),
-    { weight: TESLA_EYES_OFF.weight, ...sumBands(TESLA_ROBOTAXI_SCENARIOS[0], productBands(TESLA_EYES_OFF.cars, TESLA_EYES_OFF.milesPerCarDay)), scope: "hw4" },
+    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: TESLA_EYES_OFF.weight * c.weight / TESLA_ROBOTAXI_SCENARIOS.reduce((s, r) => s + r.weight, 0),
+      ...sumBands(c, productBands(TESLA_EYES_OFF.cars, TESLA_EYES_OFF.milesPerCarDay)), scope: "hw4" })),
   ].map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_CAR_DAY, lo: c.lo / TESLA_MILES_PER_CAR_DAY,
     hi: c.hi / TESLA_MILES_PER_CAR_DAY, scope: c.scope })) },
   { helmer: "Waymo", components: [
@@ -3890,10 +3902,13 @@ const RIDES_HISTORY = {
 const MILES_FORECAST = [
   { helmer: "Tesla", components: [
     ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: c.weight, ...teslaCumulativeMiles(c), scope: "robotaxi" })),
-    // C: A's robotaxi miles plus the customer cars' eyes-off miles
-    // (TESLA_EYES_OFF: ~600M [20M, 6B]). Until 2026-10-31 C counted the
+    // C: each robotaxi scenario's miles plus the customer cars' eyes-off
+    // miles (TESLA_EYES_OFF: ~750M [20M, 6B]), one component per scenario at
+    // its share of the robotaxi weights. From 2026-10-31 to 2026-11-03 C was
+    // A's miles alone plus ~600M eyes-off; until 2026-10-31 C counted the
     // customer cars' miles alone.
-    { weight: TESLA_EYES_OFF.weight, ...sumBands(teslaCumulativeMiles(TESLA_ROBOTAXI_SCENARIOS[0]), TESLA_EYES_OFF.cumulative), scope: "hw4" },
+    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: TESLA_EYES_OFF.weight * c.weight / TESLA_ROBOTAXI_SCENARIOS.reduce((s, r) => s + r.weight, 0),
+      ...sumBands(teslaCumulativeMiles(c), TESLA_EYES_OFF.cumulative), scope: "hw4" })),
   ] },
   { helmer: "Waymo", components: [
     // US. End-2026 ~408M (361.7M through October, data/vmt.csv, plus ~46M);
@@ -3905,12 +3920,15 @@ const MILES_FORECAST = [
     { weight: 1, best: 880000000, lo: 667000000, hi: 1200000000 },
   ] },
   { helmer: "Zoox", components: [
-    // End-2026 ~4.46M (the data/vmt.csv model); 2027 adds ~8.3-8.8M: an
-    // average fleet of ~270-285 at ~85 miles a vehicle-day (now ~80-95). Low:
-    // today's rate held flat, October's 290,000 over its 31 days for the 426
-    // days from Nov 1, 2026 through Dec 31, 2027 (7.86M; 7.5M until
-    // 2026-10-31).
-    { weight: 1, best: 13000000, lo: 7860000, hi: 24000000 },
+    // End-2026 ~4.50M (the data/vmt.csv model: 3,889,920 through October,
+    // then November ~300,000 and December ~310,000 on its method); 2027 adds
+    // ~8.3-8.8M: an average fleet of ~270-285 at ~85 miles a vehicle-day (now
+    // ~81-97, October's 9,677 a day on ~100-120 vehicles). Low: today's rate
+    // held flat, October's 300,000 over its 31 days for the 426 days from Nov
+    // 1, 2026 through Dec 31, 2027 (8.01M; 7.86M until 2026-11-03, 7.5M until
+    // 2026-10-31; quals/fleet-forecast.qual.mjs re-derives it, and Waymo's,
+    // from data/vmt.csv's newest month).
+    { weight: 1, best: 13000000, lo: 8010000, hi: 24000000 },
   ] },
 ];
 
@@ -3930,8 +3948,8 @@ function teslaRidesBand(miles) {
 // HW4): its computed median lands between the scenarios instead of inside
 // one. Tesla's A/B bands are the miles scenarios divided by the same [4.7,
 // 6.2, 8.3] miles-per-ride corridor as RIDES_HISTORY (teslaRidesBand); C's
-// rides are A's plus Tesla-Network rides from eyes-off customer cars
-// (participation deeply uncertain, hence the width).
+// rides are each robotaxi scenario's plus Tesla-Network rides from eyes-off
+// customer cars (participation deeply uncertain, hence the width).
 const RIDES_FORECAST = [
   { helmer: "Tesla", components: [
     // A and B are the miles scenarios over the ride corridor, tied in code
@@ -3939,17 +3957,19 @@ const RIDES_FORECAST = [
     // MILES_FORECAST A was re-based on 2026-09-04).
     ...MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi")
       .map(c => ({ weight: c.weight, ...teslaRidesBand(c), scope: "robotaxi" })),
-    // C: Tesla's rides in that world, A's robotaxi rides plus the
-    // Tesla-Network rides on the eyes-off miles (TESLA_EYES_OFF: ~10% of
-    // them at ~6 a ride, ~10M [0.33M, 100M]). Until 2026-10-31 C was authored
-    // as ~15M [2M, 150M], the Jan-1-2027 forecast's figures with a wider high
-    // edge, which put the lane's median and 5th percentile under the robotaxi
-    // lane's.
-    { weight: TESLA_EYES_OFF.weight, scope: "hw4",
-      ...sumBands(teslaRidesBand(teslaCumulativeMiles(TESLA_ROBOTAXI_SCENARIOS[0])),
+    // C: Tesla's rides in that world, each robotaxi scenario's rides plus
+    // the Tesla-Network rides on the eyes-off miles (TESLA_EYES_OFF: ~10% of
+    // them at ~6 a ride, ~12.5M [0.33M, 100M]), one component per scenario at
+    // its share of the robotaxi weights. From 2026-10-31 to 2026-11-03 C was
+    // A's rides alone plus ~10M eyes-off rides; until 2026-10-31 C was
+    // authored as ~15M [2M, 150M], the Jan-1-2027 forecast's figures with a
+    // wider high edge, which put the lane's median and 5th percentile under
+    // the robotaxi lane's.
+    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: TESLA_EYES_OFF.weight * c.weight / TESLA_ROBOTAXI_SCENARIOS.reduce((s, r) => s + r.weight, 0), scope: "hw4",
+      ...sumBands(teslaRidesBand(teslaCumulativeMiles(c)),
         { best: TESLA_EYES_OFF.cumulative.best * TESLA_EYES_OFF.ridesPerMile,
           lo: TESLA_EYES_OFF.cumulative.lo * TESLA_EYES_OFF.ridesPerMile,
-          hi: TESLA_EYES_OFF.cumulative.hi * TESLA_EYES_OFF.ridesPerMile }) },
+          hi: TESLA_EYES_OFF.cumulative.hi * TESLA_EYES_OFF.ridesPerMile }) })),
   ] },
   { helmer: "Waymo", components: [
     // End-2026 ~48.7M (43.5M through October, RIDES_HISTORY, plus ~0.6M a
@@ -3994,7 +4014,8 @@ function growthMetricSpec(key) {
   const specs = {
     fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipAt: wholeAtSigFigs,
       // yMax 1,000,000, the decade above the largest value drawn (the all-HW4
-      // lane's 95th percentile, ~317,000; decision 23(g) of the 2026-11-01
+      // lane's 95th percentile, ~324,000 since 2026-11-03, ~317,000 before
+      // C's robotaxi part became the A/B mix; decision 23(g) of the 2026-11-01
       // open questions; quals/fleet-timeseries.qual.mjs). 4,000,000 until
       // 2026-11-02, set when that lane counted distinct customer cars (its
       // 95th percentile 2.86M for Jan 1, 2027, 1.92M for Jan 1, 2028 on

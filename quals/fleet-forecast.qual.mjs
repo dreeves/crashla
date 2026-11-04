@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { parseCsv } from "./csv-parse.mjs";
 
 // renderFleetForecastChart and the mixture helpers touch no DOM, so a thin stub
 // context suffices (matching the distribution-chart qual's setup).
@@ -303,7 +304,15 @@ Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
 // nowhere below the robotaxi lane. Until 2026-10-31 it did, for rides (median
 // 16.7M against 20.0M, 5th percentile 2.08M against 7.33M) and miles (5th
 // percentile 16.8M against 60.2M): its rides had kept the Jan-1-2027
-// forecast's numbers, and its miles counted customer cars alone.
+// forecast's numbers, and its miles counted customer cars alone. Since
+// 2026-11-03 C's robotaxi part is the robotaxi lane's own A/B mix (the
+// section after the rides-corridor check below), so the distribution of C's
+// sum lies above the robotaxi lane at every percentile; the lanes drawn here
+// put each C component's two parts in one two-piece band through their
+// summed edges, whose low side is wider, so this checks the drawn lanes at
+// the three percentiles the charts print. (On the 2026-11-03 tables the drawn
+// all-HW4 lane falls under the robotaxi lane only below about the 3rd
+// percentile: miles 2.8%, rides 2.7%, the fleet under 0.001%.)
 {
   const lanes = JSON.parse(vm.runInContext(`JSON.stringify(["fleet", "rides", "miles"].map(metric => ({metric,
     curves: fleetDistributionCurves(metric).filter(c => c.historyHelmer === "Tesla")
@@ -318,6 +327,31 @@ Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
   assert.ok(below.length === 0,
     `Replicata: build Tesla's robotaxi and all-HW4 lanes for the fleet, rides and miles forecasts and read each lane's 5th percentile, median and 95th percentile.
 Expectata: for every metric, each of the all-HW4 lane's three at or above the robotaxi lane's (C contains the robotaxi's own cars, rides and miles).
+Resultata: ${below.join("; ")}.`);
+}
+
+// --- 4d. ... and at every percentile inside the charts' 90% interval -------
+// The human's wording of the rule (2026-11-03, open question 30): C "is
+// robotaxis plus customer cars, so its curve should never sit below the solid
+// one". The distribution of C's sum meets that at every percentile; the drawn
+// lanes (4c) depart from it only in the low tail, under about the 3rd
+// percentile. So every whole percentile from the 5th to the 95th, the span
+// the charts' 90% interval draws, of the drawn all-HW4 lane sits at or above
+// the robotaxi lane's, from the same quantile function the charts use
+// (bandMixtureQuantiles).
+{
+  const ps = Array.from({length: 91}, (_, i) => (5 + i) / 100);
+  const lanes = JSON.parse(vm.runInContext(`JSON.stringify(["fleet", "rides", "miles"].map(metric => ({metric,
+    q: Object.fromEntries(fleetDistributionCurves(metric).filter(c => c.historyHelmer === "Tesla")
+      .map(c => [c.key, bandMixtureQuantiles(c.components, ${JSON.stringify(ps)})]))})))`, ctx));
+  const below = [];
+  for (const {metric, q} of lanes) {
+    const under = ps.filter((_, i) => !(q.hw4[i] >= q.robotaxi[i]));
+    if (under.length > 0) below.push(`${metric}: under at ${under.map(p => `${Math.round(100 * p)}%`).join(", ")}`);
+  }
+  assert.ok(below.length === 0,
+    `Replicata: build Tesla's robotaxi and all-HW4 lanes for the fleet, rides and miles forecasts and read each lane's quantiles at every whole percentile from the 5th to the 95th (bandMixtureQuantiles).
+Expectata: at each, the all-HW4 lane's at or above the robotaxi lane's.
 Resultata: ${below.join("; ")}.`);
 }
 
@@ -443,16 +477,26 @@ Resultata: {${rc.best}, ${rc.lo}, ${rc.hi}} weight ${rc.weight}.`);
   });
 }
 
-// --- Tesla's scenario C is A's robotaxi plus eyes-off customer driving ---
-// (the human's decision, 2026-10-30.) C is Tesla's whole ADS service in that
-// world: scenario A's robotaxi ramp, tied in code, plus eyes-off driving on
-// customer HW4 cars (crashla.js TESLA_EYES_OFF), edge by edge (the two parts
-// taken as moving together). Its fleet is in car-equivalents, the unit of
-// Tesla's line: the two parts' ADS miles a day on the forecast date over
-// TESLA_MILES_PER_CAR_DAY. Its miles are A's cumulative plus the customer
-// cars' eyes-off miles, its rides A's rides plus the Tesla-Network rides on
-// those miles. Until 2026-10-31 C counted distinct customer cars, its miles
-// left out the robotaxi's, and its rides kept the Jan-1-2027 forecast's.
+// --- Tesla's scenario C is the robotaxi lane's own mix plus eyes-off driving ---
+// (the human's decisions, 2026-10-30 and 2026-11-03.) C is Tesla's whole ADS
+// service in that world: the robotaxi lane's own scenarios, A or B at their
+// relative weights, each plus eyes-off driving on customer HW4 cars
+// (crashla.js TESLA_EYES_OFF), edge by edge (the two parts taken as moving
+// together). So each table carries one C component (scope "hw4") per robotaxi
+// scenario, weighted TESLA_EYES_OFF.weight times that scenario's share of the
+// robotaxi weights, and each C component less the eyes-off part is that
+// scenario's own robotaxi band in the same table: C contains the robotaxi
+// lane by construction. The fleet table's robotaxi bands are
+// TESLA_ROBOTAXI_SCENARIOS' daily miles over TESLA_MILES_PER_CAR_DAY
+// (car-equivalents, the unit of Tesla's line), and its eyes-off part the
+// eyes-off cars times their miles a car-day over the same rate; the miles
+// table's eyes-off part is the customer cars' cumulative eyes-off miles, the
+// rides table's the Tesla-Network rides on them (cumulative x
+// TESLA_EYES_OFF.ridesPerMile). From 2026-10-31 to 2026-11-03 C was one
+// component per table, scenario A's robotaxi band alone plus the eyes-off
+// part (open question 30); until 2026-10-31 C counted distinct customer cars,
+// its miles left out the robotaxi's, and its rides kept the Jan-1-2027
+// forecast's.
 {
   const d = JSON.parse(vm.runInContext(`JSON.stringify((() => {
     const comps = t => t.find(f => f.helmer === "Tesla").components;
@@ -460,22 +504,81 @@ Resultata: {${rc.best}, ${rc.lo}, ${rc.hi}} weight ${rc.weight}.`);
       daily: TESLA_ROBOTAXI_SCENARIOS, eyesOff: TESLA_EYES_OFF, perCarDay: TESLA_MILES_PER_CAR_DAY};
   })())`, ctx));
   const EDGES = ["best", "lo", "hi"];
-  const heaviest = cs => cs.reduce((a, c) => (c.weight > a.weight ? c : a));
-  const a = { daily: heaviest(d.daily), miles: heaviest(d.miles.filter(c => c.scope === "robotaxi")),
-    rides: heaviest(d.rides.filter(c => c.scope === "robotaxi")) };
-  const want = {
-    fleet: Object.fromEntries(EDGES.map(k => [k, (a.daily[k] + d.eyesOff.cars[k] * d.eyesOff.milesPerCarDay[k]) / d.perCarDay])),
-    miles: Object.fromEntries(EDGES.map(k => [k, a.miles[k] + d.eyesOff.cumulative[k]])),
-    rides: Object.fromEntries(EDGES.map(k => [k, a.rides[k] + d.eyesOff.cumulative[k] * d.eyesOff.ridesPerMile])),
+  const close = (x, y) => Math.abs(x - y) <= 1e-9 * Math.abs(y);
+  const eyesOffPart = {
+    fleet: Object.fromEntries(EDGES.map(k => [k, d.eyesOff.cars[k] * d.eyesOff.milesPerCarDay[k] / d.perCarDay])),
+    miles: Object.fromEntries(EDGES.map(k => [k, d.eyesOff.cumulative[k]])),
+    rides: Object.fromEntries(EDGES.map(k => [k, d.eyesOff.cumulative[k] * d.eyesOff.ridesPerMile])),
   };
   const problems = [];
+  // The eyes-off part is a band of positive figures, so each C component sits
+  // on top of its robotaxi band at every edge.
   for (const metric of ["fleet", "miles", "rides"]) {
-    const c = d[metric].filter(x => x.scope === "hw4");
-    if (c.length !== 1 || c[0].weight !== d.eyesOff.weight || EDGES.some(k => !(Math.abs(c[0][k] - want[metric][k]) <= 1e-9 * want[metric][k])))
-      problems.push(`${metric}: C ${JSON.stringify(c)}; want weight ${d.eyesOff.weight} and ${JSON.stringify(want[metric])}`);
+    const e = eyesOffPart[metric];
+    if (!(0 < e.lo && e.lo <= e.best && e.best <= e.hi)) problems.push(`${metric}: the eyes-off part ${JSON.stringify(e)} is not 0 < lo <= best <= hi`);
+  }
+  // The fleet table's robotaxi bands, one per scenario in TESLA_ROBOTAXI_SCENARIOS' order.
+  const fleetRobotaxi = d.fleet.filter(c => c.scope === "robotaxi");
+  if (fleetRobotaxi.length !== d.daily.length || d.daily.some((s, i) => fleetRobotaxi[i].weight !== s.weight
+    || EDGES.some(k => !close(fleetRobotaxi[i][k], s[k] / d.perCarDay))))
+    problems.push(`fleet: robotaxi bands ${JSON.stringify(fleetRobotaxi)}; want TESLA_ROBOTAXI_SCENARIOS ${JSON.stringify(d.daily)} over ${d.perCarDay}, same weights`);
+  for (const metric of ["fleet", "miles", "rides"]) {
+    const robotaxi = d[metric].filter(c => c.scope === "robotaxi"), cs = d[metric].filter(c => c.scope === "hw4");
+    const robotaxiWeight = robotaxi.reduce((s, c) => s + c.weight, 0);
+    if (cs.length !== robotaxi.length) problems.push(`${metric}: ${cs.length} C components for ${robotaxi.length} robotaxi scenarios`);
+    const matched = new Set();
+    for (const c of cs) {
+      const part = Object.fromEntries(EDGES.map(k => [k, c[k] - eyesOffPart[metric][k]]));
+      const i = robotaxi.findIndex((r, j) => !matched.has(j) && EDGES.every(k => close(part[k], r[k])));
+      if (i < 0) {
+        problems.push(`${metric}: C component ${JSON.stringify(c)} less the eyes-off part ${JSON.stringify(eyesOffPart[metric])} is ${JSON.stringify(part)}, no robotaxi scenario's band (${JSON.stringify(robotaxi)})`);
+        continue;
+      }
+      matched.add(i);
+      const wantWeight = d.eyesOff.weight * robotaxi[i].weight / robotaxiWeight;
+      if (!(Math.abs(c.weight - wantWeight) <= 1e-12)) problems.push(`${metric}: C component on robotaxi scenario ${i} weighs ${c.weight}; want TESLA_EYES_OFF.weight ${d.eyesOff.weight} x ${robotaxi[i].weight} / ${robotaxiWeight} = ${wantWeight}`);
+    }
   }
   assert.ok(problems.length === 0,
-    `Replicata: read Tesla's scenario C component (scope "hw4") in FLEET_FORECAST, MILES_FORECAST and RIDES_FORECAST, with scenario A (the heaviest robotaxi component), TESLA_EYES_OFF and TESLA_MILES_PER_CAR_DAY.
-Expectata: one C component per table, weighted TESLA_EYES_OFF.weight, each edge A's plus the eyes-off part: fleet (A's daily miles + the eyes-off daily miles, the eyes-off cars x their miles a car-day) / TESLA_MILES_PER_CAR_DAY, miles A's cumulative + the eyes-off cumulative, rides A's rides + the eyes-off cumulative x TESLA_EYES_OFF.ridesPerMile.
+    `Replicata: read Tesla's components in FLEET_FORECAST, MILES_FORECAST and RIDES_FORECAST (scope "robotaxi" and scope "hw4", scenario C), with TESLA_ROBOTAXI_SCENARIOS, TESLA_EYES_OFF and TESLA_MILES_PER_CAR_DAY.
+Expectata: the fleet table's robotaxi bands are TESLA_ROBOTAXI_SCENARIOS over TESLA_MILES_PER_CAR_DAY; in every table one C component per robotaxi scenario, each the scenario's own robotaxi band in that table plus the eyes-off part (positive, 0 < lo <= best <= hi), edge by edge (fleet: the eyes-off cars x their miles a car-day / TESLA_MILES_PER_CAR_DAY; miles: TESLA_EYES_OFF.cumulative; rides: TESLA_EYES_OFF.cumulative x TESLA_EYES_OFF.ridesPerMile), weighted TESLA_EYES_OFF.weight x the scenario's weight / the robotaxi weights' sum.
 Resultata: ${problems.join("; ")}.`);
 }
+
+// --- Waymo's and Zoox's miles low edges hold their newest month flat ---
+// MILES_FORECAST's Waymo and Zoox comments set each low edge by one rule: the
+// line's newest data/vmt.csv month held flat, that month's miles a day from
+// the next day through the day before GROWTH_FORECAST_DATE on top of its
+// cumulative, at three significant figures (on October 2026's rows, 426
+// days: Waymo 667M; Zoox 7.86M on the rows of 2026-10-31 and 8.01M on the
+// joint path of 2026-11-03). Until 2026-11-03 no qual checked the rule and
+// each edge was re-derived by hand; this re-derives both from data/vmt.csv,
+// so a new month or a revised row moves the edge it sets.
+{
+  const forecastDate = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
+  const rows = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
+  const lows = JSON.parse(vm.runInContext(`JSON.stringify(Object.fromEntries(["Waymo", "Zoox"].map(h => [h,
+    MILES_FORECAST.find(f => f.helmer === h).components.map(c => c.lo)])))`, ctx));
+  const problems = [];
+  for (const helmer of ["Waymo", "Zoox"]) {
+    const own = rows.filter(r => r[0] === helmer.toLowerCase());
+    assert.ok(own.length > 0,
+      `Replicata: read data/vmt.csv's ${helmer} rows.
+Expectata: at least one (the line's newest month sets its forecast's low edge).
+Resultata: none.`);
+    const newest = own.reduce((a, r) => (r[1] > a[1] ? r : a));
+    const [year, month] = newest[1].split("-").map(Number);
+    const monthDays = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const heldDays = (Date.parse(forecastDate) - Date.UTC(year, month, 1)) / 86400000;
+    const flat = Number(newest[3]) + Number(newest[2]) / monthDays * heldDays;
+    const want = Number(flat.toPrecision(3));
+    if (lows[helmer].length !== 1 || lows[helmer][0] !== want)
+      problems.push(`${helmer}: MILES_FORECAST's low edge ${JSON.stringify(lows[helmer])}; want ${want.toLocaleString("en-US")}, ${newest[1]}'s cumulative ${Number(newest[3]).toLocaleString("en-US")} plus its ${Number(newest[2]).toLocaleString("en-US")} miles over its ${monthDays} days held flat for the ${heldDays} days to ${forecastDate} (${Math.round(flat).toLocaleString("en-US")}) at three significant figures`);
+  }
+  assert.ok(problems.length === 0,
+    `Replicata: read MILES_FORECAST's Waymo and Zoox low edges, and each line's newest data/vmt.csv month (its miles and cumulative).
+Expectata: each low edge is that month's cumulative plus its miles a day held flat from the next day through the day before ${forecastDate}, at three significant figures.
+Resultata: ${problems.join("; ")}.`);
+}
+
+console.log("qual pass: Tesla's scenario C is the robotaxi lane's own A/B mix plus the eyes-off part, and Waymo's and Zoox's miles low edges hold their newest month flat");

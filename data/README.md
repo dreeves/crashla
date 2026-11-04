@@ -338,7 +338,10 @@ rows for the new ghost month (`crashla.js` `FLEET_HISTORY` and
 path at that month's exit rate (`TESLA_PATH_START`; the qual's
 `PAGE_MEASURED` records the Tesla page figure the rate rests on), and
 `quals/fleet-forecast.qual.mjs` then checks each Jan-1 fleet forecast against
-them. Re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
+them, and Waymo's and Zoox's miles low edges (`MILES_FORECAST`) against
+their newest `data/vmt.csv` month held flat through the day before the
+forecast date (since 2026-11-03), so a new ghost row moves both edges.
+Re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
 comments say, and its default-window fault-flip table (`WANT_DEFAULT_FLIPS`:
 each line's printed multiplier, the verdict it reaches and its All-incidents
 verdict, since 2026-10-31) when a release or a VMT or fault re-pin moves it.
