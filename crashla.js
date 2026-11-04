@@ -1876,18 +1876,29 @@ const PRE_SERIES_OFFSET = {
 };
 // PRE_SERIES_OFFSET checked against the master at load (init runs it right
 // after checkGhostVmtRows; since 2026-11-03, rule 12): one entry for each line
-// the master holds, and each line with a range starting it at its first fully
-// knotted month, the month after the last one whose cumulative band is not
-// strictly inside the running sums of the monthly bands from the series'
-// zero (quals/window-band.qual.mjs derives it the same way). windowVmtBand
-// adds the range back from that month on, right only while both edges of
-// every cumulative band from it on came through a knot. A line with no range
-// (Tesla's) adds nothing back, so its month is not checked.
+// the master holds; each entry's range a finite number of miles, 0 or more,
+// and its month "" with a range of 0 and a YYYY-MM month with a range above 0
+// (the range filter below would skip a NaN or negative range silently); and
+// each line with a range starting it at its first fully knotted month, the
+// month after the last one whose cumulative band is not strictly inside the
+// running sums of the monthly bands from the series' zero
+// (quals/window-band.qual.mjs derives it the same way). windowVmtBand adds the
+// range back from that month on, right only while both edges of every
+// cumulative band from it on came through a knot. A line with no range
+// (Tesla's) adds nothing back, so its month is not checked against the knots.
 function checkPreSeriesOffsets() {
   const entries = Object.keys(PRE_SERIES_OFFSET).sort();
   const lines = [...new Set(vmtRows.map(r => r.helmer))].sort();
   assert(JSON.stringify(entries) === JSON.stringify(lines),
     "PRE_SERIES_OFFSET must have one entry for each line with VMT rows", {entries, lines});
+  // String() names a value JSON cannot write (NaN, Infinity, a missing one).
+  for (const [helmer, {from, range}] of Object.entries(PRE_SERIES_OFFSET)) {
+    assert(Number.isFinite(range) && range >= 0,
+      "a PRE_SERIES_OFFSET range must be a finite number of miles, 0 or more", {helmer, range: String(range)});
+    assert(range === 0 ? from === "" : /^\d{4}-(?:0[1-9]|1[0-2])$/.test(from),
+      "a PRE_SERIES_OFFSET month must be \"\" with a range of 0 and a YYYY-MM month with a range above 0",
+      {helmer, range, from: String(from)});
+  }
   for (const [helmer, offset] of Object.entries(PRE_SERIES_OFFSET).filter(entry => entry[1].range > 0)) {
     const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
     let lo = 0, hi = 0;

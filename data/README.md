@@ -355,6 +355,14 @@ re-pinned each release); a Tesla narrative that says nothing about who was
 aboard (13781-16941, due in the Nov 2026 release) passes its narrative check
 only when stored as (filed code, "Unknown") (the human, 2026-11-02).
 
+A data change that moves a line's first fully knotted month (the month from
+which every cumulative band lies strictly inside the running sums of the
+monthly bands, a knot having shaped both its edges), such as a new knot or a
+re-banded month before it, stops the page at load with the error banner
+(`crashla.js` `checkPreSeriesOffsets`, since 2026-11-03) until
+`PRE_SERIES_OFFSET`'s `from` moves with it; `quals/window-band.qual.mjs`
+goes red on it first.
+
 ## VMT master
 
 `data/vmt.csv` is the in-repo master for the monthly VMT estimates.
