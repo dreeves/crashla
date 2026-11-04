@@ -331,13 +331,13 @@ Resultata: ${below.join("; ")}.`);
 }
 
 // --- 4d. ... and at every percentile inside the charts' 90% interval -------
-// The human's wording of the rule (2026-11-03, open question 30): C "is
-// robotaxis plus customer cars, so its curve should never sit below the solid
-// one". The distribution of C's sum meets that at every percentile; the drawn
-// lanes (4c) depart from it only in the low tail, under about the 3rd
-// percentile. So every whole percentile from the 5th to the 95th, the span
-// the charts' 90% interval draws, of the drawn all-HW4 lane sits at or above
-// the robotaxi lane's, from the same quantile function the charts use
+// The question on which the human settled open question 30 (2026-11-03) put
+// the rule as C's curve never sitting below the robotaxi curve. The
+// distribution of C's sum meets that at every percentile; the drawn lanes
+// (4c) depart from it only in the low tail, under about the 3rd percentile.
+// So at every whole percentile from the 5th to the 95th (the span of the
+// charts' 90% interval) the drawn all-HW4 lane must sit at or above the
+// robotaxi lane, by the quantile function the charts use
 // (bandMixtureQuantiles).
 {
   const ps = Array.from({length: 91}, (_, i) => (5 + i) / 100);
