@@ -250,7 +250,11 @@ console.log(`qual pass: every one of ${oneMonth.compared} per-month chart poster
 // checkPreSeriesOffsets, which init runs right after checkGhostVmtRows. Here
 // it must be silent on the data, which also shows that a line with no range
 // goes unchecked against the knots (its month is "", which no derived month
-// equals). It must throw, naming the line, the month the master gives
+// equals), and silent when such a line's knots move (Tesla's two lines, every
+// cumulative band narrowed inside the running sums at both edges, so the
+// first fully knotted month becomes the line's first month: its month stays
+// "" whatever its knots, as data/README.md's release checklist says, since
+// 2026-11-04). It must throw, naming the line, the month the master gives
 // (expected) and the month the constant holds (found), when a line's month
 // moves a month either way; when a knot's band edge widens to the running sum
 // of the monthly bands (the knot no longer shapes it, so the first fully
@@ -260,10 +264,15 @@ console.log(`qual pass: every one of ${oneMonth.compared} per-month chart poster
 // first, which moved the knot only while the top was already inside). It must
 // throw naming the master's lines when a line's entry is missing or a line
 // with no rows has one. The form check (also 2026-11-03): it must throw,
-// naming the line and the bad value under the field that holds it, when an
+// naming the line and the bad value under the field that holds it, and not a
+// TypeError, when an entry is not an object (null, undefined, a number: until
+// 2026-11-04 the destructuring of the entry threw a TypeError on the first
+// two, naming no line, and a number's range was named "undefined"), when an
 // entry's range is not a finite number of miles, 0 or more (NaN, negative,
 // Infinity, a string of digits, null, missing: the range filter skipped all
-// but Infinity and the string silently, and took those two for a range), or
+// but Infinity and the string silently, and took those two for a range; since
+// 2026-11-04 the range's type is named too, as String() writes a string of
+// digits just as it writes a valid range), or
 // its month is not "" with a range of 0 (Tesla's set to 2099-01: until the
 // form check this section required that to pass silently, a line with no
 // range adding nothing back; and Waymo's range zeroed with its month kept) or
@@ -336,41 +345,60 @@ Resultata: ${initBlock === undefined ? "no init block" : "no such call"}.`);
         () => { const s = runningSums(line, before.month); before.kyoomMin = s.lo + 1; before.kyoomMax = Math.min(before.kyoomMax, s.hi - 1); },
         () => { [before.kyoomMin, before.kyoomMax] = band; });
     }
+    // A line with no range adds nothing back, so its knots go unchecked: each
+    // of Tesla's two lines with every cumulative band narrowed a mile inside
+    // the running sums at both edges must leave the check silent; then the
+    // bands restored. The narrowing makes the line's first month its first
+    // fully knotted month, a knot moved (Tesla's) or gained (TeslaNoMonitor
+    // has none), since that month's band was loose before (kyoom-band.qual
+    // pins a line's first cumulative band to its monthly band).
+    for (const line of ["Tesla", "TeslaNoMonitor"]) {
+      const rows = lineRows(line), bands = rows.map(r => [r.kyoomMin, r.kyoomMax]), was = knotted(line);
+      rows.forEach(r => { const s = runningSums(line, r.month); r.kyoomMin = s.lo + 1; r.kyoomMax = Math.min(r.kyoomMax, s.hi - 1); });
+      const now = knotted(line);
+      check(line + "'s every cumulative band narrowed a mile inside the running sums at both edges", null, [],
+        now === was ? "the change left the first fully knotted month at " + was : null);
+      rows.forEach((r, i) => { [r.kyoomMin, r.kyoomMax] = bands[i]; });
+    }
     // A line's entry replaced by a malformed one: a throw naming the line and
-    // the bad value, as String() writes it, under the field that holds it;
-    // then the entry restored.
-    const malformed = (what, line, entry, field) => {
+    // each given detail (the bad value, as String() writes it, under the field
+    // that holds it, and a range's type, which String() hides), not a
+    // TypeError; then the entry restored.
+    const malformed = (what, line, entry, details) => {
       const saved = PRE_SERIES_OFFSET[line];
       PRE_SERIES_OFFSET[line] = entry;
-      check(what, [named("helmer", line), named(field, String(entry[field]))], [], null);
+      check(what, [named("helmer", line), ...Object.entries(details).map(([key, value]) => named(key, value))], ["TypeError"], null);
       PRE_SERIES_OFFSET[line] = saved;
     };
     const waymoFrom = PRE_SERIES_OFFSET.Waymo.from, waymoRange = PRE_SERIES_OFFSET.Waymo.range;
+    for (const [what, entry] of [["null", null], ["undefined", undefined], ["a number", waymoRange]]) {
+      malformed("Waymo's entry " + what, "Waymo", entry, {entry: String(entry)});
+    }
     for (const [what, range] of [["NaN", NaN], ["negative", -waymoRange], ["Infinity", Infinity],
       ["a string of digits", String(waymoRange)], ["null", null]]) {
-      malformed("Waymo's range " + what, "Waymo", {from: waymoFrom, range}, "range");
+      malformed("Waymo's range " + what, "Waymo", {from: waymoFrom, range}, {range: String(range), type: typeof range});
     }
-    malformed("Waymo's range missing", "Waymo", {from: waymoFrom}, "range");
+    malformed("Waymo's range missing", "Waymo", {from: waymoFrom}, {range: String(undefined), type: typeof undefined});
     for (const [what, from] of [['""', ""], ["Dec 2021", "Dec 2021"], ["2021-13", "2021-13"],
       ["2021-12-01 (a day)", "2021-12-01"], ["202112 (a number)", 202112]]) {
-      malformed("Waymo's month " + what + " with its range above 0", "Waymo", {from, range: waymoRange}, "from");
+      malformed("Waymo's month " + what + " with its range above 0", "Waymo", {from, range: waymoRange}, {from: String(from)});
     }
-    malformed("Waymo's month missing with its range above 0", "Waymo", {range: waymoRange}, "from");
-    malformed("Waymo's range 0 with its month kept", "Waymo", {from: waymoFrom, range: 0}, "from");
-    malformed("Tesla's month (range 0) set to 2099-01", "Tesla", {from: "2099-01", range: 0}, "from");
-    malformed('TeslaNoMonitor given a range (1000) with its month ""', "TeslaNoMonitor", {from: "", range: 1000}, "from");
+    malformed("Waymo's month missing with its range above 0", "Waymo", {range: waymoRange}, {from: String(undefined)});
+    malformed("Waymo's range 0 with its month kept", "Waymo", {from: waymoFrom, range: 0}, {from: waymoFrom});
+    malformed("Tesla's month (range 0) set to 2099-01", "Tesla", {from: "2099-01", range: 0}, {from: "2099-01"});
+    malformed('TeslaNoMonitor given a range (1000) with its month ""', "TeslaNoMonitor", {from: "", range: 1000}, {from: ""});
     // A line given a range and a month but no fully knotted month: the assert
     // that says so. TeslaNoMonitor's last month is loose (its cumulative band
     // is the running sums'); its top is set to the running sum here anyway, so
-    // the case holds whatever knots the line gains.
+    // the line has no fully knotted month whatever knots it gains (the case's
+    // own requirement catches one that stayed: the knot check would throw
+    // naming "expected", or nothing would).
     const tnm = lineRows("TeslaNoMonitor"), tnmLast = tnm[tnm.length - 1];
     const tnmTop = tnmLast.kyoomMax, tnmEntry = PRE_SERIES_OFFSET.TeslaNoMonitor;
     tnmLast.kyoomMax = runningSums("TeslaNoMonitor", tnmLast.month).hi;
     PRE_SERIES_OFFSET.TeslaNoMonitor = {from: tnm[0].month, range: 1000};
-    const tnmKnot = knotted("TeslaNoMonitor");
     check("TeslaNoMonitor given a range (1000) and its first month, " + tnm[0].month + ", as its month",
-      [named("helmer", "TeslaNoMonitor")], ["TypeError", '"expected":', '"range":'],
-      tnmKnot === "9999-12" ? null : "the line kept a fully knotted month (" + tnmKnot + ")");
+      [named("helmer", "TeslaNoMonitor")], ["TypeError", '"expected":', '"range":'], null);
     PRE_SERIES_OFFSET.TeslaNoMonitor = tnmEntry;
     tnmLast.kyoomMax = tnmTop;
     // The entries are the master's lines.
@@ -394,11 +422,11 @@ Resultata: ${initBlock === undefined ? "no init block" : "no such call"}.`);
     if (!held) bad.push(`${c.what}: ${c.got === null ? "silent" : "threw " + JSON.stringify(c.got)}, want ${c.names === null ? "silence" : "a throw naming " + c.names.join(", ") + c.absent.map(n => ", without " + n).join("")}`);
   }
   assert.deepEqual(bad, [],
-    `Replicata: in the app loaded in vm, vmtRows parsed from data/vmt.js as init parses them, run checkPreSeriesOffsets on the data, then on each change (restoring after each): Waymo's and Zoox's PRE_SERIES_OFFSET month moved a month either way; their knotted month's cumulative band top widened to the running sum of the monthly bands; the month before it narrowed strictly inside the running sums at both edges; Waymo's range NaN, negative, Infinity, a string of digits, null or missing; Waymo's month "", "Dec 2021", "2021-13", a day, a number or missing with its range above 0, and kept with its range 0; Tesla's month (range 0) set to 2099-01; TeslaNoMonitor given a range with month "", and with its first month (its last month loose, so no fully knotted month); an entry removed; an entry added for a line with no rows.
-Expectata: silent on the data and after restoring; on every other change a throw: for a moved month or knot naming the line, the month the master gives ("expected") and the constant's ("found"); for a malformed entry naming the line and the bad value under the field that holds it ("range" or "from"); for TeslaNoMonitor with a month but no fully knotted month the assert that says so, naming the line (not a TypeError, nor the knot or form asserts); for a missing or extra entry the master's lines.
+    `Replicata: in the app loaded in vm, vmtRows parsed from data/vmt.js as init parses them, run checkPreSeriesOffsets on the data, then on each change (restoring after each): Waymo's and Zoox's PRE_SERIES_OFFSET month moved a month either way; their knotted month's cumulative band top widened to the running sum of the monthly bands; the month before it narrowed strictly inside the running sums at both edges; Tesla's and TeslaNoMonitor's every cumulative band so narrowed (their range 0); Waymo's entry null, undefined or a number; Waymo's range NaN, negative, Infinity, a string of digits, null or missing; Waymo's month "", "Dec 2021", "2021-13", a day, a number or missing with its range above 0, and kept with its range 0; Tesla's month (range 0) set to 2099-01; TeslaNoMonitor given a range with month "", and with its first month (its last month loose, so no fully knotted month); an entry removed; an entry added for a line with no rows.
+Expectata: silent on the data, after Tesla's two lines' bands are narrowed (a line with no range is not checked against its knots), and after restoring; on every other change a throw: for a moved month or knot naming the line, the month the master gives ("expected") and the constant's ("found"); for a malformed entry naming the line and the bad value under the field that holds it ("entry", "range" with the range's "type", or "from"), not a TypeError; for TeslaNoMonitor with a month but no fully knotted month the assert that says so, naming the line (not a TypeError, nor the knot or form asserts); for a missing or extra entry the master's lines.
 Resultata: ${bad.join("; ")}.`);
   const t0 = process.hrtime.bigint();
   vm.runInContext("for (let i = 0; i < 1000; i++) checkPreSeriesOffsets();", ctx);
   const perCall = Number(process.hrtime.bigint() - t0) / 1e6 / 1000;
-  console.log(`qual pass: the app's load-time check of PRE_SERIES_OFFSET (checkPreSeriesOffsets) is silent on the data, leaves the range-0 lines unchecked against the knots, and throws on ${load.filter(c => c.got !== null).length} changes, naming the line and both months, the line and the bad value, or the master's lines; ${perCall.toFixed(3)} ms a call`);
+  console.log(`qual pass: the app's load-time check of PRE_SERIES_OFFSET (checkPreSeriesOffsets) is silent on the data, leaves the range-0 lines unchecked against the knots even when those move, and throws on ${load.filter(c => c.got !== null).length} changes, naming the line and both months, the line and the bad value, or the master's lines; ${perCall.toFixed(3)} ms a call`);
 }

@@ -359,9 +359,13 @@ A data change that moves a line's first fully knotted month (the month from
 which every cumulative band lies strictly inside the running sums of the
 monthly bands, a knot having shaped both its edges), such as a new knot or a
 re-banded month before it, stops the page at load with the error banner
-(`crashla.js` `checkPreSeriesOffsets`, since 2026-11-03) until
-`PRE_SERIES_OFFSET`'s `from` moves with it; `quals/window-band.qual.mjs`
-goes red on it first.
+(`crashla.js` `checkPreSeriesOffsets`, since 2026-11-03) when the line has a
+pre-series offset range (today Waymo and Zoox, in `PRE_SERIES_OFFSET`),
+until the entry's `from` moves with it; one that leaves such a line no fully
+knotted month at all stops it too, naming the line.
+`quals/window-band.qual.mjs` goes red on either first. Tesla's two lines
+have no range: their `from` stays `""` whatever their knots, and the page
+stops if it is anything else.
 
 ## VMT master
 

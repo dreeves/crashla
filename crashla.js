@@ -1876,7 +1876,8 @@ const PRE_SERIES_OFFSET = {
 };
 // PRE_SERIES_OFFSET checked against the master at load (init runs it right
 // after checkGhostVmtRows; since 2026-11-03, rule 12): one entry for each line
-// the master holds; each entry's range a finite number of miles, 0 or more,
+// the master holds; each entry an object (since 2026-11-04: a null one threw
+// a TypeError naming no line), its range a finite number of miles, 0 or more,
 // and its month "" with a range of 0 and a YYYY-MM month with a range above 0
 // (the range filter below would skip a NaN or negative range silently); and
 // each line with a range starting it at its first fully knotted month, the
@@ -1891,10 +1892,15 @@ function checkPreSeriesOffsets() {
   const lines = [...new Set(vmtRows.map(r => r.helmer))].sort();
   assert(JSON.stringify(entries) === JSON.stringify(lines),
     "PRE_SERIES_OFFSET must have one entry for each line with VMT rows", {entries, lines});
-  // String() names a value JSON cannot write (NaN, Infinity, a missing one).
-  for (const [helmer, {from, range}] of Object.entries(PRE_SERIES_OFFSET)) {
+  // String() names a value JSON cannot write (NaN, Infinity, a missing one);
+  // typeof, the type String() hides (a string of digits for a range).
+  for (const [helmer, entry] of Object.entries(PRE_SERIES_OFFSET)) {
+    assert(entry !== null && typeof entry === "object",
+      "a PRE_SERIES_OFFSET entry must be an object with a range and a month", {helmer, entry: String(entry)});
+    const {from, range} = entry;
     assert(Number.isFinite(range) && range >= 0,
-      "a PRE_SERIES_OFFSET range must be a finite number of miles, 0 or more", {helmer, range: String(range)});
+      "a PRE_SERIES_OFFSET range must be a finite number of miles, 0 or more",
+      {helmer, range: String(range), type: typeof range});
     assert(range === 0 ? from === "" : /^\d{4}-(?:0[1-9]|1[0-2])$/.test(from),
       "a PRE_SERIES_OFFSET month must be \"\" with a range of 0 and a YYYY-MM month with a range above 0",
       {helmer, range, from: String(from)});
