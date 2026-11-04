@@ -19,9 +19,21 @@ const data = vm.runInContext("INCIDENT_DATA", ctx);
 // speed-vs-movement divergence).
 const MOVING = /Proceeding|Making|Turn|Changing|Merging|Passing|Backing|Entering|Leaving|Negotiating|Accelerat|Decelerat|Traveling/;
 
+// Both signals are read on every record: data/slurp.py writes svMovement
+// ("SV Pre-Crash Movement") as a string and speed ("SV Precrash Speed (MPH)")
+// as a whole number, or null where the filed value is not one. A record
+// lacking either counts as agreeing, so until 2026-11-04 (svMovement then read
+// as "" when absent) a renamed or dropped field left this monitor counting
+// nothing and passing at 0 disagreements.
+const unread = data.filter(r => typeof r.svMovement !== "string" || !(typeof r.speed === "number" || r.speed === null));
+assert.equal(unread.length, 0,
+  `Replicata: read svMovement (data/slurp.py's "SV Pre-Crash Movement") and speed ("SV Precrash Speed (MPH)") on every INCIDENT_DATA record.
+Expectata: on each, svMovement a string and speed a number or null (a filed speed that is not a whole number).
+Resultata: ${unread.length} of ${data.length} records lack one; the first: ${unread.slice(0, 5).map(r => `${r.reportId} (svMovement ${JSON.stringify(r.svMovement)}, speed ${JSON.stringify(r.speed)})`).join("; ")}.`);
+
 let spd0Moving = 0, stoppedSpdPos = 0;
 for (const r of data) {
-  if (r.speed === 0 && MOVING.test(r.svMovement || "")) spd0Moving++;
+  if (r.speed === 0 && MOVING.test(r.svMovement)) spd0Moving++;
   if (r.svMovement === "Stopped" && typeof r.speed === "number" && r.speed > 0) stoppedSpdPos++;
 }
 const n = data.length;

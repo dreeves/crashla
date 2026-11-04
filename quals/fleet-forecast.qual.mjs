@@ -31,21 +31,33 @@ Expectata: output is an SVG using the fleet-clip clip-path.
 Resultata: no <svg / fleet-clip found.`,
 );
 
-const svgHeight = Number((html.match(/viewBox="0 0 [\d.]+ ([\d.]+)"/) || [])[1]);
+// The SVG's height and the bottom label are read, never assumed (until
+// 2026-11-04 a chart without a viewBox, or without its axis title among its
+// tick texts, read the inset as NaN, reported as "... was inset NaN").
+const viewBox = html.match(/viewBox="0 0 [\d.]+ ([\d.]+)"/);
+assert.ok(viewBox !== null,
+  `Replicata: call renderFleetForecastChart and read its SVG's viewBox.
+Expectata: "0 0 <width> <height>".
+Resultata: none in ${JSON.stringify(html.slice(0, 200))}.`);
+const svgHeight = Number(viewBox[1]);
 const tickLabels = [...html.matchAll(
   /<text class="month-tick"[^>]*\by="([\d.]+)"[^>]*>([^<]+)<\/text>/g,
 )];
 // The axis title, read from the app (no wording pins in quals, 2026-10-28).
 const fleetTitle = vm.runInContext('growthMetricSpec("fleet").yLabel', ctx);
 const bottomLabel = tickLabels.find(match => match[2] === fleetTitle);
-const bottomLabelInset = svgHeight - Number(bottomLabel?.[1]);
+assert.ok(bottomLabel !== undefined,
+  `Replicata: call renderFleetForecastChart and find its axis title (growthMetricSpec("fleet").yLabel, ${JSON.stringify(fleetTitle)}) among its month-tick texts.
+Expectata: one, the bottom label.
+Resultata: the month-tick texts ${JSON.stringify(tickLabels.map(match => match[2]))}.`);
+const bottomLabelInset = svgHeight - Number(bottomLabel[1]);
 assert.equal(
   bottomLabelInset,
   9,
   `Replicata: render the fleet forecast at 320px through 1000px wide.
 Expectata: the bottom label's baseline is inset nine SVG units, keeping the
 label's descenders inside the viewport in Chromium, Firefox, and WebKit.
-Resultata: ${JSON.stringify(bottomLabel?.[2])} was inset ${bottomLabelInset}.`,
+Resultata: ${JSON.stringify(bottomLabel[2])} was inset ${bottomLabelInset}.`,
 );
 
 for (const [label, color] of [["Tesla robotaxi", "#d13b2d"], ["Tesla HW4", "#e08a2e"],

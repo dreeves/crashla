@@ -130,7 +130,16 @@ Expectata: vmt = the safety page's figure; a positive lower edge at or below the
 Resultata: ${JSON.stringify(badMiles.map(p => p.slice(0, 8)))}.`);
 const vmtJs = fs.readFileSync("data/vmt.js", "utf8");
 const jsRows = parseCsv(vmtJs.slice(vmtJs.indexOf("/* VMT_CSV_START */") + 19, vmtJs.indexOf("/* VMT_CSV_END */")).replace(/^`|`$/g, "").trim());
-const cov = (h, m) => jsRows.find(p => p[0] === h && p[1] === m)?.slice(8, 14).join(",");
+// A row's coverage columns, the row required (until 2026-11-04 a month
+// missing for both lines read undefined for both, which compared equal).
+const cov = (h, m) => {
+  const row = jsRows.find(p => p[0] === h && p[1] === m);
+  assert.ok(row !== undefined,
+    `Replicata: find the ${h} ${m} row in data/vmt.js's analysis segment.
+Expectata: present (each teslanomonitor month through the data-through month, and Tesla's).
+Resultata: none.`);
+  return row.slice(8, 14).join(",");
+};
 const covDiff = Object.keys(MILES).filter(m => cov("teslanomonitor", m) !== cov("tesla", m));
 assert.deepEqual(covDiff, [], `Replicata: compare data/vmt.js coverage columns of teslanomonitor and tesla month by month.
 Expectata: identical (the line inherits Tesla's receipt and incident coverage).

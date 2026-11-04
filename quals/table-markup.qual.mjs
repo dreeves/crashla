@@ -69,8 +69,16 @@ assert.equal(onlyDecl(num.body, "white-space", "td.num, th.num"), "nowrap");
   for (const m of html.matchAll(/<table([^>]*)>([\s\S]*?)<\/table>/g)) {
     const id = (/\bid="([^"]*)"/.exec(m[1]) || [])[1];
     seen.add(id);
-    const heads = [...((/<thead>([\s\S]*?)<\/thead>/.exec(m[2]) || [])[1] || "").matchAll(/<th([^>]*)>/g)].map(h => isNum(h[1]));
-    const rows = [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(m[2]) || [])[1] || "").matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)]
+    // The header cells and the body are read, never assumed (until
+    // 2026-11-04 a table without a thead, or without a tbody, read as no
+    // columns or no rows, and the comparisons below checked nothing of it).
+    const head = /<thead>([\s\S]*?)<\/thead>/.exec(m[2]), body = /<tbody>([\s\S]*?)<\/tbody>/.exec(m[2]);
+    assert.ok(head !== null && body !== null && /<th[\s>]/.test(head[1]),
+      `Replicata: render the sanity section (default window) and read the header cells and body of the table ${JSON.stringify(id)}.
+Expectata: a thead holding header cells, and a tbody: the cells compared below.
+Resultata: ${JSON.stringify(m[2].slice(0, 300))}.`);
+    const heads = [...head[1].matchAll(/<th([^>]*)>/g)].map(h => isNum(h[1]));
+    const rows = [...body[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)]
       .map(r => [...r[1].matchAll(/<td([^>]*)>([\s\S]*?)<\/td>/g)].map(c => ({ num: isNum(c[1]), span: /colspan/.test(c[1]), text: c[2].replace(/<[^>]*>/g, "").trim() })))
       .filter(r => r.length === heads.length && !r.some(c => c.span));
     heads.forEach((thNum, j) => {

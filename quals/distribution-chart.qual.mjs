@@ -642,17 +642,12 @@ const meanCheck = vm.runInContext(`
       // seriesMarkName), found by the value its first line reports.
       const tip = targets.find(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip
         && t.tip.split("\\n")[0].endsWith(": " + fmtMiles(e.postMedian))).tip;
-      // The mean: the second of the second line's " · "-separated parts,
-      // after the median (or peak) and before the MLE, its value the part's
-      // last word. Until 2026-10-29 this read it after the tooltip's word
-      // "mean".
-      const shown = ((tip.split("\\n")[1] || "").split(" · ")[1] || "").split(" ").pop();
       const aMin = Math.min(...e.comps.map(c => c.a));
       // numeric mean of the drawn density (w.r.t. ln x): wide fine grid
       let m0 = 0, m1 = 0;
       const lo = Math.log(e.postMedian) - 9, hi = Math.log(e.postMedian) + 9, n = 40000, st = (hi - lo) / (n - 1);
       for (let i = 0; i < n; i++) { const x = Math.exp(lo + st * i), d = e.densityFn(x); m0 += d; m1 += x * d; }
-      out.push({mk, h, shown, aMin, numeric: m1 / m0, median: e.postMedian});
+      out.push({mk, h, tip, aMin, numeric: m1 / m0, median: e.postMedian});
     }
   }
   return out;
@@ -660,13 +655,23 @@ const meanCheck = vm.runInContext(`
 const fromMiles = s => Number(s.replace(/[KMB]$/, "")) * ({K: 1e3, M: 1e6, B: 1e9}[s.at(-1)] || 1);
 const meanProblems = [];
 for (const r of meanCheck) {
+  // The mean: the second of the second line's " · "-separated parts, after
+  // the median (or peak) and before the MLE, its value the part's last word.
+  // Until 2026-10-29 this read it after the tooltip's word "mean"; until
+  // 2026-11-04 a tooltip without that part read as a mean of "".
+  const lines = r.tip.split("\n");
+  assert.ok(lines.length >= 2 && lines[1].split(" · ").length >= 2,
+    `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, hover ${r.h}'s Median marker on ${r.mk} and read its tooltip's second line.
+Expectata: its " · "-separated parts, the second the curve's mean.
+Resultata: the tooltip ${JSON.stringify(r.tip)}.`);
+  const shown = lines[1].split(" · ")[1].split(" ").pop();
   if (r.aMin <= 1) {
-    if (r.shown !== "∞") meanProblems.push(`${r.h} ${r.mk}: a component has a_K = ${r.aMin}, so the mean is infinite, but the tooltip says ${r.shown}`);
+    if (shown !== "∞") meanProblems.push(`${r.h} ${r.mk}: a component has a_K = ${r.aMin}, so the mean is infinite, but the tooltip says ${shown}`);
   } else if (r.aMin > 3) {
     // half a unit of the last displayed digit (one decimal of the K/M/B unit)
-    const unit = ({K: 1e3, M: 1e6, B: 1e9}[r.shown.at(-1)] || 1) * 0.1;
-    if (Math.abs(fromMiles(r.shown) - r.numeric) > 0.5 * unit * 1.001)
-      meanProblems.push(`${r.h} ${r.mk}: tooltip mean ${r.shown}, drawn curve's mean ${Math.round(r.numeric)} (median ${Math.round(r.median)})`);
+    const unit = ({K: 1e3, M: 1e6, B: 1e9}[shown.at(-1)] || 1) * 0.1;
+    if (Math.abs(fromMiles(shown) - r.numeric) > 0.5 * unit * 1.001)
+      meanProblems.push(`${r.h} ${r.mk}: tooltip mean ${shown}, drawn curve's mean ${Math.round(r.numeric)} (median ${Math.round(r.median)})`);
   }
 }
 assert.ok(meanCheck.filter(r => r.aMin > 3).length >= 6 && meanProblems.length === 0,

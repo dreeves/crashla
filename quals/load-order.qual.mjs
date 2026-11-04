@@ -123,15 +123,17 @@ try {
       await bare.close();
 
       // The room is held only until the first build: with no company checked
-      // the company charts' box is empty again, and takes none.
+      // the company charts' box is empty again, and takes none. The box is
+      // read from a drawn page: until 2026-11-04 a wait that timed out was
+      // swallowed here, and a page that never drew, its box empty too, passed.
       const none = await browser.newContext({ viewport: { width: 1200, height: 900 } });
       await none.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
       const humans = await none.newPage();
       await humans.goto(server.url + "?f=All&s=-&a=1&c=HumansAV&m=atfault", { waitUntil: "load" });
-      await humans.waitForFunction(drawnAll, null, { timeout: 30000 }).catch(() => {});
+      const drew = await humans.waitForFunction(drawnAll, null, { timeout: 30000 }).then(() => true, () => false);
       const empty = await humans.evaluate(() => ({ children: document.getElementById("chart-helmer-series").children.length,
         height: document.getElementById("chart-helmer-series").getBoundingClientRect().height }));
-      if (!(empty.children === 0 && empty.height < 1)) problems.push(`${engineName}: with no company checked the company charts' box holds ${empty.children} charts and is ${empty.height.toFixed(1)} px tall (want none, 0 px)`);
+      if (!(drew && empty.children === 0 && empty.height < 1)) problems.push(`${engineName}: with no company checked the page drew within 30 s: ${drew}; the company charts' box holds ${empty.children} charts and is ${empty.height.toFixed(1)} px tall (want true, none, 0 px)`);
       await none.close();
     } finally {
       await browser.close();
@@ -142,8 +144,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, load the default view at 1200x900, watching every animation frame from the document's start, then click the "Tesla" filter and the "All" filter; load the default view again with crashla.js withheld; then load c=HumansAV (no company checked).
-Expectata: the first frame that shows the charts and cards also shows every incident row, the sanity section and both growth charts; no page error; the incident box has content-visibility auto in the default view and after each filter click; Chromium records a layout shift under 0.01; the "Vehicle Miles Traveled" heading sits within 1 px of the same place before the script runs and once the page is drawn; the empty incident box before the script runs is, within 1 px, as tall as the drawn page's, both where it sits off screen and once scrolled on screen; and with no company checked (c=HumansAV) the company charts' box is empty and 0 px tall.
+  `Replicata: in Chromium, Firefox and WebKit, load the default view at 1200x900, watching every animation frame from the document's start, then click the "Tesla" filter and the "All" filter; load the default view again with crashla.js withheld; then load c=HumansAV (no company checked) and wait up to 30 s for it to draw.
+Expectata: the first frame that shows the charts and cards also shows every incident row, the sanity section and both growth charts; no page error; the incident box has content-visibility auto in the default view and after each filter click; Chromium records a layout shift under 0.01; the "Vehicle Miles Traveled" heading sits within 1 px of the same place before the script runs and once the page is drawn; the empty incident box before the script runs is, within 1 px, as tall as the drawn page's, both where it sits off screen and once scrolled on screen; and with no company checked (c=HumansAV) the page draws within 30 s and the company charts' box is empty and 0 px tall.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: a load paints the page whole, with every view built in the script's task, keeps the incident box's layout skipping through filter clicks, and shifts nothing, in three engines");

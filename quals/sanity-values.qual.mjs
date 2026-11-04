@@ -315,7 +315,7 @@ Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
   // A badge cell: whether its badge is marked prior-only, and whether a marked
   // one carries the prior-only tip.
   const badge = cell => {
-    const m = /<span class="stress-badge ([^"]*)"([^>]*)>/.exec(cell || "");
+    const m = /<span class="stress-badge ([^"]*)"([^>]*)>/.exec(cell);
     const marked = m !== null && m[1].split(" ").includes("prior-only");
     return { marked, tipped: m !== null && m[2].includes(`data-tip="${escAttr(priorTip)}"`) };
   };
@@ -325,6 +325,12 @@ Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
     const rows = bodyRows(sec.slice(sec.indexOf(`id="${id}"`)));
     if (rows.length !== ks.length) { problems.push(`${id}: ${rows.length} rows, want ${ks.length}`); continue; }
     rows.forEach((r, i) => {
+      // The row's verdict cell is read, never assumed (until 2026-11-04 a
+      // row short of it read as an unmarked badge, which passed for k > 0).
+      assert.ok(r.cells.length > col,
+        `Replicata: read the verdict badge (cell ${col + 1}) of row ${i + 1} of the ${id} table, full history.
+Expectata: the row has that cell.
+Resultata: a row of ${r.cells.length} cells: ${JSON.stringify(r.cells.map(c => c.slice(0, 40)))}.`);
       const b = badge(r.cells[col]);
       if (b.marked !== (ks[i] === 0) || (b.marked && !b.tipped))
         problems.push(`${id} row ${i + 1} (${r.cells[0]}${id === "sanity-stress" ? ` ${r.cells[1]}` : ""}): k = ${ks[i]}, badge ${b.marked ? `marked prior-only${b.tipped ? "" : " without the prior-only tip"}` : "not marked"}`);

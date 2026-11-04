@@ -111,15 +111,32 @@ if (typeof NOTE === "string" && NOTE.trim() !== "") {
 
     // --- 4. The Sensitivity table: the fatality rows' counts ---------------
     const stress = vm.runInContext(`renderStressTestTable(${slice})`, ctx);
-    const table = (/<table[^>]*\bid="sanity-stress"[^>]*>([\s\S]*?)<\/table>/.exec(stress) || [])[1] || "";
-    const bodyRows = [...((/<tbody>([\s\S]*?)<\/tbody>/.exec(table) || [])[1] || "").matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
+    // The table, its body and each row's count cell are read, never assumed
+    // (until 2026-11-04 a missing table or body read as no rows, which the
+    // row count below reported as "0 fatality rows", and a row short of its
+    // count cell read as a count without the note).
+    const table = /<table[^>]*\bid="sanity-stress"[^>]*>([\s\S]*?)<\/table>/.exec(stress);
+    assert.ok(table !== null,
+      `Replicata: render the Sensitivity table (renderStressTestTable) for the ${win} window.
+Expectata: a table with id sanity-stress, the rows whose count cells this check reads.
+Resultata: none in ${JSON.stringify(stress.slice(0, 300))}.`);
+    const body = /<tbody>([\s\S]*?)<\/tbody>/.exec(table[1]);
+    assert.ok(body !== null,
+      `Replicata: render the Sensitivity table (renderStressTestTable) for the ${win} window and read its body.
+Expectata: a tbody holding its rows.
+Resultata: none in ${JSON.stringify(table[1].slice(0, 300))}.`);
+    const bodyRows = [...body[1].matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
       .map(x => [...x[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(c => c[1]));
     const fatalityLabel = run("METRIC_BY_KEY.fatality.cardLabel");
     let fatalityRows = 0;
     for (const cells of bodyRows) {
+      assert.ok(cells.length >= 3,
+        `Replicata: render the Sensitivity table (renderStressTestTable) for the ${win} window and read each row's company, metric and count cells.
+Expectata: each row has them, its count the third cell.
+Resultata: a row of ${cells.length} cells: ${JSON.stringify(cells)}.`);
       const isFatality = decode(cells[1]) === fatalityLabel;
       fatalityRows += Number(isFatality);
-      const carries = tipsOf(cells[2] || "").includes(NOTE);
+      const carries = tipsOf(cells[2]).includes(NOTE);
       if (carries !== isFatality) problems.push(`${win} Sensitivity table, ${decode(cells[0])} ${decode(cells[1])}: the count cell ${carries ? "carries" : "lacks"} the note (${JSON.stringify(cells[2])})`);
       if (cells.slice(3).some(c => tipsOf(c).includes(NOTE))) problems.push(`${win} Sensitivity table, ${decode(cells[0])} ${decode(cells[1])}: the note sits outside the count cell`);
     }

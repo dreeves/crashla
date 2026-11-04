@@ -74,7 +74,14 @@ assert.equal(new Set(labels).size, labels.length,
   `Replicata: compare the labels in BENCHMARK_SOURCES.
 Expectata: no two sources share a label.
 Resultata: ${JSON.stringify(labels)}.`);
-const sep = vm.runInContext(`typeof SOURCE_LIST_SEP === "undefined" ? ", " : SOURCE_LIST_SEP`, ctx);
+// The separator is the app's (until 2026-11-04 a crashla.js without
+// SOURCE_LIST_SEP was read as joining with ", ", so the check below blamed the
+// labels' own commas).
+const sep = vm.runInContext(`typeof SOURCE_LIST_SEP === "undefined" ? null : SOURCE_LIST_SEP`, ctx);
+assert.ok(typeof sep === "string",
+  `Replicata: read SOURCE_LIST_SEP in crashla.js.
+Expectata: a string, the separator between the links of a source list.
+Resultata: ${JSON.stringify(sep)}.`);
 assert.ok(labels.every(l => !l.includes(sep.trim())),
   `Replicata: look for the link-list separator ${JSON.stringify(sep)} inside a source label.
 Expectata: none — a label like "Kusano et al. 2024, Table 3" keeps its comma, and the lists separate entries with ${JSON.stringify(sep)}, so one label never reads as two.

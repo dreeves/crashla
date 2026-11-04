@@ -70,6 +70,13 @@ const out = JSON.parse(vm.runInContext(`
   });
 })()`, ctx));
 
+// The two cells are read, never assumed: a row not found, or one without a
+// Location cell, reads undefined, which JSON drops (until 2026-11-04 the
+// check below then printed the object without the key).
+assert.ok(typeof out.blankCell === "string" && typeof out.firstSorted === "string",
+  `Replicata: add a Waymo JUL-2025 incident with empty city and state, sort the incident browser by Location ascending, and read the Location cell (the third) of its row and of the first row.
+Expectata: both rows, each with a Location cell.
+Resultata: its row's cell ${typeof out.blankCell}, the first row's ${typeof out.firstSorted}.`);
 assert.deepEqual(out, { blankCell: "Unknown", bareCommaRows: 0, firstSorted: out.firstSorted, sortKey: "Unknown", geographyLabel: "Unknown" },
   `Replicata: add a Waymo JUL-2025 incident with empty city and state, sort the incident browser by Location ascending, and read its Location cell.
 Expectata: the cell and the Location sort key read "Unknown" (the Geography table's label for a location-less filing), and no row shows a bare comma.

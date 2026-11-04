@@ -110,12 +110,22 @@ try {
 
 // The rendered panel as rows: question (or outcome) text, faded, state label.
 const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+// A card's question link, the text that names the card here (until 2026-11-04
+// a card without one was named "?", and checked as an ordinary live card).
+const questionLink = card => {
+  const link = /<a [^>]*>(?:<b>)?([^<]*)/.exec(card.innerHTML);
+  assert.ok(link !== null,
+    `Replicata: read the prediction-market panel's cards (readPanel).
+Expectata: each card holds its question's link, whose text names the card.
+Resultata: a card without one: ${JSON.stringify(card.innerHTML.slice(0, 300))}.`);
+  return link;
+};
 function readPanel() {
   const panel = nodes.get("predmarket-panel");
   const grid = panel.children[0];
   return {
     cards: grid.children.map(card => ({
-      text: decode((/<a [^>]*>(?:<b>)?([^<]*)/.exec(card.innerHTML) || [, "?"])[1]),
+      text: decode(questionLink(card)[1]),
       header: card.innerHTML.includes("<b>"),
       sub: card.classes.has("pm-subcard"),
       faded: card.classes.has("pm-faded"),

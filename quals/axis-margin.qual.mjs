@@ -75,7 +75,15 @@ const ticks = [...html.matchAll(
   /<text class="month-tick" x="([\d.]+)"[^>]*text-anchor="end">([^<]+)<\/text>/g,
 )].map(m => ({ x: Number(m[1]), label: m[2] }));
 assert.ok(ticks.length > 0, "the growth trajectory chart draws y tick labels");
-const axisX = Number((html.match(/<line class="month-axis" x1="([\d.]+)" y1="[\d.]+" x2="\1"/) || [])[1]);
+// The vertical axis line: a month-axis line whose x1 is its x2 (until
+// 2026-11-04 a chart without one read its x as NaN, and the check below failed
+// on the first tick as sitting "one gap left of the axis line at NaN").
+const axisLine = html.match(/<line class="month-axis" x1="([\d.]+)" y1="[\d.]+" x2="\1"/);
+assert.ok(axisLine !== null,
+  `Replicata: render the growth trajectory chart and find its vertical axis line.
+Expectata: a month-axis line whose x1 equals its x2, the line the y tick labels sit left of.
+Resultata: the chart's month-axis lines are ${JSON.stringify(html.match(/<line class="month-axis"[^>]*>/g))}.`);
+const axisX = Number(axisLine[1]);
 for (const tick of ticks) {
   assert.equal(tick.x, axisX - 8, `tick ${JSON.stringify(tick.label)} sits one gap left of the axis line at ${axisX}`);
   const leftEdge = tick.x - 8 * (tick.label.length + 0.5 * tick.label.replace(/[^KMBT]/g, "").length);

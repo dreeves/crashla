@@ -32,7 +32,13 @@ _lm = format_datetime(datetime.datetime.fromisoformat(_modified + 'T12:00:00+00:
 HEADERS = {slurp.NHTSA_ADS_CSV_URL: (_lm, None), slurp.NHTSA_ADS_ARCHIVE_URL: (_lm, None)}
 def run_main(extra=(), fault_text=None, **patch):
     names = ('fetch_nhtsa_csv', 'INCIDENT_JS', 'VMT_JS', 'FAULT_INPUT', *patch)
-    saved = {k: getattr(slurp, k, None) for k in names}
+    # Each name is one data/slurp.py defines (until 2026-11-04 a patch of a
+    # name it does not define was set and later restored as None, and the run
+    # it was for patched nothing slurp reads).
+    undefined_names = [k for k in names if not hasattr(slurp, k)]
+    assert undefined_names == [], (f"Replicata: run slurp.main() offline (quals/slurp-offline.mjs run_main) with {sorted(patch)} patched. "
+                                   f"Expectata: each a name data/slurp.py defines. Resultata: it defines none of {undefined_names}.")
+    saved = {k: getattr(slurp, k) for k in names}
     with tempfile.TemporaryDirectory() as d:
         d = pathlib.Path(d)
         start = {'incidents.js': TEXT['incidents.js'], 'vmt.js': TEXT['vmt.js'],
@@ -59,7 +65,12 @@ for _name in ('OPERATOR_TYPE_OVERRIDE', 'TELEOP_DRIVEN_REPORTS', 'REMOTE_LANGUAG
               'SPLIT_SAME_INCIDENT_REPORTS', 'SUPERSEDED_REPORTS', 'LOCATION_OVERRIDE', 'SEVERITY_OVERRIDE',
               'AIRBAG_OVERRIDE', 'VEHICLES_INVOLVED', 'SECOND_INVOLVEMENTS', 'SECOND_AV_REVIEWED',
               'MISFILED_ADS_REPORTS', 'NON_ADS_FILE_EXCLUDED'):
-    _REVIEWED |= set(getattr(slurp, _name, ()))
+    # Each table read, never assumed (until 2026-11-04 a table data/slurp.py
+    # no longer defined added no Report IDs, so template() could pick a report
+    # it names).
+    assert hasattr(slurp, _name), (f"Replicata: collect the Report IDs data/slurp.py's reviewed tables name (quals/slurp-offline.mjs, _REVIEWED). "
+                                   f"Expectata: data/slurp.py defines {_name}. Resultata: it does not.")
+    _REVIEWED |= set(getattr(slurp, _name))
 def _trips(r):
     probe = dict(r, **{'Report ID': 'synthetic-probe'})
     for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified, slurp.check_occupancy_classified,

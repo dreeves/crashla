@@ -668,9 +668,18 @@ Resultata: mpi-helmers=${JSON.stringify(plain.legendMpiHelmers)}, mpi-lines=${JS
 // the human's edits and caught no agent's; the human reviews every diff).
 const firstMonthCards = vm.runInContext(`renderMpiSummaryCards(sliceSeries(monthSeriesData(), 0, 0))`, ctx);
 const NO_MILES = vm.runInContext("NO_MILES_NOTE", ctx);
-// A card, found by its helmer's label (helmerLabel).
-const cardOf = (html, helmer) => html.split('class="mpi-card-helmer">')
-  .find(s => s.startsWith(escText(helmerLabelOf(helmer)) + "<")) || "";
+// A card, found by its helmer's label (helmerLabel), and required (until
+// 2026-11-04 a card not found read as one with no lines, so the checks below
+// reported its VMT lines as [] and named no card).
+const cardOf = (html, helmer) => {
+  const pieces = html.split('class="mpi-card-helmer">');
+  const card = pieces.find(s => s.startsWith(escText(helmerLabelOf(helmer)) + "<"));
+  assert.ok(card !== undefined,
+    `Replicata: render the summary cards and find the ${helmer} card by its label (helmerLabel, ${JSON.stringify(helmerLabelOf(helmer))}).
+Expectata: one.
+Resultata: the cards' labels ${JSON.stringify(pieces.slice(1).map(s => s.slice(0, s.indexOf("<"))))}.`);
+  return card;
+};
 const vmtLines = card => [...card.matchAll(/<div class="mpi-card-vmt"([^>]*)>([\s\S]*?)<\/div>/g)]
   .map(m => ({ attrs: m[1], body: m[2] }));
 for (const helmer of ["Tesla", "Zoox"]) {

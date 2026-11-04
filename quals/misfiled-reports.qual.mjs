@@ -40,8 +40,14 @@ out = {'urls': [getattr(slurp, 'NHTSA_ADAS_CSV_URL', None), getattr(slurp, 'NHTS
        'excluded': {k: list(v) for k, v in getattr(slurp, 'NON_ADS_FILE_EXCLUDED', {}).items()}}
 snap = pathlib.Path('data/snapshots')
 texts = {p: (sorted(snap.glob(p + '-*.csv')) or [None])[-1] for p in ('nhtsa-adas', 'nhtsa-other')}
-out['snapshots'] = {p: (path.name if path else None) for p, path in texts.items()}
-texts = {p: path.read_text(encoding='utf-8') for p, path in texts.items() if path}
+# Both snapshots are read, never assumed: until 2026-11-04 a missing one read
+# as None here and the run went on to slurp.newest_snapshot_rows(), which
+# stopped on a TypeError naming no file, before this qual's check of both.
+assert None not in texts.values(), (f"Replicata: list data/snapshots for the newest nhtsa-adas-* and nhtsa-other-* files (quals/misfiled-reports.qual.mjs). "
+                                    f"Expectata: both exist (the release's two non-ADS files, read with the ADS files). "
+                                    f"Resultata: none for {[p for p, path in texts.items() if path is None]}.")
+out['snapshots'] = {p: path.name for p, path in texts.items()}
+texts = {p: path.read_text(encoding='utf-8') for p, path in texts.items()}
 # this qual's own tripwire recount over the two newest snapshots
 need = []
 for p, text in texts.items():
@@ -72,21 +78,20 @@ def with_rows(text, change):
     rdr = change(rdr)
     buf = io.StringIO(); w = csv.DictWriter(buf, fieldnames=fields, lineterminator='\n'); w.writeheader(); w.writerows(rdr)
     return buf.getvalue()
-if len(texts) == 2:
-    adas = texts['nhtsa-adas']
-    tmpl = next(r for r in csv.DictReader(io.StringIO(adas)) if r['Report ID'] == '30270-14303')
-    def add(row):
-        return lambda rs: rs + [dict(tmpl, **row)]
-    out['stop'] = {
-      'baseline': stops(ads, texts),
-      'unlistedWaymo': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report ID': '30270-99001', 'Same Incident ID': 'synthetic-99001'}))})),
-      'unlistedZooxOther': stops(ads, dict(texts, **{'nhtsa-other': with_rows(texts['nhtsa-other'], add({'Report ID': '30610-99002', 'Same Incident ID': 'synthetic-99002', 'Reporting Entity': 'Zoox, Inc.', 'Driver / Operator Type': 'Unknown', 'Automation System Engaged?': 'Unknown'}))})),
-      'teslaConsumer': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report ID': '13781-99003', 'Same Incident ID': 'synthetic-99003', 'Reporting Entity': 'Tesla, Inc.', 'Driver / Operator Type': 'Consumer'}))})),
-      'operatorChanged': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report Version': '2', 'Report Type': 'Update', 'Driver / Operator Type': 'In-Vehicle (Commercial / Test)'}))})),
-      'movedToAds': stops(ads + [dict(tmpl, **{'Automation System Engaged?': 'ADS'})], texts),
-      'gone': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, lambda rs: [r for r in rs if r['Report ID'] != '30270-14303'])})),
-      'unquoted': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report Version': '2', 'Report Type': 'Update', 'Narrative': 'The Waymo AV was stopped and a passenger opened its door.'}))})),
-    }
+adas = texts['nhtsa-adas']
+tmpl = next(r for r in csv.DictReader(io.StringIO(adas)) if r['Report ID'] == '30270-14303')
+def add(row):
+    return lambda rs: rs + [dict(tmpl, **row)]
+out['stop'] = {
+  'baseline': stops(ads, texts),
+  'unlistedWaymo': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report ID': '30270-99001', 'Same Incident ID': 'synthetic-99001'}))})),
+  'unlistedZooxOther': stops(ads, dict(texts, **{'nhtsa-other': with_rows(texts['nhtsa-other'], add({'Report ID': '30610-99002', 'Same Incident ID': 'synthetic-99002', 'Reporting Entity': 'Zoox, Inc.', 'Driver / Operator Type': 'Unknown', 'Automation System Engaged?': 'Unknown'}))})),
+  'teslaConsumer': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report ID': '13781-99003', 'Same Incident ID': 'synthetic-99003', 'Reporting Entity': 'Tesla, Inc.', 'Driver / Operator Type': 'Consumer'}))})),
+  'operatorChanged': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report Version': '2', 'Report Type': 'Update', 'Driver / Operator Type': 'In-Vehicle (Commercial / Test)'}))})),
+  'movedToAds': stops(ads + [dict(tmpl, **{'Automation System Engaged?': 'ADS'})], texts),
+  'gone': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, lambda rs: [r for r in rs if r['Report ID'] != '30270-14303'])})),
+  'unquoted': stops(ads, dict(texts, **{'nhtsa-adas': with_rows(adas, add({'Report Version': '2', 'Report Type': 'Update', 'Narrative': 'The Waymo AV was stopped and a passenger opened its door.'}))})),
+}
 # fetch_nhtsa_csv: four files fetched and snapshotted, the same rows as the snapshots give
 class Resp:
     def __init__(self, body): self.body = body; self.headers = {'Last-Modified': 'Thu, 15 Oct 2026 12:30:00 GMT', 'ETag': None}
@@ -163,10 +168,21 @@ Resultata: ${JSON.stringify(S.fetch)}.`);
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync("data/incidents.js", "utf8"), ctx);
 const rec = vm.runInContext("INCIDENT_DATA", ctx).find(r => r.reportId === "30270-14303");
+// The record and its fault rating are read, never assumed (until 2026-11-04
+// a record without a rating read its faultfrac as undefined, which JSON drops,
+// so the check below printed the record without the field).
+assert.ok(rec !== undefined,
+  `Replicata: look up 30270-14303 in data/incidents.js.
+Expectata: its record.
+Resultata: none.`);
+assert.ok(typeof rec.fault === "object" && rec.fault !== null,
+  `Replicata: look up 30270-14303's fault rating in data/incidents.js.
+Expectata: a rating (its data/faultfrac.csv row's).
+Resultata: fault ${JSON.stringify(rec.fault)}.`);
 const [header, ...rows] = parseCsv(fs.readFileSync("data/faultfrac.csv", "utf8"));
 const row = rows.find(r => r[header.indexOf("reportID")] === "30270-14303");
-const got = rec && { helmer: rec.helmer, date: rec.date, city: rec.city, speed: rec.speed, svHit: rec.svHit, cpHit: rec.cpHit,
-  faultfrac: rec.fault?.faultfrac, csv: row ? Number(row[header.indexOf("faultfrac")]) : null };
+const got = { helmer: rec.helmer, date: rec.date, city: rec.city, speed: rec.speed, svHit: rec.svHit, cpHit: rec.cpHit,
+  faultfrac: rec.fault.faultfrac, csv: row ? Number(row[header.indexOf("faultfrac")]) : null };
 assert.deepEqual(got, { helmer: "Waymo", date: "MAR-2026", city: "San Francisco", speed: 0, svHit: "right", cpHit: "front left", faultfrac: 0.1, csv: 0.1 },
   `Replicata: look up 30270-14303 in data/incidents.js and data/faultfrac.csv.
 Expectata: the Waymo crash of MAR-2026 in San Francisco, stopped (0 mph), its right side struck by the passing car's front left, rated 0.1 in both files.

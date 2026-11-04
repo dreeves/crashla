@@ -58,11 +58,18 @@ try {
         const errors = [];
         page.on("pageerror", err => errors.push(err.message));
         await page.setContent(`<iframe id="f" style="${style}" src="${server.url}"></iframe>`);
-        let frame = null;
+        // The iframe's frame, waited for up to 5 s and then required (until
+        // 2026-11-04 a frame that never appeared failed below as a TypeError,
+        // "Cannot read properties of null", naming no frame).
+        let frame;
         for (let i = 0; i < 100 && !frame; i++) {
-          frame = page.frames().find(f => f.url().startsWith(server.url)) || null;
+          frame = page.frames().find(f => f.url().startsWith(server.url));
           if (!frame) await page.waitForTimeout(50);
         }
+        assert.ok(frame !== undefined,
+          `Replicata: in ${engineName}, load the page in an iframe styled ${style} and wait up to 5 s for its frame.
+Expectata: a frame whose URL is under ${server.url}.
+Resultata: the page's frames ${JSON.stringify(page.frames().map(f => f.url()))}.`);
         await frame.waitForFunction(() => document.readyState === "complete");
         await frame.waitForFunction(() => document.querySelector(".pm-refresh") !== null &&
           document.querySelector(".pm-refresh").getAttribute("aria-disabled") !== "true", null, { timeout: 30000 }).catch(() => {});
