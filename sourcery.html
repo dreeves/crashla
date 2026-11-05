@@ -13674,7 +13674,11 @@ PS: Claude typed the following, so I&#x27;m less sure it&#x27;s useful but just 
 <article class="exchange claude" id="p659" data-login="dreeves">
 <header><p class="speaker">dreev</p>
 <div class="diffstat">+7 −2 <span class="blocks" aria-hidden="true"><span class="add"></span><span class="add"></span><span class="add"></span><span class="del"></span><span class="nil"></span></span></div></header>
-<pre class="prompt">Answering your earlier question "Your commit 0250d85 turned fleet-timeseries.qual red. The qual requires the fleet note to state the 180 miles a car-day. To rule out figures like 180,000 or 180.5, it rejects any 180 followed by a comma or period, so your "divided by 180, our assumed miles per car-day" fails. Change the check to reject a comma or period only when a digit follows? It would still rule out 180,000, 180.5, 1,180 and 1800, and accept your sentence.": Change the check (Recommended)</pre>
+<div class="ballot machine">
+<div class="ballot-question">Your commit 0250d85 turned fleet-timeseries.qual red. The qual requires the fleet note to state the 180 miles a car-day. To rule out figures like 180,000 or 180.5, it rejects any 180 followed by a comma or period, so your "divided by 180, our assumed miles per car-day" fails. Change the check to reject a comma or period only when a digit follows? It would still rule out 180,000, 180.5, 1,180 and 1800, and accept your sentence.</div>
+<div class="option picked">✓ Change the check (Recommended)</div>
+<div class="option">· Leave it red</div>
+</div>
 <details>
 <summary><a class="anchor" href="#p659"><time datetime="2026-11-03T18:51:51.865000+00:00">18:51</time></a> <span class="chip"></span> <span class="agent">Claude Code</span> <span class="model">claude-opus-5-5</span> <span class="effort">(xhigh)</span> <span class="elapsed">thought for 1m48s · 1m59s wall-clock time</span></summary>
 <div class="reply machine"><p>The run from before the restart left no results, so the suite needs a fresh run. Applying your approved change first:</p>

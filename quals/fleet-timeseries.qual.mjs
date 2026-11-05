@@ -264,7 +264,8 @@ Resultata: ${JSON.stringify(notes.out.fleet.note)}.`);
 // --- 8. The fleet view's y axis tops out at the decade above what it draws ---
 // The fleet trajectory's log axis framed 6 to 4,000,000 while nothing it drew
 // passed ~358,000 (the all-HW4 lane's 95th percentile then, on the tables of
-// 2026-11-01; ~324,000 since 2026-11-03), so its top decade was empty
+// 2026-11-01; ~324,000 from 2026-11-03 and ~319,000 since 2026-11-04, the
+// exact sum), so its top decade was empty
 // (decision 23(g), 2026-11-02: top it at 1M).
 // Its top, growthMetricSpec("fleet").yMax, must be the smallest power of ten
 // at or above the largest value it draws: every lane's history ranges and its

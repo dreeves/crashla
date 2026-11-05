@@ -87,13 +87,16 @@ const pBeatsWaymo = c => {
   }
   return p;
 };
+// Each component holds its parts (since 2026-11-04, when each C component
+// became the comonotonic sum of its two): each robotaxi component one, its
+// band, read here with its weight.
 const robotaxi = app.tesla.filter(c => c.scope === "robotaxi");
 const hw4 = app.tesla.filter(c => c.scope === "hw4");
 // C is one component per robotaxi scenario (since 2026-11-03); its weight in
 // the fit is theirs summed.
-if (robotaxi.length !== 2 || hw4.length !== robotaxi.length) problems.push(`Tesla's fleet components: ${robotaxi.length} robotaxi (want A and B) and ${hw4.length} hw4 (want C, one per robotaxi scenario)`);
+if (robotaxi.length !== 2 || hw4.length !== robotaxi.length || !robotaxi.every(c => Array.isArray(c.parts) && c.parts.length === 1)) problems.push(`Tesla's fleet components: ${robotaxi.length} robotaxi (want A and B, each of one part, its band: ${JSON.stringify(robotaxi)}) and ${hw4.length} hw4 (want C, one per robotaxi scenario)`);
 else {
-  const [A, B] = [...robotaxi].sort((x, y) => x.best - y.best);
+  const [A, B] = robotaxi.map(c => ({weight: c.weight, ...c.parts[0]})).sort((x, y) => x.best - y.best);
   const cWeight = hw4.reduce((s, c) => s + c.weight, 0);
   const pA = pBeatsWaymo(A), pB = pBeatsWaymo(B);
   const mixture = A.weight * pA + B.weight * pB + cWeight * C_COUNTS;

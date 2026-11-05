@@ -3256,10 +3256,14 @@ function logUniformGrid(lo, hi, n) {
 // Jan 1, 2027 (the human's choice; the AGENTS.md ledger records the Jan-1-2027
 // forecasts for scoring).
 //
-// Each helmer's distribution is a mixture of two-piece log-normal bands
-// {weight, best, lo, hi}, the format of all three tables (until 2026-10-29 the
+// Each helmer's distribution is a mixture of components {weight, parts}, the
+// format of all three tables: each component the comonotonic sum of its
+// parts (its p-quantile the sum of theirs, at every p), each part a two-piece
+// log-normal band {best, lo, hi}. Only Tesla's scenario C has two parts
+// (below); every other component has one, its band. (Until 2026-11-04 each
+// component was one band {weight, best, lo, hi}, and until 2026-10-29 the
 // fleet's were {median, sigma} log-normals, converted to symmetric bands per
-// call): `best` is the band's mode, and lo and hi sit 1.6449 sigmas out on
+// call.) A band's `best` is its mode, and lo and hi sit 1.6449 sigmas out on
 // their own sides, so 10% of the band's mass lies outside [lo, hi], split
 // between the two tails in proportion to the two sides' widths (4-6% each in
 // the bands below), not 5% apiece. Tesla's modes are three different futures,
@@ -3275,25 +3279,29 @@ function logUniformGrid(lo, hi, n) {
 //      network (from ~Q2 2027, Q3-2026 call, Oct 21) count in C, as before.
 //      C is Tesla's whole ADS service in that world: the robotaxi lane's own
 //      mix, A or B at their relative weights (0.78 and 0.15 of 0.93), each
-//      plus the customer cars' eyes-off driving (TESLA_EYES_OFF), edge by
-//      edge: one C component per robotaxi scenario in every table (the
-//      human's decisions, 2026-10-30 and 2026-11-03; from 2026-10-31 to
-//      2026-11-03 C carried A's robotaxi ramp alone). The rule that C's lane
-//      sits at or above the robotaxi lane's at the 5th percentile, the median
-//      and the 95th percentile (the human's decision, 2026-10-30;
-//      fleet-forecast.qual.mjs) follows from that definition for the
-//      distribution of C's sum: C's robotaxi part is distributed as the
-//      robotaxi lane is, with the eyes-off miles on top, so that distribution
-//      sits at or above the robotaxi lane at every percentile. The drawn
-//      lanes, each C component one two-piece band through its two parts'
-//      summed edges (not the distribution of their sum), hold the rule by a
-//      margin, not by that argument: a drawn lane sits at or above the
-//      robotaxi lane above about the 3rd percentile, but such a band's low
-//      side is wider in ln x than its robotaxi part's, so below that point
-//      (miles 2.8%, rides 2.7%; the fleet only under 0.001%) the drawn lane's
-//      quantiles fall under the robotaxi lane's (with C on A alone, from
-//      2026-10-31 to 2026-11-03, miles 2.9% and rides 3.4% before the
-//      2026-11-02 refit and 3.5% after it).
+//      plus the customer cars' eyes-off driving (TESLA_EYES_OFF): one C
+//      component per robotaxi scenario in every table (the human's
+//      decisions, 2026-10-30 and 2026-11-03; from 2026-10-31 to 2026-11-03 C
+//      carried A's robotaxi ramp alone), whose two parts are that scenario's
+//      band and the eyes-off band, taken as moving together: C's p-quantile
+//      is the scenario's p-quantile plus the eyes-off band's, at every p (the
+//      human's decision, 2026-11-04, "Hold exactly"; teslaComponents). So
+//      C's lane sits at or above the robotaxi lane at every percentile, the
+//      rule of the human's decision of 2026-10-30: each C component's
+//      quantiles sit above its scenario's, and the two lanes share the
+//      scenarios' weights (fleet-forecast.qual.mjs reads it at every tenth of
+//      a percentile, quals/forecast-sum.qual.mjs the sum). From 2026-11-03 to
+//      2026-11-04 each C component was one two-piece band through its two
+//      parts' summed edges, whose mode, the sum of the parts' modes, is not
+//      the sum's, and whose low side is wider in ln x than its robotaxi
+//      part's, so the drawn all-HW4 lane fell under the robotaxi lane below
+//      about the 3rd percentile (miles 2.8%, rides 2.7%; the fleet only under
+//      0.001%; with C on A alone, from 2026-10-31 to 2026-11-03, miles 2.9%
+//      and rides 3.4% before the 2026-11-02 refit and 3.5% after it), and
+//      printed, for Jan 1, 2028, fleet 50,200 [5,860, 324,000]
+//      car-equivalents, miles 810M [87.1M, 6.06B] and rides 38.1M [8.78M,
+//      176M], where the sum prints 48,400 [5,870, 319,000], 571M [84.7M,
+//      5.22B] and 30.2M [8.37M, 155M].
 // Tesla's robotaxi fleet is cars driving on a typical day, from miles (the
 // human's choice, 2026-10-29; FLEET_HISTORY), so A and B are authored as daily
 // robotaxi miles on the forecast date (TESLA_ROBOTAXI_SCENARIOS): the fleet
@@ -3329,8 +3337,10 @@ function logUniformGrid(lo, hi, n) {
 // guidance (customer cars only inside its network, from ~Q2 2027) and its
 // record on this promise (end-2025, then Q4 2026, now Q2 2027). Checks: the
 // mixture puts ~0.74 on Tesla's cumulative miles reaching 100M before 2028 (A
-// ~0.67, B ~1.0, C ~0.94; ~0.93 until 2026-11-03, with C on A alone and 600M
-// eyes-off), against 0.50 for "Before 2028" on Manifold's "When
+// ~0.67, B ~1.0, C ~0.93; ~0.94 from 2026-11-03 to 2026-11-04, with each C
+// component one band through its parts' summed edges, and ~0.93 until
+// 2026-11-03, with C on A alone and 600M eyes-off), against 0.50 for "Before
+// 2028" on Manifold's "When
 // will vision-only level 4 self-driving be widely deployed?" (2026-10-31;
 // https://manifold.markets/dreev/when-will-visiononly-level-4-selfdr), whose
 // FAQ defines widely deployed as "100 million autonomous miles, with zero
@@ -3374,10 +3384,12 @@ const TESLA_ROBOTAXI_SCENARIOS = [
   { weight: 0.78, best: 504000,  lo: 162000, hi: 1440000 }, // A: slow ramp
   { weight: 0.15, best: 2700000, lo: 900000, hi: 7200000 }, // B: aggressive Cybercab scale-up
 ];
-// Scenario C's eyes-off driving on customer HW4 cars, which C adds edge by
-// edge to each robotaxi scenario's own band, A's and B's, in all three tables
-// (the human's decisions, 2026-10-30 and 2026-11-03; to A's alone until
-// 2026-11-03). ~1M US HW4 cars with paid FSD today and ~1.5M by end-2027
+// Scenario C's eyes-off driving on customer HW4 cars, which C adds to each
+// robotaxi scenario's own band, A's and B's, in all three tables, quantile by
+// quantile (the comonotonic sum, teslaComponents; the human's decisions,
+// 2026-10-30, 2026-11-03 and 2026-11-04; to A's alone until 2026-11-03, and
+// edge by edge, one band through the summed edges, until 2026-11-04). ~1M US
+// HW4 cars with paid FSD today and ~1.5M by end-2027
 // (1.74M FSD subscriptions and purchases worldwide, HW3 included; Q3-2026
 // deck): 400k cars eyes-off on the forecast date [60k; 2.0M, more than the
 // ~1.5M with paid FSD by end-2027, which needs eyes-off on HW4 cars without
@@ -3419,16 +3431,32 @@ const TESLA_EYES_OFF = {
   cumulative: { best: 750000000, lo: 20000000, hi: 6000000000 }, // through the day before
   ridesPerMile: 0.1 / 6,                                         // Tesla-Network rides
 };
-// Two {best, lo, hi} bands summed edge by edge (scenario C's robotaxi part
-// and its eyes-off part, taken as moving together).
-function sumBands(a, b) {
-  return { best: a.best + b.best, lo: a.lo + b.lo, hi: a.hi + b.hi };
-}
 // Two {best, lo, hi} bands multiplied edge by edge (scenario C's eyes-off
 // cars and their miles a car-day, taken as moving together): C's eyes-off
 // miles a day on the forecast date.
 function productBands(a, b) {
   return { best: a.best * b.best, lo: a.lo * b.lo, hi: a.hi * b.hi };
+}
+// A band of ADS miles a day on the forecast date as car-equivalents, each
+// edge over TESLA_MILES_PER_CAR_DAY: the unit of Tesla's fleet line.
+function carEquivalents(band) {
+  return { best: band.best / TESLA_MILES_PER_CAR_DAY, lo: band.lo / TESLA_MILES_PER_CAR_DAY, hi: band.hi / TESLA_MILES_PER_CAR_DAY };
+}
+// Tesla's components in a forecast table, from robotaxiBand, each robotaxi
+// scenario's band in the table's unit, and eyesOff, the eyes-off band in it:
+// A and B (scope "robotaxi"), each of one part, its band; and C (scope
+// "hw4"), one component per robotaxi scenario at TESLA_EYES_OFF.weight times
+// its share of the robotaxi weights, whose parts are the scenario's band and
+// the eyes-off band, so its p-quantile is theirs summed and C's lane holds
+// the robotaxi lane's own A/B mix.
+function teslaComponents(robotaxiBand, eyesOff) {
+  const robotaxiWeight = TESLA_ROBOTAXI_SCENARIOS.reduce((s, r) => s + r.weight, 0);
+  const bands = TESLA_ROBOTAXI_SCENARIOS.map(s => robotaxiBand(s));
+  return [
+    ...TESLA_ROBOTAXI_SCENARIOS.map((s, i) => ({ weight: s.weight, parts: [bands[i]], scope: "robotaxi" })),
+    ...TESLA_ROBOTAXI_SCENARIOS.map((s, i) => ({ weight: TESLA_EYES_OFF.weight * s.weight / robotaxiWeight,
+      parts: [bands[i], eyesOff], scope: "hw4" })),
+  ];
 }
 // The path's start (the human's choice, 2026-10-30: "start at Oct's exit
 // rate"): Nov 1, 2026, the day after data/vmt.csv's newest Tesla month, at
@@ -3466,56 +3494,29 @@ function teslaCumulativeMiles(band) {
 const FLEET_FORECAST = [
   // Every Tesla scenario's fleet is its ADS miles a day on the forecast date
   // over TESLA_MILES_PER_CAR_DAY: car-equivalents, the unit of Tesla's line.
-  // C is each robotaxi scenario's daily miles plus the eyes-off daily miles
-  // (TESLA_EYES_OFF), one component per scenario at its share of the robotaxi
-  // weights, so C's lane holds the robotaxi lane's own A/B mix.
-  { helmer: "Tesla", components: [
-    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ ...c, scope: "robotaxi" })),
-    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: TESLA_EYES_OFF.weight * c.weight / TESLA_ROBOTAXI_SCENARIOS.reduce((s, r) => s + r.weight, 0),
-      ...sumBands(c, productBands(TESLA_EYES_OFF.cars, TESLA_EYES_OFF.milesPerCarDay)), scope: "hw4" })),
-  ].map(c => ({ weight: c.weight, best: c.best / TESLA_MILES_PER_CAR_DAY, lo: c.lo / TESLA_MILES_PER_CAR_DAY,
-    hi: c.hi / TESLA_MILES_PER_CAR_DAY, scope: c.scope })) },
+  // C sums each robotaxi scenario's daily miles and the eyes-off daily miles
+  // (TESLA_EYES_OFF), quantile by quantile, one component per scenario at
+  // its share of the robotaxi weights (teslaComponents), so C's lane holds
+  // the robotaxi lane's own A/B mix.
+  { helmer: "Tesla", components: teslaComponents(carEquivalents,
+    carEquivalents(productBands(TESLA_EYES_OFF.cars, TESLA_EYES_OFF.milesPerCarDay))) },
   { helmer: "Waymo", components: [
     // Base: ~5,500 on Jan 1, 2027, then ~500 a month in 2027 (nearly 3x
     // 2026's ~180 a month) on ~5,100 Ojai, continued imports and the Ioniq 5.
     // Low: imports stopped (Senate bill S.4429) or demand stalls.
-    { weight: 0.78, best: 11500, lo: 7000, hi: 16000 },
+    { weight: 0.78, parts: [{ best: 11500, lo: 7000, hi: 16000 }] },
     // Plan: toward Semafor's 20,000 by end-2027; drawn as the base mode's
     // upper tail, not a second peak (fleet-forecast.qual.mjs).
-    { weight: 0.22, best: 17000, lo: 12000, hi: 27000 },
+    { weight: 0.22, parts: [{ best: 17000, lo: 12000, hi: 27000 }] },
   ] },
   { helmer: "Zoox", components: [
     // ~120 in October 2026 plus ~20 a month in 2027 (2.5x 2026's ~8): Las Vegas
     // past its cap, Los Angeles via Uber, Austin and Miami going public.
     // Production is not the limit; NHTSA's 1,000 at once bounds the high end,
     // and the low end is a pause holding the fleet near today's.
-    { weight: 1, best: 400, lo: 150, hi: 1000 },
+    { weight: 1, parts: [{ best: 400, lo: 150, hi: 1000 }] },
   ] },
 ];
-
-// Quantiles from any density w.r.t. log(x): integrate it on a fine log grid
-// [lo, hi] into a CDF, then invert at each probability. Reuses the numeric-
-// density idiom of the marginal MPI bells rather than adding a normal-CDF
-// primitive. The grid must cover essentially all the mass (asserted).
-function quantilesFromLogDensity(densityFn, lo, hi, ps) {
-  const n = 6000, step = (hi - lo) / (n - 1);
-  const cum = new Float64Array(n);
-  let mass = 0, prev = densityFn(Math.exp(lo));
-  for (let i = 1; i < n; i++) {
-    const dens = densityFn(Math.exp(lo + step * i));
-    mass += (dens + prev) / 2 * step;
-    cum[i] = mass;
-    prev = dens;
-  }
-  assert(Math.abs(mass - 1) < 0.01, "quantilesFromLogDensity: density must normalize to 1", {mass});
-  return ps.map(p => {
-    const target = p * mass;
-    let i = 1;
-    while (i < n && cum[i] < target) i++;
-    const frac = (target - cum[i - 1]) / (cum[i] - cum[i - 1]); // linear interp in log space
-    return Math.exp(lo + step * (i - 1 + frac));
-  });
-}
 
 // A helmer can be drawn as more than one curve ("lane"), split by its components'
 // `scope` tag. Tesla splits into its two scopes (robotaxi vs the broader HW4-fleet
@@ -3545,6 +3546,8 @@ function forecastLanes(table) {
       {helmer: entry.helmer, total});
     const byScope = new Map();
     for (const c of entry.components) {
+      assert(Array.isArray(c.parts) && c.parts.length > 0, "a forecast component holds its parts, one band or more",
+        {helmer: entry.helmer, component: c});
       const scope = c.scope ?? entry.helmer;
       if (!byScope.has(scope)) byScope.set(scope, []);
       byScope.get(scope).push(c);
@@ -3579,55 +3582,180 @@ function fleetForecastCurves() {
   return bandForecastCurves(FLEET_FORECAST);
 }
 
-// Two-piece log-normal (density w.r.t. log x): mode at `best`, with the lower/upper
-// spread set so lo/hi sit at matching distances each side. Lets every forecast
-// table's components (fleet, miles, rides) — given only as {best, lo, hi},
-// asymmetric for Tesla — render as an honest, normalized, single-peaked density
-// without inventing mixture components.
+// The standard normal quantile function, the z at which the standard normal
+// CDF reaches p, 0 < p < 1: algorithm AS 241 (M. J. Wichura, "The Percentage
+// Points of the Normal Distribution", Applied Statistics 37, 1988), PPND16,
+// accurate to about one part in 1e16 (quals/normal-quantile.qual.mjs checks
+// it against reference values). Three rational functions, each the ratio of
+// two polynomials whose coefficients run from the constant term up: one for
+// p within 0.425 of one half, in (p - 1/2)^2, and two for the tails, in r =
+// sqrt(-ln(min(p, 1 - p))), at most 5 and beyond. The gamma machinery's
+// starting points (normalQuantApprox) keep their coarser approximation.
+const NORMAL_QUANTILE = {
+  central: {num: [3.387132872796366608, 133.14166789178437745, 1971.5909503065514427, 13731.693765509461125,
+    45921.953931549871457, 67265.770927008700853, 33430.575583588128105, 2509.0809287301226727],
+  den: [1, 42.313330701600911252, 687.1870074920579083, 5394.1960214247511077, 21213.794301586595867,
+    39307.89580009271061, 28729.085735721942674, 5226.495278852545925]},
+  near: {from: 1.6, num: [1.42343711074968357734, 4.6303378461565452959, 5.7694972214606914055, 3.64784832476320460504,
+    1.27045825245236838258, 0.24178072517745061177, 0.0227238449892691845833, 7.7454501427834140764e-4],
+  den: [1, 2.05319162663775882187, 1.6763848301838038494, 0.68976733498510000455, 0.14810397642748007459,
+    0.0151986665636164571966, 5.475938084995344946e-4, 1.05075007164441684324e-9]},
+  far: {from: 5, num: [6.6579046435011037772, 5.4637849111641143699, 1.7848265399172913358, 0.29656057182850489123,
+    0.026532189526576123093, 0.0012426609473880784386, 2.71155556874348757815e-5, 2.01033439929228813265e-7],
+  den: [1, 0.59983220655588793769, 0.13692988092273580531, 0.0148753612908506148525, 7.868691311456132591e-4,
+    1.8463183175100546818e-5, 1.4215117583164458887e-7, 2.04426310338993978564e-15]},
+};
+// A polynomial at x, its coefficients from the constant term up (Horner).
+function polynomialAt(coefficients, x) {
+  let sum = 0;
+  for (let i = coefficients.length - 1; i >= 0; i--) sum = sum * x + coefficients[i];
+  return sum;
+}
+function normalQuantile(p) {
+  assert(p > 0 && p < 1, "normalQuantile: need 0 < p < 1", {p});
+  const q = p - 0.5;
+  if (Math.abs(q) <= 0.425) {
+    const r = 0.180625 - q * q;
+    return q * polynomialAt(NORMAL_QUANTILE.central.num, r) / polynomialAt(NORMAL_QUANTILE.central.den, r);
+  }
+  const r = Math.sqrt(-Math.log(Math.min(p, 1 - p)));
+  const tail = r <= 5 ? NORMAL_QUANTILE.near : NORMAL_QUANTILE.far;
+  return Math.sign(q) * polynomialAt(tail.num, r - tail.from) / polynomialAt(tail.den, r - tail.from);
+}
+
+// Two-piece log-normal: in ln x a normal with its mode at ln `best` and one
+// sigma on each side, set so lo and hi sit 1.6449 of their side's sigmas out.
+// Lets every forecast table's bands (fleet, miles, rides), given only as
+// {best, lo, hi}, asymmetric for Tesla, be honest, normalized, single-peaked
+// densities.
 function splitLogNormalSigmas(best, lo, hi) {
   assert(lo <= best && best <= hi && lo > 0, "splitLogNormal: need 0 < lo <= best <= hi", {best, lo, hi});
   const mu = Math.log(best);
   return [Math.max((mu - Math.log(lo)) / 1.6449, 1e-6),
           Math.max((Math.log(hi) - mu) / 1.6449, 1e-6)];
 }
-function splitLogNormalLogDensity(best, lo, hi, x) {
-  const [sLo, sHi] = splitLogNormalSigmas(best, lo, hi);
-  const mu = Math.log(best);
-  const u = Math.log(x);
-  const z = (u - mu) / (u < mu ? sLo : sHi);
-  return 2 / (Math.sqrt(2 * Math.PI) * (sLo + sHi)) * Math.exp(-0.5 * z * z);
+// A two-piece band's shape in ln x: its mode mu and its two sides' sigmas.
+function bandShape(band) {
+  const [sLo, sHi] = splitLogNormalSigmas(band.best, band.lo, band.hi);
+  return {mu: Math.log(band.best), sLo, sHi};
+}
+// A two-piece band, by its shape, at the quantile level whose lower and
+// upper tail probabilities are p and q = 1 - p (both given, so that either
+// tail keeps its precision): its quantile there as u = ln x, and its density
+// over ln x there, g. Below the mode (mass sLo / (sLo + sHi)) its CDF is
+// 2 sLo / (sLo + sHi) times the normal CDF of z = (u - mu) / sLo; above it,
+// 1 less 2 sHi / (sLo + sHi) times the normal CDF of -z, z = (u - mu) / sHi.
+function shapeAtLevel({mu, sLo, sHi}, p, q) {
+  const lower = p * (sLo + sHi) < sLo;
+  const z = lower ? normalQuantile(p * (sLo + sHi) / (2 * sLo)) : -normalQuantile(q * (sLo + sHi) / (2 * sHi));
+  return {u: mu + z * (lower ? sLo : sHi), g: 2 / (Math.sqrt(2 * Math.PI) * (sLo + sHi)) * Math.exp(-0.5 * z * z)};
+}
+// The comonotonic sum of some parts, by their shapes, at the quantile level
+// of log-odds L (the level's p = 1 / (1 + e^-L), q = 1 - p): its quantile
+// there, the sum x of the parts' quantiles x_i, as u = ln x, and its density
+// over ln x there, g = x / the sum of x_i / g_i (since x's change with the
+// level, dx/dp, is the sum of the x_i / g_i, g_i each part's density over
+// ln x at the level).
+function sumAtLevel(shapes, L) {
+  const p = 1 / (1 + Math.exp(-L)), q = 1 / (1 + Math.exp(L));
+  let x = 0, spread = 0;
+  for (const shape of shapes) {
+    const at = shapeAtLevel(shape, p, q), xi = Math.exp(at.u);
+    x += xi;
+    spread += xi / at.g;
+  }
+  return {u: Math.log(x), g: x / spread, p, q};
+}
+// The point where an increasing function reaches `target`, from a start t
+// inside a bracket [lo, hi] that holds it: Newton's method kept to the
+// bracket of points known to lie below and above the solution, as in
+// Numerical Recipes' rtsafe (a Newton step that would leave the bracket, or
+// that is not under half the step before last, bisects the bracket instead,
+// so the bracket at least halves every second step), done when the step or
+// the bracket is within 1e-12 of t's scale. at(t) gives the function's value
+// and slope at t, with anything else its caller wants; this returns at's
+// result at the solution.
+function solveIncreasing(at, target, lo, hi, t) {
+  let last = hi - lo, beforeLast = hi - lo;
+  for (let i = 0; i < 200; i++) {
+    const a = at(t);
+    const step = (a.value - target) / a.slope;
+    if (step > 0) hi = t; else lo = t;
+    const tolerance = 1e-12 * (1 + Math.abs(t));
+    if (Math.abs(step) <= tolerance || hi - lo <= tolerance) return a;
+    const newton = t - step;
+    const next = newton > lo && newton < hi && Math.abs(step) < beforeLast / 2 ? newton : (lo + hi) / 2;
+    beforeLast = last;
+    last = Math.abs(next - t);
+    t = next;
+  }
+  return fail("solveIncreasing: no solution within 200 steps", {target, lo, hi, t});
+}
+// A forecast component, the comonotonic sum of its parts, at ln x = u: the
+// level at which its quantile is x (its CDF at x is that level's p) and its
+// density over ln x there (g), solving for the level's log-odds in
+// [-700, 700] (p or q down to about e^-700), where the quantile's slope in L
+// is p q / g. An x past the quantiles at those levels, some 37 sigmas from
+// the parts' modes, ends at the range's end, where p or q, and the density,
+// are under 1e-300.
+function componentAt(c, u) {
+  const shapes = c.parts.map(bandShape);
+  return solveIncreasing(L => {
+    const at = sumAtLevel(shapes, L);
+    return {...at, value: at.u, slope: at.p * at.q / at.g};
+  }, u, -700, 700, 0);
 }
 
-// Mixture of two-piece log-normals: the single density behind every forecast
-// curve (until 2026-10-29 the fleet's {median, sigma} components were
-// converted to symmetric bands first; FLEET_FORECAST has been bands since).
-// Each scenario component is a {weight, best, lo, hi} band — the same banding
-// idiom as every other miles/rides figure. `best` is each component's MODE, so
-// displayed medians/CIs are always computed from the density
-// (quantilesFromLogDensity), never read off the parameters.
+// Mixture of comonotonic sums of two-piece log-normals: the single density
+// behind every forecast curve (until 2026-11-04 of two-piece log-normals
+// alone, and until 2026-10-29 the fleet's {median, sigma} components were
+// converted to symmetric bands first). Each scenario component is a
+// {weight, parts} sum of {best, lo, hi} bands, the same banding idiom as
+// every other miles/rides figure. A band's `best` is its MODE, so displayed
+// medians and CIs are always computed from the components' CDFs
+// (bandMixtureQuantiles), never read off the parameters. The density, over
+// ln x, at x: its components' densities there, weighted.
 function bandMixtureLogDensity(components, x) {
+  const u = Math.log(x);
   let d = 0;
-  for (const c of components) d += c.weight * splitLogNormalLogDensity(c.best, c.lo, c.hi, x);
+  for (const c of components) d += c.weight * componentAt(c, u).g;
   return d;
 }
+// The mixture's quantile at each level in ps: the root of its CDF (its
+// components' CDFs, weighted) less the level, which lies between the
+// smallest and the largest of its components' own quantiles at that level
+// (at the smallest every component's CDF is at or below the level, so the
+// mixture's is too, and at the largest at or above it); for a mixture of one
+// component, its own quantile. Until 2026-11-04 the quantiles came from the
+// density integrated on a grid of 6,000 points in ln x, to within about
+// 4e-6 of the exact ones.
 function bandMixtureQuantiles(components, ps) {
-  let lo = Infinity, hi = -Infinity;
-  for (const c of components) {
-    const [sLo, sHi] = splitLogNormalSigmas(c.best, c.lo, c.hi);
-    lo = Math.min(lo, Math.log(c.best) - 9 * sLo);
-    hi = Math.max(hi, Math.log(c.best) + 9 * sHi);
-  }
-  return quantilesFromLogDensity(x => bandMixtureLogDensity(components, x), lo, hi, ps);
+  return ps.map(level => {
+    const own = components.map(c => sumAtLevel(c.parts.map(bandShape), Math.log(level / (1 - level))).u);
+    const lo = Math.min(...own), hi = Math.max(...own);
+    return Math.exp(solveIncreasing(u => {
+      let value = 0, slope = 0;
+      for (const c of components) {
+        const at = componentAt(c, u);
+        value += c.weight * at.p;
+        slope += c.weight * at.g;
+      }
+      return {u, value, slope};
+    }, level, lo, hi, (lo + hi) / 2).u);
+  });
 }
 
 // Plottable curves for a band-component forecast table (fleet, miles, rides):
-// one per lane (Tesla splits into robotaxi + HW4).
+// one per lane (Tesla splits into robotaxi + HW4). Each lane's probe extent
+// [xMin, xMax] runs from a third of its components' smallest summed low edge
+// (the sum of a component's parts' lo) to three times their largest summed
+// high edge.
 function bandForecastCurves(table) {
   return forecastLanes(table).map(lane => {
     let xMin = Infinity, xMax = 0;
     for (const c of lane.components) {
-      xMin = Math.min(xMin, c.lo / 3);
-      xMax = Math.max(xMax, c.hi * 3);
+      xMin = Math.min(xMin, c.parts.reduce((s, b) => s + b.lo, 0) / 3);
+      xMax = Math.max(xMax, c.parts.reduce((s, b) => s + b.hi, 0) * 3);
     }
     const [lo90, median, hi90] = bandMixtureQuantiles(lane.components, [0.05, 0.5, 0.95]);
     return {
@@ -3949,16 +4077,14 @@ const RIDES_HISTORY = {
 // and robotaxi/HW4 scope split); its A and B follow from their daily miles on
 // the forecast date (TESLA_ROBOTAXI_SCENARIOS, teslaCumulativeMiles).
 const MILES_FORECAST = [
-  { helmer: "Tesla", components: [
-    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: c.weight, ...teslaCumulativeMiles(c), scope: "robotaxi" })),
-    // C: each robotaxi scenario's miles plus the customer cars' eyes-off
-    // miles (TESLA_EYES_OFF: ~750M [20M, 6B]), one component per scenario at
-    // its share of the robotaxi weights. From 2026-10-31 to 2026-11-03 C was
-    // A's miles alone plus ~600M eyes-off; until 2026-10-31 C counted the
-    // customer cars' miles alone.
-    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: TESLA_EYES_OFF.weight * c.weight / TESLA_ROBOTAXI_SCENARIOS.reduce((s, r) => s + r.weight, 0),
-      ...sumBands(teslaCumulativeMiles(c), TESLA_EYES_OFF.cumulative), scope: "hw4" })),
-  ] },
+  // C: each robotaxi scenario's miles plus the customer cars' eyes-off miles
+  // (TESLA_EYES_OFF: ~750M [20M, 6B]), quantile by quantile, one component
+  // per scenario at its share of the robotaxi weights (teslaComponents).
+  // From 2026-11-03 to 2026-11-04 each C component was one band through the
+  // two's summed edges; from 2026-10-31 to 2026-11-03 C was A's miles alone
+  // plus ~600M eyes-off; until 2026-10-31 C counted the customer cars' miles
+  // alone.
+  { helmer: "Tesla", components: teslaComponents(teslaCumulativeMiles, TESLA_EYES_OFF.cumulative) },
   { helmer: "Waymo", components: [
     // US. End-2026 ~408M (361.7M through October, data/vmt.csv, plus ~46M);
     // 2027 adds ~470-495M: an average fleet of ~8,500 at ~155 miles a car-day
@@ -3966,7 +4092,7 @@ const MILES_FORECAST = [
     // ~4,300). Low: October's 718k a day held flat for the 426 days from Nov
     // 1, 2026 through Dec 31, 2027 (667M; 680M until 2026-10-31, against a
     // flat hold then given as 676M). High: an average fleet of ~13k.
-    { weight: 1, best: 880000000, lo: 667000000, hi: 1200000000 },
+    { weight: 1, parts: [{ best: 880000000, lo: 667000000, hi: 1200000000 }] },
   ] },
   { helmer: "Zoox", components: [
     // End-2026 ~4.50M (the data/vmt.csv model: 3,889,920 through October,
@@ -3977,7 +4103,7 @@ const MILES_FORECAST = [
     // 1, 2026 through Dec 31, 2027 (8.01M; 7.86M until 2026-11-03, 7.5M until
     // 2026-10-31; quals/fleet-forecast.qual.mjs re-derives it, and Waymo's,
     // from data/vmt.csv's newest month).
-    { weight: 1, best: 13000000, lo: 8010000, hi: 24000000 },
+    { weight: 1, parts: [{ best: 13000000, lo: 8010000, hi: 24000000 }] },
   ] },
 ];
 
@@ -4000,33 +4126,31 @@ function teslaRidesBand(miles) {
 // rides are each robotaxi scenario's plus Tesla-Network rides from eyes-off
 // customer cars (participation deeply uncertain, hence the width).
 const RIDES_FORECAST = [
-  { helmer: "Tesla", components: [
-    // A and B are the miles scenarios over the ride corridor, tied in code
-    // (2026-09-26: A had stayed on the 2026-07-22 miles figures when
-    // MILES_FORECAST A was re-based on 2026-09-04).
-    ...MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi")
-      .map(c => ({ weight: c.weight, ...teslaRidesBand(c), scope: "robotaxi" })),
-    // C: Tesla's rides in that world, each robotaxi scenario's rides plus
-    // the Tesla-Network rides on the eyes-off miles (TESLA_EYES_OFF: ~10% of
-    // them at ~6 a ride, ~12.5M [0.33M, 100M]), one component per scenario at
-    // its share of the robotaxi weights. From 2026-10-31 to 2026-11-03 C was
-    // A's rides alone plus ~10M eyes-off rides; until 2026-10-31 C was
-    // authored as ~15M [2M, 150M], the Jan-1-2027 forecast's figures with a
-    // wider high edge, which put the lane's median and 5th percentile under
-    // the robotaxi lane's.
-    ...TESLA_ROBOTAXI_SCENARIOS.map(c => ({ weight: TESLA_EYES_OFF.weight * c.weight / TESLA_ROBOTAXI_SCENARIOS.reduce((s, r) => s + r.weight, 0), scope: "hw4",
-      ...sumBands(teslaRidesBand(teslaCumulativeMiles(c)),
-        { best: TESLA_EYES_OFF.cumulative.best * TESLA_EYES_OFF.ridesPerMile,
-          lo: TESLA_EYES_OFF.cumulative.lo * TESLA_EYES_OFF.ridesPerMile,
-          hi: TESLA_EYES_OFF.cumulative.hi * TESLA_EYES_OFF.ridesPerMile }) })),
-  ] },
+  // A and B are the miles scenarios over the ride corridor, tied in code
+  // (2026-09-26: A had stayed on the 2026-07-22 miles figures when
+  // MILES_FORECAST A was re-based on 2026-09-04): each scenario's band is its
+  // cumulative miles (teslaCumulativeMiles, MILES_FORECAST's) over the
+  // corridor. C: Tesla's rides in that world, each robotaxi scenario's rides
+  // plus the Tesla-Network rides on the eyes-off miles (TESLA_EYES_OFF: ~10%
+  // of them at ~6 a ride, ~12.5M [0.33M, 100M]), quantile by quantile, one
+  // component per scenario at its share of the robotaxi weights
+  // (teslaComponents). From 2026-11-03 to 2026-11-04 each C component was
+  // one band through the two's summed edges; from 2026-10-31 to 2026-11-03 C
+  // was A's rides alone plus ~10M eyes-off rides; until 2026-10-31 C was
+  // authored as ~15M [2M, 150M], the Jan-1-2027 forecast's figures with a
+  // wider high edge, which put the lane's median and 5th percentile under
+  // the robotaxi lane's.
+  { helmer: "Tesla", components: teslaComponents(s => teslaRidesBand(teslaCumulativeMiles(s)),
+    { best: TESLA_EYES_OFF.cumulative.best * TESLA_EYES_OFF.ridesPerMile,
+      lo: TESLA_EYES_OFF.cumulative.lo * TESLA_EYES_OFF.ridesPerMile,
+      hi: TESLA_EYES_OFF.cumulative.hi * TESLA_EYES_OFF.ridesPerMile }) },
   { helmer: "Waymo", components: [
     // End-2026 ~48.7M (43.5M through October, RIDES_HISTORY, plus ~0.6M a
     // week for Nov-Dec's 8.7 weeks); 2027 adds ~49-51M (~98-100M in all): an
     // average fleet of ~8,300-8,700 at ~16 rides a car-day (2026 ran 17-19).
     // Low: flat at 0.56M a week plus a pause. High: Manifold's 2027
     // weekly-rides market (2M a week at 83%, thin).
-    { weight: 1, best: 100000000, lo: 75000000, hi: 140000000 },
+    { weight: 1, parts: [{ best: 100000000, lo: 75000000, hi: 140000000 }] },
   ] },
   { helmer: "Zoox", components: [
     // End-2026 ~0.53M (467k through October, RIDES_HISTORY, plus Nov-Dec at
@@ -4034,7 +4158,7 @@ const RIDES_FORECAST = [
     // at ~12 rides a vehicle-day (now ~11: about 7.7k rides a week, Q2's ~50k
     // riders a month at 1.5 riders a ride as in RIDES_HISTORY, on ~100
     // vehicles).
-    { weight: 1, best: 1800000, lo: 900000, hi: 3800000 },
+    { weight: 1, parts: [{ best: 1800000, lo: 900000, hi: 3800000 }] },
   ] },
 ];
 
@@ -4063,9 +4187,11 @@ function growthMetricSpec(key) {
   const specs = {
     fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipAt: wholeAtSigFigs,
       // yMax 1,000,000, the decade above the largest value drawn (the all-HW4
-      // lane's 95th percentile, ~324,000 since C's robotaxi part became the
-      // A/B mix on 2026-11-03, ~317,000 on the 2026-11-02 refit's tables and
-      // ~358,000 from 2026-10-31 until that refit; decision 23(g) of the
+      // lane's 95th percentile, ~319,000 since 2026-11-04, the exact sum
+      // (each C component the comonotonic sum of its two parts), ~324,000
+      // from 2026-11-03, when C's robotaxi part became the A/B mix, until
+      // then, ~317,000 on the 2026-11-02 refit's tables and ~358,000 from
+      // 2026-10-31 until that refit; decision 23(g) of the
       // 2026-11-01 open questions; quals/fleet-timeseries.qual.mjs). 4,000,000 until
       // 2026-11-02, set when that lane counted distinct customer cars (its
       // 95th percentile 2.86M for Jan 1, 2027, 1.92M for Jan 1, 2028 on

@@ -1,6 +1,8 @@
 Next Tasks:
 
 * [SLI] Slider to parametrize the forecast date in the forecast section at the bottom
+* [SAN] Sanity check: check for discrepancies between teslapologetics here and the following presentation by philip koopman:
+https://users.ece.cmu.edu/~koopman/lectures/L131_Safe_Enough.pdf
 
 Other name ideas:
 

@@ -167,9 +167,15 @@ Resultata: [teslanomonitor row, PAGE_MEASURED entry] = ${JSON.stringify([nm, pag
       for (let i = 0; i < days; i++) sum += exitRate * (target / exitRate) ** ((i + 0.5) / days);
       return sum;
     };
+    // Each component holds its parts (since 2026-11-04); a robotaxi
+    // component one, its band.
+    assert.ok(milesComps.length === scenarios.length && milesComps.every(c => Array.isArray(c.parts) && c.parts.length === 1),
+      `Replicata: read MILES_FORECAST's Tesla robotaxi components.
+Expectata: one per robotaxi scenario (${scenarios.length}), each of one part, its band of cumulative miles.
+Resultata: ${JSON.stringify(milesComps)}.`);
     scenarios.forEach((s, i) => {
       for (const k of ["best", "lo", "hi"]) {
-        const want = path(s[k]), got = milesComps[i] && milesComps[i][k];
+        const want = path(s[k]), got = milesComps[i].parts[0][k];
         if (!(Math.abs(got - want) <= 1e-4 * want))
           problems.push(`MILES_FORECAST Tesla robotaxi component ${i} ${k}: ${got}; want ${Math.round(want)}, the cumulative through the day before ${forecastDate} on the path from ${exitRate.toFixed(1)} miles a day on ${firstDay} to ${s[k]} on ${forecastDate}`);
       }
