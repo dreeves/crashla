@@ -390,12 +390,46 @@ Editing rules:
 - Numbers are plain integers (no thousands separators: slurp.py would
   accept a quoted "2,501,777", but the quals' parsers would not)
 - `rationale` is free text explaining the estimate's source and uncertainty.
-  The page shows it verbatim (sanity section, "VMT sources"), so it cites
-  documents by file and section ("data/README.md, Waymo anchors";
-  "IGNOREME.md, Waymo VMT Methodology") and avoids this file's column names
-  and other repo shorthand. `quals/vmt-rationale-text.qual.mjs` checks each
-  section citation and each figure stated in a form it reads, where that
-  wording appears, and requires no wording (the human's rule of 2026-11-03)
+  The page shows it as written (sanity section, "VMT sources"), its links as
+  links, so it avoids this file's column names and other repo shorthand. To
+  point at a section of this file, write a markdown link whose target is the
+  section on the site, its text what readers see, as
+  `[data/README.md, Waymo anchors](data/#waymo-anchors)`. GitHub Pages
+  renders this file at `data/`, each heading with an id made from its text as
+  it renders (a code span's or a link's text kept, a typographic `--` a dash;
+  then lowercased, every character but a letter, digit, underscore, hyphen or
+  space dropped, each space a hyphen; a repeated id takes -1, -2 and so on),
+  and the page shows the link as a link to that section (since 2026-11-05;
+  until then these pointers were prose). A link of another form stops the
+  page at load (`crashla.js` `vmtRationale`): its text must hold a character
+  other than a blank and no square bracket, its target `data/#` and an anchor
+  of lowercase letters, digits and hyphens. So a heading meant for links needs
+  an id of that form (an underscore, from a word such as `vmt_min` or from a
+  code span, or an accented letter gives one the page does not read), and
+  outside a link `data/#` may stand only inside a longer path or address
+  (prose can give the site's address,
+  `teslapologetics.dreev.es/data/#ghost-months`). Square brackets outside the
+  links are prose, as a band's "[2,075,000, 3,289,000]" or a half-open
+  "(0, 1]". Another file named in prose ("IGNOREME.md, Waymo VMT
+  Methodology") goes unchecked. `quals/vmt-rationale-text.qual.mjs` checks
+  that each link's anchor is the id of one of this file's headings, in the
+  form the page reads, so renaming a heading turns it red until the links to
+  it follow. Its heading reader (`quals/rationale-links.mjs`,
+  `headingAnchors`) reads this file's blocks as kramdown, which GitHub Pages
+  runs, reads them (a heading in a list item, a quote or a definition, at its
+  content column or on a lazy line, is a heading; a `#` line that code, a
+  comment, an HTML element, a math block or a table takes is none), and
+  stops, naming the line, only on a form whose effect on a heading it does
+  not compute: Liquid (a double brace, or a brace and a percent sign, which
+  Jekyll runs on this whole file, code blocks included); a kramdown
+  extension, attribute list or attribute definition at a block's start
+  (`{:`); a table holding an inline HTML element with content; or a mark in
+  a heading that changes the text it renders (an entity, inline HTML, an
+  image, math, a typographic `<<` or `>>`, an explicit id, `{:`, a link of
+  another form, a reference link or footnote whose label this file defines,
+  or an underscore with one after it that can make emphasis). It also
+  checks each figure stated in a form it reads, where that wording appears;
+  it requires no wording (the human's rule of 2026-11-03)
 
 To change VMT data: edit `data/vmt.csv`, run `python3 data/slurp.py`, and
 commit the master together with the regenerated artifacts.

@@ -96,7 +96,9 @@ LONG_INTERVAL_WIDTH = math.log(2)
 # Every allocated month's rationale from February 2023: one text, so the
 # page's VMT sources table shows those months as one entry (until 2026-10-30
 # each month restated it around its own California and remaining miles; those
-# figures are in data/waymo-ca.csv and model()'s output).
+# figures are in data/waymo-ca.csv and model()'s output). This note and
+# EARLY_NOTE point at data/README.md's sections with markdown links, which
+# the page shows as links (since 2026-11-05: data/README.md, VMT master).
 ALLOCATION_NOTE = ("US est.: each month's California part is CPUC's measured driverless "
                    "miles (data/waymo-ca.csv); the rest (other states, and California "
                    "miles outside CPUC's scope) is allocated between Waymo's published "
@@ -104,7 +106,7 @@ ALLOCATION_NOTE = ("US est.: each month's California part is CPUC's measured dri
                    "interval's total kept. Only the rest carries allocation uncertainty, "
                    "and the monthly and cumulative bands agree with each other. The bands "
                    "are model estimates, not validated US probability intervals "
-                   "(data/README.md, Waymo monthly allocation).")
+                   "([data/README.md, Waymo monthly allocation](data/#waymo-monthly-allocation)).")
 # July 2021-January 2023, before CPUC's monthly California series (December
 # 2022 on, which counts in its month). English: the human's rule for
 # AI-labeled text (2026-10-30). The offset's figures come from OFFSET (typed
@@ -120,8 +122,9 @@ EARLY_NOTE = ("US est.: Waymo's rider-only miles by calendar year (Kusano et al.
               f"{OFFSET[0]:,} (range {OFFSET[1]:,}-{OFFSET[2]:,}), come off; "
               "July-December 2021's bands and "
               "every cumulative band carry that range, and each month's band an allowance "
-              "for the monthly split, half to twice a month's miles in 2022 (data/README.md, "
-              "Waymo anchors; data/README.md, Waymo monthly allocation).")
+              "for the monthly split, half to twice a month's miles in 2022 ([data/README.md, "
+              "Waymo anchors](data/#waymo-anchors); [data/README.md, Waymo monthly "
+              "allocation](data/#waymo-monthly-allocation)).")
 
 
 def month_info(month):

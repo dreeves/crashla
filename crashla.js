@@ -1453,6 +1453,55 @@ function csvUnquote(field) {
   return quoted ? field.slice(1, -1).replace(/""/g, "\"") : field;
 }
 
+// A rationale's link to a section of data/README.md, "[<text>](data/#<anchor>)"
+// (since 2026-11-05; the human's choice of links over prose pointers,
+// 2026-11-04): GitHub Pages renders data/README.md at data/ on the site, each
+// heading with an id, and the VMT sources table shows the link as an a
+// element to it (rationaleHtml). Its text holds a character other than a
+// blank and no square bracket. Its anchor is lowercase letters, digits and
+// hyphens, the form of every id data/README.md's headings have today; an id
+// GitHub Pages gives can also hold an underscore (from a heading's word such
+// as vmt_min, or its code span) or a letter outside a-z (an accented word),
+// and a link to such a heading stops the page here (vmt-rationale-text.qual
+// checks each anchor against data/README.md's headings, and that the page
+// reads it).
+const RATIONALE_LINK = /\[(?=[^\[\]]*[^\[\]\s])([^\[\]]+)\]\((data\/#[a-z0-9-]+)\)/g;
+
+// A VMT row's rationale, its CSV field unquoted, read where parseVmtCsv and
+// parseGhostVmtCsv read the rows, so a link of the wrong form stops the page
+// (with the error banner) and names the row's line: with each of its links
+// (RATIONALE_LINK) read as a blank, no "](" may remain (each must open a
+// link's target) and no target "data/#" (a link left open, or the target
+// with its text or brackets lost, before or right after a link) but one
+// inside a longer path or address, after a word character, ".", "/", ":" or
+// "-" (so prose can give the site's address,
+// "teslapologetics.dreev.es/data/#ghost-months"). Square brackets outside the
+// links are prose: a band's "[2,075,000, 3,289,000]", a half-open interval's
+// "(0, 1]". A link that lost all of "](data/#<anchor>)" reads as such prose,
+// its "[" kept, and so does a text in square brackets followed by the site's
+// address.
+function vmtRationale(field, lineNo) {
+  const rationale = csvUnquote(field);
+  const rest = rationale.replace(RATIONALE_LINK, " ");
+  assert(!rest.includes("]("),
+    "a rationale's \"](\" must open the target of a link [<text>](data/#<anchor>), its text holding a character other than a blank and no square bracket, its anchor lowercase letters, digits and hyphens",
+    {lineNo, rationale});
+  assert(!/(?:^|[^\w.\/:-])data\/#/.test(rest),
+    "a rationale's link is left open: outside its links [<text>](data/#<anchor>), no target data/# may stand but inside a longer path or address",
+    {lineNo, rationale});
+  return rationale;
+}
+
+// A rationale as the VMT sources table shows it: its text escaped (escHtml),
+// each link an a element to its section of data/README.md on the site, its
+// href the only attribute, as the sanity section's other links have only
+// theirs (sourceLink). The links are replaced in the escaped text, which
+// escaping leaves as they were: the entities it writes hold no bracket or
+// parenthesis, and an anchor no character it changes.
+function rationaleHtml(rationale) {
+  return escHtml(rationale).replace(RATIONALE_LINK, "<a href=\"$2\">$1</a>");
+}
+
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   assert(lines.length > 1, "VMT sheet CSV must include header and rows");
@@ -1514,7 +1563,7 @@ function parseVmtCsv(text) {
       incCov,
       incCovMin,
       incCovMax,
-      rationale: csvUnquote(hit[15]),
+      rationale: vmtRationale(hit[15], i + 1),
     });
   }
   assert(rows.length > 0, "VMT sheet CSV has no data rows");
@@ -1569,7 +1618,7 @@ function parseGhostVmtCsv(text) {
     if (line === "") continue;
     const hit = re.exec(line);
     assert(hit !== null, "Malformed ghost VMT CSV row", {lineNo: i + 1, line});
-    rows.push({...vmtRowMiles(hit, i + 1), rationale: csvUnquote(hit[9])});
+    rows.push({...vmtRowMiles(hit, i + 1), rationale: vmtRationale(hit[9], i + 1)});
   }
   return rows;
 }
@@ -3265,9 +3314,13 @@ function logUniformGrid(lo, hi, n) {
 // fleet's were {median, sigma} log-normals, converted to symmetric bands per
 // call.) A band's `best` is its mode, and lo and hi sit 1.6449 sigmas out on
 // their own sides, so 10% of the band's mass lies outside [lo, hi], split
-// between the two tails in proportion to the two sides' widths (4-6% each in
-// the bands below), not 5% apiece. Tesla's modes are three different futures,
-// not one smooth ramp:
+// between the two tails in proportion to the two sides' widths, not 5%
+// apiece: 3.65-6.35% each in the bands below, 6.35% under lo and 3.65% over
+// hi in the eyes-off miles band and the rides band, its multiple, and
+// 4.0-6.0% in the others (until the sixth fix run's third review,
+// 2026-11-05, this comment gave 4-6%, from before 2026-11-04, when the
+// eyes-off band, its low side the widest, became a part of its own). Tesla's
+// modes are three different futures, not one smooth ramp:
 //   A: the slow robotaxi ramp continues;
 //   B: Tesla scales its dedicated robotaxi service aggressively (Cybercab
 //      deployment at hundreds to a thousand a week);
@@ -3586,16 +3639,21 @@ function fleetForecastCurves() {
 // CDF reaches p, 0 < p < 1: algorithm AS 241 (M. J. Wichura, "The Percentage
 // Points of the Normal Distribution", Applied Statistics 37, 1988), PPND16,
 // accurate to about one part in 1e16 (quals/normal-quantile.qual.mjs checks
-// it against reference values). Three rational functions, each the ratio of
+// its coefficients against the published ones, and its values against
+// reference values; until 2026-11-04 the central denominator's last
+// coefficient read 5226.495278852545925, where AS 241 prints
+// 5226.4952788528545610). Three rational functions, each the ratio of
 // two polynomials whose coefficients run from the constant term up: one for
-// p within 0.425 of one half, in (p - 1/2)^2, and two for the tails, in r =
-// sqrt(-ln(min(p, 1 - p))), at most 5 and beyond. The gamma machinery's
-// starting points (normalQuantApprox) keep their coarser approximation.
+// p within 0.425 of one half, in 0.180625 - (p - 1/2)^2, its numerator times
+// p - 1/2; and two for the tails, for r = sqrt(-ln(min(p, 1 - p))) at most
+// 5 and beyond, in r - 1.6 and r - 5, their sign that of p - 1/2. The gamma
+// machinery's starting points (normalQuantApprox) keep their coarser
+// approximation.
 const NORMAL_QUANTILE = {
   central: {num: [3.387132872796366608, 133.14166789178437745, 1971.5909503065514427, 13731.693765509461125,
     45921.953931549871457, 67265.770927008700853, 33430.575583588128105, 2509.0809287301226727],
   den: [1, 42.313330701600911252, 687.1870074920579083, 5394.1960214247511077, 21213.794301586595867,
-    39307.89580009271061, 28729.085735721942674, 5226.495278852545925]},
+    39307.89580009271061, 28729.085735721942674, 5226.4952788528545610]},
   near: {from: 1.6, num: [1.42343711074968357734, 4.6303378461565452959, 5.7694972214606914055, 3.64784832476320460504,
     1.27045825245236838258, 0.24178072517745061177, 0.0227238449892691845833, 7.7454501427834140764e-4],
   den: [1, 2.05319162663775882187, 1.6763848301838038494, 0.68976733498510000455, 0.14810397642748007459,
@@ -3653,28 +3711,39 @@ function shapeAtLevel({mu, sLo, sHi}, p, q) {
 // The comonotonic sum of some parts, by their shapes, at the quantile level
 // of log-odds L (the level's p = 1 / (1 + e^-L), q = 1 - p): its quantile
 // there, the sum x of the parts' quantiles x_i, as u = ln x, and its density
-// over ln x there, g = x / the sum of x_i / g_i (since x's change with the
-// level, dx/dp, is the sum of the x_i / g_i, g_i each part's density over
-// ln x at the level).
+// over ln x there, g = 1 / the sum of (x_i / x) / g_i (since x's change with
+// the level, dx/dp, is the sum of the x_i / g_i, g_i each part's density over
+// ln x at the level), with p, q and L. For L in [-700, 700] each share
+// x_i / x is at most 1 and each 1 / g_i at most about 2.7e302 times its
+// part's sLo + sHi (1e303 for today's widest part), so the sum cannot
+// overflow and g is positive. Until the sixth fix run's second review
+// (2026-11-05) g was x / the sum of x_i / g_i, whose terms overflowed far
+// out in the upper tail, g then 0: from L of about 647 (q about 7e-282) for
+// the miles scenario-C components, and from L of 674 to 698 for the one-part
+// components.
 function sumAtLevel(shapes, L) {
   const p = 1 / (1 + Math.exp(-L)), q = 1 / (1 + Math.exp(L));
+  const parts = shapes.map(shape => shapeAtLevel(shape, p, q));
+  const xs = parts.map(part => Math.exp(part.u));
   let x = 0, spread = 0;
-  for (const shape of shapes) {
-    const at = shapeAtLevel(shape, p, q), xi = Math.exp(at.u);
-    x += xi;
-    spread += xi / at.g;
-  }
-  return {u: Math.log(x), g: x / spread, p, q};
+  for (const xi of xs) x += xi;
+  parts.forEach((part, i) => { spread += xs[i] / x / part.g; });
+  return {u: Math.log(x), g: 1 / spread, p, q, L};
 }
 // The point where an increasing function reaches `target`, from a start t
-// inside a bracket [lo, hi] that holds it: Newton's method kept to the
-// bracket of points known to lie below and above the solution, as in
-// Numerical Recipes' rtsafe (a Newton step that would leave the bracket, or
-// that is not under half the step before last, bisects the bracket instead,
-// so the bracket at least halves every second step), done when the step or
-// the bracket is within 1e-12 of t's scale. at(t) gives the function's value
-// and slope at t, with anything else its caller wants; this returns at's
-// result at the solution.
+// inside a bracket [lo, hi]: Newton's method kept to the bracket of points
+// known to lie below and above the solution, as in Numerical Recipes' rtsafe
+// (a Newton step that would leave the bracket, or that is not under half the
+// move before last, gives way to bisecting the bracket, so every Newton move
+// taken is under half the move before last, and every bisection halves the
+// bracket), done when the step or the bracket is within 1e-12 of t's scale.
+// at(t) gives the function's value and slope at t, with anything else its
+// caller wants; this returns at's result where it stops. A bracket that does
+// not hold the solution stops it at the bracket's end nearest the solution,
+// and an infinite slope (a zero step) where it occurs, away from the target
+// (neither caller's function has one since 2026-11-05): each caller asserts
+// what it reached (until the sixth fix run's first review, 2026-11-04,
+// neither did; quals/forecast-solve.qual.mjs checks that both asserts fire).
 function solveIncreasing(at, target, lo, hi, t) {
   let last = hi - lo, beforeLast = hi - lo;
   for (let i = 0; i < 200; i++) {
@@ -3692,18 +3761,38 @@ function solveIncreasing(at, target, lo, hi, t) {
   return fail("solveIncreasing: no solution within 200 steps", {target, lo, hi, t});
 }
 // A forecast component, the comonotonic sum of its parts, at ln x = u: the
-// level at which its quantile is x (its CDF at x is that level's p) and its
-// density over ln x there (g), solving for the level's log-odds in
-// [-700, 700] (p or q down to about e^-700), where the quantile's slope in L
-// is p q / g. An x past the quantiles at those levels, some 37 sigmas from
-// the parts' modes, ends at the range's end, where p or q, and the density,
-// are under 1e-300.
+// level at which its quantile is x (its CDF at x is that level's p, and its
+// upper tail q) and its density over ln x there (g), solving for the level's
+// log-odds L in [-700, 700] (p or q down to e^-700, about 1e-304), where the
+// quantile's slope in L is p q / g. The density is positive and finite at
+// every L in the range (sumAtLevel), so the solve stops away from x only at
+// an end of the range, x beyond the component's quantile there (about 37
+// sigmas from its parts' modes), where no figure drawn or printed can tell
+// the tail from the true one: it then reports that end's p and q, the smaller
+// e^-700 (about 1e-304), above the true tail (bandMixtureQuantiles gives what
+// that does to a lane's CDF). Asserted: the solve reaches ln x within 1e-8 of
+// its scale, or it stops within 1e-9 (relative) of an end of the range with x
+// beyond the quantile there, on that end's side (until the sixth fix run's
+// third review, 2026-11-05, no qual read the side test at the high end, nor
+// either tolerance; quals/forecast-solve.qual.mjs). Until the sixth fix run's
+// second review (2026-11-05) the density underflowed to 0 far out in the
+// upper tail, and the solve stopped there, away from x, where q was under
+// about 1e-281 (7.1e-282 at worst on the tables of 2026-11-04, the miles
+// scenario-C components; this comment said 1e-284, from a probe of seven
+// points), while the assert passed any stop where p or q was under 1e-280:
+// with the eyes-off miles band's high edge at 7.5B for 6B a correct density
+// threw, and a solve stopped at the range's wrong end passed.
 function componentAt(c, u) {
-  const shapes = c.parts.map(bandShape);
-  return solveIncreasing(L => {
-    const at = sumAtLevel(shapes, L);
-    return {...at, value: at.u, slope: at.p * at.q / at.g};
-  }, u, -700, 700, 0);
+  const shapes = c.parts.map(bandShape), end = 700;
+  const at = solveIncreasing(L => {
+    const sum = sumAtLevel(shapes, L);
+    return {...sum, value: sum.u, slope: sum.p * sum.q / sum.g};
+  }, u, -end, end, 0);
+  assert(Math.abs(at.u - u) <= 1e-8 * (1 + Math.abs(u))
+    || (end - Math.abs(at.L) <= 1e-9 * end && Math.sign(u - at.u) === Math.sign(at.L)),
+    "componentAt: the solve must reach ln x, or stop at an end of its level range with x beyond the quantile there",
+    {u, reached: at.u, L: at.L, p: at.p, q: at.q, g: at.g, parts: c.parts});
+  return at;
 }
 
 // Mixture of comonotonic sums of two-piece log-normals: the single density
@@ -3721,27 +3810,66 @@ function bandMixtureLogDensity(components, x) {
   for (const c of components) d += c.weight * componentAt(c, u).g;
   return d;
 }
-// The mixture's quantile at each level in ps: the root of its CDF (its
-// components' CDFs, weighted) less the level, which lies between the
-// smallest and the largest of its components' own quantiles at that level
-// (at the smallest every component's CDF is at or below the level, so the
-// mixture's is too, and at the largest at or above it); for a mixture of one
-// component, its own quantile. Until 2026-11-04 the quantiles came from the
-// density integrated on a grid of 6,000 points in ln x, to within about
-// 4e-6 of the exact ones.
+// The mixture's quantile at each level in ps: the root, in ln x, of its CDF's
+// log-odds less the level's, its CDF's log-odds being ln(P / Q) for P its
+// components' CDFs, weighted, and Q their upper tails, weighted (each
+// component's p and q from its level's log-odds, so that both tails keep
+// their precision). The root lies between the smallest and the largest of its
+// components' own quantiles at that level (at the smallest every component's
+// CDF is at or below the level, so the mixture's is too, and at the largest
+// at or above it); for a mixture of one component, its own quantile. The
+// solve stops when its step, or its bracket, in ln x is within 1e-12 of
+// ln x's scale, 1 + |ln x| (solveIncreasing), so it leaves the log-odds
+// within about that step times their slope in ln x, g / P + g / Q (g the
+// components' densities over ln x, weighted), plus the error componentAt's
+// own solves leave in P and Q: their levels within 1e-12 of their scale, up
+// to about 7e-10 in the log-odds at the ends of their range. On today's
+// tables the most a sweep found is 6.8e-11 from 0.001 to 0.999 and 7.1e-10
+// from 1e-300 to 1 - 1e-15 (sweeps of 9,981 to 20,001 levels and of 4,401 to
+// 13,001, the sixth fix run's third review, 2026-11-05; its second gave 6e-11
+// and 3e-10, the most it found at 1,010 levels, as bounds). Asserted: the
+// log-odds at the quantile found within 1e-8 of the level's, plus what a step
+// of 1e-11 of ln x's scale (ten times the solve's) moves them, with the slope
+// finite. The 1e-8 holds componentAt's error, which in a far tail can exceed
+// what the step moves the log-odds (an assert on the step alone threw on
+// correct quantiles of a wide band whose far quantiles pass near x = 1); the
+// step term holds a steep CDF's, such as a point band's (its sigmas floored
+// at 1e-6) beside a wide one, whose log-odds the solve's precision in ln x
+// leaves up to 1.6e-5 off (until the third review the assert read the 1e-8
+// alone, and threw on such correct quantiles; quals/forecast-solve.qual.mjs
+// reads both). The CDF is componentAt's: a component whose quantile at its
+// level range's low end lies above x reports that end's p, e^-700 (about
+// 1e-304), above its true one, so below about 1e-296 a lane's CDF, and its
+// quantiles there, are good only to that floor times the component's weight,
+// relative to the level: 8.3e-5 at 1e-300 on today's tables (by mpmath),
+// where the page asks only 0.05, 0.5 and 0.95.
+// Until the sixth fix run's second review (2026-11-05) the solve was on P
+// itself, which near 1 resolves only about 1e-16, so past about 1 - 1e-8 its
+// assert (P within 1e-8 of the level's smaller tail) threw on correct
+// quantiles and passed inaccurate ones (off by up to 3.7% at 1 - 1e-15),
+// though the page asks only 0.05, 0.5 and 0.95. Until 2026-11-04 the
+// quantiles came from the density integrated on a grid of 6,000 points in
+// ln x, to within about 4e-6 of the exact ones.
 function bandMixtureQuantiles(components, ps) {
   return ps.map(level => {
-    const own = components.map(c => sumAtLevel(c.parts.map(bandShape), Math.log(level / (1 - level))).u);
+    const target = Math.log(level / (1 - level));
+    const own = components.map(c => sumAtLevel(c.parts.map(bandShape), target).u);
     const lo = Math.min(...own), hi = Math.max(...own);
-    return Math.exp(solveIncreasing(u => {
-      let value = 0, slope = 0;
+    const root = solveIncreasing(u => {
+      let P = 0, Q = 0, g = 0;
       for (const c of components) {
         const at = componentAt(c, u);
-        value += c.weight * at.p;
-        slope += c.weight * at.g;
+        P += c.weight * at.p;
+        Q += c.weight * at.q;
+        g += c.weight * at.g;
       }
-      return {u, value, slope};
-    }, level, lo, hi, (lo + hi) / 2).u);
+      return {u, value: Math.log(P) - Math.log(Q), slope: g / P + g / Q, P, Q};
+    }, target, lo, hi, (lo + hi) / 2);
+    const bound = 1e-8 + root.slope * 1e-11 * (1 + Math.abs(root.u));
+    assert(Math.abs(root.value - target) <= bound && Number.isFinite(bound),
+      "bandMixtureQuantiles: the mixture's CDF at its quantile must be the level",
+      {level, target, logOdds: root.value, slope: root.slope, bound, cdf: root.P, tail: root.Q, u: root.u, lo, hi});
+    return Math.exp(root.u);
   });
 }
 
@@ -4187,11 +4315,11 @@ function growthMetricSpec(key) {
   const specs = {
     fleet: {label: "Fleet size", yLabel: "Fleet size", valueLabel: "Fleet size", fmt: fmtWhole, tipAt: wholeAtSigFigs,
       // yMax 1,000,000, the decade above the largest value drawn (the all-HW4
-      // lane's 95th percentile, ~319,000 since 2026-11-04, the exact sum
-      // (each C component the comonotonic sum of its two parts), ~324,000
-      // from 2026-11-03, when C's robotaxi part became the A/B mix, until
-      // then, ~317,000 on the 2026-11-02 refit's tables and ~358,000 from
-      // 2026-10-31 until that refit; decision 23(g) of the
+      // lane's 95th percentile: ~319,000 since 2026-11-04, the exact sum,
+      // each C component the comonotonic sum of its two parts; ~324,000 from
+      // 2026-11-03 to 2026-11-04, C's robotaxi part the A/B mix through
+      // summed edges; ~317,000 on the 2026-11-02 refit's tables; and
+      // ~358,000 from 2026-10-31 until that refit; decision 23(g) of the
       // 2026-11-01 open questions; quals/fleet-timeseries.qual.mjs). 4,000,000 until
       // 2026-11-02, set when that lane counted distinct customer cars (its
       // 95th percentile 2.86M for Jan 1, 2027, 1.92M for Jan 1, 2028 on
@@ -6381,7 +6509,9 @@ Maybe that affects AVs too?
   // rationales (rule 9: shown and marked, not left out), after each line's
   // analysis months, each headed by its month and the ghost tooltip's note.
   // The note is the human's English, so its span is styled as such inside the
-  // AI-text cell. Those miles are on the VMT charts but in no rate yet.
+  // AI-text cell. Those miles are on the VMT charts but in no rate yet. Each
+  // rationale, analysis or ghost, is drawn by rationaleHtml, its links to
+  // data/README.md's sections as links (since 2026-11-05).
   const ghostVmt = windowGhostRows(series.months[series.months.length - 1]);
   const vmtSrcRows = [];
   for (const helmer of ADS_SERIES) {
@@ -6401,9 +6531,9 @@ Maybe that affects AVs too?
       assert(at[at.length - 1] - at[0] + 1 === at.length,
         "a VMT rationale covers two separate runs of months", {helmer, months: at.map(i => helmerVmt[i].month)});
       const span = [...new Set([helmerVmt[at[0]].month, helmerVmt[at[at.length - 1]].month])].join(" \u2013 ");
-      return `${span}: ${escHtml(rationale)}`;
+      return `${span}: ${rationaleHtml(rationale)}`;
     }).concat(ghostVmt.filter(r => r.helmer === helmer).map(r =>
-      `${r.month} (<span class="vmt-ghost-note">${escHtml(VMT_GHOST_NOTE)}</span>): ${escHtml(r.rationale)}`)).join("<br>");
+      `${r.month} (<span class="vmt-ghost-note">${escHtml(VMT_GHOST_NOTE)}</span>): ${rationaleHtml(r.rationale)}`)).join("<br>");
     vmtSrcRows.push(`<tr>
       <td>${escHtml(helmerLabel(helmer))}</td>
       <td class="ai-text">${ratStr}</td>

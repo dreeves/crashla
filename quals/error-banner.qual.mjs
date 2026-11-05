@@ -28,9 +28,17 @@
 //    named the line and the range since 2026-11-03): init stops at the range
 //    assert, and the banner shows its message, which names Waymo, the range
 //    as String() writes it and its type, and its button dismisses it.
+//  - a data/vmt.js whose first analysis row's rationale holds a link with its
+//    target left open, and one whose first ghost row's rationale holds a link
+//    whose anchor is in capitals (since 2026-11-05, when the rationales'
+//    section pointers became links, "[<text>](data/#<anchor>)"): init stops
+//    where parseVmtCsv or parseGhostVmtCsv reads the rationale, and the
+//    banner shows the link assert's message, whose details name the row's
+//    line, 2, and its rationale, and its button dismisses it.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
+import { parseCsv } from "./csv-parse.mjs";
 
 const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 const skewedVmt = fs.readFileSync("data/vmt.js", "utf8").replace(/const GHOST_VMT_CSV_TEXT\b/, "const GHOST_VMT_CSV_TEXT_NOT_IN_THIS_RELEASE");
@@ -63,6 +71,26 @@ assert.ok(appJs.split(INIT).length === 2,
 Expectata: one "// --- Init ---" line, the one quals/load-app.mjs splits the app at.
 Resultata: ${appJs.split(INIT).length - 1} such lines.`);
 const nanRangeApp = appJs.replace(INIT, `\nPRE_SERIES_OFFSET.Waymo.range = NaN;${INIT}`);
+// The malformed links: the first row of each CSV segment (the line after its
+// header, inside the segment's template literal), its rationale (its last
+// field, read as CSV, quoted or not) given a link of the wrong form at its
+// end, and the row written back with that field double-quoted; its other
+// fields hold no comma, quote or line break, so they need no quotes.
+const firstRow = segment => {
+  assert.ok(vmtJs.split(`const ${segment} =`).length === 2,
+    `Replicata: find ${segment}'s declaration in data/vmt.js. Expectata: one "const ${segment} =". Resultata: ${vmtJs.split(`const ${segment} =`).length - 1}.`);
+  const at = vmtJs.indexOf("`", vmtJs.indexOf(`const ${segment} =`)) + 1;
+  return vmtJs.slice(at, vmtJs.indexOf("`", at)).split("\n")[1];
+};
+const badLink = (segment, link) => {
+  const row = firstRow(segment), fields = parseCsv(row)[0];
+  assert.ok(vmtJs.split(row).length === 2 && fields.length > 1 && fields.slice(0, -1).every(f => !/[",\n]/.test(f)),
+    `Replicata: read the first row of data/vmt.js's ${segment}. Expectata: a row once in the file, its fields but the rationale (its last) free of commas, quotes and line breaks. Resultata: ${JSON.stringify(row.slice(0, 80))}.`);
+  const rationale = fields[fields.length - 1] + link;
+  return vmtJs.replace(row, () => [...fields.slice(0, -1), `"${rationale.replace(/"/g, '""')}"`].join(","));
+};
+const openTargetVmt = badLink("VMT_CSV_TEXT", " ([data/README.md, Ghost months](data/#ghost-months");
+const capitalAnchorVmt = badLink("GHOST_VMT_CSV_TEXT", " [data/README.md, Ghost months](data/#Ghost-Months).");
 
 const banner = () => {
   const b = document.getElementById("url-banner");
@@ -107,6 +135,11 @@ try {
       // --- a malformed PRE_SERIES_OFFSET entry --------------------------------
       await stoppedLoad(browser, engineName, "crashla.js with Waymo's PRE_SERIES_OFFSET range NaN",
         /\/crashla\.js$/, nanRangeApp, [`"helmer":"Waymo"`, `"range":"NaN"`, `"type":"number"`]);
+      // --- a rationale's link of the wrong form -----------------------------
+      await stoppedLoad(browser, engineName, "data/vmt.js whose first analysis rationale holds a link with its target left open",
+        /\/data\/vmt\.js$/, openTargetVmt, ['{"lineNo":2,"rationale":"']);
+      await stoppedLoad(browser, engineName, "data/vmt.js whose first ghost rationale holds a link whose anchor is in capitals",
+        /\/data\/vmt\.js$/, capitalAnchorVmt, ['{"lineNo":2,"rationale":"']);
       // --- errors on a page that drew -------------------------------------
       {
         const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
@@ -142,8 +175,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data), with Waymo's first fully knotted month's band top widened to its running sum (a release that moved the knot), and with crashla.js served with Waymo's PRE_SERIES_OFFSET range set to NaN; then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
-Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; for the moved knot checkPreSeriesOffsets's, naming Waymo, the month the data gives and PRE_SERIES_OFFSET's; for the NaN range its range assert's, naming Waymo, "NaN" and the type "number"; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
+  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data), with Waymo's first fully knotted month's band top widened to its running sum (a release that moved the knot), with crashla.js served with Waymo's PRE_SERIES_OFFSET range set to NaN, and with data/vmt.js's first analysis rationale given a link whose target is left open and its first ghost rationale a link whose anchor is in capitals; then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
+Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; for the moved knot checkPreSeriesOffsets's, naming Waymo, the month the data gives and PRE_SERIES_OFFSET's; for the NaN range its range assert's, naming Waymo, "NaN" and the type "number"; for each malformed link the link assert's, its details naming line 2 and the rationale; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: an uncaught error or unhandled rejection, at init or after it, shows the page's banner with its message, in three engines");

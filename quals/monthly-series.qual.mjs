@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { rationaleText } from "./rationale-links.mjs";
 
 class ElementStub {
   constructor(tagName, id = "") {
@@ -767,11 +768,14 @@ Resultata: ${JSON.stringify(fiveDay)} from ${fiveDayTips.length} tooltips, e.g. 
 // (c) The card's Effective-VMT tooltip states the numbers only; the per-month
 // VMT rationales live in the sanity section's VMT-sources table (embedded
 // here they made the tooltip 7,000-8,700px tall, unreadable and unpinnable).
-// No rationale of the VMT rows (the first 40 characters of each) may appear
-// in it; until 2026-10-29 this looked for a few words common in them
-// ("US est.", "deck", "CPUC").
+// No rationale of the VMT rows (the first 40 characters of each, as
+// data/vmt.csv holds it and, since its section pointers became links on
+// 2026-11-05, as the page shows it, each link as its text) may appear in it;
+// until 2026-10-29 this looked for a few words common in them ("US est.",
+// "deck", "CPUC").
 const vmtTips = [...plain.summaryCardHtml.matchAll(/class="mpi-card-vmt" data-tip="([^"]*)"/g)].map(m => m[1]);
-const rationales = appValue("[...new Set([...vmtRows, ...parseGhostVmtCsv(GHOST_VMT_CSV_TEXT)].map(r => r.rationale))]");
+const rationales = appValue("[...new Set([...vmtRows, ...parseGhostVmtCsv(GHOST_VMT_CSV_TEXT)].map(r => r.rationale))]")
+  .flatMap(r => [r, rationaleText(r)]);
 // One card per ADS line, checked or not (unchecked lines' cards are grayed).
 const adsLines = vm.runInContext("ADS_SERIES.length", ctx);
 assert.ok(rationales.length > 0 && vmtTips.length === adsLines && vmtTips.every(t => t.length < 700 && !rationales.some(r => t.includes(escAttr(r.slice(0, 40))))),

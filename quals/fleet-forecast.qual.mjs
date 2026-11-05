@@ -1116,9 +1116,21 @@ Resultata: ${failing.map(l => `${l.metric} ${l.label}: ${l.runs.map(r => `${SLOP
 // fork from Tesla's own history line, must sit at or above the robotaxi lane
 // at every tenth of a percentile from the 0.1st to the 99.9th on every
 // metric, by the quantile function the charts use (bandMixtureQuantiles),
-// with no allowance; and each lane's printed 5th percentile, median and 95th
+// with no allowance; each lane's printed 5th percentile, median and 95th
 // percentile (fleetDistributionCurves' lo90, median and hi90) must be its
-// quantiles there, so the printed figures are among those read.
+// quantiles there, within a billionth (relative), so the printed figures are
+// among those read; and the all-HW4 lane's printed figures must sit at or
+// above the robotaxi lane's, with no allowance. The printed figures come
+// from a call of bandMixtureQuantiles at those three levels, the quantiles
+// read here from one at 999, and each is solved to within 1e-12 of ln x's
+// scale, 1 + |ln x|, of the root (crashla.js, solveIncreasing), at most
+// about 2.3e-11 relative here (the farthest of the printed figures from an
+// mpmath computation, 1.8e-11 at the sixth fix run's first review,
+// 2026-11-04, and 1.3e-11 since its second, 2026-11-05), so a correct
+// solver may reach them by different paths, its last bits apart (the first
+// review found a warm-started solve 1.8e-11 apart, an exact tie red on it);
+// a printed figure read at another level, 0.9500001 for 0.95, is 1e-6
+// apart.
 // Until 2026-11-04 three sections read the rule, each C component then one
 // two-piece band through its two parts' summed edges, whose low side ran
 // under the robotaxi lane's below about the 3rd percentile (miles 2.8%,
@@ -1142,6 +1154,7 @@ Resultata: ${failing.map(l => `${l.metric} ${l.label}: ${l.runs.map(r => `${SLOP
     else runs.push([i, i]);
     return runs;
   }, []).map(([a, b]) => `${pct(ps[a])} to ${pct(ps[b])}`).join(", ");
+  const TIE = 1e-9; // a printed figure's distance from its quantile, relative
   const below = [], unprinted = [];
   for (const {metric, lanes: tesla} of lanes) {
     assert.ok(["robotaxi", "hw4"].every(key => key in tesla && tesla[key].q.length === ps.length),
@@ -1151,8 +1164,12 @@ Resultata: quantiles per lane ${JSON.stringify(Object.fromEntries(Object.entries
     const {robotaxi, hw4} = tesla;
     for (const [key, lane] of [["robotaxi", robotaxi], ["hw4", hw4]]) {
       for (const [p, field] of PRINTED) {
-        if (lane[field] !== lane.q[ps.indexOf(p)]) unprinted.push(`${metric} ${key}: printed ${field} ${lane[field]} against its quantile at ${p}, ${lane.q[ps.indexOf(p)]}`);
+        const q = lane.q[ps.indexOf(p)];
+        if (!(Math.abs(lane[field] / q - 1) <= TIE)) unprinted.push(`${metric} ${key}: printed ${field} ${lane[field]} against its quantile at ${p}, ${q} (x${lane[field] / q})`);
       }
+    }
+    for (const [p, field] of PRINTED) {
+      if (!(hw4[field] >= robotaxi[field])) below.push(`${metric}: printed ${field} (${pct(p)}), all-HW4 ${hw4[field]} against robotaxi ${robotaxi[field]}`);
     }
     const under = ps.map((_, i) => i).filter(i => !(hw4.q[i] >= robotaxi.q[i]));
     if (under.length > 0) {
@@ -1162,7 +1179,7 @@ Resultata: quantiles per lane ${JSON.stringify(Object.fromEntries(Object.entries
   }
   assert.ok(below.length === 0 && unprinted.length === 0,
     `Replicata: build Tesla's robotaxi and all-HW4 lanes for the fleet, rides and miles forecasts and read each lane's quantiles at every tenth of a percentile from the 0.1st to the 99.9th (bandMixtureQuantiles), and its printed 5th percentile, median and 95th percentile (fleetDistributionCurves).
-Expectata: at each, the all-HW4 lane's at or above the robotaxi lane's, with no allowance; and each lane's printed figures its quantiles at 0.05, 0.5 and 0.95.
+Expectata: at each, the all-HW4 lane's at or above the robotaxi lane's, with no allowance; each lane's printed figures its quantiles at 0.05, 0.5 and 0.95 within ${TIE} (relative); and the all-HW4 lane's printed figures at or above the robotaxi lane's, with no allowance.
 Resultata: ${[...below, ...unprinted].join("; ")}.`);
 }
 
@@ -1262,7 +1279,7 @@ Expectata: immediate throw (the weights are a hard invariant).
 Resultata: no throw.`,
 );
 
-console.log(`qual pass: fleet forecast draws four normalized curves; Tesla split into its robotaxi and all-HW4-ADS scopes; on every metric every lane is drawn as its own density on the chart's grid and scale (its samples, stroke, fill and median marker, each in its lane's colour and, as its own and its ancestors' attributes and styles paint it, drawn to be seen and under no transform, its fill unoutlined and its stroke dashed exactly when the lane is conditional) in the frame of its month-axis lines, which meet at its corner and which its clip rectangle contains, its strokes and fills clipped, each stroke drawn over every fill and each median marker, unclipped, over every stroke and fill it meets, and its hit circles over the markers, and the ${onePeakLanes} lanes drawn from one band rise then fall on that grid; Tesla's all-HW4 lane sits at or above its robotaxi lane at every tenth of a percentile from the 0.1st to the 99.9th, its printed percentiles among them`);
+console.log(`qual pass: fleet forecast draws four normalized curves; Tesla split into its robotaxi and all-HW4-ADS scopes; on every metric every lane is drawn as its own density on the chart's grid and scale (its samples, stroke, fill and median marker, each in its lane's colour and, as its own and its ancestors' attributes and styles paint it, drawn to be seen and under no transform, its fill unoutlined and its stroke dashed exactly when the lane is conditional) in the frame of its month-axis lines, which meet at its corner and which its clip rectangle contains, its strokes and fills clipped, each stroke drawn over every fill and each median marker, unclipped, over every stroke and fill it meets, and its hit circles over the markers, and the ${onePeakLanes} lanes drawn from one band rise then fall on that grid; Tesla's all-HW4 lane sits at or above its robotaxi lane at every tenth of a percentile from the 0.1st to the 99.9th and at its printed percentiles, each lane's printed percentiles its quantiles to a billionth`);
 
 // --- Tesla's rides scenarios are the miles scenarios over the ride corridor -
 // RIDES_FORECAST Tesla A stayed at the 2026-07-22 miles figures when

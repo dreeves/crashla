@@ -21,6 +21,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 import { parseCsv } from "./csv-parse.mjs";
+import { rationaleMarkup } from "./rationale-links.mjs";
 
 class ElementStub {
   constructor(tagName) { this.tagName = tagName; this._text = ""; this._html = ""; }
@@ -147,7 +148,10 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
   // #40: each rationale with the months it covers, in order, for every ADS
   // line with a row (each company, and Tesla's no-monitor line under its
   // label; until 2026-10-31 the companies only, found by their keys, so the
-  // no-monitor line's row went unread: audit 2026-10-30, QT-04).
+  // no-monitor line's row went unread: audit 2026-10-30, QT-04). Since
+  // 2026-11-05 a rationale's links to data/README.md's sections are a
+  // elements (quals/rationale-links.mjs, rationaleMarkup; the human's "ok, go
+  // with links", 2026-11-04); until then the whole rationale was escaped text.
   const src = bodyRows(section(html, "sanity-vmt-sources"));
   for (const helmer of LINES) {
     const rows = vmt.filter(r => r.helmer === helmer && w(r.month)).sort((x, y) => x.month < y.month ? -1 : 1);
@@ -156,7 +160,7 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
       if (runs.length && runs[runs.length - 1].rationale === r.rationale) runs[runs.length - 1].last = r.month;
       else runs.push({ rationale: r.rationale, first: r.month, last: r.month });
     }
-    const want = runs.map(s => `${s.first === s.last ? s.first : `${s.first} – ${s.last}`}: ${escHtml(s.rationale)}`);
+    const want = runs.map(s => `${s.first === s.last ? s.first : `${s.first} – ${s.last}`}: ${rationaleMarkup(s.rationale)}`);
     const row = src.find(r => r.cells[0] && r.cells[0].text === escHtml(LABEL[helmer]));
     const got = row ? row.cells[1].html.split("<br>") : [];
     if (JSON.stringify(got) !== JSON.stringify(want)) problems.vmtSources.push(`${wname} ${helmer}: got ${JSON.stringify(got.map(g => g.slice(0, 40)))}, want ${JSON.stringify(want.map(g => g.slice(0, 40)))}`);
@@ -245,7 +249,7 @@ for (const helmer of [...new Set(csv.map(r => r.helmer))]) {
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
   `Replicata: build the sanity section for ${Object.keys(WINDOWS).join(", ")} and compare its Poisson dispersion, VMT sources, Incident coverage, Reporting threshold and count cells with a recompute from INCIDENT_DATA and the VMT rows (each section found by its table's id).
-Expectata: (noIncidents) the Passenger presence, Severity breakdown, Reporting threshold and Geography tables carry one row per ADS helmer, grayed (class insufficient) with one cell giving the reason (NO_INCIDENTS_NOTE) for a helmer with no incidents in the window; (dispersion) one row per ADS helmer: over its own VMT months in the window when it has 3 or more (rates, overall rate, index and the DISPERSION_VERDICT assessment of its recomputed tier), else a grayed row (class insufficient) whose one cell gives the reason (dispersionFewMonthsNote with the month count); (vmtSources) each rationale prefixed "first – last: " (or "month: "), in month order, each rationale's months contiguous in data/vmt.csv; (coverageRows) rows only for helmers with VMT months in the window; (coverageNote) the data-through month in parentheses, "(${dataThroughMonth})", not the cutoff date; (avStopped) Stopped + Parked; (separators) counts of 1,000 or more grouped "1,164", and the Waymo cross-check's opening paragraph gives the full-history count, ${inc.filter(i => i.helmer === "Waymo").length.toLocaleString("en-US")}.
+Expectata: (noIncidents) the Passenger presence, Severity breakdown, Reporting threshold and Geography tables carry one row per ADS helmer, grayed (class insufficient) with one cell giving the reason (NO_INCIDENTS_NOTE) for a helmer with no incidents in the window; (dispersion) one row per ADS helmer: over its own VMT months in the window when it has 3 or more (rates, overall rate, index and the DISPERSION_VERDICT assessment of its recomputed tier), else a grayed row (class insufficient) whose one cell gives the reason (dispersionFewMonthsNote with the month count); (vmtSources) each rationale prefixed "first – last: " (or "month: "), in month order, its text escaped and each of its links an a element (rationaleMarkup), each rationale's months contiguous in data/vmt.csv; (coverageRows) rows only for helmers with VMT months in the window; (coverageNote) the data-through month in parentheses, "(${dataThroughMonth})", not the cutoff date; (avStopped) Stopped + Parked; (separators) counts of 1,000 or more grouped "1,164", and the Waymo cross-check's opening paragraph gives the full-history count, ${inc.filter(i => i.helmer === "Waymo").length.toLocaleString("en-US")}.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
 console.log(`qual pass: sanity tables over ${Object.keys(WINDOWS).length} windows (${dispersionChecked} dispersion rows recomputed) use each helmer's own months, label rationale spans, list coverage only for helmers with months, count Stopped + Parked, and group thousands`);

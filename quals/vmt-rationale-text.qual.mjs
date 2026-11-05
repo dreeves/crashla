@@ -1,56 +1,38 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { parseCsv } from "./csv-parse.mjs";
+import { LINK, DATA_LINK, OPEN_TARGET, rationaleLinks, rationaleText, headingAnchors } from "./rationale-links.mjs";
 
 // The sanity section's "VMT sources" table shows each data/vmt.csv rationale
-// verbatim (those of the window's months, and a ghost month's when the window
-// ends at the newest NHTSA month; data/README.md, Ghost months), so the
-// rationales are page text. Added 2026-10-03 for the 2026-10-02 audit
+// as written, its links as links (those of the window's months, and a ghost
+// month's when the window ends at the newest NHTSA month; data/README.md,
+// Ghost months), so the rationales are page text. Added 2026-10-03 for the 2026-10-02 audit
 // findings #38, #39, #47 and #76-#80:
-//   (1) every citation of a section resolves. A citation is a document's
-//       name, a comma, and text starting with a capital letter, as a section
-//       name does ("data/README.md, Zoox anchors"), or with "[AI TEXT] " and
-//       a capital, as some IGNOREME.md headings do. The documents are the
-//       repo's READMEs and IGNOREME.md: every file named README, README.md or
-//       IGNOREME.md outside the repo's dot-directories and node_modules
-//       (today data/README.md, data/snapshots/README.md, IGNOREME.md,
-//       quals/README and README.md), each named by its path from the repo
-//       root, with or without a leading "./". A bare "README" is a name too,
-//       of no file: the top-level README is README.md, and a bare "README"
-//       could mean any of them. A name inside a longer path or a URL
-//       (data/README.md in foo/data/README.md, README.md in
-//       https://github.com/x/README.md) starts no citation, and each name and
-//       comma starts a citation of its own, so one that follows another in a
-//       clause is read too. Its text, less a leading "[AI TEXT] ", starts
-//       with a heading of its file and ends there or goes on after a space or
-//       punctuation ("Zoox anchors." and "Zoox anchors, which ..." cite
-//       "Zoox anchors"). Text and heading compare in either case, with
-//       markdown's code marks dropped, a curly apostrophe read as a straight
-//       one, each run of white space as one space, and a heading's closing
-//       ?, ., ! or : optional ("README.md, How safe are robotaxis" cites "How
-//       safe are robotaxis?"). No heading of these files begins another of
-//       its file at a word's end today; one that did would let a typo past
-//       its end in the longer one pass. Any other mention of a file goes
-//       unchecked: a clause that continues the sentence ("data/README.md,
-//       which ..."), a list of the names ("data/README.md, IGNOREME.md"), and
-//       any other file's name (data/waymo-ca.csv, AGENTS.md, data/README, a
-//       README outside the repo); so does a second section named without its
-//       file ("data/README.md, Ghost months and Zoox anchors" reads "Ghost
-//       months" only). This reading dates from 2026-11-04. On 2026-11-03 every
-//       "<file>, <text>" was read and its text had to be exactly a heading as
-//       written; until then every mention of data/README.md, IGNOREME.md or
-//       "README" had to be a citation. Earlier on 2026-11-04 the names were
-//       data/README.md and IGNOREME.md, matched anywhere (so inside a longer
-//       path too), and a bare "README", matched at the end of any path (so
-//       quals/README and data/README were read as it, red), and a citation's
-//       text ran to the next ";" or ")", so a second citation inside it went
-//       unread; README.md and text tagged "[AI TEXT] " went unchecked; and a
-//       list of the names, or a heading typed in another case, with a curly
-//       apostrophe or a no-break space or without its code marks, turned the
-//       qual red. Later that day README.md was read too, also anywhere, so
-//       any path ending in it (data/snapshots/README.md) was read as
-//       README.md, and README.md's heading "How safe are robotaxis?" cited
-//       without its "?" turned the qual red;
+//   (1) every link names a section of data/README.md. A rationale points a
+//       reader at a section with a markdown link whose text is the pointer
+//       and whose target is that section on the site, "[data/README.md, Zoox
+//       anchors](data/#zoox-anchors)", which the VMT sources table shows as a
+//       link (vmt-source-links.qual): GitHub Pages renders data/README.md at
+//       data/, each heading with an id, which quals/rationale-links.mjs
+//       computes offline from each heading's text as GitHub Pages renders it
+//       (headingAnchors, which reads the file's blocks as kramdown does and
+//       stops on the few forms whose effect on a heading it does not compute;
+//       it is checked on synthetic files against the ids GitHub Pages' own
+//       stack gives them). Each link (any
+//       "[<text>](<target>)") has a text other than blanks and the target
+//       data/#<anchor>, <anchor> one of those ids, each of which is
+//       non-empty, in the form the page reads (crashla.js reads an anchor as
+//       lowercase letters, digits and hyphens, so a link to a heading whose
+//       id holds an underscore or another letter would stop the page; this
+//       test is also run on synthetic links); and no "](" or target "data/#"
+//       stands outside a link but inside a longer path or address (a link of
+//       the wrong form; the site's address in prose is no link,
+//       OPEN_TARGET). A prose mention of a file or a section goes unchecked.
+//       Since 2026-11-05
+//       links replace the prose citations ("<file>, <section>") this check
+//       read until then, which it had to guess at, so that some correct
+//       phrasings turned it red (the human's "ok, go with links",
+//       2026-11-04);
 //   (2) no repo-internal column name or shorthand (kyoom, vmt_min/vmt_max,
 //       TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best", "D/H"), none
 //       of which the page defines (rule 13);
@@ -96,11 +78,14 @@ import { parseCsv } from "./csv-parse.mjs";
 //       milestones listed as "exact centrals minus ~0.15M", a wording gone
 //       from the rows since 2026-10-31, against the cumulative plus 0.15M);
 //   (4) the specific facts the audit corrected stay corrected.
-// No check here requires a wording: a citation, figure or fact is checked
-// where its wording appears, and a statement reworded out of its form goes
-// unchecked. Until 2026-11-03 four more checks required words, so a correct
-// rewording turned them red: (1) took every mention of data/README.md,
-// IGNOREME.md or "README" for a citation; (3c) required five knot and floor
+// Checks (2), (3) and (4) read each rationale as the page shows it, each link
+// as its text (quals/rationale-links.mjs, rationaleText), so no frame or
+// phrase reads a link's target or brackets; the visible text is the
+// rationale as it stood before its pointers became links (2026-11-05).
+// No check here requires a wording: a link, figure or fact is checked
+// where it appears, and a statement reworded out of its form goes
+// unchecked. Until 2026-11-03 three checks since removed required words, so a
+// correct rewording turned them red: (3c) required five knot and floor
 // rows (Zoox Nov-2025, Dec-2025, Mar-2026 and Jul-2026, Tesla Aug-2026) to
 // state their band edges as the rows' figures with thousands commas; three of
 // (4)'s facts required words beside a trigger (Waymo's weekly-trips quote
@@ -111,7 +96,7 @@ import { parseCsv } from "./csv-parse.mjs";
 // of Tesla's Sep 2025-Jun 2026 rationales, which disclose that those months
 // may hold trips with a safety monitor in the driver's seat (the human's
 // decision of 2026-10-31, open question 13). The human chose "Drop required
-// words" for all four on 2026-11-03, after (3b)'s two requirements went the
+// words" for them on 2026-11-03, after (3b)'s two requirements went the
 // same day. Two checks forbid wording, so a correct statement that uses one
 // of their phrases turns the qual red: (2)'s seven shorthand patterns (item
 // (2) above), and the phrase each of (4)'s facts but the last (which reads
@@ -150,18 +135,16 @@ import { parseCsv } from "./csv-parse.mjs";
 // January row's "December's cumulative band" would be read as the December
 // after it, and another line's figure as the row's line's. A June row's
 // "CPUC Q2-2026 driverless actual ..." quoting May's miles would be checked
-// against June's in data/waymo-ca.csv. Likewise (1) takes any of its names,
-// a comma and capitalized text for a citation, so a correct mention that
-// starts with no section name fails: a capitalized word before the section's
-// ("data/README.md, The Ghost months section") or a list of sources whose
-// next item is no name (1) reads ("data/README.md, CPUC quarterly filings");
-// and a citation of README.md written as a bare "README" ("README, Related
-// Links") fails, a bare "README" naming no file. Relaxing any of them is the
-// human's call (rule 5).
+// against June's in data/waymo-ca.csv. Relaxing any of them is the human's
+// call (rule 5).
 
+// Each row's rationale as data/vmt.csv holds it, its links written in
+// markdown (markdown), which (1) reads, and as the page shows it, each link as
+// its text (rationale), which (2)-(4) read.
 const raw = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const rows = raw.slice(1).map(p => ({
-  helmer: p[0], month: p[1], vmt: +p[2], cume: +p[3], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7], rationale: p[8],
+  helmer: p[0], month: p[1], vmt: +p[2], cume: +p[3], kmin: +p[4], kmax: +p[5], vmin: +p[6], vmax: +p[7],
+  markdown: p[8], rationale: rationaleText(p[8]),
 }));
 const rowOf = (helmer, month) => rows.find(r => r.helmer === helmer && r.month === month);
 // The months before `knot` whose cumulative band a later constraint narrowed:
@@ -191,54 +174,254 @@ const wholeMiles = s => ({ stated: s, miles: Number(s.replace(/,/g, "")), slack:
 const thousands = s => ({ stated: `${s}k`, miles: Number(s) * 1e3, slack: 0.5 * 10 ** (3 - decimals(s)) + 1 });
 const millions = s => ({ stated: `${s}M`, miles: Number(s) * 1e6, slack: halfUnit(s) });
 
-// (1) citations resolve
-// The documents a citation can name: the repo's READMEs and IGNOREME.md,
-// every file named README, README.md or IGNOREME.md outside the repo's
-// dot-directories and node_modules, each by its path from the repo root.
-const walk = dir => fs.readdirSync(dir, { withFileTypes: true })
-  .filter(e => !e.name.startsWith(".") && e.name !== "node_modules")
-  .flatMap(e => {
-    const p = dir === "." ? e.name : `${dir}/${e.name}`;
-    return e.isDirectory() ? walk(p) : [p];
-  });
-const DOCS = walk(".").filter(p => /(?:^|\/)(?:README(?:\.md)?|IGNOREME\.md)$/.test(p));
-assert.ok(["data/README.md", "IGNOREME.md", "README.md"].every(f => DOCS.includes(f)),
-  `Replicata: list the repo's files named README, README.md or IGNOREME.md (outside dot-directories and node_modules).
-Expectata: data/README.md, IGNOREME.md and README.md among them, the documents the rationales cite by section.
-Resultata: ${JSON.stringify(DOCS)}.`);
-// A heading or a citation's text as compared: markdown's code marks dropped,
-// a curly apostrophe read as a straight one, each run of white space as one
-// space, in lower case; a heading also less its "[AI TEXT] " tag and its
-// closing ?, ., ! or : ("How safe are robotaxis?" is cited with or without
-// its "?").
-const norm = s => s.replace(/`/g, "").replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
-const headingsOf = path => fs.readFileSync(path, "utf8").split("\n")
-  .filter(l => /^#+ /.test(l)).map(l => norm(l.replace(/^#+ /, "").replace(/^\[AI TEXT\] /, "")).replace(/[?.!:]+$/, ""));
-const HEADINGS = Object.fromEntries(DOCS.map(f => [f, headingsOf(f)]));
-// A citation's name: one of those paths, with or without a leading "./", or a
-// bare "README", which names no file (the top-level one is README.md); never
-// the end of a longer path or of a URL (the lookbehind), so
-// data/snapshots/README.md is read as itself, not as README.md.
-const escRe = s => s.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
-const NAME = `(?:\\.\\/)?(?:${[...DOCS, "README"].sort((a, b) => b.length - a.length).map(escRe).join("|")})`;
-const CITATION = new RegExp(`(?<![\\w./:-])(${NAME}), (?=((?:\\[AI TEXT\\] )?[A-Z][^;)]*))`, "g");
-const LIST = new RegExp(`^${NAME}(?![\\w./-])`);
-const badCites = [];
-let citations = 0;
+// (1) every link names a section of data/README.md: its text non-empty, its
+// target data/#<anchor>, the anchor one of the ids GitHub Pages gives the
+// file's headings (header), each of them non-empty; and no link syntax ("](",
+// a target "data/#" but inside a longer path or address) outside a link.
+const README_IDS = headingAnchors(fs.readFileSync("data/README.md", "utf8"), "data/README.md");
+const emptyIds = README_IDS.filter(h => h.anchor === "");
+assert.ok(README_IDS.length > 0 && emptyIds.length === 0,
+  `Replicata: compute the ids GitHub Pages gives data/README.md's headings (quals/rationale-links.mjs, headingAnchors).
+Expectata: at least one heading, each with a non-empty id.
+Resultata: ${README_IDS.length} headings; with an empty id: ${JSON.stringify(emptyIds)}.`);
+const ANCHORS = README_IDS.map(h => h.anchor);
+// The reader on synthetic files (self-contained: they read no file), each
+// case's ids the ones GitHub Pages' own stack gives (kramdown 2.4.0 with
+// kramdown-parser-gfm 1.1.0, the versions github-pages 233 pins, run on these
+// files 2026-11-05; a front matter case on the file Jekyll leaves, the front
+// matter dropped). The cases read, as kramdown reads them, a heading's text:
+// code marks dropped with their text kept, an escape's character kept, a code
+// span of two or more backticks less a space at each end, a code span closed
+// by its run's next occurrence (which can start a longer run), an autolink's
+// address, an inline link's text; punctuation dropped, letters lowercased (an
+// accented one kept), an underscore and decimal digits kept and other numbers
+// dropped, each space or tab a hyphen, a repeated id numbered, a closing run
+// of #s dropped, a typographic "--" or "---" a dash, which the id drops, one
+// hyphen of "----" kept; square brackets, braces, a lone or unclosed
+// backtick, a backslash before a character it does not escape, and an
+// underscore with none after it that can close emphasis, as text. And the
+// blocks around it:
+// fenced code blocks closed as kramdown closes them, and a fence kramdown
+// does not read as one a paragraph's line; an indented code block, and the
+// lines it takes after it, no headings; setext headings; a heading in a list
+// item, a quote or a definition, at its content column or lazily, and a # line
+// in code in one no heading; a comment, a block-level element (its markdown
+// content too) or a math block, and the # lines inside it, as kramdown reads
+// them; a line starting with a span-level element, an autolink line and a
+// thematic break; a table and the pipe lines it takes; a footnote's content,
+// whose headings get no id; front matter dropped, a YAML comment in it too;
+// "\r\n" line ends. Each form the reader stops on stops it, for the reason
+// given (its message names it): each can make the text GitHub Pages renders
+// for a heading, and so its id, differ from what this reader reads, or make,
+// hide or rename a heading (here the stack gives "Foo {#bar}" bar, "`x`{: .y}
+// z" x-z, "R&amp;D" rd, "Angle a << b >> c" angle-a-b-c, "[a](b c) d" a-d,
+// "[the hub][hub]" with [hub] defined the-hub, "_Emphasis_ here"
+// emphasis-here, "## Heading" after "{: #x}" x; Liquid is Jekyll's, which the
+// stack does not run). Until 2026-11-05 the reader stopped on many of the
+// forms read here, or read them wrong (the third review of that day).
+const ruleProblems = [];
+for (const [markdown, want] of [
+  ["## What `data/slurp.py` reads", ["what-dataslurppy-reads"]],
+  ["### Tesla's no-monitor line", ["teslas-no-monitor-line"]],
+  ["# A\n## A\n### A", ["a", "a-1", "a-2"]],
+  ["## Snake_case 2026, and ?!", ["snake_case-2026-and-"]],
+  ["## Closed ##", ["closed"]],
+  ["## Closed2##", ["closed2"]],
+  ["```\n# a comment\n```\n## After", ["after"]],
+  ["<!-- a comment -->\n## After", ["after"]],
+  ["## A -- B", ["a--b"]],
+  ["## Flag `--x` -- y", ["flag---x--y"]],
+  ["## a---b----c", ["ab-c"]],
+  ["## Fifty--fifty", ["fiftyfifty"]],
+  ["## See [the hub](https://example.com) notes", ["see-the-hub-notes"]],
+  ["## Link [a -- b](u) text", ["link-a--b-text"]],
+  ["## Dash-[](u)-dash", ["dash--dash"]],
+  ["## Ellipsis...", ["ellipsis"]],
+  ["## MONTHLY_ARRIVAL_LAG and x-_y", ["monthly_arrival_lag-and-x-_y"]],
+  ["## a _ b", ["a-_-b"]],
+  ["## Count ² ½ 3", ["count---3"]],
+  ["## Café Ñ", ["café-ñ"]],
+  ["## Tab\there", ["tab-here"]],
+  ["## Strike ~~gone~~ x", ["strike-gone-x"]],
+  ["## *Bold* and **strong**", ["bold-and-strong"]],
+  ["## Quotes \"x\" and 'y'", ["quotes-x-and-y"]],
+  ["## Code `a  b`", ["code-a--b"]],
+  ["## 1. numbered heading", ["1-numbered-heading"]],
+  ["## Résumé — naïve façade", ["résumé--naïve-façade"]],
+  // square brackets, braces, escapes, backticks and underscores as text
+  ["## Regeneration [offline]", ["regeneration-offline"]],
+  ["### [AI TEXT] Zoox anchors", ["ai-text-zoox-anchors"]],
+  ["## Coverage [0.20, 0.52]", ["coverage-020-052"]],
+  ["## A [ref] link", ["a-ref-link"]],
+  ["## A footnote[^1]", ["a-footnote1"]],
+  ["## See [the hub][hub] notes", ["see-the-hubhub-notes"]],
+  ["## See [the hub][] notes\n\n[the hub]: https://example.com", ["see-the-hub-notes"]],
+  ["## \\[a](b) c", ["ab-c"]],
+  ["## a](b) e", ["ab-e"]],
+  ["## [a](b 't') d", ["a-d"]],
+  ["## [a]( b ) d", ["a-d"]],
+  ["### The {lo, hi} bands", ["the-lo-hi-bands"]],
+  ["## Foo {#bar} ##", ["foo-bar"]],
+  ["## A \\* escaped", ["a--escaped"]],
+  ["## a\\--b", ["a--b"]],
+  ["## Two ``ticks`` here", ["two-ticks-here"]],
+  ["## `` a `` b", ["a-b"]],
+  ["## A ` lone tick", ["a--lone-tick"]],
+  ["## a ` b ` c", ["a--b--c"]],
+  ["## <https://a--b.com/x_y_> c", ["httpsa--bcomx_y_-c"]],
+  ["## <mailto:a@b.co> c", ["abco-c"]],
+  ["## 2026_q3 rows", ["2026_q3-rows"]],
+  ["### The 5_day track", ["the-5_day-track"]],
+  // headings' own forms
+  ["## ", []],
+  ["1) ## c", []],
+  ["  ## Indented", []],
+  ["Para\n  ## continued", []],
+  ["## A\r\n## B\r\n", ["a", "b"]],
+  ["---\ntitle: Data sources\n---\n\n# Data Sources", ["data-sources"]],
+  ["---\ntitle: Data sources\n# a YAML comment\n---\n\n# Data Sources", ["data-sources"]],
+  // blocks around headings
+  ["## Before\n\n~~~~\n~~~\n# Inside\n~~~~\n\n## After", ["before", "after"]],
+  ["````\n```\n# Inside\n```\n````\n\n## After", ["after"]],
+  ["````\n# x\n```\n## After", ["after"]],
+  ["To regenerate:\n\n    # offline, from the newest snapshots\n    python3 data/slurp.py\n\n## After", ["after"]],
+  ["Para\n\n    code\n\n# x", ["x"]],
+  ["- a\n\nb\n\n  ## c", []],
+  ["## A\n\n<!--\nA paragraph set aside for now.\n-->\n\n## B", ["a", "b"]],
+  ["## A\n\n<details>\n<summary>Old notes</summary>\n\nA note.\n\n</details>\n\n## B", ["a", "b"]],
+  ["Para\n<details>\n\ntext\n\n</details>\n## After", ["after"]],
+  ["## A\n\n<https://teslapologetics.dreev.es/data/>\n\n## B", ["a", "b"]],
+  ["<sup>1</sup> A note.\n## B", ["b"]],
+  ["<br>\n# x", ["x"]],
+  ["<hr>\n# x", ["x"]],
+  ["<span>\n# x\n</span>", ["x"]],
+  ["## A\n---\n\nText.\n\n## B", ["a", "b"]],
+  ["```\nx\n```\n---\n## B", ["b"]],
+  ["| a | b |\n|---|---|\n| 1 | 2 |\n---\n## B", ["b"]],
+  ["## A\nText\n---", ["a"]],
+  ["Line one\nTitle\n---", []],
+  ["Title\n  ---", []],
+  // forms the reader stopped on until 2026-11-05
+  ["Title\n=====", ["title"]],
+  ["Title\n---", ["title"]],
+  ["- two\n---", ["two"]],
+  ["- a\n\n  T\n  ---", ["t"]],
+  ["> ## Quoted", ["quoted"]],
+  ["- ## A list item heading", ["a-list-item-heading"]],
+  ["1. ## In an ordered item", ["in-an-ordered-item"]],
+  ["- a\n  ## c", ["c"]],
+  ["<div>\n\n# x\n\n</div>", []],
+  ["<div>\n<!-- </div> -->\n# x\n</div>\n\n## After", ["after"]],
+  ["<!--\n# hidden\n-->\n## After", ["after"]],
+  ["Para\n<!--\n# x\n-->", ["x"]],
+  ["$$\n# x\n$$", []],
+  ["Para\n\n    code\n# x", []],
+  ["```\n# an open fence", ["an-open-fence"]],
+  ["```js title\n# x\n```", ["x"]],
+  ["## Before\n\n```\n# x\n```js\n\n## After", ["before", "x", "after"]],
+  // the third review of 2026-11-05: correct edits in list items and quotes,
+  // and forms read wrong until then
+  ["10. Stop on any unrated incident:\n    ```bash\n    # list the unrated reports\n    python3 data/slurp.py\n    ```\n\n## After", ["after"]],
+  ["- The master:\n  - to check it:\n    ```bash\n    # the master's own quals\n    node quals/vmt-ledger.qual.mjs\n    ```\n\n## After", ["after"]],
+  ["- the snapshots are archival\n\n    # regenerate from the newest snapshots\n    python3 data/slurp.py\n\n## After", ["after"]],
+  ["> ```bash\n> # offline\n> python3 data/slurp.py\n> ```\n\n## After", ["after"]],
+  ["1. Fetch.\n\n    Then run slurp.\n## After", ["after"]],
+  ["10. Run:\n\n    ```bash\n    python3 data/slurp.py\n    ```\n11. Count the\n    # of rows\n\n## After", ["of-rows", "after"]],
+  ["- a\n  <!--\n  # x\n  -->\n\n## After", ["x", "after"]],
+  ["    python3 data/slurp.py\n<details>\n\n## Folded\n\n</details>\n\n## After", ["after"]],
+  ["| a | b |\n|---|---|\n| 1 | 2 |\n## Knots | bands", []],
+  ["[x]: https://example.com\n===", ["x-httpsexamplecom"]],
+  ["   $$\n> # A -- B\n   $$\n   ## Bands 1.5x\u20132x", ["a--b"]],
+  ["| a | b |\n|---|---|\n      - nested item\n## Ghost months\n $$\n> # Ghost months\n      $$", ["ghost-months", "ghost-months-1"]],
+  ["## A\n\n<!--\n## Regeneration\n\nText.\n-->\n\n## B", ["a", "b"]],
+  ["## A\n\n<details>\n<summary>Old</summary>\n\n## Regeneration\n\nText.\n\n</details>\n\n## B", ["a", "b"]],
+  ["## ``a``` --b`", ["a---b"]],
+  ["## ` --x `y`", ["-x-y"]],
+  // more blocks
+  ["    code\n## After", []],
+  ["- item\n## After", ["after"]],
+  ["> quote\n## After", ["after"]],
+  ["| a | b |\n|---|---|\n## After", ["after"]],
+  ["| a | b |\n|---|---|\n## H | x\nText", ["h--x"]],
+  ["| a | b |\n|---|---|\n## H | x\n\nText", []],
+  ["| `x|y` | b |\n|---|---|\n| 1 | 2 |\n\n## After", ["after"]],
+  ["<div>\n<p>\n</div>\n\n## After", []],
+  ["<div markdown=\"1\">\n\n## Inside\n\n</div>\n\n## After", ["after"]],
+  ["## A\n\nText[^1].\n\n[^1]: Note.\n\n    ## In a footnote\n\n## After", ["a", "after"]],
+  ["Term\n: A definition\n\n  ## In a definition", ["in-a-definition"]],
+  ["Para\n$$\n# x\n$$", ["x"]],
+  ["- a\n\n- b\n\n      ## code\n\n## After", ["after"]],
+]) {
+  // A stop is a problem of its case, so every case's outcome is reported.
+  let got;
+  try { got = JSON.stringify(headingAnchors(markdown, "a synthetic file").map(h => h.anchor)); }
+  catch (e) { got = `a stop, ${JSON.stringify(e.message.split("Resultata: ")[1])}`; }
+  if (got !== JSON.stringify(want)) ruleProblems.push(`${JSON.stringify(markdown)} gives ${got}, want ${JSON.stringify(want)}`);
+}
+for (const [markdown, why] of [
+  ["## Before\n{: #custom}", "a kramdown extension, attribute list or attribute definition"],
+  ["## Foo {#bar}", "an explicit id"],
+  ["## `x`{: .y} z", "a kramdown attribute list or extension ({:)"],
+  ["## Liquid {{ site.x }}", "Liquid"],
+  ["## A\n\n{% if x %}\n## B\n{% endif %}", "Liquid"],
+  ["## R&amp;D", "an entity"],
+  ["## A <b>bold</b> idea", "inline HTML"],
+  ["## Angle a << b >> c", "a typographic << or >>"],
+  ["## Math $$x--y$$", "math ($$)"],
+  ["## An ![alt](x.png) image", "an image"],
+  ["## [a](b c) d", "a link of a form this reader does not read"],
+  ["## See [the hub][hub] notes\n\n[hub]: https://example.com", "a reference link to a label the file defines"],
+  ["## A footnote[^1]\n\nText.\n\n[^1]: A note.", "a footnote the file defines"],
+  ["## _Emphasis_ here", "an underscore that can open emphasis"],
+  ["{: #x}\n## Heading", "a kramdown extension, attribute list or attribute definition"],
+  ["{:ref: .x}\n## Heading", "a kramdown extension, attribute list or attribute definition"],
+  ["{::comment}\n## Hidden\n{:/comment}\n\n## After", "a kramdown extension, attribute list or attribute definition"],
+  ["| <b>a</b> | b |\n|---|---|\n| 1 | 2 |", "a table holding an inline HTML element with content"],
+]) {
+  let message = null;
+  try { headingAnchors(markdown, "a synthetic file"); } catch (e) { message = e.message; }
+  const stopped = message !== null && message.startsWith("Replicata: read the headings of a synthetic file") && message.includes(why);
+  if (!stopped) ruleProblems.push(`${JSON.stringify(markdown)} ${message === null ? "is read without a stop" : `stops with ${JSON.stringify(message.slice(0, 300))}`}, want headingAnchors' stop naming ${JSON.stringify(why)}`);
+}
+// The link form the page draws (crashla.js RATIONALE_LINK), whole.
+const PAGE_LINK = new RegExp(`^${DATA_LINK.source}$`, "u");
+// What is wrong with a link, given the ids of the headings, or null.
+const linkProblem = (link, anchors) => {
+  const anchor = /^data\/#(.*)$/.exec(link.target)?.[1];
+  return link.text.trim() === "" ? "has no text but blanks"
+    : anchor === undefined ? "targets no section of data/README.md (a target is data/#<anchor>)"
+    : !anchors.includes(anchor) ? `names no heading of data/README.md (no heading's id is ${JSON.stringify(anchor)})`
+    : !PAGE_LINK.test(link.source) ? "names a heading whose id the page does not read: crashla.js reads a link's anchor as lowercase letters, digits and hyphens, so the page would stop at load"
+    : null;
+};
+// The same test on synthetic links, against synthetic ids (one holding an
+// underscore, as a heading's code span can give), each wrong form named.
+const linkRuleProblems = [];
+for (const [source, want] of [
+  ["[data/README.md, Zoox anchors](data/#zoox-anchors)", null],
+  ["[](data/#zoox-anchors)", "has no text but blanks"],
+  ["[ ](data/#zoox-anchors)", "has no text but blanks"],
+  ["[the hub](https://waymo.com/safety/impact/)", "targets no section"],
+  ["[data/README.md, Nowhere](data/#nowhere)", "names no heading"],
+  ["[the lag table](data/#the-monthly_arrival_lag-table)", "names a heading whose id the page does not read"],
+]) {
+  const got = linkProblem(rationaleLinks(source)[0], ["zoox-anchors", "the-monthly_arrival_lag-table"]);
+  if (!(want === null ? got === null : got !== null && got.startsWith(want)))
+    linkRuleProblems.push(`${source} gives ${JSON.stringify(got)}, want ${want === null ? "none" : JSON.stringify(want)}`);
+}
+const badLinks = [];
+let links = 0;
 for (const r of rows) {
-  // The text is read in a lookahead, so a name and comma inside it start a
-  // match of their own (until 2026-11-04 the text was consumed, and a
-  // citation after another in one clause went unread).
-  for (const m of r.rationale.matchAll(CITATION)) {
-    const [, name, text] = m;
-    // A list of the names ("data/README.md, IGNOREME.md") cites no section.
-    if (LIST.test(text)) continue;
-    citations++;
-    const file = name.replace(/^\.\//, ""), t = norm(text.replace(/^\[AI TEXT\] /, ""));
-    const why = !(file in HEADINGS) ? "no file of the repo has that path; the top-level README is README.md"
-      : HEADINGS[file].some(h => t.startsWith(h) && /^(\W|$)/.test(t.slice(h.length))) ? null
-      : `no heading of ${file} begins it`;
-    if (why !== null) badCites.push(`${r.helmer} ${r.month}: ${JSON.stringify(`${name}, ${text}`)} (${why})`);
+  for (const link of rationaleLinks(r.markdown)) {
+    links++;
+    const why = linkProblem(link, ANCHORS);
+    if (why !== null) badLinks.push(`${r.helmer} ${r.month}: ${link.source} ${why}`);
+  }
+  // Each link a blank, as crashla.js's vmtRationale reads it, so a target
+  // right after a link is one outside a link.
+  const outside = r.markdown.replace(LINK, " ");
+  for (const m of outside.matchAll(new RegExp(`\\]\\(|${OPEN_TARGET.source}`, "g"))) {
+    badLinks.push(`${r.helmer} ${r.month}: ${JSON.stringify(m[0])} outside a link, in ${JSON.stringify(outside.slice(Math.max(0, m.index - 40), m.index + 40))} (a link is [<text>](data/#<anchor>))`);
   }
 }
 
@@ -855,7 +1038,9 @@ const FACTS = [
 const factErrors = [];
 for (const r of rows) for (const [bad, what] of FACTS) if (bad(r)) factErrors.push(`${r.helmer} ${r.month}: ${what}`);
 const problems = {
-  unresolvedCitations: [...new Set(badCites)],
+  anchorRule: ruleProblems,
+  linkRule: linkRuleProblems,
+  linksNamingNoSection: [...new Set(badLinks)],
   internalShorthand: jargon,
   figuresNotTheRows: [...new Set(figureErrors)],
   preSeriesOffsetNotOffset: offsetErrors,
@@ -863,8 +1048,8 @@ const problems = {
 };
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0));
 assert.deepEqual(failing, {},
-  `Replicata: read every data/vmt.csv rationale (shown verbatim in the page's VMT sources table) and check (1) citations of a section, (2) internal shorthand, (3) stated figures against the rows (and CPUC's miles in data/waymo-ca.csv), and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts.
-Expectata: (1) each citation of a section (a document's name: the path from the repo root, with or without "./", of one of its files named README, README.md or IGNOREME.md, ${JSON.stringify(DOCS)}, or a bare "README"; then a comma and text starting with a capital letter, or with "[AI TEXT] " and one; each name and comma starting one, a name inside a longer path or a URL starting none, and a list of the names citing no section) names a file of the repo (a bare "README" names none) and, less a leading "[AI TEXT] ", starts with a section heading that exists there (compared in either case, with code marks dropped, a curly apostrophe read as a straight one, each run of white space as one space and a heading's closing ?, ., ! or : optional), ending there or going on after a space or punctuation; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best" or "D/H"; (3) each figure stated in one of the forms that follow passes its form's test (a value to its stated precision, whole miles exactly; a floor to a mile; a milestone day to the day) and is checked where its wording appears, none of these forms being required (a statement reworded out of its form goes unchecked, the human's rule of 2026-11-03): each "<x>k" or "<x>M" "end-[<Mon>-]<YYYY>" is that line's series cumulative; each Waymo anchor ("The <Mon>-<YYYY> cumulative lands on the anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles") is that month's cumulative, h + e - o; each Waymo band after an anchor in its rationale ("its cumulative band is the hub total plus <a>M to <b>M ..., less the pre-series miles' range, <l>M-<u>M") that month's cumulative band; each Waymo "<h>M rider-only miles thru <Mon>-<YYYY>" the hub figure every anchor for that month uses, where one exists; each Waymo "<n> in <YYYY>" of "by calendar year (...)" that year's summed months, for each year whose January the series holds; each Waymo "first million rider-only miles on <Mon> <D>, <YYYY>" the day the lifetime (the cumulative plus OFFSET's central, the month's miles spread evenly) reaches 1,000,000; each Waymo "floor the series clears, ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon> <D>, <YYYY>)" with N million no more than the lifetime at the end of that day; each Waymo "Total <x>M, about <y>k a day (...)" with "<Monthname>'s row" in its parenthesis its miles and its miles over its days, and in that parenthesis each "<Monthname>'s row <z>k" the miles over the days of the latest month of that name at or before the row's, and each "measured Q<n> <w>k" those of the latest quarter n ending at or before the row's month; each Waymo "Cross-check: <x>M/mo ≈ <y>M/wk" its miles and its miles times 7 over its days; each Waymo "Band x<lo> to x<hi>" in a sentence that gives it as "the components' ranges combined" its row's band over its miles; each Waymo list of terms ("CA ... = <c>M; Maricopa <m>M ... Travis <t>M ...; Atlanta <a>M ...; ... metros ... <u>M[; and about <x>M for ...]") its row's miles, the terms summed, to their stated precision; each Waymo "CPUC Q<n>-<YYYY> driverless actual <d> deployment + <p> pilot (...) x <f>, ... = <r>M" with (d + p) x f equal to r, and d and p data/waymo-ca.csv's deployment and pilot miles for the row's month, rounded to a mile, where that file holds the month and it lies in that quarter; each "<b>M ... x [the hub-vs-CPUC CA ratio ]<f>[ [<range>]] = <r>M" with b x f equal to r, f a decimal or a ratio a/b; with a month's name read as that month of the row's year in the row's line, each "<Month> keeps ...end-of-month <c>[ (...)], its band <lo>-<hi>" that month's cumulative and cumulative band, each reading of "end-<Month> <a> / <b> / <c>" that a later "its band <lo>-<hi> holding the three readings" places in that month's band inside it, each "<Month>'s cumulative is that reading, <c>" or "is the chart's ~<c>" its cumulative, "..., its band from the call's <f> to <p>% above it" its band's floor f and its top p% above c, to the whole percent, "..., its floor <f>" its band's floor, each "<Month>'s miles are at least <n>" with its miles at least n and "..., puts them there (<v> with" its miles v, each "<Month>'s cumulative band, <lo> to <hi>" its cumulative band and each "End-<Month> cumulative floor <f>" its band's floor; in each row, "Each month is its cumulative less the month before's, its band the difference of their bands" its miles and band from its line's row before (from zero for a line's first), "a month's band is <a>x-<b>x its miles, within the difference of its cumulative band and the month before's" its band a and b times its miles, each edge held inside the difference of the two cumulative bands, to a mile, "the cumulative is ...: <x>M less the <o> pre-series miles, <c>" its cumulative c with x less o equal to c, "Its band, <lo> to <hi>, is that statement's range" and a sentence's opening "Cumulative band <lo> to <hi>:" its cumulative band, and "The cumulative band's floor through <Mon> <D>, <f>, is the end-<Month> floor (<j>: ...) plus the <Month> and <Month> floors" with D the last day of <Mon>, f that month's cumulative floor, j the end-<Month> one and j plus the two months' floors f; every figure a Waymo rationale states for the pre-series offset (the builder's "miles driven before it, <central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision; (4) none of the corrected statements recurs.
+  `Replicata: read every data/vmt.csv rationale (shown as written, its links as links, in the page's VMT sources table) and check (1) links to sections of data/README.md, (2) internal shorthand, (3) stated figures against the rows (and CPUC's miles in data/waymo-ca.csv), and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts.
+Expectata: (1) each link (any "[<text>](<target>)") has a text other than blanks and the target data/#<anchor>, <anchor> the id GitHub Pages gives one of data/README.md's headings (${ANCHORS.join(", ")}) and of the form the page reads (lowercase letters, digits and hyphens), and no "](" or target "data/#" stands outside a link but inside a longer path or address; on synthetic files the heading reader gives GitHub Pages' ids, and stops with its message on each form it stops on; on synthetic links each wrong form is named; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best" or "D/H"; (3) each figure stated in one of the forms that follow passes its form's test (a value to its stated precision, whole miles exactly; a floor to a mile; a milestone day to the day) and is checked where its wording appears, none of these forms being required (a statement reworded out of its form goes unchecked, the human's rule of 2026-11-03): each "<x>k" or "<x>M" "end-[<Mon>-]<YYYY>" is that line's series cumulative; each Waymo anchor ("The <Mon>-<YYYY> cumulative lands on the anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles") is that month's cumulative, h + e - o; each Waymo band after an anchor in its rationale ("its cumulative band is the hub total plus <a>M to <b>M ..., less the pre-series miles' range, <l>M-<u>M") that month's cumulative band; each Waymo "<h>M rider-only miles thru <Mon>-<YYYY>" the hub figure every anchor for that month uses, where one exists; each Waymo "<n> in <YYYY>" of "by calendar year (...)" that year's summed months, for each year whose January the series holds; each Waymo "first million rider-only miles on <Mon> <D>, <YYYY>" the day the lifetime (the cumulative plus OFFSET's central, the month's miles spread evenly) reaches 1,000,000; each Waymo "floor the series clears, ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon> <D>, <YYYY>)" with N million no more than the lifetime at the end of that day; each Waymo "Total <x>M, about <y>k a day (...)" with "<Monthname>'s row" in its parenthesis its miles and its miles over its days, and in that parenthesis each "<Monthname>'s row <z>k" the miles over the days of the latest month of that name at or before the row's, and each "measured Q<n> <w>k" those of the latest quarter n ending at or before the row's month; each Waymo "Cross-check: <x>M/mo ≈ <y>M/wk" its miles and its miles times 7 over its days; each Waymo "Band x<lo> to x<hi>" in a sentence that gives it as "the components' ranges combined" its row's band over its miles; each Waymo list of terms ("CA ... = <c>M; Maricopa <m>M ... Travis <t>M ...; Atlanta <a>M ...; ... metros ... <u>M[; and about <x>M for ...]") its row's miles, the terms summed, to their stated precision; each Waymo "CPUC Q<n>-<YYYY> driverless actual <d> deployment + <p> pilot (...) x <f>, ... = <r>M" with (d + p) x f equal to r, and d and p data/waymo-ca.csv's deployment and pilot miles for the row's month, rounded to a mile, where that file holds the month and it lies in that quarter; each "<b>M ... x [the hub-vs-CPUC CA ratio ]<f>[ [<range>]] = <r>M" with b x f equal to r, f a decimal or a ratio a/b; with a month's name read as that month of the row's year in the row's line, each "<Month> keeps ...end-of-month <c>[ (...)], its band <lo>-<hi>" that month's cumulative and cumulative band, each reading of "end-<Month> <a> / <b> / <c>" that a later "its band <lo>-<hi> holding the three readings" places in that month's band inside it, each "<Month>'s cumulative is that reading, <c>" or "is the chart's ~<c>" its cumulative, "..., its band from the call's <f> to <p>% above it" its band's floor f and its top p% above c, to the whole percent, "..., its floor <f>" its band's floor, each "<Month>'s miles are at least <n>" with its miles at least n and "..., puts them there (<v> with" its miles v, each "<Month>'s cumulative band, <lo> to <hi>" its cumulative band and each "End-<Month> cumulative floor <f>" its band's floor; in each row, "Each month is its cumulative less the month before's, its band the difference of their bands" its miles and band from its line's row before (from zero for a line's first), "a month's band is <a>x-<b>x its miles, within the difference of its cumulative band and the month before's" its band a and b times its miles, each edge held inside the difference of the two cumulative bands, to a mile, "the cumulative is ...: <x>M less the <o> pre-series miles, <c>" its cumulative c with x less o equal to c, "Its band, <lo> to <hi>, is that statement's range" and a sentence's opening "Cumulative band <lo> to <hi>:" its cumulative band, and "The cumulative band's floor through <Mon> <D>, <f>, is the end-<Month> floor (<j>: ...) plus the <Month> and <Month> floors" with D the last day of <Mon>, f that month's cumulative floor, j the end-<Month> one and j plus the two months' floors f; every figure a Waymo rationale states for the pre-series offset (the builder's "miles driven before it, <central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision; (4) none of the corrected statements recurs.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
-console.log(`qual pass: ${rows.length} VMT rationales cite resolvable sections (${citations} citations, of ${DOCS.length} documents), use no internal shorthand, and state figures that pass their form's test against the rows (the rows' values, floors the rows meet and products that hold) in every form read here (${Object.entries(figureForms).map(([f, found]) => `${found.length} ${f}`).join(", ")}; found with nothing to read them against, so unchecked: ${Object.entries(unchecked).map(([f, found]) => `${found.length} ${f}`).join(", ")}); ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);
+console.log(`qual pass: ${rows.length} VMT rationales link only to sections of data/README.md (${links} links, to the ids of its ${README_IDS.length} headings), use no internal shorthand, and state figures that pass their form's test against the rows (the rows' values, floors the rows meet and products that hold) in every form read here (${Object.entries(figureForms).map(([f, found]) => `${found.length} ${f}`).join(", ")}; found with nothing to read them against, so unchecked: ${Object.entries(unchecked).map(([f, found]) => `${found.length} ${f}`).join(", ")}); ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);

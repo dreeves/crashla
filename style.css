@@ -149,6 +149,12 @@ input { accent-color: var(--ink); }
    reach (a parent's text decoration covers its inline children, which
    cannot take it off). */
 .ai-text .vmt-ghost-note { color: var(--ink); display: inline-block; }
+/* A link inside AI text (since 2026-11-05 the VMT sources table's links to
+   data/README.md's sections) keeps the text's ink at rest and hovered, so it
+   reads as AI text too: its own solid underline, drawn over the dotted one
+   the AI text carries, marks it as a link, and it keeps every link's hover
+   lift. */
+.ai-text a, .ai-text a:hover { color: inherit; }
 
 /* Error banner, shown only when there is something to report (URL keys the
    page does not own): the drawn box, in the verdict red. */

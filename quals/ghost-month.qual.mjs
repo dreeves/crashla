@@ -4,6 +4,7 @@ import vm from "node:vm";
 import { spawnSync } from "node:child_process";
 import { appScript, dataScript } from "./load-app.mjs";
 import { parseCsv } from "./csv-parse.mjs";
+import { rationaleMarkup } from "./rationale-links.mjs";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 
 // Ghost months (2026-10-26; human: "could we get ghosty estimates of October
@@ -263,7 +264,10 @@ for (const cumulative of [false, true]) {
 // --- 3b. The VMT sources table ---------------------------------------------
 // The window's rows' rationales, per line, in month order; when the window
 // ends at the newest NHTSA month, the line's ghost rows follow, each as
-// "<month> (<note>): <rationale>" with the note in a vmt-ghost-note span.
+// "<month> (<note>): <rationale>" with the note in a vmt-ghost-note span, the
+// rationale's text escaped and each of its links to data/README.md's
+// sections an a element (since 2026-11-05: quals/rationale-links.mjs,
+// rationaleMarkup; until then the whole rationale was escaped text).
 // The table is found by its id, sanity-vmt-sources (by its heading's words
 // until 2026-10-29).
 const sources = window => {
@@ -293,7 +297,7 @@ const cellOf = (section, label) => {
   for (const h of app.lines) {
     const cell = cellOf(at, escText(app.labels[h]));
     const want = app.ghost.filter(g => g.helmer === h).sort((a, b) => (a.month < b.month ? -1 : 1))
-      .map(g => `${g.month} (<span class="vmt-ghost-note">${escText(app.note)}</span>): ${escText(g.rationale)}`);
+      .map(g => `${g.month} (<span class="vmt-ghost-note">${escText(app.note)}</span>): ${rationaleMarkup(g.rationale)}`);
     if (cell === null) problems.push(`VMT sources, window ${DEFAULT_WINDOW.join("..")}: no row for ${h}`);
     else if (!cell.endsWith(want.join("<br>")) || !cell.slice(0, cell.length - want.join("<br>").length).endsWith("<br>"))
       problems.push(`VMT sources, window ${DEFAULT_WINDOW.join("..")}, ${h}: the cell does not end with its ghost rows' entries after its analysis months' (want ${JSON.stringify(want.join("<br>").slice(0, 120))}...)`);
