@@ -147,11 +147,7 @@ const flat = reconstruct(sample, 3, flatRate);
 const rmse = rows => Math.sqrt(sum(rows.map(r => r.error ** 2)) / rows.length);
 assert.ok(rmse(smooth) < rmse(flat),
   `Replicata: reconstruct measured California months from calendar-quarter totals.\nExpectata: the neighboring-rate interpolation improves on uniform daily allocation.\nResultata: log RMSE ${rmse(smooth)} versus ${rmse(flat)}.`);
-// June 2025's reconstruction is read, never assumed (until 2026-11-06 a
-// sample without it stopped here on a TypeError naming nothing).
 const shutdown = smooth.find(r => r.month === "2025-06");
-assert.ok(shutdown !== undefined,
-  `Replicata: reconstruct measured California months from calendar-quarter totals and find June 2025's.\nExpectata: one, the shutdown month the allowance is checked against.\nResultata: none among the ${smooth.length} reconstructed months, ${JSON.stringify(smooth.map(r => r.month))}.`);
 assert.ok(shutdown.error < -0.20,
   `Replicata: hide June 2025's California miles inside its quarter total.\nExpectata: the smooth allocation misses the local shutdown below its 0.20 log allowance.\nResultata: log error ${shutdown.error}.`);
 

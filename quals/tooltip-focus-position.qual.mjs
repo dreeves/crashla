@@ -111,13 +111,23 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     // with its bottom at the window's bottom edge.
     const real = await page.evaluate(async () => {
       document.activeElement.blur();
-      const el = [...document.querySelectorAll(".mpi-card-vmt[data-tip]")].at(-1);
+      // The line is read, never assumed (until 2026-11-06 a page without one
+      // stopped this qual on a TypeError naming nothing). assert is
+      // crashla.js's, which throws its message with the details appended.
+      const lines = [...document.querySelectorAll(".mpi-card-vmt[data-tip]")];
+      assert(lines.length > 0, "Replicata: load the default view and find the summary cards' Effective VMT lines (.mpi-card-vmt[data-tip]).\nExpectata: at least one, the last card's the line this check focuses.\nResultata: none; the cards number", document.querySelectorAll(".mpi-card").length);
+      const el = lines.at(-1);
       el.scrollIntoView({ block: "end" });
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       return true;
     });
     await page.keyboard.press("Shift");
-    await page.evaluate(() => [...document.querySelectorAll(".mpi-card-vmt[data-tip]")].at(-1).focus({ preventScroll: true }));
+    // (Read again in this evaluation, so asserted again.)
+    await page.evaluate(() => {
+      const lines = [...document.querySelectorAll(".mpi-card-vmt[data-tip]")];
+      assert(lines.length > 0, "Replicata: scroll the last card's Effective VMT line into view, press Shift, and find the line again to focus it.\nExpectata: at least one .mpi-card-vmt[data-tip].\nResultata: none; the cards number", document.querySelectorAll(".mpi-card").length);
+      lines.at(-1).focus({ preventScroll: true });
+    });
     await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
     const shown = await page.evaluate(() => {
       const t = document.getElementById("chart-tip").getBoundingClientRect();

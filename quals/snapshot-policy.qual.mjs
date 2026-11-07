@@ -22,7 +22,7 @@ with tempfile.TemporaryDirectory() as tmp:
     crlf_first = slurp.snapshot_csv_if_changed("crlf", "a,b\\r\\n1,2\\r\\n", "20260306T040404")
     crlf_second = slurp.snapshot_csv_if_changed("crlf", "a,b\\r\\n1,2\\r\\n", "20260306T050505")
     files = sorted(path.name for path in tmpdir.glob("*.csv"))
-    print(json.dumps({
+    out = {
         "first": first.name,
         "second": second.name,
         "third": third.name,
@@ -30,7 +30,31 @@ with tempfile.TemporaryDirectory() as tmp:
         "crlf_second": crlf_second.name,
         "files": files,
         "latest": slurp.latest_snapshot_path("demo").name,
-    }))
+    }
+
+# An offline regeneration with one NHTSA file's snapshot missing: the newest
+# snapshot of every other file (current, archive, ADAS) linked into an empty
+# directory, the last file's (OTHER) left out. slurp.newest_snapshot_rows()
+# must stop naming the missing file's prefix; until 2026-11-06 it stopped on
+# a TypeError from open(None), naming no file.
+prefixes = [p for _u, p, _parse in slurp.NHTSA_SOURCES] + [p for _u, p in slurp.NON_ADS_SOURCES]
+slurp.SNAPSHOT_DIR = Path("data/snapshots").resolve()
+real = {p: slurp.latest_snapshot_path(p) for p in prefixes}
+assert all(real.values()), ("Replicata: find the newest snapshot of each NHTSA file in data/snapshots. "
+                            "Expectata: one per prefix, the files this check links. "
+                            f"Resultata: {real}.")
+with tempfile.TemporaryDirectory() as tmp:
+    tmpdir = Path(tmp)
+    for p in prefixes[:-1]:
+        (tmpdir / real[p].name).symlink_to(real[p])
+    slurp.SNAPSHOT_DIR = tmpdir
+    slurp.LEGACY_SNAPSHOT_PATHS = {}
+    try:
+        slurp.newest_snapshot_rows()
+        out["missing"] = {"prefix": prefixes[-1], "raised": None, "message": None}
+    except Exception as e:
+        out["missing"] = {"prefix": prefixes[-1], "raised": type(e).__name__, "message": str(e)}
+print(json.dumps(out))
 `;
 
 const raw = execFileSync("python3", ["-c", py], { encoding: "utf8" }).trim().split("\n").at(-1);
@@ -84,4 +108,11 @@ Expectata: unchanged content is compared exactly, so the helper reuses the first
 Resultata: the CRLF snapshots were ${JSON.stringify({ first: out.crlf_first, second: out.crlf_second })}.`,
 );
 
-console.log("qual pass: data/slurp.py snapshots only changed fetches and bridges legacy snapshot names");
+assert.ok(
+  out.missing.raised === "AssertionError" && out.missing.message.includes(out.missing.prefix),
+  `Replicata: call data/slurp.py newest_snapshot_rows() with data/snapshots holding the newest snapshot of every NHTSA file but ${out.missing.prefix}'s.
+Expectata: it stops on its own check, an AssertionError naming the missing file's prefix (${out.missing.prefix}).
+Resultata: ${out.missing.raised === null ? "it returned" : `${out.missing.raised}: ${JSON.stringify(out.missing.message)}`}.`,
+);
+
+console.log("qual pass: data/slurp.py snapshots only changed fetches and bridges legacy snapshot names, and an offline regeneration missing one NHTSA file's snapshot stops naming it");

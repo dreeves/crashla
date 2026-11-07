@@ -1297,7 +1297,11 @@ def newest_snapshot_rows():
     """Rows of the newest snapshot of each NHTSA file, parsed as a live fetch is."""
     texts = {}
     for prefix in [p for _url, p, _parse in NHTSA_SOURCES] + [p for _url, p in NON_ADS_SOURCES]:
-        with open(latest_snapshot_path(prefix), newline="", encoding="utf-8") as f:
+        path = latest_snapshot_path(prefix)
+        must(path is not None,
+             "no snapshot of this NHTSA file to read (a live run fetches and snapshots it)",
+             prefix=prefix, pattern=f"{prefix}-*.csv", directory=relpath(SNAPSHOT_DIR))
+        with open(path, newline="", encoding="utf-8") as f:
             texts[prefix] = f.read()
     return nhtsa_rows(texts)
 

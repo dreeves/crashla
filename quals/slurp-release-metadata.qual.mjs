@@ -217,13 +217,7 @@ early_monthly['Same Incident ID'] = 'synthetic-early-monthly'
 early_monthly['Report Type'] = 'Monthly'
 early_monthly['Report Submission Date'] = last_label
 # rated, as every in-scope incident must be (a copy of the template's row)
-# The template's own fault row, read, never assumed (until 2026-11-06 a
-# faultfrac.csv without it stopped here on a StopIteration naming nothing).
-template_faults = [line for line in fault_original.split('\n') if line.startswith(template['Report ID'] + ',')]
-assert template_faults, (f"Replicata: find the clone template {template['Report ID']}'s row in data/faultfrac.csv. "
-                         f"Expectata: one, the rating the synthetic early Monthly filing copies (every in-scope incident is rated). "
-                         f"Resultata: none.")
-template_fault = template_faults[0]
+template_fault = next(line for line in fault_original.split('\n') if line.startswith(template['Report ID'] + ','))
 regenerate(rows + [early_monthly], [template_fault.replace(template['Report ID'], 'synthetic-early-monthly', 1)])  # must not raise
 late_monthly = dict(early_monthly)
 late_monthly['Report ID'] = 'synthetic-late-monthly'
@@ -284,13 +278,7 @@ else:
 
 # (7) the archive's crash-partner airbag column is required, not defaulted:
 # without it 19 archive-era CP-only deployments would silently revert.
-# (Read, never assumed: until 2026-11-06 an archive without such a row stopped
-# here on a StopIteration naming nothing.)
-arch_rows = [r for r in csv.DictReader(open(archive, newline='')) if r['Same Incident ID'].strip()]
-assert arch_rows, (f"Replicata: read the newest nhtsa-archive snapshot ({archive}) and find a row with a Same Incident ID. "
-                   f"Expectata: at least one, the row this check strips of its crash-partner airbag column. "
-                   f"Resultata: none.")
-arch_row = arch_rows[0]
+arch_row = next(r for r in csv.DictReader(open(archive, newline='')) if r['Same Incident ID'].strip())
 arch_copy = dict(arch_row); del arch_copy['CP Any Air Bags Deployed?']
 try:
     slurp._normalize_archive_row(arch_copy)

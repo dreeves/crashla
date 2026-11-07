@@ -98,15 +98,16 @@ const out = vm.runInContext(`
   const windowBand = (helmer, pts, minOf, maxOf, isPartial) => {
     const master = vmtRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
     const fullPts = pts.filter(p => !isPartial(p)), partial = pts.filter(p => isPartial(p));
-    // The window's fully received months and its last one's row are read,
-    // never assumed (until 2026-11-06 a window of partially received months
-    // only, or a month missing from the rows, stopped this model on a
-    // TypeError naming nothing). assert is crashla.js's, which throws its
-    // message with the details appended.
+    // The window's fully received months are read, never assumed (until
+    // 2026-11-06 a window of partially received months only stopped this
+    // model on a TypeError naming nothing; the app's windowVmtBand then takes
+    // no kyoom bound, which this model does not reproduce). assert is
+    // crashla.js's, which throws its message with the details appended. (The
+    // last one's row is there by construction: the window's points are
+    // vmtRows' own months.)
     assert(fullPts.length > 0, "Replicata: model " + helmer + "'s window band over the window's months.\\nExpectata: at least one fully received month, whose cumulative bands the band intersects.\\nResultata: none; every month is partially received:", pts.map(p => p.month));
     const before = master.filter(r => r.month < fullPts[0].month).at(-1) || {month: "", kyoomMin: 0, kyoomMax: 0};
     const last = master.find(r => r.month === fullPts.at(-1).month);
-    assert(last !== undefined, "Replicata: model " + helmer + "'s window band and find the row (vmtRows) of the window's last fully received month, " + fullPts.at(-1).month + ".\\nExpectata: one, its cumulative band the band's top.\\nResultata: none; " + helmer + "'s rows run", master.map(r => r.month));
     const shared = before.month >= knottedFrom[helmer] ? OFFSET_RANGE[helmer] : 0;
     const sum = (arr, f) => arr.reduce((s, p) => s + f(p), 0);
     return {
@@ -150,7 +151,10 @@ const out = vm.runInContext(`
   const after = {};
   for (const [helmer, a, b] of [["Waymo", "2022-01", "2022-12"], ["Zoox", "2026-01", "2026-08"]]) {
     const w = sliceSeries(full, full.months.indexOf(a), full.months.indexOf(b));
-    const row = monthlySummaryRows(w).find(r => r.helmer === helmer);
+    // (The row is read, never assumed, as above.)
+    const wRows = monthlySummaryRows(w);
+    const row = wRows.find(r => r.helmer === helmer);
+    assert(row !== undefined, "Replicata: build the summary rows (monthlySummaryRows) of " + helmer + "'s window " + a + ".." + b + ", which starts after a knot, and find its row.\\nExpectata: one, its VMT band the band this model must reproduce.\\nResultata: none; the rows are", wRows.map(r => r.helmer));
     const pts = w.points.map(p => p.helmers[helmer]).filter(p => p !== null);
     after[helmer + " " + a + ".." + b] = {row: {min: row.vmtMin, max: row.vmtMax},
       exp: windowBand(helmer, pts, p => p.vmtMin, p => p.vmtMax, () => false)};
@@ -380,17 +384,11 @@ Resultata: ${initBlock === undefined ? "no init block" : "no such call"}.`);
         mutate(line + "'s month moved " + (by > 0 ? "a month later" : "a month earlier"), line,
           () => { PRE_SERIES_OFFSET[line].from = shift(from, by); }, () => { PRE_SERIES_OFFSET[line].from = from; });
       }
-      // The first fully knotted month's row and the one before it are read,
-      // never assumed (until 2026-11-06 a constant naming a month the rows
-      // lack stopped here on a TypeError naming nothing). assert is
-      // crashla.js's, which throws its message with the details appended.
       const knot = lineRows(line).find(r => r.month === from);
-      assert(knot !== undefined, "Replicata: find " + line + "'s row (vmtRows) for PRE_SERIES_OFFSET's month, " + from + ".\\nExpectata: one, the first fully knotted month whose band the next case widens.\\nResultata: none; " + line + "'s rows run", lineRows(line).map(r => r.month));
       const top = knot.kyoomMax;
       mutate(line + "'s " + from + " cumulative band's top widened to the running sum", line,
         () => { knot.kyoomMax = runningSums(line, from).hi; }, () => { knot.kyoomMax = top; });
       const before = lineRows(line).find(r => r.month === shift(from, -1));
-      assert(before !== undefined, "Replicata: find " + line + "'s row (vmtRows) for the month before PRE_SERIES_OFFSET's month " + from + ".\\nExpectata: one, whose band the next case narrows.\\nResultata: none; " + line + "'s rows run", lineRows(line).map(r => r.month));
       const band = [before.kyoomMin, before.kyoomMax];
       mutate(line + "'s " + before.month + " cumulative band narrowed to at least a mile inside the running sums at both edges", line,
         () => { narrowInside(line, before); }, () => { [before.kyoomMin, before.kyoomMax] = band; });

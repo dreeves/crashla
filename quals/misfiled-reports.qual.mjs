@@ -79,14 +79,7 @@ def with_rows(text, change):
     buf = io.StringIO(); w = csv.DictWriter(buf, fieldnames=fields, lineterminator='\n'); w.writeheader(); w.writerows(rdr)
     return buf.getvalue()
 adas = texts['nhtsa-adas']
-# 30270-14303's ADAS-file row, the template of the synthetic rows below, read,
-# never assumed (until 2026-11-06 a file without it stopped on a StopIteration
-# naming nothing).
-tmpls = [r for r in csv.DictReader(io.StringIO(adas)) if r['Report ID'] == '30270-14303']
-assert tmpls, (f"Replicata: read the newest nhtsa-adas snapshot ({out['snapshots']['nhtsa-adas']}) and find 30270-14303's rows. "
-               f"Expectata: at least one, the template of this qual's synthetic ADAS-file rows. "
-               f"Resultata: none among its {sum(1 for _ in csv.DictReader(io.StringIO(adas)))} rows.")
-tmpl = tmpls[0]
+tmpl = next(r for r in csv.DictReader(io.StringIO(adas)) if r['Report ID'] == '30270-14303')
 def add(row):
     return lambda rs: rs + [dict(tmpl, **row)]
 out['stop'] = {

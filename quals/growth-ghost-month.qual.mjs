@@ -213,22 +213,21 @@ for (const key of METRICS) {
   // tipFmt, three figures or the fleet's exact count).
   const figuresOf = p => vm.runInContext(`historyTipFigures(growthMetricSpec(selectedGrowthMetric), ${JSON.stringify(p)})`, ctx);
   const circles = [...html.matchAll(/<circle([^>]*)><\/circle>/g)].map(m => m[1]);
-  // A circle's attribute, read, never assumed (until 2026-11-06 a dot without
-  // its cx, cy or fill colour, or a target whose data-tip did not close in
-  // the tag, stopped here on a TypeError naming nothing).
+  // A dot's attribute, read, never assumed (until 2026-11-06 a dot without
+  // its cx, cy or fill colour stopped here on a TypeError naming nothing).
   const attrOf = (a, re, what) => {
     const m = re.exec(a);
     assert.ok(m !== null,
-      `Replicata: draw the growth chart on ${key} (renderFleetTimeSeriesChart) and read its circles' ${what}.
-Expectata: on every one that has it.
+      `Replicata: draw the growth chart on ${key} (renderFleetTimeSeriesChart) and read the ${what} of each of its 3.3-unit dots.
+Expectata: one on every dot.
 Resultata: none on <circle${a}>.`);
     return m[1];
   };
   const marks = circles.filter(a => / r="3\.3"/.test(a)).map(a => ({
-    ghost: / class="month-ghost"/.test(a), x: attrOf(a, /cx="([\d.]+)"/, "dots' cx (the 3.3-unit dots)"),
-    y: attrOf(a, /cy="([\d.]+)"/, "dots' cy (the 3.3-unit dots)"),
-    color: attrOf(a, /fill:(#[0-9a-f]{6})/, "dots' fill colour (the 3.3-unit dots)") }));
-  const tips = circles.filter(a => /data-tip="/.test(a)).map(a => decode(attrOf(a, /data-tip="([^"]*)"/, "tooltip targets' data-tip, quoted")));
+    ghost: / class="month-ghost"/.test(a), x: attrOf(a, /cx="([\d.]+)"/, "cx"),
+    y: attrOf(a, /cy="([\d.]+)"/, "cy"),
+    color: attrOf(a, /fill:(#[0-9a-f]{6})/, "fill colour") }));
+  const tips = circles.filter(a => /data-tip="/.test(a)).map(a => decode(/data-tip="([^"]*)"/.exec(a)[1]));
   const paths = [...html.matchAll(/<path d="([^"]*)" style="stroke:(#[0-9a-f]{6});stroke-width:2;fill:none(;stroke-dasharray:6 4)?"><\/path>/g)]
     .map(m => ({ d: m[1], color: m[2], dashed: m[3] !== undefined }));
   const lanes = lanesOf(key);

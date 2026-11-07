@@ -651,12 +651,11 @@ const meanCheck = vm.runInContext(`
     for (const h of ADS_HELMERS) {
       const e = summaryRow(rows, h, "open the default window with Humans (AV cities), Tesla, Waymo and Zoox on (" + mk + ") and build its summary rows").mpiEstimates[mk];
       // The median marker: one of the helmer's (named for it,
-      // seriesMarkName), found by the value its first line reports, the
-      // line's last figure (until 2026-11-06 the text after its ": ", so a
-      // separator edit there missed it, and a marker not found stopped this
-      // qual on a TypeError naming nothing).
+      // seriesMarkName), found by the value its first line reports (until
+      // 2026-11-06 a marker not found stopped this qual on a TypeError naming
+      // nothing).
       const marker = targets.find(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip
-        && [...t.tip.split("\\n")[0].matchAll(/∞|\\d+(?:\\.\\d+)?[KMBT]?/g)].map(m => m[0]).at(-1) === fmtMiles(e.postMedian));
+        && t.tip.split("\\n")[0].endsWith(": " + fmtMiles(e.postMedian)));
       assert(marker !== undefined, "Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, draw the distribution chart on " + mk + " and find " + h + "'s Median marker, the one of its markers whose tooltip's first line reports the curve's median (" + fmtMiles(e.postMedian) + ").\\nExpectata: one.\\nResultata: none; the first lines of its markers' tooltips are",
         targets.filter(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip).map(t => t.tip.split("\\n")[0]));
       const tip = marker.tip;
