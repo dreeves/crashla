@@ -18,8 +18,8 @@
 //  - scenario shares are forecast labels (#83): history points are labelled
 //    by their helmer and month, not by a forecast lane's label ("Tesla ·
 //    2026-08", not "Tesla robotaxi (~<share>%) · 2026-08"; read in any words
-//    and separators since 2026-11-07), and a note gives the two Tesla shares
-//    the legend chips carry.
+//    and separators since 2026-11-07, and lines since later that day), and a
+//    note gives the two Tesla shares the legend chips print.
 //  - the section heading's date is GROWTH_FORECAST_DATE (2026-10-31; audit
 //    growth-heading-date-guard, R9, CR-06): index.html's #sec-fleet heading
 //    is the one displayed copy of the date the code does not derive, and it
@@ -30,6 +30,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { carriedLabel, holdsPercent, markLabel, percentIn, textOutside } from "./page-text.mjs";
 
 const escapingEl = () => {
   let html = "";
@@ -100,13 +101,15 @@ const givesInOrder = (tip, figures) => {
   for (const f of figures) { const i = tip.indexOf(f, at); if (i < 0) return false; at = i + f.length; }
   return true;
 };
-const bodyOf = tip => tip.split("\n").slice(1).join("\n");
-// Whether a tooltip's first line names each of the parts (a lane's label or
-// helmer, a month or date), in any order and with any words or separators
-// between them (since 2026-11-07; until then each tooltip was found by its
-// head written "<name> · <month>", so an edit of that separator in
-// crashla.js, "Tesla, 2026-10" say, turned this qual red).
-const headNames = (tip, ...parts) => parts.every(part => tip.split("\n")[0].includes(part));
+// Whether a tooltip names each of the parts (a lane's label or helmer, a
+// month or date) anywhere in it, in any order and with any words, separators
+// or lines between them. Until 2026-11-07 each tooltip was found by its head
+// written "<name> · <month>", so an edit of that separator in crashla.js
+// ("Tesla, 2026-10", say) turned this qual red; later that day, until the
+// main agent's pass after the sixth fix run's third final review, by its
+// first line, so a correct edit putting the forecast date on a line of its
+// own did.
+const names = (tip, ...parts) => parts.every(part => tip.includes(part));
 const problems = [];
 const charts = JSON.parse(JSON.stringify(vm.runInContext(`(() => {
   const out = {};
@@ -133,14 +136,26 @@ for (const [key, c] of Object.entries(charts)) {
   if (a.length !== 4 || JSON.stringify(a) !== JSON.stringify(b))
     problems.push(`${key}: the trajectory legend reads ${JSON.stringify(a)} but the forecast legend ${JSON.stringify(b)}`);
   const ftips = tipsOf(c.forecast), ttips = tipsOf(c.trajectory);
+  const labels = c.curves.map(cv => cv.label);
   for (const curve of c.curves) {
     const want = [curve.median, curve.lo90, curve.hi90].map(TIP_FMT[key].forecast);
-    const ftip = ftips.filter(t => t.startsWith(`${curve.label}\n`));
-    if (ftip.length !== 1 || !givesInOrder(bodyOf(ftip[0]), want))
+    // The forecast chart's tooltip that carries the lane's label, anywhere in
+    // it (carriedLabel), giving the figures outside the label (until
+    // 2026-11-07 the label had to be its first line; later that day, on its
+    // first line).
+    const ftip = ftips.filter(t => carriedLabel(t, labels) === curve.label);
+    if (ftip.length !== 1 || !givesInOrder(textOutside(ftip[0], curve.label), want))
       problems.push(`${key}: the forecast chart's ${curve.label} tooltip should give its median, 5th and 95th percentiles as ${want.join(", ")}; found ${JSON.stringify(ftip)}`);
-    const end = ttips.filter(t => headNames(t, curve.label, FORECAST_DATE));
-    if (end.length !== 1 || ftip.length !== 1 || bodyOf(end[0]) !== bodyOf(ftip[0]))
-      problems.push(`${key}: the trajectory's ${curve.label} endpoint tooltip should name "${curve.label}" and ${FORECAST_DATE} on its first line and print what the forecast chart prints; found ${JSON.stringify(end)} against ${JSON.stringify(ftip)}`);
+    // The trajectory's endpoint tooltip: the one that names the forecast date
+    // and, beside it, the lane's label, anywhere in it (markLabel over the
+    // whole tooltip), giving the forecast chart's figures in order outside
+    // the label and the date. Until the main agent's pass after the sixth fix
+    // run's third final review (2026-11-07) its first line had to name both
+    // and its other lines had to equal the forecast chart's tooltip's, so a
+    // correct edit putting the date on a line of its own turned this qual red.
+    const end = ttips.filter(t => markLabel(t, FORECAST_DATE, labels) === curve.label);
+    if (end.length !== 1 || !givesInOrder(textOutside(end[0], curve.label, FORECAST_DATE), want))
+      problems.push(`${key}: the trajectory's ${curve.label} endpoint tooltip should name "${curve.label}" and ${FORECAST_DATE} and give the forecast chart's figures, ${want.join(", ")}; found ${JSON.stringify(end)} against ${JSON.stringify(ftip)}`);
   }
   for (const e of c.endMonths) {
     if (e.month !== ENDPOINT[key] || !e.forecast)
@@ -148,44 +163,55 @@ for (const [key, c] of Object.entries(charts)) {
   }
   // History points print the metric's figures (#51, #51b): value, low and
   // high, in order, at the fewest figures (at least three) that keep apart
-  // the ones that differ in whole units.
+  // the ones that differ in whole units, read outside the helmer and month.
   for (const lane of c.history) {
     for (const p of lane.points) {
       const want = TIP_FMT[key].history([p.best, p.lo, p.hi]);
-      const tip = ttips.filter(t => headNames(t, lane.helmer, p.month) && !headNames(t, FORECAST_DATE));
-      if (tip.length !== 1 || !givesInOrder(bodyOf(tip[0]), want)) problems.push(`${key}: the ${lane.helmer} ${p.month} history tooltip should give ${want.join(", ")}; found ${JSON.stringify(tip)}`);
+      const tip = ttips.filter(t => names(t, lane.helmer, p.month) && !names(t, FORECAST_DATE));
+      if (tip.length !== 1 || !givesInOrder(textOutside(tip[0], lane.helmer, p.month), want)) problems.push(`${key}: the ${lane.helmer} ${p.month} history tooltip should give ${want.join(", ")}; found ${JSON.stringify(tip)}`);
     }
   }
+  // The scenario shares, read as the percents the legend chips print,
+  // wherever and however each label prints its share (percentIn; until the
+  // main agent's pass after the sixth fix run's third final review,
+  // 2026-11-07, read only as "(~<n>%)" ending the label, so a legend written
+  // "Tesla robotaxi, ~93%" turned this qual red).
+  const shares = c.curves.map(cv => percentIn(cv.label)).filter(s => s !== null);
+  if (shares.length !== 2) problems.push(`${key}: ${shares.length} legend chips carry a scenario share (${JSON.stringify(labels)}); want Tesla's two`);
   // Scenario shares belong to forecasts (audit #83): an observed history
   // point is labelled by its helmer, not by a forecast lane's label, which
   // carries a scenario share. Until 2026-10-03 all 24 Tesla history tooltips
   // read "Tesla robotaxi (~95%) · 2026-08 ...". Each history tooltip names
-  // its helmer and its month, in any words (until 2026-11-07 its head was
-  // pinned to "<helmer> · <month>", separator and all).
-  const history = ttips.filter(t => !headNames(t, FORECAST_DATE));
-  const helmers = c.history.map(l => l.helmer), laneOnly = c.curves.map(cv => cv.label).filter(l => !helmers.includes(l));
+  // its helmer and its month, in any words and lines (until 2026-11-07 its
+  // head was pinned to "<helmer> · <month>", separator and all). Nor does it
+  // print a share a legend chip carries ("93%"; since 2026-11-07, so that a
+  // head with the share and not the lane's whole label, "Tesla (~93%) ·
+  // 2026-08", is red, as it was while the head was pinned to "<helmer> ·
+  // <month>").
+  const history = ttips.filter(t => !names(t, FORECAST_DATE));
+  const helmers = c.history.map(l => l.helmer), laneOnly = labels.filter(l => !helmers.includes(l));
   if (history.length === 0) problems.push(`${key}: no history-point tooltips found`);
   for (const t of history) {
-    const head = t.split("\n")[0];
-    if (!helmers.some(h => head.includes(h)) || !/\d{4}-\d\d/.test(head) || laneOnly.some(l => head.includes(l)))
-      problems.push(`${key}: a history point is labelled ${JSON.stringify(head)}; want its helmer (one of ${JSON.stringify(helmers)}) and its month, and no forecast lane's label (${JSON.stringify(laneOnly)}, which carry scenario shares)`);
+    if (!helmers.some(h => t.includes(h)) || !/\d{4}-\d\d/.test(t) || laneOnly.some(l => t.includes(l)) || shares.some(share => holdsPercent(t, share)))
+      problems.push(`${key}: a history point's tooltip reads ${JSON.stringify(t)}; want its helmer (one of ${JSON.stringify(helmers)}) and its month, and no forecast lane's label (${JSON.stringify(laneOnly)}) or scenario share (${JSON.stringify(shares.map(s => `${s}%`))})`);
   }
   // ...and the shares are explained: a note under the legend gives both Tesla
-  // scenario shares the legend chips carry. Its words are the human's
-  // (committed 2026-10-04 in b068a10) and were pinned to the character until
-  // 2026-10-28, when the human dropped such pins (one went red on each of the
-  // human's edits and caught no agent's; the human reviews every diff).
-  const shares = c.curves.filter(curve => /\(~\d+%\)$/.test(curve.label)).map(curve => /\(~(\d+)%\)$/.exec(curve.label)[1]);
+  // scenario shares the legend chips carry, as figures. Its words are the
+  // human's (committed 2026-10-04 in b068a10) and were pinned to the
+  // character until 2026-10-28, when the human dropped such pins (one went
+  // red on each of the human's edits and caught no agent's; the human
+  // reviews every diff); until 2026-11-07 each share had to read "~<n>%".
   const notes = [...c.trajectory.matchAll(/<p class="month-note">([^<]*)<\/p>/g)].map(m => decode(m[1]));
-  if (shares.length !== 2) problems.push(`${key}: ${shares.length} legend chips carry a scenario share; want Tesla's two`);
   const chipShare = k => {
     const curve = c.curves.find(cv => cv.key === k);
-    assert.ok(curve !== undefined && /\(~\d+%\)$/.test(curve.label),
-      `${key}: the ${k} lane's legend chip carries no scenario share: ${JSON.stringify(curve && curve.label)}`);
-    return /\(~(\d+)%\)$/.exec(curve.label)[1];
+    assert.ok(curve !== undefined && percentIn(curve.label) !== null,
+      `Replicata: read the ${key} growth chart's legend label for its ${k} lane.
+Expectata: a label printing the lane's scenario share as a whole percent.
+Resultata: ${JSON.stringify(curve === undefined ? `no ${k} lane among ${JSON.stringify(c.curves.map(cv => cv.key))}` : curve.label)}.`);
+    return percentIn(curve.label);
   };
-  const wantShares = [`~${chipShare("robotaxi")}%`, `~${chipShare("hw4")}%`];
-  if (!notes.some(n => wantShares.every(s => n.includes(s)))) problems.push(`${key}: no note gives both scenario shares ${JSON.stringify(wantShares)}; the notes are ${JSON.stringify(notes)}`);
+  const wantShares = [chipShare("robotaxi"), chipShare("hw4")];
+  if (!notes.some(n => wantShares.every(s => holdsPercent(n, s)))) problems.push(`${key}: no note gives both scenario shares ${JSON.stringify(wantShares.map(s => `${s}%`))}; the notes are ${JSON.stringify(notes)}`);
 }
 // The section heading's dates and years (a date's month by name, full or
 // abbreviated, in either order with its day, or ISO).
@@ -216,7 +242,7 @@ for (const [key, c] of Object.entries(charts)) {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render both growth charts for fleet, rides and miles in vm and read their legends, forecast tooltips and lane endpoints.
-Expectata: one legend order in both charts; each forecast's median, 5th and 95th percentiles printed at three significant figures (miles before the unit suffix, "6.27M"; rides and the fleet in full digits), the same in both charts; each history point's value and range at the fewest significant figures, at least three, that print apart the ones differing in whole units; the endpoint at the forecast date's month for the fleet and the month before for the cumulative metrics, its tooltip dated GROWTH_FORECAST_DATE (${FORECAST_DATE}); every history point's tooltip naming its helmer and its month on its first line, in any words and separators, and no forecast lane's label (which carries a scenario share); a note giving Tesla's two scenario shares ("~<robotaxi share>%" and "~<HW4 share>%") as the legend chips carry them; and every date and year in the growth section's heading (index.html #sec-fleet) the forecast date's.
+Expectata: one legend order in both charts; each forecast's median, 5th and 95th percentiles printed at three significant figures (miles before the unit suffix, "6.27M"; rides and the fleet in full digits), the same in both charts; each history point's value and range at the fewest significant figures, at least three, that print apart the ones differing in whole units; the endpoint at the forecast date's month for the fleet and the month before for the cumulative metrics, its tooltip dated GROWTH_FORECAST_DATE (${FORECAST_DATE}); every history point's tooltip naming its helmer and its month, in any words, separators and lines, and holding no forecast lane's label (which carries a scenario share) or scenario share a legend chip prints; a note giving Tesla's two scenario shares as the percents the legend chips print; and every date and year in the growth section's heading (index.html #sec-fleet) the forecast date's.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 8).join("\n")}`);
 console.log("qual pass: the growth charts share one legend order, print forecasts alike at three significant figures, date the endpoint by its own time convention, label history points by helmer and explain the scenario shares; the section heading's date is the forecast date");

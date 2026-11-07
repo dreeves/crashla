@@ -80,7 +80,8 @@ export function rationaleMarkup(rationale) {
 // lists, definition lists, block HTML (comments, and elements, read to the
 // tag that closes them as parse_raw_html reads them, or as markdown where a
 // markdown attribute says so), math blocks, tables, footnote, link and
-// abbreviation definitions, end-of-block markers and paragraphs, tried in
+// abbreviation definitions, attribute definitions and block attribute
+// lists, end-of-block markers and paragraphs, tried in
 // kramdown's order at each block's start, and a list item's, quote's or
 // definition's content read as its own blocks at its content column. So a
 // heading in a list item, a quote or a definition is read as the site reads
@@ -89,10 +90,14 @@ export function rationaleMarkup(rationale) {
 // markdown takes the converter's id. It stops (throws, naming each line and
 // why) on the forms whose effect on the file's headings it does not
 // compute: Liquid ({{ or {%), which Jekyll runs on the file before kramdown
-// reads it; a kramdown extension, attribute list or attribute definition at
-// a block's start ({:), which can set a heading's id or drop content; and a
-// table holding an inline HTML element with content, which kramdown's pipe
-// check reads with every span parser. A heading whose text holds one of the
+// reads it; a kramdown extension at a block's start ({:: or {:/), which can
+// drop content or set the options that give headings their ids; an
+// attribute list or attribute definition at a block's start that sets an id
+// ({: #<id>}, {:<name>: #<id>} or id=), which can set a heading's (one that
+// sets none, "{:toc}" or "{: .no_toc}", is read and leaves every id as it is;
+// until 2026-11-07 every "{:" at a block's start stopped it); and a table
+// holding an inline HTML element with content, which kramdown's pipe check
+// reads with every span parser. A heading whose text holds one of the
 // marks HEADING_STOPS lists, or that sits in a footnote, it leaves unread,
 // its id not known (headingAnchors, below). Its ids, stops and unread
 // headings are checked on vmt-rationale-text.qual's synthetic files, each
@@ -279,9 +284,9 @@ const RE = {
   linkDef: at(`^ {0,3}\\[([^\\n\\]]+)\\]:[ \\t]*(?:<(${DOT}*?)>|([^\\n]*?${NS}[^\\n]*?))(?:(?:[ \\t]*?\\n|[ \\t]+?)[ \\t]*?(["'])(${DOT}+?)\\4)?[ \\t]*?\\n`), // LINK_DEFINITION_START
   abbrevDef: at(`^ {0,3}\\*\\[(${DOT}+?)\\]:(${DOT}*?)\\n`), // ABBREV_DEFINITION_START
   extensions: at("^ {0,3}\\{:"), // BLOCK_EXTENSIONS_START
-  ald: at(`^ {0,3}\\{:(${ALD_ID_NAME}):${ALD_ANY}+\\}${S}*?\\n`), // ALD_START
+  ald: at(`^ {0,3}\\{:(${ALD_ID_NAME}):(${ALD_ANY}+)\\}${S}*?\\n`), // ALD_START
   ext: at(`^ {0,3}(?:\\{::(\\w+)(?:${S}${ALD_ANY}*?|)(\\/)?\\}|\\{:\\/(${ALD_ID_NAME})?\\})${S}*?\\n`), // EXT_BLOCK_START
-  ial: at(IAL_BLOCK_START), eob: at(EOB_MARKER),
+  ial: at(`^ {0,3}\\{:(?![:\\/])(${ALD_ANY}+)\\}${S}*?\\n`), eob: at(EOB_MARKER), // IAL_BLOCK_START, its content read
   paragraphStart: at(`^ {0,3}[^ \\t]${DOT}*?\\n`), paragraph: at(PARAGRAPH_MATCH),
   paragraphEnd: at(`(?:${LAZY_END}|${LIST_START}|${ATX_HEADER_START}|${DEFINITION_LIST_START}|${BLOCKQUOTE_START}|${FENCED_CODEBLOCK_START})`), // PARAGRAPH_END_GFM
   lazyEnd: at(LAZY_END), line: at(`${DOT}*\\n`),
@@ -390,6 +395,17 @@ class Scanner {
   }
 }
 
+// parse_attribute_list's tokens (ALD_TYPE_ANY): a key and its quoted value
+// (ALD_TYPE_KEY_VALUE_PAIR, group 1 the key), a reference to an attribute
+// definition (ALD_TYPE_REF), or ids and classes run together
+// (ALD_TYPE_ID_OR_CLASS_MULTI, group 5: "#<id>", ".<class>"), each after the
+// list's start or a blank and before a blank or its end. Ruby's [^\}\2]
+// (inside a class \2 is the character U+0002, not the quote) as written.
+const ALD_TOKEN = new RegExp(`(?:^|${S})(?:(${ALD_ID_NAME})=("|')((?:\\\\\\}|\\\\\\2|[^}\\x02])*?)\\2|(${ALD_ID_NAME})|((?:#[A-Za-z][\\w:-]*|\\.[^ \\t\\n\\v\\f\\r.#]+)+))(?=${S}|$)`, "gu");
+// Whether an attribute list's or definition's content sets an id: a key id,
+// or an "#<id>" among its ids and classes.
+const setsId = content => [...content.matchAll(ALD_TOKEN)].some(t => t[1] === "id" || /#[A-Za-z]/.test(t[5] ?? ""));
+
 // What a parser's tree holds that the parsers read back: each child's type,
 // and a blank's lines or an end-of-block marker's kind (value).
 const add = (tree, type, value) => tree.children.push({ type, value });
@@ -489,12 +505,41 @@ const BLOCK_PARSERS = [
     add(tree, "eob", "abbrev_def");
     return true;
   }],
+  // parse_block_extensions: an attribute definition, an extension or a
+  // block attribute list. An extension ({::comment}, {::nomarkdown},
+  // {::options ...}, a stray stop tag) stops the reader: it can drop content
+  // or set the options that give headings their ids. A definition or a list
+  // whose attributes set an id stops it too, since a list can give a heading
+  // an id, directly or through a definition it refers to (the definitions'
+  // references are resolved after the whole file is read, so one that sets an
+  // id stops the reader wherever it stands); any other definition or list
+  // gives no heading an id ("{:toc}", "{: .no_toc}", a title), and is read as
+  // kramdown reads it: a definition an end-of-block marker, a list one after
+  // the block it follows where it applies to that block (and no list follows
+  // it), and nothing where it waits for the next block. Until the second final
+  // review of the sixth fix run (2026-11-07) every one of them stopped the
+  // reader, so a table of contents or a class added to data/README.md, which
+  // leave every id as it is, turned vmt-rationale-text.qual red.
   [RE.extensions, (sc, tree, file) => {
     const line = sc.lineAt(sc.pos);
-    const m = sc.scan(RE.ald) ?? (sc.check(RE.ext) === null ? null : sc.scan(RE.line)) ?? sc.scan(RE.ial);
+    let m = sc.scan(RE.ald);
+    if (m !== null) {
+      if (setsId(m[2])) file.stop(line, "a kramdown attribute definition that sets an id ({:<name>: #<id>} or id=), which an attribute list can give a heading");
+      add(tree, "eob", "ald");
+      return true;
+    }
+    if (sc.check(RE.ext) !== null) {
+      sc.scan(RE.line);
+      file.stop(line, "a kramdown extension ({:: or {:/), which can drop content or set the options that give headings their ids");
+      add(tree, "eob", "extension");
+      return true;
+    }
+    m = sc.scan(RE.ial);
     if (m === null) return false;
-    file.stop(line, "a kramdown extension, attribute list or attribute definition ({:), which can set a heading's id or drop content");
-    add(tree, "eob", "extension");
+    if (setsId(m[1])) file.stop(line, "a kramdown attribute list that sets an id ({: #<id>} or id=), which can set a heading's");
+    const last = tree.children.at(-1);
+    const toLast = last !== undefined && last.type !== "blank" && (last.type !== "eob" || ["link_def", "abbrev_def", "footnote_def"].includes(last.value));
+    if (toLast && sc.check(RE.ial) === null) add(tree, "eob", "ial");
     return true;
   }],
   [RE.eob, (sc, tree, file, ids, m) => {
@@ -922,11 +967,12 @@ const UNREAD_WHERE = { gfm: [], converter: [],
 // before it shares its base). An empty id (a heading whose text keeps no
 // character the id keeps) is one the page does not write. The forms whose
 // effect on the file's headings this reader does not compute, Liquid, a
-// kramdown extension, attribute list or attribute definition at a block's
-// start, and a table holding an inline HTML element with content, stop it
-// (it throws, naming each line and why). Until 2026-11-07 a heading of an
-// unread form stopped it too, so a correct edit of the file adding one, which
-// no link targets, turned vmt-rationale-text.qual red.
+// kramdown extension at a block's start, an attribute list or attribute
+// definition there that sets an id, and a table holding an inline HTML
+// element with content, stop it (it throws, naming each line and why). Until
+// 2026-11-07 a heading of an unread form stopped it too, so a correct edit of
+// the file adding one, which no link targets, turned vmt-rationale-text.qual
+// red.
 export function headingAnchors(markdown, file) {
   const bomless = markdown.replace(/^\uFEFF/, "");
   const front = FRONT_MATTER.exec(bomless);
@@ -944,12 +990,24 @@ export function headingAnchors(markdown, file) {
   parseBlocks(new Scanner(lines.map((l, i) => ({ text: l, line: i + skipped + 1 }))), { type: "root", children: [] }, state, "gfm");
   if (problems.length > 0) {
     throw new Error(`Replicata: read the headings of ${file} to compute the ids GitHub Pages gives them.
-Expectata: no form whose effect on the file's headings this reader does not compute (quals/rationale-links.mjs, headingAnchors): Liquid, a kramdown extension, attribute list or attribute definition at a block's start, or a table holding an inline HTML element with content.
+Expectata: no form whose effect on the file's headings this reader does not compute (quals/rationale-links.mjs, headingAnchors): Liquid, a kramdown extension at a block's start, an attribute list or attribute definition there that sets an id, or a table holding an inline HTML element with content.
 Resultata: ${problems.join("; ")}.`);
   }
   const ids = [], counts = { gfm: new Map(), converter: new Map() }, unreadBefore = { gfm: 0, converter: 0, footnote: 0 };
   for (const h of state.headers) {
     const t = { raw: h.raw, ...headingText(h.text) };
+    // An explicit id, "{#<id>}" ending the heading's text (kramdown's
+    // HEADER_ID, its id an XML name, read here in its ASCII part; an id with
+    // another character stays unread, HEADING_STOPS' "an explicit id"), is the
+    // heading's id as written, and it counts toward neither counter: GFM's
+    // update_elements and the converter number only the ids they generate
+    // (kramdown-parser-gfm 1.1.0, gfm.rb: `!child.attr.key?('id')`). Until the
+    // main agent's pass after the sixth fix run's third final review
+    // (2026-11-07) such a heading was left unread, so a correct edit of
+    // data/README.md giving a linked heading its own id as an explicit one
+    // turned vmt-rationale-text.qual red, its links naming no heading.
+    const explicit = /[\t ]\{#([A-Za-z_:][\w.:-]*)\}$/.exec(h.raw);
+    if (explicit !== null && h.ids !== "footnote") { ids.push({ line: h.line, heading: h.text, anchor: explicit[1], anchors: [explicit[1]], unread: [] }); continue; }
     const unread = [...UNREAD_WHERE[h.ids], ...HEADING_STOPS.filter(([stops]) => stops(t, state.labels)).map(([, what]) => what)];
     if (unread.length > 0) {
       unreadBefore[h.ids] += 1;

@@ -74,7 +74,13 @@ const read = () => {
 // The reference link's own properties, the ones the site's rule for every
 // link sets.
 const readRef = () => {
-  const s = getComputedStyle(document.querySelector("#sanity-vmt-sources a[data-qual-reference]"));
+  // The reference link is read, never assumed (since 2026-11-07; until then
+  // a page without it stopped this qual on a TypeError naming nothing).
+  // assert is crashla.js's, which throws its message with the details
+  // appended.
+  const a = document.querySelector("#sanity-vmt-sources a[data-qual-reference]");
+  assert(a !== null, "Replicata: read the reference link this qual appended to the VMT sources table (#sanity-vmt-sources a[data-qual-reference]).\nExpectata: one.\nResultata: none; the table's links number", document.querySelectorAll("#sanity-vmt-sources a").length);
+  const s = getComputedStyle(a);
   return { color: s.color, decoColor: s.textDecorationColor, opacity: s.opacity, thickness: s.textDecorationThickness, top: s.top };
 };
 // An element's document position: the top of its box plus the scroll.
@@ -133,8 +139,13 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
       a.setAttribute(attr, "");
       cell.append(" (", a, ")");
     };
+    // The cells are read, never assumed (since 2026-11-07; until then a table
+    // without them stopped this qual on a TypeError naming nothing). assert is
+    // crashla.js's, which throws its message with the details appended.
     const labels = document.querySelectorAll("#sanity-vmt-sources td:not(.ai-text)");
-    link("data-qual-probe", document.querySelector("#sanity-vmt-sources td.ai-text"));
+    const aiCell = document.querySelector("#sanity-vmt-sources td.ai-text");
+    assert(aiCell !== null && labels.length >= 2, "Replicata: load the default view and read the VMT sources table's cells (#sanity-vmt-sources td), to append this qual's links to them.\nExpectata: an AI-text cell (td.ai-text) and two label cells (td:not(.ai-text)).\nResultata: the AI-text cells and label cells number", [document.querySelectorAll("#sanity-vmt-sources td.ai-text").length, labels.length]);
+    link("data-qual-probe", aiCell);
     link("data-qual-reference", labels[0]);
     link("data-qual-lifter", labels[1]);
     const rule = document.createElement("style");

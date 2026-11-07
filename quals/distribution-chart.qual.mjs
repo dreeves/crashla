@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { MARKUP_TEXT } from "./page-text.mjs";
 
 class ElementStub {
   constructor(tagName, id = "") {
@@ -366,9 +367,11 @@ Expectata: legend has no entry for HumansUS (its label, ${JSON.stringify(labelOf
 Resultata: found it in output.`,
 );
 
-// The y axis is titled (until 2026-10-29 the title's words were pinned).
+// The y axis is titled (until 2026-10-29 the title's words were pinned; its
+// text read as MARKUP_TEXT since 2026-11-07, so a "<" in it that opens no tag
+// is text, as the browser shows it).
 assert.ok(
-  /<text class="month-label"[^>]*>[^<]+<\/text>/.test(distChart),
+  new RegExp(`<text class="month-label"[^>]*>(?!<\\/text>)${MARKUP_TEXT}<\\/text>`).test(distChart),
   `Replicata: call renderDistributionChart and inspect the y-axis title.
 Expectata: a y-axis title (a month-label text) that is not empty.
 Resultata: no such title in output.`,

@@ -424,8 +424,11 @@ Editing rules:
   naming the line, only on a form whose effect on this file's headings it
   does not compute: Liquid (a double brace, or a brace and a percent sign,
   which Jekyll runs on this whole file, code blocks included); a kramdown
-  extension, attribute list or attribute definition at a block's start
-  (`{:`); or a table holding an inline HTML element with content. A heading
+  extension at a block's start (`{::`, or a stray `{:/`); an attribute list
+  or attribute definition there that sets an id (`{: #...}`, or an `id=`),
+  which can give a heading its id; or a table holding an inline HTML element
+  with content. An attribute list that sets no id, as a table of contents
+  (`{:toc}`) or a class (`{: .no_toc}`), is read and changes no id. A heading
   holding a mark that changes the text it renders (an entity, inline HTML,
   an image, math, a typographic `<<` or `>>`, an explicit id, `{:`, a link
   of another form, a reference link or footnote whose label this file

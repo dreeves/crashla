@@ -20,6 +20,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { markLabel } from "./page-text.mjs";
 
 class ElementStub {
   constructor(tagName) { this.tagName = tagName; this._html = ""; this.style = {}; this.children = []; this._attributes = {}; }
@@ -112,8 +113,12 @@ Resultata: none; the labels ${JSON.stringify(labels)}, the rows' companies ${JSO
       for (const [chart, html] of Object.entries(charts)) {
         const tips = tipsOf(html);
         const named = [...html.matchAll(/data-tip="([^"]*)"[^>]*aria-label="([^"]*)"/g)].map(x => [decode(x[1]), decode(x[2])]);
+        // A human band's mark is one whose name carries a human label beside
+        // its tip, in any words (markLabel; until 2026-11-07 the name had to
+        // start "<label> · ", so seriesMarkName written "<label>: <tip>" read
+        // every human band's mark as a company's, wanting the note on it).
         for (const [tip, name] of named) {
-          const human = HUMAN.some(h => name.startsWith(labels[h] + " · "));
+          const human = HUMAN.some(h => markLabel(name, tip, Object.values(labels)) === labels[h]);
           const want = metric === "fatality" && !human;
           if (tip.includes(NOTE) !== want) problems.push(`${win} ${chart} chart, metric ${metric}: ${tip.includes(NOTE) ? "carries" : "lacks"} the note in ${JSON.stringify(name.slice(0, 80))}`);
         }

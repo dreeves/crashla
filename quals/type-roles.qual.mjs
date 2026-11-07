@@ -236,7 +236,9 @@ Expectata: none -- #8f887f sits under AA on every ground, so it paints chrome
 Resultata: ${JSON.stringify(faintText.map(r => r.sel))}.`);
 const noneDeco = parsed.filter(r => decls(r.body, "text-decoration").some(v => /^none/.test(v)));
 assert.deepEqual(noneDeco.map(r => r.sel), [],
-  "every link keeps its underline (decision 5); lists of links differ only in colour");
+  `Replicata: read style.css's rules for a text-decoration of none.
+Expectata: none: every link keeps its underline (decision 5), lists of links differing only in colour, and a link inside AI text keeps its own solid underline.
+Resultata: the rules ${JSON.stringify(noneDeco.map(r => r.sel))}.`);
 const linkLists = byExactSel(".pm-card-question a, .mpi-card-vmt a, .mpi-card-sources a");
 assert.equal(linkLists.length, 1, "one rule for links inside lists of links (market questions, card citations)");
 assert.equal(onlyDecl(linkLists[0].body, "color", "link lists"), "var(--ink-soft)");
@@ -264,12 +266,16 @@ Expectata: one, top-level, declaring text-decoration: underline dotted (with its
 Resultata: ${JSON.stringify(aiText.map(r => ({ context: r.context, body: r.body.trim() })))}.`);
 const aiDeco = parsed.filter(r => r.sel !== ".ai-text" && selectors(r).some(sel => /\.ai-text\b/.test(sel))
   && ["text-decoration", "text-decoration-line", "text-decoration-style"].some(p => has(r, p)));
-assert.deepEqual(aiDeco.map(r => r.sel), [], "no other rule restyles AI text's underline");
+assert.deepEqual(aiDeco.map(r => r.sel), [],
+  `Replicata: read style.css's rules whose selectors name .ai-text, other than the .ai-text rule itself, for a text-decoration, text-decoration-line or text-decoration-style.
+Expectata: none: no other rule restyles AI text's underline (so a link inside it keeps its solid one).
+Resultata: the rules ${JSON.stringify(aiDeco.map(r => r.sel))}.`);
 // A link inside AI text (since 2026-11-05, the VMT sources table's links to
 // data/README.md's sections, the human's "ok, go with links" of 2026-11-04)
-// keeps the text's ink at rest and hovered: one top-level rule, its
-// selectors .ai-text a and .ai-text a:hover, declaring its colour once,
-// inherited from the AI text. It may declare more (an underline offset, say):
+// keeps the text's ink at rest and hovered: one top-level rule, its selector
+// .ai-text a, alone or with .ai-text a:hover (which it already covers),
+// declaring its colour once, inherit or currentcolor (the cell's AI ink). It
+// may declare more (an underline offset, say):
 // no text-decoration: none anywhere (section 9) and no other rule restyling
 // AI text's underline (above) keep the link's own solid underline, which reads
 // apart from the AI text's dotted one. ai-text-links.qual checks the outcome

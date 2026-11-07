@@ -18,13 +18,16 @@
 // copy of its tip, laid out on every rebuild of the 1,228-row table (#26);
 // and each narrative toggle was named by its whole narrative (median 948
 // characters, #62). Since then no target holds its tip as hidden text: an SVG
-// mark is named by its tip (on the shared charts, by its company's label, " · "
-// and its tip, as the growth chart's tips read), an HTML target is an image
-// named by what it shows and its tip, a fault cell is described by its row's
+// mark is named by its tip (on the shared charts, by its company's label and
+// its tip, as the growth chart's tips read: in any words since 2026-11-07,
+// read by markLabel; until then the name had to be crashla.js's
+// seriesMarkName "<label> · <tip>", separator and all), an HTML target is an
+// image named by what it shows and its tip, a fault cell is described by its row's
 // "Fault fraction:" line, and a narrative toggle has a short name and the
 // narrative as its description.
 import assert from "node:assert/strict";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
+import { markLabel } from "./page-text.mjs";
 
 // The narrative toggle's short name (narrativeToggleName) is the human's
 // English (committed 2026-10-05 in a3c39bb); the checks below read it from
@@ -47,7 +50,8 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
   // --- #4: every tooltip target is reachable and readable -----------------
 
   const audit = await page.evaluate(() => {
-    const out = { targets: 0, faultCells: 0, notFocusable: [], badSvg: [], badHtml: [], badFault: [], copies: [] };
+    const out = { targets: 0, faultCells: 0, notFocusable: [], badSvg: [], shared: [], badHtml: [], badFault: [], copies: [],
+      labels: ALL_HELMERS.map(h => helmerLabel(h)) };
     // A company's label by its series colour.
     const labelOf = {};
     for (const h of ALL_HELMERS) labelOf[HELMER_COLORS[h].toLowerCase()] = helmerLabel(h);
@@ -92,9 +96,12 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
       if (!isFaultCell && el.tabIndex !== 0) out.notFocusable.push(where);
       // No target holds its tip as text of its own (a hidden second copy).
       if (el.textContent.includes(text)) out.copies.push(where);
-      if (el instanceof SVGElement) {
-        const want = seriesLabel.has(el) ? `${seriesLabel.get(el)} · ${text}` : text;
-        if (name !== want) out.badSvg.push(`${where} named ${JSON.stringify(name)}, want ${JSON.stringify(want.slice(0, 60))}`);
+      // A mark on a shared chart is checked below, by the label its name
+      // carries beside its tip (markLabel); any other SVG mark is named by
+      // its tip.
+      if (el instanceof SVGElement && seriesLabel.has(el)) out.shared.push({ where, name, text, series: seriesLabel.get(el) });
+      else if (el instanceof SVGElement) {
+        if (name !== text) out.badSvg.push(`${where} named ${JSON.stringify(name)}, want its tip ${JSON.stringify(text.slice(0, 60))}`);
       } else if (isFaultCell) {
         const ids = (el.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
         const described = ids.map(id => document.getElementById(id));
@@ -112,11 +119,15 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     }
     return out;
   });
+  for (const m of audit.shared) {
+    const carried = markLabel(m.name ?? "", m.text, audit.labels);
+    if (carried !== m.series) audit.badSvg.push(`${m.where} named ${JSON.stringify(m.name)}, carrying ${carried === undefined ? "no single label" : JSON.stringify(carried)} beside its tip; want ${JSON.stringify(m.series)}'s`);
+  }
   assert.ok(audit.targets > 1000 && audit.faultCells > 1000 && audit.notFocusable.length === 0 &&
     audit.badSvg.length === 0 && audit.badHtml.length === 0 && audit.badFault.length === 0 && audit.copies.length === 0,
     `[${engine}] Replicata: load the default view and inspect every [data-tip] tooltip target.
 Expectata: every target but the incident table's fault cells is a Tab stop, and none holds its tip as text of its own;
-an SVG mark's aria-label is its tip, and on the MPI, distribution and combined VMT charts its company's label, " · " and its tip;
+an SVG mark's aria-label is its tip, and on the MPI, distribution and combined VMT charts its company's label (its glyph's colour's) and its tip, in any words;
 an HTML target is role="img" named by what it shows (its aria-hidden decoration left out) and its tip;
 a fault cell's aria-describedby is its row's "${"Fault fraction:"}" line, which holds its tip.
 Resultata: ${audit.targets} targets (${audit.faultCells} fault cells); not focusable ${audit.notFocusable.length}
@@ -295,7 +306,9 @@ Resultata: on focus ${JSON.stringify(t)}; after Escape ${JSON.stringify(afterEsc
     // stopped this qual on a TypeError naming nothing). assert is
     // crashla.js's, which throws its message with the details appended.
     const targets = [...document.querySelectorAll("#chart-fleet-timeseries circle[data-tip]")];
-    const c = targets.find(e => e.getAttribute("data-tip").startsWith("Tesla · 2025-06\n"));
+    // Its tooltip's first line names Tesla and the month, in any words (until
+    // 2026-11-07 it had to open "Tesla · 2025-06").
+    const c = targets.find(e => ["Tesla", "2025-06"].every(part => e.getAttribute("data-tip").split("\n")[0].includes(part)));
     assert(c !== undefined, "Replicata: open the growth chart on Miles (g=miles) and find Tesla's 2025-06 point among its tooltip targets.\nExpectata: one.\nResultata: none; the targets' tooltips open", targets.map(e => e.getAttribute("data-tip").split("\n")[0]));
     c.scrollIntoView({ block: "center" });
     const r = c.getBoundingClientRect();

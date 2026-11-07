@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { holdsPercent, MARKUP_TEXT } from "./page-text.mjs";
 import { parseCsv } from "./csv-parse.mjs";
 
 // renderFleetForecastChart and the mixture helpers touch no DOM, so a thin stub
@@ -107,7 +108,11 @@ const endTag = (t, i) => {
   const name = scan(TAG_NAME, t, i + 2)[0];
   return {name: lower(name), written: name, end: t.indexOf(">", i) + 1};
 };
-const LABEL = /[^<]*/y;
+// An element's text, to the next tag (MARKUP_TEXT: a "<" that opens no tag is
+// text; until the second final review of the sixth fix run, 2026-11-07, the
+// text ran to the first "<", so an axis title holding one, "Fleet size (<1M
+// cars)", read as "Fleet size (", and its check went red).
+const LABEL = new RegExp(MARKUP_TEXT, "y");
 const parse = (text, where) => {
   // The text with each comment blanked out, every other character where it was.
   const t = text.replace(/<!--[\s\S]*?-->/g, c => " ".repeat(c.length));
@@ -482,7 +487,12 @@ Resultata: colour not found.`,
 
 // Both Tesla scopes are labeled with their scenario probability, computed here
 // from FLEET_FORECAST's weights; the names come from the app (FLEET_LANE_META)
-// and are not pinned (no wording pins, 2026-10-28). The conditional HW4 curve
+// and are not pinned (no wording pins, 2026-10-28). A label is read as one of
+// the chart's texts (its legend chips' among them) holding the scope's name
+// and its share as a whole percent, in any words and form (until the main
+// agent's pass after the sixth fix run's third final review, 2026-11-07, the
+// chart had to hold "<name> (~<n>%)", so a legend written "Tesla robotaxi,
+// ~93%" turned this qual red). The conditional HW4 curve
 // is dashed: here only a dashed stroke is looked for; since later on
 // 2026-11-04 (the sixth fix run's first review) section 4e reads, on every
 // metric, that each lane's stroke is dashed exactly when its lane is
@@ -491,18 +501,21 @@ Resultata: colour not found.`,
 {
   const scopes = JSON.parse(vm.runInContext(`JSON.stringify({meta: FLEET_LANE_META,
     weights: __entry(FLEET_FORECAST, "FLEET_FORECAST", "Tesla").components.map(c => ({scope: c.scope, weight: c.weight}))})`, ctx));
-  const want = ["robotaxi", "hw4"].map(k => `${scopes.meta[k].label} (~${Math.round(100 * scopes.weights.filter(w => w.scope === k).reduce((t, w) => t + w.weight, 0))}%)`);
-  assert.ok(want.every(w => html.includes(w)),
-    `Replicata: read the fleet chart legend/markers.
-Expectata: Tesla's two scopes labeled with their scenario shares from the weights: ${JSON.stringify(want)}.
-Resultata: not found.`,
+  const want = ["robotaxi", "hw4"].map(k => [scopes.meta[k].label, Math.round(100 * scopes.weights.filter(w => w.scope === k).reduce((t, w) => t + w.weight, 0))]);
+  const decodeText = t => t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+  const texts = [...html.matchAll(new RegExp(`>(${MARKUP_TEXT})(?=<\\/?[a-zA-Z]|$)`, "g"))].map(m => decodeText(m[1]).trim()).filter(t => t !== "");
+  const missing = want.filter(([label, pct]) => !texts.some(t => t.includes(label) && holdsPercent(t, pct)));
+  assert.ok(missing.length === 0,
+    `Replicata: read the fleet chart's texts, its legend's among them.
+Expectata: Tesla's two scopes labeled with their scenario shares from the weights, each a text holding the scope's name and its share as a whole percent: ${JSON.stringify(want.map(([label, pct]) => `${label}, ${pct}%`))}.
+Resultata: none for ${JSON.stringify(missing.map(([label, pct]) => `${label}, ${pct}%`))}; the texts holding a Tesla scope's name are ${JSON.stringify(texts.filter(t => want.some(([label]) => t.includes(label))))}.`,
   );
 }
 assert.ok(
   html.includes("stroke-dasharray"),
   `Replicata: inspect the fleet chart strokes.
-Expectata: a dashed stroke (stroke-dasharray) among them, the conditional HW4 curve's (section 4e reads which).
-Resultata: no stroke-dasharray found.`,
+Expectata: a dashed stroke (stroke-dasharray) among them, the conditional HW4 curve's (section 4e reads which), in the chart's markup (this qual reads no stylesheet: a dash style.css gives a class is not read).
+Resultata: no stroke-dasharray found in the chart's markup.`,
 );
 
 // One median marker per curve (4), each with one tooltip target: since
@@ -1158,7 +1171,7 @@ Resultata: ${n} grid points from ${grid[0]} to ${grid[n - 1]}; uneven steps afte
         problems.push(`${l.label}: stroke ${i + 1}, drawn after a median marker, given no stroke-width in the chart's markup (this qual reads none from a stylesheet; whether it covers the marker is read from it)`);
       if (outlines(fill.paint)) problems.push(`${l.label}: fill ${i + 1} outlined (its stroke ${JSON.stringify({stroke: fill.paint.stroke, "stroke-width": fill.paint["stroke-width"], "stroke-opacity": fill.paint["stroke-opacity"]})})`);
       if (!(marker.r > 0)) problems.push(`${l.label}: marker ${i + 1} of radius ${marker.r}`);
-      if (dashes(stroke.paint) !== l.dashed) problems.push(`${l.label}: stroke ${i + 1} drawn ${DRAWN[dashes(stroke.paint)]}, the lane ${DRAWN[l.dashed]}`);
+      if (dashes(stroke.paint) !== l.dashed) problems.push(`${l.label}: stroke ${i + 1} drawn ${DRAWN[dashes(stroke.paint)]} by the chart's markup (a dash a stylesheet gives is not read), the lane ${DRAWN[l.dashed]}`);
       if (l.dashed === l.mainline) problems.push(`${l.label}: a ${SCOPE[l.mainline]} lane, ${DRAWN[l.dashed]}`);
       const offPoints = pts.map((p, j) => j).filter(j => !(near(pts[j][0], mapX(grid[j])) && near(pts[j][1], mapY(own[i][j]))));
       if (offPoints.length > 0) {

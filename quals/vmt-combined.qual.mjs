@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { markLabel, MARKUP_TEXT } from "./page-text.mjs";
 
 // The combined VMT chart (2026-10-24; human: "can we add a VMT graph that has
 // all the selected helmers combined on a single graph?", then "no log scale
@@ -10,8 +11,10 @@ import { appScript, dataScript } from "./load-app.mjs";
 // (ADS_SERIES: each company, and Tesla's no-monitor line) on one linear axis
 // from 0. It follows the date window and the Monthly/Cumulative toggle. Each
 // line carries exactly the marks and tips its own chart does; as on the MPI
-// and distribution charts, a mark is named by its line's label, " · " and its
-// tip, and the figure names no one line. A checked line with no months in
+// and distribution charts, a mark is named by its line's label and its tip
+// (in any words: since 2026-11-07 through markLabel, until then pinned to
+// seriesMarkName's "<label> · <tip>", separator and all), and the figure
+// names no one line. A checked line with no months in
 // the window keeps a grayed legend chip; with no line checked the chart still
 // draws its empty axes.
 
@@ -83,7 +86,7 @@ const targets = markup => [...markup.matchAll(/<circle [^>]*data-tip="([^"]*)" t
   .map(m => ({ tip: m[1], name: m[2] }));
 const figureName = markup => (/<svg class="month-svg"[^>]*aria-label="([^"]*)"/.exec(markup) || [])[1];
 // The chart's y-axis title, the rotated label drawSingleMonthAxes writes.
-const axisTitle = markup => (/<text class="month-label"[^>]*transform="rotate\(-90[^"]*"[^>]*>([^<]*)<\/text>/.exec(markup) || [])[1];
+const axisTitle = markup => (new RegExp(`<text class="month-label"[^>]*transform="rotate\\(-90[^"]*"[^>]*>(${MARKUP_TEXT})<\\/text>`).exec(markup) || [])[1];
 const escAttr = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const sorted = xs => [...xs].sort();
 
@@ -127,21 +130,24 @@ for (const [what, checked, cumulative, window] of STATES) {
   titles[cumulative].add(title);
   if (!title || figureName(combined) !== escAttr(title)) problems.push(`${what}: figure named ${JSON.stringify(figureName(combined))}, its axis title ${JSON.stringify(title)}; want the figure named by its axis title`);
   for (const h of lines) {
-    if (axisTitle(own[h]) !== title || figureName(own[h]) !== escAttr(`${label(h)} ${title}`))
-      problems.push(`${what}: ${h}'s own chart has axis title ${JSON.stringify(axisTitle(own[h]))} and figure name ${JSON.stringify(figureName(own[h]))}; want the combined chart's title ${JSON.stringify(title)} and the name "<its label> <title>"`);
+    // A company's own chart is named by its label and the axis title, in any
+    // words (since 2026-11-07; until then pinned to "<its label> <title>").
+    if (axisTitle(own[h]) !== title || markLabel(figureName(own[h]) ?? "", escAttr(title), lines.map(k => escAttr(label(k)))) !== escAttr(label(h)))
+      problems.push(`${what}: ${h}'s own chart has axis title ${JSON.stringify(axisTitle(own[h]))} and figure name ${JSON.stringify(figureName(own[h]))}; want the combined chart's title ${JSON.stringify(title)} and a name carrying its label and that title`);
   }
   // Linear from 0: the lowest y tick label is "0".
   const yTicks = [...combined.matchAll(/<text class="month-tick" x="[^"]*" y="([^"]*)" text-anchor="end">([^<]*)<\/text>/g)]
     .map(m => ({ y: Number(m[1]), label: m[2] })).sort((a, b) => b.y - a.y);
   if (yTicks.length === 0 || yTicks[0].label !== "0") problems.push(`${what}: lowest y tick ${JSON.stringify(yTicks[0])}, want "0"`);
 
-  // Each mark named "<its line's label> · <its tip>", and each line's tips
-  // exactly its own chart's.
+  // Each mark named by its line's label and its tip (markLabel), and each
+  // line's tips exactly its own chart's.
   const marks = targets(combined);
   const byLine = Object.fromEntries(lines.map(h => [h, []]));
   for (const t of marks) {
-    const owner = lines.find(h => t.name === `${escAttr(label(h))} · ${t.tip}`);
-    if (owner === undefined) problems.push(`${what}: a mark named ${JSON.stringify(t.name.slice(0, 60))} for tip ${JSON.stringify(t.tip.slice(0, 40))}, not "<checked line's label> · <tip>"`);
+    const carried = markLabel(t.name, t.tip, lines.map(h => escAttr(label(h))));
+    const owner = lines.find(h => escAttr(label(h)) === carried);
+    if (owner === undefined) problems.push(`${what}: a mark named ${JSON.stringify(t.name.slice(0, 60))} for tip ${JSON.stringify(t.tip.slice(0, 40))}, carrying no checked line's label beside its tip (the labels ${JSON.stringify(lines.map(label))})`);
     else byLine[owner].push(t.tip);
   }
   for (const h of lines) {
@@ -155,7 +161,7 @@ if (titles.false.size !== 1 || titles.true.size !== 1 || [...titles.false][0] ==
   problems.push(`axis titles: monthly view ${JSON.stringify([...titles.false])}, cumulative view ${JSON.stringify([...titles.true])}; want one title per view, the two different`);
 assert.deepEqual(problems, [],
   `Replicata: for each state (${STATES.map(s => s[0]).join("; ")}), set the checkboxes, the Monthly/Cumulative toggle and the window, run renderWindowedViews() and read #chart-vmt-combined, beside each line's own chart (renderHelmerMonthlyChart).
-Expectata: a legend chip per checked line in ADS_SERIES order (grayed for a line with no months in the window), one VMT line per checked line in its colour, axes even with no line checked, the figure named by its axis title (each line's own chart "<line label> <axis title>", one title per Monthly/Cumulative view, the two different), a linear axis from 0, and each line's marks exactly its own chart's, each named "<line label> · <tip>".
+Expectata: a legend chip per checked line in ADS_SERIES order (grayed for a line with no months in the window), one VMT line per checked line in its colour, axes even with no line checked, the figure named by its axis title (each line's own chart by its line's label and the axis title, in any words, one title per Monthly/Cumulative view, the two different), a linear axis from 0, and each line's marks exactly its own chart's, each named by its line's label and its tip, in any words.
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 12).join("\n")}`);
 

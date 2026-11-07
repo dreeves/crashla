@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { markLabel, textOutside } from "./page-text.mjs";
 
 // escHtml() round-trips through textContent -> innerHTML, so createElement must
 // escape there or every escAttr()'d data-tip renders empty (tooltip checks moot).
@@ -86,18 +87,23 @@ const FORECAST_DATE = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
 // Forecasts print at three significant figures in both growth charts since
 // 2026-10-03 (audit #57); growth-charts.qual pins the two charts' texts equal.
 const fmtWhole = vm.runInContext("fmtWhole", ctx);
-// The endpoint's tooltip is found by its lane's label and the forecast date
-// and must give the median; its words are the page's and not checked (no
+// The endpoint's tooltip is found by the forecast date and its lane's label
+// beside it, anywhere in it and in any words (markLabel over the whole
+// tooltip; until 2026-11-07 it had to open "<label> · <date>", and later that
+// day, until the main agent's pass after the sixth fix run's third final
+// review, both had to be on its first line), and must give the median outside
+// the label and the date; its words are the page's and not checked (no
 // wording pins, 2026-10-28).
 const decodeTip = t => t.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const tips = [...html.matchAll(/data-tip="([^"]*)"/g)].map(m => decodeTip(m[1]));
+const laneLabels = endpoints.map(e => e.label);
 for (const e of endpoints) {
   const median = fmtWhole(Number(e.median.toPrecision(3)));
-  const tip = tips.filter(t => t.startsWith(`${e.label} · ${FORECAST_DATE}`));
-  assert.ok(tip.length === 1 && tip[0].split("\n").slice(1).join("\n").includes(median),
-    `Replicata: look for the ${e.key} forecast-endpoint tooltip in the fleet trajectory chart.
-Expectata: one, giving the distribution chart's median ${median} (incl. the HW4 fork).
-Resultata: ${JSON.stringify(tip)}.`);
+  const tip = tips.filter(t => markLabel(t, FORECAST_DATE, laneLabels) === e.label);
+  assert.ok(tip.length === 1 && textOutside(tip[0], e.label, FORECAST_DATE).includes(median),
+    `Replicata: look for the ${e.key} forecast-endpoint tooltip in the fleet trajectory chart: the one that names "${e.label}" beside ${FORECAST_DATE}.
+Expectata: one, giving the distribution chart's median ${median} (incl. the HW4 fork) outside the label and the date.
+Resultata: ${JSON.stringify(tip)}, of the chart's ${tips.length} tooltips, those naming ${FORECAST_DATE} being ${JSON.stringify(tips.filter(t => t.includes(FORECAST_DATE)))}.`);
 }
 
 // --- 3b. The toggle offers all three metrics; each renders both charts ---

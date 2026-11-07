@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { MARKUP_TEXT } from "./page-text.mjs";
 import { rationaleText } from "./rationale-links.mjs";
 
 class ElementStub {
@@ -155,8 +156,10 @@ const helmerLabelOf = helmer => appValue(`helmerLabel(${JSON.stringify(helmer)})
 const escText = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const escAttr = s => escText(s).replace(/"/g, "&quot;");
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-// A chart's y-axis title (the rotated month-label text), present and not empty.
-const hasAxisTitle = svg => /<text class="month-label"[^>]*>[^<]+<\/text>/.test(svg);
+// A chart's y-axis title (the rotated month-label text), present and not
+// empty, its text read as MARKUP_TEXT (since 2026-11-07: a "<" in it that
+// opens no tag is text, as the browser shows it).
+const hasAxisTitle = svg => new RegExp(`<text class="month-label"[^>]*>(?!<\\/text>)${MARKUP_TEXT}<\\/text>`).test(svg);
 
 assert(
   plain.months.includes("2025-06") && plain.months.includes("2026-02"),

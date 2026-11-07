@@ -102,10 +102,13 @@ try {
           // The filter button is read, never assumed (until 2026-11-06 a
           // missing one stopped this qual on a TypeError naming nothing).
           // assert is crashla.js's, which throws its message with the
-          // details appended.
+          // details appended. It is found by the key crashla.js gives it
+          // (data-focus-key, which keeps focus across re-renders), not by
+          // its words (until 2026-11-07 its text had to open "<label> (", so
+          // the count written "Tesla: 31" turned this qual red).
           const buttons = [...document.querySelectorAll("#filters button")];
-          const button = buttons.find(b => b.textContent.startsWith(label + " ("));
-          assert(button !== undefined, `Replicata: load the default view and find the incident browser's "${label}" filter button.\nExpectata: one, its text "${label} (<count>)".\nResultata: none; the filter buttons read`, buttons.map(b => b.textContent));
+          const button = buttons.find(b => b.getAttribute("data-focus-key") === "filter-" + label);
+          assert(button !== undefined, `Replicata: load the default view and find the incident browser's "${label}" filter button.\nExpectata: one, its data-focus-key "filter-${label}".\nResultata: none; the filter buttons' keys and texts are`, buttons.map(b => [b.getAttribute("data-focus-key"), b.textContent]));
           button.click();
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           return { rows: document.querySelectorAll("#incidents-body tr").length,

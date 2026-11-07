@@ -6,6 +6,7 @@ import { appScript, dataScript } from "./load-app.mjs";
 import { parseCsv } from "./csv-parse.mjs";
 import { rationaleMarkup } from "./rationale-links.mjs";
 import { ENGINES, serveRepo, openPage } from "./browser.mjs";
+import { markLabel } from "./page-text.mjs";
 
 // Ghost months (2026-10-26; human: "could we get ghosty estimates of October
 // (in general, whatever the current month is) VMT on the VMT graphs?
@@ -225,17 +226,22 @@ for (const cumulative of [false, true]) {
   for (const h of app.lines) {
     const rows = app.ghost.filter(g => g.helmer === h).sort((a, b) => (a.month < b.month ? -1 : 1));
     for (const [where, markup] of [[`${h}'s own chart`, at.own[h]], ["the combined chart", at.combined]]) {
-      const name = tip => where === "the combined chart" ? `${esc(app.labels[h])} · ${tip}` : tip;
+      // Whether a target's accessible name is the one this chart gives it: on
+      // the combined chart its line's label beside its tip, in any words
+      // (markLabel; until 2026-11-07 pinned to "<label> · <tip>", separator
+      // and all), on a company's own chart its tip.
+      const named = (name, tip) => where === "the combined chart"
+        ? markLabel(name, tip, app.lines.map(k => esc(app.labels[k]))) === esc(app.labels[h]) : name === tip;
       // Each target: its tip (unescaped) and whether its accessible name is
       // the one this chart gives it.
       const targets = [...markup.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
-        .map(m => ({ tip: unesc(m[1]), named: m[2] === name(m[1]) }));
+        .map(m => ({ tip: unesc(m[1]), named: named(m[2], m[1]) }));
       for (const g of rows) {
         const [best, lo, hi] = cumulative ? [g.cume, g.kmin, g.kmax] : [g.best, g.lo, g.hi];
         const want = [
-          [`its low end (${fmt(lo)}, ${app.edge.lo})`, t => tipIs(t, g.month, [[fmt(lo)]], app.edge.lo)],
-          [`its high end (${fmt(hi)}, ${app.edge.hi})`, t => tipIs(t, g.month, [[fmt(hi)]], app.edge.hi)],
-          [`its dot (${fmt(best)}, range ${fmt(lo)} – ${fmt(hi)}, the ghost note)`, t => tipIs(t, g.month, [[fmt(best)], [fmt(lo), fmt(hi)]], app.note)],
+          [`low end (${fmt(lo)}, ${app.edge.lo})`, t => tipIs(t, g.month, [[fmt(lo)]], app.edge.lo)],
+          [`high end (${fmt(hi)}, ${app.edge.hi})`, t => tipIs(t, g.month, [[fmt(hi)]], app.edge.hi)],
+          [`dot (${fmt(best)}, range ${fmt(lo)} – ${fmt(hi)}, the ghost note)`, t => tipIs(t, g.month, [[fmt(best)], [fmt(lo), fmt(hi)]], app.note)],
         ];
         for (const [what, is] of want) if (!targets.some(t => t.named && is(t.tip))) problems.push(`${view}, ${where}: no target for ${h} ${g.month}'s ${what}`);
         if (yTop(markup) < hi) problems.push(`${view}, ${where}: y axis tops out at ${yTop(markup)}, under ${h} ${g.month}'s high end ${hi}`);
