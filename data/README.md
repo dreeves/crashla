@@ -417,17 +417,23 @@ Editing rules:
   it follow. Its heading reader (`quals/rationale-links.mjs`,
   `headingAnchors`) reads this file's blocks as kramdown, which GitHub Pages
   runs, reads them (a heading in a list item, a quote or a definition, at its
-  content column or on a lazy line, is a heading; a `#` line that code, a
-  comment, an HTML element, a math block or a table takes is none), and
-  stops, naming the line, only on a form whose effect on a heading it does
-  not compute: Liquid (a double brace, or a brace and a percent sign, which
-  Jekyll runs on this whole file, code blocks included); a kramdown
+  content column or on a lazy line, is a heading; one in an HTML element read
+  as markdown, `markdown="1"`, takes the id kramdown's HTML converter gives
+  it when it writes the page; a `#` line that code, a comment, an HTML
+  element read raw, a math block or a table takes is none), and stops,
+  naming the line, only on a form whose effect on this file's headings it
+  does not compute: Liquid (a double brace, or a brace and a percent sign,
+  which Jekyll runs on this whole file, code blocks included); a kramdown
   extension, attribute list or attribute definition at a block's start
-  (`{:`); a table holding an inline HTML element with content; or a mark in
-  a heading that changes the text it renders (an entity, inline HTML, an
-  image, math, a typographic `<<` or `>>`, an explicit id, `{:`, a link of
-  another form, a reference link or footnote whose label this file defines,
-  or an underscore with one after it that can make emphasis). It also
+  (`{:`); or a table holding an inline HTML element with content. A heading
+  holding a mark that changes the text it renders (an entity, inline HTML,
+  an image, math, a typographic `<<` or `>>`, an explicit id, `{:`, a link
+  of another form, a reference link or footnote whose label this file
+  defines, or an underscore with one after it that can make emphasis), or
+  one in a footnote, it leaves unread: a link to it turns the qual red,
+  naming it, but the heading by itself turns nothing red, nor does a heading
+  whose id is empty (every character of it one an id drops), which the page
+  writes without an id. It also
   checks each figure stated in a form it reads, where that wording appears;
   it requires no wording (the human's rule of 2026-11-03)
 

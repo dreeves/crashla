@@ -51,17 +51,28 @@ export function rationaleMarkup(rationale) {
 }
 
 // --- The ids GitHub Pages gives a markdown file's headings -------------------
-// GitHub Pages builds the site with Jekyll (github-pages 233), which drops a
+// GitHub Pages builds the site with Jekyll (github-pages 232, by
+// pages.github.com/versions.json, read 2026-11-07; until then this said 233,
+// which pins the same kramdown versions), which drops a
 // leading byte-order mark and a leading YAML front matter block
 // (YAML_FRONT_MATTER_REGEXP), runs Liquid on a file that holds "{{" or "{%",
 // and gives the rest to kramdown 2.4.0 with kramdown-parser-gfm 1.1.0 (input
 // GFM, gfm_quirks paragraph_end). That parser gives each heading outside an
-// HTML element and a footnote the id generate_gfm_header_id makes from the
-// heading's text as it renders (update_raw_text): lowercased; every
+// HTML element and a footnote, when it parses the file, the id
+// generate_gfm_header_id makes from the heading's text as it renders
+// (update_raw_text): lowercased; every
 // character dropped but a letter, a mark, a decimal digit, a connector (the
 // underscore among them), a hyphen, a space or a tab (Ruby's \p{Word}, the
 // hyphen and the blanks); each space or tab a hyphen; and an id already given
-// takes -1, -2 and so on, counted per id in document order.
+// takes -1, -2 and so on, counted per id in document order (an empty id is
+// one the page does not write). A heading inside an HTML element read as
+// markdown gets its id when kramdown's HTML converter writes the page
+// (convert_header, generate_id): from the same text, its characters dropped
+// up to its first ASCII letter, then every character but an ASCII letter or
+// digit, a space or a hyphen; each space a hyphen; lowercased; "section" if
+// nothing is left; numbered by the converter's own counter, in document
+// order. A footnote's headings get the converter's ids where the page writes
+// the footnote, after the rest, and only if it is referenced.
 //
 // headingAnchors reads the file's blocks as kramdown's block parsers do
 // (parse_blocks), ported here with their regexes: blank lines, indented and
@@ -73,20 +84,27 @@ export function rationaleMarkup(rationale) {
 // kramdown's order at each block's start, and a list item's, quote's or
 // definition's content read as its own blocks at its content column. So a
 // heading in a list item, a quote or a definition is read as the site reads
-// it, and a # line that code, a comment, an HTML element or a lazy line takes
-// is no heading, as on the site. It stops (throws, naming each line and why)
-// on the forms whose effect on a heading it does not compute: Liquid ({{ or
-// {%), which Jekyll runs on the file before kramdown reads it; a kramdown
-// extension, attribute list or attribute definition at a block's start
-// ({:), which can set a heading's id or drop content; a table holding an
-// inline HTML element with content, which kramdown's pipe check reads with
-// every span parser; and, in a heading's text, the marks HEADING_STOPS lists.
-// Its ids and stops are checked on vmt-rationale-text.qual's synthetic files,
-// each case's ids the ones GitHub Pages' own stack gives (run on them
-// 2026-11-05). Until 2026-11-05 a line-by-line reader stood here, which
-// stopped on many correct forms (a # line in code in a list item or a quote,
-// a heading after one) and read some others wrong (a list item's lazy line, a
-// comment in a list item); the third review of that day found both.
+// it, a # line that code, a comment, an HTML element read raw or a lazy line
+// takes is no heading, as on the site, and one in an element read as
+// markdown takes the converter's id. It stops (throws, naming each line and
+// why) on the forms whose effect on the file's headings it does not
+// compute: Liquid ({{ or {%), which Jekyll runs on the file before kramdown
+// reads it; a kramdown extension, attribute list or attribute definition at
+// a block's start ({:), which can set a heading's id or drop content; and a
+// table holding an inline HTML element with content, which kramdown's pipe
+// check reads with every span parser. A heading whose text holds one of the
+// marks HEADING_STOPS lists, or that sits in a footnote, it leaves unread,
+// its id not known (headingAnchors, below). Its ids, stops and unread
+// headings are checked on vmt-rationale-text.qual's synthetic files, each
+// case's ids the ones in the page GitHub Pages' own stack serves
+// (Document#to_html; run on them 2026-11-05 and 2026-11-07). The sixth fix
+// run's first reader (2026-11-05, before it reached git) read the file line
+// by line, stopped on many correct forms (a # line in code in a list item or
+// a quote, a heading after one) and read some others wrong (a list item's
+// lazy line, a comment in a list item); the third review of that day found
+// both. Until 2026-11-07 this reader gave a heading inside an element read
+// as markdown no id (the ids set when the file is parsed, which the served
+// page adds to) and stopped on the headings it now leaves unread.
 //
 // Ruby's regexes as JS sources. Ruby's ^ is a line start, and at a
 // StringScanner's position (fixed_anchor false), which Scanner.check reads
@@ -383,9 +401,9 @@ const FOUND = Symbol("found"); // the block HTML parser found the end tag of the
 
 // kramdown's block parsers in its order (GFM's ATX heading and fenced code
 // block parsers in place of kramdown's), each a start regex and a parser
-// given the scanner, the tree, the file's state and whether a heading here
-// gets an id; a parser gives true (read), false (not, so the next is tried)
-// or FOUND.
+// given the scanner, the tree, the file's state and which renderer gives a
+// heading here its id (ids); a parser gives true (read), false (not, so the
+// next is tried) or FOUND.
 const BLOCK_PARSERS = [
   [RE.blank, (sc, tree, file, ids, m) => {
     sc.pos += m[0].length;
@@ -428,7 +446,7 @@ const BLOCK_PARSERS = [
   }],
   [RE.list, (sc, tree, file, ids) => parseList(sc, tree, file, ids)],
   [RE.dl, (sc, tree, file, ids) => parseDefinitionList(sc, tree, file, ids)],
-  [RE.html, (sc, tree, file) => parseBlockHtml(sc, tree, file)],
+  [RE.html, (sc, tree, file, ids) => parseBlockHtml(sc, tree, file, ids)],
   [RE.setext, (sc, tree, file, ids, m) => {
     if (!afterBlockBoundary(tree)) return false;
     const raw = rstrip(m.groups.contents);
@@ -455,7 +473,7 @@ const BLOCK_PARSERS = [
     sc.pos += m[0].length;
     file.labels.add(`^${m[1]}`);
     parseBlocks(new Scanner(sc.lines(from, sc.pos).map(l => ({ ...l, text: l.text.replace(/^(?:\t| {4})/, "") }))),
-      { type: "footnote_def", children: [] }, file, false);
+      { type: "footnote_def", children: [] }, file, "footnote");
     add(tree, "eob", "footnote_def");
     return true;
   }],
@@ -493,7 +511,8 @@ const BLOCK_PARSERS = [
 ];
 
 // A heading (add_header): its line, its text as written (raw, which an
-// explicit id ends) and as kramdown reads it, and whether it gets an id.
+// explicit id ends) and as kramdown reads it, and which renderer gives it its
+// id (ids, INSIDE_ELEMENT's modes).
 function header(sc, tree, file, ids, m, raw, text) {
   file.headers.push({ line: sc.lineAt(sc.pos), raw, text, ids });
   sc.pos += m[0].length;
@@ -643,7 +662,7 @@ function parseDefinitionList(sc, tree, file, ids) {
 
 // parse_block_html: a comment, an element's start tag (not a span-level
 // element's), or the end tag of the element whose content is being read.
-function parseBlockHtml(sc, tree, file) {
+function parseBlockHtml(sc, tree, file, ids) {
   if (sc.scan(RE.htmlComment) !== null) {
     add(tree, "xml_comment");
     sc.scan(RE.trailing);
@@ -652,7 +671,7 @@ function parseBlockHtml(sc, tree, file) {
   let m = sc.check(RE.htmlTag);
   if (m !== null && !HTML_SPAN.has(m.groups.n.toLowerCase())) {
     sc.pos += m[0].length;
-    htmlStartTag(sc, tree, file, m);
+    htmlStartTag(sc, tree, file, m, ids);
     return true;
   }
   m = sc.check(RE.htmlClose);
@@ -669,9 +688,11 @@ function parseBlockHtml(sc, tree, file) {
 // tag, nested elements' own end tags read as theirs: parse_raw_html), span
 // (to its end tag) or block (as blocks, to its end tag at a block's start),
 // raw unless a markdown attribute says otherwise. No heading inside an
-// element gets an id (kramdown-parser-gfm's update_elements does not look
-// inside one).
-function htmlStartTag(sc, tree, file, m) {
+// element gets an id when the file is parsed (kramdown-parser-gfm's
+// update_elements does not look inside one): one inside an element read as
+// markdown gets its id when the page is written, from kramdown's HTML
+// converter (INSIDE_ELEMENT).
+function htmlStartTag(sc, tree, file, m, ids) {
   const known = HTML_ELEMENT.has(m.groups.n.toLowerCase());
   const name = known ? m.groups.n.toLowerCase() : m.groups.n;
   const attrs = new Map([...m.groups.attrs.matchAll(HTML_ATTRIBUTE)].map(a => [known ? a[1].toLowerCase() : a[1], a[2] ?? a[4] ?? ""]));
@@ -683,9 +704,9 @@ function htmlStartTag(sc, tree, file, m) {
   el.model = new Map([["0", "raw"], ["1", contentModel(name)], ["span", "span"], ["block", "block"]]).get(attrs.get("markdown")) ?? "raw"; // HTML_MARKDOWN_ATTR_MAP
   if (el.model === "block") sc.scan(RE.trailing);
   if (closed || raw) return;
-  if (el.model === "block") parseBlocks(sc, el, file, false);
+  if (el.model === "block") parseBlocks(sc, el, file, INSIDE_ELEMENT[ids]);
   else if (el.model === "span") pastEndTag(sc, name);
-  else parseRawHtml(sc, el, file);
+  else parseRawHtml(sc, el, file, ids);
   if (!(tree.type === "html_element" && tree.model === "raw")) sc.scan(RE.trailing);
 }
 
@@ -704,7 +725,7 @@ function pastEndTag(sc, name) {
 // parse_raw_html: an element's raw content, to its end tag (one of its name,
 // in the case written unless kramdown knows the element), or the source's
 // end; comments, processing instructions and nested elements read as such.
-function parseRawHtml(sc, el, file) {
+function parseRawHtml(sc, el, file, ids) {
   while (!sc.eos) {
     const next = sc.search(RE.rawStart);
     if (next === -1) {
@@ -716,7 +737,7 @@ function parseRawHtml(sc, el, file) {
     if (sc.scan(RE.htmlComment) !== null || sc.scan(RE.rawInstruction) !== null) continue;
     if ((m = sc.check(RE.rawTag)) !== null) {
       sc.pos += m[0].length;
-      htmlStartTag(sc, el, file, m);
+      htmlStartTag(sc, el, file, m, ids);
       continue;
     }
     if ((m = sc.scan(RE.rawClose)) !== null) {
@@ -866,6 +887,46 @@ function pipeOnEveryLine(spans) {
 // Jekyll's YAML_FRONT_MATTER_REGEXP.
 const FRONT_MATTER = new RegExp(`^(---${S}*\\n[\\s\\S]*?\\n?)(?:(?<=\\n)|(?<![\\s\\S]))((?:---|\\.\\.\\.)${S}*(?=\\n|(?![\\s\\S]))\\n?)`, "u");
 
+// Which renderer gives a heading its id, by where the heading sits (the
+// mode parseBlocks carries): "gfm" at the file's top level and in a list
+// item, a quote or a definition there, when the file is parsed
+// (kramdown-parser-gfm's generate_gfm_header_id, its counter per id, in
+// document order); "converter" inside an HTML element read as markdown, when
+// the page is written (kramdown's HTML converter, convert_header:
+// generate_id, its own counter, in document order); "footnote" in a
+// footnote's content, which the page writes after the rest and only where
+// the footnote is referenced, the converter's id there, in that order (this
+// reader leaves such a heading unread). An element inside a footnote is the
+// footnote's; until 2026-11-07 a heading inside an element read as markdown
+// was read as getting no id, which the page gives it.
+const INSIDE_ELEMENT = { gfm: "converter", converter: "converter", footnote: "footnote" };
+// The id kramdown's HTML converter makes from a heading's text as it renders
+// (basic_generate_id, then generate_id's "section" for an empty one), before
+// numbering: its characters dropped up to its first ASCII letter, then every
+// character but an ASCII letter or digit, a space or a hyphen; each space a
+// hyphen; lowercased.
+const converterId = text => text.replace(/^[^a-zA-Z]+/, "").replace(/[^a-zA-Z0-9 -]/g, "").replace(/ /g, "-").toLowerCase() || "section";
+const BASE_ID = { gfm: headingId, converter: converterId };
+// Why a heading is left unread by where it sits, beside the marks
+// HEADING_STOPS lists in its text.
+const UNREAD_WHERE = { gfm: [], converter: [],
+  footnote: ["a heading in a footnote, which the page writes after the rest, only where the footnote is referenced"] };
+
+// Each heading of a markdown file, in document order: its line, its text as
+// kramdown reads it (heading), and its id. A heading whose text holds a mark
+// HEADING_STOPS lists, or that sits in a footnote, is left unread (unread
+// gives why): its id is not known here (anchor null, anchors empty), and,
+// since it may share a later heading's base, it makes the number of each
+// later id its renderer gives uncertain by one (anchors, every id the
+// heading may have, the first, anchor, the one it has if no unread heading
+// before it shares its base). An empty id (a heading whose text keeps no
+// character the id keeps) is one the page does not write. The forms whose
+// effect on the file's headings this reader does not compute, Liquid, a
+// kramdown extension, attribute list or attribute definition at a block's
+// start, and a table holding an inline HTML element with content, stop it
+// (it throws, naming each line and why). Until 2026-11-07 a heading of an
+// unread form stopped it too, so a correct edit of the file adding one, which
+// no link targets, turned vmt-rationale-text.qual red.
 export function headingAnchors(markdown, file) {
   const bomless = markdown.replace(/^\uFEFF/, "");
   const front = FRONT_MATTER.exec(bomless);
@@ -880,19 +941,25 @@ export function headingAnchors(markdown, file) {
     stop: (line, what) => problems.push(`line ${line}, ${what}: ${JSON.stringify(lines[line - skipped - 1])}`),
   };
   for (const [i, l] of lines.entries()) if (/\{\{|\{%/.test(l)) state.stop(i + skipped + 1, "Liquid ({{ or {%), which Jekyll runs on the file before kramdown reads it");
-  parseBlocks(new Scanner(lines.map((l, i) => ({ text: l, line: i + skipped + 1 }))), { type: "root", children: [] }, state, true);
-  const ids = [], given = new Map();
-  for (const h of state.headers.filter(h => h.ids)) {
-    const t = { raw: h.raw, ...headingText(h.text) };
-    for (const [stops, what] of HEADING_STOPS) if (stops(t, state.labels)) state.stop(h.line, what);
-    const base = headingId(t.shown), n = (given.get(base) ?? -1) + 1;
-    given.set(base, n);
-    ids.push({ line: h.line, heading: h.text, anchor: n === 0 ? base : `${base}-${n}` });
-  }
+  parseBlocks(new Scanner(lines.map((l, i) => ({ text: l, line: i + skipped + 1 }))), { type: "root", children: [] }, state, "gfm");
   if (problems.length > 0) {
     throw new Error(`Replicata: read the headings of ${file} to compute the ids GitHub Pages gives them.
-Expectata: every heading in a form this reader reads (quals/rationale-links.mjs, headingAnchors), and none of the forms it stops on.
+Expectata: no form whose effect on the file's headings this reader does not compute (quals/rationale-links.mjs, headingAnchors): Liquid, a kramdown extension, attribute list or attribute definition at a block's start, or a table holding an inline HTML element with content.
 Resultata: ${problems.join("; ")}.`);
+  }
+  const ids = [], counts = { gfm: new Map(), converter: new Map() }, unreadBefore = { gfm: 0, converter: 0, footnote: 0 };
+  for (const h of state.headers) {
+    const t = { raw: h.raw, ...headingText(h.text) };
+    const unread = [...UNREAD_WHERE[h.ids], ...HEADING_STOPS.filter(([stops]) => stops(t, state.labels)).map(([, what]) => what)];
+    if (unread.length > 0) {
+      unreadBefore[h.ids] += 1;
+      ids.push({ line: h.line, heading: h.text, anchor: null, anchors: [], unread });
+      continue;
+    }
+    const base = BASE_ID[h.ids](t.shown), count = counts[h.ids], n = (count.get(base) ?? -1) + 1;
+    count.set(base, n);
+    const anchors = Array.from({ length: unreadBefore[h.ids] + 1 }, (_, k) => (n + k === 0 ? base : `${base}-${n + k}`));
+    ids.push({ line: h.line, heading: h.text, anchor: anchors[0], anchors, unread });
   }
   return ids;
 }

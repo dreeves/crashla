@@ -11,8 +11,11 @@
 // the hub use; plus 2015, 812013, where the US low edges average the two),
 // the release notes link the current edition (Oct 2, 2026 since
 // 2026-10-27; the hub has linked it since about Oct 5, and it keeps the
-// passage the all-crashes caveat cites), and the arXiv papers are "Kusano et
-// al." (7 and 6 authors).
+// passage the all-crashes caveat cites), and no label calls the arXiv papers
+// "Kusano & Scanlon" (they have 7 and 6 authors; until 2026-11-07 their
+// labels had to start "Kusano et al.", and the Blincoe labels hold their
+// years, words of the human's text, which no qual requires: the human's rule
+// of 2026-11-03).
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
@@ -119,10 +122,15 @@ Resultata: ${JSON.stringify(label)}.`);
 }
 
 // --- #70: the two Kusano papers have 7 and 6 authors ---
+// Each is a source with a label (until 2026-11-07 each label had to start
+// "Kusano et al.", words of the human's, who edited these labels on
+// 2026-11-02, so a correct rewording turned this red: the human's rule of
+// 2026-11-03, no qual requires the wording of text the human might edit).
+// The label naming two authors only, a factual error, stays forbidden.
 for (const url of ["https://arxiv.org/abs/2312.12675", "https://arxiv.org/abs/2505.01515"]) {
-  assert.ok(SOURCES[url] && SOURCES[url].startsWith("Kusano et al."),
-    `Replicata: read the label for ${url}.
-Expectata: "Kusano et al. ..." (the paper has more than two authors).
+  assert.ok(typeof SOURCES[url] === "string" && SOURCES[url].trim() !== "",
+    `Replicata: read BENCHMARK_SOURCES' label for ${url}.
+Expectata: a label (the paper is a source of the benchmarks).
 Resultata: ${JSON.stringify(SOURCES[url])}.`);
 }
 assert.ok(labels.every(l => !/Kusano & Scanlon/.test(l)),
@@ -169,9 +177,12 @@ assert.deepEqual(avBlincoe2015, [],
   `Replicata: look for Blincoe 2015 (NHTSA 812013) among the AV-cities sources.
 Expectata: none — the AV-cities bands use Blincoe et al. 2023 through Kusano et al. and the hub.
 Resultata: ${JSON.stringify(avBlincoe2015)}.`);
-assert.ok(/2015/.test(SOURCES[B2015] || "") && /2023/.test(SOURCES[B2023] || ""),
-  `Replicata: read the two Blincoe labels.
-Expectata: each names its edition (2015, 2023).
+// The two Blincoe editions are told apart: each a source with a label, the
+// two labels different (until 2026-11-07 each label had to hold its year,
+// "2015" and "2023", words of the human's text).
+assert.ok([B2015, B2023].every(url => typeof SOURCES[url] === "string" && SOURCES[url].trim() !== "") && SOURCES[B2015] !== SOURCES[B2023],
+  `Replicata: read BENCHMARK_SOURCES' labels for the two Blincoe editions (NHTSA 812013 and 813403).
+Expectata: a label for each, the two different, so a reader can tell the editions apart.
 Resultata: ${JSON.stringify([SOURCES[B2015], SOURCES[B2023]])}.`);
 
 // --- #69: the current release notes ---

@@ -31,6 +31,31 @@ const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 async function open(browser, url) {
   const context = await browser.newContext({ viewport: { width: 1200, height: 900 } });
   await context.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
+  // Where a pointer reaches a range input's thumb at value v, and the travel
+  // per step: the thumb is var(--thumb) across (style.css), its centre
+  // running from half a thumb in from the input's left edge to half a thumb
+  // in from its right. The size is the length the engine resolves the token
+  // to, laid out as the width of a hidden probe beside the input, so any
+  // form of the token (a px or rem length, calc(), max()) reads as the
+  // engine draws it. History: until 2026-11-07 the qual took 18 px, a copy
+  // of style.css's, so a thumb under 9 px put the pointer off it at the
+  // slider's ends; then, the same day, parseFloat of the token, which read
+  // a rem length as px and stopped on max() or calc(). assert is crashla.js's.
+  await context.addInitScript(() => {
+    window.__thumbAt = (input, v) => {
+      const size = getComputedStyle(input).getPropertyValue("--thumb");
+      const probe = document.createElement("div");
+      probe.style.cssText = "position:absolute;visibility:hidden;height:0";
+      probe.style.width = size;
+      input.parentElement.appendChild(probe);
+      const thumb = probe.getBoundingClientRect().width;
+      probe.remove();
+      assert(thumb > 0, "Replicata: lay out the date slider's thumb size, style.css's --thumb as read on #" + input.id + ", as the width of a hidden probe beside it.\nExpectata: a positive width.\nResultata:", {size, thumb});
+      const box = input.getBoundingClientRect();
+      return { x: box.left + thumb / 2 + (box.width - thumb) * v / Number(input.max), y: box.top + box.height / 2,
+        perStep: (box.width - thumb) / Number(input.max) };
+    };
+  });
   const page = await context.newPage();
   page.errors = [];
   page.on("pageerror", err => page.errors.push(err.message));
@@ -52,9 +77,7 @@ const read = page => page.evaluate(() => ({
 async function dragFromThumbs(page, dx) {
   const at = await page.evaluate(() => {
     const input = document.getElementById("date-range-max");
-    const box = input.getBoundingClientRect();
-    const x = box.left + 9 + (box.width - 18) * Number(input.value) / Number(input.max);
-    return { x, y: box.top + box.height / 2 };
+    return window.__thumbAt(input, Number(input.value));
   });
   await page.mouse.move(at.x, at.y);
   await page.mouse.down();
@@ -113,9 +136,13 @@ try {
           // drags below find it.
           const at = v => {
             move(min, 0); move(max, v); move(min, v);
-            const box = max.getBoundingClientRect();
-            const hit = document.elementFromPoint(box.left + 9 + (box.width - 18) * v / Number(max.max), box.top + box.height / 2);
-            return { reaches: [hit === min, hit === max], hit: hit === null ? null : hit.outerHTML.slice(0, 160),
+            const point = window.__thumbAt(max, v);
+            const hit = document.elementFromPoint(point.x, point.y);
+            // The element reached, by its tag, id and class (until
+            // 2026-11-07 its markup, whose value attribute is the one set at
+            // load, not the input's current value; that is in window).
+            return { reaches: [hit === min, hit === max],
+              hit: hit === null ? null : { tag: hit.tagName.toLowerCase(), id: hit.id, class: hit.getAttribute("class") },
               zIndex: [getComputedStyle(min).zIndex, getComputedStyle(max).zIndex], window: [min.value, max.value] };
           };
           return { atLast: at(last), atFirst: at(0), rightHalf: at(last - 3), leftHalf: at(3) };
@@ -155,13 +182,11 @@ try {
         const p = await open(browser, server.url + DEF + "&d=2025-06.2026-03");
         const at = await p.evaluate(id => {
           const input = document.getElementById(id);
-          const box = input.getBoundingClientRect();
-          return { x: box.left + 9 + (box.width - 18) * Number(input.value) / Number(input.max),
-            y: box.top + box.height / 2, perMonth: (box.width - 18) / Number(input.max) };
+          return window.__thumbAt(input, Number(input.value));
         }, id);
         await p.mouse.move(at.x, at.y);
         await p.mouse.down();
-        await p.mouse.move(at.x + dMonths * at.perMonth, at.y, { steps: 20 });
+        await p.mouse.move(at.x + dMonths * at.perStep, at.y, { steps: 20 });
         await p.mouse.up();
         await p.waitForTimeout(300);
         // The heading names the window by its months (YYYY-MM).

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const preprocess = fs.readFileSync("data/slurp.py", "utf8");
-const doc = fs.readFileSync("data/README.md", "utf8");
 
 assert.ok(
   preprocess.includes("NHTSA_ADS_CSV_URL") &&
@@ -40,16 +39,10 @@ Expectata: data/slurp.py may compare against the latest legacy current snapshot,
 Resultata: the expected legacy-snapshot bridge was missing.`,
 );
 
-assert.ok(
-  doc.includes("archival snapshots only") &&
-    doc.includes("does not read `data/snapshots/nhtsa-2025-jun-dec.csv` or") &&
-    doc.includes("fetches NHTSA data live") &&
-    doc.includes("`data/vmt.csv` is the in-repo master") &&
-    doc.includes("New snapshots use timestamped filenames") &&
-    doc.includes("They are not parsed as incident inputs"),
-  `Replicata: inspect data/README.md.
-Expectata: the data-sources document states that the checked-in NHTSA CSVs are archival, data/slurp.py fetches live NHTSA data, data/vmt.csv is the in-repo VMT master, and changed fetches create timestamped snapshots without treating legacy snapshots as live inputs.
-Resultata: the expected documentation text was missing.`,
-);
+// Until 2026-11-07 this qual also required six phrases of data/README.md
+// ("archival snapshots only", "fetches NHTSA data live" and four more), so a
+// correct rewording of that doc, which the human may edit, turned it red (the
+// human's rule of 2026-11-03: no qual requires the wording of text the human
+// might edit). The pipeline itself is checked above, in data/slurp.py's code.
 
-console.log("qual pass: data/slurp.py documentation matches the live fetch pipeline");
+console.log("qual pass: data/slurp.py fetches NHTSA data live, snapshotting each changed fetch, and reads VMT from the in-repo master");

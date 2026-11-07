@@ -82,6 +82,20 @@ vm.runInContext(`function summaryRow(rows, helmer, where) {
   assert(row !== undefined, "Replicata: " + where + " and find " + helmer + "'s row of monthlySummaryRows.\\nExpectata: one, holding the estimates this check reads.\\nResultata: none; the rows are", rows.map(r => r.helmer));
   return row;
 }`, ctx);
+// The distribution chart's plot frame: the rect in its dist-clip clip path,
+// each attribute read on its own (until 2026-11-07 a pattern that also
+// required the rect right after the clipPath's tag, with its x, y and width
+// in that order, so a template listing them in another order found no
+// frame). <where> says how the chart was drawn. assert is crashla.js's.
+vm.runInContext(String.raw`function distFrame(html, where) {
+  const attrsOf = tag => Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(m => [m[1], m[2]]));
+  const clipPaths = [...html.matchAll(/<clipPath\b([^>]*)>([\s\S]*?)<\/clipPath>/g)];
+  const rects = clipPaths.filter(m => attrsOf(m[1]).id === "dist-clip")
+    .flatMap(m => [...m[2].matchAll(/<rect\b([^>]*)>/g)].map(r => attrsOf(r[1])));
+  const frame = rects.map(a => ({x: Number(a.x), y: Number(a.y), width: Number(a.width), height: Number(a.height)}));
+  assert(frame.length === 1 && Object.values(frame[0]).every(Number.isFinite), "Replicata: " + where + " and read its plot frame, the rect in its dist-clip clip path, each attribute on its own.\nExpectata: one rect, with a number for each of its x, y, width and height.\nResultata: the dist-clip rects' attributes, and the chart's clip paths:", {rects, clipPaths: clipPaths.map(m => m[0])});
+  return frame[0];
+}`, ctx);
 
 // --- 1. invGammaLogDensity math correctness ---
 
@@ -553,10 +567,8 @@ const markerCheck = vm.runInContext(`
     // The plot frame is the clip rect: since 2026-10-03 its right margin
     // follows the axis labels (axisRightMargin), so it is read, not assumed
     // (and until 2026-11-06 a chart without one stopped here on a TypeError
-    // naming nothing).
-    const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
-    assert(clip !== null, "Replicata: render the distribution chart on " + mk + " (every company and Humans (AV cities) on, the full history) and read its plot frame, the dist-clip clip rect.\\nExpectata: a rect with its x and width.\\nResultata: none in", html.slice(0, 300));
-    const mLeft = Number(clip[1]), pW = Number(clip[2]);
+    // naming nothing; distFrame, above).
+    const {x: mLeft, width: pW} = distFrame(html, "render the distribution chart on " + mk + " (every company and Humans (AV cities) on, the full history)");
     const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
     const medians = curves.map(e => ({ cx: mapX(e.postMedian), shown: fmtMiles(e.postMedian),
       finite: Number.isFinite(e.postMedian), inCI: e.postMedian >= e.lo && e.postMedian <= e.hi }));
@@ -635,11 +647,60 @@ Resultata: ${k0vis.dashed} dashed, ${k0vis.hollow} hollow.`,
 // 'mean 121.1K' for a drawn curve whose mean is 130.7K). Each ADS curve's mean
 // must be the integral of x over its own drawn density -- computed here
 // numerically, independent of the app's formula -- and infinite exactly when
-// a mixture component has a_K <= 1. Every metric is read: until 2026-11-07
-// six were, and of their curves only Zoox's at-fault one had an infinite mean
-// beside a finite MLE, the case where an infinite mean printed as a finite
-// figure shows without the word that labels it (below); at-fault injury adds
-// Waymo's and Zoox's.
+// a mixture component has a_K <= 1. Every metric is read (until 2026-11-07
+// six were; at-fault injury adds Waymo's and Zoox's curves, whose infinite
+// mean sits beside a finite MLE).
+// The mean's figures on a tooltip are found by perturbation: each company's
+// densityFn.mean, the value renderDistributionChart prints as the mean, is
+// set to a sentinel and the chart drawn again; the figures of a marker's
+// tooltip that the sentinel then takes over are the mean's, wherever and
+// however the tooltip places them, and in the normal drawing each must print
+// the drawn curve's mean, or "∞". The Median marker must hold at least one;
+// the curve's other markers (its Peak marker) may hold none, but any they
+// hold must print the mean too. No word, order, line or separator is read.
+// The sentinels, one for each company, are over 90 trillion miles, far above
+// any figure the chart prints, and distinct, so the figures found on a
+// curve's tooltip are its own mean's.
+// History: until 2026-10-29 the mean was read after the tooltip's word
+// "mean"; until 2026-11-04 a tooltip without that part read as a mean of
+// ""; until 2026-11-06 it was the second of the second line's
+// " · "-separated parts (an edit of that separator in crashla.js turned
+// this qual red), then, the same day, the second figure on that line (a
+// reordering of the line did); until 2026-11-07 it was a figure on that line
+// that printed the mean, then, the same day, one on any line after the
+// first, each found by its value alone, and then the figures the sentinel
+// took over on the Median marker's lines after its first (so a mean printed
+// on the first line was red, and a wrong mean on the Peak marker alone
+// passed, which the package start's reading by position had caught).
+// That let a wrong mean pass wherever another figure printed like the right
+// one (Waymo's at-fault, injury and airbag curves: their peak, and on injury
+// the MLE too), and a finite figure printed for an infinite mean pass on a
+// curve with no incident, whose MLE's "∞" was there. Taking the peak's and
+// the MLE's figures out first (a review's proposal, 2026-11-06) would have
+// turned it red when an edit dropped the peak from the line: the peak and
+// the mean both print 2.2M on Waymo's at-fault curve, so the peak's figure
+// taken out is the mean's.
+// Not read: the word that labels the figure. So a tooltip that prints the
+// mean's value under another value's word, and that value under the mean's,
+// passes: a check blind to the words cannot tell a swap of two values' words
+// from a reordering of the line (the two print the same figures in the same
+// order), and they are words the human might edit (2026-10-28: a qual reads
+// such a label from an app constant, and there is none for these).
+// What it relies on, each a coupling that a correct change of the app could
+// break (each then fails with a message naming it):
+// - the chart prints the mean from the estimates that windowSummaryRows
+//   keeps for the series, their densityFn.mean. If the mean comes to be
+//   computed or copied elsewhere, no figure takes the sentinel, and the
+//   message says to perturb that source instead;
+// - densityFn.mean is a property that can be redefined (configurable, as a
+//   value or an accessor): a frozen or non-configurable one is named by an
+//   assert;
+// - the drawing takes any value for the mean. The sentinels are finite, so
+//   on a curve with a component a_K <= 1 they contradict the model (its mean
+//   is infinite): an app check that rejects a finite mean there, true to the
+//   model, stops the perturbed drawing, and the error is named as this
+//   check's, with the sentinels. A curve's infinite mean cannot be perturbed
+//   without leaving the model, so this coupling stays.
 // How the marker tooltips print an infinite value (crashla.js's infOr in
 // renderDistributionChart), the mean of a curve with a component a_K <= 1.
 const INF = "∞";
@@ -648,38 +709,67 @@ const meanCheck = vm.runInContext(`
   incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   const full = monthSeriesData();
   const series = sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1);
+  const where = mk => "open the default window with Humans (AV cities), Tesla, Waymo and Zoox on and draw the distribution chart on " + mk;
+  // Each company's sentinel: distinct, and over 90 trillion miles.
+  const sentinel = h => (91.1 + 1.1 * ADS_HELMERS.indexOf(h)) * 1e12;
+  // The tooltip targets (hitCircles), each attribute read on its own.
+  const attrsOf = tag => Object.fromEntries([...tag.matchAll(/([\\w-]+)="([^"]*)"/g)].map(m => [m[1], m[2]]));
   const out = [];
   for (const mk of METRIC_DEFS.map(m => m.key)) {
     selectedMetricKey = mk;
     for (const d of ALL_HELMERS) monthHelmerEnabled[d] = ["HumansAV", "Tesla", "Waymo", "Zoox"].includes(d);
-    const rows = monthlySummaryRows(series);
-    const html = renderDistributionChart(series);
+    // The estimates the chart draws: those windowSummaryRows keeps for the
+    // series (renderDistributionChart reads them there).
+    const rows = windowSummaryRows(series);
+    const ests = ADS_HELMERS.map(h => summaryRow(rows, h, where(mk)).mpiEstimates[mk]);
+    assert(ests.every(e => e !== null && e !== undefined), "Replicata: " + where(mk) + " and read each company's estimate in its summary row.\\nExpectata: one for each company (each has miles in the window).\\nResultata:", Object.fromEntries(ADS_HELMERS.map((h, i) => [h, String(ests[i] && "an estimate")])));
     // The chart's mapX, replicated as section 7 does: its frame from the
     // dist-clip rect, its extent from distributionExtent over the drawn curves.
     const curves = rows.filter(r => monthHelmerEnabled[r.helmer] && r.mpiEstimates[mk]).map(r => r.mpiEstimates[mk]);
     const {xMin, xMax} = distributionExtent(curves);
-    const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
-    assert(clip !== null, "Replicata: render the distribution chart on " + mk + " (the default window, Humans (AV cities), Tesla, Waymo and Zoox on) and read its plot frame, the dist-clip clip rect.\\nExpectata: a rect with its x and width.\\nResultata: none in", html.slice(0, 300));
-    const mLeft = Number(clip[1]), pW = Number(clip[2]);
-    const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
-    // The tooltip targets (hitCircles), each attribute read on its own.
-    const attrsOf = tag => Object.fromEntries([...tag.matchAll(/([\\w-]+)="([^"]*)"/g)].map(m => [m[1], m[2]]));
-    const targets = [...html.matchAll(/<circle\\b([^>]*)>/g)].map(m => attrsOf(m[1])).filter(a => "data-tip" in a)
-      .map(a => ({cx: Number(a.cx), tip: a["data-tip"], name: a["aria-label"]}));
-    for (const h of ADS_HELMERS) {
-      const e = summaryRow(rows, h, "open the default window with Humans (AV cities), Tesla, Waymo and Zoox on (" + mk + ") and build its summary rows").mpiEstimates[mk];
-      // The curve's markers: the targets named for the helmer
-      // (seriesMarkName), each with its tooltip and its distance from the
-      // median's place on the chart, read below.
-      const tips = targets.filter(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip)
-        .map(t => ({tip: t.tip, dx: t.cx - mapX(e.postMedian)}));
+    // One drawing's markers for each company: the targets named for it
+    // (seriesMarkName), each with its tooltip and its distance from the
+    // median's place on the chart, read below.
+    const draw = () => {
+      const html = renderDistributionChart(series);
+      const {x: mLeft, width: pW} = distFrame(html, where(mk));
+      const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
+      const targets = [...html.matchAll(/<circle\\b([^>]*)>/g)].map(m => attrsOf(m[1])).filter(a => "data-tip" in a)
+        .map(a => ({cx: Number(a.cx), tip: a["data-tip"], name: a["aria-label"]}));
+      return ADS_HELMERS.map((h, i) => targets.filter(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip)
+        .map(t => ({tip: t.tip, dx: t.cx - mapX(ests[i].postMedian)})));
+    };
+    const normal = draw();
+    // Each sentinel is set through the property's descriptor, saved first and
+    // restored after, then read back, so a mean held as an accessor or a
+    // read-only value is perturbed too, and one that cannot be redefined is
+    // named (until 2026-11-07 a plain assignment, which a getter silently
+    // ignored: every curve then failed with a false diagnosis).
+    const saved = ests.map(e => Object.getOwnPropertyDescriptor(e.densityFn, "mean"));
+    assert(saved.every(d => d !== undefined && d.configurable), "Replicata: " + where(mk) + " and read each company's densityFn.mean property, to set it to a sentinel.\\nExpectata: a property that can be redefined (configurable).\\nResultata: the descriptors", Object.fromEntries(ADS_HELMERS.map((h, i) => [h, saved[i] === undefined ? "absent" : {configurable: saved[i].configurable, writable: saved[i].writable, accessor: "get" in saved[i]}])));
+    ests.forEach((e, i) => Object.defineProperty(e.densityFn, "mean", {value: sentinel(ADS_HELMERS[i]), writable: true, configurable: true, enumerable: true}));
+    assert(ests.every((e, i) => e.densityFn.mean === sentinel(ADS_HELMERS[i])), "Replicata: " + where(mk) + " and set each company's densityFn.mean to its sentinel.\\nExpectata: each reads back as its sentinel.\\nResultata:", ests.map(e => e.densityFn.mean));
+    // The perturbed drawing; an error from it is named as this check's, with
+    // the sentinels it was drawn with (an app check that rejects a finite
+    // mean on a curve with a_K <= 1, true to the model, stops it here).
+    let perturbed;
+    try {
+      perturbed = draw();
+    } catch (err) {
+      throw new Error("Replicata: " + where(mk) + ", then draw it again with each company's densityFn.mean set to its sentinel " + JSON.stringify(Object.fromEntries(ADS_HELMERS.map(h => [h, fmtMiles(sentinel(h))]))) + ".\\nExpectata: the chart draws, printing the sentinel where it printed the mean (this check relies on the drawing taking any value for the mean: see 'What it relies on').\\nResultata: it threw: " + err.message);
+    } finally {
+      ests.forEach((e, i) => Object.defineProperty(e.densityFn, "mean", saved[i]));
+    }
+    ADS_HELMERS.forEach((h, i) => {
+      const e = ests[i];
       const aMin = Math.min(...e.comps.map(c => c.a));
       // numeric mean of the drawn density (w.r.t. ln x): wide fine grid
       let m0 = 0, m1 = 0;
       const lo = Math.log(e.postMedian) - 9, hi = Math.log(e.postMedian) + 9, n = 40000, st = (hi - lo) / (n - 1);
-      for (let i = 0; i < n; i++) { const x = Math.exp(lo + st * i), d = e.densityFn(x); m0 += d; m1 += x * d; }
-      out.push({mk, h, tips, aMin, numeric: m1 / m0, median: e.postMedian});
-    }
+      for (let j = 0; j < n; j++) { const x = Math.exp(lo + st * j), d = e.densityFn(x); m0 += d; m1 += x * d; }
+      out.push({mk, h, normal: normal[i], perturbed: perturbed[i], sentinel: sentinel(h), sentinelShown: fmtMiles(sentinel(h)),
+        aMin, numeric: m1 / m0, median: e.postMedian});
+    });
   }
   return out;
 })()`, ctx);
@@ -706,68 +796,69 @@ Resultata: no match.`);
   const decimals = `${digits}.`.split(".")[1].length;
   return {value: Number(digits) * UNIT[m[2]], half: 0.5 * UNIT[m[2]] * 10 ** -decimals};
 };
-// Whether each checked curve's tooltip mean is told apart from the tooltip's
-// other figures, for the pass line: on a data-rich curve the peak, the
-// median, the mean and the MLE can print alike (Waymo injury: 1.7M each), and
-// on a curve with no incident the mean and the MLE are both infinite; there
-// the mean, found by its value, cannot be told from them. From 2026-11-06 to
-// 2026-11-07 at least six such curves were required, which a coarser
-// fmtMiles, or more data, could turn red with nothing wrong.
-const apart = [];
+// Whether a finite figure prints a value: within half a unit of its last
+// printed digit.
+const prints = (f, value) => f !== INF && Math.abs(finiteFigure(f).value - value) <= finiteFigure(f).half * 1.001;
 for (const r of meanCheck) {
-  // The Median marker: the curve's marker at the median's place on the chart,
-  // mapX(postMedian) to 0.05 px, as section 7 finds it: by the value it
-  // reports, not by its words or separators (until 2026-11-06 the text after
-  // its ": "; then until 2026-11-07 the first marker whose tooltip's first
-  // line held the median's figure, which, on a curve whose peak prints like
-  // its median, was the Peak marker). Two only if the peak sits there too.
-  const markers = r.tips.filter(t => Math.abs(t.dx) < 0.05).map(t => t.tip);
-  assert.ok(markers.length >= 1,
-    `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, draw the distribution chart on ${r.mk} and find ${r.h}'s Median marker: of its markers (named for it), one at the median's place, mapX(postMedian) to 0.05 px.
-Expectata: one (two only where the curve's peak sits there too).
-Resultata: none; its ${r.tips.length} markers' distances from that place: ${JSON.stringify(r.tips.map(t => t.dx))}.`);
-  // The tooltip's lines after its first: the curve's other central values and
-  // its interval, in whatever order and on whatever lines the tooltip prints
-  // them (until 2026-11-07 only the second line was read, so moving the CI
-  // line up, or the mean onto a line of its own, turned this red).
-  const rests = markers.map(tip => tip.split("\n").slice(1).join("\n"));
-  assert.ok(rests.every(rest => rest !== ""),
-    `Replicata: hover ${r.h}'s Median marker on ${r.mk} and read its tooltip's lines after the first.
-Expectata: at least one, listing the curve's other central values.
-Resultata: the tooltips ${JSON.stringify(markers)}.`);
-  // The mean: a figure among them that is the curve's mean, found by its
-  // value alone. Until 2026-10-29 this read it after the tooltip's word
-  // "mean"; until 2026-11-04 a tooltip without that part read as a mean of
-  // ""; until 2026-11-06 it was the second of the second line's
-  // " · "-separated parts (an edit of that separator in crashla.js turned
-  // this qual red), then, the same day, the second figure on that line (a
-  // reordering of the line did), and until 2026-11-07 a figure on the
-  // second line. Taking the peak's and the MLE's figures out first (a
-  // review's proposal, 2026-11-06) would turn it red when an edit dropped the
-  // peak from the line: the peak and the mean both print 2.2M on Waymo's
-  // at-fault curve, so the peak's figure taken out is the mean's.
-  // Not read: the word that labels the figure. So a tooltip that printed the
-  // mean's value under another value's word, and that value under the mean's,
-  // passes, and so does a finite figure printed for an infinite mean on a
-  // curve with no incident (its MLE's "∞" is there): a check blind to the
-  // words cannot tell a swap of two values' words from a reordering of the
-  // line (the two print the same figures in the same order), and they are
-  // words the human might edit (2026-10-28: a qual reads such a label from an
-  // app constant, and there is none for these).
-  // How many figures on each such tooltip's lines after its first print the
-  // mean: "∞" for an infinite one, else one within half a unit of its last
-  // digit of the drawn curve's (a mean with 1 < a_K <= 3 is not checked).
-  const isMean = r.aMin <= 1 ? f => f === INF
-    : f => f !== INF && Math.abs(finiteFigure(f).value - r.numeric) <= finiteFigure(f).half * 1.001;
+  // The curve's markers (named for it), paired across the two drawings in
+  // drawing order: the perturbation moves no marker, so each drawing holds
+  // as many.
+  assert.ok(r.normal.length >= 1 && r.perturbed.length === r.normal.length,
+    `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, draw the distribution chart on ${r.mk}, then draw it again with ${r.h}'s densityFn.mean set to ${r.sentinelShown}, and in each drawing find ${r.h}'s markers (the tooltip targets named for it).
+Expectata: at least one in the first drawing, and as many in the second.
+Resultata: ${r.normal.length} and ${r.perturbed.length}.`);
+  // The Median marker in each drawing: the curve's marker at the median's
+  // place on the chart, mapX(postMedian) to 0.05 px, as section 7 finds it:
+  // by the value it reports, not by its words or separators (until
+  // 2026-11-06 the text after its ": "; then until 2026-11-07 the first
+  // marker whose tooltip's first line held the median's figure, which, on a
+  // curve whose peak prints like its median, was the Peak marker). Two only
+  // if the peak sits there too. Its other markers (the Peak marker) are read
+  // too, below.
+  const atMedian = ts => ts.filter(t => Math.abs(t.dx) < 0.05).map(t => t.tip);
+  const [normal, perturbed] = [r.normal, r.perturbed].map(atMedian);
+  assert.ok(normal.length >= 1 && perturbed.length === normal.length,
+    `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, draw the distribution chart on ${r.mk}, then draw it again with ${r.h}'s densityFn.mean set to ${r.sentinelShown}, and in each drawing find ${r.h}'s Median marker: of its markers (named for it), one at the median's place, mapX(postMedian) to 0.05 px.
+Expectata: one in each drawing (two only where the curve's peak sits there too), as many in the second as in the first.
+Resultata: ${normal.length} and ${perturbed.length}; the markers' distances from that place: ${JSON.stringify(r.normal.map(t => t.dx))} and ${JSON.stringify(r.perturbed.map(t => t.dx))}.`);
+  // The mean: "∞" for an infinite one, else a figure that prints the drawn
+  // curve's (a mean with 1 < a_K <= 3 is not checked).
+  const isMean = r.aMin <= 1 ? f => f === INF : f => prints(f, r.numeric);
   if (r.aMin <= 1 || r.aMin > 3) {
-    const counts = rests.map(rest => figuresOf(rest).filter(isMean).length);
-    if (Math.max(...counts) === 0) meanProblems.push(`${r.h} ${r.mk}: no figure on the lines after the first of ${JSON.stringify(rests)} prints the mean (${r.aMin <= 1 ? `a component has a_K = ${r.aMin}, so the mean is infinite, "${INF}"` : `the drawn curve's, ${Math.round(r.numeric)}, to within half a unit of the figure's last digit; median ${Math.round(r.median)}`})`);
-    apart.push(counts.includes(1));
+    // A marker's tooltip in the two drawings: the figures the perturbation
+    // moves, those that differ between the drawings at the same place among
+    // the tooltip's figures (null if the two hold different numbers of
+    // figures). Each must be the mean: in the perturbed drawing it prints the
+    // curve's own sentinel (not a transform of it, nor another company's),
+    // and in the normal one the drawn curve's mean. The whole tooltip is read
+    // (until 2026-11-07 its first line was set aside, so a tooltip printing
+    // the mean there was red; the marker's own value on that line never
+    // moves).
+    const pairOf = (tip, tipPerturbed) => {
+      const a = figuresOf(tip), b = figuresOf(tipPerturbed);
+      const moved = a.length === b.length ? [...b.keys()].filter(j => b[j] !== a[j]) : null;
+      return {normal: a, perturbed: b, moved: moved === null ? null : moved.map(j => [a[j], b[j]])};
+    };
+    const isTheMean = p => p.moved !== null && p.moved.every(([f, fp]) => prints(fp, r.sentinel) && isMean(f));
+    const wantMean = r.aMin <= 1 ? `is infinite (a component has a_K = ${r.aMin}), "${INF}"` : `is the drawn curve's, ${Math.round(r.numeric)}, to within half a unit of the figure's last digit (median ${Math.round(r.median)})`;
+    // The Median marker must print the mean, at one place or more.
+    const pairs = normal.map((tip, i) => pairOf(tip, perturbed[i]));
+    if (!pairs.some(p => isTheMean(p) && p.moved.length >= 1))
+      meanProblems.push(`${r.h} ${r.mk}, its Median marker (its sentinel ${r.sentinelShown}): ${JSON.stringify(pairs)}; the mean ${wantMean}`);
+    // The curve's other markers (its Peak marker) need not print the mean,
+    // but any figure on them that the perturbation moves must be it (until
+    // 2026-11-07 they were not read, so a wrong mean on the Peak marker
+    // alone passed).
+    const others = r.normal.map((t, i) => [t, r.perturbed[i]]).filter(([t]) => Math.abs(t.dx) >= 0.05).map(([t, tp]) => pairOf(t.tip, tp.tip));
+    if (!others.every(isTheMean))
+      meanProblems.push(`${r.h} ${r.mk}, its other markers (its sentinel ${r.sentinelShown}): ${JSON.stringify(others)}; the mean ${wantMean}`);
   }
 }
-assert.ok(meanCheck.filter(r => r.aMin > 3).length >= 6 && meanProblems.length === 0,
-  `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on; on every metric, hover each ADS curve's Median marker.
-Expectata: on the tooltip's lines after its first, a figure that prints the drawn curve's own mean (numerically, the integral of x over the plotted density) to within half a unit of its last digit, or a "${INF}" when a mixture component has a_K <= 1. The figure is found by its value; the word labelling it is not read.
-Resultata: ${JSON.stringify(meanProblems)}.`);
+const finiteChecked = meanCheck.filter(r => r.aMin > 3).length;
+assert.ok(finiteChecked >= 6 && meanProblems.length === 0,
+  `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on; on every metric, draw the distribution chart, then draw it again with each company's densityFn.mean (on the estimates windowSummaryRows keeps for the series, which the chart draws) set to a sentinel over 90 trillion miles, one for each company; in both drawings hover each ADS curve's markers.
+Expectata: on each marker's tooltip, every figure the perturbation moves (one that differs between the two drawings, at the same place among the figures, the two drawings holding as many) prints, in the second drawing, the curve's own sentinel, and, in the first, the drawn curve's own mean (numerically, the integral of x over the plotted density) to within half a unit of its last digit, or "${INF}" when a mixture component has a_K <= 1; the Median marker holds at least one such figure (the curve's other markers may hold none); at least six curves with a finite mean checked. No word, order, line or separator is read. A Median marker with no figure the perturbation moves prints something other than densityFn.mean, a value computed elsewhere (then perturb that source here); a moved figure that does not print the sentinel is a transform of the mean, or another curve's.
+Resultata: ${finiteChecked} curves with a finite mean checked; ${meanProblems.length} problems, each giving, for each marker, its figures in the normal drawing, in the perturbed one, and the moved figures as [normal, perturbed] pairs (null where the drawings hold different numbers of figures):
+${meanProblems.join("\n")}`);
 
-console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy; the tooltip mean told apart from the tooltip's other figures on ${apart.filter(Boolean).length} of the ${apart.length} curves checked)`);
+console.log(`qual pass: distribution chart renders inverse-gamma and log-normal density curves (${comboHealth.length} marginal bells healthy; on ${meanCheck.filter(r => r.aMin <= 1 || r.aMin > 3).length} curves, ${meanCheck.filter(r => r.aMin <= 1).length} of them with an infinite mean, the markers' figures for the mean, found by perturbing densityFn.mean, print the drawn curve's)`);

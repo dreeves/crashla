@@ -136,10 +136,13 @@ try {
       await stoppedLoad(browser, engineName, "crashla.js with Waymo's PRE_SERIES_OFFSET range NaN",
         /\/crashla\.js$/, nanRangeApp, [`"helmer":"Waymo"`, `"range":"NaN"`, `"type":"number"`]);
       // --- a rationale's link of the wrong form -----------------------------
+      // Each of the details' keys is read on its own, in any order (until
+      // 2026-11-07 one fragment, '{"lineNo":2,"rationale":"', also pinned
+      // their order, so a correct reordering of the details was red).
       await stoppedLoad(browser, engineName, "data/vmt.js whose first analysis rationale holds a link with its target left open",
-        /\/data\/vmt\.js$/, openTargetVmt, ['{"lineNo":2,"rationale":"']);
+        /\/data\/vmt\.js$/, openTargetVmt, ['"lineNo":2', '"rationale":"']);
       await stoppedLoad(browser, engineName, "data/vmt.js whose first ghost rationale holds a link whose anchor is in capitals",
-        /\/data\/vmt\.js$/, capitalAnchorVmt, ['{"lineNo":2,"rationale":"']);
+        /\/data\/vmt\.js$/, capitalAnchorVmt, ['"lineNo":2', '"rationale":"']);
       // --- errors on a page that drew -------------------------------------
       {
         const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });

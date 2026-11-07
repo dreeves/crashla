@@ -45,7 +45,10 @@
 //     it) integrates to 1 within 1e-3 over its 5th to 95th percentiles
 //     widened by 15 in ln x on each side, and to its printed 5th, 50th and
 //     95th percentiles within 1e-3 of 0.05, 0.5 and 0.95 (Simpson's rule in
-//     ln x): each lane is read whole, since the distribution chart's frame,
+//     ln x, on pieces that follow the lane's mass: between its own quantiles,
+//     this qual's, and the places its components' densities change side;
+//     until 2026-11-07 on a fixed grid, which misread narrow or one-sided
+//     bands): each lane is read whole, since the distribution chart's frame,
 //     every lane's 90% interval widened 1.6 times, holds 97.8-98.2% of the
 //     all-HW4 lanes (about 98% before the sum too) and 99.3-99.9% of the
 //     fleet's and the rides' Zoox lanes and the rides' robotaxi lane;
@@ -117,12 +120,15 @@ const app = JSON.parse(vm.runInContext(`JSON.stringify((() => {
 })())`, ctx));
 
 // Every metric draws one lane per helmer and scope of its table, so that 2-4
-// read every lane.
+// read every lane. The lists are compared as sets (sorted), not in order:
+// the chart may draw the lanes in any order (until 2026-11-07 the table's
+// order was required, so a correct reordering, the conditional lane drawn
+// last, was red).
 const undrawn = METRICS.filter(m => !(app.tableLanes[m].length > 0
-  && JSON.stringify(app.lanes[m].map(lane => lane.key)) === JSON.stringify(app.tableLanes[m])));
+  && JSON.stringify(app.lanes[m].map(lane => lane.key).sort()) === JSON.stringify([...app.tableLanes[m]].sort())));
 assert.ok(undrawn.length === 0,
   `Replicata: read each growth metric's drawn lanes (crashla.js fleetDistributionCurves, each lane's key) and its forecast table's helmers and scopes (${METRICS.map(m => TABLE[m]).join(", ")}: each entry's components' scope, or the helmer's name where a component has none).
-Expectata: for each metric, one lane per helmer and scope of its table, in the table's order, and at least one.
+Expectata: for each metric, one lane per helmer and scope of its table, in any order, and at least one.
 Resultata: ${undrawn.map(m => `${m}: drawn ${JSON.stringify(app.lanes[m].map(lane => lane.key))} for the table's ${JSON.stringify(app.tableLanes[m])}`).join("; ")}.`);
 
 // Each drawn lane's components, for 3 and 4: Tesla's from first principles
@@ -268,13 +274,47 @@ const simpson = (f, a, b, n) => {
   for (let i = 1; i < n; i++) s += (i % 2 === 1 ? 4 : 2) * f(a + i * h);
   return s * h / 3;
 };
+// The pieces each lane is integrated on, in ln x, so that each holds a small
+// share of the lane's mass and none a jump or kink inside it: their ends are
+// the lane's own quantiles (this qual's, computed apart from the app's) at
+// 401 levels spread evenly over (0, 1) and at tail levels down to 1e-14 on
+// each side, the places where a component's density changes its side (for
+// each of its parts, at the level of that part's mode, a/(a + c) of the way
+// in sigma, the sum of the parts' quantiles there: the part's own mode in a
+// one-part component), and the range's two ends. Simpson's rule takes 16
+// intervals of each piece. Until 2026-11-07 the lane was integrated on a
+// fixed grid of 4,000 intervals over its whole range, which read a correct
+// lane as not integrating to 1 when a band was narrower than a grid step
+// (Zoox's fleet {400, 399, 401}) or had its mode at an edge, a jump in its
+// density between grid points (Zoox's miles {8.01M, 8.01M, 24M}).
+const TAIL_LEVELS = [1e-14, 1e-12, 1e-10, 1e-8, 1e-6, 1e-5, 1e-4, 3e-4, 1e-3];
+const NODE_LEVELS = [...TAIL_LEVELS, ...Array.from({length: 401}, (_, i) => (i + 0.5) / 401), ...TAIL_LEVELS.map(p => 1 - p)];
+const PIECE_INTERVALS = 16;
+const pieceEnds = Object.fromEntries(METRICS.map(metric => [metric, app.lanes[metric].map((lane, li) => {
+  const comps = laneComponents[metric][li];
+  const a = Math.log(lane.lo90) - 15, b = Math.log(lane.hi90) + 15;
+  const quantiles = NODE_LEVELS.map(p => Math.log(laneQuantile(comps, p)));
+  const sides = comps.flatMap(k => k.parts.map(part => {
+    const {a: below, c: above} = shape(part);
+    const p = below / (below + above);
+    return Math.log(k.parts.reduce((x, q) => x + bandQuantile(q, p), 0));
+  }));
+  return [...new Set([a, b, ...quantiles, ...sides].filter(u => u >= a && u <= b))].sort((u, v) => u - v);
+})]));
 const integrals = JSON.parse(vm.runInContext(`JSON.stringify((() => {
   const simpson = ${simpson.toString()};
-  return Object.fromEntries(${JSON.stringify(METRICS)}.map(metric => [metric, fleetDistributionCurves(metric).map(c => {
+  const pieceEnds = ${JSON.stringify(pieceEnds)};
+  return Object.fromEntries(${JSON.stringify(METRICS)}.map(metric => [metric, fleetDistributionCurves(metric).map((c, li) => {
     const g = u => c.densityFn(Math.exp(u));
-    const a = Math.log(c.lo90) - 15, b = Math.log(c.hi90) + 15;
-    return {label: c.legendLabel, mass: simpson(g, a, b, 4000),
-      at: [c.lo90, c.median, c.hi90].map(q => simpson(g, a, Math.log(q), 4000))};
+    const ends = pieceEnds[metric][li];
+    // The integral from the range's low end up to t, piece by piece.
+    const upTo = t => {
+      let mass = 0;
+      for (let i = 0; i + 1 < ends.length && ends[i] < t; i++) mass += simpson(g, ends[i], Math.min(ends[i + 1], t), ${PIECE_INTERVALS});
+      return mass;
+    };
+    return {label: c.legendLabel, mass: upTo(ends[ends.length - 1]),
+      at: [c.lo90, c.median, c.hi90].map(q => upTo(Math.log(q)))};
   })]));
 })())`, ctx));
 for (const metric of METRICS) {

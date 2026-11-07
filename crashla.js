@@ -3315,7 +3315,7 @@ function logUniformGrid(lo, hi, n) {
 // call.) A band's `best` is its mode, and lo and hi sit 1.6449 sigmas out on
 // their own sides, so 10% of the band's mass lies outside [lo, hi], split
 // between the two tails in proportion to the two sides' widths, not 5%
-// apiece: 3.65-6.35% each in the bands below, 6.35% under lo and 3.65% over
+// apiece: 3.65-6.35% each in the parts below, 6.35% under lo and 3.65% over
 // hi in the eyes-off miles band and the rides band, its multiple, and
 // 4.0-6.0% in the others (until the sixth fix run's third review,
 // 2026-11-05, this comment gave 4-6%, from before 2026-11-04, when the
@@ -3835,9 +3835,15 @@ function bandMixtureLogDensity(components, x) {
 // correct quantiles of a wide band whose far quantiles pass near x = 1); the
 // step term holds a steep CDF's, such as a point band's (its sigmas floored
 // at 1e-6) beside a wide one, whose log-odds the solve's precision in ln x
-// leaves up to 1.6e-5 off (until the third review the assert read the 1e-8
-// alone, and threw on such correct quantiles; quals/forecast-solve.qual.mjs
-// reads both). The CDF is componentAt's: a component whose quantile at its
+// leaves off by up to about their slope times 1e-12 of ln x's scale, a bound
+// with no fixed size, since the slope grows without limit as a band narrows
+// (on quals/forecast-solve.qual.mjs's three steep made-up mixtures, at 999
+// levels from 0.001 to 0.999, up to 1.6e-5; up to 2.1e-5 on other point-band
+// mixtures, the sixth fix run's fourth review, 2026-11-05; until the third
+// review the assert read the 1e-8 alone, and threw on such correct
+// quantiles; quals/forecast-solve.qual.mjs reads both). Until 2026-11-07
+// this comment gave the 1.6e-5 as the most the solve leaves off. The CDF is
+// componentAt's: a component whose quantile at its
 // level range's low end lies above x reports that end's p, e^-700 (about
 // 1e-304), above its true one, so below about 1e-296 a lane's CDF, and its
 // quantiles there, are good only to that floor times the component's weight,

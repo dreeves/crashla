@@ -412,11 +412,13 @@ const yLabels = svg => textsOf(svg)
   .filter(t => /(^|\s)month-tick(\s|$)/.test(t.attrs.class) && t.attrs["text-anchor"] === "end")
   .map(t => ({ y: Number(t.attrs.y), value: valueOf(t.label), label: t.label }));
 // A chart's <text> elements counted by class and text-anchor, and those
-// anchored at their end, for a message.
+// anchored at their end, for a message. An attribute a text lacks is left
+// out of its kind (until 2026-11-07 it printed as "undefined").
 const textsSeen = svg => {
   const texts = textsOf(svg);
-  const pairs = texts.map(t => `class="${t.attrs.class}" text-anchor="${t.attrs["text-anchor"]}"`);
-  return `by class and text-anchor ${JSON.stringify([...new Set(pairs)].map(k => [k, pairs.filter(p => p === k).length]))}; those anchored at their end ${JSON.stringify(texts.filter(t => t.attrs["text-anchor"] === "end").map(t => t.label).slice(0, 12))}`;
+  const kinds = texts.map(t => JSON.stringify({ class: t.attrs.class, "text-anchor": t.attrs["text-anchor"] }));
+  const counted = [...new Set(kinds)].map(k => ({ ...JSON.parse(k), count: kinds.filter(x => x === k).length }));
+  return `by class and text-anchor ${JSON.stringify(counted)}; those anchored at their end ${JSON.stringify(texts.filter(t => t.attrs["text-anchor"] === "end").map(t => t.label).slice(0, 12))}`;
 };
 const unround = [];
 for (const [what, setup, render] of [

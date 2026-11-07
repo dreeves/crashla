@@ -6,12 +6,19 @@
 //    around it (its nearest .ai-text ancestor), the AI ink (--ai-ink,
 //    resolved on a probe element), its text is painted in that colour too
 //    (its computed -webkit-text-fill-color, which paints over the colour when
-//    set), at full opacity (a link faded by its own opacity is painted in no
-//    ink of the page's), and its own text decoration is a solid underline
-//    drawn in its own colour, no hairline (a thickness under 1px, which
-//    draws no line on a 1x display), where the AI text around it is
-//    underlined dotted (an underline made transparent, of another colour or a
-//    hairline would hide what marks it as a link);
+//    set), and its own text decoration is a solid underline, where the AI
+//    text around it is underlined dotted;
+//  - what the site's rule for every link sets, it keeps as a link outside AI
+//    text (a reference link appended to the same table's label cell, read
+//    the same way at rest and hovered) has it: its opacity, its underline's
+//    thickness, its underline drawn in its own colour where the reference's
+//    is (else in the reference's), and its computed top (an underline made
+//    transparent, faded, of another colour or a hairline would hide what
+//    marks it as a link). Until 2026-11-07 these were fixed values (opacity
+//    1, an underline in its own colour, at least 1px thick, a top of 0px at
+//    rest, the reference unlifted at rest), which the site's rule for every
+//    link sets, so a correct change of that rule (dropping the hover lift, a
+//    soft underline colour, a thickness of 0.06em, drawn as 1px) was red;
 //  - hovered, it moves as a link outside AI text does: a reference link
 //    appended to the same table's label cell is hovered the same way, and
 //    each link's computed top equals the reference's, and the distance its
@@ -64,6 +71,12 @@ const read = () => {
       top: s.top, y: a.getBoundingClientRect().top + scrollY };
   }) };
 };
+// The reference link's own properties, the ones the site's rule for every
+// link sets.
+const readRef = () => {
+  const s = getComputedStyle(document.querySelector("#sanity-vmt-sources a[data-qual-reference]"));
+  return { color: s.color, decoColor: s.textDecorationColor, opacity: s.opacity, thickness: s.textDecorationThickness, top: s.top };
+};
 // An element's document position: the top of its box plus the scroll.
 const docTop = loc => loc.evaluate(a => a.getBoundingClientRect().top + scrollY);
 const px = n => `${Math.round(n * 100) / 100}px`;
@@ -88,17 +101,19 @@ const marks = (tag, l) => {
   const out = [];
   if (!(/\bunderline\b/.test(l.line) && l.style === "solid")) out.push(`${tag}: its own decoration is "${l.line} ${l.style}", want a solid underline`);
   if (!(/\bunderline\b/.test(l.boxLine) && l.boxStyle === "dotted")) out.push(`${tag}: the AI text around it is decorated "${l.boxLine} ${l.boxStyle}", want a dotted underline`);
-  if (/px$/.test(l.thickness) && parseFloat(l.thickness) < 1) out.push(`${tag}: its underline is ${l.thickness} thick, want 1px or more (or the font's own)`);
   return out;
 };
-// The page's own colours: the link and the AI text around it in the AI ink,
-// the link's text painted and underlined in the link's colour, at full
-// opacity.
-const colours = (tag, l, aiInk) => [
+// The page's own colours, and what the site's rule for every link sets: the
+// link and the AI text around it in the AI ink, the link's text painted in
+// the link's colour; its underline drawn as the reference link draws its own
+// (in its own colour where the reference's is, else in the reference's), and
+// as thick, and the link as opaque as the reference.
+const colours = (tag, l, aiInk, ref) => [
   ...(l.color === l.boxColor && l.color === aiInk ? [] : [`${tag}: drawn ${l.color}, the AI text around it ${l.boxColor}; want both the AI ink, ${aiInk}`]),
   ...(l.fill === l.color ? [] : [`${tag}: its text is painted in ${l.fill} (-webkit-text-fill-color), its colour ${l.color}; want it painted in its colour`]),
-  ...(l.decoColor === l.color ? [] : [`${tag}: its underline is drawn in ${l.decoColor}, its text in ${l.color}; want the underline in its own colour`]),
-  ...(l.opacity === "1" ? [] : [`${tag}: opacity ${l.opacity}, want 1`]),
+  ...((ref.decoColor === ref.color ? l.decoColor === l.color : l.decoColor === ref.decoColor) ? [] : [`${tag}: its underline is drawn in ${l.decoColor}, its text in ${l.color}; want it drawn as a link outside AI text draws its own (${ref.decoColor}, its text ${ref.color})`]),
+  ...(l.thickness === ref.thickness ? [] : [`${tag}: its underline is ${l.thickness} thick, want ${ref.thickness}, a link outside AI text's`]),
+  ...(l.opacity === ref.opacity ? [] : [`${tag}: opacity ${l.opacity}, want ${ref.opacity}, a link outside AI text's`]),
 ];
 
 const server = await serveRepo();
@@ -130,12 +145,13 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
   if (rest.forced) problems.push(`[${engine}] the page is in forced colours before any emulation`);
   if (!rest.links.some(l => l.synthetic)) problems.push(`[${engine}] the appended link is not among the VMT sources table's AI-text links (${rest.links.length} found)`);
   const ref = page.locator(REFERENCE), lifter = page.locator(LIFTER);
-  if (await ref.evaluate(a => a.closest(".ai-text") !== null || getComputedStyle(a).top !== "0px"))
-    problems.push(`[${engine}] the reference link is inside AI text, or lifted at rest`);
+  if (await ref.evaluate(a => a.closest(".ai-text") !== null))
+    problems.push(`[${engine}] the reference link is inside AI text`);
+  const refRest = await page.evaluate(readRef);
   for (const l of rest.links) {
     const tag = `[${engine}] link ${l.i} ${JSON.stringify(l.text)}${l.synthetic ? " (appended)" : ""}, at rest`;
-    problems.push(...marks(tag, l), ...colours(tag, l, rest.aiInk));
-    if (l.top !== "0px") problems.push(`${tag}: top ${l.top}, want 0px`);
+    problems.push(...marks(tag, l), ...colours(tag, l, rest.aiInk, refRest));
+    if (l.top !== refRest.top) problems.push(`${tag}: top ${l.top}, want ${refRest.top}, a link outside AI text's at rest`);
   }
   // The lifter, then the reference link's lift (its computed top and the
   // distance it is drawn from where it rests), then each AI-text link's,
@@ -152,7 +168,8 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     await page.mouse.move(0, 0);
     const refRest = await docTop(ref);
     await hoverSettled(ref, `${mode} the reference link`, problems);
-    const lift = await ref.evaluate(a => getComputedStyle(a).top);
+    const refHover = await page.evaluate(readRef);
+    const lift = refHover.top;
     const drawnLift = await docTop(ref) - refRest;
     lifts.push(`${motion} ${px(drawnLift)}`);
     for (const l of rest.links) {
@@ -163,7 +180,7 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
       await hoverSettled(loc, tag, problems);
       const h = (await page.evaluate(read)).links[l.i];
       if (!h.hovered) problems.push(`${tag}: the pointer is on it but it does not match :hover`);
-      problems.push(...marks(tag, h), ...colours(tag, h, rest.aiInk));
+      problems.push(...marks(tag, h), ...colours(tag, h, rest.aiInk, refHover));
       if (h.top !== lift) problems.push(`${tag}: top ${h.top}, want ${lift}, the top of a link outside AI text hovered the same way`);
       if (Math.abs(h.y - y0 - drawnLift) > 0.25) problems.push(`${tag}: drawn ${px(h.y - y0)} from where it rests, want ${px(drawnLift)}, the distance of a link outside AI text hovered the same way`);
     }
@@ -182,7 +199,7 @@ await server.close();
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: load the default view in Chromium, Firefox and WebKit, append a link to an AI-text cell of the VMT sources table (id sanity-vmt-sources), a reference link to a label cell and a link this qual's rule lifts 3px on hover to another, and read each link in that table's AI text at rest and hovered (each read once its transitions have finished), and the reference link and the lifter hovered, with the page's motion and with reduced motion (emulated); then emulate forced colours and read them again.
-Expectata: each link's colour is the AI text's around it, the AI ink (--ai-ink), at rest and hovered, its text painted and underlined in that colour, at opacity 1; its own decoration is a solid underline no thinner than 1px and the AI text's a dotted one; hovered, its top is the reference link's hovered top and it is drawn as far from where it rests as the reference is, within 0.25px, with either motion; the lifter is drawn 3px up, within 0.25px; every hovered link settles (no endless animation, none running after 5 s); in forced colours the same two underlines; no page errors.
+Expectata: each link's colour is the AI text's around it, the AI ink (--ai-ink), at rest and hovered, its text painted in that colour; its own decoration is a solid underline and the AI text's a dotted one; its underline drawn as the reference link draws its own (in its own colour where the reference's is), as thick as the reference's, and the link as opaque, at rest and hovered; at rest its top is the reference's; hovered, its top is the reference link's hovered top and it is drawn as far from where it rests as the reference is, within 0.25px, with either motion; the lifter is drawn 3px up, within 0.25px; every hovered link settles (no endless animation, none running after 5 s); in forced colours the same two underlines; no page errors.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 10).join("\n")}`);
-console.log(`qual pass: links in AI text (the rationales' links, by engine: ${counts.join(", ")}; and one appended) keep the AI ink at rest and hovered, painted at full opacity and underlined solid in it, no hairline, where the text around them has a dotted underline, and move on hover as a link outside AI text does, as computed and as drawn, with the page's motion and with reduced motion; the same solid and dotted underlines in forced colours`);
+console.log(`qual pass: links in AI text (the rationales' links, by engine: ${counts.join(", ")}; and one appended) keep the AI ink at rest and hovered, painted in it and underlined solid, where the text around them has a dotted underline, keep the opacity and underline a link outside AI text has, and move on hover as such a link does, as computed and as drawn, with the page's motion and with reduced motion; the same solid and dotted underlines in forced colours`);

@@ -277,10 +277,10 @@ assert.deepEqual(aiDeco.map(r => r.sel), [], "no other rule restyles AI text's u
 // painted text fill, and the hover's movement as each link's box is drawn.
 const aiLinks = parsed.filter(r => selectors(r).some(sel => /^\.ai-text\s+a\b/.test(sel)));
 assert.ok(aiLinks.length === 1 && aiLinks[0].context.length === 0
-    && JSON.stringify(selectors(aiLinks[0]).sort()) === JSON.stringify([".ai-text a", ".ai-text a:hover"])
-    && decls(aiLinks[0].body, "color").join() === "inherit",
+    && selectors(aiLinks[0]).includes(".ai-text a") && selectors(aiLinks[0]).every(sel => [".ai-text a", ".ai-text a:hover"].includes(sel))
+    && ["inherit", "currentcolor"].includes(decls(aiLinks[0].body, "color").join().toLowerCase()),
   `Replicata: read style.css's rules for links inside AI text (a selector starting ".ai-text a").
-Expectata: one, top-level, with the selectors .ai-text a and .ai-text a:hover, declaring color once, inherit.
+Expectata: one, top-level, with the selector .ai-text a, alone or with .ai-text a:hover (which it already covers), declaring color once, inherit or currentcolor (each the cell's AI ink; until 2026-11-07 the two selectors and inherit were required, so the rule written .ai-text a { color: currentcolor } was red).
 Resultata: ${JSON.stringify(aiLinks.map(r => ({ sel: r.sel, context: r.context, body: r.body.trim() })))}.`);
 const ghostNote = byExactSel(".ai-text .vmt-ghost-note");
 assert.ok(ghostNote.length === 1 && onlyDecl(ghostNote[0].body, "display", ".ai-text .vmt-ghost-note") === "inline-block"

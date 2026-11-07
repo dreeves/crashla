@@ -72,7 +72,11 @@
 //     tolerance short of that end; bandMixtureQuantiles' ("level",
 //     "target", "logOdds", "u") when its solve stops one unit of ln x below
 //     its start; when the quantile it finds leaves the log-odds five times
-//     the assert's 1e-8 from the level's, either side; on the steep made-up
+//     the assert's whole bound (its 1e-8 plus its step term) from the
+//     level's, either side, at the median and at the levels 1e-10 and
+//     1 - 1e-10 (where componentAt's near miss of its reach is also read;
+//     until 2026-11-07 the log-odds near miss was five times the 1e-8 alone,
+//     at the median alone); on the steep made-up
 //     mixtures, where the assert's step term rules, when the quantile is
 //     five times that step from the solution, either side; and when it
 //     stops one unit of ln x below its start with an infinite slope there,
@@ -109,10 +113,13 @@ const lanesDrawn = JSON.parse(vm.runInContext(`JSON.stringify(Object.entries({${
   .map(([metric, table]) => ({metric,
     table: table.flatMap(entry => [...new Set(entry.components.map(c => c.scope ?? entry.helmer))]),
     drawn: fleetDistributionCurves(metric).map(lane => lane.key)})))`, ctx));
-const undrawn = lanesDrawn.filter(m => !(m.table.length > 0 && JSON.stringify(m.drawn) === JSON.stringify(m.table)));
+// The two lists are compared as sets (sorted), not in order: the chart may
+// draw the lanes in any order (until 2026-11-07 the table's order was
+// required, so a correct reordering, the conditional lane drawn last, was red).
+const undrawn = lanesDrawn.filter(m => !(m.table.length > 0 && JSON.stringify([...m.drawn].sort()) === JSON.stringify([...m.table].sort())));
 assert.ok(undrawn.length === 0,
   `Replicata: read each growth metric's drawn lanes (crashla.js fleetDistributionCurves, each lane's key) and its forecast table's helmers and scopes (${METRICS.map(m => TABLE[m]).join(", ")}: each entry's components' scope, or the helmer's name where a component has none).
-Expectata: for each metric, one lane per helmer and scope of its table, in the table's order, and at least one, so that checks 2 and 3 read every lane.
+Expectata: for each metric, one lane per helmer and scope of its table, in any order, and at least one, so that checks 2 and 3 read every lane.
 Resultata: ${undrawn.map(m => `${m.metric}: drawn ${JSON.stringify(m.drawn)} for the table's ${JSON.stringify(m.table)}`).join("; ")}.`);
 
 // --- 1. componentAt from x = 1e-300 to 1e300 --------------------------------
@@ -239,8 +246,13 @@ assert.equal(vm.runInContext("typeof solveIncreasing", ctx), "function",
   `Replicata: load crashla.js and look up solveIncreasing, the solver both of the forecasts' solves call.
 Expectata: a function, which section 3 stands in for to make each solve's fault.
 Resultata: ${vm.runInContext("typeof solveIncreasing", ctx)}.`);
+// The levels in the lanes' far tails at which the near misses below are also
+// tested, where a solve's error is largest (until 2026-11-07 they were tested
+// at the median alone).
+const TAIL_LEVELS = [1e-10, 1 - 1e-10];
 vm.runInContext(`globalThis.__lanes = Object.fromEntries(${JSON.stringify(METRICS)}.map(metric => [metric, fleetDistributionCurves(metric)]));
-globalThis.__steep = ${JSON.stringify(STEEP)};`, ctx);
+globalThis.__steep = ${JSON.stringify(STEEP)};
+globalThis.__tails = Object.fromEntries(Object.entries(__lanes).map(([metric, lanes]) => [metric, lanes.map(l => bandMixtureQuantiles(l.components, ${JSON.stringify(TAIL_LEVELS)}))]));`, ctx);
 const LOGODDS = 1e-8; // the mixture assert's distance of the log-odds from the level's, before its step term
 const NEAR = 5; // a near miss's distance, in multiples of the tolerance it tests
 // Runs code with solveIncreasing's outermost solve replaced by stop(at,
@@ -296,10 +308,27 @@ for (const metric of METRICS) {
     }
     cases.push({what: `${metric} ${label}: its median, the mixture's solve stopping one unit of ln x below its start`,
       want: "bandMixtureQuantiles", got: faulty("(at, target, lo, hi, t) => at(t - 1)", median)});
+    // The log-odds near miss is five times the assert's whole bound at the
+    // root, its 1e-8 plus its step term (until 2026-11-07 five times the 1e-8
+    // alone, which on a steep lane the step term outgrows, so that a correct
+    // lane's near miss could fall inside the bound and a loosened step term
+    // pass unseen).
+    const nearLogOdds = sign => `(at, target, lo, hi, t, solve) => { const r = solve(at, target, lo, hi, t); return at(r.u + ${sign * NEAR} * (${LOGODDS} + r.slope * ${STEP} * (1 + Math.abs(r.u))) / r.slope); }`;
     for (const [side, sign] of [["above", 1], ["below", -1]]) {
-      cases.push({what: `${metric} ${label}: its median, the mixture's solve finding a quantile whose log-odds are ${NEAR} times the assert's ${LOGODDS} ${side} the level's`,
-        want: "bandMixtureQuantiles", got: faulty(`(at, target, lo, hi, t, solve) => { const r = solve(at, target, lo, hi, t); return at(r.u + ${sign * NEAR * LOGODDS} / r.slope); }`, median)});
+      cases.push({what: `${metric} ${label}: its median, the mixture's solve finding a quantile whose log-odds are ${NEAR} times the assert's whole bound (${LOGODDS} plus its step term) ${side} the level's`,
+        want: "bandMixtureQuantiles", got: faulty(nearLogOdds(sign), median)});
     }
+    // The reach and log-odds near misses again at the far tails' levels.
+    TAIL_LEVELS.forEach((level, k) => {
+      const atLevel = `bandMixtureQuantiles(${lane}.components, [${level}])`;
+      const x = `__tails.${metric}[${li}][${k}]`;
+      for (const [side, sign] of [["above", 1], ["below", -1]]) {
+        cases.push({what: `${metric} ${label}: its density at its quantile at ${level}, componentAt's solve reaching the level whose quantile is ${NEAR} times its tolerance (${REACH} of ln x's scale) ${side} ln x`,
+          want: "componentAt", got: faulty(`(at, target, lo, hi, t, solve) => solve(at, target + ${sign * NEAR * REACH} * (1 + Math.abs(target)), lo, hi, t)`, density(x))});
+        cases.push({what: `${metric} ${label}: its quantile at ${level}, the mixture's solve finding a quantile whose log-odds are ${NEAR} times the assert's whole bound ${side} the level's`,
+          want: "bandMixtureQuantiles", got: faulty(nearLogOdds(sign), atLevel)});
+      }
+    });
     cases.push({what: `${metric} ${label}: its median, the mixture's solve stopping one unit of ln x below its start, its slope there infinite`,
       want: "bandMixtureQuantiles", got: faulty("(at, target, lo, hi, t) => ({...at(t - 1), slope: Infinity})", median)});
   });

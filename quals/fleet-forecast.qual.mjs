@@ -17,6 +17,15 @@ vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 // The "miles" metric reads vmtRows (repo VMT master), so populate it like init does.
 vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
+// A helmer's entry of a forecast table, read, never assumed (since
+// 2026-11-07; until then six reads took .components of the first match, so a
+// table without the helmer stopped this qual on a TypeError naming nothing).
+// assert is crashla.js's, which throws its message with the details appended.
+vm.runInContext(`globalThis.__entry = (table, name, helmer) => {
+  const entry = table.find(f => f.helmer === helmer);
+  assert(entry !== undefined, "Replicata: read the forecast table " + name + " and find " + helmer + "'s entry.\\nExpectata: one, its components the lanes this qual reads.\\nResultata: none; the table's helmers are", table.map(f => f.helmer));
+  return entry;
+};`, ctx);
 
 // The elements of an SVG or HTML text, in document order, each with its tag
 // name in lower case (name: HTML reads a tag name in either case, so <PATH>
@@ -46,32 +55,87 @@ vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 // or as markup that does not nest; an attribute given twice took its last
 // value; and the messages of these asserts named no chart.
 const VOID = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"];
-const TAG = /<(\/?)([a-zA-Z][\w:-]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>/g;
-const ATTR = /([\w:-]+)\s*=\s*("[^"]*"|'[^']*'|[^\s"'=<>`]+)/g;
+// A start or end tag as HTML's tokenizer reads it (since 2026-11-07; until
+// then two regexes that split a tag at JavaScript's white space, a no-break
+// space among it, and skipped what they could not read, so a tag the browser
+// reads otherwise read as the chart's: an attribute after a no-break space,
+// which HTML reads as part of the attribute's name, read as a style, and a
+// tag name followed by one read as a path). HTML's white space is tab, line
+// feed, form feed, carriage return and space (the classes below). A tag name runs from
+// its first letter to white space, "/" or ">"; an attribute's name from its
+// first character to white space, "/", ">" or "=" (its first may be "="),
+// lower case taken for ASCII upper case; after it, white space, then "=",
+// white space and a value: quoted with either quote (holding ">" and white
+// space), or unquoted to white space or ">"; a quoted value may be followed
+// by the next attribute's name with no white space between (a parse error
+// HTML recovers from), and a "/" not before ">" reads as white space. The
+// tag ends at the first ">" outside a quoted value. Each reader returns the
+// tag's parts and where it ends.
+const sticky = re => new RegExp(re, "y");
+const TAG_NAME = sticky("[a-zA-Z][^\\t\\n\\f\\r />]*"), ATTR_NAME = sticky("[^\\t\\n\\f\\r />][^\\t\\n\\f\\r />=]*");
+const SPACE = sticky("[\\t\\n\\f\\r ]*"), QUOTED = sticky(`"([^"]*)"|'([^']*)'`), UNQUOTED = sticky("[^\\t\\n\\f\\r >]*");
+const scan = (re, t, i) => { re.lastIndex = i; return re.exec(t); };
+const lower = s => s.replace(/[A-Z]+/g, c => c.toLowerCase());
+const startTag = (t, i) => {
+  const name = scan(TAG_NAME, t, i + 1)[0];
+  const pairs = [];
+  let k = i + 1 + name.length, selfClosing = false;
+  for (;;) {
+    k += scan(SPACE, t, k)[0].length;
+    if (k >= t.length || t[k] === ">") break;
+    if (t[k] === "/") {
+      selfClosing = t[k + 1] === ">";
+      k += 1;
+      continue;
+    }
+    const attr = scan(ATTR_NAME, t, k)[0];
+    k += attr.length;
+    const eq = scan(sticky("[\\t\\n\\f\\r ]*=[\\t\\n\\f\\r ]*"), t, k);
+    let value = "";
+    if (eq !== null) {
+      k += eq[0].length;
+      const q = scan(QUOTED, t, k);
+      const v = q ?? scan(UNQUOTED, t, k);
+      value = q === null ? v[0] : q[1] ?? q[2];
+      k += v[0].length;
+    }
+    pairs.push([lower(attr), value]);
+  }
+  return {name: lower(name), written: name, pairs, end: k + 1, selfClosing};
+};
+const endTag = (t, i) => {
+  const name = scan(TAG_NAME, t, i + 2)[0];
+  return {name: lower(name), written: name, end: t.indexOf(">", i) + 1};
+};
 const LABEL = /[^<]*/y;
 const parse = (text, where) => {
   // The text with each comment blanked out, every other character where it was.
   const t = text.replace(/<!--[\s\S]*?-->/g, c => " ".repeat(c.length));
   const root = {name: "none", at: "none", chain: []}, open = [root], els = [];
-  for (const m of t.matchAll(TAG)) {
-    const [tag, slash, written, attrText, selfClosing] = m;
-    const name = written.toLowerCase();
-    if (slash === "/") {
+  // Each "<" that opens a start tag (a letter after it) or an end tag ("/"
+  // and a letter), past the last tag read (pos: a "<" inside a quoted value
+  // is that tag's); any other "<" is text.
+  let pos = 0;
+  for (const m of t.matchAll(/<\/?(?=[a-zA-Z])/g)) {
+    if (m.index < pos) continue;
+    if (m[0] === "</") {
+      const tag = endTag(t, m.index);
       const inner = open.pop();
-      assert.ok(inner !== root && inner.name === name,
+      assert.ok(inner !== root && inner.name === tag.name && tag.end > 0,
         `Replicata: read ${where}'s markup (parse), nesting each element in the innermost one open where its start tag stands.
 Expectata: each end tag closes the innermost open element, of its name (in either case).
-Resultata: </${written}> at ${m.index}, where the innermost open element is ${inner.name} (its start tag at ${inner.at}).`);
-      inner.end = m.index + tag.length;
+Resultata: </${tag.written}> at ${m.index}, where the innermost open element is ${inner.name} (its start tag at ${inner.at}).`);
+      inner.end = tag.end;
+      pos = tag.end;
     } else {
-      LABEL.lastIndex = m.index + tag.length;
-      // Its attributes as [name, value], in the order written.
-      const pairs = [...attrText.matchAll(ATTR)].map(a => [a[1].toLowerCase(), a[2].replace(/^(["'])([\s\S]*)\1$/, "$2")]);
-      const el = {name, at: m.index, tagEnd: m.index + tag.length, end: m.index + tag.length, text: LABEL.exec(t)[0], where,
-        attrs: Object.fromEntries(pairs.filter(([attr], k) => pairs.findIndex(([other]) => other === attr) === k))};
+      const tag = startTag(t, m.index);
+      LABEL.lastIndex = tag.end;
+      const el = {name: tag.name, at: m.index, tagEnd: tag.end, end: tag.end, text: LABEL.exec(t)[0], where,
+        attrs: Object.fromEntries(tag.pairs.filter(([attr], k) => tag.pairs.findIndex(([other]) => other === attr) === k))};
       el.chain = [...open.at(-1).chain, el];
       els.push(el);
-      if (selfClosing !== "/" && !VOID.includes(name)) open.push(el);
+      pos = tag.end;
+      if (!tag.selfClosing && !VOID.includes(tag.name)) open.push(el);
     }
   }
   assert.ok(open.length === 1,
@@ -143,21 +207,41 @@ const props = (el, names) => Object.fromEntries([
 ].map(([prop, value]) => [prop, trimWS(value)])
   .map(([prop, value]) => [prop, CASED.includes(prop) ? value : value.toLowerCase()]));
 const paint = el => props(el, PAINT);
-// A length as user units: its number, read by Number with a trailing px
-// dropped (an svg's px are its user units), so a value in other units, a
-// percentage, or none given reads as NaN.
-const userUnits = v => Number(`${v}`.replace(/px$/, ""));
+// A number as CSS and SVG write one, and a length as user units: a value
+// that, trimmed of white space (WS), is a number or a number in px (an svg's
+// px are its user units), read as that number; any other (another unit, a
+// percentage, a value holding another character, a no-break space or a hex
+// number say, or none given) reads as NaN, as the browser draws such a
+// length as 0 or not at all. Until 2026-11-07 Number read it, which trims a
+// no-break space and reads hex ("0x10"), so a radius, a clip width or an
+// axis end the browser reads as 0 read as the number, and the axes' ends were
+// read with Number alone, so one written in px read as NaN.
+const NUMBER = "[-+]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[-+]?\\d+)?";
+const LENGTH = new RegExp(`^(${NUMBER})(?:px)?$`, "i");
+const userUnits = v => Number((LENGTH.exec(trimWS(`${v}`)) ?? [, NaN])[1]);
+// A fraction (an opacity) as CSS writes one: a number, or a percentage of 1
+// (since 2026-11-07; until then a percentage stopped this qual as a value it
+// does not read, though the browser draws opacity 12% as 0.12).
+const FRACTION = new RegExp(`^(${NUMBER})(%?)$`);
+const fraction = v => {
+  const m = FRACTION.exec(`${v}`);
+  return Number(m[1]) * 0.01 ** m[2].length;
+};
+// SVG's comma-wsp, the separator of a list's numbers: white space and at
+// most one comma, or a comma and white space (since 2026-11-07; until then
+// any run of commas and white space, so a dash list "6,,4", which the browser
+// rejects and draws solid, read as dashed).
+const COMMA_WSP = "(?:[ \\t\\n\\r\\f]+,?[ \\t\\n\\r\\f]*|,[ \\t\\n\\r\\f]*)";
 
 // The numeric paint properties, each with the form of value this qual reads:
-// a number (a stroke-width also in px), and a dash array of none or numbers
-// (each also in px or %) apart by commas or white space.
-const NUMBER = "[-+]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[-+]?\\d+)?";
+// a number (a stroke-width also in px; an opacity also a percentage), and a
+// dash array of none or numbers (each also in px or %) apart by comma-wsp.
 const NUMERIC = {
   "stroke-width": new RegExp(`^${NUMBER}(?:px)?$`),
-  opacity: new RegExp(`^${NUMBER}$`),
-  "fill-opacity": new RegExp(`^${NUMBER}$`),
-  "stroke-opacity": new RegExp(`^${NUMBER}$`),
-  "stroke-dasharray": new RegExp(`^(?:none|${NUMBER}(?:px|%)?(?:[ \\t\\n\\r\\f,]+${NUMBER}(?:px|%)?)*)$`),
+  opacity: FRACTION,
+  "fill-opacity": FRACTION,
+  "stroke-opacity": FRACTION,
+  "stroke-dasharray": new RegExp(`^(?:none|${NUMBER}(?:px|%)?(?:${COMMA_WSP}${NUMBER}(?:px|%)?)*)$`),
 };
 
 // The properties an element is drawn with, read from its chain (its
@@ -189,12 +273,12 @@ const drawnPaint = el => {
     .map(([prop]) => `<${a.name}> (its start tag at ${a.at}) ${prop}: ${printable(own[k][prop])}`));
   assert.ok(unread.length === 0,
     `Replicata: read the paint ${el.where}'s <${el.name}> (its start tag at ${el.at}) is drawn with, from its own and its ancestors' attributes and styles.
-Expectata: each stroke-width, opacity, fill-opacity, stroke-opacity and stroke-dasharray among them a value this qual reads: a number (a stroke-width also in px), and a dash array none or numbers (each also in px or %) apart by commas or white space.
+Expectata: each stroke-width, opacity, fill-opacity, stroke-opacity and stroke-dasharray among them a value this qual reads: a number (a stroke-width also in px; an opacity also a percentage), and a dash array none or numbers (each also in px or %) apart by SVG's comma-wsp (white space and at most one comma, or a comma and white space).
 Resultata: ${unread.join("; ")}.`);
   const inherited = Object.assign({}, ...own.map(p => Object.fromEntries(Object.entries(p).filter(([prop]) => INHERITED.includes(prop)))));
   return {...inherited,
     ...Object.fromEntries(["fill", "stroke"].filter(prop => inherited[prop] === "currentcolor" && "color" in inherited).map(prop => [prop, inherited.color])),
-    opacity: own.filter(p => "opacity" in p).map(p => Number(p.opacity)).reduce((a, b) => a * b, 1),
+    opacity: own.filter(p => "opacity" in p).map(p => fraction(p.opacity)).reduce((a, b) => a * b, 1),
     displayNone: own.some(p => p.display === "none"),
     transforms: own.map(p => p.transform).filter(t => ![undefined, "none", ""].includes(t)),
     clipped: own.some(p => FLEET_CLIP_URL.test(`${p["clip-path"]}`)),
@@ -207,9 +291,13 @@ Resultata: ${unread.join("; ")}.`);
 // sixth fix run's second review (2026-11-04) colours were compared as
 // written, letter case aside, so a stroke written rgb(209, 59, 45) read as
 // another colour than its lane's #d13b2d.
+// The channels of rgb() are apart by commas throughout or by white space
+// throughout (since 2026-11-07; until then either at each gap, so a colour
+// the browser rejects, "rgb(209, 59 45)", read as #d13b2d).
 const colour = c => `${c}`.toLowerCase()
   .replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/, "#$1$1$2$2$3$3")
-  .replace(new RegExp(`^rgb\\(${WS}*(\\d+)${WS}*[ \\t\\n\\r\\f,]${WS}*(\\d+)${WS}*[ \\t\\n\\r\\f,]${WS}*(\\d+)${WS}*\\)$`), (_, r, g, b) => `#${[r, g, b].map(v => Math.min(255, Number(v)).toString(16).padStart(2, "0")).join("")}`);
+  .replace(new RegExp(`^rgb\\(${WS}*(\\d+)(?:${WS}*,${WS}*(\\d+)${WS}*,${WS}*|${WS}+(\\d+)${WS}+)(\\d+)${WS}*\\)$`),
+    (_, r, g1, g2, b) => `#${[r, g1 ?? g2, b].map(v => Math.min(255, Number(v)).toString(16).padStart(2, "0")).join("")}`);
 
 // Whether a mark's drawn paint (drawnPaint) shows it: each of the properties
 // named positive where given (one not given takes SVG's default, which shows
@@ -298,7 +386,7 @@ Resultata: the clip path's attributes ${JSON.stringify(clipPath.attrs)}, its chi
 // stroke none in its markup did.
 const plotFrame = (chart, els) => {
   const lines = els.filter(el => el.name === "line" && hasClass(el, "month-axis"));
-  const axes = lines.map(el => ({x1: Number(el.attrs.x1), y1: Number(el.attrs.y1), x2: Number(el.attrs.x2), y2: Number(el.attrs.y2)}));
+  const axes = lines.map(el => ({x1: userUnits(el.attrs.x1), y1: userUnits(el.attrs.y1), x2: userUnits(el.attrs.x2), y2: userUnits(el.attrs.y2)}));
   const yAxes = axes.filter(a => a.x1 === a.x2 && a.y1 !== a.y2), xAxes = axes.filter(a => a.y1 === a.y2 && a.x1 !== a.x2);
   assert.ok(axes.length === 2 && yAxes.length === 1 && xAxes.length === 1,
     `Replicata: render ${chart} and read its month-axis lines (the lines mapX and mapY span).
@@ -402,7 +490,7 @@ Resultata: colour not found.`,
 // section's message said it did).
 {
   const scopes = JSON.parse(vm.runInContext(`JSON.stringify({meta: FLEET_LANE_META,
-    weights: FLEET_FORECAST.find(f => f.helmer === "Tesla").components.map(c => ({scope: c.scope, weight: c.weight}))})`, ctx));
+    weights: __entry(FLEET_FORECAST, "FLEET_FORECAST", "Tesla").components.map(c => ({scope: c.scope, weight: c.weight}))})`, ctx));
   const want = ["robotaxi", "hw4"].map(k => `${scopes.meta[k].label} (~${Math.round(100 * scopes.weights.filter(w => w.scope === k).reduce((t, w) => t + w.weight, 0))}%)`);
   assert.ok(want.every(w => html.includes(w)),
     `Replicata: read the fleet chart legend/markers.
@@ -661,7 +749,7 @@ Resultata: CDF(median=${q.median}) = ${q.cdfMedian.toFixed(3)}, CDF(lo90) = ${q.
 // and the median sat 3% under its ceiling with no regression. Since
 // 2026-11-04 each component holds its parts (crashla.js, above
 // TESLA_ROBOTAXI_SCENARIOS), A's one: its band.
-const milesAComponent = JSON.parse(vm.runInContext(`JSON.stringify(MILES_FORECAST.find(f => f.helmer === "Tesla").components.find(c => c.weight > 0.5))`, ctx));
+const milesAComponent = JSON.parse(vm.runInContext(`JSON.stringify(__entry(MILES_FORECAST, "MILES_FORECAST", "Tesla").components.find(c => c.weight > 0.5))`, ctx));
 assert.ok(Array.isArray(milesAComponent.parts) && milesAComponent.parts.length === 1,
   `Replicata: read Tesla's scenario-A component of MILES_FORECAST (the one weighing over 0.5).
 Expectata: one part, A's band of cumulative miles.
@@ -695,13 +783,14 @@ Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
 // samples are taken (the first such lane on a tie). The marks are read from
 // the chart's own svg (chartOf: its legend aside), each as drawn (drawnPaint,
 // above: its own and its ancestors' attributes and styles) and its geometry
-// by property (props): the lanes' marks are the paths fleet-clip clips (it
-// or an ancestor carrying clip-path url(#fleet-clip)), a stroke a path drawn
-// with no fill (its fill none or transparent) and a fill a path drawn with a
-// fill, and a median marker a circle of class month-dot. Then, on every
-// metric:
-//   - no path fleet-clip leaves unclipped is painted in a lane's colour (its
-//     stroke or its fill: an unclipped curve);
+// by property (props): the lanes' marks are the paths painted in a lane's
+// colour (their stroke or their fill), a stroke a path drawn with no fill
+// (its fill none or transparent) and a fill a path drawn with a fill, and a
+// median marker a circle of class month-dot. Then, on every metric:
+//   - each path painted in a lane's colour is clipped by fleet-clip (it or an
+//     ancestor carrying clip-path url(#fleet-clip)) or by nothing (the
+//     curves stay inside the frame by their scale, so a clip containing the
+//     frame draws the picture no clip draws), never by another clip path;
 //   - the chart draws one stroke, one fill and one median marker per lane;
 //   - each stroke's path data is "M x y" and then "L x y" for each further
 //     vertex (absolute commands, or a first "m", which SVG reads as
@@ -739,8 +828,9 @@ Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
 //     stroke-width and the fill's and the marker's fill-opacity positive
 //     where given, no element of its chain with display none, its visibility
 //     not hidden or collapse, and the marker's r positive), its stroke's
-//     width given in the chart's markup, and its fill drawn with no outline
-//     (no stroke, or one of width or opacity 0);
+//     width given in the chart's markup where the stroke is drawn after a
+//     median marker (whether it covers the marker is read from it), and its
+//     fill drawn with no outline (no stroke, or one of width or opacity 0);
 //   - its stroke is dashed (a stroke-dasharray whose lengths are none
 //     negative and one positive) exactly when the lane is, and the lane is
 //     dashed exactly when it is conditional (not mainline), as section 1's
@@ -758,7 +848,13 @@ Resultata: ${JSON.stringify(milesByKey.robotaxi)}.`);
 // its centre lies inside the fill's polygon (even-odd) or within that of its
 // edge.
 // These checks read what the bullets above name, from the chart's markup
-// alone. Among what they do not read: what a stylesheet (style.css) sets;
+// alone, its tags read as HTML's tokenizer reads them (parse), its lengths a
+// number or a number in px (userUnits), its opacities a number or a
+// percentage, a path's data from its d attribute or a CSS d of path("..."),
+// its dash lists apart by SVG's comma-wsp, and rgb() apart by commas
+// throughout or white space throughout. Among what they do not read: what a
+// stylesheet (style.css) sets (a stroke whose fill:none moves into a class
+// there reads as a fill; the message says so);
 // paint properties outside PAINT (a mask, a filter, a clip path other than
 // fleet-clip, the paint order) and the clip path's children other than its
 // rectangle; a CSS-wide keyword (inherit, initial, unset, revert) as a
@@ -898,7 +994,17 @@ let onePeakLanes;
   const SEP = `(?:${WS}+,?${WS}*|,${WS}*)`;
   const VERTICES = `${WS}*[Mm]${WS}*${NUM}${SEP}${NUM}(?:${WS}*L${WS}*${NUM}${SEP}${NUM})*`;
   const STROKE_D = new RegExp(`^${VERTICES}${WS}*$`), FILL_D = new RegExp(`^${VERTICES}(?:${WS}*[Zz])?${WS}*$`);
-  const pathData = el => `${props(el, ["d"]).d}`;
+  // A path's data as drawn: a CSS d declaration in its style, path("<data>")
+  // with either quote, which Chromium draws over the attribute, or else its d
+  // attribute (a CSS d of another form the browser drops, as it does an
+  // invalid declaration). Since 2026-11-07; until then the merged property
+  // was read, so a stroke given its data as path("...") read as malformed.
+  const CSS_PATH = new RegExp(`^path\\(${WS}*(["'])([^"']*)\\1${WS}*\\)$`);
+  const pathData = el => {
+    const css = props({attrs: Object.fromEntries(Object.entries(el.attrs).filter(([attr]) => attr === "style"))}, ["d"]).d;
+    const m = css === undefined ? null : CSS_PATH.exec(css);
+    return m === null ? `${el.attrs.d}` : m[2];
+  };
   const vertices = d => {
     const vs = [...d.matchAll(new RegExp(NUM, "g"))].map(m => Number(m[0]));
     return Array.from({length: vs.length / 2}, (_, k) => [vs[2 * k], vs[2 * k + 1]]);
@@ -958,23 +1064,30 @@ Expectata: a call whose curves all hold their samples (their ys, an array or a t
 Resultata: calls of fleetDistributionCurves: ${builds.length}, building ${JSON.stringify(builds.map(curves => curves.length))} curves, of them without samples ${JSON.stringify(builds.map(curves => curves.filter(c => !Array.isArray(c.ys)).map(c => c.label)))}.`);
     const lanes = sampled.at(-1);
     sampledLanes.push({metric, lanes});
-    // A path fleet-clip leaves unclipped, painted in a lane's colour (its
-    // stroke or its fill), is an unclipped curve.
+    // The lanes' marks: the paths painted in a lane's colour (their stroke or
+    // their fill), each clipped by fleet-clip (it or an ancestor carrying
+    // clip-path url(#fleet-clip)) or by nothing: the curves stay inside the
+    // frame by their scale (read below), so a clip that contains the frame
+    // draws the same picture as none. A clip other than fleet-clip on one of
+    // them, which this qual does not read, fails. Since 2026-11-07; until then
+    // each had to be clipped by fleet-clip, so curves drawn with no clip at
+    // all, pixel for pixel the picture of a clip one unit wider than the plot
+    // (CLIP_WIDE, accepted), were red.
     const laneColours = lanes.map(l => colour(l.color));
-    const unclipped = paths.filter(el => !el.paint.clipped && [el.paint.stroke, el.paint.fill].some(c => laneColours.includes(colour(c))));
-    assert.ok(unclipped.length === 0,
+    const curves = paths.filter(el => [el.paint.stroke, el.paint.fill].some(c => laneColours.includes(colour(c))));
+    const otherClips = curves.filter(el => el.chain.some(a => ![undefined, "none"].includes(paint(a)["clip-path"]) && !FLEET_CLIP_URL.test(paint(a)["clip-path"])));
+    assert.ok(otherClips.length === 0,
       `Replicata: render ${chart} and find what clips each path in its svg painted in a lane's colour (${JSON.stringify(lanes.map(l => l.color))}).
-Expectata: each clipped by fleet-clip (it or an ancestor carrying clip-path url(#fleet-clip)).
-Resultata: not clipped: ${unclipped.map(el => `the path at ${el.at} (its data from ${printable(pathData(el).slice(0, 24))}), drawn with stroke ${el.paint.stroke} and fill ${el.paint.fill}`).join("; ")}.`);
-    const curves = paths.filter(el => el.paint.clipped);
+Expectata: each clipped by fleet-clip (it or an ancestor carrying clip-path url(#fleet-clip)) or by nothing (this qual reads no other clip).
+Resultata: clipped otherwise: ${otherClips.map(el => `the path at ${el.at} (its data from ${printable(pathData(el).slice(0, 24))}), under ${JSON.stringify(el.chain.map(a => paint(a)["clip-path"]).filter(c => ![undefined, "none"].includes(c)))}`).join("; ")}.`);
     const strokes = curves.filter(el => ["none", "transparent"].includes(el.paint.fill)).map(el => ({...el, color: el.paint.stroke}));
     const fills = curves.filter(el => !["none", "transparent"].includes(el.paint.fill)).map(el => ({...el, color: el.paint.fill}));
     const markers = circles.filter(el => hasClass(el, "month-dot")).map(el => ({...el, paint: drawnPaint(el), geometry: props(el, ["cx", "cy", "r"])}))
       .map(el => ({...el, color: el.paint.fill, cx: userUnits(el.geometry.cx), cy: userUnits(el.geometry.cy), r: userUnits(el.geometry.r)}));
     assert.ok([strokes, fills, markers].every(marks => marks.length === lanes.length),
       `Replicata: render ${chart} and read its strokes, fills and median markers, each as drawn (its own and its ancestors' attributes and styles).
-Expectata: among the paths fleet-clip clips, one stroke (a path drawn with no fill: none or transparent) and one fill (a path drawn with a fill), and one median marker (a circle of class month-dot), for each of its ${lanes.length} lanes.
-Resultata: of the ${paths.length} paths in its svg, ${curves.length} clipped by fleet-clip: ${strokes.length} strokes and ${fills.length} fills; of the ${circles.length} circles, ${markers.length} markers.`);
+Expectata: among the paths painted in a lane's colour, one stroke (a path drawn with no fill: none or transparent) and one fill (a path drawn with a fill), and one median marker (a circle of class month-dot), for each of its ${lanes.length} lanes. This qual reads paint from the chart's markup alone (its attributes and styles): a fill, stroke or width a stylesheet (style.css) gives is not read, so a stroke whose fill:none a stylesheet gives reads here as a fill.
+Resultata: of the ${paths.length} paths in its svg, ${curves.length} in a lane's colour: ${strokes.length} strokes and ${fills.length} fills; of the ${circles.length} circles, ${markers.length} markers.`);
     const malformed = [...strokes.map((el, i) => [`stroke ${i + 1}`, el, STROKE_D]), ...fills.map((el, i) => [`fill ${i + 1}`, el, FILL_D])]
       .filter(([, el, form]) => !form.test(pathData(el)));
     assert.ok(malformed.length === 0,
@@ -1037,7 +1150,12 @@ Resultata: ${n} grid points from ${grid[0]} to ${grid[n - 1]}; uneven steps afte
         if (colour(mark.color) !== colour(l.color)) problems.push(`${l.label}: ${what} ${i + 1} in ${mark.color}, the lane's colour ${l.color}`);
         if (!shows(mark.paint, positive)) problems.push(`${l.label}: ${what} ${i + 1} not drawn to be seen (drawn with ${JSON.stringify(mark.paint)})`);
       }
-      if (!("stroke-width" in stroke.paint)) problems.push(`${l.label}: stroke ${i + 1} given no stroke-width in the chart's markup (this qual reads none from a stylesheet; where it meets a median marker is read from it)`);
+      // A stroke drawn after a median marker needs its width in the markup:
+      // whether it covers the marker is read from it (this qual reads no
+      // stylesheet). Since 2026-11-07; until then every stroke needed one, so
+      // a width style.css gives every stroke, drawn the same, was red.
+      if (!("stroke-width" in stroke.paint) && markers.some(m => m.at < stroke.end))
+        problems.push(`${l.label}: stroke ${i + 1}, drawn after a median marker, given no stroke-width in the chart's markup (this qual reads none from a stylesheet; whether it covers the marker is read from it)`);
       if (outlines(fill.paint)) problems.push(`${l.label}: fill ${i + 1} outlined (its stroke ${JSON.stringify({stroke: fill.paint.stroke, "stroke-width": fill.paint["stroke-width"], "stroke-opacity": fill.paint["stroke-opacity"]})})`);
       if (!(marker.r > 0)) problems.push(`${l.label}: marker ${i + 1} of radius ${marker.r}`);
       if (dashes(stroke.paint) !== l.dashed) problems.push(`${l.label}: stroke ${i + 1} drawn ${DRAWN[dashes(stroke.paint)]}, the lane ${DRAWN[l.dashed]}`);
@@ -1279,7 +1397,7 @@ Expectata: immediate throw (the weights are a hard invariant).
 Resultata: no throw.`,
 );
 
-console.log(`qual pass: fleet forecast draws four normalized curves; Tesla split into its robotaxi and all-HW4-ADS scopes; on every metric every lane is drawn as its own density on the chart's grid and scale (its samples, stroke, fill and median marker, each in its lane's colour and, as its own and its ancestors' attributes and styles paint it, drawn to be seen and under no transform, its fill unoutlined and its stroke dashed exactly when the lane is conditional) in the frame of its month-axis lines, which meet at its corner and which its clip rectangle contains, its strokes and fills clipped, each stroke drawn over every fill and each median marker, unclipped, over every stroke and fill it meets, and its hit circles over the markers, and the ${onePeakLanes} lanes drawn from one band rise then fall on that grid; Tesla's all-HW4 lane sits at or above its robotaxi lane at every tenth of a percentile from the 0.1st to the 99.9th and at its printed percentiles, each lane's printed percentiles its quantiles to a billionth`);
+console.log(`qual pass: fleet forecast draws four normalized curves; Tesla split into its robotaxi and all-HW4-ADS scopes; on every metric every lane is drawn as its own density on the chart's grid and scale (its samples, stroke, fill and median marker, each in its lane's colour and, as its own and its ancestors' attributes and styles paint it, drawn to be seen and under no transform, its fill unoutlined and its stroke dashed exactly when the lane is conditional) in the frame of its month-axis lines, which meet at its corner and which its clip rectangle contains, its strokes and fills clipped by it or by nothing, each stroke drawn over every fill and each median marker, unclipped, over every stroke and fill it meets, and its hit circles over the markers, and the ${onePeakLanes} lanes drawn from one band rise then fall on that grid; Tesla's all-HW4 lane sits at or above its robotaxi lane at every tenth of a percentile from the 0.1st to the 99.9th and at its printed percentiles, each lane's printed percentiles its quantiles to a billionth`);
 
 // --- Tesla's rides scenarios are the miles scenarios over the ride corridor -
 // RIDES_FORECAST Tesla A stayed at the 2026-07-22 miles figures when
@@ -1288,8 +1406,8 @@ console.log(`qual pass: fleet forecast draws four normalized curves; Tesla split
 // component holds its parts, a robotaxi component one: its band.
 {
   const d = JSON.parse(vm.runInContext(`JSON.stringify((() => {
-    const m = MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi");
-    const r = RIDES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi");
+    const m = __entry(MILES_FORECAST, "MILES_FORECAST", "Tesla").components.filter(c => c.scope === "robotaxi");
+    const r = __entry(RIDES_FORECAST, "RIDES_FORECAST", "Tesla").components.filter(c => c.scope === "robotaxi");
     return {m, r, corridor: TESLA_MILES_PER_RIDE};
   })())`, ctx));
   assert.ok(d.m.length === 2 && d.r.length === 2 && [...d.m, ...d.r].every(c => Array.isArray(c.parts) && c.parts.length === 1),
@@ -1339,8 +1457,8 @@ Resultata: {${rc.best}, ${rc.lo}, ${rc.hi}} weight ${rc.weight}.`);
 // forecast's.
 {
   const d = JSON.parse(vm.runInContext(`JSON.stringify((() => {
-    const comps = t => t.find(f => f.helmer === "Tesla").components;
-    return {fleet: comps(FLEET_FORECAST), miles: comps(MILES_FORECAST), rides: comps(RIDES_FORECAST),
+    const comps = (t, name) => __entry(t, name, "Tesla").components;
+    return {fleet: comps(FLEET_FORECAST, "FLEET_FORECAST"), miles: comps(MILES_FORECAST, "MILES_FORECAST"), rides: comps(RIDES_FORECAST, "RIDES_FORECAST"),
       daily: TESLA_ROBOTAXI_SCENARIOS, eyesOff: TESLA_EYES_OFF, perCarDay: TESLA_MILES_PER_CAR_DAY,
       // Each robotaxi scenario's band in each table's unit: the fleet's its
       // daily miles over TESLA_MILES_PER_CAR_DAY, the miles' its cumulative
@@ -1420,7 +1538,7 @@ Resultata: ${problems.join("; ")}.`);
   // Each component's parts' low edges (since 2026-11-04 every component
   // holds its parts; each of Waymo's and Zoox's miles one band).
   const lows = JSON.parse(vm.runInContext(`JSON.stringify(Object.fromEntries(["Waymo", "Zoox"].map(h => [h,
-    MILES_FORECAST.find(f => f.helmer === h).components.flatMap(c => c.parts.map(b => b.lo))])))`, ctx));
+    __entry(MILES_FORECAST, "MILES_FORECAST", h).components.flatMap(c => c.parts.map(b => b.lo))])))`, ctx));
   const problems = [];
   for (const helmer of ["Waymo", "Zoox"]) {
     const own = rows.filter(r => r[0] === helmer.toLowerCase());

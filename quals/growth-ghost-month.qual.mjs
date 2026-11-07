@@ -258,14 +258,20 @@ Resultata: none on <circle${a}>.`);
       if (!dashedV.slice(1, -1).includes(at)) problems.push(`${key} · ${lane.label}: the dashed line ${JSON.stringify(dashedV)} does not pass through the faded dot at ${at}`);
       if (solidV.some(v => v.split(" ")[0] === g.x)) problems.push(`${key} · ${lane.label}: the solid line reaches the faded dot's month (x ${g.x})`);
     }
-    // The tooltip gives the point's values and ends with the ghost note; its
-    // other words are the page's and not checked (no wording pins, 2026-10-28).
+    // The tooltip, the one whose first line names the lane's helmer and the
+    // month (in any words and separators: until 2026-11-07 its head was read
+    // as "<helmer> · <month>", so an edit of that separator in crashla.js
+    // turned this red), gives the point's values and ends with the ghost
+    // note; its other words are the page's and not checked (no wording pins,
+    // 2026-10-28).
     for (const month of ghostMonths) {
       const p = lane.points.find(q => q.month === month);
       if (!p) continue; // reported in section 1
       const values = figuresOf(p);
-      const tip = tips.find(t => t.startsWith(`${lane.helmer} · ${month}\n`));
-      if (!tip || !tip.endsWith(`\n${GHOST_NOTE}`) || !values.every(v => tip.includes(v)))
+      const tip = tips.find(t => [lane.helmer, month].every(part => t.split("\n")[0].includes(part)));
+      if (tip === undefined)
+        problems.push(`${key} · ${lane.label}: no tooltip whose first line names ${lane.helmer} and ${month}; want one giving ${values.join(", ")} and ending with the ghost note`);
+      else if (!tip.endsWith(`\n${GHOST_NOTE}`) || !values.every(v => tip.includes(v)))
         problems.push(`${key} · ${lane.label}: the ${month} tooltip ${JSON.stringify(tip)} should give ${values.join(", ")} and end with the ghost note`);
     }
   }
