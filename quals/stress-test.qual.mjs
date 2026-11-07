@@ -515,7 +515,10 @@ Resultata: entry was ${JSON.stringify(flips.out[helmer])}.`,
       : badgeOf(cells[4]);
     const want = [escHtml(c.company), c.kText, wantBadge(c.verdict, c.k === 0), multShown(c), c.flipped === null ? null : wantBadge(c.flipped, false)];
     const got = [cells[0], cellText(cells[1]), badgeOf(cells[2]), multCell, flipped];
-    return cells.length === 5 && JSON.stringify(got) === JSON.stringify(want) ? null : { row: i + 1, want, got };
+    // Each entry names its row's cell count: a row short of its last cell
+    // reads that cell as undefined, which JSON prints as null, so until
+    // 2026-11-06 such a row's want and got printed alike.
+    return cells.length === 5 && JSON.stringify(got) === JSON.stringify(want) ? null : { row: i + 1, cells: cells.length, want, got };
   }).filter(x => x !== null);
   assert.ok(
     sameSection && rows.length === plain.flipCells.length && wrong.length === 0,

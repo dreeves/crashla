@@ -79,7 +79,14 @@ def with_rows(text, change):
     buf = io.StringIO(); w = csv.DictWriter(buf, fieldnames=fields, lineterminator='\n'); w.writeheader(); w.writerows(rdr)
     return buf.getvalue()
 adas = texts['nhtsa-adas']
-tmpl = next(r for r in csv.DictReader(io.StringIO(adas)) if r['Report ID'] == '30270-14303')
+# 30270-14303's ADAS-file row, the template of the synthetic rows below, read,
+# never assumed (until 2026-11-06 a file without it stopped on a StopIteration
+# naming nothing).
+tmpls = [r for r in csv.DictReader(io.StringIO(adas)) if r['Report ID'] == '30270-14303']
+assert tmpls, (f"Replicata: read the newest nhtsa-adas snapshot ({out['snapshots']['nhtsa-adas']}) and find 30270-14303's rows. "
+               f"Expectata: at least one, the template of this qual's synthetic ADAS-file rows. "
+               f"Resultata: none among its {sum(1 for _ in csv.DictReader(io.StringIO(adas)))} rows.")
+tmpl = tmpls[0]
 def add(row):
     return lambda rs: rs + [dict(tmpl, **row)]
 out['stop'] = {
@@ -145,11 +152,14 @@ assert.ok(S.adsPrefix && S.extra.length === 1 && S.extra[0]["Report ID"] === "30
   `Replicata: compare slurp.newest_snapshot_rows() with the newest ADS current and archive snapshots' rows.
 Expectata: the ADS rows, then 30270-14303's one row from the ADAS file, its contact areas under their true labels (the crash partner's front left, published under "Front": "the front left side of the passenger car made contact").
 Resultata: ADS rows first ${S.adsPrefix}; rows after them ${JSON.stringify(S.extra)}.`);
-const st = S.stop || {};
+// The script computes S.stop whenever it exits 0 (asserted above), each entry
+// a string (until 2026-11-06 these reads carried "|| {}" and "|| ''" defaults
+// that could not fire).
+const st = S.stop;
 assert.equal(st.baseline, "",
   `Replicata: call slurp.misfiled_ads_rows on the newest snapshots. Expectata: it returns the listed rows. Resultata: ${JSON.stringify(st.baseline)}.`);
 const want = { unlistedWaymo: /30270-99001/, unlistedZooxOther: /30610-99002/, operatorChanged: /30270-14303/, movedToAds: /30270-14303/, gone: /30270-14303/, unquoted: /30270-14303/ };
-const quiet = Object.entries(want).filter(([k, re]) => !(re.test(st[k] || "") && /MISFILED_ADS_REPORTS/.test(st[k] || ""))).map(([k]) => [k, (st[k] || "").slice(0, 200)]);
+const quiet = Object.entries(want).filter(([k, re]) => !(re.test(st[k]) && /MISFILED_ADS_REPORTS/.test(st[k]))).map(([k]) => [k, st[k].slice(0, 200)]);
 assert.deepEqual(quiet, [],
   `Replicata: call slurp.misfiled_ads_rows on the newest snapshots changed one way each: an unlisted driverless Waymo report in the ADAS file, an unlisted Zoox report coded Unknown in the OTHER file, 30270-14303 re-filed as "In-Vehicle (Commercial / Test)", 30270-14303 also in the ADS rows, 30270-14303 gone from the ADAS file, and 30270-14303 re-filed without the words saying its ADS drove.
 Expectata: each stops, naming the report and MISFILED_ADS_REPORTS.
@@ -157,7 +167,7 @@ Resultata: ${JSON.stringify(quiet)}.`);
 assert.equal(st.teslaConsumer, "",
   `Replicata: call slurp.misfiled_ads_rows with an added Tesla "Consumer" report in the ADAS file (a Level 2 crash of a customer's car).
 Expectata: no stop: a consumer at the wheel is not an ADS-driven robotaxi.
-Resultata: ${JSON.stringify((st.teslaConsumer || "").slice(0, 200))}.`);
+Resultata: ${JSON.stringify(st.teslaConsumer.slice(0, 200))}.`);
 assert.ok(S.fetch && !S.fetch.error && S.fetch.sameRows
   && JSON.stringify(S.fetch.urls) === JSON.stringify([BASE + "ADAS.csv", BASE + "ADS.csv", BASE + "OTHER.csv", "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/Archive-2021-2025/SGO-2021-01_Incident_Reports_ADS.csv"].sort())
   && JSON.stringify(S.fetch.saved) === JSON.stringify(["nhtsa-adas", "nhtsa-archive", "nhtsa-current", "nhtsa-other"]),

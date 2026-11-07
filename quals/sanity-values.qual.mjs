@@ -418,8 +418,6 @@ Expectata: class="ai-text" (the legend says this column's text is AI-generated a
 Resultata: attributes were ${JSON.stringify(m[1])}.`);
 }
 
-console.log("qual pass: sanity check computed values are arithmetically consistent");
-
 // --- The "VMT uncertainty" table reports the band the cards actually use ---
 // Until 2026-09-26 it re-summed each month's receipt-scaled 95% edges (the
 // perfectly-correlated band the app abandoned on 2026-09-04), so it showed
@@ -454,3 +452,7 @@ Resultata: ${JSON.stringify(note.slice(0, 600))}.`);
 Expectata: its five-day clause names every fiveDay metric: ${JSON.stringify(labels)}.
 Resultata: ${JSON.stringify(tip)}.`);
 }
+
+// The pass line comes after every check (until 2026-11-06 it came before the
+// last two sections, so a failure there read "qual pass" then its error).
+console.log("qual pass: sanity check computed values are arithmetically consistent");

@@ -56,10 +56,14 @@ const ctx = vm.createContext({ console, Math, Number, Float64Array, Object, Stri
   document: { getElementById() { return { textContent: "", innerHTML: "" }; }, createElement() { return { textContent: "", innerHTML: "" }; } } });
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
-const app = JSON.parse(vm.runInContext(`JSON.stringify({
-  tesla: FLEET_FORECAST.find(f => f.helmer === "Tesla").components,
-  eyesOff: TESLA_EYES_OFF,
-})`, ctx));
+// Tesla's fleet entry is read, never assumed (until 2026-11-06 a table
+// without one stopped this qual on a TypeError naming nothing). assert is
+// crashla.js's, which throws its message with the details appended.
+const app = JSON.parse(vm.runInContext(`JSON.stringify((() => {
+  const tesla = FLEET_FORECAST.find(f => f.helmer === "Tesla");
+  assert(tesla !== undefined, "Replicata: read FLEET_FORECAST in crashla.js and find Tesla's entry.\\nExpectata: one, its components the scenarios whose inputs this check reads.\\nResultata: none; the table's helmers are", FLEET_FORECAST.map(f => f.helmer));
+  return { tesla: tesla.components, eyesOff: TESLA_EYES_OFF };
+})())`, ctx));
 const problems = [];
 
 // --- 1. The weights reproduce their recorded market fit ---------------------

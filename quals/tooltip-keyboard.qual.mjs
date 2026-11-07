@@ -287,8 +287,12 @@ Resultata: on focus ${JSON.stringify(t)}; after Escape ${JSON.stringify(afterEsc
   // must still be on the circle (the plot's clip-path cut it off there).
   const growthPage = await openPage(browser, server.url + DEFAULT_QUERY + "&g=miles", { viewport: { width: 1200, height: 900 } });
   const low = await growthPage.evaluate(() => {
-    const c = [...document.querySelectorAll("#chart-fleet-timeseries circle[data-tip]")]
-      .find(e => e.getAttribute("data-tip").startsWith("Tesla · 2025-06\n"));
+    // The point is read, never assumed (until 2026-11-06 a chart without it
+    // stopped this qual on a TypeError naming nothing). assert is
+    // crashla.js's, which throws its message with the details appended.
+    const targets = [...document.querySelectorAll("#chart-fleet-timeseries circle[data-tip]")];
+    const c = targets.find(e => e.getAttribute("data-tip").startsWith("Tesla · 2025-06\n"));
+    assert(c !== undefined, "Replicata: open the growth chart on Miles (g=miles) and find Tesla's 2025-06 point among its tooltip targets.\nExpectata: one.\nResultata: none; the targets' tooltips open", targets.map(e => e.getAttribute("data-tip").split("\n")[0]));
     c.scrollIntoView({ block: "center" });
     const r = c.getBoundingClientRect();
     const x = r.left + r.width / 2, y = r.top + r.height * 0.9;

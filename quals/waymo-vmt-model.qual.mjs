@@ -54,7 +54,13 @@ for (const [month, published, minus, plus, residue] of [
   ["2024-12", 50083000, 2000, 2000 + 5500, 0],
   ["2025-01", 56700000, 500, 500 + 9250, 1],   // the paper's total; Mountain View and Atlanta listed apart
 ]) {
+  // The month's row is read, never assumed (until 2026-11-06 a master
+  // without it stopped here on a TypeError naming nothing).
   const row = master.find(r => r.month === month);
+  assert.ok(row !== undefined,
+    `Replicata: find Waymo's ${month} row in data/vmt.csv, a month with a published cumulative figure.
+Expectata: one, its cumulative band the envelope this check derives.
+Resultata: none; Waymo's months run ${JSON.stringify(master.map(r => r.month))}.`);
   const central = published - OFFSET.central + residue;
   const bounds = [published - minus - OFFSET.hi, published + plus - OFFSET.lo];
   assert.deepEqual([row.helmer_cumulative_vmt, row.kyoom_min, row.kyoom_max], [central, ...bounds],
@@ -69,7 +75,12 @@ Resultata: ${JSON.stringify(row)}.`);
 // E, less the offset's range), June the knot, later months forward from it.
 {
   const after = master.filter(r => r.month > "2026-03");
+  // (The March 2026 knot's row is read, never assumed, as above.)
   const mar = master.find(r => r.month === "2026-03");
+  assert.ok(mar !== undefined,
+    `Replicata: find Waymo's 2026-03 row in data/vmt.csv, the model's last knot.
+Expectata: one, its cumulative band the start of the chain.
+Resultata: none; Waymo's months run ${JSON.stringify(master.map(r => r.month))}.`);
   const knots = {"2026-06": [271329379 + 4000000 - OFFSET.hi, 271329379 + 10200000 - OFFSET.lo]};
   const chain = [];
   let prev = {kmin: mar.kyoom_min, kmax: mar.kyoom_max};

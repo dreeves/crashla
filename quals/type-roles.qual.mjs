@@ -189,7 +189,14 @@ assert.equal(onlyDecl(root[0].body, "--line", ":root"), "var(--ink)", "--line IS
 const tip = byExactSel(".chart-tip");
 assert.equal(tip.length, 1);
 assert.ok(!has(tip[0], "font-family"), ".chart-tip is appended to body and inherits --sans");
-assert.match(onlyDecl(byExactSel("body")[0].body, "max-width", "body"), /rem$/, "body width follows the root size");
+// The body rule is read, never assumed (until 2026-11-06 a style.css without
+// a top-level body rule stopped here on a TypeError naming nothing).
+const bodyRules = byExactSel("body");
+assert.ok(bodyRules.length >= 1,
+  `Replicata: read style.css's top-level body rule.
+Expectata: one, declaring the page's max-width.
+Resultata: none (the rules' selectors: ${JSON.stringify(parsed.filter(r => r.context.length === 0).map(r => r.sel).slice(0, 40))}).`);
+assert.match(onlyDecl(bodyRules[0].body, "max-width", "body"), /rem$/, "body width follows the root size");
 const html = byExactSel("html");
 assert.equal(html.length, 1);
 assert.equal(onlyDecl(html[0].body, "text-size-adjust", "html"), "100%");

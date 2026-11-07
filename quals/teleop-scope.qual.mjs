@@ -75,7 +75,13 @@ import tempfile, pathlib
 def regenerate_with(extra):
     inc = pathlib.Path('data/incidents.js').read_text(); vmt = pathlib.Path('data/vmt.js').read_text()
     rows = slurp.newest_snapshot_rows()
-    template = next(r for r in rows if r['Reporting Entity'] == 'Waymo LLC' and r['Driver / Operator Type'].strip() == 'None' and r['Report Type'].strip() == '5-Day' and r['Incident Date'].strip() == 'AUG-2026')
+    # The template filing is read, never assumed (until 2026-11-06 snapshots
+    # without one stopped here on a StopIteration naming nothing).
+    templates = [r for r in rows if r['Reporting Entity'] == 'Waymo LLC' and r['Driver / Operator Type'].strip() == 'None' and r['Report Type'].strip() == '5-Day' and r['Incident Date'].strip() == 'AUG-2026']
+    assert templates, ("Replicata: read slurp.newest_snapshot_rows() and find a Waymo 5-Day filing of AUG-2026 coded 'None', the template of this qual's synthetic guard rows. "
+                       "Expectata: at least one. "
+                       f"Resultata: none among the {len(rows)} rows.")
+    template = templates[0]
     synth = dict(template); synth.update(extra); synth['Report ID'] = 'synthetic-guard'; synth['Same Incident ID'] = 'synthetic-guard'
     headers = {slurp.NHTSA_ADS_CSV_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None), slurp.NHTSA_ADS_ARCHIVE_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None)}
     slurp.fetch_nhtsa_csv = lambda stamp: (rows + [synth], headers)

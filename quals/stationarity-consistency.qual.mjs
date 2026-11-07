@@ -26,10 +26,26 @@ const MOVING = /Proceeding|Making|Turn|Changing|Merging|Passing|Backing|Entering
 // as "" when absent) a renamed or dropped field left this monitor counting
 // nothing and passing at 0 disagreements.
 const unread = data.filter(r => typeof r.svMovement !== "string" || !(typeof r.speed === "number" || r.speed === null));
+// What a record holds under a field: "absent", or the value's type and the
+// value (until 2026-11-06 the message said every such record lacked a field,
+// also when it held one of the wrong type).
+const held = (r, field) => field in r ? `${typeof r[field]} ${JSON.stringify(r[field])}` : "absent";
 assert.equal(unread.length, 0,
   `Replicata: read svMovement (data/slurp.py's "SV Pre-Crash Movement") and speed ("SV Precrash Speed (MPH)") on every INCIDENT_DATA record.
 Expectata: on each, svMovement a string and speed a number or null (a filed speed that is not a whole number).
-Resultata: ${unread.length} of ${data.length} records lack one; the first: ${unread.slice(0, 5).map(r => `${r.reportId} (svMovement ${JSON.stringify(r.svMovement)}, speed ${JSON.stringify(r.speed)})`).join("; ")}.`);
+Resultata: ${unread.length} of ${data.length} records lack one or hold it with another type; the first: ${unread.slice(0, 5).map(r => `${r.reportId} (svMovement: ${held(r, "svMovement")}; speed: ${held(r, "speed")})`).join("; ")}.`);
+
+// Few speeds are null: data/slurp.py stores null where the filed speed is not
+// a whole number (3 of 2,221 records on 2026-11-06), and a null speed counts
+// as agreeing with any movement, so a parse that nulled every speed would
+// leave the drift monitor below counting nothing and passing at 0
+// disagreements. Bound: 1% of the records.
+const NULL_SPEED_SHARE = 0.01;
+const nullSpeed = data.filter(r => r.speed === null);
+assert.ok(nullSpeed.length <= NULL_SPEED_SHARE * data.length,
+  `Replicata: count the INCIDENT_DATA records whose speed (data/slurp.py's "SV Precrash Speed (MPH)") is null.
+Expectata: at most ${NULL_SPEED_SHARE * 100}% of the ${data.length} records (${Math.floor(NULL_SPEED_SHARE * data.length)}); a filed speed is a whole number but for a few.
+Resultata: ${nullSpeed.length}; the first: ${nullSpeed.slice(0, 5).map(r => r.reportId).join(", ")}.`);
 
 let spd0Moving = 0, stoppedSpdPos = 0;
 for (const r of data) {

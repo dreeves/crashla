@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
+import { stripComments, rules, decls } from "./css-parse.mjs";
 
 class ElementStub {
   constructor(tagName, id = "") {
@@ -222,6 +224,25 @@ Resultata: ${JSON.stringify(steps)}.`);
 // that can still move outward is the one a pointer grabs. With crossing gone,
 // a window collapsed onto the last month would otherwise trap a pointer: the
 // end thumb, on top, cannot move left past the start thumb it hides.
+// An input without an inline z-index takes its stylesheet's, read from
+// style.css (until 2026-11-06 this held copies of style.css's 2 and 3, so a
+// change there did not reach this check).
+const sliderCss = rules(stripComments(fs.readFileSync("style.css", "utf8")));
+// The cascade's value: the last z-index declared in a top-level rule for the
+// selector.
+const cssZ = sel => {
+  const values = sliderCss.filter(r => r.sel === sel && r.context.length === 0).flatMap(r => decls(r.body, "z-index"));
+  assert.ok(values.length >= 1,
+    `Replicata: read the z-index of style.css's top-level ${sel} rules.
+Expectata: at least one, the stacking an input without an inline z-index takes.
+Resultata: none.`);
+  return Number(values.at(-1));
+};
+const Z = { min: cssZ(".date-range-input-min"), max: cssZ(".date-range-input-max") };
+assert.ok(Number.isFinite(Z.min) && Number.isFinite(Z.max),
+  `Replicata: read the z-index of style.css's .date-range-input-min and .date-range-input-max rules.
+Expectata: a number each.
+Resultata: ${JSON.stringify(Z)}.`);
 const stacked = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
   const months = fullMonthSeries.months, last = months.length - 1;
@@ -234,13 +255,13 @@ const stacked = JSON.parse(JSON.stringify(vm.runInContext(`
     min.value = "0"; fire(min, "input");
     max.value = String(v); fire(max, "input");
     min.value = String(v); fire(min, "input");
-    return Number(min.style.zIndex || 2) > Number(max.style.zIndex || 3);
+    return Number(min.style.zIndex || ${Z.min}) > Number(max.style.zIndex || ${Z.max});
   };
   return { atLast: at(last), atFirst: at(0), rightHalf: at(last - 3), leftHalf: at(3) };
 })()
 `, ctx)));
 assert.deepEqual(stacked, { atLast: true, atFirst: false, rightHalf: true, leftHalf: false },
-  `Replicata: collapse the window onto one month at the series' last month, its first month, and a month near each end; compare the two inputs' z-index (style.css: start 2, end 3).
+  `Replicata: collapse the window onto one month at the series' last month, its first month, and a month near each end; compare the two inputs' z-index (an inline one, else style.css's: start ${Z.min}, end ${Z.max}).
 Expectata: the start thumb on top in the right half (it can still move left), the end thumb on top in the left half (it can still move right).
 Resultata: start thumb on top: ${JSON.stringify(stacked)}.`);
 

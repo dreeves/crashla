@@ -60,16 +60,16 @@ assert.ok(SOURCES !== null && Object.keys(SOURCES).length > 0 &&
 Expectata: an object mapping each benchmark source URL to its one label.
 Resultata: ${JSON.stringify(SOURCES)}.`);
 const unlisted = BANDS.flatMap(b => b.srcLinks
-  .filter(s => typeof s !== "string" || (SOURCES ?? {})[s] === undefined)
+  .filter(s => typeof s !== "string" || SOURCES[s] === undefined)
   .map(s => `${b.cohort} ${b.metric}: ${JSON.stringify(s)}`));
 assert.deepEqual(unlisted, [],
   `Replicata: check every humanMPI srcLinks entry against BENCHMARK_SOURCES.
 Expectata: each entry is a URL string with a label in the table (so one URL can only ever carry one label).
 Resultata: entries outside the table: ${JSON.stringify(unlisted)}.`);
-// (Past the first assert SOURCES is non-null; the ?? {} only keeps a
-// soft-assert red run going on code that predates the table.)
-const S = SOURCES ?? {};
-const labels = Object.values(S);
+// SOURCES is non-null past the first assert (until 2026-11-06 a "?? {}"
+// stood here, and at the check above, for a soft-assert red run on code that
+// predated the table; dead since that assert is a hard one).
+const labels = Object.values(SOURCES);
 assert.equal(new Set(labels).size, labels.length,
   `Replicata: compare the labels in BENCHMARK_SOURCES.
 Expectata: no two sources share a label.
@@ -111,19 +111,19 @@ Resultata: ${hrefs.length} links, ${new Set(hrefs).size} distinct: ${JSON.string
 Expectata: links joined by ${JSON.stringify(sep)}.
 Resultata: ${line.slice(0, 300)}.`);
   for (const [href, label] of [...line.matchAll(/href="([^"]*)">([^<]*)<\/a>/g)].map(m => [m[1].replace(/&amp;/g, "&"), m[2].replace(/&amp;/g, "&")])) {
-    assert.equal(label, S[href],
+    assert.equal(label, SOURCES[href],
       `Replicata: compare a "Benchmarks:" link label with BENCHMARK_SOURCES.
-Expectata: ${JSON.stringify(S[href])} for ${href}.
+Expectata: ${JSON.stringify(SOURCES[href])} for ${href}.
 Resultata: ${JSON.stringify(label)}.`);
   }
 }
 
 // --- #70: the two Kusano papers have 7 and 6 authors ---
 for (const url of ["https://arxiv.org/abs/2312.12675", "https://arxiv.org/abs/2505.01515"]) {
-  assert.ok(S[url] && S[url].startsWith("Kusano et al."),
+  assert.ok(SOURCES[url] && SOURCES[url].startsWith("Kusano et al."),
     `Replicata: read the label for ${url}.
 Expectata: "Kusano et al. ..." (the paper has more than two authors).
-Resultata: ${JSON.stringify(S[url])}.`);
+Resultata: ${JSON.stringify(SOURCES[url])}.`);
 }
 assert.ok(labels.every(l => !/Kusano & Scanlon/.test(l)),
   `Replicata: search the source labels for "Kusano & Scanlon".
@@ -169,13 +169,13 @@ assert.deepEqual(avBlincoe2015, [],
   `Replicata: look for Blincoe 2015 (NHTSA 812013) among the AV-cities sources.
 Expectata: none — the AV-cities bands use Blincoe et al. 2023 through Kusano et al. and the hub.
 Resultata: ${JSON.stringify(avBlincoe2015)}.`);
-assert.ok(/2015/.test(S[B2015] || "") && /2023/.test(S[B2023] || ""),
+assert.ok(/2015/.test(SOURCES[B2015] || "") && /2023/.test(SOURCES[B2023] || ""),
   `Replicata: read the two Blincoe labels.
 Expectata: each names its edition (2015, 2023).
-Resultata: ${JSON.stringify([S[B2015], S[B2023]])}.`);
+Resultata: ${JSON.stringify([SOURCES[B2015], SOURCES[B2023]])}.`);
 
 // --- #69: the current release notes ---
-const notes = Object.keys(S).filter(u => /Release_Notes/.test(u));
+const notes = Object.keys(SOURCES).filter(u => /Release_Notes/.test(u));
 assert.deepEqual(notes, ["https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/Waymo_Safety_Impact_Data_Hub_Release_Notes_20261002.pdf"],
   `Replicata: read the Waymo Data Hub release-notes link.
 Expectata: the Oct 2, 2026 edition the hub links (data through Jun 2026, with the corrected CSV3 and CSV4), not the superseded Sep 24 or Jun 24 one.
@@ -205,11 +205,11 @@ Resultata: ${JSON.stringify(notes)}.`);
     seriousInjury: [CRSS, HUB, IIHS, B2015, B2023, N813791],
   };
   const missing = Object.entries(want).flatMap(([metric, urls]) =>
-    urls.filter(u => !linksOf(metric, "HumansUS").includes(u)).map(u => `${metric}: ${S[u] || u}`));
+    urls.filter(u => !linksOf(metric, "HumansUS").includes(u)).map(u => `${metric}: ${SOURCES[u] || u}`));
   assert.deepEqual(missing, [],
     `Replicata: read the US-average (HumansUS) srcLinks of the all-crash, at-fault, injury, at-fault injury, airbag and serious-injury+ bands.
 Expectata: each links the sources of the rates its derivation names: NHTSA CRSS 2024 for the crashed-vehicle rates (all six); also the Waymo hub, IIHS, both Blincoe editions and NHTSA 813791 for the airbag and SSI+ log-interpolations.
 Resultata: missing ${JSON.stringify(missing)}.`);
 }
 
-console.log(`qual pass: ${Object.keys(S).length} benchmark sources, one label each; human cards list each once; derivations cite the sources they use`);
+console.log(`qual pass: ${Object.keys(SOURCES).length} benchmark sources, one label each; human cards list each once; derivations cite the sources they use`);

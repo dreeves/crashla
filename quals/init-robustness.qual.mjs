@@ -23,13 +23,14 @@
 import assert from "node:assert/strict";
 import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
 
-// What a document drew.
+// What a document drew. (An element's textContent is a string, so the
+// '|| ""' each of the two reads below carried until 2026-11-06 never fired.)
 const SUMMARY = () => {
   const q = s => document.querySelectorAll(s).length;
   return {
     charts: q("svg.month-svg"), cards: q(".mpi-card"), rows: q("#incidents-body tr"),
-    markets: q("#predmarket-panel .pm-card"), sanity: (document.getElementById("sanity-checks").textContent || "").length,
-    colophon: (document.getElementById("colophon").textContent || "").length > 0,
+    markets: q("#predmarket-panel .pm-card"), sanity: document.getElementById("sanity-checks").textContent.length,
+    colophon: document.getElementById("colophon").textContent.length > 0,
     chartViewW: typeof chartViewW === "number" ? chartViewW : null,
   };
 };

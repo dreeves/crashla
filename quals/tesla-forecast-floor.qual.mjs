@@ -44,8 +44,15 @@ vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 const FORECAST_DATE = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
 const DAYS_TO_FORECAST = (Date.parse(FORECAST_DATE) - Date.parse("2026-10-19")) / 86400000;
 const milesFloor = +sepRow[3] + OCT_1_18 + WEEK_TO_OCT_18 / 7 * DAYS_TO_FORECAST;
-const med = JSON.parse(vm.runInContext(`JSON.stringify(Object.fromEntries(["miles", "fleet"].map(m =>
-  [m, fleetDistributionCurves(m).find(c => c.key === "robotaxi").median])))`, ctx));
+// The robotaxi lane is read, never assumed (until 2026-11-06 a metric
+// without one stopped this qual on a TypeError naming nothing). assert is
+// crashla.js's, which throws its message with the details appended.
+const med = JSON.parse(vm.runInContext(`JSON.stringify(Object.fromEntries(["miles", "fleet"].map(m => {
+  const curves = fleetDistributionCurves(m);
+  const lane = curves.find(c => c.key === "robotaxi");
+  assert(lane !== undefined, "Replicata: draw the growth forecast's lanes on " + m + " (fleetDistributionCurves) and find Tesla's robotaxi lane (key \\"robotaxi\\").\\nExpectata: one, its median the forecast this check floors.\\nResultata: none; the lanes' keys are", curves.map(c => c.key));
+  return [m, lane.median];
+})))`, ctx));
 
 const fmt = n => Math.round(n).toLocaleString("en-US");
 assert.ok(med.miles >= milesFloor && med.fleet >= fleetFloor,

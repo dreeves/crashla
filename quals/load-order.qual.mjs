@@ -49,7 +49,8 @@ Resultata: ${JSON.stringify(box && box.body)}.`);
 const WATCH = `
   window.__order = { frames: 0, chartFrame: null };
   window.__shift = 0;
-  try { new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__shift += e.value; }).observe({ type: "layout-shift", buffered: true }); } catch (e) {}
+  window.__shiftObserveError = null;
+  try { new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__shift += e.value; }).observe({ type: "layout-shift", buffered: true }); } catch (e) { window.__shiftObserveError = String(e); }
   (function watch() {
     requestAnimationFrame(() => {
       window.__order.frames++;
@@ -79,6 +80,7 @@ try {
       await page.waitForFunction(drawnAll, null, { timeout: 30000 }).catch(() => {});
       await page.waitForTimeout(300);
       const seen = await page.evaluate(() => ({ ...window.__order, shift: window.__shift,
+        shiftSupported: PerformanceObserver.supportedEntryTypes.includes("layout-shift"), shiftObserveError: window.__shiftObserveError,
         built: { rows: document.querySelectorAll("#incidents-body tr").length, sanity: document.querySelectorAll("#sanity-checks h3").length,
           growth: document.querySelectorAll("#chart-fleet-timeseries svg, #chart-fleet-forecast svg").length },
         vmtHeadingTop: document.querySelector("#sec-vmt .sec-head").getBoundingClientRect().top + scrollY,
@@ -107,6 +109,10 @@ try {
         if (after.visibility !== "auto") problems.push(`${engineName}: after a click on the "${label}" filter the incident box (${after.rows} rows) has content-visibility ${JSON.stringify(after.visibility)}, not "auto"`);
       }
       if (engineName === "chromium" && !(seen.shift < 0.01)) problems.push(`chromium: a fresh 1200x900 load shifted the layout by ${seen.shift.toFixed(3)} (want < 0.01)`);
+      // The shift is measured, not assumed: a Chromium whose observer never
+      // registered (its error was swallowed until 2026-11-06) recorded 0 and
+      // passed the check above.
+      if (engineName === "chromium" && !(seen.shiftSupported && seen.shiftObserveError === null)) problems.push(`chromium: the layout-shift observer did not run: PerformanceObserver.supportedEntryTypes includes "layout-shift" ${seen.shiftSupported}; observe() threw ${JSON.stringify(seen.shiftObserveError)} (want true, nothing)`);
       if (errors.length > 0) problems.push(`${engineName}: page errors ${JSON.stringify(errors)}`);
       await context.close();
 
@@ -136,11 +142,16 @@ try {
       const none = await browser.newContext({ viewport: { width: 1200, height: 900 } });
       await none.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
       const humans = await none.newPage();
+      // Its page errors, collected as the default view's are (until
+      // 2026-11-06 this page had no pageerror listener).
+      const humanErrors = [];
+      humans.on("pageerror", err => humanErrors.push(err.message));
       await humans.goto(server.url + "?f=All&s=-&a=1&c=HumansAV&m=atfault", { waitUntil: "load" });
       const drew = await humans.waitForFunction(drawnAll, null, { timeout: 30000 }).then(() => true, () => false);
       const empty = await humans.evaluate(() => ({ children: document.getElementById("chart-helmer-series").children.length,
         height: document.getElementById("chart-helmer-series").getBoundingClientRect().height }));
       if (!(drew && empty.children === 0 && empty.height < 1)) problems.push(`${engineName}: with no company checked the page drew within 30 s: ${drew}; the company charts' box holds ${empty.children} charts and is ${empty.height.toFixed(1)} px tall (want true, none, 0 px)`);
+      if (humanErrors.length > 0) problems.push(`${engineName}: with no company checked, page errors ${JSON.stringify(humanErrors)}`);
       await none.close();
     } finally {
       await browser.close();
@@ -152,7 +163,7 @@ try {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: in Chromium, Firefox and WebKit, load the default view at 1200x900, watching every animation frame from the document's start, then click the "Tesla" filter and the "All" filter; load the default view again with crashla.js withheld; then load c=HumansAV (no company checked) and wait up to 30 s for it to draw.
-Expectata: the first frame that shows the charts and cards also shows every incident row, the sanity section and both growth charts; no page error; the incident box has content-visibility auto in the default view and after each filter click; Chromium records a layout shift under 0.01; the "Vehicle Miles Traveled" heading sits within 1 px of the same place before the script runs and once the page is drawn; the empty incident box before the script runs is, within 1 px, as tall as the drawn page's, both where it sits off screen and once scrolled on screen; and with no company checked (c=HumansAV) the page draws within 30 s and the company charts' box is empty and 0 px tall.
+Expectata: the first frame that shows the charts and cards also shows every incident row, the sanity section and both growth charts; no page error; the incident box has content-visibility auto in the default view and after each filter click; Chromium supports and observes layout-shift entries and records a layout shift under 0.01; the "Vehicle Miles Traveled" heading sits within 1 px of the same place before the script runs and once the page is drawn; the empty incident box before the script runs is, within 1 px, as tall as the drawn page's, both where it sits off screen and once scrolled on screen; and with no company checked (c=HumansAV) the page draws within 30 s, with no page error, and the company charts' box is empty and 0 px tall.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: a load paints the page whole, with every view built in the script's task, keeps the incident box's layout skipping through filter clicks, and shifts nothing, in three engines");

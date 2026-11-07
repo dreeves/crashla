@@ -82,7 +82,14 @@ Resultata: [${dec.kmin}, ${dec.kmax}].`);
 // miles passes 1,000,000, the month's miles spread evenly over its days.
 {
   const PRE = 40080;
+  // November's row is read, never assumed (until 2026-11-06 a master without
+  // it stopped here on a TypeError naming nothing; December's is a milestone,
+  // found above).
   const nov = rows.find(x => x.month === "2025-11"), dec = rows.find(x => x.month === "2025-12");
+  assert.ok(nov !== undefined,
+    `Replicata: find the zoox 2025-11 row in data/vmt.csv, the month before the 1M crossing.
+Expectata: one, its cumulative the crossing day's start.
+Resultata: none; zoox's months run ${JSON.stringify(rows.map(x => x.month))}.`);
   const day = 31 * (1000000 - PRE - nov.cume) / (dec.cume - nov.cume);
   assert.ok(day > 0 && day <= 7,
     `Replicata: find the day Zoox's cumulative plus the ${PRE} pre-series miles passes 1,000,000 (end-Nov ${nov.cume + PRE}, December ${dec.cume - nov.cume} spread evenly).
