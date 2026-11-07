@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
-import { stripComments, rules, decls, selectors } from "./css-parse.mjs";
 
 class ElementStub {
   constructor(tagName, id = "") {
@@ -219,67 +217,14 @@ Expectata: each moved thumb stops at the other, so "Start month" always holds th
 Resultata: ${JSON.stringify(steps)}.`);
 }
 
-// While the two thumbs share a month, the start thumb is drawn over the end
-// thumb in the slider's right half and under it in the left half, so the one
-// that can still move outward is the one a pointer grabs. With crossing gone,
-// a window collapsed onto the last month would otherwise trap a pointer: the
-// end thumb, on top, cannot move left past the start thumb it hides.
-// An input without an inline z-index takes its stylesheet's, read from
-// style.css (until 2026-11-06 this held copies of style.css's 2 and 3, so a
-// change there did not reach this check).
-const sliderCss = rules(stripComments(fs.readFileSync("style.css", "utf8")));
-// An input's classes, from the slider's markup (crashla.js
-// renderDateRangeControls).
-const inputClasses = id => {
-  const tags = [...plain.sliderHtml.matchAll(/<input\b[^>]*>/g)].map(m => m[0]);
-  const tag = tags.find(s => new RegExp(`\\sid="${id}"`).test(s));
-  assert.ok(tag !== undefined && /\sclass="[^"]*"/.test(tag),
-    `Replicata: build the monthly views and find the <input id="${id}"> in the date range slider's markup.
-Expectata: one, with a class attribute (the classes style.css styles it by).
-Resultata: the slider's inputs: ${JSON.stringify(tags)}.`);
-  return /\sclass="([^"]*)"/.exec(tag)[1].split(/\s+/).filter(Boolean);
-};
-// The stylesheet's z-index for an input with those classes, as the cascade
-// gives it: the last one declared, in source order, among style.css's
-// top-level rules whose selector list holds one of the classes as a selector
-// of its own (all of the same specificity), or auto (stack level 0) when none
-// declares one. Until a review of 2026-11-06 the check read only a rule whose
-// whole selector was the input's own class, so moving the z-index into a
-// shared or grouped rule, or deleting the start input's rule (which
-// crashla.js's inline z-index always overrides), turned it red.
-const cssZ = classes => {
-  const own = new Set(classes.map(c => "." + c));
-  const declared = sliderCss.filter(r => r.context.length === 0 && selectors(r).some(s => own.has(s)))
-    .flatMap(r => decls(r.body, "z-index"));
-  const z = ["auto", ...declared].at(-1);
-  assert.ok(z === "auto" || /^-?\d+$/.test(z),
-    `Replicata: read the z-index style.css's top-level rules give an element of classes ${JSON.stringify(classes)}.
-Expectata: an integer, or auto.
-Resultata: ${JSON.stringify(z)} (declared, in source order: ${JSON.stringify(declared)}).`);
-  return z === "auto" ? 0 : Number(z);
-};
-const Z = { min: cssZ(inputClasses("date-range-min")), max: cssZ(inputClasses("date-range-max")) };
-const stacked = JSON.parse(JSON.stringify(vm.runInContext(`
-(() => {
-  const months = fullMonthSeries.months, last = months.length - 1;
-  const min = document.getElementById("date-range-min");
-  const max = document.getElementById("date-range-max");
-  const fire = (input, type) => { for (const fn of input.listeners[type]) fn(); };
-  // Both thumbs onto month v, in an order no clamp interferes with: start to
-  // 0, end to v, start to v.
-  const at = v => {
-    min.value = "0"; fire(min, "input");
-    max.value = String(v); fire(max, "input");
-    min.value = String(v); fire(min, "input");
-    return Number(min.style.zIndex || ${Z.min}) > Number(max.style.zIndex || ${Z.max});
-  };
-  return { atLast: at(last), atFirst: at(0), rightHalf: at(last - 3), leftHalf: at(3) };
-})()
-`, ctx)));
-assert.deepEqual(stacked, { atLast: true, atFirst: false, rightHalf: true, leftHalf: false },
-  `Replicata: collapse the window onto one month at the series' last month, its first month, and a month near each end; compare the two inputs' z-index (an inline one, else style.css's: start ${Z.min}, end ${Z.max}).
-Expectata: the start thumb on top in the right half (it can still move left), the end thumb on top in the left half (it can still move right).
-Resultata: start thumb on top: ${JSON.stringify(stacked)}.`);
+// Which thumb is drawn on top while the two share a month (the one a pointer
+// grabs, so it must be one that can still move outward) is checked by
+// date-slider-thumbs.qual in Chromium, Firefox and WebKit, from the input a
+// pointer at the thumbs' centre reaches. Until 2026-11-07 this qual checked it
+// here, with style.css's values copied (start 2, end 3) and then, from
+// 2026-11-06, read through a model of the cascade, which a rule scoped by the
+// slider's class or the input's id, or a custom property, got wrong both ways
+// (review, 2026-11-07).
 
 // --- One address-bar write per commit, after every view (audit 2026-10-04 #10)
 // WebKit allows 100 history.replaceState calls per 10 s. A commit wrote the

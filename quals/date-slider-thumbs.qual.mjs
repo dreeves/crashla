@@ -4,10 +4,15 @@
 // Until 2026-10-04 they crossed: End on "Start month" and Home on "End
 // month" gave the window 2021-07..2026-08 with "Start month" announcing
 // 2026-08 and "End month" 2021-07, and ArrowRight on "End month" then moved
-// the window's start. date-slider.qual checks the clamp and the stacking in a
-// DOM stub; this checks them where keys and pointers are real:
+// the window's start. date-slider.qual checks the clamp in a DOM stub; this
+// checks it, and which thumb is drawn on top, where keys, pointers and the
+// cascade are real:
 //  - the keys above leave a one-month window whose two inputs both announce
 //    its month;
+//  - while the two thumbs share a month, a pointer at them reaches the start
+//    thumb in the slider's right half and the end thumb in its left half
+//    (the engine's own hit test; until 2026-11-07 date-slider.qual checked
+//    this with style.css's values, read through a model of the cascade);
 //  - a window collapsed onto one month opens again by dragging the thumb a
 //    pointer reaches there: at the series' last month the start thumb (drawn
 //    on top, it moves left), at its first month the end thumb (it moves
@@ -85,6 +90,46 @@ try {
       if (page.errors.length > 0) problems.push(`${engineName}: page errors ${JSON.stringify(page.errors)}`);
       await page.context().close();
 
+      // While the two thumbs share a month, the one drawn on top is the one a
+      // pointer grabs, so it must be one that can still move outward: the
+      // start thumb in the slider's right half (it can move left), the end
+      // thumb in the left half (it can move right). With crossing gone, a
+      // window collapsed onto the last month would otherwise trap a pointer:
+      // the end thumb, on top, cannot move left past the start thumb it
+      // hides. Read from the engine at the series' last and first months and
+      // a month near each end: the element a pointer at the thumbs' centre
+      // reaches (document.elementFromPoint, the hit test the drags below go
+      // through), with each input's computed z-index for the message.
+      {
+        const p = await open(browser, server.url + DEF);
+        const stacked = await p.evaluate(() => {
+          const last = fullMonthSeries.months.length - 1;
+          const min = document.getElementById("date-range-min");
+          const max = document.getElementById("date-range-max");
+          const move = (input, v) => { input.value = String(v); input.dispatchEvent(new Event("input", { bubbles: true })); };
+          max.scrollIntoView({ block: "center" });
+          // Both thumbs onto month v, in an order no clamp interferes with:
+          // start to 0, end to v, start to v; then the thumbs' centre, as the
+          // drags below find it.
+          const at = v => {
+            move(min, 0); move(max, v); move(min, v);
+            const box = max.getBoundingClientRect();
+            const hit = document.elementFromPoint(box.left + 9 + (box.width - 18) * v / Number(max.max), box.top + box.height / 2);
+            return { reaches: [hit === min, hit === max], hit: hit === null ? null : hit.outerHTML.slice(0, 160),
+              zIndex: [getComputedStyle(min).zIndex, getComputedStyle(max).zIndex], window: [min.value, max.value] };
+          };
+          return { atLast: at(last), atFirst: at(0), rightHalf: at(last - 3), leftHalf: at(3) };
+        });
+        // Which input a pointer at the thumbs' centre reaches, as [the start
+        // input, the end input].
+        const got = Object.fromEntries(Object.entries(stacked).map(([at, c]) => [at, c.reaches]));
+        const want = { atLast: [true, false], atFirst: [false, true], rightHalf: [true, false], leftHalf: [false, true] };
+        if (JSON.stringify(got) !== JSON.stringify(want))
+          problems.push(`${engineName}: with the window collapsed onto one month, a pointer at the thumbs' centre reaches [the start input, the end input] ${JSON.stringify(got)}; want ${JSON.stringify(want)} (each case's element reached, the inputs' computed z-index, start then end, and the window: ${JSON.stringify(stacked)})`);
+        if (p.errors.length > 0) problems.push(`${engineName} thumb stacking: page errors ${JSON.stringify(p.errors)}`);
+        await p.context().close();
+      }
+
       // Pointer: a window collapsed onto the last month, then onto the first.
       for (const [d, dx, want] of [
         [`${last}.${last}`, -200, w => w.start !== last && w.end === last],
@@ -140,8 +185,8 @@ try {
 
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, (a) on the default view press End on "Start month", then Home and ArrowRight on "End month"; (b) open d=<last month>.<last month> and drag the thumbs' spot 200 px left; (c) open d=2021-07.2021-07 and drag it 200 px right; (d) open d=2025-06.2026-03 and drag the end thumb 20 months left, then (fresh page) the start thumb 20 months right, past the other.
-Expectata: (a) a one-month window on the last month, both inputs announcing it ("Start month" and "End month" never swap roles); (b) the start thumb moves: the window widens leftward to end on the last month; (c) the end thumb moves: the window widens rightward from 2021-07; (d) each moved thumb stops at the other and the release commits that one-month window: the slider label, the incident browser's heading and the URL's d= all name it.
+  `Replicata: in Chromium, Firefox and WebKit, (a) on the default view press End on "Start month", then Home and ArrowRight on "End month"; (b) open d=<last month>.<last month> and drag the thumbs' spot 200 px left; (c) open d=2021-07.2021-07 and drag it 200 px right; (d) open d=2025-06.2026-03 and drag the end thumb 20 months left, then (fresh page) the start thumb 20 months right, past the other; (e) on a fresh default view collapse the window onto one month at the series' last month, its first month, and a month near each end (the start thumb to 0, the end thumb to the month, the start thumb to it), and find the input a pointer at the thumbs' centre reaches (document.elementFromPoint).
+Expectata: (a) a one-month window on the last month, both inputs announcing it ("Start month" and "End month" never swap roles); (b) the start thumb moves: the window widens leftward to end on the last month; (c) the end thumb moves: the window widens rightward from 2021-07; (d) each moved thumb stops at the other and the release commits that one-month window: the slider label, the incident browser's heading and the URL's d= all name it; (e) the start input in the slider's right half (its thumb can still move left), the end input in its left half (its thumb can still move right).
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
-console.log("qual pass: the date slider's thumbs cannot cross, a window collapsed onto one month at either end opens again by pointer, and a drag the clamp stops commits on release, in Chromium, Firefox and WebKit");
+console.log("qual pass: the date slider's thumbs cannot cross, the one drawn on top of a collapsed window can move outward, a window collapsed onto one month at either end opens again by pointer, and a drag the clamp stops commits on release, in Chromium, Firefox and WebKit");

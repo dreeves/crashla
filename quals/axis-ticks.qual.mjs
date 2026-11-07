@@ -400,15 +400,24 @@ Resultata: ${JSON.stringify(got)}.`);
 }
 const UNIT = { "": 1, K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
 const valueOf = label => { const m = /^([\d,.]+)([KMBT]?)$/.exec(label); return m ? Number(m[1].replace(/,/g, "")) * UNIT[m[2]] : NaN; };
-// A chart's y labels: its month-tick texts anchored at their end, each
-// attribute read on its own (until 2026-11-06 the pattern also required the
-// attributes in crashla.js's order, class, x, y, text-anchor, so a template
-// listing them in another order found no label at all).
+// A chart's y labels: its texts of class month-tick (among any others)
+// anchored at their end, each attribute read on its own (until 2026-11-06 the
+// pattern also required the attributes in crashla.js's order, class, x, y,
+// text-anchor, so a template listing them in another order found no label at
+// all; until 2026-11-07 month-tick had to be the only class).
 const attrsOf = tag => Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(m => [m[1], m[2]]));
-const yLabels = svg => [...svg.matchAll(/<text\b([^>]*)>([^<]+)<\/text>/g)]
-  .map(m => ({ attrs: attrsOf(m[1]), label: m[2] }))
-  .filter(t => t.attrs.class === "month-tick" && t.attrs["text-anchor"] === "end")
+const textsOf = svg => [...svg.matchAll(/<text\b([^>]*)>([^<]+)<\/text>/g)]
+  .map(m => ({ attrs: attrsOf(m[1]), label: m[2] }));
+const yLabels = svg => textsOf(svg)
+  .filter(t => /(^|\s)month-tick(\s|$)/.test(t.attrs.class) && t.attrs["text-anchor"] === "end")
   .map(t => ({ y: Number(t.attrs.y), value: valueOf(t.label), label: t.label }));
+// A chart's <text> elements counted by class and text-anchor, and those
+// anchored at their end, for a message.
+const textsSeen = svg => {
+  const texts = textsOf(svg);
+  const pairs = texts.map(t => `class="${t.attrs.class}" text-anchor="${t.attrs["text-anchor"]}"`);
+  return `by class and text-anchor ${JSON.stringify([...new Set(pairs)].map(k => [k, pairs.filter(p => p === k).length]))}; those anchored at their end ${JSON.stringify(texts.filter(t => t.attrs["text-anchor"] === "end").map(t => t.label).slice(0, 12))}`;
+};
 const unround = [];
 for (const [what, setup, render] of [
   ["Tesla cumulative VMT, full history", "vmtCumulative = true", `renderHelmerMonthlyChart(activeSeries, "Tesla")`],
@@ -424,9 +433,9 @@ for (const [what, setup, render] of [
   // The labels are read, never assumed (until 2026-11-06 a chart with fewer
   // than two stopped this qual on a TypeError naming nothing).
   assert.ok(ys.length >= 2,
-    `Replicata: render the ${what} and read its y labels (its <text class="month-tick"> elements with text-anchor="end").
+    `Replicata: render the ${what} and read its y labels (its <text> elements of class month-tick, among any others, with text-anchor="end").
 Expectata: at least two, 0 and the first step.
-Resultata: ${ys.length}; the chart's <text> elements: ${JSON.stringify([...svg.matchAll(/<text\b[^>]*>[^<]*<\/text>/g)].map(m => m[0]).slice(0, 12))}.`);
+Resultata: ${ys.length}; the chart's <text> elements: ${textsSeen(svg)}.`);
   const step = ys[1].value - ys[0].value;
   const rung = step / Math.pow(10, Math.floor(Math.log10(step)));
   const evenly = ys.every((t, i) => Math.abs(t.value - i * step) <= 1e-9 * step);
