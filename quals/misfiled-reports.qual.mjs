@@ -145,13 +145,20 @@ assert.ok(S.adsPrefix && S.extra.length === 1 && S.extra[0]["Report ID"] === "30
   `Replicata: compare slurp.newest_snapshot_rows() with the newest ADS current and archive snapshots' rows.
 Expectata: the ADS rows, then 30270-14303's one row from the ADAS file, its contact areas under their true labels (the crash partner's front left, published under "Front": "the front left side of the passenger car made contact").
 Resultata: ADS rows first ${S.adsPrefix}; rows after them ${JSON.stringify(S.extra)}.`);
-// The script computes S.stop whenever it exits 0 (asserted above), each entry
-// a string (until 2026-11-06 these reads carried "|| {}" and "|| ''" defaults
-// that could not fire).
+// The script computes S.stop whenever it exits 0 (asserted above); until
+// 2026-11-06 these reads carried "|| {}" and "|| ''" defaults, and with them
+// gone a case the script and the checks below name differently stopped this
+// qual on a TypeError naming nothing. So the cases are asserted first: the
+// keys the checks read, each a string.
 const st = S.stop;
+const want = { unlistedWaymo: /30270-99001/, unlistedZooxOther: /30610-99002/, operatorChanged: /30270-14303/, movedToAds: /30270-14303/, gone: /30270-14303/, unquoted: /30270-14303/ };
+const cases = ["baseline", ...Object.keys(want), "teslaConsumer"];
+assert.ok(JSON.stringify(Object.keys(st).sort()) === JSON.stringify([...cases].sort()) && cases.every(k => typeof st[k] === "string"),
+  `Replicata: run this qual's Python, which calls slurp.misfiled_ads_rows on the newest snapshots changed one way each, and read its stop messages (S.stop).
+Expectata: one message (a string, "" for no stop) for each case the checks below read: ${JSON.stringify(cases)}.
+Resultata: ${JSON.stringify(Object.fromEntries(Object.entries(st).map(([k, v]) => [k, typeof v])))}.`);
 assert.equal(st.baseline, "",
   `Replicata: call slurp.misfiled_ads_rows on the newest snapshots. Expectata: it returns the listed rows. Resultata: ${JSON.stringify(st.baseline)}.`);
-const want = { unlistedWaymo: /30270-99001/, unlistedZooxOther: /30610-99002/, operatorChanged: /30270-14303/, movedToAds: /30270-14303/, gone: /30270-14303/, unquoted: /30270-14303/ };
 const quiet = Object.entries(want).filter(([k, re]) => !(re.test(st[k]) && /MISFILED_ADS_REPORTS/.test(st[k]))).map(([k]) => [k, st[k].slice(0, 200)]);
 assert.deepEqual(quiet, [],
   `Replicata: call slurp.misfiled_ads_rows on the newest snapshots changed one way each: an unlisted driverless Waymo report in the ADAS file, an unlisted Zoox report coded Unknown in the OTHER file, 30270-14303 re-filed as "In-Vehicle (Commercial / Test)", 30270-14303 also in the ADS rows, 30270-14303 gone from the ADAS file, and 30270-14303 re-filed without the words saying its ADS drove.

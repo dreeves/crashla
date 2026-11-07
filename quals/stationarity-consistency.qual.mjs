@@ -2,10 +2,13 @@
 // the categorical `svMovement` — for the nonstationary metric. They legitimately
 // measure different things (speed at impact vs the pre-crash maneuver category),
 // so they need not agree on every row; `speed == 0` is authoritative for "was
-// the AV moving at impact". This is a DRIFT monitor: it fails loud only if the
+// the AV moving at impact". This is a DRIFT monitor: it fails loud if the
 // disagreement rate blows past a small bound, which would signal a data/schema
-// regression (e.g. speed parsing breaking and mass-defaulting to 0). It does not
-// change the metric — see crashla.js nonstationaryIncidentCount.
+// regression (e.g. speed parsing breaking and mass-defaulting to 0), and,
+// since 2026-11-04 and 2026-11-06, if a record does not hold both signals or
+// more than 1% of the records hold a null speed (either would leave the bound
+// counting nothing). It does not change the metric — see crashla.js
+// nonstationaryIncidentCount.
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { dataScript } from "./load-app.mjs";

@@ -85,8 +85,14 @@ out['safetyRefiled'] = without_words('SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN', '30270
 # in-scope Zoox report whose narrative says "An unoccupied Zoox autonomous
 # vehicle", then a re-filing without those words
 OCC_WORDS = 'An unoccupied Zoox autonomous vehicle'
-occ = min(rid for rid, r in latest.items() if r['Reporting Entity'] == 'Zoox, Inc.' and slurp.is_public_service_incident(r)
-          and OCC_WORDS in r['Narrative'] and rid not in _REVIEWED and r['Same Incident ID'] not in _REVIEWED)
+occ_from = [rid for rid, r in latest.items() if r['Reporting Entity'] == 'Zoox, Inc.' and slurp.is_public_service_incident(r)
+            and OCC_WORDS in r['Narrative'] and rid not in _REVIEWED and r['Same Incident ID'] not in _REVIEWED]
+# The report is read, never assumed (until 2026-11-06 none stopped this qual on
+# a bare ValueError from min(), naming nothing).
+assert occ_from, ("Replicata: find, in the newest snapshots' latest filings (quals/override-guards.qual.mjs), an in-scope Zoox report "
+                  f"whose narrative says {OCC_WORDS!r} and that no reviewed table of data/slurp.py names. "
+                  "Expectata: at least one, the report this qual gives a synthetic OCCUPANCY_LANGUAGE_REVIEWED entry. Resultata: none.")
+occ = min(occ_from)
 out['occupancyReport'] = occ
 out['occupancyRefiled'] = without_words('OCCUPANCY_LANGUAGE_REVIEWED', occ, {**slurp.OCCUPANCY_LANGUAGE_REVIEWED, occ: OCC_WORDS})
 out['fatalCountRefiled'] = without_words('VEHICLES_INVOLVED', '30270-9724', slurp.VEHICLES_INVOLVED)

@@ -215,7 +215,13 @@ first_obs = min(waymo_obs)
 waymo_obs[first_obs] = (waymo_obs[first_obs][0] + 1, *waymo_obs[first_obs][1:])
 stops['arrivalTotal'] = stop_message(newest, MONTHLY_ARRIVAL_OBSERVATIONS={**slurp.MONTHLY_ARRIVAL_OBSERVATIONS, 'Waymo': waymo_obs})
 # (g) a share table for a helmer with no lag (dead data)
-unlagged = min(h for h, lag in lags.items() if lag == 0)
+unlagged_from = [h for h, lag in lags.items() if lag == 0]
+# The helmer is read, never assumed (until 2026-11-06 a release in which every
+# helmer is lagged stopped this qual on a bare ValueError from min(), naming
+# nothing).
+assert unlagged_from, ("Replicata: find a helmer with no Monthly-report lag in data/slurp.py's MONTHLY_ARRIVAL_LAG (quals/monthly-arrival-lag.qual.mjs, case (g)). "
+                       f"Expectata: at least one, the helmer this case gives a share table it must not have. Resultata: none; the lags are {lags}.")
+unlagged = min(unlagged_from)
 stops['deadShare'] = stop_message(newest, FIVE_DAY_SHARE_OBSERVATIONS={
     **slurp.FIVE_DAY_SHARE_OBSERVATIONS, unlagged: {first_obs: (0, 1)}})
 out['stops'] = stops

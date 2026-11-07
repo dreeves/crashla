@@ -166,10 +166,15 @@ out['reviewedKept'] = sorted(slurp.OCCUPANCY_LANGUAGE_REVIEWED)
 # a copy of a 2025 report saying "unoccupied" (outside every observation
 # table; filed once, so the copy is its own version-1 filing), filed with a
 # belted passenger
-template = min((r for r in latest.values() if r['Reporting Entity'].strip() == 'Zoox, Inc.'
-                and r['Incident Date'].strip().endswith('-2025') and r['Driver / Operator Type'].strip() == 'None'
-                and r['Report Version'].strip() == '1' and re.search(r'\bunoccupied\s+Zoox', r['Narrative'])),
-               key=lambda r: r['Report ID'])
+template_from = [r for r in latest.values() if r['Reporting Entity'].strip() == 'Zoox, Inc.'
+                 and r['Incident Date'].strip().endswith('-2025') and r['Driver / Operator Type'].strip() == 'None'
+                 and r['Report Version'].strip() == '1' and re.search(r'\bunoccupied\s+Zoox', r['Narrative'])]
+# The report is read, never assumed (until 2026-11-06 none stopped this qual on
+# a bare ValueError from min(), naming nothing).
+assert template_from, ("Replicata: find, in the newest snapshots' latest filings (quals/passenger-classification.qual.mjs), a driverless "
+                       "('None') Zoox report of 2025, filed once, whose narrative says 'unoccupied Zoox'. "
+                       "Expectata: at least one, the template of this qual's synthetic report with a belted passenger. Resultata: none.")
+template = min(template_from, key=lambda r: r['Report ID'])
 synth = dict(template, **{'Report ID': 'synthetic-occupancy', 'Same Incident ID': 'synthetic-occupancy',
                           'Were All Passengers Belted?': belted})
 headers = {slurp.NHTSA_ADS_CSV_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None), slurp.NHTSA_ADS_ARCHIVE_URL: ('Tue, 15 Sep 2026 12:00:00 GMT', None)}

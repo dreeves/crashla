@@ -103,6 +103,13 @@ const master = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
   .filter(r => r[0] === "tesla")
   .map(r => ({ month: r[1], vmt: Number(r[2]), cume: Number(r[3]), kyoomMin: Number(r[4]), kyoomMax: Number(r[5]),
     vmtMin: Number(r[6]), vmtMax: Number(r[7]) }));
+// Tesla's rows are read, never assumed: until 2026-11-06 a data/vmt.csv
+// without them stopped section 3b on a TypeError naming nothing (its newest
+// month read undefined), before section 3's problems were printed.
+assert.ok(master.length > 0,
+  `Replicata: read data/vmt.csv's tesla rows.
+Expectata: at least one: section 3 checks Tesla's fleet points against them, and section 3b's path starts after the newest.
+Resultata: none; data/vmt.csv's rows are of ${JSON.stringify([...new Set(parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1).map(r => r[0]))])}.`);
 const monthsFrom = (from, to) => {
   const out = [];
   for (let [y, m] = from.split("-").map(Number); `${y}-${String(m).padStart(2, "0")}` <= to; m === 12 ? (y++, m = 1) : m++)

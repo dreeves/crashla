@@ -15,9 +15,14 @@
 //  - before the script runs, the controls and the charts' places hold the
 //    room they take in the default view: the "Vehicle Miles Traveled" heading
 //    sits where the drawn page has it (crashla.js withheld here);
-//  - in Chromium, a fresh desktop load shifts nothing (layout shift < 0.01);
+//  - in Chromium, a fresh desktop load shifts nothing (layout shift < 0.01),
+//    read off a layout-shift observer that ran: the browser lists
+//    "layout-shift" among PerformanceObserver.supportedEntryTypes and the
+//    observer's observe() did not throw (since 2026-11-06; until then a
+//    failed observer read as a shift of 0);
 //  - the room is held only until the first build: with no company checked,
-//    the company charts' box is empty and takes none;
+//    the company charts' box is empty and takes none, and the page raises no
+//    error (since 2026-11-06);
 //  - the incident box is laid out only near the screen (content-visibility),
 //    whatever its rows: a filter click to a short table leaves it so. On
 //    2026-10-05 a box of fewer than 100 rows was laid out always, which

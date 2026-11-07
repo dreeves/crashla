@@ -42,10 +42,16 @@ out['staleCutoffRow'] = cells[0]
 # a rated report re-filed with an out-of-scope operator type (a Waymo
 # safety-driver mode), so its row describes no in-scope incident
 rated = {r['reportID'] for r in csv.DictReader(io.StringIO(TEXT['faultfrac.csv']))}
-gone = min((r for r in _filed if r['Reporting Entity'] == 'Waymo LLC' and r['Report ID'] in rated
-            and _versions[r['Report ID']] == 1 and _reports[r['Same Incident ID']] == 1
-            and r['Report ID'] not in _REVIEWED and r['Same Incident ID'] not in _REVIEWED
-            and r['Incident Date'].strip().endswith('-2026')), key=lambda r: r['Report ID'])
+gone_from = [r for r in _filed if r['Reporting Entity'] == 'Waymo LLC' and r['Report ID'] in rated
+             and _versions[r['Report ID']] == 1 and _reports[r['Same Incident ID']] == 1
+             and r['Report ID'] not in _REVIEWED and r['Same Incident ID'] not in _REVIEWED
+             and r['Incident Date'].strip().endswith('-2026')]
+# The report is read, never assumed (until 2026-11-06 none stopped this qual on
+# a bare ValueError from min(), naming nothing).
+assert gone_from, ("Replicata: find, in the newest snapshots' filed rows (quals/fault-batch-stop.qual.mjs), a Waymo report of 2026 "
+                   "rated in data/faultfrac.csv, filed once, the only report of its Same Incident ID, and named in no reviewed table of data/slurp.py. "
+                   "Expectata: at least one, the report this qual re-files with an out-of-scope operator type. Resultata: none.")
+gone = min(gone_from, key=lambda r: r['Report ID'])
 refiled = dict(gone, **{'Report Version': '2', 'Report Type': 'Update', 'Driver / Operator Type': 'In-Vehicle (Commercial / Test)'})
 out['leftScopeId'] = gone['Report ID']
 out['leftScope'] = brief(run_main([refiled]))

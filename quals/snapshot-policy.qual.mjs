@@ -49,11 +49,13 @@ with tempfile.TemporaryDirectory() as tmp:
         (tmpdir / real[p].name).symlink_to(real[p])
     slurp.SNAPSHOT_DIR = tmpdir
     slurp.LEGACY_SNAPSHOT_PATHS = {}
+    # The stop is read by its kind, an AssertionError (slurp's must()), any
+    # subclass included, not by its class's name.
     try:
         slurp.newest_snapshot_rows()
-        out["missing"] = {"prefix": prefixes[-1], "raised": None, "message": None}
+        out["missing"] = {"prefix": prefixes[-1], "raised": None, "assertion": False, "message": None}
     except Exception as e:
-        out["missing"] = {"prefix": prefixes[-1], "raised": type(e).__name__, "message": str(e)}
+        out["missing"] = {"prefix": prefixes[-1], "raised": type(e).__name__, "assertion": isinstance(e, AssertionError), "message": str(e)}
 print(json.dumps(out))
 `;
 
@@ -109,7 +111,7 @@ Resultata: the CRLF snapshots were ${JSON.stringify({ first: out.crlf_first, sec
 );
 
 assert.ok(
-  out.missing.raised === "AssertionError" && out.missing.message.includes(out.missing.prefix),
+  out.missing.assertion === true && out.missing.message.includes(out.missing.prefix),
   `Replicata: call data/slurp.py newest_snapshot_rows() with data/snapshots holding the newest snapshot of every NHTSA file but ${out.missing.prefix}'s.
 Expectata: it stops on its own check, an AssertionError naming the missing file's prefix (${out.missing.prefix}).
 Resultata: ${out.missing.raised === null ? "it returned" : `${out.missing.raised}: ${JSON.stringify(out.missing.message)}`}.`,

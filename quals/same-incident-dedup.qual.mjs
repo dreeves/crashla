@@ -51,11 +51,16 @@ out = {'superseded': dict(getattr(slurp, 'SUPERSEDED_REPORTS', {}))}
 # A rated, unreviewed in-scope Waymo report of 2025 (outside every observation
 # table, so its leaving scope moves no measured count), filed once
 rated = {r['reportID'] for r in csv.DictReader(io.StringIO(TEXT['faultfrac.csv']))}
-crash = min((r for r in latest.values() if r['Reporting Entity'] == 'Waymo LLC' and slurp.is_public_service_incident(r)
-             and r['Incident Date'].strip().endswith('-2025') and r['Report ID'] in rated
-             and _versions[r['Report ID']] == 1 and _reports[r['Same Incident ID']] == 1
-             and r['Report ID'] not in _REVIEWED and r['Same Incident ID'] not in _REVIEWED),
-            key=lambda r: r['Report ID'])
+crash_from = [r for r in latest.values() if r['Reporting Entity'] == 'Waymo LLC' and slurp.is_public_service_incident(r)
+              and r['Incident Date'].strip().endswith('-2025') and r['Report ID'] in rated
+              and _versions[r['Report ID']] == 1 and _reports[r['Same Incident ID']] == 1
+              and r['Report ID'] not in _REVIEWED and r['Same Incident ID'] not in _REVIEWED]
+# The report is read, never assumed (until 2026-11-06 none stopped this qual on
+# a bare ValueError from min(), naming nothing).
+assert crash_from, ("Replicata: find, in the newest snapshots' latest filings (quals/same-incident-dedup.qual.mjs), an in-scope Waymo report of 2025 "
+                    "rated in data/faultfrac.csv, filed once, the only report of its Same Incident ID, and named in no reviewed table of data/slurp.py. "
+                    "Expectata: at least one, the crash this qual re-files and duplicates. Resultata: none.")
+crash = min(crash_from, key=lambda r: r['Report ID'])
 C = crash['Report ID']
 out['crash'] = C
 out['baseline'] = brief(run_main(), ['30270-1583', '30270-1535', '13781-11784', C])

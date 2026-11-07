@@ -57,7 +57,11 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     // 2026-10-24: its range's two ends, then its dot).
     const seriesLabel = new Map();
     for (const host of ["#chart-mpi-all", "#chart-distributions", "#chart-vmt-combined"]) {
+      // The chart is read, never assumed (until 2026-11-06 a missing one
+      // stopped this qual on a TypeError naming nothing). assert is
+      // crashla.js's, which throws its message with the details appended.
       const svg = document.querySelector(host + " svg");
+      assert(svg !== null, "Replicata: open the default view and find the chart <svg> in " + host + ", a chart several companies share.\nExpectata: one.\nResultata: none; the elements with an id that hold an <svg> are", [...document.querySelectorAll("[id]")].filter(e => e.querySelector("svg") !== null).map(e => e.id));
       const glyphs = [...svg.querySelectorAll("circle.month-dot")];
       const hits = [...svg.querySelectorAll("circle[data-tip]")];
       const per = glyphs.length > 0 && hits.length % glyphs.length === 0 ? hits.length / glyphs.length : 0;
@@ -315,7 +319,7 @@ Resultata: ${JSON.stringify(low)}.`);
       ? labelledBy.map(el => el === null ? "<missing id>" : el.textContent.trim()).join(" ")
       : (svg.getAttribute("aria-label") || "");
     const texts = [...svg.querySelectorAll("text")];
-    return { host: svg.closest("[id]").id, role: svg.getAttribute("role"), name,
+    return { host: svg.closest("[id]").id, inMpiHost: svg.closest("#chart-mpi-all") !== null, role: svg.getAttribute("role"), name,
       visibleTexts: texts.filter(x => x.closest('[aria-hidden="true"]') === null).map(x => x.textContent) };
   }));
   const badCharts = charts.filter(c => c.role !== "figure" || c.name === "" || c.name.includes("<missing id>") || c.visibleTexts.length > 0);
@@ -327,7 +331,16 @@ Resultata: ${JSON.stringify(low)}.`);
 Expectata: seven charts, each role="figure" with a non-empty accessible name from existing page text, and every
 <text> (ticks, axis titles, "?" markers) inside an aria-hidden group.
 Resultata: ${JSON.stringify(badCharts.length > 0 ? badCharts : charts).slice(0, 1500)}.`);
-  const mpiName = charts.find(c => c.host === "chart-mpi-all").name;
+  // The MPI chart: the first chart inside #chart-mpi-all, found by that host,
+  // whatever elements sit between them (until 2026-11-06 the first chart whose
+  // nearest element with an id was #chart-mpi-all, so a wrapper with its own
+  // id around the chart stopped this qual on a TypeError naming nothing).
+  const mpiCharts = charts.filter(c => c.inMpiHost);
+  assert.ok(mpiCharts.length >= 1,
+    `[${engine}] Replicata: find the chart <svg> inside #chart-mpi-all on the default view.
+Expectata: one, the MPI chart.
+Resultata: none; the charts' nearest elements with an id are ${JSON.stringify(charts.map(c => c.host))}.`);
+  const mpiName = mpiCharts[0].name;
   const mpiHeading = await page.evaluate(() => document.getElementById("mpi-heading").textContent);
   assert.equal(mpiName, mpiHeading,
     `[${engine}] Replicata: compare the MPI chart's accessible name with its section heading.

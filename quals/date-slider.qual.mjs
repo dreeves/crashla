@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
-import { stripComments, rules, decls } from "./css-parse.mjs";
+import { stripComments, rules, decls, selectors } from "./css-parse.mjs";
 
 class ElementStub {
   constructor(tagName, id = "") {
@@ -228,21 +228,37 @@ Resultata: ${JSON.stringify(steps)}.`);
 // style.css (until 2026-11-06 this held copies of style.css's 2 and 3, so a
 // change there did not reach this check).
 const sliderCss = rules(stripComments(fs.readFileSync("style.css", "utf8")));
-// The cascade's value: the last z-index declared in a top-level rule for the
-// selector.
-const cssZ = sel => {
-  const values = sliderCss.filter(r => r.sel === sel && r.context.length === 0).flatMap(r => decls(r.body, "z-index"));
-  assert.ok(values.length >= 1,
-    `Replicata: read the z-index of style.css's top-level ${sel} rules.
-Expectata: at least one, the stacking an input without an inline z-index takes.
-Resultata: none.`);
-  return Number(values.at(-1));
+// An input's classes, from the slider's markup (crashla.js
+// renderDateRangeControls).
+const inputClasses = id => {
+  const tags = [...plain.sliderHtml.matchAll(/<input\b[^>]*>/g)].map(m => m[0]);
+  const tag = tags.find(s => new RegExp(`\\sid="${id}"`).test(s));
+  assert.ok(tag !== undefined && /\sclass="[^"]*"/.test(tag),
+    `Replicata: build the monthly views and find the <input id="${id}"> in the date range slider's markup.
+Expectata: one, with a class attribute (the classes style.css styles it by).
+Resultata: the slider's inputs: ${JSON.stringify(tags)}.`);
+  return /\sclass="([^"]*)"/.exec(tag)[1].split(/\s+/).filter(Boolean);
 };
-const Z = { min: cssZ(".date-range-input-min"), max: cssZ(".date-range-input-max") };
-assert.ok(Number.isFinite(Z.min) && Number.isFinite(Z.max),
-  `Replicata: read the z-index of style.css's .date-range-input-min and .date-range-input-max rules.
-Expectata: a number each.
-Resultata: ${JSON.stringify(Z)}.`);
+// The stylesheet's z-index for an input with those classes, as the cascade
+// gives it: the last one declared, in source order, among style.css's
+// top-level rules whose selector list holds one of the classes as a selector
+// of its own (all of the same specificity), or auto (stack level 0) when none
+// declares one. Until a review of 2026-11-06 the check read only a rule whose
+// whole selector was the input's own class, so moving the z-index into a
+// shared or grouped rule, or deleting the start input's rule (which
+// crashla.js's inline z-index always overrides), turned it red.
+const cssZ = classes => {
+  const own = new Set(classes.map(c => "." + c));
+  const declared = sliderCss.filter(r => r.context.length === 0 && selectors(r).some(s => own.has(s)))
+    .flatMap(r => decls(r.body, "z-index"));
+  const z = ["auto", ...declared].at(-1);
+  assert.ok(z === "auto" || /^-?\d+$/.test(z),
+    `Replicata: read the z-index style.css's top-level rules give an element of classes ${JSON.stringify(classes)}.
+Expectata: an integer, or auto.
+Resultata: ${JSON.stringify(z)} (declared, in source order: ${JSON.stringify(declared)}).`);
+  return z === "auto" ? 0 : Number(z);
+};
+const Z = { min: cssZ(inputClasses("date-range-min")), max: cssZ(inputClasses("date-range-max")) };
 const stacked = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
   const months = fullMonthSeries.months, last = months.length - 1;

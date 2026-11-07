@@ -61,7 +61,13 @@ try {
       // Then a pointer over another marker: its tip is the pointer's, and a
       // scroll leaves it where the pointer put it.
       const other = await page.evaluate(() => {
-        const el = document.querySelectorAll("#chart-mpi-all circle[data-tip][tabindex='0']")[3];
+        // The marker is read, never assumed (until 2026-11-06 a chart with
+        // fewer than four stopped this qual on a TypeError naming nothing).
+        // assert is crashla.js's, which throws its message with the details
+        // appended.
+        const marks = document.querySelectorAll("#chart-mpi-all circle[data-tip][tabindex='0']");
+        assert(marks.length >= 4, "Replicata: open the default view and take the MPI chart's fourth focusable marker (#chart-mpi-all circle[data-tip][tabindex='0']), not the one focused above.\nExpectata: at least four markers.\nResultata:", {markers: marks.length});
+        const el = marks[3];
         const r = el.getBoundingClientRect();
         return { x: r.left + r.width / 2, y: r.top + r.height / 2, text: el.getAttribute("data-tip").slice(0, 30) };
       });

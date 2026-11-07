@@ -139,8 +139,18 @@ const plain = JSON.parse(JSON.stringify(metrics));
 // card labels, the headings, the axis titles, the legend's labels and words
 // around tooltip figures).
 const appValue = expr => JSON.parse(vm.runInContext(`JSON.stringify(${expr})`, ctx));
-const cardLabelOf = key => appValue(`METRIC_BY_KEY[${JSON.stringify(key)}].cardLabel`);
-const metricLabelOf = key => appValue(`METRIC_BY_KEY[${JSON.stringify(key)}].label`);
+// A metric's definition, found by its key in METRIC_DEFS (until 2026-11-06 a
+// key the app no longer had stopped this qual on a TypeError naming nothing).
+const metricDef = key => {
+  const def = vm.runInContext(`METRIC_DEFS.find(m => m.key === ${JSON.stringify(key)})`, ctx);
+  assert.ok(def !== undefined,
+    `Replicata: find the ${JSON.stringify(key)} entry of METRIC_DEFS in crashla.js.
+Expectata: one, the metric whose labels and human bands this qual reads.
+Resultata: none; the metrics are ${JSON.stringify(appValue("METRIC_DEFS.map(m => m.key)"))}.`);
+  return def;
+};
+const cardLabelOf = key => metricDef(key).cardLabel;
+const metricLabelOf = key => metricDef(key).label;
 const helmerLabelOf = helmer => appValue(`helmerLabel(${JSON.stringify(helmer)})`);
 const escText = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const escAttr = s => escText(s).replace(/"/g, "&quot;");
@@ -284,7 +294,7 @@ Resultata: card HTML snippet: ${JSON.stringify(plain.summaryCardHtml.slice(0, 20
 );
 
 // Verify human benchmark for airbag exists and has correct structure
-const humanAirbag = vm.runInContext("METRIC_DEFS.find(m => m.key === 'airbag').humanMPI.HumansAV", ctx);
+const humanAirbag = metricDef("airbag").humanMPI.HumansAV;
 assert.ok(
   humanAirbag && humanAirbag.lo > 0 && humanAirbag.hi > humanAirbag.lo &&
     humanAirbag.lo >= 300000 && humanAirbag.hi <= 900000,
@@ -352,7 +362,7 @@ Expectata: the cards' serious-injury line opens with the metric's card label, ${
 Resultata: label not found in card HTML.`,
 );
 
-const humanSsi = vm.runInContext("METRIC_DEFS.find(m => m.key === 'seriousInjury').humanMPI.HumansAV", ctx);
+const humanSsi = metricDef("seriousInjury").humanMPI.HumansAV;
 assert.ok(
   humanSsi && humanSsi.lo >= 1800000 && humanSsi.hi <= 12000000 && humanSsi.lo < humanSsi.hi,
   `Replicata: inspect humanMPI for seriousInjury metric.
