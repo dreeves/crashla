@@ -92,7 +92,14 @@ try {
       // A filter click to a short table (Tesla's 23 rows) and back to all.
       for (const label of ["Tesla", "All"]) {
         const after = await page.evaluate(async label => {
-          [...document.querySelectorAll("#filters button")].find(b => b.textContent.startsWith(label + " (")).click();
+          // The filter button is read, never assumed (until 2026-11-06 a
+          // missing one stopped this qual on a TypeError naming nothing).
+          // assert is crashla.js's, which throws its message with the
+          // details appended.
+          const buttons = [...document.querySelectorAll("#filters button")];
+          const button = buttons.find(b => b.textContent.startsWith(label + " ("));
+          assert(button !== undefined, `Replicata: load the default view and find the incident browser's "${label}" filter button.\nExpectata: one, its text "${label} (<count>)".\nResultata: none; the filter buttons read`, buttons.map(b => b.textContent));
+          button.click();
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           return { rows: document.querySelectorAll("#incidents-body tr").length,
             visibility: getComputedStyle(document.querySelector(".table-scroll")).contentVisibility };

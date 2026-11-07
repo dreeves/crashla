@@ -45,7 +45,15 @@ Resultata: ${a < 0 ? "no start marker" : "no end marker after it"}.`);
 };
 const ghostCsv = parseCsv(segment("/* GHOST_VMT_CSV_START */", "/* GHOST_VMT_CSV_END */"));
 const analysisCsv = parseCsv(segment("/* VMT_CSV_START */", "/* VMT_CSV_END */"));
-const dataThrough = /NHTSA_DATA_THROUGH_DATE_START \*\/\s*"(\d{4}-\d{2})-\d{2}"/.exec(incJs)[1];
+// The data-through month is read, never assumed (until 2026-11-06 an
+// incidents.js without its marked date stopped here on a TypeError naming
+// nothing).
+const dataThroughMatch = /NHTSA_DATA_THROUGH_DATE_START \*\/\s*"(\d{4}-\d{2})-\d{2}"/.exec(incJs);
+assert.ok(dataThroughMatch !== null,
+  `Replicata: read NHTSA_DATA_THROUGH_DATE in data/incidents.js, the "YYYY-MM-DD" after its /* NHTSA_DATA_THROUGH_DATE_START */ marker.
+Expectata: one, the month after which data/vmt.csv's rows are ghost months.
+Resultata: none in ${JSON.stringify(incJs.slice(0, 300))}.`);
+const dataThrough = dataThroughMatch[1];
 const nextMonth = m => {
   const [y, mo] = m.split("-").map(Number);
   return `${mo === 12 ? y + 1 : y}-${String(mo === 12 ? 1 : mo + 1).padStart(2, "0")}`;

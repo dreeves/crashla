@@ -478,7 +478,13 @@ const clampedBars = vm.runInContext(`
     const html = renderAllHelmersMpiChart(monthSeriesData());
     selectedMetricKey = savedMetric;
     monthHelmerEnabled = savedEnabled;
-    const svgH = Number(/viewBox="0 0 \\d+ (\\d+)"/.exec(html)[1]);
+    // The SVG's height is read, never assumed (until 2026-11-06 a chart
+    // without its viewBox stopped here on a TypeError naming nothing).
+    // assert is crashla.js's, which throws its message with the details
+    // appended.
+    const viewBox = /viewBox="0 0 \\d+ (\\d+)"/.exec(html);
+    assert(viewBox !== null, "Replicata: render the at-fault MPI chart with Waymo deselected (Tesla + HumansAV only) and read its SVG's viewBox.\\nExpectata: \\"0 0 <width> <height>\\" in whole units, the height the error bars must stay inside.\\nResultata: none in", html.slice(0, 300));
+    const svgH = Number(viewBox[1]);
     const dotCount = (html.match(/class="month-dot"/g) || []).length;
     const barYs = [...html.matchAll(/class="month-err" x1="[\\d.]+" y1="(-?[\\d.]+)" x2="[\\d.]+" y2="(-?[\\d.]+)"/g)]
       .map(m => [Number(m[1]), Number(m[2])]);
@@ -513,7 +519,10 @@ const allZeroK = vm.runInContext(`
     const html = renderAllHelmersMpiChart(monthSeriesData());
     selectedMetricKey = savedMetric;
     monthHelmerEnabled = savedEnabled;
-    const svgH = Number(/viewBox="0 0 \\d+ (\\d+)"/.exec(html)[1]);
+    // (The SVG's height is read, never assumed, as above.)
+    const viewBox = /viewBox="0 0 \\d+ (\\d+)"/.exec(html);
+    assert(viewBox !== null, "Replicata: render the fatality MPI chart with only Tesla enabled and read its SVG's viewBox.\\nExpectata: \\"0 0 <width> <height>\\" in whole units, the height the hollow dots must sit inside.\\nResultata: none in", html.slice(0, 300));
+    const svgH = Number(viewBox[1]);
     const hollowYs = [...html.matchAll(/class="month-dot" cx="[\\d.]+" cy="([\\d.]+)" r="[\\d.]+" style="fill:none;stroke:/g)]
       .map(m => Number(m[1]));
     const barLens = [...html.matchAll(/class="month-err" x1="[\\d.]+" y1="([\\d.]+)" x2="[\\d.]+" y2="([\\d.]+)"/g)]
@@ -547,10 +556,16 @@ const partialK = vm.runInContext(`
     const savedRows = vmtRows;
     selectedMetricKey = "all";
     monthHelmerEnabled = {HumansAV:false, HumansUS:false, HumansRideshare:false, Tesla:true, Waymo:false, Zoox:false};
-    // First Tesla month with k>0 for "all" (derived, so it self-updates).
+    // First Tesla month with k>0 for "all" (derived, so it self-updates),
+    // read, never assumed (until 2026-11-06 a series with none stopped here
+    // on a TypeError naming nothing). assert is crashla.js's, which throws
+    // its message with the details appended.
     const fullSeries = monthSeriesData();
-    const tgt = fullSeries.points.find(p =>
-      p.helmers.Tesla && p.helmers.Tesla.mpiByMetric.all.incidentCount > 0).month;
+    const tgtPoint = fullSeries.points.find(p =>
+      p.helmers.Tesla && p.helmers.Tesla.mpiByMetric.all.incidentCount > 0);
+    assert(tgtPoint !== undefined, "Replicata: build the month series and find Tesla's first month with an incident (All incidents).\\nExpectata: one, the month marked partially reported here.\\nResultata: none; Tesla's months and incident counts are",
+      fullSeries.points.filter(p => p.helmers.Tesla).map(p => [p.month, p.helmers.Tesla.mpiByMetric.all.incidentCount]));
+    const tgt = tgtPoint.month;
     const fullK = fullSeries.points.find(p => p.month === tgt).helmers.Tesla.mpiByMetric.all;
     const fullHtml = renderAllHelmersMpiChart(fullSeries);
     // Mark that month as only ~40% reported and re-render.
@@ -734,7 +749,11 @@ Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
 {
   const dt = vm.runInContext(`
     (() => { const rows = parseVmtCsv(VMT_CSV_TEXT); const m = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
+      // The month's row is read, never assumed (until 2026-11-06 a VMT CSV
+      // without one stopped here on a TypeError naming nothing). assert is
+      // crashla.js's, which throws its message with the details appended.
       const r = rows.find(x => x.month === m);
+      assert(r !== undefined, "Replicata: read data/vmt.js's analysis rows (parseVmtCsv(VMT_CSV_TEXT)) and find one for the data-through month " + m + ".\\nExpectata: one, its receipt and incident coverage the figures the coverage notes give.\\nResultata: none; the newest month there is", rows.map(x => x.month).sort().at(-1));
       return { month: m, coverage: r.coverage, coverageMin: r.coverageMin, incCov: r.incCov, incCovMin: r.incCovMin }; })()`, ctx);
   const wantMonthly = [Math.round(dt.coverage * dt.incCov * 100), Math.round(dt.coverage * dt.incCovMin * 100)];
   const wantFiveDay = [Math.round(dt.coverage * 100), Math.round(dt.coverageMin * 100)];

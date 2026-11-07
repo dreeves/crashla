@@ -73,7 +73,13 @@ Resultata: ${JSON.stringify(seen.sortArrow)}.`);
     // inks (1.66:1 axes, 3.9:1 text on a dark theme's black canvas), take the
     // theme's text colour, the gridlines its GrayText.
     const states = await page.evaluate(() => {
-      [...document.querySelectorAll("#filters button")].find(b => b.textContent.startsWith("Waymo (")).click();
+      // The filter button is read, never assumed (until 2026-11-06 a missing
+      // one stopped this qual on a TypeError naming nothing). assert is
+      // crashla.js's, which throws its message with the details appended.
+      const buttons = [...document.querySelectorAll("#filters button")];
+      const waymo = buttons.find(b => b.textContent.startsWith("Waymo ("));
+      assert(waymo !== undefined, "Replicata: load the page with forced colours and find the incident browser's Waymo filter button.\nExpectata: one, its text \"Waymo (<count>)\".\nResultata: none; the filter buttons read", buttons.map(b => b.textContent));
+      waymo.click();
       const system = name => { const p = document.createElement("span"); p.style.color = name; document.body.appendChild(p);
         const c = getComputedStyle(p).color; p.remove(); return c; };
       const filters = [...document.querySelectorAll("#filters button")].map(b => {

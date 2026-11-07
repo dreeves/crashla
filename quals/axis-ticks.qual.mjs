@@ -218,7 +218,14 @@ Resultata: ${ticks.length} labels on ${onGrid.size} gridlines.`,
   // frame's right edge ran up to 8 units past the 900-unit SVG, which clips).
   // The gap is also the slack for faces wider than the glyph model: Firefox at
   // phone size draws "200.0M" 61 units wide, 6.4 past the model on each side.
-  const svgW = Number(chart.svg.match(/viewBox="0 0 ([\d.]+) /)[1]);
+  // The SVG's width is read, never assumed (until 2026-11-06 a chart without
+  // a viewBox stopped here on a TypeError naming nothing).
+  const viewBox = chart.svg.match(/viewBox="0 0 ([\d.]+) /);
+  assert.ok(viewBox !== null,
+    `Replicata: render the ${chart.what} and read its SVG's viewBox.
+Expectata: "0 0 <width> <height>", the width the tick labels must stay inside.
+Resultata: none in ${JSON.stringify(chart.svg.slice(0, 200))}.`);
+  const svgW = Number(viewBox[1]);
   for (const t of ticks) {
     const half = width(t.label) / 2;
     assert.ok(
@@ -344,8 +351,15 @@ for (const viewW of [900, 366]) {
     ["MPI chart", run(`renderAllHelmersMpiChart(sliceSeries(activeSeries, ${months - 1}, ${months - 1}))`)],
     ...["Tesla", "Waymo", "Zoox"].map(h => [`${h} VMT chart`, run(`renderHelmerMonthlyChart(sliceSeries(activeSeries, ${months - 1}, ${months - 1}), ${JSON.stringify(h)})`)]),
   ]) {
-    const axis = [...svg.matchAll(/<line class="month-axis" x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)">/g)]
-      .map(m => m.slice(1).map(Number)).find(([, y1, , y2]) => y1 === y2);
+    // The horizontal axis is read, never assumed (until 2026-11-06 a chart
+    // without one stopped here on a TypeError naming nothing).
+    const axes = [...svg.matchAll(/<line class="month-axis" x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)">/g)]
+      .map(m => m.slice(1).map(Number));
+    const axis = axes.find(([, y1, , y2]) => y1 === y2);
+    assert.ok(axis !== undefined,
+      `Replicata: render the ${what} on the one-month window ${run("activeSeries.months.at(-1)")} at ${viewW} units and find its horizontal axis line.
+Expectata: a month-axis line whose y1 equals its y2, the axis the month column centres on.
+Resultata: the chart's month-axis lines (x1, y1, x2, y2) are ${JSON.stringify(axes)}.`);
     const mid = (axis[0] + axis[2]) / 2;
     const dots = [...svg.matchAll(/<circle class="month-dot" cx="([\d.]+)"/g)].map(m => Number(m[1]));
     const labels = monthTicks(svg).map(t => t.x);

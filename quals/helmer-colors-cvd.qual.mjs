@@ -18,7 +18,14 @@ import { appScript } from "./load-app.mjs";
 const ctx = vm.createContext({ console, Math, Number, document: { getElementById() { return null; } } });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const COLORS = JSON.parse(JSON.stringify(vm.runInContext("HELMER_COLORS", ctx)));
-const paper = /--paper:\s*(#[0-9a-f]{6})/i.exec(fs.readFileSync("style.css", "utf8"))[1];
+// The page's ground is read, never assumed (until 2026-11-06 a style.css
+// without a hex --paper stopped here on a TypeError naming nothing).
+const paperMatch = /--paper:\s*(#[0-9a-f]{6})/i.exec(fs.readFileSync("style.css", "utf8"));
+assert.ok(paperMatch !== null,
+  `Replicata: read the --paper token in style.css.
+Expectata: a 6-digit hex colour, the ground every series colour's contrast is measured on.
+Resultata: none (no "--paper: #rrggbb" declaration).`);
+const paper = paperMatch[1];
 
 const MACHADO = {
   deuteranopia: [[0.367322, 0.860646, -0.227968], [0.280085, 0.672501, 0.047413], [-0.011820, 0.042940, 0.968881]],

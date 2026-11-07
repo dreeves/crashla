@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 import { parseCsv } from "./csv-parse.mjs";
 import { LINK, DATA_LINK, OPEN_TARGET, rationaleLinks, rationaleText, headingAnchors } from "./rationale-links.mjs";
 
@@ -43,10 +44,11 @@ import { LINK, DATA_LINK, OPEN_TARGET, rationaleLinks, rationaleText, headingAnc
 //       named month's or quarter's daily rate, a figure of Tesla's
 //       no-monitor page, and a hub figure, the one the anchors for its month
 //       use); a lifetime on a day lies on a path through its month, the
-//       month-end lifetime on its last day (the Zoox model's path where a
-//       Zoox clause names a path, and elsewhere the month's miles spread
-//       evenly, one only some other path bears out going unchecked, since the
-//       rows hold no path within a month); a sum holds (a row's listed
+//       month-end lifetime on its last day (the Zoox model's path on a Zoox
+//       line where a clause names the model's path, its days out where a
+//       rationale places them, and elsewhere the month's miles spread evenly,
+//       one only some other path bears out going unchecked, since the rows
+//       hold no path within a month); a sum holds (a row's listed
 //       terms, a quarter's split of an increment, one line's miles less
 //       another's), as do a product
 //       ("<b> x <f> = <r>", r to its precision), a share, a run-rate and a
@@ -57,11 +59,17 @@ import { LINK, DATA_LINK, OPEN_TARGET, rationaleLinks, rationaleText, headingAnc
 //       after "more than" or "less than") is one the rows meet; a figure
 //       marked approximate by its "~" (or "≈", "about" and the like) holds to
 //       one unit of its last digit; the CPUC miles a product starts from are a
-//       month's of data/waymo-ca.csv, or a sum of its months; and Zoox's
-//       statements of its pre-series miles agree, some one figure lying
-//       within the stated precision of each (since the round-2 review of
-//       2026-11-05; until then this header said they agreed and nothing
-//       checked it). Most forms read Waymo's rationales;
+//       month's of data/waymo-ca.csv, or a sum of its months; Zoox's
+//       statements of its pre-series miles give the Zoox model's figure,
+//       quals/zoox-vmt-model.qual.mjs's PRE_C, to their precision (since the
+//       round-3 review of 2026-11-06; from the round-2 review of 2026-11-05
+//       until then they had only to agree, some one figure within the stated
+//       precision of each; until that review this header said they agreed
+//       and nothing checked it); and the days a Zoox rationale says a month
+//       leaves out are as many as the model holds out of a month of that
+//       name, its LV_PAUSE (since the round-3 review). Each of the model's
+//       constants is read from that file and evaluated alone (constantOf).
+//       Most forms read Waymo's rationales;
 //       the end-of-month form, a product, the forms that name a month or
 //       state a row's own figures, and the forms added for Tesla's and Zoox's
 //       figures read every line's, but for the no-monitor page's readings
@@ -157,81 +165,111 @@ import { LINK, DATA_LINK, OPEN_TARGET, rationaleLinks, rationaleText, headingAnc
 // <x>M/mo ≈ <y>M/wk" is the row's only with " vs Waymo's" after it (until
 // then a component's pair failed as the row's).
 // Read under the meanings their words could have, since 2026-11-05 and as
-// that day's round-1 and round-2 reviews restated them: a month-end figure
-// is a line's series cumulative or its lifetime, for a line the row may mean
-// or its clause names, or Waymo's hub figure, as a floor, a ceiling or
-// approximate where the words right before it say so ("more than", "less
-// than", "~"), and one that is none of these goes unchecked where its clause
-// names another owner (a county, a city, another series, a deck's or a
-// page's reading), its month has no row, it may be Waymo's unknown hub
-// figure, or Zoox's pre-series miles are unstated; a clause holding a pronoun
-// ("it", "its") or a noun that names no owner ("the total") with none that
-// does refers back, so the clauses before it in its sentence (or, where it
-// opens one, the sentence before) and what a parenthesis follows count as its
-// words, and a stop cuts a clause only before a capital, not an
-// abbreviation's ("Maricopa Co."), so that a deck's "the total", a county's
-// "...; it stood at" and "Maricopa Co. stood at" are another owner's (since
-// the round-2 review; until then each failed as the row's line's; until the
-// round-1 review the series cumulative only, and a figure that was none of
-// the readings failed whatever its words); a month
+// that day's round-1 and round-2 reviews and the round-3 review of 2026-11-06
+// restated them: a month-end figure is a line's series cumulative or its
+// lifetime, for a line the row may mean or its clause names, or Waymo's hub
+// figure, as a floor, a ceiling or approximate where the words right before
+// it say so ("more than", "less than", "~"), and one that is none of these
+// goes unchecked where its clause names another owner (a county, a city,
+// another series, a deck's or a page's reading) or a line data/vmt.csv has
+// no rows of, where it may be the lifetime in a month a line has no row for
+// (after the line's last row at least its cumulative, before its first at
+// most its pre-series miles; since the round-3 review, until then whatever
+// the figure), or where it may be Waymo's unknown hub figure, which its words
+// leave among its meanings unless they name the series or a line and not
+// the hub (since the round-3 review; until then whatever the words, and
+// unchecked too where Zoox's pre-series miles were unstated); a clause
+// holding a pronoun ("it", "its") or a noun that names no owner ("the
+// total") with none that does refers back, so the clauses before it in its
+// sentence (or, where it opens one, the sentence before) and what a
+// parenthesis follows count as its words, and a stop cuts a clause only
+// before a capital, not an abbreviation's ("Maricopa Co."), so that a deck's
+// "the total", a county's "...; it stood at" and "Maricopa Co. stood at" are
+// another owner's (since the round-2 review; until then each failed as the
+// row's line's; until the round-1 review the series cumulative only, and a
+// figure that was none of the readings failed whatever its words); a month
 // named without its year is any month of that name with a row, in the row's
 // line or, for a Tesla line, either Tesla line, and where the nearest one
-// has no row a figure no row bears out goes unchecked (until the round-1
-// review the month of that name within 11 months either way, so a shared
-// rationale naming a month 12-14 months from some of its rows failed;
-// before that day the row's year's); a quarter named without its year is any
-// year's (until the round-1 review the latest at or before the row's month);
-// a CPUC base is any month's of its stated quarter or the sum of two or three
-// of them (until the round-1 review a month's only; before that day the
-// row's month's); a Waymo list's terms hold when its components plus any
-// choice of its other labelled terms sum to its miles (until the round-1
-// review every labelled term, so a part of a term failed; before that day
-// the five or six it named, so an added term failed); a product's base is
-// any figure of its clause before " x" (until the round-1 review the one
-// right before " x", so an aside figure failed; before that day the
-// leftmost, so an earlier figure failed); a page reading is the no-monitor
-// line's month or its cumulative, or, where month names stand before its
-// month in its clause, the miles from one of them through it ("July and
-// August: <p>"), and goes unchecked where other words stand there, which may
-// name a part ("In Houston, July: <p>"), or below the month's floor with no
-// deck reading beside it, which may be the days a month in progress had
-// measured (since the round-2 review; until then one below the floor went
-// unchecked beside a deck reading too, and one after "July and" was read as
-// the month's alone; until the round-1 review the month's miles only,
-// wherever the reading stood); the figures after page readings are any such
-// reading's month's or a month's their sentence names, and one that another
-// month's row bears out goes unchecked, since words can name a month
-// relatively ("the month before's"; since the round-2 review, until then it
-// failed; until the round-1 review the latest reading's only); a lifetime on
-// a day is the series cumulative or the lifetime, or on a month's last day
-// Waymo's hub figure, within the rounding the line's months carry, read on
-// the Zoox model's path where a Zoox clause names a path (the month's miles
-// spread evenly over its days, or its Las Vegas share at one rate a driving
-// day with the days the model holds out of the month anywhere in it) and
-// elsewhere on the even spread, and one that only some other path through
-// the month bears out goes unchecked (since 2026-11-06; from the round-2
-// review until then any path through the month bore a figure out, so a Zoox
-// crossing a day late passed; from the round-1 review until the round-2
-// review the even spread alone, which failed a correct figure of a month a
-// series ran through unevenly; until the round-1 review the lifetime only, on
-// the even spread exactly), and a day no month of its name has fails (since
-// the round-2 review; until then a day past its month's end went unchecked);
-// a floor the series clears is cleared where the even spread through its
-// day, with OFFSET's high edge, clears it, and goes unchecked where only its
-// month's end does (since 2026-11-06; from the round-2 review until then the
-// month's end cleared it; until then the even spread with OFFSET's central),
-// one dated after the rows cleared where the last row's lifetime clears it,
-// and otherwise it goes unchecked (until the round-1 review it failed); a
-// run-rate is a third of an increment a split
-// statement gives (until the round-1 review also of the quarter's listed
-// terms, which for estimated rows are no hub figure); and a per-day term that
-// states no adjustment of its own may add any signed sum of the figures stated
-// outside its list and its total, and goes unchecked where none fits and its
-// label recurs (since the round-2 review; until then it went unchecked
-// wherever the rationale held one of three wordings of an adjustment and was
-// read as unadjusted where it held none, so an adjustment in other words
-// failed). What a frame cannot read goes unchecked, and the pass line counts
-// it (the comment at `unchecked` lists each case).
+// has no row a figure no row bears out goes unchecked where it may be that
+// month's (after the line's last row each cumulative or band edge at least
+// the last row's, before its first at most its pre-series miles, a month's
+// own miles anything; since the round-3 review, until then whatever its
+// value; until the round-1 review the month of that name within 11 months
+// either way, so a shared rationale naming a month 12-14 months from some of
+// its rows failed; before that day the row's year's); a quarter named
+// without its year is any year's (until the round-1 review the latest at or
+// before the row's month); a CPUC base is any month's of its stated quarter
+// or the sum of two or three of them (until the round-1 review a month's
+// only; before that day the row's month's); a Waymo list's terms hold when
+// its components plus any choice of its other labelled terms sum to its
+// miles (until the round-1 review every labelled term, so a part of a term
+// failed; before that day the five or six it named, so an added term
+// failed); a product's base is any figure of its clause before " x" (until
+// the round-1 review the one right before " x", so an aside figure failed;
+// before that day the leftmost, so an earlier figure failed); a page reading
+// is the no-monitor line's month or its cumulative, or, where month names
+// stand before its month in its clause, the miles from one of them through
+// it ("July and August: <p>"), and goes unchecked where other words stand
+// there, which may name a part ("In Houston, July: <p>"), or below the
+// month's floor with no deck reading beside it, which may be the days a
+// month in progress had measured (since the round-2 review; until then one
+// below the floor went unchecked beside a deck reading too, and one after
+// "July and" was read as the month's alone; until the round-1 review the
+// month's miles only, wherever the reading stood); the figures after page
+// readings are any such reading's month's or a month's their sentence names,
+// and one that another month's row bears out goes unchecked, since words can
+// name a month relatively ("the month before's"; since the round-2 review,
+// until then it failed; until the round-1 review the latest reading's only);
+// a lifetime on a day is the series cumulative or the lifetime of a line the
+// row may mean or its clause names, or on a month's last day Waymo's hub
+// figure (an anchor's, or, where none gives one and its words leave the hub
+// among its meanings, the unknown figure, at most the lifetime), on the day
+// of the month its year names or else of any month of its name with a row,
+// within the rounding the line's months carry, read on a Zoox line on the
+// Zoox model's path where its clause names the model's path ("the path",
+// "its path", "Zoox's path", "the smooth path", "the smoothest path", "the
+// model's path"), or names no path of its own and refers back to a clause
+// that does (the month's miles spread evenly over its days, or its Las Vegas
+// share at one rate a driving day with the days the model holds out of the
+// month where a rationale places them, and else anywhere in it), and
+// elsewhere on the even spread; and one that only some other path through
+// the month bears out goes unchecked, as does one whose clause names another
+// owner, away from the model's path, or a line with no rows (since the
+// round-3 review the lines and owners its clause names, the year, the
+// model's path by name, the days out where placed and the hub's unknown
+// figure; until then the row's own lines whatever the words, any year of the
+// month's name, any "path" word, the days out anywhere and no unknown hub
+// figure; since 2026-11-06 the model's path, from the round-2 review until
+// then any path through the month bearing a figure out, so a Zoox crossing a
+// day late passed; from the round-1 review until the round-2 review the even
+// spread alone, which failed a correct figure of a month a series ran
+// through unevenly; until the round-1 review the lifetime only, on the even
+// spread exactly); a day no month of its name has, or that its stated
+// year's month lacks, fails (since the round-2 review; until then a day past
+// its month's end went unchecked; the stated year since the round-3 review),
+// and one of a month the rows do not reach goes unchecked only where the
+// series' growth allows it then (after a line's last row the lifetime is at
+// least its cumulative, for a hub figure on a Waymo month's last day
+// anything, before its first row at most its pre-series miles; since
+// 2026-11-06, until then whatever the figure); a floor the series clears is
+// cleared where the even spread through its day, with OFFSET's high edge,
+// clears it, and goes unchecked where only its month's end does (since
+// 2026-11-06; from the round-2 review until then the month's end cleared it;
+// until then the even spread with OFFSET's central), one dated after the
+// rows cleared where the last row's lifetime clears it and otherwise
+// unchecked (until the round-1 review it failed), and one dated before the
+// series unchecked where it is at most OFFSET's high edge and otherwise
+// failing (since the round-3 review; until then unchecked whatever its
+// value); a run-rate is a third of an increment a split statement gives
+// (until the round-1 review also of the quarter's listed terms, which for
+// estimated rows are no hub figure); and a per-day term that states no
+// adjustment of its own may add any signed sum of the figures stated outside
+// its list and its total, and goes unchecked where none fits and its label
+// recurs (since the round-2 review; until then it went unchecked wherever the
+// rationale held one of three wordings of an adjustment and was read as
+// unadjusted where it held none, so an adjustment in other words failed).
+// What a frame cannot read goes unchecked, and the pass line counts it (the
+// comment at `unchecked` lists each case).
 // What remains, the meanings a correct figure could have that no frame
 // reads, so that the figure fails: a frame takes a stated input as exact
 // (products, sums, rates and per-day scalings "multiply out" as written), so
@@ -239,39 +277,51 @@ import { LINK, DATA_LINK, OPEN_TARGET, rationaleLinks, rationaleText, headingAnc
 // fails (today's closest: October's Travis 1.95M x 31/30 = 2.015M against
 // 2.02M and its metros' base 2.85M x 31/30 = 2.945M against 2.95M, each 5,000
 // miles of the 5,001 allowed off, then its 10.4M x 31/30 = 10.75M, 3,333 of
-// 5,001; a half-down rounding, 2.01M, passes too); a month-end figure whose
-// clause holds only words of a reading of the row's own line (OWN_WORDS),
-// and no pronoun, is read as one, so another owner's figure fails where an
-// earlier sentence named the owner and "the lifetime" or "the series" in
-// that clause refers back to it; a pronoun is read as referring to the
-// clauses before it in its sentence or, where it opens one, to the sentence
-// before, so a referent further back is not read; a lifetime on a day in a
-// Zoox clause that names a path (or whose pronoun may refer to one that does,
-// or that holds "path" in a revision note, "one path 2026-11-03") is read on
-// the Zoox model's path, so a figure there that is not the path's (a source's
-// own day for the crossing, say) fails; a page reading whose month
-// opens its clause, at or above its month's floor or below it beside a deck
-// reading, is read as the month's whole, so a part named only in an earlier
-// sentence fails; a per-day term that states no adjustment of its own and is
-// adjusted in words that state no figure and do not name its label ("Austin
-// freeway rides add a twentieth") fails; the milestone day reads the
-// builder's lifetime on the even spread with OFFSET's central (its rationale
-// has January 2023 keep one daily rate), so a milestone in a month whose
-// daily rate changes, or read with another offset, could fail; a statement
-// of a part of Zoox's pre-series miles in the words of the whole, with no
-// qualifier right after it ("the 20,174 earlier driverless miles California
-// logged"), fails their statements' agreement; and a named month in Waymo's
-// or Zoox's rows is read in the row's line only. And what
-// the frames cannot check, which passes or goes unchecked: a lifetime on a
-// day away from the Zoox model's path, off the even spread but within its
-// month (it goes unchecked, since some path through the month may put it
-// there: a crossing a day late, say), and a figure on the Zoox model's path
-// read with no pre-series miles (the series itself, which crosses Zoox's 1M
-// on Dec 5, 2025, so that "the path crosses 1M on Dec 5" passes); a page
-// reading below its month's floor with no deck reading beside it; a
-// month-end figure that may be
-// another owner's or Waymo's unknown hub figure; and a floor dated after the
-// rows above the last row's lifetime.
+// 5,001; a half-down rounding, 2.01M, passes too); a month-end figure or a
+// lifetime on a day whose clause holds only words of a reading of the row's
+// own line (OWN_WORDS, and for a lifetime the path's words and plain ones,
+// PLAIN), and no pronoun, is read as one, so another owner's figure fails
+// where an earlier sentence named the owner and "the lifetime" or "the
+// series" in that clause refers back to it; a pronoun is read as referring
+// to the clauses before it in its sentence or, where it opens one, to the
+// sentence before, so a referent further back is not read; Waymo's hub
+// figure called "the series" or "the line" without the word "hub" (the
+// hub's "benchmarked series") is read as the rows' own, and so fails; a
+// lifetime on a day on a Zoox line, in a clause that names the model's path
+// (or whose pronoun refers back to one that does), is read on the model's
+// path whatever else its words name, so a figure there that is not the
+// path's (a source's own day for the crossing, or another owner's figure
+// beside the path's name) fails; a window of days a Zoox rationale says a
+// month leaves out is read as the model's Las Vegas days out, so a window of
+// another share's days fails; a page reading whose month opens its clause, at
+// or above its month's floor or below it beside a deck reading, is read as
+// the month's whole, so a part named only in an earlier sentence fails; a
+// per-day term that states no adjustment of its own and is adjusted in words
+// that state no figure and do not name its label ("Austin freeway rides add
+// a twentieth") fails; the milestone day reads the builder's lifetime on the
+// even spread with OFFSET's central (its rationale has January 2023 keep one
+// daily rate), so a milestone in a month whose daily rate changes, or read
+// with another offset, could fail; a statement of a part of Zoox's
+// pre-series miles in the words of the whole, with no qualifier right after
+// it ("the 20,174 earlier driverless miles California logged"), fails against
+// PRE_C; and a named month in Waymo's or Zoox's rows is read in the row's
+// line only. And what the frames cannot check, which passes or goes
+// unchecked: a lifetime on a day away from the Zoox model's path, off the
+// even spread but within its month (it goes unchecked, since some path
+// through the month may put it there: a crossing a day late, say, which the
+// crossing and the Dec-31 lifetime catch only where their clause names the
+// model's path, so that "Zoox's lifetime crosses 1M at the start of Dec 3"
+// goes unchecked), and a figure on the Zoox model's path read with no
+// pre-series miles (the series itself, which crosses Zoox's 1M on Dec 5,
+// 2025, so that "the path crosses 1M on Dec 5" passes); the days out of a
+// month where no rationale places them in the words read, which may lie
+// anywhere in it; a page reading below its month's floor with no deck
+// reading beside it; a month-end figure that may be another owner's or
+// Waymo's unknown hub figure, which after Waymo's last row may be anything; a
+// floor dated after the rows above the last row's lifetime; a month's own
+// miles of a month by its name beyond the rows, which need not grow; and a
+// floor through a month's end of a month beyond the rows, whatever its
+// value.
 
 // Each row's rationale as data/vmt.csv holds it, its links written in
 // markdown (markdown), which (1) reads, and as the page shows it, each link as
@@ -315,6 +365,30 @@ const thousands = s => ({ stated: `${s}k`, miles: Number(s.replace(/,/g, "")) * 
 const millions = s => ({ stated: `${s}M`, miles: Number(s.replace(/,/g, "")) * 1e6, slack: halfUnit(s) });
 const aboutThousands = s => ({ ...thousands(s), slack: 10 ** (3 - decimals(s)) + 1 });
 const aboutMillions = s => ({ ...millions(s), slack: 10 ** (6 - decimals(s)) + 1 });
+// A constant another file of the repo declares at a line's start ("const
+// <name> = <expression>;"), its expression everything up to the first
+// semicolon after the "=", evaluated alone in a fresh context, so that each
+// literal form of a value reads alike (either quote, a trailing comma,
+// comments without a semicolon, several lines, Object.freeze(...)); a
+// constant declared other than once, or an expression that does not evaluate
+// alone (one holding a semicolon, or needing a name the file defines
+// elsewhere), stops the qual with its message. Since the round-3 review of
+// 2026-11-06 (until then one line's regex and JSON.parse read
+// quals/zoox-vmt-model.qual.mjs's LV_PAUSE, so a correct edit of its literal
+// form, valid JavaScript to that qual, stopped this one with a raw
+// SyntaxError).
+const constantOf = (file, name) => {
+  const decls = [...fs.readFileSync(file, "utf8").matchAll(new RegExp(String.raw`^[ \t]*(?:export[ \t]+)?(?:const|let|var)[ \t]+${name}[ \t]*=([^;]*);`, "gm"))];
+  assert.equal(decls.length, 1,
+    `Replicata: read ${file} for the constant ${name}. Expectata: one declaration at a line's start, "const ${name} = <expression>;". Resultata: ${decls.length} declarations.`);
+  let value, failure = null;
+  try { value = vm.runInNewContext(`(${decls[0][1]}\n)`, Object.create(null), { timeout: 1000 }); } catch (e) { failure = e.message; }
+  assert.equal(failure, null,
+    `Replicata: read the constant ${name} in ${file} and evaluate its expression, up to the first semicolon, alone.
+Expectata: a value that needs nothing else the file defines.
+Resultata: evaluating ${JSON.stringify(decls[0][1].trim())} gave ${JSON.stringify(failure)}.`);
+  return value;
+};
 
 // (1) every link names a section of data/README.md: its text non-empty, its
 // target data/#<anchor>, the anchor one of the ids GitHub Pages gives the
@@ -601,18 +675,24 @@ for (const r of rows) for (const re of BANNED) {
 //     figure an anchor gives, to its stated precision, or as a floor, a
 //     ceiling or approximate where the words right before it say so
 //     (MODIFIERS); one that is none of those goes unchecked where it may be a
-//     reading the rows do not hold: its month has no row on those lines, it
-//     may be a Waymo hub figure no anchor gives (at most the lifetime), it may
-//     be a Zoox lifetime whose pre-series miles no rationale states, or its
-//     clause holds a word that is not one of OWN_WORDS, which may name
-//     another owner, its clause being, where a pronoun or a noun that names
-//     no owner refers back, its sentence's clauses before it too (or the
-//     sentence before) and what a parenthesis follows (since 2026-11-05;
-//     until then the row's line's series cumulative only; until that day's
-//     round-1 review a figure that was none of the readings failed whatever
-//     its words, and "more than" or "~" before it was not read; until its
-//     round-2 review a pronoun read nothing it refers to, and thousands
-//     commas before a unit, "1,717k", stopped the number);
+//     reading the rows do not hold: the lifetime in a month one of those
+//     lines has no row for, where the line's growth allows it then
+//     (growthReading), a Waymo hub figure no anchor gives (at most the
+//     lifetime, and after Waymo's rows anything), where its words leave the
+//     hub among its meanings (hubMeant), a line its clause names that has no
+//     rows, or another owner, its clause holding a word that is not one of
+//     OWN_WORDS, its clause being, where a pronoun or a noun that names no
+//     owner refers back, its sentence's clauses before it too (or the
+//     sentence before) and what a parenthesis follows (ownerOf; since
+//     2026-11-05; until then the row's line's series cumulative only; until
+//     that day's round-1 review a figure that was none of the readings
+//     failed whatever its words, and "more than" or "~" before it was not
+//     read; until its round-2 review a pronoun read nothing it refers to, and
+//     thousands commas before a unit, "1,717k", stopped the number; until the
+//     round-3 review of 2026-11-06 a month with no row on those lines left a
+//     figure unchecked whatever it was, the hub's unknown figure was a
+//     meaning whatever the words, and a Zoox lifetime whose pre-series miles
+//     no rationale stated was one too);
 //   Waymo's anchor: in a Waymo row, "The <Mon>-<YYYY> cumulative lands on the
 //     anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles" is
 //     that month's cumulative, h + e - o (the April-June 2026 rows);
@@ -660,8 +740,11 @@ for (const r of rows) for (const re of BANNED) {
 //     read); for a day after the rows, the floor is cleared where the last
 //     earlier row's lifetime at its month's end clears it, and otherwise goes
 //     unchecked (since the round-1 review of 2026-11-05; until then such a
-//     day failed); a day no month of its name has (0, 32, Nov 31) fails
-//     (since the round-2 review). The frame
+//     day failed); for a day before the series, when the lifetime was at most
+//     OFFSET's high edge, a floor no higher goes unchecked and a higher one
+//     fails (since the round-3 review of 2026-11-06; until then any floor of
+//     such a day went unchecked); a day no month of its name has (0, 32, Nov
+//     31) fails (since the round-2 review). The frame
 //     starts at "floor the series clears" because a rationale may also quote
 //     a floor the series does not clear, to say so;
 //   a Waymo row's total and daily rate: "Total <x>M, about <y>k a day (...)",
@@ -752,7 +835,12 @@ for (const r of rows) for (const re of BANNED) {
 //     the row's; until then that month of the row's year in the row's line),
 //     the figure holding for any of them, and where the month of that name
 //     nearest the row's (or another row's sharing the rationale) has no row,
-//     one no row bears out goes unchecked (beyondRows): "<Month> keeps <source>'s
+//     one no row bears out goes unchecked where it may be that month's
+//     (beyondNamed: after the line's last row each cumulative or band edge at
+//     least the last row's, before its first at most its pre-series miles, a
+//     month's own miles anything; since the round-3 review of 2026-11-06,
+//     until then whatever its value; for "a floor through a month's end",
+//     below, still whatever its value, beyondRows): "<Month> keeps <source>'s
 //     end-of-month <c>[ (...)], its band <lo>-<hi>" is its cumulative and
 //     cumulative band; each of the three readings of "end-<Month> <a> / <b>
 //     / <c>" lies inside that month's cumulative band where a later "<Month>
@@ -800,9 +888,9 @@ for (const r of rows) for (const re of BANNED) {
 //     tops after them, one Tesla line's miles less the other's and their
 //     share, the no-monitor line's projected month, lifetimes on a day and
 //     approximate lifetimes (and on 2026-11-06 a path's lifetime on a day,
-//     "puts <n> lifetime miles at <Mon> <D>"), a floor only one deck's
-//     reading meets, a crash count at a rate, a band's and a floor's
-//     approximate shares, a month at
+//     "puts <n> lifetime miles at <Mon> <D>", and a month's days out, "leaves
+//     out <Mon> <a>-<b>"), a floor only one deck's reading meets, a crash
+//     count at a rate, a band's and a floor's approximate shares, a month at
 //     its daily rates, a quarter's split and run-rate, and a month at
 //     another's per-day rates.
 const figureErrors = [];
@@ -816,48 +904,52 @@ const figureForms = Object.fromEntries(["end of a month or year", "Waymo anchor"
   "an end-of-month floor", "a floor through a month's end",
   "a page reading", "a month's floor, central or top", "a central from a reading and a remainder",
   "a top from a reading", "a monitor-aboard remainder", "a monitor-aboard share", "a projected month's band",
-  "a row's central", "a lifetime milestone", "a path's lifetime on a day", "an approximate lifetime", "Zoox's pre-series miles", "a floor one reading meets",
+  "a row's central", "a lifetime milestone", "a path's lifetime on a day", "an approximate lifetime", "Zoox's pre-series miles", "a month's days out", "a floor one reading meets",
   "a crash count at a rate", "a band's approximate shares", "a floor an approximate share below",
   "a quarter's split", "a quarter's run-rate", "a month at another's per-day rates",
   "a month at its daily rates"].map(f => [f, []]));
 // statements found in their frames but with nothing to read them against,
 // which the pass line counts: a month-end figure that is none of the known
-// readings, its month with no row on the lines it may mean, or perhaps a Waymo
-// hub figure no anchor gives (at most the lifetime) or a Zoox lifetime whose
-// pre-series miles no rationale states, or its clause, or what it refers back
-// to, naming another owner (end of a month or year); a figure of a month by
-// its name that no row bears out, where the nearest month of that name has no
-// row (a month by its name, for the named forms and the floor through a
-// month's end; a lifetime milestone and a path's lifetime on a day for a
-// lifetime on a day, which also goes unchecked where only pre-series miles no
-// rationale states, or, away from the Zoox model's path, only some path
-// through its month other than the even spread, would bear it out); a floor,
-// central or top after a page reading that no month it may mean bears out but
-// another month's row does (a month's floor, central or top); no anchor
-// sentence for its month (Waymo anchor band, hub figure); a floor dated after
-// the rows that the last row's lifetime does not clear, or one that only its
-// month's end clears (floor the series clears); a base that is none of the
-// figures of its quarter data/waymo-ca.csv holds, the file lacking one of the
-// quarter's months (CPUC base); a list holding a figure that is no labelled
-// term (Waymo terms); a page reading none of its readings bears out with words
-// before its month other than month names and range words (perhaps a part), or
-// below its month's floor with no deck reading beside it (perhaps a month in
-// progress), or no row for the month on the no-monitor line (a page reading);
-// no row for the month on both Tesla lines (a monitor-aboard remainder, a
-// monitor-aboard share) or on the no-monitor line (a projected month's band);
-// no row for the day on a line the row may mean (a lifetime milestone, a
-// path's lifetime on a day); no row for its month, or a figure only some
-// uneven path through its month bears out (an approximate lifetime); no list
-// of decks, or no readings of the month (a floor one reading meets, a floor an
-// approximate share below); no deck reading beside a page reading before it (a
-// top from a reading); a split pairing its terms with another number of
-// totals, naming a quarter the row's month is not in, or in a quarter not
-// every month of which states it (a quarter's split); no split increment for
-// that quarter (a quarter's run-rate); and the row's own list unread, an
-// "about" term, a term with no term of its label in the month named, a
-// parenthesis this does not read, or a term with no adjustment of its own that
-// no signed sum of the figures stated elsewhere bears out, its label standing
-// elsewhere in the rationale too (a month at another's per-day rates)
+// readings, perhaps the lifetime in a month a line it may mean has no row for
+// (the line's growth allowing it then), a Waymo hub figure no anchor gives (at
+// most the lifetime, and after the rows anything) where its words leave the
+// hub among its meanings, a figure of a line its clause names that has no
+// rows, or another owner's, its clause, or what it refers back to, naming one
+// (end of a month or year); a figure of a month by its name that no row bears
+// out, where the nearest month of that name has no row and the figure may be
+// that month's (a month by its name, for the named forms, and for the floor
+// through a month's end whatever its value); a lifetime on a day no reading
+// bears out where some other path through its month would (away from the Zoox
+// model's path), it may be the hub's unknown figure, a lifetime in a month of
+// that name a line has no row for may be it, its clause names another owner
+// (away from the model's path) or a line with no rows (a lifetime milestone, a
+// path's lifetime on a day); a floor, central or top after a page reading that
+// no month it may mean bears out but another month's row does (a month's
+// floor, central or top); no anchor sentence for its month (Waymo anchor band,
+// hub figure); a floor dated after the rows that the last row's lifetime does
+// not clear, one dated before the series no higher than OFFSET's high edge, or
+// one that only its month's end clears (floor the series clears); a base that
+// is none of the figures of its quarter data/waymo-ca.csv holds, the file
+// lacking one of the quarter's months (CPUC base); a list holding a figure
+// that is no labelled term (Waymo terms); a page reading none of its readings
+// bears out with words before its month other than month names and range words
+// (perhaps a part), or below its month's floor with no deck reading beside it
+// (perhaps a month in progress), or no row for the month on the no-monitor
+// line (a page reading); no row for the month on both Tesla lines (a
+// monitor-aboard remainder, a monitor-aboard share) or on the no-monitor line
+// (a projected month's band); no row for its month where the lifetime may be
+// it then, or a figure only some uneven path through its month bears out (an
+// approximate lifetime); no list of decks, or no readings of the month (a
+// floor one reading meets, a floor an approximate share below); no deck
+// reading beside a page reading before it (a top from a reading); a split
+// pairing its terms with another number of totals, naming a quarter the row's
+// month is not in, or in a quarter not every month of which states it (a
+// quarter's split); no split increment for that quarter (a quarter's
+// run-rate); and the row's own list unread, an "about" term, a term with no
+// term of its label in the month named, a parenthesis this does not read, or a
+// term with no adjustment of its own that no signed sum of the figures stated
+// elsewhere bears out, its label standing elsewhere in the rationale too (a
+// month at another's per-day rates)
 const unchecked = Object.fromEntries(["end of a month or year", "a month by its name", "Waymo anchor band", "hub figure", "floor the series clears", "CPUC base", "Waymo terms",
   "a page reading", "a month's floor, central or top", "a monitor-aboard remainder", "a monitor-aboard share", "a projected month's band",
   "a lifetime milestone", "a path's lifetime on a day", "an approximate lifetime", "a floor one reading meets", "a floor an approximate share below",
@@ -918,12 +1010,17 @@ const monthsNamed = n => MONTHS.filter(m => Number(m.slice(5, 7)) === n + 1);
 // 2026-11-05).
 const monthIndex = m => Number(m.slice(0, 4)) * 12 + Number(m.slice(5, 7)) - 1;
 const monthOf = i => `${Math.floor(i / 12)}-${String(i % 12 + 1).padStart(2, "0")}`;
-const nearestNamed = (from, n) => {
-  const near = [-1, 0, 1].map(dy => (Number(from.slice(0, 4)) + dy) * 12 + n), gap = i => Math.abs(i - monthIndex(from));
+// The months of name n (0 for January) nearest month `from`, both on a tie,
+// among those holding day d (since the round-3 review of 2026-11-06, so that
+// a Feb 29 is a leap year's; until then any month of the name, within a
+// year either way)
+const nearestNamed = (from, n, d) => {
+  const near = [-4, -3, -2, -1, 0, 1, 2, 3, 4].map(dy => (Number(from.slice(0, 4)) + dy) * 12 + n).filter(i => d <= daysIn(monthOf(i)));
+  const gap = i => Math.abs(i - monthIndex(from));
   return near.filter(i => gap(i) === Math.min(...near.map(gap))).map(monthOf);
 };
 const beyondRows = (r, n, lines) => rows.filter(x => x.rationale === r.rationale)
-  .some(x => nearestNamed(x.month, n).some(month => lines.every(line => rowOf(line, month) === undefined)));
+  .some(x => nearestNamed(x.month, n, 1).some(month => lines.every(line => rowOf(line, month) === undefined)));
 // The lines a row's rationale may mean where a frame names none (since
 // 2026-11-05): its own, and for the two Tesla lines either one, since each
 // one's rationales state the other's figures (until then the row's own line).
@@ -941,38 +1038,38 @@ const rowsNote = list => list.length === 0 ? "no row of a month of that name"
 const someCombination = (lists, test, picked = []) => picked.length === lists.length
   ? test(picked) : lists[picked.length].some(x => someCombination(lists, test, [...picked, x]));
 // The pre-series miles a line's lifetime adds to its series cumulative, each
-// a range with a note for messages: Waymo's OFFSET range; Zoox's as its
-// rationales state them ("the <o> pre-series miles", "the <o> earlier
-// driverless miles", "the <o> driverless miles before it", never a
-// possessive "miles'"), arithmetic only, since no file the qual reads holds
-// them; and none for the Tesla lines, whose series start with their service.
-// A statement qualified by the words right after it ("in California", "of
-// them") may state a part of them, so it is not read. Zoox's statements must
-// agree, some one figure lying within the stated precision of each (a whole
-// number that may be rounded, to half a unit of its last nonzero digit:
-// "40,080" 40,075 to 40,085, so that a rounded restatement, "the 40,000
-// earlier driverless miles", agrees with it), and the miles are that common
-// range, so that no statement can move alone beyond the others' precision;
-// where none is readable the miles are unknown, any amount, so a figure only
-// a lifetime would bear out goes unchecked rather than failing, and one below
-// the series still fails (since the round-2 review of 2026-11-05; from that
-// day's round-1 review until then the row's own statements or else any Zoox
-// rationale's, with only the two forms whose arithmetic pins the figure
-// required to match an approximate lifetime's, so that rewording every
-// statement failed a correct lifetime, and a statement moved alone within its
-// form's precision passed; from earlier that day until the round-1 review the
-// row's own only, and "the <o> driverless miles" in any words, which other
-// driverless miles can be).
+// a range with a note for messages: Waymo's OFFSET range; Zoox's the Zoox
+// model's, quals/zoox-vmt-model.qual.mjs's PRE_C, "its central, as the
+// series counts it", which its lifetimes count; and none for the Tesla lines,
+// whose series start with their service. Each Zoox statement of them ("the
+// <o> pre-series miles", "the <o> earlier driverless miles", "the <o>
+// driverless miles before it", never a possessive "miles'") gives PRE_C to
+// its precision, a whole number that may be rounded, to half a unit of its
+// last nonzero digit ("40,080" 40,075 to 40,085; "the 40,000 earlier
+// driverless miles" 39,500 to 40,500); one qualified by the words right after
+// it ("in California", "of them") may state a part of them, so it is not
+// read. (Since the round-3 review of 2026-11-06, which found PRE_C in a file
+// this qual reads; from the round-2 review of 2026-11-05 until then the
+// statements had only to agree, some one figure within the precision of
+// each, so all of them moved together passed, and where none was readable
+// the miles were unknown; from that day's round-1 review until then the
+// row's own statements or else any Zoox rationale's; from earlier that day
+// until the round-1 review the row's own only, and "the <o> driverless
+// miles" in any words, which other driverless miles can be.)
+const PRE_C = constantOf("quals/zoox-vmt-model.qual.mjs", "PRE_C");
+assert.ok(typeof PRE_C === "number" && Number.isFinite(PRE_C) && PRE_C > 0,
+  `Replicata: read PRE_C in quals/zoox-vmt-model.qual.mjs. Expectata: a positive number of miles, Zoox's pre-series driverless miles as its series counts them. Resultata: ${String(PRE_C)}.`);
 const ZOOX_PRE = new RegExp(String.raw`\bthe ${WHOLE} (?:pre-series miles|earlier driverless miles|driverless miles before it)\b(?!'| (?:in|of|on|at|from|for|by|across|outside|within|among|between)\b)`, "g");
-const zooxPreStated = rows.filter(x => x.helmer === "zoox").flatMap(x => [...x.rationale.matchAll(ZOOX_PRE)].map(m => ({ row: x, ...roundedWhole(m[1]) })));
-const preLow = Math.max(...zooxPreStated.map(p => p.miles - p.slack)), preHigh = Math.min(...zooxPreStated.map(p => p.miles + p.slack));
-figureForms["Zoox's pre-series miles"].push(...zooxPreStated.map(p => `zoox ${p.row.month}`));
-if (preLow > preHigh) {
-  figureErrors.push(`zoox: its rationales' statements of its pre-series miles disagree, no figure within the precision of each: ${[...new Set(zooxPreStated.map(p => p.stated))].map(o => `${o} (${zooxPreStated.filter(p => p.stated === o).map(p => p.row.month).join(", ")})`).join("; ")}`);
+for (const x of rows.filter(y => y.helmer === "zoox")) for (const m of x.rationale.matchAll(ZOOX_PRE)) {
+  figureForms["Zoox's pre-series miles"].push(`zoox ${x.month}`);
+  const pre = roundedWhole(m[1]);
+  if (!within(pre.miles, PRE_C, pre.slack)) {
+    figureErrors.push(`zoox ${x.month}: "${m[0]}" vs the Zoox model's pre-series miles, quals/zoox-vmt-model.qual.mjs's PRE_C, ${fmt(PRE_C)} (the statement's precision ${fmt(pre.slack)})`);
+  }
 }
 const PRE_SERIES = {
   waymo: [{ low: OFFSET.low, high: OFFSET.high, note: `${fmt(OFFSET.low)}-${fmt(OFFSET.high)}` }],
-  zoox: zooxPreStated.length > 0 ? [{ low: preLow, high: preHigh, note: `${fmt(preLow)}-${fmt(preHigh)}` }] : [{ low: 0, high: Infinity, unknown: true, note: "an amount no rationale states" }],
+  zoox: [{ low: PRE_C, high: PRE_C, note: fmt(PRE_C) }],
   tesla: [],
   teslanomonitor: [],
 };
@@ -1070,9 +1167,74 @@ const OWN_NOUNS = new Set(["hub", "hub's", "cumulative", "lifetime", "series", "
   "no-monitor", "tesla", "tesla's", "waymo", "waymo's", "zoox", "zoox's"]);
 const PRONOUNS = new Set(["it", "its", "this", "that", "they", "their", "these", "those"]);
 const GENERIC_NOUNS = new Set(["total", "figure"]);
+// Whether a clause's words leave Waymo's hub figure, which counts a part of
+// Waymo's miles, among the meanings of its figure: unless they name the
+// series, the rows' own reading ("the series", "the line"), and not the hub
+// (since the round-3 review of 2026-11-06; until then "the series stood at
+// <x>M end-<Mon>-<YYYY>" in a Waymo row could be the hub's unknown figure, so
+// a wrong figure at most the lifetime went unchecked). "Cumulative" and
+// "lifetime" leave it: Waymo's published total is its cumulative, lifetime
+// rider-only miles in the places the hub counts.
+const SERIES_NOUNS = new Set(["series", "series'", "line", "line's"]), HUB_NOUNS = new Set(["hub", "hub's"]);
+const hubMeant = words => words.some(w => HUB_NOUNS.has(w)) || !words.some(w => SERIES_NOUNS.has(w));
+// Whose figure a clause states, from the clause's words around the figure
+// (words), the text before a parenthesis whose first clause it is
+// (antecedent) and the clauses before it (earlier), given the nouns that say
+// whose figure it is (nouns) and the words that name no other owner (own): a
+// noun of those in it says so; a pronoun, or a noun that names no owner
+// (GENERIC_NOUNS) with none of those beside it, refers back, to the clauses
+// before it and what a parenthesis follows; with neither, a parenthesis'
+// first clause speaks of what the parenthesis follows. It gives whether the
+// clause refers back (refers), the words that may name its owner's line
+// (named), and those that may name another owner (others). (Since the round-2
+// review of 2026-11-05 for the end of a month; since the round-3 review of
+// 2026-11-06, in this one function, for lifetimes on a day too.)
+const ownerOf = (words, antecedent, earlier, nouns, own) => {
+  const owned = words.some(w => nouns.has(w)), refers = words.some(w => PRONOUNS.has(w)) || (!owned && words.some(w => GENERIC_NOUNS.has(w)));
+  const back = refers ? wordsOf(earlier) : [];
+  return { refers, named: [...words, ...wordsOf(antecedent), ...back],
+    others: [...words, ...back, ...(owned && !refers ? [] : wordsOf(antecedent))].filter(w => !own.has(w)) };
+};
 // The lines a word names
 const LINE_WORDS = { "tesla": ["tesla", "teslanomonitor"], "tesla's": ["tesla", "teslanomonitor"], "waymo": ["waymo"], "waymo's": ["waymo"],
   "zoox": ["zoox"], "zoox's": ["zoox"], "no-monitor": ["teslanomonitor"] };
+// The lines a figure may be a reading of, given the words that may name its
+// owner: those the row may mean (LINES_MEANT) and those the words name
+// (LINE_WORDS), but for lines data/vmt.csv has no rows of; and, apart, the
+// lines the words name that have none (absent), against which a figure has
+// nothing to be read, so that a miss goes unchecked (since the round-3 review
+// of 2026-11-06; until then such a line stopped the lifetime forms with a
+// TypeError, as data/vmt.csv before 2026-10-24, which has no no-monitor
+// line, would)
+const linesFor = (r, named) => {
+  const namedLines = Object.entries(LINE_WORDS).filter(([w]) => named.includes(w)).flatMap(([, ls]) => ls);
+  const has = line => rows.some(x => x.helmer === line);
+  return { lines: [...new Set([...LINES_MEANT[r.helmer], ...namedLines])].filter(has), absent: [...new Set(namedLines)].filter(line => !has(line)) };
+};
+// The series alone, with no pre-series miles, as a pre-series range
+const NONE = { low: 0, high: 0, note: "none" };
+// What a line's lifetime or cumulative may be in a month it has no row for,
+// given pre-series ranges pre (the series alone being NONE): the lifetime
+// only grows, so after its last row it is at least that row's cumulative
+// plus the least pre-series amount, and before its first row, the series not
+// begun, at most the most; and where a Waymo hub figure may be meant (hub),
+// after the rows anything, since the hub counts a part of Waymo's miles. Each
+// such reading is unknown: a figure inside it may be its, which the rows
+// cannot bear out (since the round-3 review of 2026-11-06 for the end of a
+// month too; from 2026-11-06 until then for lifetimes on a day only, so that
+// a month-end figure in a month the rows do not reach went unchecked
+// whatever its value; the floor the series clears and the named forms read
+// the same bound in their own terms).
+const growthReading = (line, month, pre, hub) => {
+  const own = rows.filter(x => x.helmer === line), last = own.at(-1);
+  assert.ok(month > last.month || month < own[0].month,
+    `Replicata: read ${line}'s months in data/vmt.csv for ${month}. Expectata: a row for every month from its first, ${own[0].month}, to its last, ${last.month}. Resultata: none for ${month}.`);
+  return month > last.month
+    ? { what: `${line} after its last row, ${last.month}`, lo: hub ? 0 : last.cume + Math.min(...pre.map(p => p.low)), hi: Infinity, unknown: true }
+    : { what: `${line} before its first row, ${own[0].month}`, lo: 0, hi: Math.max(...pre.map(p => p.high)), unknown: true };
+};
+// A reading's words and range, for a message
+const readingNote = x => `${x.what}: ${x.lo === x.hi ? fmt(x.lo) : `${milesOf(x.lo)} to ${milesOf(x.hi)}`}`;
 // What a stated figure x (miles, slack) and the words right before it in
 // its clause make it: a floor ("more than", "over", "at least", "above",
 // "past", "beyond", and "reached", "passed", "crossed", "topped" or
@@ -1097,22 +1259,27 @@ const MODIFIERS = [
 // its interval (MODIFIERS) meets one of them. One that meets none is no
 // reading of the rows where its clause holds only OWN_WORDS; it goes
 // unchecked, rather than failing, where it may be a reading the rows do not
-// hold: in a month none of those lines has a row for (before a series
-// starts), in a Waymo month whose hub figure no anchor gives (the hub's
-// figure is then unknown, but the hub counts a part of Waymo's miles, so it
-// is at most the lifetime: a figure no higher may be the hub's), and where
-// its clause holds another word, which may name another owner (until the
-// round-1 review of 2026-11-05 a county's, Tesla's Bay Area series', another
-// company's and a deck's figure failed as the row's line's).
-const monthEndReadings = (lines, month) => [
+// hold: in a month one of those lines has no row for, where the lifetime may
+// be it then (growthReading: after the line's last row at least its
+// cumulative, before its first at most its pre-series miles; since the
+// round-3 review of 2026-11-06, until then whatever the figure), in a Waymo
+// month whose hub figure no anchor gives (the hub's figure is then unknown,
+// but the hub counts a part of Waymo's miles, so it is at most the lifetime:
+// a figure no higher may be the hub's), where its clause names a line
+// data/vmt.csv has no rows of, and where its clause holds another word, which
+// may name another owner (until the round-1 review of 2026-11-05 a county's,
+// Tesla's Bay Area series', another company's and a deck's figure failed as
+// the row's line's).
+const monthEndReadings = (lines, month, hub) => [
   ...lines.flatMap(line => [rowOf(line, month)].filter(x => x !== undefined).flatMap(x => [
     { what: `${line}'s cumulative`, lo: x.cume, hi: x.cume },
-    ...PRE_SERIES[line].map(p => ({ what: `${line}'s lifetime (pre-series miles ${p.note})`, lo: x.cume + p.low, hi: x.cume + p.high, unknown: p.unknown })),
+    ...PRE_SERIES[line].map(p => ({ what: `${line}'s lifetime (pre-series miles ${p.note})`, lo: x.cume + p.low, hi: x.cume + p.high })),
   ])),
+  ...lines.filter(line => rowOf(line, month) === undefined).map(line => growthReading(line, month, [...PRE_SERIES[line], NONE], hub && line === "waymo")),
   ...hubFigures.filter(h => lines.includes("waymo") && h.month === month)
     .filter((h, i, all) => all.findIndex(g => g.hub.stated === h.hub.stated) === i) // each figure once
     .map(h => ({ what: "the hub's figure", lo: h.hub.miles - h.hub.slack, hi: h.hub.miles + h.hub.slack })),
-  ...[rowOf("waymo", month)].filter(x => x !== undefined && lines.includes("waymo") && !hubFigures.some(h => h.month === month))
+  ...[rowOf("waymo", month)].filter(x => x !== undefined && hub && lines.includes("waymo") && !hubFigures.some(h => h.month === month))
     .map(x => ({ what: "the hub's figure, which no anchor gives, at most the lifetime", lo: 0, hi: x.cume + OFFSET.high, unknown: true })),
 ];
 for (const r of rows) {
@@ -1120,28 +1287,23 @@ for (const r of rows) {
     const month = `${m[4]}-${m[3] === undefined ? "12" : MON[m[3]]}`, stated = UNIT[m[2]](m[1]);
     const { before, after, antecedent, earlier } = clauseAround(r.rationale, m.index, m.index + m[0].length);
     const modifier = MODIFIERS.find(x => x.re.test(before)), [lo, hi] = modifier.interval(stated, 10 ** ({ k: 3, M: 6 }[m[2]] - decimals(m[1])));
+    // whose figure it is (ownerOf), the modifier left out of its words
     const words = wordsOf(`${before.replace(modifier.re, "")} ${after}`);
-    // whose figure it is: a noun of a reading or a line in the clause says so;
-    // a pronoun, or a noun that names no owner with none of those beside it,
-    // refers back, to the clauses before it (earlier) and what a parenthesis
-    // follows (antecedent); with neither, a parenthesis' first clause speaks
-    // of what the parenthesis follows
-    const owned = words.some(w => OWN_NOUNS.has(w)), refers = words.some(w => PRONOUNS.has(w)) || (!owned && words.some(w => GENERIC_NOUNS.has(w)));
-    const back = refers ? wordsOf(earlier) : [], named = [...words, ...wordsOf(antecedent), ...back];
-    const others = [...words, ...back, ...(owned && !refers ? [] : wordsOf(antecedent))].filter(w => !OWN_WORDS.has(w));
-    const lines = [...new Set([...LINES_MEANT[r.helmer], ...Object.entries(LINE_WORDS).filter(([w]) => named.includes(w)).flatMap(([, ls]) => ls)])];
-    const readings = monthEndReadings(lines, month), meets = x => lo <= x.hi && x.lo <= hi;
+    const { named, others } = ownerOf(words, antecedent, earlier, OWN_NOUNS, OWN_WORDS);
+    const { lines, absent } = linesFor(r, named);
+    const readings = monthEndReadings(lines, month, hubMeant(named)), meets = x => lo <= x.hi && x.lo <= hi;
     const reached = readings.some(x => !x.unknown && meets(x));
-    // a reading the rows do not hold may be its: no row for its month on those
-    // lines, a Waymo hub figure no anchor gives, or another owner its words name
-    const unread = readings.length === 0 || readings.some(x => x.unknown && meets(x)) || others.length > 0;
+    // a reading the rows do not hold may be its: a lifetime in a month a line
+    // has no row for, a Waymo hub figure no anchor gives, a line with no rows,
+    // or another owner its words name
+    const unread = readings.some(x => x.unknown && meets(x)) || absent.length > 0 || others.length > 0;
     if (!reached && unread) {
       unchecked["end of a month or year"].push(`${r.helmer} ${r.month}`);
       continue;
     }
     figureForms["end of a month or year"].push(`${r.helmer} ${r.month}`);
     if (!reached) {
-      figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" (${modifier.how}) vs ${readings.map(x => `${x.what} ${x.lo === x.hi ? fmt(x.lo) : `${milesOf(x.lo)} to ${milesOf(x.hi)}`}`).join("; ")}`);
+      figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" (${modifier.how}) vs ${readings.map(readingNote).join("; ")}`);
     }
   }
 }
@@ -1201,7 +1363,10 @@ for (const r of waymo) {
     // a day after the rows: the lifetime then is at least the last earlier
     // row's at its month's end, so a floor no higher is cleared, and one
     // higher may be, which the rows cannot tell (since the round-1 review of
-    // 2026-11-05; until then a day with no row failed)
+    // 2026-11-05; until then a day with no row failed); a day before the
+    // series: the lifetime then is at most the pre-series offset's high edge,
+    // so only a floor no higher may be cleared (since the round-3 review of
+    // 2026-11-06; until then any floor of such a day went unchecked)
     const earlier = waymo.filter(x => x.month < month).at(-1);
     // the lifetime at a month's end with the pre-series offset's high edge,
     // the most the series' lifetime can be
@@ -1209,18 +1374,21 @@ for (const r of waymo) {
     // cleared on the even spread through the day (since 2026-11-06), the
     // lifetime with the offset's high edge; and one that only an uneven path
     // through the month clears by that day, the lifetime at its month's end
-    // clearing it, or one dated after the rows, may be cleared, which the rows
-    // cannot tell, so it goes unchecked
+    // clearing it, one dated after the rows that the last row's lifetime does
+    // not clear, or one dated before the series no higher than the offset's
+    // high edge, may be cleared, which the rows cannot tell, so it goes
+    // unchecked
     const clears = possible && (row === undefined ? earlier !== undefined && floor <= highest(earlier) + 1
       : day <= daysIn(month) && floor <= lifetimeOf(row, day, OFFSET.high) + 1);
-    const mayClear = possible && (row === undefined || (day <= daysIn(month) && floor <= highest(row) + 1));
+    const mayClear = possible && (row === undefined ? earlier !== undefined || floor <= OFFSET.high + 1
+      : day <= daysIn(month) && floor <= highest(row) + 1);
     if (!clears && mayClear) {
       unchecked["floor the series clears"].push(r.month);
       continue;
     }
     figureForms["floor the series clears"].push(r.month);
     if (!clears) {
-      figureErrors.push(`waymo ${r.month}: "${m[0]}" vs the lifetime ${row === undefined ? `(no row for ${month})` : `${milesOf(highest(row))} at the end of ${month}, a month of ${daysIn(month)} days, with the pre-series offset's high edge`} (a ${m[2]} has 1 to ${LONGEST[MON_NAMES.indexOf(m[2])]} days)`);
+      figureErrors.push(`waymo ${r.month}: "${m[0]}" vs the lifetime ${row === undefined ? `(no row for ${month}; the series starts ${waymo[0].month}, its lifetime before then at most the pre-series offset's high edge, ${fmt(OFFSET.high)})` : `${milesOf(highest(row))} at the end of ${month}, a month of ${daysIn(month)} days, with the pre-series offset's high edge`} (a ${m[2]} has 1 to ${LONGEST[MON_NAMES.indexOf(m[2])]} days)`);
     }
   }
   // The total is read only with the parenthesis right after it, holding no
@@ -1445,61 +1613,87 @@ for (const r of rows) {
 // with a row, in the row's line or the other Tesla line; from earlier that
 // day the month of that name within 11 months either way; until then that
 // month of the row's year in the row's line), and unchecked where it may be a
-// month the rows do not reach (beyondRows).
+// month the rows do not reach (beyondNamed). Each form names the figures it
+// states that only grow, a cumulative or a band's edge, with the field each
+// is (fields), which beyondNamed reads.
 const NAMED_FORMS = [
   // "<Month> keeps <source>'s end-of-month <c>[ (...)], its band <lo>-<hi>":
   // its cumulative and band
   { form: "a month's cumulative and band",
     re: new RegExp(String.raw`\b${MONTH_NAME} keeps [^,;()]*?\bend-of-month ${WHOLE}(?: ${PAREN})?, its band ${WHOLE}-${WHOLE}`, "g"),
-    holds: (row, m) => row.cume === wholeMiles(m[2]).miles && row.kmin === wholeMiles(m[3]).miles && row.kmax === wholeMiles(m[4]).miles },
+    holds: (row, m) => row.cume === wholeMiles(m[2]).miles && row.kmin === wholeMiles(m[3]).miles && row.kmax === wholeMiles(m[4]).miles,
+    fields: m => [[m[2], "cume"], [m[3], "kmin"], [m[4], "kmax"]] },
   // "end-<Month> <a> / <b> / <c>", where "<Month> keeps ..., its band <lo>-<hi>
   // holding the three readings" follows: each reading inside the month's band
   { form: "a band holding readings",
     re: new RegExp(String.raw`\bend-${MONTH_NAME} ${WHOLE} \/ ${WHOLE} \/ ${WHOLE}(?=[^]*?\b\1 keeps [^,;()]*?\bend-of-month [\d,]+(?: ${PAREN})?, its band [\d,]+-[\d,]+ holding the three readings\b)`, "g"),
-    holds: (row, m) => [m[2], m[3], m[4]].every(s => row.kmin <= wholeMiles(s).miles && wholeMiles(s).miles <= row.kmax) },
+    holds: (row, m) => [m[2], m[3], m[4]].every(s => row.kmin <= wholeMiles(s).miles && wholeMiles(s).miles <= row.kmax),
+    fields: m => [[m[2], "kmin"], [m[3], "kmin"], [m[4], "kmin"]] },
   // "<Month>'s cumulative is that reading, <c>" or "is the chart's ~<c>": its
   // cumulative (the "~" marks the chart's reading approximate, not the
   // cumulative, which is that figure)
   { form: "a month's cumulative",
     re: new RegExp(String.raw`\b${MONTH_NAME}'s cumulative is (?:that reading, |the chart's ~)${WHOLE}`, "g"),
-    holds: (row, m) => row.cume === wholeMiles(m[2]).miles },
+    holds: (row, m) => row.cume === wholeMiles(m[2]).miles, fields: m => [[m[2], "cume"]] },
   // "<Month>'s cumulative is that reading, <c>, its band from the call's <f> to
   // <p>% above it": the band's floor f and its top c x (1 + p/100), p to the
   // whole percent
   { form: "a cumulative's floor and top",
     re: new RegExp(String.raw`\b${MONTH_NAME}'s cumulative is that reading, ${WHOLE}, its band from the call's ${WHOLE} to (\d+)% above it\b`, "g"),
-    holds: (row, m) => row.kmin === wholeMiles(m[3]).miles && within(row.kmax / wholeMiles(m[2]).miles - 1, Number(m[4]) / 100, 0.005 + 1e-9) },
+    holds: (row, m) => row.kmin === wholeMiles(m[3]).miles && within(row.kmax / wholeMiles(m[2]).miles - 1, Number(m[4]) / 100, 0.005 + 1e-9),
+    fields: m => [[m[2], "cume"], [m[3], "kmin"]] },
   // "<Month>'s cumulative is the chart's ~<c>, its floor <f>": the band's floor
   { form: "a cumulative's floor",
     re: new RegExp(String.raw`\b${MONTH_NAME}'s cumulative is the chart's ~${WHOLE}, its floor ${WHOLE}`, "g"),
-    holds: (row, m) => row.kmin === wholeMiles(m[3]).miles },
+    holds: (row, m) => row.kmin === wholeMiles(m[3]).miles, fields: m => [[m[3], "kmin"]] },
   // "<Month>'s miles are at least <n>": a floor on its miles
   { form: "a month's miles at least",
     re: new RegExp(String.raw`\b${MONTH_NAME}'s miles are at least ${WHOLE}`, "g"),
-    holds: (row, m) => row.vmt >= wholeMiles(m[2]).miles },
+    holds: (row, m) => row.vmt >= wholeMiles(m[2]).miles, fields: () => [] },
   // "<Month>'s miles are at least <n>, ..., puts them there (<v> with": its
   // miles
   { form: "a month's miles as put",
     re: new RegExp(String.raw`\b${MONTH_NAME}'s miles are at least ${WHOLE},(?:[^.;()]|\.(?=\d))*?\bputs them there \(${WHOLE} with\b`, "g"),
-    holds: (row, m) => row.vmt === wholeMiles(m[3]).miles },
+    holds: (row, m) => row.vmt === wholeMiles(m[3]).miles, fields: () => [] },
   // "<Month>'s cumulative band, <lo> to <hi>": its cumulative band
   { form: "a month's cumulative band",
     re: new RegExp(String.raw`\b${MONTH_NAME}'s cumulative band, ${WHOLE} to ${WHOLE}`, "g"),
-    holds: (row, m) => row.kmin === wholeMiles(m[2]).miles && row.kmax === wholeMiles(m[3]).miles },
+    holds: (row, m) => row.kmin === wholeMiles(m[2]).miles && row.kmax === wholeMiles(m[3]).miles,
+    fields: m => [[m[2], "kmin"], [m[3], "kmax"]] },
   // "End-<Month> cumulative floor <f>": its cumulative band's floor
   { form: "an end-of-month floor",
     re: new RegExp(String.raw`\bEnd-${MONTH_NAME} cumulative floor ${WHOLE}`, "g"),
-    holds: (row, m) => row.kmin === wholeMiles(m[2]).miles },
+    holds: (row, m) => row.kmin === wholeMiles(m[2]).miles, fields: m => [[m[2], "kmin"]] },
 ];
-for (const r of rows) for (const { form, re, holds } of NAMED_FORMS) for (const m of r.rationale.matchAll(re)) {
-  const n = MONTH_NAMES.indexOf(m[1]), meant = namedRows(r, n), held = meant.some(row => holds(row, m));
-  if (!held && beyondRows(r, n, LINES_MEANT[r.helmer])) { // perhaps a month the rows do not reach
+// The months of name n a named form's figures may be in that the rows do not
+// reach: the month of that name nearest each row sharing r's rationale where
+// no line the row may mean has a row, each with whether the figures fit it on
+// a line: after the line's last row each figure that only grows (a
+// cumulative, or a band's edge or a reading inside the band) at least the
+// last row's same field, before its first at most the line's pre-series
+// miles' high edge (the lifetime then, the series not begun), and a month's
+// own miles anything (since the round-3 review of 2026-11-06; until then a
+// figure of such a month went unchecked whatever its value, although
+// cumulatives only grow)
+const beyondNamed = (r, n, fields) => {
+  const lines = LINES_MEANT[r.helmer].filter(line => rows.some(x => x.helmer === line));
+  return [...new Set(rows.filter(x => x.rationale === r.rationale).flatMap(x => nearestNamed(x.month, n, 1)))]
+    .filter(month => lines.every(line => rowOf(line, month) === undefined)).flatMap(month => lines.map(line => {
+      const own = rows.filter(x => x.helmer === line), last = own.at(-1), high = Math.max(0, ...PRE_SERIES[line].map(p => p.high));
+      return month > last.month
+        ? { fits: fields.every(([s, k]) => wholeMiles(s).miles >= last[k]), note: `${month}, after ${line}'s last row, ${last.month}, whose cumulative is ${cumeAndBand(last)}` }
+        : { fits: fields.every(([s]) => wholeMiles(s).miles <= high), note: `${month}, before ${line}'s first row, ${own[0].month}, its lifetime then at most ${fmt(high)}` };
+    }));
+};
+for (const r of rows) for (const { form, re, holds, fields } of NAMED_FORMS) for (const m of r.rationale.matchAll(re)) {
+  const n = MONTH_NAMES.indexOf(m[1]), meant = namedRows(r, n), held = meant.some(row => holds(row, m)), beyond = beyondNamed(r, n, fields(m));
+  if (!held && beyond.some(b => b.fits)) { // perhaps a month the rows do not reach
     unchecked["a month by its name"].push(`${form}: ${r.helmer} ${r.month}`);
     continue;
   }
   figureForms[form].push(`${r.helmer} ${r.month}`);
   if (!held) {
-    figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" vs ${rowsNote(meant)}`);
+    figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" vs ${rowsNote(meant)}${beyond.map(b => `; ${b.note}`).join("")}`);
   }
 }
 // The row's own figures, any line; the row before is its line's previous row
@@ -1780,35 +1974,47 @@ for (const r of rows) {
     }
   }
 }
-// A lifetime on a day (restated in the round-1 and round-2 reviews of
-// 2026-11-05 and on 2026-11-06): "crosses <x>M at the start of <Mon> <D>" (or
+// A lifetime on a day (restated in the round-1, round-2 and round-3 reviews
+// of 2026-11-05 and 2026-11-06): "crosses <x>M at the start of <Mon> <D>" (or
 // "on <Mon> <D>") has the lifetime reach x during that day, with one mile's
 // slack (at most x + 1 at the end of the day before, at least x - 1 at its
 // end); "stands at <x>M on <Mon> <D>" has the lifetime at the end of that day
 // x, to x's precision, and so does "puts <n> lifetime miles at <Mon> <D>" n,
 // to its last nonzero digit (since 2026-11-06; Zoox's 2026 rows give the
-// path's Mar 24 and Aug 5 figures so). Each is read on a line the row may
-// mean, in a month of that name (monthsNamed): the lifetime is the series
-// cumulative plus the line's pre-series miles (PRE_SERIES), any amount in
-// their range, or none (the series itself); and on a month's last day
-// "stands at" may also give Waymo's hub figure an anchor gives for that
-// month. The rows hold each month's miles and no path within it, so a figure
-// is read on paths through the month, within the rounding the line's months
-// carry (half a unit of the last nonzero digit of the miles of each of the
-// line's months through the day, for Zoox about 70 miles through November
+// path's Mar 24 and Aug 5 figures so). A ", <YYYY>" right after the day names
+// the year of its month (since the round-3 review of 2026-11-06; until then
+// it was not read, so "stands at 1.25M on Dec 31, 2024" was read as Dec 31,
+// 2025's); without one the day is in a month of that name with a row
+// (monthsNamed). Its lines are those the row may mean or its clause names,
+// and whose figure it is is read as at the end of a month (ownerOf,
+// linesFor; since the round-3 review, until then the row's own lines only,
+// so that a county's, a city's, another company's or a deck's correct figure
+// failed as the row's line's): the lifetime is the series cumulative plus the
+// line's pre-series miles (PRE_SERIES), any amount in their range, or none
+// (the series itself); and on a month's last day "stands at" may also give
+// Waymo's hub figure an anchor gives for that month, or, where none gives
+// one, the hub's unknown figure, at most the lifetime (since the round-3
+// review). The rows hold each month's miles and no path within it, so a
+// figure is read on paths through the month, within the rounding the line's
+// months carry (half a unit of the last nonzero digit of the miles of each of
+// the line's months through the day, for Zoox about 70 miles through November
 // 2025, 13,940 by Mar 24, 2026 and 35,875 by Aug 5, 2026):
-//   - in a Zoox row whose clause around the figure says "path" (or, where it
-//     holds a pronoun, the clauses the pronoun may refer to do, as at the end
-//     of a month), the Zoox model's path (data/README.md, Zoox anchors): the
-//     month's miles spread evenly over its days, as the model counts its
-//     statements, or its Las Vegas share at one rate a Las Vegas driving day,
-//     the days the model holds out of the month (LV_PAUSE below: five, for
-//     January 2026's Jan 22-26) lying anywhere in it, and its California
+//   - on a Zoox line where the clause names the Zoox model's path ("the
+//     path", "its path", "Zoox's path", "the smooth path", "the smoothest
+//     path", "the model's path"), or names no path of its own and a pronoun
+//     in it may refer to a clause that does (THE_PATH; since the round-3
+//     review, until then any "path" word, so that a correct "a path that
+//     crosses 1M on Dec 7", or "path" in a revision note, was read as the
+//     model's), the model's path (data/README.md, Zoox anchors): the month's
+//     miles spread evenly over its days, as the model counts its statements,
+//     or its Las Vegas share at one rate a Las Vegas driving day, the days the
+//     model holds out of the month (LV_PAUSE below: five, for January 2026's
+//     Jan 22-26) where a Zoox rationale places them ("leaves out <Mon>
+//     <a>-<b>") and anywhere in the month where none does, and its California
 //     share, which no row holds apart, anything from none of the month's
 //     miles to all of them, spread over its days. A figure on no such path
-//     fails, so a
-//     crossing a day late does ("the path crosses 1M at the start of Dec 2",
-//     where the path is at 1,008,064 by the end of Dec 1).
+//     fails, so a crossing a day late does ("the path crosses 1M at the start
+//     of Dec 2", where the path is at 1,008,064 by the end of Dec 1).
 //   - elsewhere, the month's miles spread evenly over its days: a figure
 //     there is checked, and one only some other path bears out (the lifetime
 //     anywhere from the month's start, or on its last day its end, to its
@@ -1816,52 +2022,83 @@ for (const r of rows) {
 //     unevenly within a month (the Waymo builder's daily rates change within
 //     months; Tesla's no-monitor series grows within each one, so that its
 //     388,672 by Jul 22 and 1,035,164 by Sep 3 lie below the even spread's
-//     406,253 and 1,058,645).
-// A day no month of its name has (0, 32, Nov 31) fails; a figure no reading
-// bears out goes unchecked where no meant line has a row for its day, where
-// the month of that name nearest the row's has none (beyondRows), or where
-// only pre-series miles no rationale states (Zoox's, were none of its
-// statements readable) would bear it out. (From the round-2 review of
-// 2026-11-05 until 2026-11-06 a figure lying anywhere some path through its
-// month could put it passed, so the Zoox crossing a day late did; from the
-// round-1 review until the round-2 review every line was read on the even
-// spread alone, a figure off it failing, as the no-monitor series' figures of
-// Jul 22 and Sep 3 did once reworded into the form, and a day past its
-// month's end went unchecked; from earlier on 2026-11-05 until the round-1
-// review the lifetime only, on the even spread exactly, and a Zoox row
-// stating no pre-series miles unchecked.) And "the <o> driverless miles
-// before it come off <Name>'s ~<x>M-mile figure for <Mon> <D>, <YYYY>" has
-// the cumulative at the end of that day plus o x, to one unit of x's last
-// digit (its "~"), read as "stands at" reads a figure away from a path, so
-// that one only some uneven path bears out goes unchecked, and its month with
-// no row too (since 2026-11-06; from the round-2 review until then any path
-// bore it out, and until the round-2 review the even spread; until 2026-11-06
-// its month with no row failed), and o, to its own precision, in the line's
-// stated pre-series range (PRE_SERIES) where it has one (since the round-1
+//     406,253 and 1,058,645); and so does one no reading bears out whose
+//     clause, or what it refers back to, holds a word that may name another
+//     owner (a word other than OWN_WORDS, PATH_WORDS and PLAIN below), or
+//     names a line data/vmt.csv has no rows of.
+// A day no month of its name has (0, 32, Nov 31), or that its stated year's
+// month lacks (Feb 29, 2026), fails; and a figure no reading bears out goes
+// unchecked where, in the month of that name holding the day nearest a row
+// sharing the rationale (or the month its year names), a line has no row and
+// its lifetime may be the figure then (growthReading: after the line's last
+// row at least its cumulative, on a Waymo month's last day anything, its hub
+// figure counting a part of its miles, before its first row at most its
+// pre-series miles; since 2026-11-06, until then whatever the figure). (From
+// the round-2 review of 2026-11-05 until 2026-11-06 a figure lying anywhere
+// some path through its month could put it passed, so the Zoox crossing a
+// day late did; from the round-1 review until the round-2 review every line
+// was read on the even spread alone, a figure off it failing, as the
+// no-monitor series' figures of Jul 22 and Sep 3 did once reworded into the
+// form, and a day past its month's end went unchecked; from earlier on
+// 2026-11-05 until the round-1 review the lifetime only, on the even spread
+// exactly, and a Zoox row stating no pre-series miles unchecked.) And "the
+// <o> driverless miles before it come off <Name>'s ~<x>M-mile figure for
+// <Mon> <D>, <YYYY>" has the cumulative at the end of that day plus o x, to
+// one unit of x's last digit (its "~"), read as "stands at" reads a figure
+// away from a path, so that one only some uneven path bears out goes
+// unchecked, and one of a month with no row too where the lifetime may be it
+// then (growthReading; since 2026-11-06; from the round-2 review until then
+// any path bore it out, and until the round-2 review the even spread; until
+// 2026-11-06 a month with no row failed), and o, to its own precision, in the
+// line's pre-series range (PRE_SERIES) where it has one (since the round-1
 // review; until then o held only to x's "~").
 //
 // The days of each Zoox month the model counts without Las Vegas driving:
 // quals/zoox-vmt-model.qual.mjs's LV_PAUSE, its count of them, read from that
 // file as data/waymo_vmt.py's OFFSET is read (since 2026-11-06; nothing
-// before then read the model's path within a month).
-const pauseLine = fs.readFileSync("quals/zoox-vmt-model.qual.mjs", "utf8").match(/^const LV_PAUSE = (\{[^{}\n]*\});/m);
-assert.ok(pauseLine !== null,
-  `Replicata: read quals/zoox-vmt-model.qual.mjs. Expectata: a line "const LV_PAUSE = { "<YYYY-MM>": <days>, ... };", the days of each month the Zoox model counts without Las Vegas driving. Resultata: no such line.`);
-const LV_PAUSE = JSON.parse(pauseLine[1]);
+// before then read the model's path within a month; since the round-3 review
+// of that day through constantOf, until then one line's regex and
+// JSON.parse, which stopped on a correct edit of its literal form).
+const LV_PAUSE = constantOf("quals/zoox-vmt-model.qual.mjs", "LV_PAUSE");
+assert.equal(Object.prototype.toString.call(LV_PAUSE), "[object Object]",
+  `Replicata: read LV_PAUSE in quals/zoox-vmt-model.qual.mjs. Expectata: an object of the months the Zoox model counts Las Vegas driving days out of, each with their count. Resultata: ${String(LV_PAUSE)}.`);
 const badPause = Object.entries(LV_PAUSE).filter(([month, k]) => !(/^\d{4}-(?:0[1-9]|1[0-2])$/.test(month) && Number.isInteger(k) && 0 < k && k < daysIn(month)));
 assert.deepEqual(badPause, [],
   `Replicata: read LV_PAUSE in quals/zoox-vmt-model.qual.mjs. Expectata: each entry a YYYY-MM month and a whole number of days, at least one and fewer than the month has. Resultata: ${JSON.stringify(badPause)}.`);
 // The days the model holds out of a month, none where it lists none
 const pausedIn = month => Object.entries(LV_PAUSE).filter(([m]) => m === month).reduce((sum, [, k]) => sum + k, 0);
+// Where a Zoox rationale places a month's days out, "leaves out <Mon> <a>-<b>"
+// ("January leaves out Jan 22-26"): the days a to b of a month of that name
+// that the model holds that many days out of (a month named without its year,
+// read as any month of the name; since the round-3 review of 2026-11-06,
+// until then the days lay anywhere in the month, so that "the path stands at
+// 1.25M on Jan 3" passed, Jan 1-5 taken as the days out). A window that no
+// such month holds fails: the rationale and the model then disagree on the
+// month's days out.
+const PAUSE_WINDOW = new RegExp(String.raw`\bleaves out ${MON_NAME} (\d{1,2})-(\d{1,2})\b`, "g");
+const windows = rows.filter(x => x.helmer === "zoox").flatMap(x => [...x.rationale.matchAll(PAUSE_WINDOW)]
+  .map(m => ({ row: x, text: m[0], n: MON_NAMES.indexOf(m[1]), first: Number(m[2]), last: Number(m[3]) })));
+const windowOf = (w, month) => Number(month.slice(5, 7)) === w.n + 1 && 1 <= w.first && w.last <= daysIn(month) && pausedIn(month) === w.last - w.first + 1;
+for (const w of windows) {
+  figureForms["a month's days out"].push(`zoox ${w.row.month}`);
+  if (!Object.keys(LV_PAUSE).some(month => windowOf(w, month))) {
+    figureErrors.push(`zoox ${w.row.month}: "${w.text}" (${w.last - w.first + 1} days of a ${MON_NAMES[w.n]}) vs quals/zoox-vmt-model.qual.mjs's LV_PAUSE, the days the model holds out of each month, ${JSON.stringify(LV_PAUSE)}`);
+  }
+}
 // A family of paths through row x's month, as the least and the most of the
 // month's D days' miles its paths have driven by the end of day d (0 to D):
-// the even spread; the Zoox model's path (above), k its days out of the month;
-// and any path, which by then has driven anything from none of them to all of
-// them, none at the month's start and all at its end
+// the even spread; the Zoox model's path (above), k its days out of the
+// month, its Las Vegas driving days by the end of day d being d less the days
+// out a rationale places by then, or, where none places them, anywhere from
+// d less k (all of them at the month's start) to d (all at its end); and any
+// path, which by then has driven anything from none of them to all of them,
+// none at the month's start and all at its end
 const EVEN = () => (d, D) => [d / D, d / D];
 const ZOOX_PATH = x => {
-  const k = pausedIn(x.month);
-  return (d, D) => [Math.min(d / D, Math.max(0, d - k) / (D - k)), Math.max(d / D, Math.min(d, D - k) / (D - k))];
+  const k = pausedIn(x.month), placed = windows.filter(w => windowOf(w, x.month));
+  const driven = (d, D) => placed.length === 0 ? [Math.max(0, d - k), Math.min(d, D - k)]
+    : placed.map(w => d - Math.max(0, Math.min(d, w.last) - w.first + 1));
+  return (d, D) => [Math.min(d / D, ...driven(d, D).map(v => v / (D - k))), Math.max(d / D, ...driven(d, D).map(v => v / (D - k)))];
 };
 const ANY = () => (d, D) => [Math.floor(d / D), Math.ceil(d / D)];
 // The series' lifetime less its pre-series miles at the end of day d of row
@@ -1874,13 +2111,13 @@ const pathRounding = (x, d) => rows.filter(y => y.helmer === x.helmer && y.month
 // from a function giving the span at the end of any day (a crossing's from
 // the least at the end of the day before to the most at the end of the day,
 // the others' that day's), with words for it in a message
-const STANDS = { re: new RegExp(String.raw`\bstands at (\d+(?:\.\d+)?)M on ${MON_NAME} (\d{1,2})\b`, "g"), name: "a lifetime milestone", hub: true,
+const STANDS = { re: new RegExp(String.raw`\bstands at (\d+(?:\.\d+)?)M on ${MON_NAME} (\d{1,2})\b(?:, (\d{4})\b)?`, "g"), name: "a lifetime milestone", hub: true,
   figure: m => millions(m[1]), span: (at, d) => at(d), when: d => `at the end of day ${d}` };
 const LIFETIME_FORMS = [
-  { re: new RegExp(String.raw`\bcrosses (\d+(?:\.\d+)?)M (?:at the start of|on) ${MON_NAME} (\d{1,2})\b`, "g"), name: "a lifetime milestone", hub: false,
+  { re: new RegExp(String.raw`\bcrosses (\d+(?:\.\d+)?)M (?:at the start of|on) ${MON_NAME} (\d{1,2})\b(?:, (\d{4})\b)?`, "g"), name: "a lifetime milestone", hub: false,
     figure: m => ({ ...millions(m[1]), slack: 1 }), span: (at, d) => [at(d - 1)[0], at(d)[1]], when: d => `from the end of day ${d - 1} to the end of day ${d}` },
   STANDS,
-  { re: new RegExp(String.raw`\bputs ${WHOLE} lifetime miles at ${MON_NAME} (\d{1,2})\b`, "g"), name: "a path's lifetime on a day", hub: false,
+  { re: new RegExp(String.raw`\bputs ${WHOLE} lifetime miles at ${MON_NAME} (\d{1,2})\b(?:, (\d{4})\b)?`, "g"), name: "a path's lifetime on a day", hub: false,
     figure: m => roundedWhole(m[1]), span: (at, d) => at(d), when: STANDS.when },
 ];
 // Whether the stated figure f lies, with some pre-series amount in p, where a
@@ -1890,49 +2127,80 @@ const lifetimeHolds = (form, x, path, d, p, f) => {
   const [a, b] = form.span(dd => spanAt(x, path, dd), d), slack = f.slack + pathRounding(x, d);
   return Math.max(p.low, f.miles - slack - b) <= Math.min(p.high, f.miles + slack - a);
 };
+// Whether a reading from lo to hi meets a stated figure f (miles and slack)
+const meetsFigure = (g, f) => g.lo <= f.miles + f.slack && f.miles - f.slack <= g.hi;
+// The words of a lifetime's clause that say whose it is: a path's, as well as
+// a reading's or a line's (OWN_NOUNS); and those that name no other owner:
+// OWN_WORDS, the path's, and prepositions, adverbs, months' names and words
+// that set one figure beside another ("On the path the lifetime crosses ...",
+// "For comparison, Waymo's series crosses ...", "In August, ...")
 const PATH_WORDS = new Set(["path", "path's", "paths"]);
+const PLAIN = new Set(["on", "in", "for", "from", "through", "after", "before", "since", "until", "about", "around", "still",
+  "already", "only", "just", "now", "when", "where", "which", "comparison", "contrast", "scale",
+  ...MONTH_NAMES.map(x => x.toLowerCase()), ...MON_NAMES.map(x => x.toLowerCase())]);
+const LIFETIME_NOUNS = new Set([...OWN_NOUNS, ...PATH_WORDS]), LIFETIME_OWN = new Set([...OWN_WORDS, ...PATH_WORDS, ...PLAIN]);
+// The Zoox model's path, named (above)
+const THE_PATH = /\b(?:the|its|zoox's) (?:smooth(?:est)? |model's )?path\b/i;
 const COMES_OFF = new RegExp(String.raw`\bthe ${WHOLE} driverless miles before it come off [A-Z][A-Za-z]*'s ~(\d+(?:\.\d+)?)M-mile figure for ${MON_NAME} (\d{1,2}), (\d{4})\b`, "g");
 for (const r of rows) {
   for (const form of LIFETIME_FORMS) for (const m of r.rationale.matchAll(form.re)) {
-    const f = form.figure(m), day = Number(m[3]), n = MON_NAMES.indexOf(m[2]), months = monthsNamed(n);
-    // the Zoox model's path where the clause around the figure names a path
-    // (or, for a pronoun in it, the clauses it may refer to do): the family a
-    // figure is checked on, then the one it may lie on
-    const { before, after, earlier } = clauseAround(r.rationale, m.index, m.index + m[0].length), words = wordsOf(`${before} ${after}`);
-    const onPath = r.helmer === "zoox" && [...words, ...(words.some(w => PRONOUNS.has(w)) ? wordsOf(earlier) : [])].some(w => PATH_WORDS.has(w));
-    const [sure, may] = onPath ? [ZOOX_PATH, ZOOX_PATH] : [EVEN, ANY];
-    const meant = LINES_MEANT[r.helmer].flatMap(line => months.map(month => rowOf(line, month))
-      .filter(row => row !== undefined && 1 <= day && day <= daysIn(row.month)).flatMap(row => [...PRE_SERIES[line], { low: 0, high: 0, note: "none" }].map(o => ({ row, o }))));
-    const hubs = hubFigures.filter(h => form.hub && LINES_MEANT[r.helmer].includes("waymo") && months.includes(h.month) && day === daysIn(h.month));
-    const held = meant.some(({ row, o }) => !o.unknown && lifetimeHolds(form, row, sure(row), day, o, f)) || hubs.some(h => within(h.hub.miles, f.miles, h.hub.slack + f.slack));
-    const possible = meant.some(({ row, o }) => lifetimeHolds(form, row, may(row), day, o, f));
-    // a day a month of its name has, and either some path or pre-series
-    // amount the rows cannot rule out bearing it out, or no row for it,
-    // perhaps a month the rows do not reach
-    if (!held && 1 <= day && day <= LONGEST[n] && (possible || (meant.length === 0 && hubs.length === 0) || beyondRows(r, n, LINES_MEANT[r.helmer]))) {
+    const f = form.figure(m), day = Number(m[3]), n = MON_NAMES.indexOf(m[2]);
+    // the months the day may be in: the one its year names, or else every
+    // month of its name with a row
+    const months = m[4] === undefined ? monthsNamed(n) : [`${m[4]}-${MON[m[2]]}`];
+    const longest = m[4] === undefined ? LONGEST[n] : daysIn(months[0]), dayOk = 1 <= day && day <= longest;
+    // whose figure it is (ownerOf), and the Zoox model's path where the
+    // clause names it, or names no path of its own and refers back to a
+    // clause that does
+    const { before, after, antecedent, earlier } = clauseAround(r.rationale, m.index, m.index + m[0].length), words = wordsOf(`${before} ${after}`);
+    const { refers, named, others } = ownerOf(words, antecedent, earlier, LIFETIME_NOUNS, LIFETIME_OWN);
+    const { lines, absent } = linesFor(r, named);
+    const onPath = THE_PATH.test(`${before} ${after}`) || (!words.some(w => PATH_WORDS.has(w)) && refers && THE_PATH.test(`${earlier} ${antecedent}`));
+    // the families a row's figure is checked on, then the one it may lie on
+    const families = x => onPath && x.helmer === "zoox" ? [ZOOX_PATH, ZOOX_PATH] : [EVEN, ANY];
+    const meant = lines.flatMap(line => months.map(month => rowOf(line, month))
+      .filter(row => row !== undefined && 1 <= day && day <= daysIn(row.month)).flatMap(row => [...PRE_SERIES[line], NONE].map(o => ({ row, o }))));
+    const hubs = hubFigures.filter(h => form.hub && lines.includes("waymo") && months.includes(h.month) && day === daysIn(h.month));
+    const held = meant.some(({ row, o }) => lifetimeHolds(form, row, families(row)[0](row), day, o, f)) || hubs.some(h => within(h.hub.miles, f.miles, h.hub.slack + f.slack));
+    const possible = meant.some(({ row, o }) => lifetimeHolds(form, row, families(row)[1](row), day, o, f));
+    // the hub's unknown figure on the last day of a Waymo month no anchor
+    // gives one for, at most the lifetime
+    const hubMay = form.hub && hubMeant(named) && meant.some(({ row }) => row.helmer === "waymo" && day === daysIn(row.month) && !hubFigures.some(h => h.month === row.month) && f.miles - f.slack <= row.cume + OFFSET.high);
+    // the lifetimes it may be in the months it may be in (the nearest of its
+    // name holding the day to each row sharing the rationale, or the month
+    // its year names) that a line has no row for
+    const beyond = [...new Set(m[4] === undefined ? rows.filter(x => x.rationale === r.rationale).flatMap(x => nearestNamed(x.month, n, day)) : months)]
+      .flatMap(month => lines.filter(line => rowOf(line, month) === undefined)
+        .map(line => growthReading(line, month, [...PRE_SERIES[line], NONE], form.hub && hubMeant(named) && line === "waymo" && day === daysIn(month))));
+    // a real day, and some path the rows cannot rule out, the hub's unknown
+    // figure, a lifetime in a month a line has no row for, another owner its
+    // words may name (away from the model's path) or a line with no rows
+    // bearing it out
+    if (!held && dayOk && (possible || hubMay || beyond.some(g => meetsFigure(g, f)) || (!onPath && others.length > 0) || absent.length > 0)) {
       unchecked[form.name].push(`${r.helmer} ${r.month}`);
       continue;
     }
     figureForms[form.name].push(`${r.helmer} ${r.month}`);
     if (!held) {
-      const spanNote = row => form.span(dd => spanAt(row, sure(row), dd), day).map(milesOf).join(" to ");
-      figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" vs ${[...new Set(meant.map(({ row }) => row))].map(row => `${row.helmer}'s series ${spanNote(row)} on ${onPath ? "the Zoox model's path" : "the even spread"} ${form.when(day)} of ${row.month} (${milesOf(row.cume - row.vmt)} at its start, ${milesOf(row.cume)} at its end), give or take its months' rounding, up to ${milesOf(pathRounding(row, day))}, plus no pre-series miles${PRE_SERIES[row.helmer].map(o => ` or ${o.note}`).join("")}`).join("; ")}${hubs.map(h => `; the hub's ${h.hub.stated} for ${h.month}`).join("")} (a ${m[2]} has at most ${LONGEST[n]} days; ${meant.length} readings of rows holding day ${day})`);
+      const spanNote = row => form.span(dd => spanAt(row, families(row)[0](row), dd), day).map(milesOf).join(" to ");
+      figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" vs ${meant.length} readings of rows holding day ${day} (its month has at most ${longest} days)${[...new Set(meant.map(({ row }) => row))].map(row => `; ${row.helmer}'s series ${spanNote(row)} on ${onPath && row.helmer === "zoox" ? "the Zoox model's path" : "the even spread"} ${form.when(day)} of ${row.month} (${milesOf(row.cume - row.vmt)} at its start, ${milesOf(row.cume)} at its end), give or take its months' rounding, up to ${milesOf(pathRounding(row, day))}, plus no pre-series miles${PRE_SERIES[row.helmer].map(o => ` or ${o.note}`).join("")}`).join("")}${hubs.map(h => `; the hub's ${h.hub.stated} for ${h.month}`).join("")}${beyond.map(g => `; ${readingNote(g)}`).join("")}`);
     }
   }
   for (const m of r.rationale.matchAll(COMES_OFF)) {
     const pre = roundedWhole(m[1]), o = { low: pre.miles, high: pre.miles }, x = { ...millions(m[2]), slack: 10 ** (6 - decimals(m[2])) }, day = Number(m[4]);
-    const month = `${m[5]}-${MON[m[3]]}`, row = rowOf(r.helmer, month), stated = PRE_SERIES[r.helmer].filter(p => !p.unknown);
+    const month = `${m[5]}-${MON[m[3]]}`, row = rowOf(r.helmer, month), stated = PRE_SERIES[r.helmer];
     const agrees = stated.length === 0 || stated.some(p => p.low <= pre.miles + pre.slack && pre.miles - pre.slack <= p.high);
     const real = 1 <= day && day <= daysIn(month), onEven = row !== undefined && lifetimeHolds(STANDS, row, EVEN(), day, o, x);
-    // a real day and agreeing pre-series miles, and no row for the month or
-    // only some uneven path bearing it out
-    if (!onEven && real && agrees && (row === undefined || lifetimeHolds(STANDS, row, ANY(), day, o, x))) {
+    // a real day and agreeing pre-series miles, and a month with no row where
+    // the lifetime may be that, or only some uneven path bearing it out
+    if (!onEven && real && agrees && (row === undefined ? meetsFigure(growthReading(r.helmer, month, [o], false), x)
+      : lifetimeHolds(STANDS, row, ANY(), day, o, x))) {
       unchecked["an approximate lifetime"].push(`${r.helmer} ${r.month}`);
       continue;
     }
     figureForms["an approximate lifetime"].push(`${r.helmer} ${r.month}`);
     if (!real || !onEven || !agrees) {
-      figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" vs ${row === undefined ? `no row for ${month}` : `the cumulative ${milesOf(lifetimeOf(row, day, 0))} at the end of day ${day} of ${row.month} on the even spread, which plus ${fmt(pre.miles)} is ${milesOf(lifetimeOf(row, day, pre.miles))}`} (a ${m[3]} ${m[5]} has ${daysIn(month)} days); its line's stated pre-series miles: ${stated.map(p => p.note).join(" or ")}`);
+      figureErrors.push(`${r.helmer} ${r.month}: "${m[0]}" vs ${row === undefined ? `no row for ${month}: ${readingNote(growthReading(r.helmer, month, [o], false))}` : `the cumulative ${milesOf(lifetimeOf(row, day, 0))} at the end of day ${day} of ${row.month} on the even spread, which plus ${fmt(pre.miles)} is ${milesOf(lifetimeOf(row, day, pre.miles))}`} (a ${m[3]} ${m[5]} has ${daysIn(month)} days); its line's pre-series miles: ${stated.map(p => p.note).join(" or ")}`);
     }
   }
 }
@@ -2329,8 +2597,8 @@ const problems = {
 };
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0));
 assert.deepEqual(failing, {},
-  `Replicata: read every data/vmt.csv rationale (shown as written, its links as links, in the page's VMT sources table) and check (1) links to sections of data/README.md, (2) internal shorthand, (3) stated figures against the rows (and CPUC's miles in data/waymo-ca.csv), and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts.
-Expectata: (1) each link (any "[<text>](<target>)") has a text other than blanks and the target data/#<anchor>, <anchor> the id GitHub Pages gives one of data/README.md's headings (${ANCHORS.join(", ")}) and of the form the page reads (lowercase letters, digits and hyphens), and no "](" or target "data/#" stands outside a link but inside a longer path or address; on synthetic files the heading reader gives GitHub Pages' ids, and stops with its message on each form it stops on; on synthetic links each wrong form is named; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best" or "D/H"; (3) each figure stated in one of the forms that follow passes its form's test and is checked where its wording appears, none of these forms being required (a statement reworded out of its form goes unchecked, the human's rule of 2026-11-03), and a figure passes where it is right under one of the meanings its form reads its words to have (a month named without its year is any month of that name with a row, in the row's line or, for a Tesla line, either Tesla line, and a quarter named without its year any year's; the meanings a correct figure could have that no form reads are listed in the header as what remains), and goes unchecked rather than failing where a reading the rows do not hold may be its (each case below). The tests: a value to its stated precision, whole miles exactly and a whole number that may be rounded to its last nonzero digit; CPUC's miles to half a mile either way for each month summed, and a band's clipped edges to half a mile either way; the floor the series clears, the milestone day and a crossing with one mile's slack, a month-end floor or ceiling with one mile's, and the other floors exactly; a lifetime on a day on a path through its month, within the rounding the line's months carry (the Zoox model's path where a Zoox clause names a path: the month's miles spread evenly or its Las Vegas share at one rate a driving day with the model's days out of the month, LV_PAUSE in quals/zoox-vmt-model.qual.mjs, anywhere in it; elsewhere the even spread, a figure only some other path through the month bears out going unchecked); a figure marked "~" (or "≈", "about" and the like) to one unit of its last digit; and in products, sums, rates and per-day scalings the stated figures taken as exact. The forms: each "<x>k" or "<x>M" "end-[<Mon>-]<YYYY>" is a series cumulative or lifetime that month of a line the row may mean or its clause names or, in a Waymo row, the hub's figure an anchor gives, as a floor, a ceiling or approximate where the words right before it say so (one that is none of these goes unchecked where its month has no row on those lines, it may be a hub figure no anchor gives, at most the lifetime, it may be a Zoox lifetime whose pre-series miles no rationale states, or its clause holds a word other than the words of a reading of the row's own line, which may name another owner, its clause counting, where a pronoun or a noun that names no owner refers back, the clauses before it in its sentence, or the sentence before, and what a parenthesis follows; a stop cuts a clause only before a capital letter or at the end); each Waymo anchor ("The <Mon>-<YYYY> cumulative lands on the anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles") is that month's cumulative, h + e - o; each Waymo band after an anchor in its rationale ("its cumulative band is the hub total plus <a>M to <b>M ..., less the pre-series miles' range, <l>M-<u>M") that month's cumulative band; each Waymo "update: <h>M rider-only miles thru <Mon>-<YYYY>", its clause ending after the month at a semicolon, a stop or a closing parenthesis, the hub figure every anchor for that month uses, where one exists; each Waymo "<n> in <YYYY>" of "by calendar year (...)" that year's summed months, for each year whose January the series holds; each Waymo "first million rider-only miles on <Mon> <D>, <YYYY>" the day the lifetime (the cumulative plus OFFSET's central, the month's miles spread evenly) reaches 1,000,000; each Waymo "floor the series clears, ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon> <D>, <YYYY>)" with N million no more than the lifetime at the end of that day on the even spread with the pre-series offset's high edge (one only the month's end clears going unchecked; for a day after the rows, no more than the last row's at its month's end, or else unchecked; a day no month of its name has failing); each Waymo "Total <x>M, about <y>k a day (...)" whose parenthesis holds "<Monthname>'s row <digit>" its miles and its miles over its days (the rate to one unit of its last digit, its "about"), and in that parenthesis each "<Monthname>'s row <z>k" that month's miles over its days and each "measured Q<n> <w>k" those of a quarter n; each Waymo "Cross-check: <x>M/mo ≈ <y>M/wk" a pair that agrees for a month of 28 to 31 days or the average month, 365.25/12 days, and with " vs Waymo's" after it its miles and its miles times 7 over its days or the average month's; each Waymo "Band x<lo> to x<hi>" followed in its sentence by "the components' ranges combined" its row's band over its miles; each Waymo list of terms (the sentence "CA = ..." or "CA <digit>..." opens, naming Maricopa, Travis, Atlanta and metros) its row's miles, its components (CA's, Maricopa's, Travis's, Atlanta's and the metros' terms, and an "about" term after " and ") plus any choice of its other labelled terms summed, where each figure in it is CA's term or a labelled term (otherwise it goes unchecked); each Waymo "CPUC Q<n>-<YYYY> driverless actual <d> deployment + <p> pilot (...) x <f>, ... = <r>M" with (d + p) x f equal to r, and d and p a month's of that quarter in data/waymo-ca.csv or the sums of two or three of its months (a base that is none of these, the file lacking one of the quarter's months, goes unchecked); each "<b>M ... x [the hub-vs-CPUC CA ratio ]<f>[ [<range>]] = <r>M", b one of the clause's "<num>M" figures before " x", with b x f equal to r, f a decimal or a ratio a/b; each "<Month> keeps ...end-of-month <c>[ (...)], its band <lo>-<hi>" that month's cumulative and cumulative band; each of the three readings of "end-<Month> <a> / <b> / <c>" inside that month's cumulative band where a later "<Month> keeps ..., its band <lo>-<hi> holding the three readings" says the band holds them; each "<Month>'s cumulative is that reading, <c>" or "is the chart's ~<c>" its cumulative, "..., its band from the call's <f> to <p>% above it" its band's floor f and its top p% above c, to the whole percent, and "..., its floor <f>" its band's floor; each "<Month>'s miles are at least <n>" with its miles at least n, and "..., puts them there (<v> with" its miles v; each "<Month>'s cumulative band, <lo> to <hi>" its cumulative band and each "End-<Month> cumulative floor <f>" its band's floor (where the month of that name nearest the row's, or another row's sharing its rationale, has no row, a figure of these forms that no row bears out goes unchecked); in each row, "Each month is its cumulative less the month before's, its band the difference of their bands" its miles and band from its line's row before (from zero for a line's first), "a month's band is <a>x-<b>x its miles, within the difference of its cumulative band and the month before's" its band a and b times its miles, each edge held inside the difference of the two cumulative bands, "the cumulative is ...: <x>M less the <o> pre-series miles, <c>" its cumulative c with x less o equal to c, "Its band, <lo> to <hi>, is that statement's range" and a sentence's opening "Cumulative band <lo> to <hi>:" its cumulative band, a sentence's opening "Central <c>." its miles, and "The cumulative band's floor through <Mon> <D>, <f>, is the end-<Month> floor (<j>: ...) plus the <Month> and <Month> floors" with D the last day of <Mon>'s month, f that month's cumulative floor, j the end-<Month> one and j plus the two months' floors f; in a Tesla line's row, each "<Month>: <p> on the page" or "<Month>'s no-monitor miles are <p> on the page", at depth 0, its month after no possessive and its clause ending after "on the page" or going on to its deck reading, the no-monitor line's miles or cumulative that month, or the miles from a month named before it in its clause through it (with other words before its month, below the month's floor with no deck reading beside it, or with no row for its month, one none of these bears out goes unchecked), and after it each "floor <f>", "the central, <c>" and "the top, <t>" a floor, central and top of a month of a page reading before it or one its sentence names (one that another month's row bears out goes unchecked), each "the central, <c>, adds <Month>'s <r> monitor-aboard remainder" with c such a reading (the page's or the deck's) or the no-monitor line's miles plus r, and each "the top, <t>, ... (the higher reading x <f>)" with t the higher of a page reading before it and its deck reading times f; each "<r> monitor-aboard miles, <Month>'s measured remainder (the Q<q> deck's <a> paid miles less the page's <b> no-monitor miles)" with a and b Tesla's and the no-monitor line's miles that month and r a less b, each "<Month>'s <r> monitor-aboard remainder" with r their difference, and each "monitor-aboard share [stayed ]at or below <Month>'s <p>%" with p their difference over Tesla's miles (with no row for the month on both lines these go unchecked); each "no-monitor miles for the month as projected on the no-monitor line, <c> [<lo>, <hi>] (...), set the floor" the no-monitor line's miles and band that month, and lo the row's floor; each "crosses <x>M at the start of <Mon> <D>" (or "on") a day the lifetime reaches x, each "stands at <x>M on <Mon> <D>" the lifetime at the end of that day (or, on a month's last day, Waymo's hub figure an anchor gives) and each "puts <n> lifetime miles at <Mon> <D>" the same, on a path through the day's month as above, the lifetime the series cumulative plus none or the line's pre-series miles (Waymo's OFFSET range, Zoox's as its rationales state them, the range all of their statements' precisions share), a day no month of its name has failing, and each "the <o> driverless miles before it come off <Name>'s ~<x>M-mile figure for <Mon> <D>, <YYYY>" with the lifetime that day, read so off a path (its month with no row going unchecked), counting o, x and o the line's stated pre-series figure; each "a floor on the end-<Month> cumulative that only the <deck> deck's reading meets" with that deck's reading the one of the month's three readings (in the order "in its <deck> (...), <deck> and <deck> (...) update decks" lists them) at or above its cumulative floor; each "<Month>'s cumulative is the chart's ~<c>, its floor <f> (the lowest reading less ~<q>% read noise)" with f q% below the month's lowest reading, each "the end-<Month> floor (<j>: the deck's <d>M less ~<q>% read noise)" with d that month's cumulative and j q% below d, and each "the cumulative band's top carries ~<p>% upside and its floor ~<q>% read noise" with its cumulative band's top p% above its cumulative and its floor q% below; each "<n> <MON> SGO crashes in them ≈ <x>M at the <rate>/M" with n over the rate x, x to one unit of its last digit (its "≈"); each "(<a> a day with the x<k>) and the rest at <b> a day: <s>, rounded to <v>" with s the two rates times the row's days and v its miles; each Waymo "<A> <a>M[ and <B> <b>M] = the hub's measured Q<q> ... increment[s] (<x>M[ / <y>M])" with the quarter's three A terms summing to x (and B's to y); each Waymo "<A> <a>M (hub Q<q> run-rate <r>M/mo" with r a third of an A increment for a quarter q that a split statement gives; and each Waymo "the <Month> row's terms at their per-day rates for <D> days" with each term but CA's and the "about" terms that month's term of its label at its per-day rate for D days, plus the adjustments its parenthesis states ("<b>M at <Month>'s rate" or "<Month>'s <b>M before its ... deduction", then "plus about", "less about" and "and about"), a term whose parenthesis states none read so with any signed sum of the figures the rationale states outside the list and its "Total ... (...)" added (one none of these bears out goes unchecked where its label's last word stands elsewhere in the rationale too); Zoox's statements of its pre-series miles ("the <o> pre-series miles", "the <o> earlier driverless miles", "the <o> driverless miles before it", none qualified by the words right after it) agree, some one figure lying within the stated precision of each, a whole number that may be rounded to half a unit of its last nonzero digit; every figure a Waymo rationale states for the pre-series offset (the builder's "miles driven before it, <central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision; (4) none of the corrected statements recurs.
+  `Replicata: read every data/vmt.csv rationale (shown as written, its links as links, in the page's VMT sources table) and check (1) links to sections of data/README.md, (2) internal shorthand, (3) stated figures against the rows (and CPUC's miles in data/waymo-ca.csv, and Zoox's pre-series miles and days out against quals/zoox-vmt-model.qual.mjs's PRE_C and LV_PAUSE), and the stated pre-series offset against data/waymo_vmt.py's OFFSET, (4) the audit's corrected facts.
+Expectata: (1) each link (any "[<text>](<target>)") has a text other than blanks and the target data/#<anchor>, <anchor> the id GitHub Pages gives one of data/README.md's headings (${ANCHORS.join(", ")}) and of the form the page reads (lowercase letters, digits and hyphens), and no "](" or target "data/#" stands outside a link but inside a longer path or address; on synthetic files the heading reader gives GitHub Pages' ids, and stops with its message on each form it stops on; on synthetic links each wrong form is named; (2) no kyoom, vmt_min/vmt_max, TotalVMTZEV, "hub + E", "+ E <digit>", "E lo/hi/best" or "D/H"; (3) each figure stated in one of the forms that follow passes its form's test and is checked where its wording appears, none of these forms being required (a statement reworded out of its form goes unchecked, the human's rule of 2026-11-03), and a figure passes where it is right under one of the meanings its form reads its words to have (a month named without its year is any month of that name with a row, in the row's line or, for a Tesla line, either Tesla line, and a quarter named without its year any year's; the meanings a correct figure could have that no form reads are listed in the header as what remains), and goes unchecked rather than failing where a reading the rows do not hold may be its (each case below). The tests: a value to its stated precision, whole miles exactly and a whole number that may be rounded to its last nonzero digit; CPUC's miles to half a mile either way for each month summed, and a band's clipped edges to half a mile either way; the floor the series clears, the milestone day and a crossing with one mile's slack, a month-end floor or ceiling with one mile's, and the other floors exactly; a lifetime on a day on a path through its month, within the rounding the line's months carry (on a Zoox line the Zoox model's path where a clause names the model's path, "the path", "its path", "Zoox's path", "the smooth[est] path" or "the model's path", or names none of its own and refers back to one that does: the month's miles spread evenly or its Las Vegas share at one rate a driving day with the model's days out of the month, LV_PAUSE in quals/zoox-vmt-model.qual.mjs, where a Zoox rationale's "leaves out <Mon> <a>-<b>" places them and else anywhere in it; elsewhere the even spread, a figure only some other path through the month bears out going unchecked); a figure marked "~" (or "≈", "about" and the like) to one unit of its last digit; and in products, sums, rates and per-day scalings the stated figures taken as exact. The forms: each "<x>k" or "<x>M" "end-[<Mon>-]<YYYY>" is a series cumulative or lifetime that month of a line the row may mean or its clause names or, in a Waymo row, the hub's figure an anchor gives, as a floor, a ceiling or approximate where the words right before it say so (one that is none of these goes unchecked where it may be the lifetime in a month one of those lines has no row for, after the line's last row at least its cumulative and before its first at most its pre-series miles, a hub figure no anchor gives, at most the lifetime and after Waymo's rows anything, where its words do not name the series or a line without the hub, a figure of a line its clause names that has no rows, or another owner's, its clause holding a word other than the words of a reading of the row's own line, its clause counting, where a pronoun or a noun that names no owner refers back, the clauses before it in its sentence, or the sentence before, and what a parenthesis follows; a stop cuts a clause only before a capital letter or at the end); each Waymo anchor ("The <Mon>-<YYYY> cumulative lands on the anchor: the hub's <h>M plus <e>M ..., less the <o>M pre-series miles") is that month's cumulative, h + e - o; each Waymo band after an anchor in its rationale ("its cumulative band is the hub total plus <a>M to <b>M ..., less the pre-series miles' range, <l>M-<u>M") that month's cumulative band; each Waymo "update: <h>M rider-only miles thru <Mon>-<YYYY>", its clause ending after the month at a semicolon, a stop or a closing parenthesis, the hub figure every anchor for that month uses, where one exists; each Waymo "<n> in <YYYY>" of "by calendar year (...)" that year's summed months, for each year whose January the series holds; each Waymo "first million rider-only miles on <Mon> <D>, <YYYY>" the day the lifetime (the cumulative plus OFFSET's central, the month's miles spread evenly) reaches 1,000,000; each Waymo "floor the series clears, ...'more than <N> million fully autonomous miles' ([<source>, ]<Mon> <D>, <YYYY>)" with N million no more than the lifetime at the end of that day on the even spread with the pre-series offset's high edge (one only the month's end clears going unchecked; for a day after the rows, no more than the last row's at its month's end, or else unchecked; for a day before the series, unchecked where no more than OFFSET's high edge, or else failing; a day no month of its name has failing); each Waymo "Total <x>M, about <y>k a day (...)" whose parenthesis holds "<Monthname>'s row <digit>" its miles and its miles over its days (the rate to one unit of its last digit, its "about"), and in that parenthesis each "<Monthname>'s row <z>k" that month's miles over its days and each "measured Q<n> <w>k" those of a quarter n; each Waymo "Cross-check: <x>M/mo ≈ <y>M/wk" a pair that agrees for a month of 28 to 31 days or the average month, 365.25/12 days, and with " vs Waymo's" after it its miles and its miles times 7 over its days or the average month's; each Waymo "Band x<lo> to x<hi>" followed in its sentence by "the components' ranges combined" its row's band over its miles; each Waymo list of terms (the sentence "CA = ..." or "CA <digit>..." opens, naming Maricopa, Travis, Atlanta and metros) its row's miles, its components (CA's, Maricopa's, Travis's, Atlanta's and the metros' terms, and an "about" term after " and ") plus any choice of its other labelled terms summed, where each figure in it is CA's term or a labelled term (otherwise it goes unchecked); each Waymo "CPUC Q<n>-<YYYY> driverless actual <d> deployment + <p> pilot (...) x <f>, ... = <r>M" with (d + p) x f equal to r, and d and p a month's of that quarter in data/waymo-ca.csv or the sums of two or three of its months (a base that is none of these, the file lacking one of the quarter's months, goes unchecked); each "<b>M ... x [the hub-vs-CPUC CA ratio ]<f>[ [<range>]] = <r>M", b one of the clause's "<num>M" figures before " x", with b x f equal to r, f a decimal or a ratio a/b; each "<Month> keeps ...end-of-month <c>[ (...)], its band <lo>-<hi>" that month's cumulative and cumulative band; each of the three readings of "end-<Month> <a> / <b> / <c>" inside that month's cumulative band where a later "<Month> keeps ..., its band <lo>-<hi> holding the three readings" says the band holds them; each "<Month>'s cumulative is that reading, <c>" or "is the chart's ~<c>" its cumulative, "..., its band from the call's <f> to <p>% above it" its band's floor f and its top p% above c, to the whole percent, and "..., its floor <f>" its band's floor; each "<Month>'s miles are at least <n>" with its miles at least n, and "..., puts them there (<v> with" its miles v; each "<Month>'s cumulative band, <lo> to <hi>" its cumulative band and each "End-<Month> cumulative floor <f>" its band's floor (where the month of that name nearest the row's, or another row's sharing its rationale, has no row, a figure of these forms that no row bears out goes unchecked where it may be that month's, after the line's last row each cumulative or band edge at least the last row's and before its first at most its pre-series miles, a month's own miles anything); in each row, "Each month is its cumulative less the month before's, its band the difference of their bands" its miles and band from its line's row before (from zero for a line's first), "a month's band is <a>x-<b>x its miles, within the difference of its cumulative band and the month before's" its band a and b times its miles, each edge held inside the difference of the two cumulative bands, "the cumulative is ...: <x>M less the <o> pre-series miles, <c>" its cumulative c with x less o equal to c, "Its band, <lo> to <hi>, is that statement's range" and a sentence's opening "Cumulative band <lo> to <hi>:" its cumulative band, a sentence's opening "Central <c>." its miles, and "The cumulative band's floor through <Mon> <D>, <f>, is the end-<Month> floor (<j>: ...) plus the <Month> and <Month> floors" with D the last day of <Mon>'s month, f that month's cumulative floor, j the end-<Month> one and j plus the two months' floors f; in a Tesla line's row, each "<Month>: <p> on the page" or "<Month>'s no-monitor miles are <p> on the page", at depth 0, its month after no possessive and its clause ending after "on the page" or going on to its deck reading, the no-monitor line's miles or cumulative that month, or the miles from a month named before it in its clause through it (with other words before its month, below the month's floor with no deck reading beside it, or with no row for its month, one none of these bears out goes unchecked), and after it each "floor <f>", "the central, <c>" and "the top, <t>" a floor, central and top of a month of a page reading before it or one its sentence names (one that another month's row bears out goes unchecked), each "the central, <c>, adds <Month>'s <r> monitor-aboard remainder" with c such a reading (the page's or the deck's) or the no-monitor line's miles plus r, and each "the top, <t>, ... (the higher reading x <f>)" with t the higher of a page reading before it and its deck reading times f; each "<r> monitor-aboard miles, <Month>'s measured remainder (the Q<q> deck's <a> paid miles less the page's <b> no-monitor miles)" with a and b Tesla's and the no-monitor line's miles that month and r a less b, each "<Month>'s <r> monitor-aboard remainder" with r their difference, and each "monitor-aboard share [stayed ]at or below <Month>'s <p>%" with p their difference over Tesla's miles (with no row for the month on both lines these go unchecked); each "no-monitor miles for the month as projected on the no-monitor line, <c> [<lo>, <hi>] (...), set the floor" the no-monitor line's miles and band that month, and lo the row's floor; each "crosses <x>M at the start of <Mon> <D>" (or "on") a day the lifetime reaches x, each "stands at <x>M on <Mon> <D>" the lifetime at the end of that day (or, on a month's last day, Waymo's hub figure an anchor gives, or where none gives one and the words do not name the series or a line without the hub, the unknown hub figure, at most the lifetime) and each "puts <n> lifetime miles at <Mon> <D>" the same, a ", <YYYY>" after the day naming its month's year, on a path through the day's month as above, of a line the row may mean or its clause names, the lifetime the series cumulative plus none or the line's pre-series miles (Waymo's OFFSET range, Zoox's PRE_C), a day no month of its name has, or that its year's month lacks, failing, a figure of a month the rows do not reach going unchecked only where the series' growth allows it (after a line's last row at least its cumulative, before its first at most its pre-series miles), and one no reading bears out going unchecked where, away from the Zoox model's path, its clause names another owner or a line with no rows; each "the <o> driverless miles before it come off <Name>'s ~<x>M-mile figure for <Mon> <D>, <YYYY>" with the lifetime that day, read so off a path (its month with no row going unchecked where the lifetime may be its figure then), counting o, x and o the line's pre-series figure; each Zoox "leaves out <Mon> <a>-<b>" as many days as LV_PAUSE holds out of a month of that name; each "a floor on the end-<Month> cumulative that only the <deck> deck's reading meets" with that deck's reading the one of the month's three readings (in the order "in its <deck> (...), <deck> and <deck> (...) update decks" lists them) at or above its cumulative floor; each "<Month>'s cumulative is the chart's ~<c>, its floor <f> (the lowest reading less ~<q>% read noise)" with f q% below the month's lowest reading, each "the end-<Month> floor (<j>: the deck's <d>M less ~<q>% read noise)" with d that month's cumulative and j q% below d, and each "the cumulative band's top carries ~<p>% upside and its floor ~<q>% read noise" with its cumulative band's top p% above its cumulative and its floor q% below; each "<n> <MON> SGO crashes in them ≈ <x>M at the <rate>/M" with n over the rate x, x to one unit of its last digit (its "≈"); each "(<a> a day with the x<k>) and the rest at <b> a day: <s>, rounded to <v>" with s the two rates times the row's days and v its miles; each Waymo "<A> <a>M[ and <B> <b>M] = the hub's measured Q<q> ... increment[s] (<x>M[ / <y>M])" with the quarter's three A terms summing to x (and B's to y); each Waymo "<A> <a>M (hub Q<q> run-rate <r>M/mo" with r a third of an A increment for a quarter q that a split statement gives; and each Waymo "the <Month> row's terms at their per-day rates for <D> days" with each term but CA's and the "about" terms that month's term of its label at its per-day rate for D days, plus the adjustments its parenthesis states ("<b>M at <Month>'s rate" or "<Month>'s <b>M before its ... deduction", then "plus about", "less about" and "and about"), a term whose parenthesis states none read so with any signed sum of the figures the rationale states outside the list and its "Total ... (...)" added (one none of these bears out goes unchecked where its label's last word stands elsewhere in the rationale too); Zoox's statements of its pre-series miles ("the <o> pre-series miles", "the <o> earlier driverless miles", "the <o> driverless miles before it", none qualified by the words right after it) give quals/zoox-vmt-model.qual.mjs's PRE_C, ${fmt(PRE_C)}, to their precision, a whole number that may be rounded to half a unit of its last nonzero digit; every figure a Waymo rationale states for the pre-series offset (the builder's "miles driven before it, <central> (range <low>-<high>)", "<x>M pre-series miles", "pre-series miles' range, <low>M-<high>M") equals OFFSET, central ${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)}, whole miles exactly and millions to their stated precision; (4) none of the corrected statements recurs.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
-console.log(`qual pass: ${rows.length} VMT rationales link only to sections of data/README.md (${links} links, to the ids of its ${README_IDS.length} headings), use no internal shorthand, and state figures that pass their form's test (the rows' values; sums, products, shares and rates that hold; readings inside the rows' bands; floors and ceilings the rows meet; lifetimes on a day on a path through their month; approximate figures within a unit of their last digit; CPUC miles that data/waymo-ca.csv holds, a month's or a sum's; and Zoox's statements of its pre-series miles agreeing within their precision) in every form read here (${Object.entries(figureForms).map(([f, found]) => `${found.length} ${f}`).join(", ")}; found with nothing to read them against, so unchecked: ${Object.entries(unchecked).map(([f, found]) => `${found.length} ${f}`).join(", ")}); ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);
+console.log(`qual pass: ${rows.length} VMT rationales link only to sections of data/README.md (${links} links, to the ids of its ${README_IDS.length} headings), use no internal shorthand, and state figures that pass their form's test (the rows' values; sums, products, shares and rates that hold; readings inside the rows' bands; floors and ceilings the rows meet; lifetimes on a day on a path through their month; approximate figures within a unit of their last digit; CPUC miles that data/waymo-ca.csv holds, a month's or a sum's; Zoox's statements of its pre-series miles giving the Zoox model's PRE_C, ${fmt(PRE_C)}, to their precision; and the days out a Zoox rationale states as many as the model's LV_PAUSE holds) in every form read here (${Object.entries(figureForms).map(([f, found]) => `${found.length} ${f}`).join(", ")}; found with nothing to read them against, so unchecked: ${Object.entries(unchecked).map(([f, found]) => `${found.length} ${f}`).join(", ")}); ${Object.values(offsetForms).flat().length} Waymo statements of the pre-series offset, in ${OFFSET_FORMS.length} forms, give data/waymo_vmt.py's OFFSET (${fmt(OFFSET.central)}, range ${fmt(OFFSET.low)}-${fmt(OFFSET.high)})`);

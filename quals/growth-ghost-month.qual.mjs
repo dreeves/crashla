@@ -161,7 +161,15 @@ Resultata: [teslanomonitor row, PAGE_MEASURED entry] = ${JSON.stringify([nm, pag
     const forecastDate = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
     const days = (Date.parse(forecastDate) - Date.parse(firstDay)) / 86400000;
     const scenarios = plain(vm.runInContext("TESLA_ROBOTAXI_SCENARIOS", ctx));
-    const milesComps = plain(vm.runInContext(`MILES_FORECAST.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "robotaxi")`, ctx));
+    // Tesla's miles entry is read, never assumed (until 2026-11-06 a table
+    // without one stopped here on a TypeError naming nothing).
+    const milesTable = plain(vm.runInContext("MILES_FORECAST", ctx));
+    const teslaMiles = milesTable.find(f => f.helmer === "Tesla");
+    assert.ok(teslaMiles !== undefined,
+      `Replicata: read MILES_FORECAST in crashla.js and find Tesla's entry.
+Expectata: one, its robotaxi components the scenarios the path runs to.
+Resultata: none; the table's helmers are ${JSON.stringify(milesTable.map(f => f.helmer))}.`);
+    const milesComps = teslaMiles.components.filter(c => c.scope === "robotaxi");
     const path = target => {
       let sum = t.cume;
       for (let i = 0; i < days; i++) sum += exitRate * (target / exitRate) ** ((i + 0.5) / days);
@@ -205,10 +213,22 @@ for (const key of METRICS) {
   // tipFmt, three figures or the fleet's exact count).
   const figuresOf = p => vm.runInContext(`historyTipFigures(growthMetricSpec(selectedGrowthMetric), ${JSON.stringify(p)})`, ctx);
   const circles = [...html.matchAll(/<circle([^>]*)><\/circle>/g)].map(m => m[1]);
+  // A circle's attribute, read, never assumed (until 2026-11-06 a dot without
+  // its cx, cy or fill colour, or a target whose data-tip did not close in
+  // the tag, stopped here on a TypeError naming nothing).
+  const attrOf = (a, re, what) => {
+    const m = re.exec(a);
+    assert.ok(m !== null,
+      `Replicata: draw the growth chart on ${key} (renderFleetTimeSeriesChart) and read its circles' ${what}.
+Expectata: on every one that has it.
+Resultata: none on <circle${a}>.`);
+    return m[1];
+  };
   const marks = circles.filter(a => / r="3\.3"/.test(a)).map(a => ({
-    ghost: / class="month-ghost"/.test(a), x: /cx="([\d.]+)"/.exec(a)[1], y: /cy="([\d.]+)"/.exec(a)[1],
-    color: /fill:(#[0-9a-f]{6})/.exec(a)[1] }));
-  const tips = circles.filter(a => /data-tip="/.test(a)).map(a => decode(/data-tip="([^"]*)"/.exec(a)[1]));
+    ghost: / class="month-ghost"/.test(a), x: attrOf(a, /cx="([\d.]+)"/, "dots' cx (the 3.3-unit dots)"),
+    y: attrOf(a, /cy="([\d.]+)"/, "dots' cy (the 3.3-unit dots)"),
+    color: attrOf(a, /fill:(#[0-9a-f]{6})/, "dots' fill colour (the 3.3-unit dots)") }));
+  const tips = circles.filter(a => /data-tip="/.test(a)).map(a => decode(attrOf(a, /data-tip="([^"]*)"/, "tooltip targets' data-tip, quoted")));
   const paths = [...html.matchAll(/<path d="([^"]*)" style="stroke:(#[0-9a-f]{6});stroke-width:2;fill:none(;stroke-dasharray:6 4)?"><\/path>/g)]
     .map(m => ({ d: m[1], color: m[2], dashed: m[3] !== undefined }));
   const lanes = lanesOf(key);
@@ -245,7 +265,13 @@ for (const key of METRICS) {
   }
   // A fork's dashed line leaves from its helmer's faded dot.
   for (const lane of lanes.filter(l => l.branchOnly)) {
+    // (The fork's own company's line is read, never assumed: until 2026-11-06
+    // a fork without one stopped here on a TypeError naming nothing.)
     const parent = mainline.find(l => l.helmer === lane.helmer);
+    assert.ok(parent !== undefined,
+      `Replicata: draw the growth chart on ${key} and find the line of the fork ${JSON.stringify(lane.label)}'s company (${lane.helmer}) among the lines drawn from history.
+Expectata: one, the line whose faded dot the fork leaves from.
+Resultata: none; the lines are ${JSON.stringify(mainline.map(l => [l.helmer, l.label]))}.`);
     const from = marks.find(c => c.color === parent.color && c.ghost);
     const fork = paths.filter(p => p.color === lane.color && p.dashed);
     if (!from || fork.length !== 1 || vertices(fork[0].d)[0] !== `${from.x} ${from.y}`)

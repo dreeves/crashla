@@ -108,13 +108,20 @@ const sorted = vm.runInContext(`
   sortCol = "date";
   sortAsc = true;
   renderTable();
+  // The active incidents and the first rendered row are read, never assumed
+  // (until 2026-11-06 an empty table stopped here on a TypeError naming
+  // nothing). assert here is crashla.js's, which throws its message with the
+  // details appended.
+  const active = activeIncidents();
+  assert(active.length > 0, "Replicata: build the default view and list the incident browser's active incidents (activeIncidents()).\\nExpectata: at least one, the rows whose earliest date the sort must put first.\\nResultata: none, of INCIDENT_DATA's:", { records: INCIDENT_DATA.length });
   const firstRow = document.getElementById("incidents-body").children[0];
+  assert(firstRow !== undefined, "Replicata: sort the incident browser ascending by Date and read its first row (#incidents-body's first child).\\nExpectata: a row, one per active incident.\\nResultata: none; the active incidents:", { active: active.length });
   // The Date cell is .date-cell since 2026-10-03 (kept on one line; audit #64).
   const hit = firstRow.innerHTML.match(/<td>[^<]*<\\/td>\\s*<td class="date-cell">([^<]+)<\\/td>/);
   const firstRenderedDate = hit && hit[1];
-  const expectedDate = activeIncidents().reduce((best, row) =>
+  const expectedDate = active.reduce((best, row) =>
     monthKeyFromIncidentLabel(row.date) < monthKeyFromIncidentLabel(best) ? row.date : best,
-    activeIncidents()[0].date,
+    active[0].date,
   );
   return { firstRenderedDate, expectedDate };
 })()

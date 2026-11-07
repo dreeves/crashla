@@ -76,12 +76,24 @@ if (typeof NOTE === "string" && NOTE.trim() !== "") {
     // --- 2. The summary cards: the fatality line's count carries it --------
     const cards = vm.runInContext(`renderMpiSummaryCards(${slice})`, ctx);
     for (const piece of cards.split(/(?=<div class="mpi-card(?: [^"]*)?" style=)/).filter(p => p.startsWith('<div class="mpi-card'))) {
-      const name = decode(/<div class="mpi-card-helmer">([^<]*)<\/div>/.exec(piece)[1]);
+      // The card's company and its summary row are read, never assumed
+      // (until 2026-11-06 a card without its name, or one naming no company
+      // with a row, stopped here on a TypeError naming nothing).
+      const nameMatch = /<div class="mpi-card-helmer">([^<]*)<\/div>/.exec(piece);
+      assert.ok(nameMatch !== null,
+        `Replicata: render the summary cards (renderMpiSummaryCards) for the ${win} window and read each card's company name (its mpi-card-helmer div).
+Expectata: one on every card.
+Resultata: none on ${JSON.stringify(piece.slice(0, 300))}.`);
+      const name = decode(nameMatch[1]);
       const helmer = Object.keys(labels).find(h => labels[h] === name);
+      const row = rows.find(r => r.helmer === helmer);
+      assert.ok(row !== undefined,
+        `Replicata: render the summary cards for the ${win} window and find the summary row (windowSummaryRows) of the company each card names.
+Expectata: a row for ${JSON.stringify(name)}, a company label (helmerLabel).
+Resultata: none; the labels ${JSON.stringify(labels)}, the rows' companies ${JSON.stringify(rows.map(r => r.helmer))}.`);
       for (const m of piece.matchAll(/<div class="mpi-card-metric[^"]*" data-metric="([^"]+)">\s*<div>([\s\S]*?)<\/div>/g)) {
         const [, key, line] = m;
         const carries = tipsOf(line).includes(NOTE);
-        const row = rows.find(r => r.helmer === helmer);
         const want = key === "fatality" && row.has.fatality; // an ADS line's count (a human card prints none)
         if (carries !== want) problems.push(`${win} ${helmer} card, ${key} line: ${carries ? "carries" : "lacks"} the note (${JSON.stringify(line.slice(0, 160))})`);
         // The count is what carries it: the tooltip target holds the count's text.

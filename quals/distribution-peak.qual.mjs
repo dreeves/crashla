@@ -55,8 +55,12 @@ const out = vm.runInContext(`
     const peaks = targets.filter((_, i) => i % 2 === 0);
     const medianValues = targets.filter((_, i) => i % 2 === 1).map(t => t.text.slice(t.text.indexOf(": ") + 2));
     // The plot frame is the clip rect (its right margin follows the tick
-    // labels since 2026-10-03, so it is read, not assumed).
+    // labels since 2026-10-03, so it is read, not assumed; until 2026-11-06 a
+    // chart without one stopped here on a TypeError naming nothing). assert
+    // here is crashla.js's, which throws its message with the details
+    // appended.
     const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
+    assert(clip !== null, "Replicata: render the distribution chart on " + mk + " in the default window (Humans (AV cities), Tesla and Waymo on) and read its plot frame, the dist-clip clip rect.\\nExpectata: a rect with its x and width.\\nResultata: none in", html.slice(0, 300));
     res[mk] = {xMin, xMax, frame: [Number(clip[1]), Number(clip[1]) + Number(clip[2])], peaks, medianValues, curves: curves.map(c => {
       // true mode: fine log grid over the curve's own extent
       let best = -Infinity, arg = NaN;
@@ -107,7 +111,10 @@ console.log("qual pass: distribution-chart frame contains every curve's density 
       const full = monthSeriesData();
       const series = sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1);
       const html = renderDistributionChart(series);
+      // The frame is read, never assumed (until 2026-11-06 a chart without
+      // its clip rect stopped here on a TypeError naming nothing).
       const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
+      assert(clip !== null, "Replicata: render the fatality distribution with all six helmers on (the default window) and read its plot frame, the dist-clip clip rect.\\nExpectata: a rect with its x and width.\\nResultata: none in", html.slice(0, 300));
       // Each curve's second marker is its median (by position since
       // 2026-10-29, until then by its tooltip's word "Median:"); its value
       // must be the curve's median.
@@ -171,8 +178,17 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
   const problems = {clipGroup: [], disc: [], top: [], coarse: [], humanPeak: []};
   let markers = 0, curvesSeen = 0;
   for (const {state, html, colors, humanPrefixes} of sweep) {
-    const vb = html.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/).map(Number);
-    const clip = html.match(/<clipPath id="dist-clip"><rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/).slice(1).map(Number);
+    // The SVG's size and the plot frame are read, never assumed (until
+    // 2026-11-06 a chart without its viewBox or clip rect stopped here on a
+    // TypeError naming nothing).
+    const vbMatch = html.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+    const clipMatch = html.match(/<clipPath id="dist-clip"><rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/);
+    assert.ok(vbMatch !== null && clipMatch !== null,
+      `Replicata: render the distribution chart (${state}) and read its SVG's viewBox and its plot frame, the dist-clip clip rect.
+Expectata: both, "0 0 <width> <height>" and a rect with its x, y, width and height.
+Resultata: viewBox ${JSON.stringify(vbMatch && vbMatch[0])}, clip rect ${JSON.stringify(clipMatch && clipMatch[0])}, in ${JSON.stringify(html.slice(0, 300))}.`);
+    const vb = vbMatch.map(Number);
+    const clip = clipMatch.slice(1).map(Number);
     const [x0, y0, x1, y1] = [clip[0], clip[1], clip[0] + clip[2], clip[1] + clip[3]];
     const group = html.indexOf('<g clip-path="url(#dist-clip)">');
     const groupEnd = html.indexOf("</g>", group);
@@ -185,7 +201,7 @@ Resultata: ${JSON.stringify(medians.medians.map(p => [p.text, p.cx]))}.`);
     if (dots.length !== tips.length || dots.some((d, i) => Math.abs(Number(d[1]) - Number(tips[i][1])) > 0.01 || Math.abs(Number(d[2]) - Number(tips[i][2])) > 0.01))
       problems.disc.push(`${state}: ${dots.length} marker dots but ${tips.length} hit circles, or not in step`);
     const circles = dots.map((m, i) => ({at: m.index, cx: Number(m[1]), cy: Number(m[2]), r: Number(m[3]),
-        color: (m[4].match(/(?:fill|stroke):(#[0-9a-f]{6})(?!.*fill:#)/i) || [])[1], tip: (tips[i] ? tips[i][3] : "").split("\n"),
+        tip: (tips[i] ? tips[i][3] : "").split("\n"),
         human: tips[i] !== undefined && humanPrefixes.some(p => tips[i][4] === p + tips[i][3])}));
     markers += circles.length;
     for (const c of circles) {

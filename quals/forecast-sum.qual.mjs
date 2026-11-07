@@ -80,6 +80,14 @@ const app = JSON.parse(vm.runInContext(`JSON.stringify((() => {
   const perCarDay = b => ({ best: b.best / TESLA_MILES_PER_CAR_DAY, lo: b.lo / TESLA_MILES_PER_CAR_DAY, hi: b.hi / TESLA_MILES_PER_CAR_DAY });
   const eyes = TESLA_EYES_OFF;
   const tables = {fleet: FLEET_FORECAST, miles: MILES_FORECAST, rides: RIDES_FORECAST};
+  // Tesla's entry of a table, read, never assumed (until 2026-11-06 a table
+  // without one stopped this qual on a TypeError naming nothing). assert is
+  // crashla.js's, which throws its message with the details appended.
+  const teslaEntry = (metric, t) => {
+    const entry = t.find(f => f.helmer === "Tesla");
+    assert(entry !== undefined, "Replicata: read the " + metric + " forecast table (FLEET_FORECAST, MILES_FORECAST or RIDES_FORECAST) and find Tesla's entry.\\nExpectata: one, its components the scenarios this check sums.\\nResultata: none; the table's helmers are", t.map(f => f.helmer));
+    return entry;
+  };
   return {
     weights: TESLA_ROBOTAXI_SCENARIOS.map(s => s.weight),
     robotaxi: {
@@ -95,7 +103,7 @@ const app = JSON.parse(vm.runInContext(`JSON.stringify((() => {
     },
     // Each C component's quantiles at LEVELS, by the app, the component alone.
     cQuantiles: Object.fromEntries(Object.entries(tables).map(([metric, t]) => [metric,
-      t.find(f => f.helmer === "Tesla").components.filter(c => c.scope === "hw4")
+      teslaEntry(metric, t).components.filter(c => c.scope === "hw4")
         .map(c => bandMixtureQuantiles([{...c, weight: 1}], ${JSON.stringify(LEVELS)}))])),
     lanes: Object.fromEntries(Object.keys(tables).map(metric => [metric, fleetDistributionCurves(metric).map(c => ({
       key: c.key, label: c.legendLabel, helmer: c.historyHelmer, lo90: c.lo90, median: c.median, hi90: c.hi90}))])),

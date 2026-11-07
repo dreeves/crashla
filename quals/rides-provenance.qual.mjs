@@ -157,8 +157,18 @@ Resultata: ${JSON.stringify(a)} then ${JSON.stringify(b)}.`);
 // 40M for Jan 1, 2027).
 {
   const forecastDate = vm.runInContext("GROWTH_FORECAST_DATE", ctx);
+  // Waymo's lane and its newest history row are read, never assumed (until
+  // 2026-11-06 a missing one stopped here on a TypeError naming nothing).
   const waymoLane = lanes.find(l => l.label === "Waymo");
+  assert.ok(waymoLane !== undefined,
+    `Replicata: build the rides trajectory lanes and find Waymo's.
+Expectata: one, labelled "Waymo".
+Resultata: none; the lanes are ${JSON.stringify(lanes.map(l => l.label))}.`);
   const lastRow = waymoLane.points.filter(p => !p.forecast).at(-1);
+  assert.ok(lastRow !== undefined,
+    `Replicata: read the Waymo rides lane's history points (those not flagged forecast).
+Expectata: at least one, the newest rides row the floor runs from.
+Resultata: none among its ${waymoLane.points.length} points.`);
   const [y, m] = lastRow.month.split("-").map(Number);
   const weeks = (Date.parse(forecastDate) - Date.UTC(y, m, 1)) / (7 * 86400000);
   const floor = lastRow.lo + 500000 * weeks;

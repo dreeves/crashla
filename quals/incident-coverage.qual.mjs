@@ -288,7 +288,12 @@ thinned band [${bandCheck.allThinned.lo}, ${bandCheck.allThinned.hi}].`);
   const windowCheck = vm.runInContext(`
     (() => {
       const series = monthSeriesData();
-      const row = monthlySummaryRows(series).find(r => r.helmer === ${JSON.stringify(raw.helmer)});
+      // The row is read, never assumed (until 2026-11-06 a missing one
+      // stopped this qual on a TypeError naming nothing). assert is
+      // crashla.js's, which throws its message with the details appended.
+      const rows = monthlySummaryRows(series);
+      const row = rows.find(r => r.helmer === ${JSON.stringify(raw.helmer)});
+      assert(row !== undefined, "Replicata: build the full history's summary rows (monthlySummaryRows) and find ${raw.helmer}'s, the company of the incomplete month ${raw.month}.\\nExpectata: one, holding the fatality and All-incidents estimates whose VMT this check compares.\\nResultata: none; the rows are", rows.map(r => r.helmer));
       const months = series.points.map(p => p.helmers[${JSON.stringify(raw.helmer)}]).filter(Boolean);
       return {
         fatalityVmtBest: row.mpiEstimates.fatality.vmtBest,

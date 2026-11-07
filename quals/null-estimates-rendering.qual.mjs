@@ -145,7 +145,11 @@ const checks = vm.runInContext(`
   const faultIdx = series.months.indexOf(incompleteMonth);
   const faultSlice = sliceSeries(series, faultIdx, faultIdx);
   const sliceSummary = monthlySummaryRows(faultSlice);
+  // Waymo's row is read, never assumed (until 2026-11-06 a missing one
+  // stopped this qual on a TypeError naming nothing). assert is crashla.js's,
+  // which throws its message with the details appended.
   const waymoSlice = sliceSummary.find(r => r.helmer === "Waymo");
+  assert(waymoSlice !== undefined, "Replicata: slice the series to Waymo's fault-incomplete month " + incompleteMonth + " and build its summary rows (monthlySummaryRows).\\nExpectata: Waymo's row among them, its fault-needing estimates null.\\nResultata: none; the rows are", sliceSummary.map(r => r.helmer));
   const sliceNullCount = needsFaultKeys.filter(k => waymoSlice.mpiEstimates[k] === null).length;
 
   // Render all views on the fault-incomplete slice — must not crash

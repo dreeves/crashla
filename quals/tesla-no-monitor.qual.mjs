@@ -111,7 +111,15 @@ assert.deepEqual(unclassified, [], `Replicata: classify every in-scope 2026 Tesl
 // estimate, which has no complete reading yet (quals/ghost-month.qual.mjs;
 // its floor, the partial reading, in quals/tesla-unsupervised-floor.qual.mjs).
 // Until 2026-10-26 every teslanomonitor row was checked here.
-const dataThrough = /NHTSA_DATA_THROUGH_DATE_START \*\/\s*"(\d{4}-\d{2})/.exec(text)[1];
+// (The data-through month is read, never assumed: until 2026-11-06 an
+// incidents.js without its marked date stopped here on a TypeError naming
+// nothing.)
+const dataThroughMatch = /NHTSA_DATA_THROUGH_DATE_START \*\/\s*"(\d{4}-\d{2})/.exec(text);
+assert.ok(dataThroughMatch !== null,
+  `Replicata: read NHTSA_DATA_THROUGH_DATE in data/incidents.js, the "YYYY-MM-DD" after its /* NHTSA_DATA_THROUGH_DATE_START */ marker.
+Expectata: one, the month through which the teslanomonitor rows are checked.
+Resultata: none in ${JSON.stringify(text.slice(0, 300))}.`);
+const dataThrough = dataThroughMatch[1];
 const vmtCsv = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const rows = vmtCsv.slice(1).filter(p => p[0] === "teslanomonitor" && p[1] <= dataThrough);
 const months = rows.map(p => p[1]);

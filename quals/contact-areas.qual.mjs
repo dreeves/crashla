@@ -74,9 +74,14 @@ vm.runInContext(`
 // 2026-10-29 this checked the separator's glyph (a collision emoji) and the
 // placeholder's word ("n/a"), the human's to change; now it checks the areas
 // from the data and their order.
+// The incident with both areas is read, never assumed (until 2026-11-06 a
+// dataset with none stopped on a TypeError naming nothing). assert here is
+// crashla.js's, which throws its message with the details appended.
 const areaTips = vm.runInContext(`
   (() => {
     const inc = INCIDENT_DATA.find(i => i.svHit && i.cpHit);
+    assert(inc !== undefined, "Replicata: find an INCIDENT_DATA record with both contact areas, svHit (the AV's own) and cpHit (its crash partner's).\\nExpectata: one, whose fault tooltip then names both.\\nResultata: none; the records holding each area:",
+      { svHit: INCIDENT_DATA.filter(i => i.svHit).length, cpHit: INCIDENT_DATA.filter(i => i.cpHit).length, records: INCIDENT_DATA.length });
     const incFO = INCIDENT_DATA.find(i => i.svHit && !i.cpHit);
     return {
       both: { svHit: inc.svHit, cpHit: inc.cpHit, tip: faultTooltip(inc) },

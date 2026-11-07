@@ -85,7 +85,11 @@ const masses = run(`
   };
   const out = {};
   for (const helmer of ["Waymo", "Zoox"]) {
+    // The row is read, never assumed (until 2026-11-06 a missing one stopped
+    // this qual on a TypeError naming nothing). assert is crashla.js's, which
+    // throws its message with the details appended.
     const row = rows.find(r => r.helmer === helmer);
+    assert(row !== undefined, "Replicata: build the default window's summary rows (monthlySummaryRows) and find " + helmer + "'s.\\nExpectata: one, holding the All-incidents and at-fault estimates whose CI mass this check integrates.\\nResultata: none; the rows are", rows.map(r => r.helmer));
     for (const key of ["all", "atfault"]) {
       out[helmer + "." + key] = ciMass(row.mpiEstimates[key]);
     }

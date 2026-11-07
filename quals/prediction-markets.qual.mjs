@@ -198,7 +198,11 @@ const refresh = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
   renderPredmarketsPanel(snapshotMarkets(POLYMARKET_SNAPSHOT), snapshotMarkets(MANIFOLD_SNAPSHOT), PREDMARKET_SNAPSHOT_DATE);
   const footer = document.getElementById("predmarket-panel").children[1];
+  // The button is read, never assumed (until 2026-11-06 a footer without it
+  // stopped this qual on a TypeError naming nothing). assert is crashla.js's,
+  // which throws its message with the details appended.
   const btn = footer.children.find(c => c.className === "pm-refresh");
+  assert(btn !== undefined, "Replicata: render the prediction markets panel and find the footer's refresh button (class pm-refresh).\\nExpectata: one.\\nResultata: none; the footer's children have the classes", footer.children.map(c => c.className));
   return { title: btn.title, label: btn.getAttribute("aria-label"), html: btn.innerHTML };
 })()
 `, ctx)));

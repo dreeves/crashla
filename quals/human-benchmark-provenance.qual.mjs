@@ -24,6 +24,17 @@ import { appScript, dataScript } from "./load-app.mjs";
 const ctx = vm.createContext({ console, Math, Number, Object, JSON, Array, Set, Map, isFinite, parseFloat, parseInt, Date });
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
+// A metric's human bands (its METRIC_DEFS entry's humanMPI), read, never
+// assumed: until 2026-11-06 a METRIC_DEFS without the metric stopped this
+// qual on a TypeError naming nothing.
+const humanBands = key => {
+  const def = vm.runInContext(`METRIC_DEFS.find(m => m.key === ${JSON.stringify(key)})`, ctx);
+  assert.ok(def !== undefined,
+    `Replicata: find the ${JSON.stringify(key)} entry of METRIC_DEFS in crashla.js.
+Expectata: one, holding the human bands (humanMPI) this qual pins.
+Resultata: none; the metrics are ${JSON.stringify(vm.runInContext("METRIC_DEFS.map(m => m.key)", ctx))}.`);
+  return def.humanMPI;
+};
 
 // Waymo Safety Impact hub, per-city human benchmark IPMM (thru Jun 2026):
 // hiRate = the highest-rate city (SF Bay Area for injury/SSI+, Atlanta for airbag),
@@ -36,7 +47,7 @@ const SRC = {
 const REL_TOL = 0.01; // 1% — allows rounding of the edges to clean integers
 
 for (const [key, r] of Object.entries(SRC)) {
-  const band = vm.runInContext(`METRIC_DEFS.find(m => m.key === ${JSON.stringify(key)}).humanMPI.HumansAV`, ctx);
+  const band = humanBands(key).HumansAV;
   const expLo = 1e6 / r.hiRate; // highest-rate city = lowest MPI
   const expHi = 1e6 / r.loRate; // lowest-rate city = highest MPI
   const okLo = Math.abs(band.lo - expLo) / expLo <= REL_TOL;
@@ -76,7 +87,7 @@ Resultata: ${geoIpmm.toFixed(2)} IPMM.`);
 // serious-injury+ ratio divided by that rounded 0.01: 3.6x where the unrounded
 // rate gives 3.3x (audit #8).
 {
-  const band = k => vm.runInContext(`METRIC_DEFS.find(m => m.key === ${JSON.stringify(k)}).humanMPI.HumansAV`, ctx);
+  const band = k => humanBands(k).HumansAV;
   const near = (x, y) => Math.abs(x - y) / y <= 0.01;
   const inj = band("injury"), afi = band("atfaultInjury");
   assert.ok(near(afi.lo, inj.lo / 0.94) && near(afi.hi, inj.hi / 0.5),
@@ -156,7 +167,7 @@ function metricDefComments(key) {
   return appScript.slice(start, end).split("\n").filter(l => /^\s*\/\//.test(l)).join("\n");
 }
 {
-  const bands = vm.runInContext(`Object.fromEntries(["hospitalization"].map(k => [k, METRIC_DEFS.find(m => m.key === k).humanMPI]))`, ctx);
+  const bands = Object.fromEntries(["hospitalization"].map(k => [k, humanBands(k)]));
   const near = (x, y) => Math.abs(x - y) / y <= 0.01;
   const routeRates = Object.values(HUB_AREAS)
     .flatMap(([inj, ab]) => [inj * CRSS2024.hospPerInjury, ab * CRSS2024.hospPerAirbag]);
@@ -233,7 +244,7 @@ Resultata: not stated: ${JSON.stringify(unstated)}.`);
 // underreporting estimate "does not include off-road or parking lot crashes"
 // (p. 1, note 1), so both human benchmarks already exclude parking lots.
 {
-  const defs = vm.runInContext(`Object.fromEntries(["all", "nonstationary", "roadwayNonstationary"].map(k => [k, METRIC_DEFS.find(m => m.key === k).humanMPI]))`, ctx);
+  const defs = Object.fromEntries(["all", "nonstationary", "roadwayNonstationary"].map(k => [k, humanBands(k)]));
   const near = (x, y) => Math.abs(x - y) / y <= 0.01;
   for (const [cohort, stopped] of [["HumansAV", CRSS2024.stoppedAV], ["HumansUS", CRSS2024.stoppedUS]]) {
     const all = defs.all[cohort], ns = defs.nonstationary[cohort], rw = defs.roadwayNonstationary[cohort];
@@ -272,8 +283,7 @@ Resultata: srcLinks ${JSON.stringify(h.srcLinks)}; src ${h.src}`);
 // rideshare ran ~30-50% safer than the urban average in the same years
 // (subset-chain.qual's 2x sanity bound).
 {
-  const rs = vm.runInContext(
-    `METRIC_DEFS.find(m => m.key === "fatality").humanMPI.HumansRideshare`, ctx);
+  const rs = humanBands("fatality").HumansRideshare;
   const lyftMileWeighted = 86 / (36 / 0.86 + 50 / 1.02);
   assert.ok(rs && rs.lo === 106000000 && Math.abs(rs.lo - 1e8 / lyftMileWeighted) / (1e8 / lyftMileWeighted) <= 0.01 &&
     rs.hi === 161000000 && rs.derived !== true,
@@ -298,8 +308,7 @@ Resultata: ${rs.src}.`);
 // performs. Re-pin here FIRST (red) when FARS updates.
 {
   const FARS2024 = { deaths: 39254, fatalCrashes: 36297, vmt100M: 32940.31 };
-  const band = vm.runInContext(
-    `METRIC_DEFS.find(m => m.key === "fatality").humanMPI.HumansUS`, ctx);
+  const band = humanBands("fatality").HumansUS;
   const expLo = 1e8 / (FARS2024.deaths / FARS2024.vmt100M);       // deaths basis ≈ 83.9M
   const expHi = 1e8 / (FARS2024.fatalCrashes / FARS2024.vmt100M); // fatal-crash basis ≈ 90.7M
   const relTol = 0.01;
@@ -319,8 +328,7 @@ Resultata: lo=${band.lo}, hi=${band.hi}.`);
 // 2021 peak as the high-rate edge, a continued-improvement floor below the
 // 2024 value). Re-pin here FIRST (red) when IIHS posts a new year.
 {
-  const band = vm.runInContext(
-    `METRIC_DEFS.find(m => m.key === "fatality").humanMPI.HumansAV`, ctx);
+  const band = humanBands("fatality").HumansAV;
   const expLo = 1e8 / 1.20, expHi = 1e8 / 0.95, current2024 = 1e8 / 1.01;
   const relTol = 0.01;
   assert.ok(

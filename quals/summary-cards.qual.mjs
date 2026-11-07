@@ -87,7 +87,14 @@ function parseCards(html) {
   const cards = {};
   for (const piece of html.split(/(?=<div class="mpi-card(?: [^"]*)?" style=)/).filter(p => p.startsWith('<div class="mpi-card'))) {
     const cls = /^<div class="([^"]*)"/.exec(piece)[1];
-    const name = /<div class="mpi-card-helmer">([^<]*)<\/div>/.exec(piece)[1];
+    // The card's company name is read, never assumed (until 2026-11-06 a card
+    // without one stopped here on a TypeError naming nothing).
+    const nameMatch = /<div class="mpi-card-helmer">([^<]*)<\/div>/.exec(piece);
+    assert.ok(nameMatch !== null,
+      `Replicata: render the summary cards and read each card's company name (its mpi-card-helmer div).
+Expectata: one on every card.
+Resultata: none on ${JSON.stringify(piece.slice(0, 300))}.`);
+    const name = nameMatch[1];
     const stress = (/<div class="mpi-card-stress">([\s\S]*?)<\/div>/.exec(piece) || [])[1] ?? null;
     const lines = {};
     for (const m of piece.matchAll(/<div class="mpi-card-metric[^"]*" data-metric="([^"]+)">\s*<div>[^:]*: (?:<span [^>]*>([^<]*)<\/span>)?([^<]*?)<span class="mpi-card-mpi">[^<]*<\/span>(?:\s*<span class="mpi-card-mult([^"]*)"([^>]*)>([^<]*)((?:<span class="visually-hidden">[^<]*<\/span>)?)<\/span>)?/g)) {

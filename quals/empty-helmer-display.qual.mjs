@@ -59,8 +59,8 @@ const out = vm.runInContext(`
   renderWindowedViews();
   return {
     months: activeSeries.months,
-    mpiLegend: /<div class="month-legend">[\\s\\S]*?<\\/div>/.exec(renderAllHelmersMpiChart(activeSeries))[0],
-    distLegend: /<div class="month-legend">[\\s\\S]*?<\\/div>/.exec(renderDistributionChart(activeSeries))[0],
+    mpiChart: renderAllHelmersMpiChart(activeSeries),
+    distChart: renderDistributionChart(activeSeries),
     teslaChart: renderHelmerMonthlyChart(activeSeries, "Tesla"),
     waymoChart: renderHelmerMonthlyChart(activeSeries, "Waymo"),
   };
@@ -84,7 +84,17 @@ const itemClass = (legend, color) => {
 };
 const TESLA = "#d13b2d", WAYMO = "#2060c0";
 
-for (const [name, legend] of [["MPI", out.mpiLegend], ["distribution", out.distLegend]]) {
+// Each chart's legend is read, never assumed (until 2026-11-06 a chart
+// without one stopped this qual on a TypeError naming nothing).
+const legendOf = (name, chart) => {
+  const legend = /<div class="month-legend">[\s\S]*?<\/div>/.exec(chart);
+  assert.ok(legend !== null,
+    `Replicata: select Tesla and Waymo only, window to the first six months (${out.months[0]}..${out.months.at(-1)}) and render the ${name} chart.
+Expectata: its legend, a month-legend div of chips.
+Resultata: none in ${JSON.stringify(chart.slice(0, 300))}.`);
+  return legend[0];
+};
+for (const [name, legend] of [["MPI", legendOf("MPI", out.mpiChart)], ["distribution", legendOf("distribution", out.distChart)]]) {
   assert.equal(
     itemClass(legend, TESLA), "month-legend-item month-legend-item-empty",
     `Replicata: render the ${name} chart legend with Tesla selected but no data in range.

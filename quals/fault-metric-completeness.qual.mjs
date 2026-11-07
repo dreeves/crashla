@@ -116,12 +116,17 @@ const checks = vm.runInContext(`
   const testWaymo = incompleteMonth.helmers.Waymo;
   const testIdx = fullMonthSeries.months.indexOf(testMonth);
   // Window through the incomplete month vs. through the month before it.
-  const extendedWaymo = monthlySummaryRows(
-    sliceSeries(fullMonthSeries, 0, testIdx),
-  ).find(r => r.helmer === "Waymo");
-  const fromNextWaymo = monthlySummaryRows(
-    sliceSeries(fullMonthSeries, 0, testIdx - 1),
-  ).find(r => r.helmer === "Waymo");
+  // Waymo's row of each is read, never assumed (until 2026-11-06 a missing
+  // row stopped this qual on a TypeError naming nothing). assert is
+  // crashla.js's, which throws its message with the details appended.
+  const waymoRow = (to, which) => {
+    const rows = monthlySummaryRows(sliceSeries(fullMonthSeries, 0, to));
+    const row = rows.find(r => r.helmer === "Waymo");
+    assert(row !== undefined, "Replicata: null one Waymo MAR-2026 incident's fault judgment, rebuild the month series and build the summary rows of the window from the first month through " + which + ".\\nExpectata: Waymo's row among them.\\nResultata: none; the rows are", rows.map(r => r.helmer));
+    return row;
+  };
+  const extendedWaymo = waymoRow(testIdx, "the incomplete month (" + testMonth + ")");
+  const fromNextWaymo = waymoRow(testIdx - 1, "the month before it");
   return {
     allComplete: false,
     testMonth,

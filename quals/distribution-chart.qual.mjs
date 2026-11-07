@@ -73,6 +73,15 @@ const ctx = vm.createContext({
 });
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
+// A helmer's row of monthlySummaryRows (rows), read, never assumed: until
+// 2026-11-06 a missing row stopped this qual on a TypeError naming nothing.
+// <where> says how the rows were built. assert is crashla.js's, which throws
+// its message with the details appended.
+vm.runInContext(`function summaryRow(rows, helmer, where) {
+  const row = rows.find(r => r.helmer === helmer);
+  assert(row !== undefined, "Replicata: " + where + " and find " + helmer + "'s row of monthlySummaryRows.\\nExpectata: one, holding the estimates this check reads.\\nResultata: none; the rows are", rows.map(r => r.helmer));
+  return row;
+}`, ctx);
 
 // --- 1. invGammaLogDensity math correctness ---
 
@@ -400,10 +409,10 @@ const windowEffect = vm.runInContext(`
 (() => {
   selectedMetricKey = "all";
   fullMonthSeries = monthSeriesData();
-  const fullWaymo = monthlySummaryRows(fullMonthSeries).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
+  const fullWaymo = summaryRow(monthlySummaryRows(fullMonthSeries), "Waymo", "build the full history's summary rows (All incidents)").mpiEstimates.all.median;
   monthRangeStart = 0; monthRangeEnd = 5;
   renderWindowedViews();
-  const slicedWaymo = monthlySummaryRows(activeSeries).find(row => row.helmer === "Waymo").mpiEstimates.all.median;
+  const slicedWaymo = summaryRow(monthlySummaryRows(activeSeries), "Waymo", "slice the window to its first six months and build its summary rows (All incidents)").mpiEstimates.all.median;
   return {
     fullWaymo,
     slicedWaymo,
@@ -483,7 +492,7 @@ const comboHealth = vm.runInContext(`
   const sr = monthlySummaryRows(monthSeriesData());
   const rows = [];
   for (const mk of METRIC_KEYS) for (const h of ADS_HELMERS) {
-    const e = sr.find(r => r.helmer === h).mpiEstimates[mk];
+    const e = summaryRow(sr, h, "enable every company and build the full history's summary rows").mpiEstimates[mk];
     if (!e || !e.densityFn) continue;
     const n = 8000, L0 = Math.log(1), L1 = Math.log(1e13), st = (L1 - L0) / (n - 1);
     let mass = 0;
@@ -542,8 +551,11 @@ const markerCheck = vm.runInContext(`
     const {xMin, xMax} = distributionExtent(curves); // same visible-band extent the chart uses
     const html = renderDistributionChart(series);
     // The plot frame is the clip rect: since 2026-10-03 its right margin
-    // follows the axis labels (axisRightMargin), so it is read, not assumed.
+    // follows the axis labels (axisRightMargin), so it is read, not assumed
+    // (and until 2026-11-06 a chart without one stopped here on a TypeError
+    // naming nothing).
     const clip = html.match(/<clipPath id="dist-clip"><rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)"/);
+    assert(clip !== null, "Replicata: render the distribution chart on " + mk + " (every company and Humans (AV cities) on, the full history) and read its plot frame, the dist-clip clip rect.\\nExpectata: a rect with its x and width.\\nResultata: none in", html.slice(0, 300));
     const mLeft = Number(clip[1]), pW = Number(clip[2]);
     const mapX = x => mLeft + (Math.log(x) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin)) * pW;
     const medians = curves.map(e => ({ cx: mapX(e.postMedian), shown: fmtMiles(e.postMedian),
@@ -637,11 +649,17 @@ const meanCheck = vm.runInContext(`
     const html = renderDistributionChart(series);
     const targets = [...html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)].map(m => ({tip: m[1], name: m[2]}));
     for (const h of ADS_HELMERS) {
-      const e = rows.find(r => r.helmer === h).mpiEstimates[mk];
+      const e = summaryRow(rows, h, "open the default window with Humans (AV cities), Tesla, Waymo and Zoox on (" + mk + ") and build its summary rows").mpiEstimates[mk];
       // The median marker: one of the helmer's (named for it,
-      // seriesMarkName), found by the value its first line reports.
-      const tip = targets.find(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip
-        && t.tip.split("\\n")[0].endsWith(": " + fmtMiles(e.postMedian))).tip;
+      // seriesMarkName), found by the value its first line reports, the
+      // line's last figure (until 2026-11-06 the text after its ": ", so a
+      // separator edit there missed it, and a marker not found stopped this
+      // qual on a TypeError naming nothing).
+      const marker = targets.find(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip
+        && [...t.tip.split("\\n")[0].matchAll(/∞|\\d+(?:\\.\\d+)?[KMBT]?/g)].map(m => m[0]).at(-1) === fmtMiles(e.postMedian));
+      assert(marker !== undefined, "Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, draw the distribution chart on " + mk + " and find " + h + "'s Median marker, the one of its markers whose tooltip's first line reports the curve's median (" + fmtMiles(e.postMedian) + ").\\nExpectata: one.\\nResultata: none; the first lines of its markers' tooltips are",
+        targets.filter(t => t.name === escAttr(seriesMarkName(h, "")) + t.tip).map(t => t.tip.split("\\n")[0]));
+      const tip = marker.tip;
       const aMin = Math.min(...e.comps.map(c => c.a));
       // numeric mean of the drawn density (w.r.t. ln x): wide fine grid
       let m0 = 0, m1 = 0;
@@ -654,17 +672,24 @@ const meanCheck = vm.runInContext(`
 })()`, ctx);
 const fromMiles = s => Number(s.replace(/[KMB]$/, "")) * ({K: 1e3, M: 1e6, B: 1e9}[s.at(-1)] || 1);
 const meanProblems = [];
+// A figure as the tooltips print one: fmtMiles' number, with its unit letter
+// if it has one, or "∞".
+const FIGURE = /∞|\d+(?:\.\d+)?[KMBT]?/g;
 for (const r of meanCheck) {
-  // The mean: the second of the second line's " · "-separated parts, after
-  // the median (or peak) and before the MLE, its value the part's last word.
-  // Until 2026-10-29 this read it after the tooltip's word "mean"; until
-  // 2026-11-04 a tooltip without that part read as a mean of "".
-  const lines = r.tip.split("\n");
-  assert.ok(lines.length >= 2 && lines[1].split(" · ").length >= 2,
+  // The mean: the second figure on the tooltip's second line, after the
+  // other marker's value (the peak, on the Median marker) and before the
+  // MLE, found by its place among the line's figures, not by the words or
+  // separators between them. Until 2026-10-29 this read it after the
+  // tooltip's word "mean"; until 2026-11-04 a tooltip without that part read
+  // as a mean of ""; until 2026-11-06 it was the second of the line's
+  // " · "-separated parts, so an edit of that separator in crashla.js's
+  // tooltip turned this qual red.
+  const second = r.tip.split("\n")[1];
+  assert.ok(second !== undefined && [...second.matchAll(FIGURE)].length >= 2,
     `Replicata: open the default window with Humans (AV cities), Tesla, Waymo and Zoox on, hover ${r.h}'s Median marker on ${r.mk} and read its tooltip's second line.
-Expectata: its " · "-separated parts, the second the curve's mean.
+Expectata: at least two figures on it, the second the curve's mean.
 Resultata: the tooltip ${JSON.stringify(r.tip)}.`);
-  const shown = lines[1].split(" · ")[1].split(" ").pop();
+  const shown = [...second.matchAll(FIGURE)][1][0];
   if (r.aMin <= 1) {
     if (shown !== "∞") meanProblems.push(`${r.h} ${r.mk}: a component has a_K = ${r.aMin}, so the mean is infinite, but the tooltip says ${shown}`);
   } else if (r.aMin > 3) {

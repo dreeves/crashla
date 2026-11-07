@@ -49,7 +49,12 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const MARK = "SYNTHETIC-BLANK-LOCATION";
 const out = JSON.parse(vm.runInContext(`
 (() => {
+  // The template incident and the Location column are read, never assumed
+  // (until 2026-11-06 a missing template spread as {} and a missing column
+  // stopped this qual on a TypeError naming nothing). assert is crashla.js's,
+  // which throws its message with the details appended.
   const template = INCIDENT_DATA.find(r => r.helmer === "Waymo" && r.date === "JUL-2025");
+  assert(template !== undefined, "Replicata: find a Waymo JUL-2025 incident in INCIDENT_DATA, the template of the synthetic location-less one.\\nExpectata: one.\\nResultata: none; Waymo's incidents number", INCIDENT_DATA.filter(r => r.helmer === "Waymo").length);
   const blank = {...template, reportId: "synthetic-blank-location", incidentId: "synthetic-blank-location",
     city: "", state: "", narrative: "${MARK}"};
   incidents = [...INCIDENT_DATA, blank];
@@ -60,7 +65,9 @@ const out = JSON.parse(vm.runInContext(`
   renderTable();
   const cells = html => [...html.matchAll(/<td[^>]*>([\\s\\S]*?)<\\/td>/g)].map(m => m[1].trim());
   const rows = document.getElementById("incidents-body").children.map(tr => cells(tr.innerHTML));
-  const locKey = SORT_COLUMNS.find(c => c.key === "location").val;
+  const locColumn = SORT_COLUMNS.find(c => c.key === "location");
+  assert(locColumn !== undefined, "Replicata: find the Location column (key \\"location\\") among the incident browser's SORT_COLUMNS.\\nExpectata: one, whose sort key (val) this check reads.\\nResultata: none; the columns' keys are", SORT_COLUMNS.map(c => c.key));
+  const locKey = locColumn.val;
   return JSON.stringify({
     blankCell: rows.find(c => c.at(-1).includes("${MARK}"))?.[2],
     bareCommaRows: rows.filter(c => /^\\s*,|,\\s*$/.test(c[2])).length,

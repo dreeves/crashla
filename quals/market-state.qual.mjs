@@ -379,7 +379,23 @@ const allOpen = () => {
   fetchImpl = url => url.includes("gamma-api.polymarket.com") ? reply(p) : reply(m[decodeURIComponent(url.split("/v0/slug/")[1])]);
   await vm.runInContext("refreshPredmarkets()", ctx);
   const first = readPanel();
-  const age = () => { const st = nodes.get("predmarket-panel").children[1].children.find(c => c.classes.has("pm-status")); return st && st.children.find(c => c.classes.has("pm-age")).textContent; };
+  // The footer's age, read, never assumed (until 2026-11-06 a footer without
+  // its status read as an age of undefined, and a status without its pm-age
+  // span stopped this qual on a TypeError naming nothing).
+  const age = () => {
+    const footer = nodes.get("predmarket-panel").children[1];
+    const st = footer.children.find(c => c.classes.has("pm-status"));
+    assert.ok(st !== undefined,
+      `Replicata: refresh the prediction markets (refreshPredmarkets) and read the panel footer's status (its pm-status element).
+Expectata: one, holding the odds' age.
+Resultata: none; the footer's children have the classes ${JSON.stringify(footer.children.map(c => c.className))}.`);
+    const span = st.children.find(c => c.classes.has("pm-age"));
+    assert.ok(span !== undefined,
+      `Replicata: refresh the prediction markets (refreshPredmarkets) and read the age in the panel footer's status (its pm-age span).
+Expectata: one, the age of the odds the panel shows.
+Resultata: none; the status's children have the classes ${JSON.stringify(st.children.map(c => c.className))}.`);
+    return span.textContent;
+  };
   const firstAge = age();
   vm.runInContext(`Date.now = () => ${NOW + 2 * 3600000};`, ctx);
   fetchImpl = () => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) });
