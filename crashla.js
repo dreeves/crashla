@@ -4920,7 +4920,10 @@ function renderMpiSummaryCards(series) {
       const tip = `Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}`;
       const shown = [`Effective VMT: ${fmtWhole(row.vmtBest)}`,
         ...(row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? [`Range: ${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)}`] : [])];
-      return `<div class="mpi-card-vmt"${htmlTipAttrs(`${shown.join(" ")} ${tip}`, tip)}>${shown.join("<br>")}</div>`;
+      // The space before the break shows nothing (a line's trailing space is
+      // dropped) but keeps the lines apart in the element's text, as in its
+      // name (tooltip-keyboard.qual reads what a target shows from its text).
+      return `<div class="mpi-card-vmt"${htmlTipAttrs(`${shown.join(" ")} ${tip}`, tip)}>${shown.join(" <br>")}</div>`;
     };
     const noMilesLine = `<div class="mpi-card-vmt">${NO_MILES_NOTE}</div>`;
     // Each source once, by URL (one label per URL: BENCHMARK_SOURCES).
