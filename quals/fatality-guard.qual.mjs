@@ -1,12 +1,25 @@
-// A new Fatality incident must stop the run so a human looks at it before the
-// numbers move on their own. The reason is the fatality METRIC, not any copy:
-// it divides each death by vehiclesInvolved (Koopman/Piper fractional-death
-// attribution) and data/slurp.py DEFAULTS that field to 2, so a fatality whose
-// narrative reveals a pileup silently attributes the wrong share unless a human
-// reads the narrative and records a VEHICLES_INVOLVED override. Nothing else in
-// the pipeline asks for that read. This guard forces it, and while it is here it
-// also pins the two facts a reader would be most misled by if they changed
-// quietly: whose fatalities these are, and that none is judged at fault.
+// A new Fatality incident must stop the run once, so that a person reads its
+// narrative before the fatality metric moves. The reason is the metric, not
+// any copy: it divides each death by vehiclesInvolved (Koopman/Piper
+// fractional-death attribution), and data/slurp.py DEFAULTS that field to 2,
+// so a fatality whose narrative reveals a pileup would take the wrong share
+// unless someone counts the vehicles and records the count in
+// VEHICLES_INVOLVED. Nothing else in the pipeline asks for that read. So:
+// every fatality's crash has a VEHICLES_INVOLVED entry (the count and the
+// narrative's words that give it, the default 2 included), and the page's
+// data carries that count.
+//
+// Until 2026-11-17 this qual also pinned outcomes copied from the data:
+// exactly 3 fatalities, all of them Waymo's, each fault value at most 0.05,
+// and its own copy of the three vehicle counts (EXPECTED_VEHICLES). A fourth
+// fatality, a first Tesla or Zoox one, or a blind rater's 0.1 would each
+// have turned it red after the entry above was written, with nothing left to
+// do but re-pin. The human, 2026-11-17: "maybe they should be sanity checks,
+// like only failing on insane numbers, not merely mildly surprising
+// numbers?", then "sure, convert outcome pins to sanity check ranges". What
+// is left of them is sanity: a vehicle count is a whole number from 1 to
+// MOST_VEHICLES, and each fatality's fault value is rated and lies in [0, 1].
+// The pass line reports how many fatalities there are and whose.
 //
 // Historical note: until 2026-09-15 this qual also guarded a hard-coded
 // parenthetical in the "Severity breakdown" section that described each
@@ -21,59 +34,46 @@ import vm from "node:vm";
 import { execFileSync } from "node:child_process";
 import { appScript, dataScript } from "./load-app.mjs";
 
+const MOST_VEHICLES = 50;
+
 const ctx = vm.createContext({ console, Math, Number, Object, JSON, Array, Set, Map, isFinite, parseFloat, parseInt, Date });
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
-const fatalities = vm.runInContext(
+// Each fatality with its crash: a second AV's record (secondOf) shares the
+// crash, and the count, of the report it rides on.
+const fatalities = JSON.parse(JSON.stringify(vm.runInContext(
   `INCIDENT_DATA.filter(r => r.severity === "Fatality")
-     .map(r => ({reportId: r.reportId, helmer: r.helmer, city: r.city, date: r.date, speed: r.speed, fault: r.fault === null ? null : Number(r.fault.faultfrac), vehiclesInvolved: r.vehiclesInvolved}))`,
-  ctx);
+     .map(r => ({reportId: r.reportId, crash: r.secondOf ?? r.reportId, helmer: r.helmer, city: r.city, date: r.date,
+       fault: r.fault === null ? null : Number(r.fault.faultfrac), vehiclesInvolved: r.vehiclesInvolved}))`,
+  ctx)));
 
 const SEEN = JSON.stringify(fatalities);
-const FIX = `=> A Fatality incident was added or changed. Read its narrative and count the vehicles involved, then record that count in VEHICLES_INVOLVED in data/slurp.py as (count, the narrative's words that give it) (it defaults to 2) and add it to EXPECTED_VEHICLES below. Assess its faultfrac under the criterion at the same time.`;
+const FIX = `=> A Fatality incident was added or changed. Read its narrative, count the vehicles involved, and record the count in VEHICLES_INVOLVED in data/slurp.py as (count, the narrative's words that give it), the default 2 included; then run slurp.`;
 
-assert.equal(fatalities.length, 3,
-  `Replicata: count Fatality incidents in INCIDENT_DATA.\nExpectata: exactly 3.\nResultata: ${fatalities.length} — ${SEEN}.\n${FIX}`);
+// The reviewed counts: {report: count}.
+const reviewed = JSON.parse(execFileSync("python3", ["-c",
+  `import json, sys\nsys.path.insert(0, "data")\nimport slurp\nprint(json.dumps({rid: count for rid, (count, _words) in slurp.VEHICLES_INVOLVED.items()}))`],
+  { encoding: "utf8" }).trim().split("\n").at(-1));
 
-assert.ok(fatalities.every(f => f.helmer === "Waymo"),
-  `Replicata: which helmers the fatalities belong to.\nExpectata: all three Waymo — a first Tesla or Zoox fatality is a headline-level change and must not land silently.\nResultata: ${SEEN}.\n${FIX}`);
-
-// A fatality with no faultfrac row yet (fault null: the month's batch is not
-// done) must fail HERE with the FIX text, not crash the map above with a
-// TypeError before any message prints (as it did until 2026-09-26).
-assert.ok(fatalities.every(f => f.fault !== null && f.fault <= 0.05),
-  `Replicata: AI fault estimates for the fatalities.\nExpectata: each assessed, and each faultfrac <= 0.05 — no fatality in this dataset is judged avoidable by the AV, and the first one that is deserves a human read before it moves the at-fault metric.\nResultata: ${JSON.stringify(fatalities.map(f => f.fault))} — ${SEEN}.\n${FIX}`);
-
-// Pin each known fatality's divisor to the count its own narrative supports:
-//   30270-9724 (JAN-2025 SF): AV + car behind + SUV + a fourth car + "at
-//     least two other vehicles" per SFPD ("the other three vehicles") = 6.
-//   30270-11713 (SEP-2025 Tempe): AV + motorcycle + hit-and-run car = 3.
-//   30270-16196 (AUG-2026 Dallas): AV + the SUV that struck the pedestrian = 2,
-//     which is the default — pinned anyway so the divisor is asserted, not
-//     merely inherited. The pedestrian is the decedent, not a third vehicle.
-// A new fatality already trips the count assertion above, forcing a human to
-// assess its vehicle count before it silently divides by the default 2.
-const EXPECTED_VEHICLES = { "30270-9724": 6, "30270-11713": 3, "30270-16196": 2 };
-for (const f of fatalities) {
-  assert.equal(f.vehiclesInvolved, EXPECTED_VEHICLES[f.reportId],
-    `Replicata: read vehiclesInvolved for fatality ${f.reportId} and compare to its narrative's vehicle count.\nExpectata: ${EXPECTED_VEHICLES[f.reportId]} (from the narrative; see VEHICLES_INVOLVED in data/slurp.py).\nResultata: ${f.vehiclesInvolved}.\n${FIX}`);
-}
-
-// Each fatality's count is a reviewed VEHICLES_INVOLVED entry, the default 2
-// included, so the narrative words it rests on are re-checked when the report
-// is re-filed (check_reviewed_quotes in data/slurp.py; decision 26(c) of
-// 2026-11-02: VEHICLES_INVOLVED's fatality entries store verbatim quotes,
-// re-checked on re-filing). Until 2026-11-02 30270-16196 inherited the default
-// with no entry, so a re-filing that changed its vehicle count would not have
-// stopped slurp.
-const reviewedCounts = new Set(JSON.parse(execFileSync("python3", ["-c",
-  `import json, sys\nsys.path.insert(0, "data")\nimport slurp\nprint(json.dumps(sorted(slurp.VEHICLES_INVOLVED)))`],
-  { encoding: "utf8" }).trim().split("\n").at(-1)));
-const fatalCrashes = vm.runInContext(
-  `INCIDENT_DATA.filter(r => r.severity === "Fatality").map(r => r.secondOf ?? r.reportId)`, ctx);
-const unreviewed = [...fatalCrashes].filter(rid => !reviewedCounts.has(rid));
+const unreviewed = fatalities.filter(f => reviewed[f.crash] === undefined).map(f => f.crash);
 assert.deepEqual(unreviewed, [],
-  `Replicata: list each fatality's report and look it up in VEHICLES_INVOLVED in data/slurp.py.\nExpectata: every fatality has an entry (count, the narrative's words that give it), even when the count is the default 2.\nResultata: no entry for ${JSON.stringify(unreviewed)}.\n${FIX}`);
+  `Replicata: list each fatality's report and look it up in VEHICLES_INVOLVED in data/slurp.py.\nExpectata: every fatality has an entry (count, the narrative's words that give it), even when the count is the default 2.\nResultata: no entry for ${JSON.stringify(unreviewed)} — ${SEEN}.\n${FIX}`);
 
-console.log(`qual pass: exactly 3 fatalities, all Waymo, none judged at fault, each death divided by its narrative's vehicle count (${SEEN})`);
+const miscounted = fatalities.filter(f => f.vehiclesInvolved !== reviewed[f.crash]);
+assert.deepEqual(miscounted, [],
+  `Replicata: compare each fatality's vehiclesInvolved in data/incidents.js with its VEHICLES_INVOLVED entry in data/slurp.py (${JSON.stringify(reviewed)}).\nExpectata: the same count: each death is divided by the count a person read from its narrative.\nResultata: ${JSON.stringify(miscounted)}.\n${FIX}`);
+
+const insane = fatalities.filter(f => !(Number.isInteger(f.vehiclesInvolved) && f.vehiclesInvolved >= 1 && f.vehiclesInvolved <= MOST_VEHICLES));
+assert.deepEqual(insane, [],
+  `Replicata: read each fatality's vehicle count.\nExpectata: a whole number from 1 to ${MOST_VEHICLES} (a sanity range).\nResultata: ${JSON.stringify(insane)}.`);
+
+// A fatality with no fault value yet (fault null: its rating has not run) must
+// fail HERE with a message, not crash the map above with a TypeError before
+// any message prints (as it did until 2026-09-26).
+const unrated = fatalities.filter(f => !(f.fault !== null && Number.isFinite(f.fault) && f.fault >= 0 && f.fault <= 1));
+assert.deepEqual(unrated, [],
+  `Replicata: read each fatality's fault value.\nExpectata: rated, a number in [0, 1] (python3 data/faultrate.py rates an unrated incident).\nResultata: ${JSON.stringify(unrated)}.`);
+
+const byHelmer = Object.entries(fatalities.reduce((n, f) => ({ ...n, [f.helmer]: (n[f.helmer] ?? 0) + 1 }), {})).map(([h, n]) => `${h} ${n}`).join(", ");
+console.log(`qual pass: ${fatalities.length} fatalities (${byHelmer}), each death divided by a vehicle count a person read from its narrative (VEHICLES_INVOLVED), each fault value rated (${SEEN})`);

@@ -76,7 +76,8 @@ NHTSA_OTHER_CSV_URL = (
 # release rolled forward to the next business day when the 15th falls on a
 # weekend or federal holiday (NHTSA's data-dictionary change log, Table 1 of
 # https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/SGO-2021-01_Data_Element_Definitions.pdf,
-# republished with each release and fetchable by script: "10/15/2026 Data
+# republished with each release and fetchable by script: "11/16/2026 Data
+# release of reports received through October 15, 2026"; "10/15/2026 Data
 # release of reports received through September 15, 2026"; "9/15/2026 Data
 # release of reports received through August 17, 2026"; likewise Nov 17
 # 2025, Feb 17 and Mar 16 2026; quals/nhtsa-cutoff-date pins the rule)
@@ -93,7 +94,7 @@ NHTSA_OTHER_CSV_URL = (
 # Date, so a stale cutoff trips there). Monthly filings submitted within the
 # incident month itself are rare but real (Tesla files early; the Feb-2026
 # release held four JAN-2026 ones) and are consistent with the cutoff.
-NHTSA_DATA_THROUGH_DATE = "2026-09-15"
+NHTSA_DATA_THROUGH_DATE = "2026-10-15"
 # Receipt coverage of the data-through month. Reports received through the
 # cutoff cover only crashes from the first part of that month: the five-day
 # clock runs from the company's notice, plus NHTSA processing. Since
@@ -104,7 +105,8 @@ NHTSA_DATA_THROUGH_DATE = "2026-09-15"
 # 0.20, 0.52): the median, and the observed range padded), which is right only
 # if that share holds steady; it fell from 0.50 in February 2026 to 0.21 in
 # August, and September's 7 five-day-track incidents in the Oct-15-2026 file,
-# the fewest yet, give 0.136 by observed / expected.
+# the fewest yet, give 0.136 by observed / expected (band 0.0615-0.52; measured
+# on the Nov-16-2026 release: 7 of an eventual 61, 0.115).
 #
 # FIVE_DAY_RECEIPT_OBSERVATIONS records those first-release shares, measured
 # from data/snapshots history: (five-day-type public-service Waymo/Tesla/Zoox
@@ -122,7 +124,7 @@ NHTSA_DATA_THROUGH_DATE = "2026-09-15"
 # A month's denominator is final at its second NORMAL release: verified across
 # every release snapshot (Dec 2025 13->55 then flat; Jan 2026 21->63 then
 # flat; Feb 19->38 then flat x6; Apr 3->58 flat; May 16->58
-# flat; Jun 17->61 flat; Jul 12->58 flat). The one exception proves the rule — Mar ran 25->53->72
+# flat; Jun 17->61 flat; Jul 12->58 flat; Aug 10->48 flat). The one exception proves the rule — Mar ran 25->53->72
 # because its second release WAS the truncated May-15 one.
 # Dec 2025 and Jan 2026 entered 2026-10-31 (decision of that day on open
 # question 11): their first releases are the two legacy snapshots, which the
@@ -137,6 +139,7 @@ FIVE_DAY_RECEIPT_OBSERVATIONS = {
     "2026-06": (17, 61),   # Jul-15-2026 release
     "2026-07": (12, 58),   # Aug-17-2026 release vs the Sep-15-2026 file
     "2026-08": (10, 48),   # Sep-15-2026 release vs the Oct-15-2026 file
+    "2026-09": (7, 61),    # Oct-15-2026 release vs the Nov-16-2026 file
     # 2026-04 excluded: the May-15-2026 release was cut early (3 April
     # incidents / 19 April submissions vs ~17 / ~90 in every other release).
 }
@@ -181,7 +184,12 @@ RECEIPT_MONTHS_EXCLUDED = {
 # with its on-time count (monthly_lag_coverage() stops until it does), and is
 # re-measured at M+2 like any other month: 2026-08 entered so on the
 # Oct-15-2026 release, which already held Tesla's 7 and Zoox's 3 in-scope
-# August Monthly reports (and Waymo's 20). The recipe and its independent
+# August Monthly reports (and Waymo's 20). Re-measured on the Nov-16-2026
+# release, August gained 23 Waymo reports a release late (22 submitted
+# SEP-2026, one OCT-2026) and Tesla's 13781-17193 (submitted OCT-2026); and
+# 2026-09 entered early in turn, because Waymo's August (20 on time, 23 late)
+# reads as a lag of 1 by the majority rule below while September already held
+# 62 Waymo Monthly-track reports (Tesla 3, Zoox 10). The recipe and its independent
 # recompute are in quals/monthly-arrival-lag.qual.mjs; re-measure on each
 # release with FIVE_DAY_RECEIPT_OBSERVATIONS. Measurable from Dec 2025 (the
 # oldest snapshot release holds data through Dec 2025), where Zoox's two
@@ -190,13 +198,13 @@ RECEIPT_MONTHS_EXCLUDED = {
 MONTHLY_ARRIVAL_OBSERVATIONS = {
     "Waymo": {"2026-01": (30, 0), "2026-02": (34, 1), "2026-04": (53, 1),
               "2026-05": (42, 0), "2026-06": (46, 0), "2026-07": (31, 0),
-              "2026-08": (20,)},
+              "2026-08": (20, 23), "2026-09": (62,)},
     "Tesla": {"2026-01": (4, 0), "2026-02": (0, 0), "2026-04": (1, 0),
               "2026-05": (2, 0), "2026-06": (2, 0), "2026-07": (1, 1),
-              "2026-08": (7,)},
+              "2026-08": (7, 1), "2026-09": (3,)},
     "Zoox": {"2026-01": (0, 0), "2026-02": (0, 3), "2026-04": (0, 3),
              "2026-05": (0, 0), "2026-06": (0, 2), "2026-07": (0, 2),
-             "2026-08": (3,)},
+             "2026-08": (3, 0), "2026-09": (10,)},
 }
 # Months whose arrivals cannot be measured, with the reason; every other month
 # from the first observation on must be observed (monthly_lag_coverage()).
@@ -214,7 +222,14 @@ MONTHLY_ARRIVAL_MONTHS_EXCLUDED = {
 # Oct-15-2026 release, where its August reports arrived on time; there
 # Tesla's July tie (13781-16255 on time; 13781-16294, submitted in August,
 # first in the Oct-15-2026 file) would have made Tesla's 1 too, but its August
-# reports had arrived on time as well.
+# reports had arrived on time as well. On the Nov-16-2026 release Waymo's
+# August (20 on time, 23 a release late: the first Waymo month with more than
+# one late report) would have made Waymo's 1, but September's 62 Monthly-track
+# reports, more than any month's total since June 2025 (April 2026's 54 the
+# most), had arrived, so every lag stays 0. A month whose Monthly reports
+# arrive partly late has no model here: the lag is all or nothing, and
+# Waymo's August was counted 23 incidents short of its 89 for one release
+# (AGENTS.md, open question 36).
 MONTHLY_ARRIVAL_LAG = {"Waymo": 0, "Tesla": 0, "Zoox": 0}
 # For each helmer with a lag: (in-scope 5-Day-track incidents, all in-scope
 # incidents) per incident month, deduplicated as main() does and counted in
@@ -573,6 +588,11 @@ VEHICLES_INVOLVED = {
     "30270-16345": (3, "All three vehicles involved sustained damage"),
     "30270-16452": (3, "all three vehicles involved sustained damage"),
     "30270-16493": (3, "All three vehicles sustained damage"),
+    # The Nov-16-2026 release's narratives that count their vehicles.
+    "30270-16708": (3, "All three vehicles sustained damage"),
+    "30270-16803": (3, "All three vehicles involved sustained damage"),
+    "30270-17027": (3, "All three vehicles sustained damage"),
+    "30270-17066": (3, "All three vehicles involved sustained damage"),
 }
 
 # Tesla appends this disclaimer to the front of every redacted-update narrative.
@@ -763,6 +783,17 @@ SEVERITY_OVERRIDE = {
     "30270-16278": ("Unknown", "Minor W/ Hospitalization"),
     # Zoox stopped for an emergency vehicle and was rear-ended; no injuries mentioned
     "30610-16451": ("Unknown", "Property Damage. No Injured Reported"),
+    # Batch below added 2026-11-16 (Nov-16 NHTSA release), same convention.
+    # Zoox moving slowly after a fresh green, rear-ended by a fast SUV; "The
+    # driver of Vehicle 2 was transported by ambulance from the scene"
+    "30610-16953": ("Unknown", "Minor W/ Hospitalization"),
+    # Waymo slowed on a freeway; a pickup two cars back swerved to the shoulder
+    # and hit the median barrier and another car (no contact with the Waymo);
+    # no injuries mentioned
+    "30270-16932": ("Unknown", "Property Damage. No Injured Reported"),
+    # Waymo stopped at a stop sign, rear-ended by a pickup; "The passengers in
+    # the Waymo AV were transported from the scene to a hospital"
+    "30270-16736": ("Unknown", "Minor W/ Hospitalization"),
     # Added 2026-10-03 (audit finding #44), the 2026-08-22 convention for an
     # affirmative field the narrative contradicts: Zoox 30610-15722 (JUL-2026
     # Austin), field "Property Damage. No Injured Reported"; rear-ended while
@@ -913,6 +944,14 @@ PASSENGER_OVERRIDE = {
     "13781-16675": (PAX_NO, PAX_NO),       # "had no passengers present"
     "13781-16676": (PAX_BELTED, PAX_BELTED),  # "had three passengers in the vehicle"
     "13781-16677": (PAX_NO, PAX_NO),       # "had no passengers present"
+    # Added 2026-11-16 (Nov-16 NHTSA release)
+    "13781-16733": (PAX_NO, PAX_NO),       # "had no passengers present in the vehicle"
+    "13781-16941": (PAX_NO, "Unknown"),    # the narrative does not say who was aboard
+    "13781-17015": (PAX_BELTED, PAX_BELTED),  # "had two riders present in the vehicle"
+    "13781-17178": (PAX_BELTED, PAX_BELTED),  # "had one rider present in the vehicle"
+    "13781-17179": (PAX_BELTED, PAX_BELTED),  # "had one rider in the vehicle"
+    "13781-17191": (PAX_NO, PAX_NO),       # "had no riders in the vehicle"
+    "13781-17193": (PAX_NO, PAX_NO),       # "had no riders in the vehicle"
 }
 
 # Narrative wording that says whether anyone was aboard the AV itself, named by
@@ -2122,6 +2161,18 @@ EXPECTED_SEVERITIES = {
 # first report 35021-16268 is a JUL-2026 Beverly Hills, CA test drive with a
 # safety driver in the driver's seat (ADS disengaged 9 s before contact).
 # Out of scope: no public driverless service, so no VMT denominator.
+# Bot Auto (added 2026-11-16 release): a Houston autonomous-trucking company
+# (retrofitted Freightliner tractors). Its first report, 34966-17064, is a
+# SEP-2026 Houston freeway contact at 61 mph: a plastic chair fell off another
+# vehicle into the truck's path; an operator was aboard ("In-Vehicle
+# (Commercial / Test)"; "driver took control disengaging autonomy system
+# following the chair contact"). Out of scope: freight, no public robotaxi
+# service, so no VMT denominator.
+# quals/reporting-entity.qual.mjs pins the list against the newest snapshots
+# and the stop on a name it lacks (2026-11-16: the human asked whether to
+# relax that stop; kept, because scope is an exact match on HELMER_SHORT's
+# three names, so a helmer filing under a new name would otherwise leave
+# every count without a message).
 EXPECTED_HELMERS = {
     "Ambarella",
     "Apollo Autonomous Driving USA",
@@ -2131,6 +2182,7 @@ EXPECTED_HELMERS = {
     "AutoX Technologies Inc",
     "Avride Inc.",
     "Beep, Inc.",
+    "Bot Auto",
     "Chrysler (FCA US, LLC)",
     "Cruise LLC",
     "Daimler Trucks North America, LLC",
@@ -2315,6 +2367,12 @@ REMOTE_LANGUAGE_ADS_DRIVEN = {
                    "Vegas Boulevard in Las Vegas, with a sedan (Vehicle 2) "
                    "directly behind. The Zoox vehicle gradually slowed to a stop "
                    "when it was rear ended by Vehicle 2.",
+    # coded None; "operating under teleguidance support" (the first narrative
+    # of any company to use the word; Nov-16-2026 release): remote guidance
+    # was involved, but the vehicle was stopped at a red signal when a passing
+    # motorcyclist swiped it, so no remote human was driving it at impact
+    "30610-17194": "An unoccupied Zoox autonomous vehicle, operating under "
+                   "teleguidance support, was stopped at a red traffic signal",
 }
 # Language saying a remote human may have been driving. Calibrated 2026-09-26
 # on every in-scope narrative (all versions), when it matched exactly the
@@ -2325,11 +2383,14 @@ REMOTE_LANGUAGE_ADS_DRIVEN = {
 # and any whitespace between words; widened on the Oct-15-2026 release for
 # Tesla's "remote support operator" and "remotely took control" (13781-16678,
 # -16679). Re-checked then on every in-scope narrative of the newest files:
-# it matches exactly the five TELEOP_DRIVEN_REPORTS. Neither
-# REMOTE_LANGUAGE_ADS_DRIVEN entry matches it; their "Remote (Commercial /
-# Test)" code is what makes them trip check_teleop_classified().
+# it matches exactly the five TELEOP_DRIVEN_REPORTS. The two Remote-coded
+# REMOTE_LANGUAGE_ADS_DRIVEN entries do not match it; their "Remote
+# (Commercial / Test)" code is what makes them trip check_teleop_classified().
+# Widened on the Nov-16-2026 release for Zoox's "teleguidance" (30610-17194,
+# the one report version in data/snapshots that uses the word; listed in
+# REMOTE_LANGUAGE_ADS_DRIVEN).
 TELEOP_PATTERN = re.compile(
-    r"tele-?operat|remote\s+assist\w*|remote\s+(support\s+)?(operator|driver|pilot)|"
+    r"tele-?operat|tele-?guid|remote\s+assist\w*|remote\s+(support\s+)?(operator|driver|pilot)|"
     r"supported\s+remotely|"
     r"remotely\s+(driven|operated|controlled|piloted|assisted|supported)|"
     r"remotely\s+took\s+(over\s+)?(the\s+)?(vehicle\s+)?control|"
@@ -3016,9 +3077,9 @@ def main():
         (entry["_row"] for entry in window_by_incident.values()),
         vmt_months, fault_ids)
     must(not unrated,
-         "in-scope incidents with no data/faultfrac.csv row (rate each under "
-         "the fault criterion and add its row; slurp.unrated_reports() lists "
-         "their filings from the newest snapshot: data/README.md, Each NHTSA "
+         "in-scope incidents with no data/faultfrac.csv row (run python3 "
+         "data/faultrate.py, which has the blind raters rate each from the "
+         "newest snapshot and writes its row: data/README.md, Each NHTSA "
          "release, step 5)",
          count=len(unrated), reports=[r["Report ID"] for r in unrated])
 

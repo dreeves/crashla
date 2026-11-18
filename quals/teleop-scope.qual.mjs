@@ -67,6 +67,7 @@ out['branches'] = {w: trips(dict(base, Narrative=w)) for w in [
     'The teleoperator steered the vehicle onto the curb',
     'A remote operator  steered the vehicle',
     'A remote driver moved the vehicle',
+    'The vehicle, operating under teleguidance support, was stopped at a red traffic signal',
 ]}
 # a Remote-coded in-scope report must be classified even if its narrative says nothing
 out['tripsOnUnlistedRemoteCode'] = trips(dict(base, **{'Driver / Operator Type': 'Remote (Commercial / Test)'}, Narrative='The vehicle was stopped and was rear-ended.'))
@@ -123,7 +124,7 @@ Expectata: each one classified as teleoperator-driven or ADS-driven.
 Resultata: unclassified ${JSON.stringify(S.remoteUnclassified)}.`);
 const failedBranches = Object.entries(S.branches).filter(([, tripped]) => !tripped).map(([w]) => w);
 assert.deepEqual(failedBranches, [],
-  `Replicata: call check_teleop_classified on one unlisted in-scope report per wording family (teleoperator, remote assistance operator/advisor, supported remotely, remotely driven, took over control, remote support operator, remotely took control, remote operator with odd spacing, remote driver).
+  `Replicata: call check_teleop_classified on one unlisted in-scope report per wording family (teleoperator, remote assistance operator/advisor, supported remotely, remotely driven, took over control, remote support operator, remotely took control, remote operator with odd spacing, remote driver, teleguidance).
 Expectata: every one stops the run.
 Resultata: passed silently: ${JSON.stringify(failedBranches)}.`);
 assert.ok(S.tripsOnUnlistedRemoteCode,

@@ -191,11 +191,20 @@ Expectata: a rating (its data/faultfrac.csv row's).
 Resultata: fault ${JSON.stringify(rec.fault)}.`);
 const [header, ...rows] = parseCsv(fs.readFileSync("data/faultfrac.csv", "utf8"));
 const row = rows.find(r => r[header.indexOf("reportID")] === "30270-14303");
-const got = { helmer: rec.helmer, date: rec.date, city: rec.city, speed: rec.speed, svHit: rec.svHit, cpHit: rec.cpHit,
-  faultfrac: rec.fault.faultfrac, csv: row ? Number(row[header.indexOf("faultfrac")]) : null };
-assert.deepEqual(got, { helmer: "Waymo", date: "MAR-2026", city: "San Francisco", speed: 0, svHit: "right", cpHit: "front left", faultfrac: 0.1, csv: 0.1 },
-  `Replicata: look up 30270-14303 in data/incidents.js and data/faultfrac.csv.
-Expectata: the Waymo crash of MAR-2026 in San Francisco, stopped (0 mph), its right side struck by the passing car's front left, rated 0.1 in both files.
+// The record is the report NHTSA filed (its fields are the filing's), and its
+// fault value is its data/faultfrac.csv row's, a number in [0, 1]. Until
+// 2026-11-17 the value itself was pinned here (0.1, the old method's); the
+// blind raters decide it now, and the human's "sure, convert outcome pins to
+// sanity check ranges" leaves the range.
+const got = { helmer: rec.helmer, date: rec.date, city: rec.city, speed: rec.speed, svHit: rec.svHit, cpHit: rec.cpHit };
+assert.deepEqual(got, { helmer: "Waymo", date: "MAR-2026", city: "San Francisco", speed: 0, svHit: "right", cpHit: "front left" },
+  `Replicata: look up 30270-14303 in data/incidents.js.
+Expectata: the Waymo crash of MAR-2026 in San Francisco, stopped (0 mph), its right side struck by the passing car's front left, as NHTSA's ADAS file has it.
 Resultata: ${JSON.stringify(got)}.`);
+const csvFault = row === undefined ? null : Number(row[header.indexOf("faultfrac")]);
+assert.ok(csvFault !== null && Number.isFinite(csvFault) && csvFault >= 0 && csvFault <= 1 && rec.fault.faultfrac === csvFault,
+  `Replicata: read 30270-14303's fault value in data/faultfrac.csv and in data/incidents.js.
+Expectata: one row in data/faultfrac.csv, its value a number in [0, 1], and the same value in data/incidents.js.
+Resultata: data/faultfrac.csv ${JSON.stringify(csvFault)}, data/incidents.js ${JSON.stringify(rec.fault.faultfrac)}.`);
 
 console.log("qual pass: slurp reads NHTSA's ADAS and OTHER files for the one ADS-driven report filed there, 30270-14303, and stops on any unreviewed Waymo, Tesla or Zoox report in them that an ADS could have driven");

@@ -114,9 +114,14 @@ const metrics = vm.runInContext(`
     months: series.months,
     expectedTotalByHelmer,
     totalByHelmer,
-    janTeslaBins: byMonth["2026-01"].helmers.Tesla.incidents.speeds,
-    janTeslaNonstationary: nonstationaryIncidentCount(byMonth["2026-01"].helmers.Tesla.incidents.speeds),
-    janTeslaRoadwayNonstationary: byMonth["2026-01"].helmers.Tesla.incidents.roadwayNonstationary,
+    // Every line's months with miles: the speed bins and the two nonstationary
+    // counts the page holds, and the incidents they are counted from.
+    binsByLineMonth: ADS_SERIES.flatMap(helmer => series.points.filter(p => p.helmers[helmer] !== null).map(p => ({
+      helmer, month: p.month, total: p.helmers[helmer].incidents.total, speeds: p.helmers[helmer].incidents.speeds,
+      nonstationary: nonstationaryIncidentCount(p.helmers[helmer].incidents.speeds),
+      roadwayNonstationary: p.helmers[helmer].incidents.roadwayNonstationary,
+    }))),
+    rawIncidents: INCIDENT_DATA.map(inc => ({series: inc.series, date: inc.date, speed: inc.speed, road: inc.road})),
     summaryRows: monthlySummaryRows(series),
     airbagByHelmerMonth: Object.fromEntries(
       ADS_HELMERS.map(helmer => [
@@ -176,32 +181,45 @@ Expectata: month aggregation preserves totals from the raw incident data within 
 Resultata: expected=${JSON.stringify(plain.expectedTotalByHelmer)} actual=${JSON.stringify(plain.totalByHelmer)}.`,
 );
 
-// Re-pinned 2026-09-26: four 1-10 mph -> three, when the teleoperator-driven
-// 13781-14043 (9 mph into a construction barricade) left scope
-// (teleop-scope.qual).
-assert.deepEqual(
-  plain.janTeslaBins,
-  { "0": 1, "31+": 0, "11-30": 0, "1-10": 3, unknown: 0 },
-  `Replicata: inspect January 2026 Tesla speed bins.
-Expectata: bins reflect one 0-mph incident and three 1-10 mph incidents.
-Resultata: bins were ${JSON.stringify(plain.janTeslaBins)}.`,
-);
-
-assert.equal(
-  plain.janTeslaNonstationary,
-  3, // re-pinned 2026-09-26 (4 -> 3) with the bins above
-  `Replicata: compute January 2026 Tesla nonstationary monthly incident count.
-Expectata: only the three 1-10 mph incidents count toward the nonstationary series.
-Resultata: nonstationary count was ${JSON.stringify(plain.janTeslaNonstationary)}.`,
-);
-
-assert.equal(
-  plain.janTeslaRoadwayNonstationary,
-  1, // re-pinned 2026-09-26 (2 -> 1): the removed 13781-14043 was on a street
-  `Replicata: compute January 2026 Tesla nonstationary-roadway monthly incident count.
-Expectata: one January Tesla incident is both nonstationary and not in a parking lot.
-Resultata: nonstationary-roadway count was ${JSON.stringify(plain.janTeslaRoadwayNonstationary)}.`,
-);
+// Speed bins and the nonstationary counts, recounted for every line and month
+// from the incidents themselves, apart from the page's own tally: a speed of
+// null is unknown, 0 is stopped, then 1-10, 11-30 and 31 or more mph; an
+// incident is nonstationary unless its speed is 0, and nonstationary on a
+// roadway when it is also not in a parking lot. Until 2026-11-17 this pinned
+// January 2026's Tesla figures (one stopped, three at 1-10 mph, three
+// nonstationary, one of them on a roadway), copied from the page's output
+// and re-pinned on 2026-09-26 when a report left scope; the human: "sure,
+// convert outcome pins to sanity check ranges". A recount needs no range: it
+// is exact whatever the data.
+{
+  const MONTH_NO = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
+  const monthOf = label => `${label.slice(4)}-${String(MONTH_NO[label.slice(0, 3)]).padStart(2, "0")}`;
+  const binOf = speed => speed === null ? "unknown" : speed === 0 ? "0" : speed <= 10 ? "1-10" : speed <= 30 ? "11-30" : "31+";
+  const recount = new Map();
+  for (const inc of plain.rawIncidents) {
+    for (const helmer of inc.series) {
+      const key = `${helmer}|${monthOf(inc.date)}`;
+      const rec = recount.get(key) ?? { total: 0, speeds: { "31+": 0, "11-30": 0, "1-10": 0, unknown: 0, "0": 0 }, nonstationary: 0, roadwayNonstationary: 0 };
+      rec.total += 1;
+      rec.speeds[binOf(inc.speed)] += 1;
+      rec.nonstationary += Number(inc.speed !== 0);
+      rec.roadwayNonstationary += Number(inc.speed !== 0 && inc.road !== "Parking Lot");
+      recount.set(key, rec);
+    }
+  }
+  const empty = { total: 0, speeds: { "31+": 0, "11-30": 0, "1-10": 0, unknown: 0, "0": 0 }, nonstationary: 0, roadwayNonstationary: 0 };
+  const sorted = o => JSON.stringify(Object.fromEntries(Object.entries(o).sort()));
+  const differ = plain.binsByLineMonth.map(r => {
+    const want = recount.get(`${r.helmer}|${r.month}`) ?? empty;
+    const got = { total: r.total, speeds: r.speeds, nonstationary: r.nonstationary, roadwayNonstationary: r.roadwayNonstationary };
+    return sorted({ ...got, speeds: sorted(got.speeds) }) === sorted({ ...want, speeds: sorted(want.speeds) }) ? null : { helmer: r.helmer, month: r.month, got, want };
+  }).filter(x => x !== null);
+  const counted = plain.binsByLineMonth.reduce((n, r) => n + r.total, 0);
+  assert.ok(plain.binsByLineMonth.length > 0 && counted > 0 && differ.length === 0,
+    `Replicata: for every line and every month it has miles for (${plain.binsByLineMonth.length} line-months, ${counted} incident counts), read the page's speed bins, its nonstationary count and its nonstationary-roadway count, and recount them from the incidents' speeds and road types.
+Expectata: the same figures: a bin for each incident by its speed (unknown, 0, 1-10, 11-30, 31+), nonstationary every incident whose speed is not 0, nonstationary-roadway those of them not in a parking lot.
+Resultata: ${differ.length} line-months differ, e.g. ${JSON.stringify(differ.slice(0, 3))}.`);
+}
 
 const summaryByHelmer = Object.fromEntries(
   plain.summaryRows.map(row => [row.helmer, row]),

@@ -141,11 +141,15 @@ for (const p of fleetHistory.Tesla.filter(q => q.month >= PER_DAY_FROM)) {
 // boundary. A revised or newer row flags the forecast, and each
 // MILES_FORECAST robotaxi edge must equal the path integrated here day by day.
 {
-  // Tesla's page as the teslanomonitor row's rationale cites it: no-monitor
-  // miles measured from the 1st of the month through day `through`
-  // (tesla.com/robotaxi/safety as of Oct 18, 2026). A newer month, or a
-  // re-derived October, needs its own entry here.
-  const PAGE_MEASURED = {"2026-10": {through: 18, miles: 1179333}};
+  // The newest month's no-monitor miles before its last stretch, as the
+  // teslanomonitor row's rationale gives them: from the 1st of the month
+  // through day `through`. For October 2026 that was Tesla's page (1,179,333
+  // through Oct 18, tesla.com/robotaxi/safety); the page has not moved since,
+  // so for November it is the camera estimate's 1,519,000 through Nov 15, the
+  // days after it running at the last camera week's rate (data/README.md,
+  // Ghost months). A newer month, or a re-derived one, needs its own entry
+  // here.
+  const PAGE_MEASURED = {"2026-10": {through: 18, miles: 1179333}, "2026-11": {through: 15, miles: 1519000}};
   const start = plain(vm.runInContext("TESLA_PATH_START", ctx));
   const month = master.map(r => r.month).sort().at(-1);
   const t = master.find(r => r.month === month);

@@ -31,29 +31,30 @@ import { parseCsv } from "./csv-parse.mjs";
 import { appScript } from "./load-app.mjs";
 import { SLURP_OFFLINE_PY } from "./slurp-offline.mjs";
 
-// The second AV of each report, as its narrative gives it (2026-10-31), and
-// its fault value (the 2026-10-31 adjudication under the locked criterion).
+// The second AV of each report, as its narrative gives it (2026-10-31). Its
+// fault value is whatever the blind raters give its own row (until 2026-11-17
+// this table pinned the six values of the 2026-10-31 adjudication; the human,
+// on dropping them: "yes, those quals are safe to remove").
 const PAX_UNKNOWN = "Unknown";
 const WANT = {
   // parked for its own dropoff; the doored cyclist fell into its passenger side
   "30270-9987": { speed: 0, svMovement: "Parked", cpMovement: "Proceeding Straight", crashWith: "Non-Motorist: Cyclist",
-                  belted: PAX_UNKNOWN, svHit: "right", cpHit: "", faultfrac: 0 },
+                  belted: PAX_UNKNOWN, svHit: "right", cpHit: "" },
   // stopped; the passing first Waymo's rider opened its front passenger door into its driver side mirror
   "30270-11224": { speed: 0, svMovement: "Stopped", cpMovement: "Passing", crashWith: "SUV",
-                   belted: PAX_UNKNOWN, svHit: "left", cpHit: "front right + right", faultfrac: 0 },
+                   belted: PAX_UNKNOWN, svHit: "left", cpHit: "front right + right" },
   // reversing out of the stall beside the first Waymo, which pulled forward into its right side
   "30270-11424": { speed: null, svMovement: "Backing", cpMovement: "Proceeding Straight", crashWith: "SUV",
-                   belted: PAX_UNKNOWN, svHit: "right", cpHit: "front left", faultfrac: 0.3 },
+                   belted: PAX_UNKNOWN, svHit: "right", cpHit: "front left" },
   // stopped in the red-light queue behind the first Waymo; the careening car's left side hit it
   "30270-13817": { speed: 0, svMovement: "Stopped", cpMovement: "Other, see Narrative", crashWith: "Passenger Car",
-                   belted: PAX_UNKNOWN, svHit: "unknown", cpHit: "left", faultfrac: 0 },
+                   belted: PAX_UNKNOWN, svHit: "unknown", cpHit: "left" },
   // parked; its passenger opened its rear left door into the passing first Waymo
   "30270-14890": { speed: 0, svMovement: "Parked", cpMovement: "Passing", crashWith: "SUV",
-                   belted: "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated", svHit: "rear left", cpHit: "front right",
-                   faultfrac: 0.1 },
+                   belted: "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated", svHit: "rear left", cpHit: "front right" },
   // stopped behind the first collision; the driverless SUV rolled backwards into its front left
   "30270-15346": { speed: 0, svMovement: "Stopped", cpMovement: "Other, see Narrative", crashWith: "SUV",
-                   belted: PAX_UNKNOWN, svHit: "front left", cpHit: "rear right", faultfrac: 0 },
+                   belted: PAX_UNKNOWN, svHit: "front left", cpHit: "rear right" },
 };
 const CRASH_FIELDS = ["helmer", "version", "date", "time", "incidentId", "city", "state", "road", "severity",
   "narrative", "narrativeCbi", "airbagAny", "wxClear", "wxRain", "wxCloudy", "wxPartlyCloudy", "vehiclesInvolved", "series"];
@@ -183,14 +184,14 @@ for (const [rid, want] of Object.entries(WANT)) {
   for (const f of VEHICLE_FIELDS) if (second[f] !== want[f]) problems.push(`${rid}-B ${f}: ${JSON.stringify(second[f])}, want ${JSON.stringify(want[f])}`);
   if (second.secondOf !== rid) problems.push(`${rid}-B secondOf: ${JSON.stringify(second.secondOf)}`);
   if (parent.secondOf !== undefined) problems.push(`${rid} secondOf: ${JSON.stringify(parent.secondOf)}`);
-  if (fault.get(rid + "-B") !== want.faultfrac || second.fault?.faultfrac !== want.faultfrac)
-    problems.push(`${rid}-B faultfrac: data/faultfrac.csv ${fault.get(rid + "-B")}, incidents.js ${second.fault?.faultfrac}, want ${want.faultfrac}`);
+  if (!fault.has(rid + "-B") || second.fault?.faultfrac !== fault.get(rid + "-B"))
+    problems.push(`${rid}-B faultfrac: data/faultfrac.csv ${fault.get(rid + "-B")}, incidents.js ${second.fault?.faultfrac}`);
 }
 const strays = records.filter(r => r.secondOf !== undefined && !(r.secondOf in WANT)).map(r => r.reportId);
 if (strays.length) problems.push(`records with secondOf outside the table: ${JSON.stringify(strays)}`);
 assert.deepEqual(problems, [],
   `Replicata: for each SECOND_INVOLVEMENTS report, read its record and its "-B" record in data/incidents.js, and the "-B" row of data/faultfrac.csv.
-Expectata: the "-B" record carries the report's crash-level fields (${CRASH_FIELDS.join(", ")}), the second AV's own fields as its narrative gives them, secondOf naming the report, and the adjudicated fault value in both files; the report's own record carries no secondOf.
+Expectata: the "-B" record carries the report's crash-level fields (${CRASH_FIELDS.join(", ")}), the second AV's own fields as its narrative gives them, secondOf naming the report, and the fault value of its own data/faultfrac.csv row; the report's own record carries no secondOf.
 Resultata: ${JSON.stringify(problems, null, 1)}.`);
 
 // 4. The incident browser marks the second AV's row; the report's row is as before.

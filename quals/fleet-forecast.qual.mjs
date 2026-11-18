@@ -654,56 +654,43 @@ Resultata: ${s.lo90} / ${s.median} / ${s.hi90}.`,
 
 const byKey = Object.fromEntries(stats.map(s => [s.key, s]));
 
-// Re-pinned 2026-10-29 for the Jan 1, 2028 forecast (the human moved the
-// date; the re-pin was part of that choice). Until then: Waymo ~6,000
-// (5,000-7,000) with a tail past 8,000; Zoox ~150 (100-220); Tesla robotaxi
-// 200-2,000 at ~95%; Tesla HW4 at ~5%.
-//
-// Waymo carries a base + plan mode: one unimodal curve (the plan toward
-// Semafor's reported 20,000 is a fat right shoulder, not a second peak),
-// central ~12,000 with a tail past 18,000.
+// Until 2026-11-17 this section pinned the authored forecasts into bands:
+// Waymo's median 9,000-15,000 with a tail past 18,000 and one peak, Zoox's
+// 250-600, Tesla's robotaxi lane 1,000-10,000 with a tail under 50,000 and
+// over 80% of Tesla's weight, the all-HW4 lane past 10,000 with a tail past
+// 100,000 and under 20% (and, further down, its miles past 150M). Each was
+// the forecast's own figure with a margin, re-pinned when a forecast was
+// re-authored (2026-10-23, 2026-10-29, 2026-10-31). The human, 2026-11-17:
+// "maybe they should be sanity checks, like only failing on insane numbers,
+// not merely mildly surprising numbers?", then "sure, convert outcome pins
+// to sanity check ranges". Now:
+//   - every lane's median is a fleet in FLEET_SANE (ten cars to ten million),
+//     its 95th percentile at or above it;
+//   - Tesla's robotaxi lane is the mainline one and holds more than half of
+//     Tesla's weight, its all-HW4 lane the conditional one;
+//   - a lane drawn from one band has one peak (Zoox's and the all-HW4 one).
+// The floors against the newest observed fleets, the quantiles' honesty and
+// the all-HW4 lane's place above the robotaxi lane are checked below (4b-4f).
+const FLEET_SANE = [10, 1e7];
+const insaneLanes = stats.filter(s => !(Number.isFinite(s.median) && s.median >= FLEET_SANE[0] && s.median <= FLEET_SANE[1] &&
+  Number.isFinite(s.hi90) && s.hi90 >= s.median));
+// (stats comes from the app's realm, so its arrays are counted, not compared
+// with deepEqual, which tells an array of another realm from [].)
+assert.ok(insaneLanes.length === 0,
+  `Replicata: read each fleet-forecast lane's median and 95th percentile (${stats.map(s => s.key).join(", ")}).
+Expectata: a median of ${FLEET_SANE[0]} to ${FLEET_SANE[1]} vehicles (a sanity range) with its 95th percentile at or above it.
+Resultata: ${JSON.stringify(insaneLanes.map(s => ({ key: s.key, median: s.median, hi90: s.hi90 })))}.`);
 assert.ok(
-  byKey.Waymo.median > 9000 && byKey.Waymo.median < 15000 &&
-    byKey.Waymo.hi90 > 18000 && byKey.Waymo.signChanges === 1,
-  `Replicata: inspect Waymo's fleet forecast.
-Expectata: unimodal, median ~12,000 (9,000-15,000), with a tail past 18,000.
-Resultata: median=${byKey.Waymo.median}, hi90=${byKey.Waymo.hi90}, signChanges=${byKey.Waymo.signChanges}.`,
+  byKey.robotaxi.mainline && byKey.robotaxi.scenarioProb > 0.5 && !byKey.hw4.mainline && byKey.hw4.scenarioProb < 0.5,
+  `Replicata: inspect Tesla's two fleet lanes.
+Expectata: the robotaxi lane mainline with more than half of Tesla's weight, the all-HW4 lane conditional with less than half.
+Resultata: robotaxi mainline=${byKey.robotaxi.mainline}, prob=${byKey.robotaxi.scenarioProb}; hw4 mainline=${byKey.hw4.mainline}, prob=${byKey.hw4.scenarioProb}.`,
 );
-
 assert.ok(
-  byKey.Zoox.median > 250 && byKey.Zoox.median < 600 && byKey.Zoox.signChanges === 1,
-  `Replicata: inspect Zoox's fleet forecast.
-Expectata: a unimodal distribution with median ~400 (250-600).
-Resultata: median=${byKey.Zoox.median}, signChanges=${byKey.Zoox.signChanges}.`,
-);
-
-// Tesla robotaxi (mainline, the large majority of Tesla's mass): the
-// apples-to-apples fleet in car-equivalents, a mixture of A and B, its tail
-// in robotaxi territory (no HW4 blow-up). Its median's band was 100-600 until
-// 2026-10-23 and 200-2,000 until 2026-10-29. Until 2026-10-29 the curve also
-// had to be bimodal (B a second hump); the 2028 scenarios' bands overlap
-// (A 900-8,000, B 5,000-40,000), so B is a fat right shoulder.
-assert.ok(
-  byKey.robotaxi.mainline && byKey.robotaxi.scenarioProb > 0.8 &&
-    byKey.robotaxi.median > 1000 && byKey.robotaxi.median < 10000 &&
-    byKey.robotaxi.hi90 < 50000,
-  `Replicata: inspect Tesla's robotaxi-scope curve.
-Expectata: mainline, over 80% of Tesla's weight, median 1,000-10,000, 95th percentile under 50k (no HW4 tail).
-Resultata: mainline=${byKey.robotaxi.mainline}, prob=${byKey.robotaxi.scenarioProb}, median=${byKey.robotaxi.median}, hi90=${byKey.robotaxi.hi90}, signChanges=${byKey.robotaxi.signChanges}.`,
-);
-
-// Tesla all-HW4 ADS (conditional, a small share): the broad scenario, drawn
-// as its own unimodal curve, in car-equivalents like Tesla's line (the
-// human's choice, 2026-10-30: its ADS miles a day / TESLA_MILES_PER_CAR_DAY),
-// so tens of thousands to hundreds of thousands. Until 2026-10-31 it counted
-// distinct customer cars, and this pinned a six-figure median and a tail past
-// 1M.
-assert.ok(
-  !byKey.hw4.mainline && byKey.hw4.scenarioProb < 0.2 &&
-    byKey.hw4.median > 10000 && byKey.hw4.hi90 > 100000 && byKey.hw4.signChanges === 1,
-  `Replicata: inspect Tesla's HW4-scope curve.
-Expectata: conditional (not mainline), under 20% of Tesla's weight, median past 10,000 car-equivalents, tail past 100,000, unimodal.
-Resultata: mainline=${byKey.hw4.mainline}, prob=${byKey.hw4.scenarioProb}, median=${byKey.hw4.median}, hi90=${byKey.hw4.hi90}, signChanges=${byKey.hw4.signChanges}.`,
+  byKey.Zoox.signChanges === 1 && byKey.hw4.signChanges === 1,
+  `Replicata: count the peaks of the lanes drawn from one band (Zoox's and Tesla's all-HW4 lane).
+Expectata: one each.
+Resultata: Zoox signChanges=${byKey.Zoox.signChanges}, hw4 signChanges=${byKey.hw4.signChanges}.`,
 );
 
 // --- 4b. Miles/rides curves: scenario mixtures with honest quantiles. Tesla's
@@ -1359,9 +1346,11 @@ Resultata: ${below.map(l => `${l.label}: lo90 ${Math.round(l.lo90)}, median ${Ma
 Expectata: both run through 2026-09, on the Sep-1 Waymo and Sep-17 Zoox fleet statements.
 Resultata: ${problems.join("; ")}.`);
 }
-assert.ok(milesByKey.hw4.median > 150000000 && milesByKey.hw4.dashed,
+// (Until 2026-11-17 its median also had to pass 150M miles, the forecast's
+// own figure with a margin; 4f holds it at or above the robotaxi lane.)
+assert.ok(milesByKey.hw4.dashed && Number.isFinite(milesByKey.hw4.median) && milesByKey.hw4.median > 0,
   `Replicata: read Tesla's HW4-scope cumulative-miles curve.
-Expectata: median past 150M and drawn dashed (conditional scenario).
+Expectata: drawn dashed (conditional scenario), with a positive median.
 Resultata: ${JSON.stringify(milesByKey.hw4)}.`);
 
 // The trajectory chart's miles/rides forecast endpoints must carry the same

@@ -111,8 +111,6 @@ const stress = vm.runInContext(`
         .map(key => [key, helmerHumanStress(row, key)])),
     ])),
     summaryCardHtml: document.getElementById("mpi-summary-cards").innerHTML,
-    // null until crashla.js defines it, so the red run reports the check
-    cardStressLabel: typeof CARD_STRESS_LABEL === "undefined" ? null : CARD_STRESS_LABEL,
     sanityHtml: document.getElementById("sanity-checks").innerHTML,
     verdictClass: Object.fromEntries(Object.entries(STRESS_VERDICT_META).map(([k, m]) => [k, m.className])),
     verdictLabel: Object.fromEntries(Object.entries(STRESS_VERDICT_META).map(([k, m]) => [k, m.label])),
@@ -139,162 +137,104 @@ const stress = vm.runInContext(`
 `, ctx);
 const plain = JSON.parse(JSON.stringify(stress));
 
-assert.equal(
-  plain.byHelmer.Tesla.all.verdictKey,
-  "ambiguous",
-  `Replicata: compute stress-test verdict for Tesla on all incidents.
-Expectata: Tesla all-incident claim is assumption-sensitive (Feb 2026 VMT widens CI).
-Resultata: verdict was ${plain.byHelmer.Tesla.all.verdictKey}.`,
-);
-
-assert.equal(
-  plain.byHelmer.Waymo.all.verdictKey,
-  "ambiguous",
-  `Replicata: compute stress-test verdict for Waymo on all incidents.
-Expectata: Waymo all-incident claim remains assumption-sensitive rather than robust.
-Resultata: verdict was ${plain.byHelmer.Waymo.all.verdictKey}.`,
-);
-
-// hospitalization joined this list 2026-10-03 (audit #1): on the
-// CRSS-measured transport band (406k-1.38M; 402k-1.38M since 2026-10-27)
-// Waymo's ratio floor is ~2.7x; on
-// the old severity-neighbour bracket (617k-4.695M) it read "ambiguous".
-for (const key of ["atfault", "injury", "hospitalization", "airbag", "seriousInjury"]) {
-  assert.equal(
-    plain.byHelmer.Waymo[key].verdictKey,
-    "safer",
-    `Replicata: compute stress-test verdict for Waymo on ${key}.
-Expectata: Waymo is robustly safer than humans on ${key}.
-Resultata: verdict was ${plain.byHelmer.Waymo[key].verdictKey}.`,
-  );
-}
-
-// Nonstationary bands (audit #2, 2026-10-03). Until then the human bands
-// removed a parked-car share their in-transport benchmark never held and kept
-// the vehicles stopped in traffic that the AV side drops; Tesla's
-// non-parking-lot verdict read "robustly safer" on a 1.8% margin
-// (232,055 / 228,000). With the CRSS stopped-in-roadway share removed
-// (AV cities 121k-251k) its floor is ~0.92x: ambiguous. Waymo stays safer on
-// both nonstationary metrics. Tesla's floor will rise as its miles grow;
-// re-pin when a release or VMT re-pin moves it past 1x.
-assert.equal(plain.byHelmer.Tesla.roadwayNonstationary.verdictKey, "ambiguous",
-  `Replicata: compute the stress verdict for Tesla on nonstationary non-parking-lot incidents.
-Expectata: ambiguous — the AV/human ratio floor sits below 1x once the human band drops the vehicles stopped in the roadway (CRSS 2024), as the AV side drops its 0-mph incidents.
-Resultata: ${plain.byHelmer.Tesla.roadwayNonstationary.verdictKey} at ${plain.byHelmer.Tesla.roadwayNonstationary.ratioLo}x–${plain.byHelmer.Tesla.roadwayNonstationary.ratioHi}x.`);
-for (const key of ["nonstationary", "roadwayNonstationary"]) {
-  assert.equal(plain.byHelmer.Waymo[key].verdictKey, "safer",
-    `Replicata: compute the stress verdict for Waymo on ${key}.
-Expectata: robustly safer on the CRSS-derived nonstationary band.
-Resultata: ${plain.byHelmer.Waymo[key].verdictKey} at ${plain.byHelmer.Waymo[key].ratioLo}x–${plain.byHelmer.Waymo[key].ratioHi}x.`);
-}
-
-// byHelmer rows are the FULL series. This verdict sits ON the 1.00x knife
-// edge and therefore moves with the receipt frontier every release:
-//   - before 2026-08-28: ambiguous, ceiling exactly 1.00x
-//   - 2026-08-28: flipped to worse, because capping the data-through month's
-//     exposure by receipt coverage trimmed the effective-VMT upper edge
-//   - 2026-09-15: flipped BACK to ambiguous, ceiling 1.0010x. The Sep-15
-//     release advanced the cutoff to 2026-08, so 2026-07 is no longer the
-//     capped month: its coverage_max went 0.52 -> 1.0 in data/vmt.js, which
-//     restores the very upper-edge miles the previous release had trimmed.
-//     (coverage_max is what sets ratioHi, so the same release's 0.31 -> 0.28
-//     best / 0.25 -> 0.20 lo re-measurement does NOT bear on this.)
-//   - 2026-09-25: worse again, ceiling 0.978x. The explicit operator scope
-//     (operator-scope.qual) counts 30610-11752, an unoccupied Zoox rear-ended
-//     in Las Vegas in SEP-2025 that the old "None"-only filter dropped because
-//     NHTSA coded it "Remote (Commercial / Test)": one more real in-scope
-//     incident over the same driverless miles.
-//   - 2026-10-03: still worse, ceiling 0.978x -> 0.90x, from the CA DMV
-//     rebuild of Zoox's early rows and the Dec-2025 knot (see the default-
-//     window pin below).
-//   - 2026-10-04: still worse, ceiling 0.902x -> 0.891x: the Monthly-report
-//     lag model (data/slurp.py MONTHLY_ARRIVAL_LAG) thins Zoox's 2026-07
-//     Monthly-track miles to its 5-Day share, 0.63 [0.25, 1.0], because its
-//     July Monthly reports are not in the Sep-15-2026 file yet.
-//   - by 7b348ce (2026-10-27, after the Oct-15 release): still worse, 0.839x.
-//   - 2026-10-27 (later): still worse, 0.839x -> 0.865x: Zoox's 2026 rows
-//     rebuilt on the per-day rate between its statements (0.821x in d73ce85,
-//     whose end-July knot still had a ceiling; 0.865x once the July
-//     statement became a floor only).
-//   - 2026-11-02: still worse, 0.8648x -> 0.8657x: the smooth 2025 path
-//     (open question 21) raised the Jan 1-Mar 24 rate, and with it the
-//     end-March knot's upper edge and every later one, by 5,833 miles.
-//   - 2026-11-03: still worse, 0.8657x -> 0.8773x: one smooth path through
-//     all four statements (open question 29) holds December 2025's Las Vegas
-//     rate through 2026, so 2026's rows run 10,000 miles higher in total
-//     through September and the window's VMT band top moves 4,082,469 ->
-//     4,152,552.
-// Expect this assertion to keep alternating; re-pin it each release rather
-// than treating either direction as the stable truth.
-assert.ok(
-  plain.byHelmer.Zoox.all.verdictKey === "worse" && plain.byHelmer.Zoox.all.ratioHi < 1,
-  `Replicata: compute the full-history stress verdict for Zoox on all incidents.
-Expectata: worse — with 30610-11752 counted, the AV/human ratio ceiling sits just below 1x.
-Resultata: ${plain.byHelmer.Zoox.all.verdictKey} at ${plain.byHelmer.Zoox.all.ratioLo}x–${plain.byHelmer.Zoox.all.ratioHi}x.`,
-);
-
-// Default slider window (what the page shows on load). Also a knife edge,
-// pinned separately so neither window's verdict is silently carried by the
-// other's:
-//   - through 2026-10-02: ambiguous, ceiling just above 1x (1.0486x)
-//   - 2026-10-03: worse, ceiling 0.980x. Two VMT changes moved it: the CA DMV
-//     rebuild of Zoox's early rows (approved 2026-09-29; 40,080 pre-series
-//     miles now come off the official 1.3M, ceiling 1.0486x -> 1.0023x) and the
-//     Dec-2025 knot that pins the cumulative band to that disclosure's own
-//     uncertainty (audit finding #18; 1.0023x -> 0.980x).
-//   - 2026-10-04: still worse, ceiling 0.980x -> 0.968x, from the
-//     Monthly-report lag model (Zoox's 2026-07 at its 5-Day share).
-//   - by 7b348ce (2026-10-27, after the Oct-15 release): still worse, 0.898x.
-//   - 2026-10-27 (later): still worse, 0.898x -> 0.926x, the Zoox 2026
-//     rebuild (0.874x in d73ce85, with the end-July ceiling).
-//   - 2026-11-02: still worse, 0.9258x -> 0.9269x, the smooth 2025 path (the
-//     same 5,833 miles on the window's upper edge).
-//   - 2026-11-03: still worse, 0.9269x -> 0.9403x, one smooth path through
-//     all four statements (the window's VMT band top 3,901,518 -> 3,971,601).
-// Re-pin it like the full-history one when a release or a VMT re-pin moves it.
-const zooxDefault = JSON.parse(JSON.stringify(vm.runInContext(`
+// --- Every estimate, in the default window and over the full history -------
+// Until 2026-11-17 this qual pinned verdicts and ratio edges on live data:
+// Tesla's and Waymo's All-incidents verdicts ("ambiguous"), Waymo's "robustly
+// safer" on seven metrics, Tesla's non-parking-lot verdict, Zoox's
+// All-incidents verdict in both windows (a knife edge whose comment here
+// carried nine dated notes of data moving it or nearly moving it between
+// 2026-08-28 and 2026-11-03; AGENTS.md's ledger has each), Tesla's ratio ceiling under 3.5x and Waymo's at-fault
+// floor above 1x. Each was copied from the page's own output and re-pinned
+// when a release or a VMT or fault change moved it, so what it tested was the
+// re-pinning. The human, 2026-11-17: "maybe they should be sanity checks,
+// like only failing on insane numbers, not merely mildly surprising
+// numbers?", then "sure, convert outcome pins to sanity check ranges". So no
+// verdict is required of any company now. For every line with miles and
+// every metric it has an estimate for, in both windows:
+//   - what the page derives, exactly: the ratio range is the AV's 95% CI over
+//     the human band (floor: CI low over the band's top; ceiling: CI high
+//     over the band's bottom), and the verdict follows from it (robustly
+//     safer when the floor is above 1x, robustly worse when the ceiling is
+//     below 1x, else ambiguous);
+//   - sanity ranges, wide enough that only a broken figure leaves them (a
+//     unit error, a dropped denominator, a NaN): the count is finite and not
+//     negative; the CI is positive, ordered and holds the median; the ratio
+//     floor lies in RATIO_FLOOR and the ceiling in RATIO_CEILING (seen on
+//     2026-11-17: 0.0045x-21.6x and 0.88x-46,489x); with ENOUGH incidents or
+//     more behind it, the median over the human band's geometric centre lies
+//     in CENTRE (seen: 0.45-10.4), and an All-incidents median in ALL_MPI
+//     miles per incident (seen: 65,182-190,605).
+// And each window holds every company, with an All-incidents estimate on at
+// least one incident.
+const RATIO_FLOOR = [1e-7, 1e4], RATIO_CEILING = [1e-3, 1e9], CENTRE = [0.05, 100], ALL_MPI = [1e4, 1e7], ENOUGH = 20;
+const estimates = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
-  const row = monthlySummaryRows(activeSeries).find(r => r.helmer === "Zoox");
-  const stress = helmerHumanStress(row, "all");
-  return {verdictKey: stress.verdictKey, ratioHi: stress.ratioHi, k: stress.av.k, months: [activeSeries.months[0], activeSeries.months[activeSeries.months.length - 1]]};
+  const full = monthSeriesData();
+  const out = [];
+  for (const [name, first] of [["default", full.months.indexOf(DEFAULT_START_MONTH)], ["full", 0]]) {
+    for (const row of monthlySummaryRows(sliceSeries(full, first, full.months.length - 1)).filter(r => r.vmtBest > 0)) {
+      for (const key of METRIC_KEYS.filter(k => row.mpiEstimates[k] !== null)) {
+        const s = helmerHumanStress(row, key);
+        out.push({window: name, helmer: row.helmer, key, k: s.av.k, median: s.av.postMedian, lo: s.av.lo, hi: s.av.hi,
+          human: [s.human.lo, s.human.hi], ratioLo: s.ratioLo, ratioHi: s.ratioHi, verdict: s.verdictKey});
+      }
+    }
+  }
+  return {out, companies: ADS_HELMERS};
 })()
 `, ctx)));
-assert.ok(zooxDefault.verdictKey === "worse" && zooxDefault.ratioHi < 1,
-  `Replicata: compute the default-window stress verdict for Zoox on all incidents.
-Expectata: worse, with the AV/human ratio ceiling just below 1x (the Dec-2025 knot on Zoox's official 1.3M disclosure narrows the window's VMT band).
-Resultata: ${JSON.stringify(zooxDefault)}.`);
+const inRange = (x, [a, b]) => Number.isFinite(x) && x >= a && x <= b;
+const verdictOf = (ratioLo, ratioHi) => ratioLo > 1 ? "safer" : ratioHi < 1 ? "worse" : "ambiguous";
+const estimateProblems = estimates.out.flatMap(e => {
+  const centre = e.median / Math.sqrt(e.human[0] * e.human[1]);
+  return [
+    [Number.isFinite(e.k) && e.k >= 0, `a count of ${e.k}`],
+    [[e.lo, e.median, e.hi].every(v => Number.isFinite(v) && v > 0) && e.lo <= e.median && e.median <= e.hi,
+      `a median and 95% CI of ${e.median} [${e.lo}, ${e.hi}]`],
+    [e.human.every(v => Number.isFinite(v) && v > 0) && e.human[0] <= e.human[1], `a human band of ${JSON.stringify(e.human)}`],
+    [e.ratioLo === e.lo / e.human[1] && e.ratioHi === e.hi / e.human[0],
+      `a ratio range of ${e.ratioLo}x to ${e.ratioHi}x for a CI of [${e.lo}, ${e.hi}] over the band ${JSON.stringify(e.human)}`],
+    [e.verdict === verdictOf(e.ratioLo, e.ratioHi), `the verdict ${JSON.stringify(e.verdict)} on a ratio range of ${e.ratioLo}x to ${e.ratioHi}x`],
+    [inRange(e.ratioLo, RATIO_FLOOR) && inRange(e.ratioHi, RATIO_CEILING), `a ratio range of ${e.ratioLo}x to ${e.ratioHi}x, outside the sanity ranges`],
+    [e.k < ENOUGH || inRange(centre, CENTRE), `a median ${centre} times the human band's centre, on ${e.k} incidents`],
+    [e.k < ENOUGH || e.key !== "all" || inRange(e.median, ALL_MPI), `an All-incidents median of ${e.median} miles per incident, on ${e.k} incidents`],
+  ].filter(([ok]) => !ok).map(([, what]) => `${e.window} ${e.helmer} ${e.key}: ${what}`);
+});
+const absent = ["default", "full"].flatMap(w => estimates.companies
+  .filter(h => !estimates.out.some(e => e.window === w && e.helmer === h && e.key === "all" && e.k >= 1))
+  .map(h => `${w} ${h}: no All-incidents estimate on at least one incident`));
+assert.deepEqual([...estimateProblems, ...absent], [],
+  `Replicata: compute helmerHumanStress for every line with miles and every metric it has an estimate for, in the default window and over the full history (${estimates.out.length} estimates).
+Expectata: each ratio range is the AV's 95% CI over the AV-cities human band and its verdict follows from it (safer above 1x, worse below 1x, else ambiguous); each figure is sane: a finite count, a positive ordered CI holding its median, a ratio floor in [${RATIO_FLOOR}] and ceiling in [${RATIO_CEILING}], and with ${ENOUGH} incidents or more a median within x${CENTRE[0]} to x${CENTRE[1]} of the human band's centre and an All-incidents median of ${ALL_MPI[0]} to ${ALL_MPI[1]} miles per incident; and each window holds ${estimates.companies.join(", ")} with an All-incidents estimate. No verdict is required of any company: a figure outside a sanity range is broken, or news worth a look before the range moves.
+Resultata: ${estimateProblems.length + absent.length} problems: ${[...estimateProblems, ...absent].slice(0, 8).join("; ")}.`);
 
-// Magnitude drift guard on Tesla's optimistic edge (the straddles-1x claim
-// itself is the verdictKey assert above). Bound moved 3 -> 3.5 on 2026-07-22
-// when the Tesla denominator was re-anchored to the deck-chart series
-// (default-window VMT +16% moved ratioHi 2.78 -> 3.23 proportionally).
-assert.ok(
-  plain.byHelmer.Tesla.all.ratioHi < 3.5,
-  `Replicata: inspect Tesla all-incident AV/human ratio range.
-Expectata: Tesla's CI still straddles 1x human safety rather than being robustly safe.
-Resultata: ratio range was ${plain.byHelmer.Tesla.all.ratioLo}x to ${plain.byHelmer.Tesla.all.ratioHi}x.`,
-);
+// The verdict rule itself, on synthetic CIs around its two thresholds, against
+// a human band of 100 to 200. Live data may hold no estimate near a
+// threshold: on 2026-11-17 no ratio floor lay between 0.9x and 1x, so a rule
+// that read "safer" from 0.9x up passed every check above.
+const RULE_CASES = [
+  [201, 500, "safer"], [200, 500, "ambiguous"], [190, 500, "ambiguous"], [20, 500, "ambiguous"],
+  [20, 105, "ambiguous"], [20, 100, "ambiguous"], [20, 99, "worse"], [20, 95, "worse"],
+];
+const ruleWrong = RULE_CASES.map(([lo, hi, want]) => ({ lo, hi, want, got: vm.runInContext(`stressVerdictKey(${lo}, ${hi}, {lo: 100, hi: 200})`, ctx) }))
+  .filter(c => c.got !== c.want);
+assert.deepEqual(ruleWrong, [],
+  `Replicata: call stressVerdictKey with each of ${RULE_CASES.length} CIs against a human band of 100 to 200.
+Expectata: robustly safer when the CI's low edge is above the band's top (201 and up), robustly worse when its high edge is below the band's bottom (99 and down), ambiguous otherwise, the two edges themselves included.
+Resultata: ${JSON.stringify(ruleWrong)}.`);
 
+// The verdicts and their ranges are this table's, not the summary cards':
+// since 2026-11-17 a card has no stress line (the human's layout of that day;
+// summary-cards.qual), and its multipliers carry their own 95% intervals
+// (multiplier-interval.qual). Until then each card's stress line gave the
+// All-incidents verdict here, headed CARD_STRESS_LABEL, with its badge, and
+// this checked the label and a badge.
 assert.ok(
-  plain.byHelmer.Waymo.atfault.ratioLo > 1,
-  `Replicata: inspect Waymo at-fault AV/human ratio range.
-Expectata: even Waymo's pessimistic edge remains above 1x human safety.
-Resultata: ratio range was ${plain.byHelmer.Waymo.atfault.ratioLo}x to ${plain.byHelmer.Waymo.atfault.ratioHi}x.`,
-);
-
-// The cards' stress line is the All-incidents verdict, headed
-// CARD_STRESS_LABEL (it read "Overall:" until 2026-10-03, audit #6;
-// summary-cards.qual checks the line itself). Until 2026-10-29 this also
-// banned the word "Overall:" and found an ambiguous verdict by its word; the
-// verdict is now found by its badge's class (STRESS_VERDICT_META).
-const badge = key => `class="stress-badge ${plain.verdictClass[key]}`;
-assert.ok(
-  plain.cardStressLabel !== null &&
-    plain.summaryCardHtml.includes(`<div class="mpi-card-stress">${plain.cardStressLabel} `) &&
-    plain.summaryCardHtml.includes(badge("ambiguous")),
-  `Replicata: render top summary cards with stress labels.
-Expectata: each stress line is headed CARD_STRESS_LABEL (the All-incidents verdict), and ambiguous verdict badges appear.
-Resultata: label ${JSON.stringify(plain.cardStressLabel)}; summary card HTML snippet was ${JSON.stringify(plain.summaryCardHtml.slice(0, 400))}.`,
+  !plain.summaryCardHtml.includes("mpi-card-stress") &&
+    !Object.values(plain.verdictClass).some(c => plain.summaryCardHtml.includes(`class="stress-badge ${c}`)),
+  `Replicata: render the summary cards on the default view and look for a stress line or a verdict badge.
+Expectata: neither: the verdicts and their ranges are the sensitivity table's.
+Resultata: ${JSON.stringify(plain.summaryCardHtml.slice(0, 400))}.`,
 );
 
 // A table's body rows (by the table's id), each as its cells' markup.
@@ -319,7 +259,8 @@ const wantBadge = (verdict, priorOnly) => ({
 });
 
 // The sanity section's stress table (id sanity-stress): a row per helmer
-// metric with an estimate, robustly safer among them, its seven cells what
+// metric with an estimate (until 2026-11-17 a robustly safer one had to be
+// among them, a verdict the data happened to hold), its seven cells what
 // helmerHumanStress computes: the company and metric (their labels), the
 // incident count k, the AV's posterior median and 95% CI, the AV-cities human
 // band, the AV/human ratio range, and the verdict's badge (marked prior-only
@@ -336,60 +277,23 @@ const wantBadge = (verdict, priorOnly) => ({
     cells[5], badgeOf(cells[6])]);
   const wrong = want.map((w, i) => [i, w, got[i]]).filter(([i, w, g]) => rows[i] === undefined || rows[i].length !== 7 || JSON.stringify(g) !== JSON.stringify(w));
   assert.ok(
-    want.length > 0 && rows.length === want.length && wrong.length === 0 && plain.stressCells.some(c => c.verdict === "safer"),
+    want.length > 0 && rows.length === want.length && wrong.length === 0,
     `Replicata: render the skeptical stress-test sanity subsection (default window) and read every cell of the stress table.
-Expectata: a row per helmer metric with an estimate (${want.length} rows), a robustly safer one among them, each of seven cells: company, metric, k, the AV's median then 95% CI, the human band, the AV/human ratio range, and the verdict's badge (prior-only at k = 0), as helmerHumanStress computes them.
+Expectata: a row per helmer metric with an estimate (${want.length} rows), each of seven cells: company, metric, k, the AV's median then 95% CI, the human band, the AV/human ratio range, and the verdict's badge (prior-only at k = 0), as helmerHumanStress computes them.
 Resultata: ${rows.length} rows; ${wrong.length} differ, e.g. ${JSON.stringify(wrong.slice(0, 3).map(([i, w, g]) => ({ row: i + 1, want: w, got: g })))}.`,
   );
 }
 
-// Faultfrac sensitivity: smallest multiplier on the judged at-fault mass that
-// changes the verdict. (Serialized as strings because Infinity doesn't
-// survive JSON.)
-const flips = JSON.parse(JSON.stringify(vm.runInContext(`
-(() => {
-  const rows = monthlySummaryRows(monthSeriesData()).filter(r => r.vmtBest > 0);
-  const out = {};
-  for (const row of rows) {
-    const stress = helmerHumanStress(row, "atfault");
-    const flip = faultFlipMultiplier(stress.av, stress.human, row.incTotal);
-    out[row.helmer] = flip === null ? null : {mult: String(flip.mult), flipped: flip.flipped, sMax: row.incTotal / stress.av.k};
-  }
-  return {out,
-    distHtml: document.getElementById("chart-distributions").innerHTML,
-    distHeading: document.getElementById("dist-heading").textContent,
-    metricLabel: selectedMonthMetric().label,
-    window: [activeSeries.months[0], activeSeries.months[activeSeries.months.length - 1]]};
-})()
+// The distribution chart's container and heading, read once the monthly views
+// are built (checked at the end of this qual).
+const distView = JSON.parse(JSON.stringify(vm.runInContext(`
+(() => ({
+  distHtml: document.getElementById("chart-distributions").innerHTML,
+  distHeading: document.getElementById("dist-heading").textContent,
+  metricLabel: selectedMonthMetric().label,
+  window: [activeSeries.months[0], activeSeries.months[activeSeries.months.length - 1]],
+}))()
 `, ctx)));
-
-assert.ok(
-  flips.out.Waymo !== null &&
-    Number(flips.out.Waymo.mult) > 1 && Number.isFinite(Number(flips.out.Waymo.mult)) &&
-    flips.out.Waymo.flipped === "ambiguous",
-  `Replicata: compute the faultfrac flip multiplier for Waymo's at-fault verdict.
-Expectata: a finite multiplier > 1 at which "robustly safer" degrades to "ambiguous".
-Resultata: flip was ${JSON.stringify(flips.out.Waymo)}.`,
-);
-
-// Tesla: 8.55 judged at-fault incidents out of 23 (2026-09-26 data; 6.65 of
-// 24 when written). Even with every one of the 23 at fault (s = 2.69) the
-// verdict stays ambiguous, so the flip is unreachable: the multiplier must be
-// Infinity, not the 5.85x (39 at-fault incidents out of 24) the uncapped
-// search reported until 2026-09-04.
-assert.ok(
-  flips.out.Tesla !== null && flips.out.Tesla.mult === "Infinity" && flips.out.Tesla.flipped === null &&
-    flips.out.Tesla.sMax < 10,
-  `Replicata: compute the faultfrac flip multiplier for Tesla's at-fault verdict with the incident-count cap.
-Expectata: unreachable — mult Infinity, flipped null, because every Tesla incident at fault (s = incidents / k) leaves the verdict ambiguous.
-Resultata: flip was ${JSON.stringify(flips.out.Tesla)}.`,
-);
-assert.ok(
-  Number(flips.out.Waymo.mult) < flips.out.Waymo.sMax,
-  `Replicata: compare Waymo's flip multiplier to its cap (incidents / judged at-fault mass).
-Expectata: the flip is feasible (multiplier below the cap), so a finite value is reported.
-Resultata: flip was ${JSON.stringify(flips.out.Waymo)}.`,
-);
 
 // --- The shared shift toward 1 (decision #3 of the 2026-10-04 audit) ------
 // faultFlipMultiplier moves every incident's fault probability toward 1 by
@@ -429,39 +333,57 @@ assert.ok(shift !== null && shift.length >= 12 && shift.every(r => r.t0 && r.t1 
 Expectata: at t = 0 exactly the displayed estimate's mixture components; at t = 1 exactly the components of the metric the fault fractions are taken over (All incidents, Injury), on the same VMT band, so the shifted posterior there is that metric's.
 Resultata: ${shift === null ? "crashla.js defines no shiftedFaultComponents" : JSON.stringify(shift.filter(r => !(r.t0 && r.t1 && r.band)).slice(0, 4)) + ` (${shift.length} estimates checked)`}.`);
 
-// The default window's fault-flip table (what the page shows on load), at the
-// fault values and VMT of 2026-10-31 (NHTSA's Oct-15-2026 release): Zoox's
-// multiplier is finite, the verdict it reaches is its All-incidents verdict
-// (robustly worse), as at the cap (t = 1); Waymo's "robustly safer" lasts to
-// 4.45x (4.3x on the old scaling, two figures); Tesla's and its no-monitor
-// line's verdicts stay ambiguous at the cap, as their All-incidents ones do.
-// Like the knife-edge pins above, these values move with the data: re-pin
-// them when a release or a VMT or fault re-pin moves them.
-const defaultFlips = JSON.parse(JSON.stringify(vm.runInContext(`
+// --- The fault-flip search on live data: a relation, not pins ---------------
+// Faultfrac sensitivity: the smallest multiplier on the judged at-fault mass
+// that changes the verdict. Until 2026-11-17 this qual pinned Waymo's and
+// Tesla's flips and the default window's table (WANT_DEFAULT_FLIPS: "4.45x",
+// "18.3x", "∞", the verdicts reached and each All-incidents verdict), all
+// copied from the page's output and re-pinned as the data moved. More judged
+// fault can only move a verdict toward worse, and at the cap, every incident
+// at fault, the posterior is the universe metric's (the shared shift, above).
+// So for every line with an at-fault or at-fault-injury estimate, in both
+// windows:
+//   - no judged mass (k = 0): no entry;
+//   - else the flip is finite exactly when the verdict at the cap (the
+//     universe metric's CI against this metric's human band) lies further
+//     toward worse than the displayed one; a finite multiplier lies above 1
+//     and at or below the cap (incidents over judged mass), and reaches the
+//     next verdict toward worse; an infinite one reaches none.
+// The table's printed cells are checked against the search below
+// (sanity-fault-flip).
+const RANK = { safer: 0, ambiguous: 1, worse: 2 };
+const flipRows = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
   const full = monthSeriesData();
-  const rows = monthlySummaryRows(sliceSeries(full, full.months.indexOf(DEFAULT_START_MONTH), full.months.length - 1))
-    .filter(r => r.vmtBest > 0 && r.mpiEstimates.atfault !== null);
-  return Object.fromEntries(rows.map(row => {
-    const stress = helmerHumanStress(row, "atfault");
-    const flip = faultFlipMultiplier(stress.av, stress.human, row.incTotal);
-    return [row.helmer, {mult: flip === null ? null : flip.mult === Infinity ? "∞" : fmtRatio(flip.mult) + "x",
-      flipped: flip && flip.flipped, all: helmerHumanStress(row, "all").verdictKey}];
-  }));
+  const out = [];
+  for (const [name, first] of [["default", full.months.indexOf(DEFAULT_START_MONTH)], ["full", 0]]) {
+    for (const row of monthlySummaryRows(sliceSeries(full, first, full.months.length - 1)).filter(r => r.vmtBest > 0)) {
+      for (const [key, universe, n] of [["atfault", "all", row.incTotal], ["atfaultInjury", "injury", row.incInjury]]) {
+        if (row.mpiEstimates[key] === null) continue;
+        const s = helmerHumanStress(row, key), whole = row.mpiEstimates[universe];
+        const flip = faultFlipMultiplier(s.av, s.human, n);
+        out.push({window: name, helmer: row.helmer, key, k: s.av.k, n, shown: s.verdictKey,
+          atCap: stressVerdictKey(whole.lo, whole.hi, s.human),
+          flip: flip === null ? null : {mult: String(flip.mult), flipped: flip.flipped}});
+      }
+    }
+  }
+  return out;
 })()
 `, ctx)));
-const WANT_DEFAULT_FLIPS = {
-  Tesla: {mult: "∞", flipped: null, all: "ambiguous"},
-  TeslaNoMonitor: {mult: "∞", flipped: null, all: "ambiguous"},
-  Waymo: {mult: "4.45x", flipped: "ambiguous", all: "ambiguous"},
-  // Zoox 18.1x -> 18.3x on 2026-11-03: one smooth path through its four
-  // statements (open question 29) adds 10,000 miles to the window
-  Zoox: {mult: "18.3x", flipped: "worse", all: "worse"},
-};
-assert.deepEqual(defaultFlips, WANT_DEFAULT_FLIPS,
-  `Replicata: compute the default window's fault-flip multipliers (faultFlipMultiplier, printed by fmtRatio) and each company's All-incidents verdict.
-Expectata: ${JSON.stringify(WANT_DEFAULT_FLIPS)}: Zoox's multiplier finite and its verdict after the flip its All-incidents verdict.
-Resultata: ${JSON.stringify(defaultFlips)}.`);
+const flipProblems = flipRows.flatMap(r => {
+  const where = `${r.window} ${r.helmer} ${r.key} (judged mass ${r.k} of ${r.n} incidents, shown ${r.shown}, at the cap ${r.atCap})`;
+  if (r.k === 0) return r.flip === null ? [] : [`${where}: an entry, ${JSON.stringify(r.flip)}, with no judged mass`];
+  if (r.flip === null) return [`${where}: no entry`];
+  const finite = r.flip.mult !== "Infinity", mult = Number(r.flip.mult);
+  const ok = finite === (RANK[r.atCap] > RANK[r.shown]) &&
+    (finite ? mult > 1 && mult <= r.n / r.k * (1 + 1e-9) && RANK[r.flip.flipped] === RANK[r.shown] + 1 : r.flip.flipped === null);
+  return ok ? [] : [`${where}: ${JSON.stringify(r.flip)}`];
+});
+assert.ok(flipRows.length >= 2 * estimates.companies.length && flipProblems.length === 0,
+  `Replicata: run faultFlipMultiplier for every line's at-fault and at-fault-injury estimate, in the default window and over the full history (${flipRows.length} estimates).
+Expectata: at least an at-fault estimate for each company in each window; no entry where there is no judged mass; else a finite multiplier exactly when the verdict at the cap (every incident at fault: the universe metric's CI against this metric's human band) lies further toward worse than the one shown, above 1 and at or below the cap (incidents over judged mass), reaching the next verdict toward worse; an infinite multiplier otherwise, reaching none.
+Resultata: ${flipProblems.length} problems: ${flipProblems.slice(0, 6).join("; ")}.`);
 
 // The k=0 branch: with no judged at-fault mass the multiplier s (the shifted
 // mass over the judged mass) has no value, and the search reports null, as
@@ -479,17 +401,6 @@ assert.equal(
 Expectata: null — scaling zero mass can never change the verdict.
 Resultata: flip was ${JSON.stringify(zeroMassFlip)}.`,
 );
-
-// Every helmer with VMT yields a usable flip entry (non-null once it has any
-// judged mass); guards against the table silently dropping a row.
-for (const helmer of ["Tesla", "Waymo", "Zoox"]) {
-  assert.ok(
-    flips.out[helmer] !== null && flips.out[helmer] !== undefined,
-    `Replicata: read the faultfrac flip entry for ${helmer}.
-Expectata: a non-null flip entry (all three helmers now have judged at-fault mass > 0).
-Resultata: entry was ${JSON.stringify(flips.out[helmer])}.`,
-  );
-}
 
 // The faultfrac sensitivity table (id sanity-fault-flip) renders in the same
 // section as the stress table, a row per helmer with an at-fault estimate,
@@ -536,16 +447,16 @@ Resultata: ${at < 0 ? "no table with id sanity-fault-flip" : `same section ${sam
 // this also banned the old title suffixes' words ("Aggregated", "Trailing")
 // and found the window in the heading by its words ("using data from").
 {
-  const months = flips.distHeading.match(/\d{4}-\d{2}/g) || [];
+  const months = distView.distHeading.match(/\d{4}-\d{2}/g) || [];
   assert.ok(
-    (flips.distHtml.match(/<svg[\s>]/g) || []).length === 1 &&
-      !/<h3[\s>]/.test(flips.distHtml) &&
-      !flips.distHtml.includes("dist-note") &&
-      flips.distHeading.includes(flips.metricLabel) &&
-      JSON.stringify(months) === JSON.stringify(flips.window),
+    (distView.distHtml.match(/<svg[\s>]/g) || []).length === 1 &&
+      !/<h3[\s>]/.test(distView.distHtml) &&
+      !distView.distHtml.includes("dist-note") &&
+      distView.distHeading.includes(distView.metricLabel) &&
+      JSON.stringify(months) === JSON.stringify(distView.window),
     `Replicata: build monthly views and inspect the chart-distributions container and #dist-heading.
-Expectata: one chart body (one <svg>) with no in-body <h3>/note; the section header names the metric (${JSON.stringify(flips.metricLabel)}) and the window's months ${JSON.stringify(flips.window)}.
-Resultata: heading ${JSON.stringify(flips.distHeading)}; body head ${JSON.stringify(flips.distHtml.slice(0, 120))}.`,
+Expectata: one chart body (one <svg>) with no in-body <h3>/note; the section header names the metric (${JSON.stringify(distView.metricLabel)}) and the window's months ${JSON.stringify(distView.window)}.
+Resultata: heading ${JSON.stringify(distView.distHeading)}; body head ${JSON.stringify(distView.distHtml.slice(0, 120))}.`,
   );
 }
 
@@ -609,4 +520,4 @@ Expectata: it throws (the CI does not belong to the estimate: the search's own v
 Resultata: ${JSON.stringify(near.corruptErr)}.`);
 }
 
-console.log("qual pass: skeptical stress test classifies headline safety claims");
+console.log(`qual pass: the stress test's ${estimates.out.length} estimates (two windows) each follow from their 95% CI and human band and lie in the sanity ranges (no verdict is required of any company); ${flipRows.length} fault-flip searches agree with the verdict at the cap; the stress and fault-flip tables show what the page computes`);

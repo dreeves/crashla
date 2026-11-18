@@ -6,17 +6,23 @@
 // site, "[data/README.md, Zoox anchors](data/#zoox-anchors)": GitHub Pages
 // renders data/README.md at data/, each heading with an id (headingAnchors
 // below). The human's choice of 2026-11-04, "ok, go with links", over prose
-// pointers that a qual had to guess at.
+// pointers that a qual had to guess at. Since 2026-11-17 a link's target may
+// also be a web page, "[https://robotaxitracker.com](https://robotaxitracker.com)"
+// (the human's "yes to linkifying the robotaxitracker thing": the site asks
+// for a clickable link beside its visible address); until then a link to
+// anything but a section of data/README.md stopped the page.
 import assert from "node:assert/strict";
 
 // Any markdown inline link: "[", a text without square brackets, "](", a
 // target without parentheses, ")". The text may be empty and the target any,
 // so vmt-rationale-text.qual can name a link of the wrong form.
 export const LINK = /\[([^\[\]]*)\]\(([^()]*)\)/g;
-// The form crashla.js draws as an a element: a text holding a character
-// other than a blank, and a target of data/# and an anchor of lowercase
-// letters, digits and hyphens.
-export const DATA_LINK = /\[(?=[^\[\]]*[^\[\]\s])([^\[\]]+)\]\((data\/#[a-z0-9-]+)\)/g;
+// The forms crashla.js draws as an a element: a text holding a character
+// other than a blank, and a target that is a section of data/README.md on the
+// site (data/# and an anchor of lowercase letters, digits and hyphens) or a
+// web page (https:// and an address holding no blank, parenthesis, square or
+// angle bracket, or quote).
+export const DRAWN_LINK = /\[(?=[^\[\]]*[^\[\]\s])([^\[\]]+)\]\((data\/#[a-z0-9-]+|https:\/\/[^\s()\[\]<>"']+)\)/g;
 // A target "data/#" in a rationale's text outside its links (each read as a
 // blank, so a target right after a link is one), which crashla.js takes for a
 // link left open: one not inside a longer path or address (not right after a
@@ -38,13 +44,14 @@ export const escText = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").repla
 
 // The VMT sources table's markup for a rationale: its text escaped, each
 // link an a element whose only attribute is its target (as every other link
-// in the sanity section has only its href) and whose content is its text,
-// escaped. Built by walking the links, apart from crashla.js's rationaleHtml,
-// which replaces them in the escaped text.
+// in the sanity section has only its href), escaped as the text is (a web
+// address's "&" is "&amp;" in an attribute too), and whose content is its
+// text, escaped. Built by walking the links, apart from crashla.js's
+// rationaleHtml, which replaces them in the escaped text.
 export function rationaleMarkup(rationale) {
   let html = "", at = 0;
-  for (const m of rationale.matchAll(DATA_LINK)) {
-    html += escText(rationale.slice(at, m.index)) + `<a href="${m[2]}">${escText(m[1])}</a>`;
+  for (const m of rationale.matchAll(DRAWN_LINK)) {
+    html += escText(rationale.slice(at, m.index)) + `<a href="${escText(m[2])}">${escText(m[1])}</a>`;
     at = m.index + m[0].length;
   }
   return html + escText(rationale.slice(at));

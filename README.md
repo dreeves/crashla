@@ -1,6 +1,7 @@
 Next Tasks:
 
 * [DAT] CPUC's Q3 numbers (expected around Nov 10–18) and NHTSA's release around Nov 16
+* [HOV] There's some inconsistency with the tooltips in the incident browser. It seems to behave differently when the fault is zero and there's no colored swatch. Maybe the colored swatch shouldn't try to vary its width.
 * [SLI] Slider to parametrize the forecast date in the forecast section at the bottom (Q17 in AGENTS.md)
 * [SAN] Sanity check: check for discrepancies between teslapologetics here and the following by Philip Koopman:
 https://users.ece.cmu.edu/~koopman/lectures/L131_Safe_Enough.pdf

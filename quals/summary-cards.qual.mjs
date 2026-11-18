@@ -1,13 +1,13 @@
 // The summary cards ("Sources and raw numbers"): what each card line says
 // and how it is marked. Added 2026-10-03 for the 2026-10-02 audit findings:
-//   #6  the line under Effective VMT is the All-incidents stress verdict,
+//   #6  the line under Effective VMT was the All-incidents stress verdict,
 //       headed by CARD_STRESS_LABEL (it read "Overall:", beside a Waymo card
-//       that is robustly safer on 7 of 10 metrics; until 2026-10-29 this qual
-//       also banned that word);
+//       that is robustly safer on 7 of 10 metrics). Since 2026-11-17 a card
+//       has no stress line (below);
 //   #16 a multiplier resting on zero incidents (k = 0) carries the prior-only
 //       marking its stress badge carries (faded, the prior-only tip), not a
-//       safer/worse colour (Tesla's fatality "0.1x" was solid red);
-//   #55 one multiplier format, its colour read off the value shown ("0.0x",
+//       safer/worse color (Tesla's fatality "0.1x" was solid red);
+//   #55 one multiplier format, its color read off the figures shown ("0.0x",
 //       "10.0x", and a 0.996 printed "1.0x" in the worse red): since
 //       2026-10-31 exactly three significant figures, en-US grouping (decision
 //       #2 of the 2026-10-04 audit; two below 10 and whole numbers from 10
@@ -15,6 +15,20 @@
 //   #56 a fault-mass count is the exact sum of its 0.05-grid fault values
 //       (Waymo's 93.25 displayed as 93.2, from a float sum of 93.24999...);
 //   #67 the cards of unchecked helmers stay rendered but grayed.
+// Since 2026-11-17, the human's layout ("Injury: 155 incidents → 1,660,192 MPI
+// (6.00x)" over "95% CI: 1,387,848 – 2,010,475 (3.15x – 11.5x)", the
+// comparison line "Multipliers are vs. Humans (AV cities)", then "ok, build
+// it"): a metric line prints its multiplier in parentheses after the MPI and
+// the multiplier's 95% interval in parentheses after the MPI's 95% CI, both
+// multiplierInterval's (its median, and its 2.5% and 97.5% quantiles; their
+// numbers are multiplier-interval.qual's); the multiplier is colored by that
+// interval as printed: safer when its low end is above 1x, worse when its
+// high end is below 1x, else uncolored (until then by its value alone, safer
+// from 1x up); the card has no stress line (the line's 95% CI over the human
+// band's ends, which stays in the sensitivity table, stress-test.qual); the
+// Effective VMT's range is a line of its own under it (it sat in parentheses
+// beside it); and the section names, before the cards, the human line the
+// multipliers divide by.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
@@ -71,18 +85,20 @@ const estimates = ([a, b]) => run(`(() => {
     for (const m of METRIC_DEFS) {
       const est = row.mpiEstimates[m.key];
       const ref = m.humanMPI && m.humanMPI.HumansAV;
-      out[row.helmer][m.key] = est && ref ? {k: est.k, mult: est.postMedian / Math.sqrt(ref.lo * ref.hi)} : null;
+      // null until the app defines multiplierInterval, so the red run reports every check
+      out[row.helmer][m.key] = est && ref ? {k: est.k, mult: typeof multiplierInterval === "function" ? multiplierInterval(est, ref) : null} : null;
     }
-    const stress = helmerHumanStress(row, "all");
-    out[row.helmer].stressAll = {ratioLo: stress.ratioLo, ratioHi: stress.ratioHi};
+    out[row.helmer].vmt = {min: fmtWhole(row.vmtMin), best: fmtWhole(row.vmtBest), max: fmtWhole(row.vmtMax)};
   }
   return out;
 })()`);
 
-// One card per helmer: its container class, the stress line, and per metric
-// line its incident count text and multiplier span. A count that carries its
-// metric's note (the fatality count, since 2026-10-31: fatality-count-note
-// .qual) is its tooltip's span, whose text is the count.
+// One card per helmer: its container class, whether it has a stress line, its
+// Effective VMT element's lines, and per metric line its incident count text,
+// its multiplier span (the one in parentheses after the MPI) and the text of
+// its 95% CI line. A count that carries its metric's note (the fatality count,
+// since 2026-10-31: fatality-count-note.qual) is its tooltip's span, whose
+// text is the count.
 function parseCards(html) {
   const cards = {};
   for (const piece of html.split(/(?=<div class="mpi-card(?: [^"]*)?" style=)/).filter(p => p.startsWith('<div class="mpi-card'))) {
@@ -95,12 +111,21 @@ function parseCards(html) {
 Expectata: one on every card.
 Resultata: none on ${JSON.stringify(piece.slice(0, 300))}.`);
     const name = nameMatch[1];
-    const stress = (/<div class="mpi-card-stress">([\s\S]*?)<\/div>/.exec(piece) || [])[1] ?? null;
+    const stress = piece.includes("mpi-card-stress");
+    const vmtBody = (/<div class="mpi-card-vmt"[^>]*>([\s\S]*?)<\/div>/.exec(piece) || [])[1] ?? null;
+    const vmtLines = vmtBody === null ? null : vmtBody.split(/<br\s*\/?>/);
+    // A metric's two lines (neither holds a div): the first's text before its
+    // MPI span, after the label, is the count; the multiplier is the span in
+    // parentheses; the second's text, its tags dropped, is the CI line.
     const lines = {};
-    for (const m of piece.matchAll(/<div class="mpi-card-metric[^"]*" data-metric="([^"]+)">\s*<div>[^:]*: (?:<span [^>]*>([^<]*)<\/span>)?([^<]*?)<span class="mpi-card-mpi">[^<]*<\/span>(?:\s*<span class="mpi-card-mult([^"]*)"([^>]*)>([^<]*)((?:<span class="visually-hidden">[^<]*<\/span>)?)<\/span>)?/g)) {
-      lines[m[1]] = { kText: (m[2] ?? "") + m[3], multClass: m[4] ?? null, multAttrs: m[5] ?? null, multText: m[6] ?? null, multHidden: m[7] ?? "" };
+    const text = html => html.replace(/<[^>]*>/g, "");
+    for (const m of piece.matchAll(/<div class="mpi-card-metric[^"]*" data-metric="([^"]+)">\s*<div>([\s\S]*?)<\/div>\s*<div class="mpi-card-ci">([\s\S]*?)<\/div>/g)) {
+      const [, key, first, ci] = m;
+      const mult = /\(<span class="mpi-card-mult([^"]*)"([^>]*)>([^<]*)((?:<span class="visually-hidden">[^<]*<\/span>)?)<\/span>\)/.exec(first);
+      lines[key] = { kText: text(first.split('<span class="mpi-card-mpi">')[0]).replace(/^[^:]*: /, ""),
+        multClass: mult ? mult[1] : null, multAttrs: mult ? mult[2] : null, multText: mult ? mult[3] : null, multHidden: mult ? mult[4] : "", ciText: text(ci) };
     }
-    cards[name] = { cls, stress, lines };
+    cards[name] = { cls, stress, vmtLines, lines };
   }
   return cards;
 }
@@ -133,30 +158,34 @@ function exactFaultText(helmer, [a, b], injuryOnly) {
   return tenths % 10 === 0 ? (tenths / 10).toLocaleString("en-US") : `${Math.floor(tenths / 10).toLocaleString("en-US")}.${tenths % 10}`;
 }
 
-const problems = { label: [], priorOnly: [], format: [], colour: [], faultCount: [], unchecked: [] };
-// null until the app defines the label (so the red run reports every check).
-const CARD_STRESS_LABEL = run("typeof CARD_STRESS_LABEL === 'undefined' ? null : CARD_STRESS_LABEL");
+const problems = { stress: [], vmt: [], priorOnly: [], format: [], color: [], faultCount: [], note: [], unchecked: [] };
+// The figures of a piece of card markup, as printed (en-US grouping).
+const figures = s => s.replace(/<[^>]*>/g, "").match(/\d[\d,]*(?:\.\d+)?/g) ?? [];
 for (const [wname, win] of Object.entries(WINDOWS)) {
   const cards = parseCards(cardsHtml(win));
   const ests = estimates(win);
   assert.deepEqual(Object.keys(cards), Object.values(labels), `${wname}: every helmer has a card`);
+  // #6, since 2026-11-17: no card has a stress line.
+  for (const [name, card] of Object.entries(cards)) if (card.stress) problems.stress.push(`${wname} ${name}: a stress line (mpi-card-stress)`);
   for (const [helmer, byMetric] of Object.entries(ests)) {
     const card = cards[labels[helmer]];
-    // #6: the line is headed CARD_STRESS_LABEL and gives the All-incidents
-    // range.
-    const r = byMetric.stressAll;
-    if (card.stress === null || CARD_STRESS_LABEL === null ||
-        !card.stress.startsWith(CARD_STRESS_LABEL + " ") ||
-        !card.stress.endsWith(`${expectMultText(r.ratioLo)}x – ${expectMultText(r.ratioHi)}x`)) {
-      const shown = card.stress && card.stress.replace(/<span class="visually-hidden">[^<]*<\/span>/g, "").replace(/<[^>]*>/g, "");
-      problems.label.push(`${wname} ${helmer}: ${JSON.stringify(shown)} (CARD_STRESS_LABEL ${JSON.stringify(CARD_STRESS_LABEL)}; want the All-incidents range ${expectMultText(r.ratioLo)}x – ${expectMultText(r.ratioHi)}x)`);
-    }
+    // The Effective VMT element: its value alone on its first line, and its
+    // range (when the band has width) alone on a second.
+    const v = byMetric.vmt;
+    const wantVmt = v.min === v.best && v.max === v.best ? [[v.best]] : [[v.best], [v.min, v.max]];
+    const gotVmt = card.vmtLines === null ? null : card.vmtLines.map(figures);
+    if (JSON.stringify(gotVmt) !== JSON.stringify(wantVmt)) problems.vmt.push(`${wname} ${helmer}: lines' figures ${JSON.stringify(gotVmt)}, want ${JSON.stringify(wantVmt)}`);
     for (const [key, e] of Object.entries(byMetric)) {
-      if (key === "stressAll" || e === null) continue;
+      if (key === "vmt" || e === null) continue;
       const line = card.lines[key];
       const where = `${wname} ${helmer} ${key}`;
-      assert.ok(line && line.multText !== null, `${where}: the card line and its multiplier render`);
-      if (line.multText !== expectMultText(e.mult) + "x") problems.format.push(`${where}: ${JSON.stringify(line.multText)} for ${e.mult} (want ${JSON.stringify(expectMultText(e.mult) + "x")})`);
+      assert.ok(line && line.multText !== null, `${where}: the card line and its multiplier (in parentheses after the MPI) render`);
+      if (e.mult === null) { problems.format.push(`${where}: no multiplierInterval in crashla.js`); continue; }
+      if (line.multText !== expectMultText(e.mult.median) + "x") problems.format.push(`${where}: ${JSON.stringify(line.multText)} for a median of ${e.mult.median} (want ${JSON.stringify(expectMultText(e.mult.median) + "x")})`);
+      // The 95% CI line ends with the multiplier's interval in parentheses: its two figures.
+      const range = /\(([^()]*)\)\s*$/.exec(line.ciText);
+      const wantRange = [expectMultText(e.mult.lo), expectMultText(e.mult.hi)];
+      if (range === null || JSON.stringify(figures(range[1])) !== JSON.stringify(wantRange)) problems.format.push(`${where}: CI line ${JSON.stringify(line.ciText)}, want the multiplier's interval ${JSON.stringify(wantRange)} in parentheses at its end`);
       if (e.k === 0) {
         // #16
         // Since 2026-10-04 (audit #63) the multiplier is an image named by
@@ -167,8 +196,8 @@ for (const [wname, win] of Object.entries(WINDOWS)) {
           problems.priorOnly.push(`${where} (k = 0): class ${JSON.stringify(line.multClass)}, attrs ${JSON.stringify(line.multAttrs.slice(0, 90))}, hidden ${JSON.stringify(line.multHidden.slice(0, 40))}`);
         }
       } else {
-        const want = shownMult(e.mult) >= 1 ? "safer" : "worse";
-        if (line.multClass.trim() !== want || line.multAttrs.includes("data-tip")) problems.colour.push(`${where}: ${JSON.stringify(line.multText)} has class ${JSON.stringify(line.multClass.trim())}, want ${want}`);
+        const want = shownMult(e.mult.lo) > 1 ? "safer" : shownMult(e.mult.hi) < 1 ? "worse" : "";
+        if (line.multClass.trim() !== want || line.multAttrs.includes("data-tip")) problems.color.push(`${where}: ${JSON.stringify(line.multText)} (interval ${expectMultText(e.mult.lo)}x to ${expectMultText(e.mult.hi)}x) has class ${JSON.stringify(line.multClass.trim())}, want ${JSON.stringify(want)}`);
       }
     }
     // #56: fault-mass counts, the figure that opens the line's count text
@@ -199,19 +228,23 @@ const css = fs.readFileSync("style.css", "utf8");
 const graying = /\.mpi-card\.unchecked\s*\{[^}]*opacity:\s*0?\.\d+/.test(css);
 if (!graying) problems.unchecked.push("style.css: no .mpi-card.unchecked rule with an opacity below 1");
 
-// The label's words are the human's (CARD_STRESS_LABEL, committed 2026-10-04
-// in b068a10) and were pinned to the character here until 2026-10-28, when
-// the human dropped such pins (one went red on each of the human's edits and
-// caught no agent's; the human reviews every diff). The stress lines above
-// must start with CARD_STRESS_LABEL, whatever it reads; its ban on the word
-// "Overall:" (audit 2026-10-02: the line is the All-incidents verdict, not an
-// overall one) was dropped on 2026-10-29, the line's All-incidents range
-// still checked.
+// The comparison the multipliers make, stated once before the cards: a
+// paragraph of the "Sources and raw numbers" section (sec-summary), ahead of
+// the cards' container, names the human line they divide by (its label,
+// helmerLabel, read from the app). The sentence itself is the human's.
+const indexHtml = fs.readFileSync("index.html", "utf8");
+const summarySection = /<section[^>]*\bid="sec-summary"[^>]*>([\s\S]*?)<\/section>/.exec(indexHtml);
+assert.ok(summarySection !== null && summarySection[1].includes('<div id="mpi-summary-cards"'),
+  `Replicata: find index.html's sec-summary section and the cards' container in it.
+Expectata: both.
+Resultata: section ${summarySection === null ? "missing" : "found, without the cards' container"}.`);
+const notesBefore = [...summarySection[1].split('<div id="mpi-summary-cards"')[0].matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map(m => m[1].replace(/<[^>]*>/g, ""));
+if (!notesBefore.some(t => t.includes(labels.HumansAV))) problems.note.push(`paragraphs before the cards: ${JSON.stringify(notesBefore)}; none names ${JSON.stringify(labels.HumansAV)}`);
 
 const failing = Object.fromEntries(Object.entries(problems).filter(([, v]) => v.length > 0).map(([k, v]) => [k, v.slice(0, 12).concat(v.length > 12 ? [`... ${v.length - 12} more`] : [])]));
 assert.deepEqual(failing, {},
-  `Replicata: render the summary cards for the default window, full history, the last 3 months, the last month, 2025-06..2025-11, 2024-01..2025-12 and 2021-07..2025-05 (and the default window with the default, no and all helmers checked), and read each card's stress line, each metric line's incident count and multiplier, and each card's class.
-Expectata: (label) the stress line is headed CARD_STRESS_LABEL, and shows the All-incidents AV/human ratio range; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse colour, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier reads exactly three significant figures with en-US grouping; (colour) a k > 0 multiplier is "safer" exactly when the value shown is at least 1; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
+  `Replicata: render the summary cards for the default window, full history, the last 3 months, the last month, 2025-06..2025-11, 2024-01..2025-12 and 2021-07..2025-05 (and the default window with the default, no and all helmers checked), and read each card's lines, each metric line's incident count, multiplier and 95% CI line, each card's class, and index.html's sec-summary section.
+Expectata: (stress) no card has a stress line; (vmt) the Effective VMT element shows its value alone on one line and its range alone on the next; (priorOnly) a k = 0 multiplier has class prior-only, no safer/worse color, the prior-only tip as data-tip, is a Tab stop, and is an image (role img) named by its text and the tip, with no hidden copy of the tip; (format) every multiplier is multiplierInterval's median and its 95% CI line ends with that interval's two ends in parentheses, each figure exactly three significant figures with en-US grouping; (color) a k > 0 multiplier is "safer" when its interval's low end as printed is above 1, "worse" when its high end as printed is below 1, and uncolored otherwise; (faultCount) the at-fault and at-fault-injury counts are the exact 0.05-grid sums rounded half up to one decimal; (note) a paragraph before the cards names ${JSON.stringify(labels.HumansAV)}, the line the multipliers divide by; (unchecked) every card renders, and exactly the unchecked helmers' cards carry the class unchecked, which style.css grays.
 Resultata: ${JSON.stringify(failing, null, 1)}.`);
 
-console.log(`qual pass: summary cards over ${Object.keys(WINDOWS).length} windows name the All-incidents verdict, mark k = 0 multipliers prior-only, format multipliers to three significant figures and colour them by the value shown, show exact fault-mass counts, and gray unchecked helmers`);
+console.log(`qual pass: summary cards over ${Object.keys(WINDOWS).length} windows carry no stress line, show Effective VMT over its range, mark k = 0 multipliers prior-only, print each multiplier and its 95% interval to three significant figures and color it by that interval, show exact fault-mass counts, gray unchecked helmers, and the section names the multipliers' human line`);

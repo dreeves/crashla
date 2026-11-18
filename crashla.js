@@ -85,6 +85,14 @@ function gammainc(a, x, lga = lgamma(a)) {
   return 1 - q;
 }
 
+// The standard normal CDF, by the regularized incomplete gamma function:
+// Φ(x) = (1 + sign(x) P(1/2, x²/2)) / 2. Below about x = -8, where Φ is under
+// 1e-16, the subtraction leaves 0 (an absolute error under 1e-16).
+const LGAMMA_HALF = lgamma(0.5);
+function normalCdf(x) {
+  return 0.5 + 0.5 * Math.sign(x) * gammainc(0.5, x * x / 2, LGAMMA_HALF);
+}
+
 // Gamma quantile: find x such that P(a, x*b) = p, where Gamma(a, b) has rate b
 // Returns x (the quantile of Gamma(shape=a, rate=b))
 // Normal quantile approximation (Abramowitz & Stegun 26.2.23)
@@ -193,7 +201,13 @@ function mixtureComponents(k, fracs) {
 // quantile-finding. The fault-flip search uses this same CDF (it forced a
 // 13-node one until 2026-10-03). Accuracy: see vmtPriorNodes.
 function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax) {
-  const prior = vmtPriorNodes(vmtMin, vmtBest, vmtMax, comps[comps.length - 1].a);
+  return marginalCdfOver(comps, vmtPriorNodes(vmtMin, vmtBest, vmtMax, comps[comps.length - 1].a));
+}
+// The marginal CDF's integral on given prior nodes {lnv, v, w}: the VMT
+// prior's (makeMarginalMpiCdf), or VMT over the human MPI's for the summary
+// cards' multipliers (ratioPriorNodes, multiplierInterval). Until 2026-11-17
+// the body of makeMarginalMpiCdf.
+function marginalCdfOver(comps, prior) {
   const a0 = comps[0].a;
   const lg0 = lgamma(a0);      // for the density recurrence base and gammainc
   const lg1 = lgamma(a0 + 1);  // for the CDF recurrence base
@@ -240,8 +254,14 @@ function makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax) {
 function makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax) {
   const cdf = makeMarginalMpiCdf(comps, vmtMin, vmtBest, vmtMax);
   const {sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
-  const vLo = vmtBest * Math.exp(-VMT_MARGIN_SIGMAS * sigmaLo);
-  const vHi = vmtBest * Math.exp(VMT_MARGIN_SIGMAS * sigmaHi);
+  return marginalQuantOver(comps, cdf, vmtBest * Math.exp(-VMT_MARGIN_SIGMAS * sigmaLo), vmtBest,
+    vmtBest * Math.exp(VMT_MARGIN_SIGMAS * sigmaHi));
+}
+// The quantile solver on a built CDF (marginalCdfOver) whose prior nodes span
+// vLo to vHi about a center vMid: the VMT prior's (makeMarginalMpiQuant) or
+// VMT over the human MPI's (multiplierInterval). Until 2026-11-17 the body of
+// makeMarginalMpiQuant, with vmtBest for vMid.
+function marginalQuantOver(comps, cdf, vLo, vMid, vHi) {
   const aLo = comps[0].a, aHi = comps[comps.length - 1].a;
   const aMean = comps.reduce((s, c) => s + c.w * c.a, 0);
   return p => {
@@ -257,7 +277,7 @@ function makeMarginalMpiQuant(comps, vmtMin, vmtBest, vmtMax) {
     let xHi = 2 / approxGammaQuant(aLo, vHi, 1 - p);
     for (let g = 0; g < 8 && cdf(xLo) > p; g++) xLo /= 8;
     for (let g = 0; g < 8 && cdf(xHi) < p; g++) xHi *= 8;
-    let x = Math.min(Math.max(1 / approxGammaQuant(aMean, vmtBest, 1 - p), xLo), xHi);
+    let x = Math.min(Math.max(1 / approxGammaQuant(aMean, vMid, 1 - p), xLo), xHi);
     for (let i = 0; i < 40; i++) {
       const {cdf: F, dens} = cdf.evalBoth(x);
       const err = F - p;
@@ -403,6 +423,15 @@ const VMT_PRIOR_LNV_STEP = 0.25;   // ln(VMT) steps of at most this / sqrt(aMax)
 function vmtPriorNodes(vmtMin, vmtBest, vmtMax, aMax) {
   const {mu, sigmaLo, sigmaHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
   if (sigmaLo + sigmaHi === 0) return {lnv: [mu], v: [vmtBest], w: [1]};
+  return simpsonHalvesNodes(mu, sigmaLo, sigmaHi, aMax, z => Math.exp(-0.5 * z * z));
+}
+// The node rule of vmtPriorNodes, for any density over ln v with a center and
+// a sigma on each side: Simpson's rule in z on each half, out to
+// VMT_MARGIN_SIGMAS of that half's sigma, the panel counts as described
+// above. shape(z, sign, sigma) is the density at center + sign·sigma·z, up to
+// a constant factor (the weights are normalized). Until 2026-11-17 this was
+// vmtPriorNodes' own loop; ratioPriorNodes shares it since.
+function simpsonHalvesNodes(center, sigmaLo, sigmaHi, aMax, shape) {
   const lnv = [], w = [];
   for (const [sigma, sign] of [[sigmaLo, -1], [sigmaHi, 1]]) {
     const wanted = Math.ceil(VMT_MARGIN_SIGMAS * sigma * Math.sqrt(aMax) / VMT_PRIOR_LNV_STEP);
@@ -411,8 +440,8 @@ function vmtPriorNodes(vmtMin, vmtBest, vmtMax, aMax) {
     for (let j = 0; j <= panels; j++) {
       const z = j * dz;
       const simpson = j === 0 || j === panels ? 1 : j % 2 ? 4 : 2;
-      lnv.push(mu + sign * sigma * z);
-      w.push(simpson * sigma * dz * Math.exp(-0.5 * z * z));
+      lnv.push(center + sign * sigma * z);
+      w.push(simpson * sigma * dz * shape(z, sign, sigma));
     }
   }
   // A half of zero width (vmtMin = vmtBest, or vmtBest = vmtMax) carries no
@@ -423,6 +452,53 @@ function vmtPriorNodes(vmtMin, vmtBest, vmtMax, aMax) {
     lnv: lnv.filter((_, i) => keep[i]),
     v: lnv.filter((_, i) => keep[i]).map(u => Math.exp(u)),
     w: w.filter((_, i) => keep[i]).map(x => x / total),
+  };
+}
+
+// Nodes for the summary cards' multipliers (multiplierInterval). A
+// multiplier is R = (a line's MPI) / (the human MPI), the line's MPI being
+// VMT / G with G the rate posterior's gamma (Q(a_K, v / x) = P(MPI <= x | K,
+// VMT = v), as in makeMarginalMpiCdf), and the human MPI log-normal with the
+// metric's Humans (AV cities) band as its 95% interval (mean muH and sigma s
+// in ln, as the distribution chart draws the human curve), independent of
+// the line. So R = W / G with W = VMT / human MPI, and R's CDF is the
+// marginal MPI CDF's integral with W in place of VMT: these are nodes over ln
+// W. ln VMT is the two-piece normal of splitPriorSigmas (mode mu, sigmas sLo
+// and sHi), a mixture of two half-normals of masses pLo = sLo / (sLo + sHi)
+// and pHi = 1 - pLo; a half-normal less an independent normal is a skew
+// normal, so ln W's density at d, with u = mu - muH - d, rLo = hypot(sLo, s)
+// and rHi = hypot(sHi, s), is
+//   2 pLo / rLo φ(u / rLo) Φ(sLo u / (s rLo)) + 2 pHi / rHi φ(u / rHi) Φ(-sHi u / (s rHi))
+// (φ and Φ the standard normal density and CDF). Its tails are normal ones
+// of sigma rLo below mu - muH and rHi above, so the nodes are those of
+// simpsonHalvesNodes about mu - muH with those sigmas, their spacing set to
+// resolve the narrowest feature of the integrand: the gamma kernel's width in
+// ln, 1/sqrt(aMax) (the VMT prior's rule), or the density's own shoulder near
+// mu - muH, about s wide where the VMT band is lopsided (the Φ factors), so
+// aMax is raised to 1 / s² where that is larger. (Without the second, a
+// zero-incident line on a 0.8x-3x VMT band against the fatality band's s of
+// 0.06 missed the reference by 5e-4 in ln R; with it, by 6e-5, the upper
+// half at the VMT_PRIOR_MAX_PANELS cap; multiplier-interval.qual.) A VMT band of no width
+// (sLo = sHi = 0) makes both terms the human normal, whatever pLo is: the one
+// branch gives it 1/2. A human band of no width has no sigma: it stops here.
+// The nodes carry vLo, vMid and vHi, W at the lowest node, the center and the
+// highest node, for the quantile bracket (marginalQuantOver).
+function ratioPriorNodes(vmtMin, vmtBest, vmtMax, human, aMax) {
+  assert(human.lo > 0 && human.lo < human.hi, "ratioPriorNodes: the human band needs a width", {human});
+  const {mu, sigmaLo: sLo, sigmaHi: sHi} = splitPriorSigmas(vmtMin, vmtBest, vmtMax);
+  const muH = (Math.log(human.lo) + Math.log(human.hi)) / 2;
+  const s = (Math.log(human.hi) - Math.log(human.lo)) / (2 * 1.96);
+  const rLo = Math.hypot(sLo, s), rHi = Math.hypot(sHi, s), center = mu - muH;
+  const pLo = sLo + sHi > 0 ? sLo / (sLo + sHi) : 0.5;
+  const phi = t => Math.exp(-0.5 * t * t) / Math.sqrt(2 * Math.PI);
+  const density = d => {
+    const u = center - d;
+    return 2 * pLo / rLo * phi(u / rLo) * normalCdf(sLo * u / (s * rLo))
+      + 2 * (1 - pLo) / rHi * phi(u / rHi) * normalCdf(-sHi * u / (s * rHi));
+  };
+  return {
+    ...simpsonHalvesNodes(center, rLo, rHi, Math.max(aMax, 1 / (s * s)), (z, sign, r) => density(center + sign * r * z)),
+    vLo: Math.exp(center - VMT_MARGIN_SIGMAS * rLo), vMid: Math.exp(center), vHi: Math.exp(center + VMT_MARGIN_SIGMAS * rHi),
   };
 }
 
@@ -1273,13 +1349,6 @@ function stressBadge(meta, k) {
   const marks = priorOnlyMarks(k, meta.label);
   return `<span class="stress-badge ${meta.className}${marks.cls}"${marks.attrs}>${meta.label}</span>`;
 }
-// This label heads the summary
-// card's stress line, which is the verdict on the All incidents metric alone
-// (the AV's CI against the AV-cities band, as in the Sensitivity analysis),
-// not a summary over every metric. It read "Overall:" until 2026-10-03, so
-// the Waymo card said "Overall: ambiguous" while the Sensitivity analysis
-// called Waymo robustly safer on most metrics (audit #6).
-const CARD_STRESS_LABEL = "All incidents:";
 let selectedMetricKey = METRIC_DEFS.find(m => m.defaultEnabled).key;
 let vmtCumulative = false; // per-helmer VMT charts: false = monthly, true = cumulative
 let selectedGrowthMetric = "fleet"; // growth extrapolator metric: fleet | miles | rides
@@ -1464,8 +1533,13 @@ function csvUnquote(field) {
 // as vmt_min, or its code span) or a letter outside a-z (an accented word),
 // and a link to such a heading stops the page here (vmt-rationale-text.qual
 // checks each anchor against data/README.md's headings, and that the page
-// reads it).
-const RATIONALE_LINK = /\[(?=[^\[\]]*[^\[\]\s])([^\[\]]+)\]\((data\/#[a-z0-9-]+)\)/g;
+// reads it). Since 2026-11-17 a link's target may also be a web page,
+// "[<text>](https://<address>)", its address holding no blank, parenthesis,
+// square or angle bracket, or quote (the human's "yes to linkifying the
+// robotaxitracker thing": Robotaxi Tracker asks for a clickable link beside
+// its visible address, so those links' text is the address); until then a
+// link to anything but a section stopped the page.
+const RATIONALE_LINK = /\[(?=[^\[\]]*[^\[\]\s])([^\[\]]+)\]\((data\/#[a-z0-9-]+|https:\/\/[^\s()\[\]<>"']+)\)/g;
 
 // A VMT row's rationale, its CSV field unquoted, read where parseVmtCsv and
 // parseGhostVmtCsv read the rows, so a link of the wrong form stops the page
@@ -1484,7 +1558,7 @@ function vmtRationale(field, lineNo) {
   const rationale = csvUnquote(field);
   const rest = rationale.replace(RATIONALE_LINK, " ");
   assert(!rest.includes("]("),
-    "a rationale's \"](\" must open the target of a link [<text>](data/#<anchor>), its text holding a character other than a blank and no square bracket, its anchor lowercase letters, digits and hyphens",
+    "a rationale's \"](\" must open the target of a link, [<text>](data/#<anchor>) or [<text>](https://<address>), its text holding a character other than a blank and no square bracket, its anchor lowercase letters, digits and hyphens, its address without a blank, parenthesis, square or angle bracket, or quote",
     {lineNo, rationale});
   assert(!/(?:^|[^\w.\/:-])data\/#/.test(rest),
     "a rationale's link is left open: outside its links [<text>](data/#<anchor>), no target data/# may stand but inside a longer path or address",
@@ -1493,11 +1567,13 @@ function vmtRationale(field, lineNo) {
 }
 
 // A rationale as the VMT sources table shows it: its text escaped (escHtml),
-// each link an a element to its section of data/README.md on the site, its
-// href the only attribute, as the sanity section's other links have only
-// theirs (sourceLink). The links are replaced in the escaped text, which
-// escaping leaves as they were: the entities it writes hold no bracket or
-// parenthesis, and an anchor no character it changes.
+// each link an a element to its section of data/README.md on the site or to
+// its web page, its href the only attribute, as the sanity section's other
+// links have only theirs (sourceLink). The links are replaced in the escaped
+// text, which escaping leaves links: the entities it writes hold no bracket
+// or parenthesis, an anchor holds no character it changes, and of the
+// characters a web address may hold it changes only "&", to "&amp;", which
+// is how an href writes one (an address holds no "<", ">" or quote).
 function rationaleHtml(rationale) {
   return escHtml(rationale).replace(RATIONALE_LINK, "<a href=\"$2\">$1</a>");
 }
@@ -2127,10 +2203,25 @@ function estimateMpiWindow(k, fracs, vmtMin, vmtBest, vmtMax, massFrac = CI_MASS
   };
 }
 
+// A summary card's multiplier against a human band, with its 95% interval:
+// the median and the 2.5% and 97.5% quantiles (CI_MASS_DEFAULT_PCT) of R =
+// (the line's MPI) / (the human MPI), from an estimate (estimateMpiWindow's:
+// its mixture components and VMT band) and the band {lo, hi}, read as a
+// log-normal's 95% interval, independent of the line (ratioPriorNodes). Until
+// 2026-11-17 a card's multiplier was the line's median MPI over the band's
+// geometric middle, with no interval (Waymo's injuries: 6.00x, where R's
+// median is 6.01x and its 95% interval 3.16x to 11.5x).
+function multiplierInterval(est, human) {
+  const prior = ratioPriorNodes(est.vmtMin, est.vmtBest, est.vmtMax, human, est.comps[est.comps.length - 1].a);
+  const quant = marginalQuantOver(est.comps, marginalCdfOver(est.comps, prior), prior.vLo, prior.vMid, prior.vHi);
+  const tail = (1 - CI_MASS_DEFAULT_PCT / 100) / 2;
+  return {median: quant(0.5), lo: quant(tail), hi: quant(1 - tail)};
+}
+
 // The stress verdict of an AV CI [lo, hi] against a human band: robustly
 // safer when the whole AV/human ratio range is above 1, robustly worse when
-// it is below 1. One rule for the stress table, the cards and the fault-flip
-// search.
+// it is below 1. One rule for the stress table and the fault-flip search
+// (until 2026-11-17 also the cards' stress line).
 function stressVerdictKey(lo, hi, human) {
   return lo / human.hi > 1 ? "safer" : hi / human.lo < 1 ? "worse" : "ambiguous";
 }
@@ -3424,13 +3515,14 @@ function logUniformGrid(lo, hi, n) {
 // Tesla's robotaxi scenarios A and B as daily robotaxi miles on the forecast
 // date. A: the Q4-2026 Cybercab surge fades and 2027 grows Waymo-like (~3x)
 // across 6-10 metros: 504k a day (2,800 car-equivalents) [162k: growth slowing
-// to ~3% a month from late October's ~107k a day, through a pause or demand
-// saturation, so ~114k on Jan 1, 2027 and x1.42 through 2027 on the path
-// below; 1.44M, about twice Waymo's current daily miles]. B: ~20,000 cars at
+// to ~2.5% a month from late November's ~117k a day (authored as ~3% a month
+// from late October's ~107k, the rate then in hand), through a pause or
+// demand saturation, so ~120k on Jan 1, 2027 and x1.35 through 2027 on the
+// path below; 1.44M, about twice Waymo's current daily miles]. B: ~20,000 cars at
 // ~135 miles a car-day on Cybercab deployment of 300-1,000 a week: 2.7M a day
 // [0.9M with deployment capped by regulators (NHTSA AQ26002, state
 // approvals); 7.2M, ~50,000 Cybercabs, the line's ~1,000 a week through
-// 2027]. (On the path below A's central reaches ~134k a day on Jan 1, 2027
+// 2027]. (On the path below A's central reaches ~131k a day on Jan 1, 2027
 // and grows x3.8 through 2027.)
 const TESLA_MILES_PER_CAR_DAY = 180;
 const TESLA_ROBOTAXI_SCENARIOS = [
@@ -3512,21 +3604,25 @@ function teslaComponents(robotaxiBand, eyesOff) {
   ];
 }
 // The path's start (the human's choice, 2026-10-30: "start at Oct's exit
-// rate"): Nov 1, 2026, the day after data/vmt.csv's newest Tesla month, at
-// that month's late-October rate, so the cumulative takes no step at the
-// month boundary. The rate is the no-monitor line's projection of Oct 19-31
-// (the teslanomonitor 2026-10 row's 2,561,000 less the 1,179,333 Tesla's page
-// measured for Oct 1-18, over those 13 days) plus the monitor-aboard
-// remainder at its October average (the tesla row's 2,594,000 less the
-// teslanomonitor row's, over 31 days): 107,347 a day. (The projection grows
-// 21.4% a week, so its last days run above that average.) The cumulative is
-// the tesla row's through Oct 31 (6,835,000). growth-ghost-month.qual.mjs
-// checks all three against data/vmt.csv's newest Tesla rows. From 2026-10-29
-// to 2026-10-31 the path started at October's typical day (2,594,000 / 31,
-// mid-October), so on Nov 1 every scenario edge ran 8-20% under the
-// late-October rate.
-const TESLA_PATH_START = {day: "2026-11-01", cumulative: 6835000,
-  milesPerDay: (2561000 - 1179333) / 13 + (2594000 - 2561000) / 31};
+// rate"): the day after data/vmt.csv's newest Tesla month, at that month's
+// late-month rate, so the cumulative takes no step at the month boundary.
+// Now Dec 1, 2026, at late November's rate. Tesla's page ends at Oct 18, so
+// November's no-monitor miles are the camera estimate (data/README.md, Ghost
+// months): 1,519,000 for Nov 1-15 from the camera's weeks, then the last
+// camera week's rate held flat for Nov 16-30 (the teslanomonitor 2026-11
+// row's 3,258,000 less those 1,519,000, over 15 days: 115,933 a day; no
+// growth is assumed past the last measured week). The monitor-aboard
+// remainder adds its November average (the tesla row's 3,291,000 less the
+// teslanomonitor row's, over 30 days): 117,033 a day in all. The cumulative
+// is the tesla row's through Nov 30 (9,776,000). growth-ghost-month.qual.mjs
+// checks all three against data/vmt.csv's newest Tesla rows. Until
+// 2026-11-17 the start was Nov 1, 2026, at 107,347 a day on 6,835,000: the
+// October rows of before the camera estimate, whose projection of Oct 19-31
+// grew 21.4% a week. From 2026-10-29 to 2026-10-31 the path started at
+// October's typical day (2,594,000 / 31, mid-October), so on Nov 1 every
+// scenario edge ran 8-20% under the late-October rate.
+const TESLA_PATH_START = {day: "2026-12-01", cumulative: 9776000,
+  milesPerDay: (3258000 - 1519000) / 15 + (3291000 - 3258000) / 30};
 // Tesla's cumulative robotaxi miles through the day before the forecast date
 // for a band of daily miles on the forecast date, edge by edge: each edge's
 // path grows its daily miles at a constant rate from the start's, on its day,
@@ -4049,20 +4145,21 @@ function renderFleetForecastChart() {
 // ~28 active) with robotaxitracker's count of distinct cars seen in August
 // (150 [90, 220], against its 175).
 // Each helmer's last row is its ghost month's (data/README.md, Ghost months;
-// added 2026-10-28, growth-ghost-month.qual.mjs): October 2026, in progress,
-// as on a typical day of the month (mid-October). Waymo 2026-10 =
-// September's 4,300 run on 1.5 months at ~280 cars a month (~4,700), the pace
-// of the Jan-1-2027 forecast in place when the point was written (2026-10-28):
-// above 2026's average of ~180 a month and under the ~320 a month from
-// mid-October that the current forecast's ~5,500 on Jan 1, 2027 needs, as
-// Ojai imports ramp (~5,100 on pace by end-2026, MoffettNathanson via the NY
-// Post, Oct 19). The floor is "roughly 4,000 cars" (Semafor via Reuters, Oct
-// 19; Waymo did not comment), the ceiling September's run on at ~400 a month
-// (~5,300). Alphabet's Q3 remarks (Oct 28) gave no fleet figure. Zoox
-// 2026-10 = September's 105 run on a month at ~13 a month (~120), the pace of
-// the Jan-1-2027 forecast then in place: above 2026's average of ~8 a month,
-// with Hayward building 5-6 a day (CEO, Aug 10); no count since Sep 17, so the
-// floor stays September's, and the ceiling is a Hayward ramp of ~35 a month.
+// since 2026-10-28, growth-ghost-month.qual.mjs): November 2026, in progress
+// when written (2026-11-17), as on a typical day of the month (mid-November).
+// Tesla's October and November are its miles rows' (October 465 [312, 788]
+// until 2026-11-17, on the row of before the camera estimate). Waymo and
+// Zoox have published no fleet count since September, so each runs
+// September's count on at a pace. Waymo: 4,300 on Sep 1, then ~280 cars a
+// month (above 2026's average of ~180 a month, as Ojai imports ramp: ~5,100
+// on pace by end-2026, MoffettNathanson via the NY Post, Oct 19), ~4,700 in
+// mid-October and ~5,000 in mid-November; the floor is "roughly 4,000 cars"
+// (Semafor via Reuters, Oct 19; Waymo did not comment), the ceiling ~400 a
+// month (~5,300 in October's row, ~5,700 in November's). Alphabet's Q3
+// remarks (Oct 28) gave no fleet figure. Zoox: 105 on Sep 17, then ~13 a
+// month (above 2026's average of ~8 a month, with Hayward building 5-6 a
+// day: CEO, Aug 10), ~120 in October and ~133 in November; the floor stays
+// September's, and the ceiling is a Hayward ramp of ~35 a month (140, 175).
 const FLEET_HISTORY = {
   Tesla: [
     {month: "2025-06", best: 12, lo: 8, hi: 20},
@@ -4079,7 +4176,8 @@ const FLEET_HISTORY = {
     {month: "2026-07", best: 50, lo: 35, hi: 77},
     {month: "2026-08", best: 93, lo: 65, hi: 145},
     {month: "2026-09", best: 186, lo: 132, hi: 294},
-    {month: "2026-10", best: 465, lo: 312, hi: 788},
+    {month: "2026-10", best: 402, lo: 281, hi: 653},
+    {month: "2026-11", best: 609, lo: 341, hi: 1221},
   ],
   Waymo: [
     {month: "2025-05", best: 1500, lo: 1300, hi: 1700},
@@ -4089,6 +4187,7 @@ const FLEET_HISTORY = {
     {month: "2026-05", best: 3750, lo: 3400, hi: 4200},
     {month: "2026-09", best: 4300, lo: 4000, hi: 4700},
     {month: "2026-10", best: 4700, lo: 4000, hi: 5300},
+    {month: "2026-11", best: 5000, lo: 4000, hi: 5700},
   ],
   Zoox: [
     {month: "2026-01", best: 50,  lo: 35, hi: 70},
@@ -4096,6 +4195,7 @@ const FLEET_HISTORY = {
     {month: "2026-06", best: 100, lo: 80, hi: 130},
     {month: "2026-09", best: 105, lo: 95, hi: 120},
     {month: "2026-10", best: 120, lo: 95, hi: 140},
+    {month: "2026-11", best: 133, lo: 95, hi: 175},
   ],
 };
 // The growth forecasts' date, the one place it is set (Jan 1, 2027 until
@@ -4143,21 +4243,24 @@ const RIDES_HISTORY = {
   // The rows sit at quarter ends, then at the ghost month. Through 2026-06
   // they are deck-chart months, whose miles are near-exact, so each band is
   // the corridor's alone (cume / 8.3 .. cume / 4.7); 2026-09 (added
-  // 2026-10-03, audit #87) and the ghost month 2026-10 (added 2026-10-28,
-  // growth-ghost-month.qual.mjs) are estimate months of data/vmt.csv, so each
-  // band divides the kyoom band by the corridor's far ends, as RIDES_FORECAST
-  // does: 4,241,000 / 6.2, 4,004,800 / 8.3, 4,976,000 / 4.7 and 6,835,000 /
-  // 6.2, 6,079,800 / 8.3, 8,611,000 / 4.7. (2026-09 sat on September's
-  // cumulative of before the 2026-10-23 re-pin, 3,630,000 [3,194,800,
-  // 4,506,000], until 2026-10-28.) Re-derive a row whenever its month's
-  // cumulative miles change.
+  // 2026-10-03, audit #87), 2026-10 (added 2026-10-28) and the ghost month
+  // 2026-11 (added 2026-11-17; growth-ghost-month.qual.mjs) are estimate
+  // months of data/vmt.csv, so each band divides the kyoom band by the
+  // corridor's far ends, as RIDES_FORECAST does: 4,241,000 / 6.2, 4,004,800
+  // / 8.3, 4,976,000 / 4.7; 6,485,000 / 6.2, 5,950,800 / 8.3, 7,902,000 /
+  // 4.7; and 9,776,000 / 6.2, 7,991,800 / 8.3, 13,686,000 / 4.7. (2026-09
+  // sat on September's cumulative of before the 2026-10-23 re-pin, 3,630,000
+  // [3,194,800, 4,506,000], until 2026-10-28; 2026-10 on October's of before
+  // the camera estimate, 6,835,000 [6,079,800, 8,611,000], until 2026-11-17.)
+  // Re-derive a row whenever its month's cumulative miles change.
   Tesla: [
     {month: "2025-09", best: 19500,  lo: 14500,  hi: 26000},
     {month: "2025-12", best: 106000, lo: 79000,  hi: 140000},
     {month: "2026-03", best: 277000, lo: 207000, hi: 365000},
     {month: "2026-06", best: 394000, lo: 294000, hi: 519000},
     {month: "2026-09", best: 684000, lo: 483000, hi: 1059000},
-    {month: "2026-10", best: 1102000, lo: 733000, hi: 1832000},
+    {month: "2026-10", best: 1046000, lo: 717000, hi: 1681000},
+    {month: "2026-11", best: 1577000, lo: 963000, hi: 2912000},
   ],
   // Waymo pinned to published cumulative milestones (rides-provenance.qual):
   // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
@@ -4167,9 +4270,11 @@ const RIDES_HISTORY = {
   // Sep 30 on Waymo's "over half a million trips each week" (Sep 14; the floor
   // it has stated since late March, so no newer level): lo = May's lo + 500k a
   // week (rounded up), best = May's best + ~575k a week (the 2026-03 ->
-  // 2026-05 rows' pace), hi = May's hi + 700k a week. The ghost month 2026-10
-  // (added 2026-10-28) extends 2026-09 the same way by October's 4.43 weeks:
-  // Alphabet's Q3 remarks (Oct 28) gave no newer weekly figure.
+  // 2026-05 rows' pace), hi = May's hi + 700k a week. 2026-10 (added
+  // 2026-10-28) extends 2026-09 the same way by October's 4.43 weeks, and the
+  // ghost month 2026-11 (added 2026-11-17) extends that by November's 4.29:
+  // Alphabet's Q3 remarks (Oct 28) gave no newer weekly figure, and none has
+  // followed.
   Waymo: [
     {month: "2025-06", best: 11500000, lo: 10500000, hi: 12800000},
     {month: "2025-09", best: 16000000, lo: 14500000, hi: 17800000},
@@ -4178,6 +4283,7 @@ const RIDES_HISTORY = {
     {month: "2026-05", best: 31000000, lo: 28000000, hi: 34500000},
     {month: "2026-09", best: 41000000, lo: 36800000, hi: 46700000},
     {month: "2026-10", best: 43500000, lo: 39100000, hi: 49800000},
+    {month: "2026-11", best: 46000000, lo: 41300000, hi: 52800000},
   ],
   // Zoox rides anchor to its published cumulative RIDER counts — >300k riders
   // by late 2025, >350k by late Mar 2026 (CleanTechnica 2026-03-24, The
@@ -4197,12 +4303,16 @@ const RIDES_HISTORY = {
   // ride (467k, about 7.7k rides a week since June). Its band, ~33k riders a
   // month at 2.0 riders a ride (317k) to ~137k at 1.2 (872k), is the rider
   // pace range of the Jan-1-2027 forecast (350k-1.1M rides by end-2026),
-  // kept when the forecast moved to Jan 1, 2028.
+  // kept when the forecast moved to Jan 1, 2028. The ghost month 2026-11
+  // (added 2026-11-17) runs the same paces one more month: 750k riders at
+  // 1.5 a ride (500k), 665k at 2.0 (333k) to 1.185M at 1.2 (988k). No rider
+  // count has followed June's.
   Zoox: [
     {month: "2025-12", best: 200000, lo: 150000, hi: 265000},
     {month: "2026-03", best: 235000, lo: 175000, hi: 300000},
     {month: "2026-06", best: 333000, lo: 250000, hi: 417000},
     {month: "2026-10", best: 467000, lo: 317000, hi: 872000},
+    {month: "2026-11", best: 500000, lo: 333000, hi: 988000},
   ],
 };
 // Cumulative-miles forecast through the day before GROWTH_FORECAST_DATE (Dec 31,
@@ -4220,24 +4330,26 @@ const MILES_FORECAST = [
   // alone.
   { helmer: "Tesla", components: teslaComponents(teslaCumulativeMiles, TESLA_EYES_OFF.cumulative) },
   { helmer: "Waymo", components: [
-    // US. End-2026 ~408M (361.7M through October, data/vmt.csv, plus ~46M);
+    // US. End-2026 ~407M (383.6M through November, data/vmt.csv, plus ~23M);
     // 2027 adds ~470-495M: an average fleet of ~8,500 at ~155 miles a car-day
     // (Q2 2026: 608k a day over ~3,800-3,900 cars; September: 714k over
-    // ~4,300). Low: October's 718k a day held flat for the 426 days from Nov
-    // 1, 2026 through Dec 31, 2027 (667M; 680M until 2026-10-31, against a
-    // flat hold then given as 676M). High: an average fleet of ~13k.
-    { weight: 1, parts: [{ best: 880000000, lo: 667000000, hi: 1200000000 }] },
+    // ~4,300). Low: November's 730k a day held flat for the 396 days from Dec
+    // 1, 2026 through Dec 31, 2027 (673M; 667M until 2026-11-17, October's
+    // 718k a day from Nov 1; 680M until 2026-10-31, against a flat hold then
+    // given as 676M). High: an average fleet of ~13k.
+    { weight: 1, parts: [{ best: 880000000, lo: 673000000, hi: 1200000000 }] },
   ] },
   { helmer: "Zoox", components: [
-    // End-2026 ~4.50M (the data/vmt.csv model: 3,889,920 through October,
-    // then November ~300,000 and December ~310,000 on its method); 2027 adds
-    // ~8.3-8.8M: an average fleet of ~270-285 at ~85 miles a vehicle-day (now
-    // ~81-97, October's 9,677 a day on ~100-120 vehicles). Low: today's rate
-    // held flat, October's 300,000 over its 31 days for the 426 days from Nov
-    // 1, 2026 through Dec 31, 2027 (8.01M; 7.86M until 2026-11-03, 7.5M until
-    // 2026-10-31; quals/fleet-forecast.qual.mjs re-derives it, and Waymo's,
-    // from data/vmt.csv's newest month).
-    { weight: 1, parts: [{ best: 13000000, lo: 8010000, hi: 24000000 }] },
+    // End-2026 ~4.50M (the data/vmt.csv model: 4,189,920 through November,
+    // then December ~310,000 on its method); 2027 adds ~8.3-8.8M: an average
+    // fleet of ~270-285 at ~85 miles a vehicle-day (now ~75-100, November's
+    // 10,000 a day on ~100-133 vehicles). Low: today's rate held flat,
+    // November's 300,000 over its 30 days for the 396 days from Dec 1, 2026
+    // through Dec 31, 2027 (8.15M; 8.01M until 2026-11-17, October's row from
+    // Nov 1; 7.86M until 2026-11-03, 7.5M until 2026-10-31;
+    // quals/fleet-forecast.qual.mjs re-derives it, and Waymo's, from
+    // data/vmt.csv's newest month).
+    { weight: 1, parts: [{ best: 13000000, lo: 8150000, hi: 24000000 }] },
   ] },
 ];
 
@@ -4778,13 +4890,17 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
   `;
 }
 
-// A summary card's multiplier against the human benchmark: "2.4x" in the
-// one ratio format (fmtRatio), coloured by the value printed (ratioShown), or
-// at k = 0 given the prior-only marking instead of a colour.
+// A summary card's multiplier against the human benchmark
+// (multiplierInterval's median): "6.01x" in the one ratio format (fmtRatio),
+// colored by its 95% interval as printed (ratioShown): safer when the
+// interval's low end is above 1x, worse when its high end is below 1x,
+// uncolored when it holds 1x; at k = 0 the prior-only marking instead of a
+// color. Until 2026-11-17 colored by the multiplier alone, safer from 1x up.
 function cardMultSpan(mult, k) {
-  const text = `${fmtRatio(mult)}x`;
+  const text = `${fmtRatio(mult.median)}x`;
   const marks = priorOnlyMarks(k, text);
-  return `<span class="mpi-card-mult${marks.cls || (ratioShown(mult) >= 1 ? " safer" : " worse")}"${marks.attrs}>${text}</span>`;
+  const verdict = ratioShown(mult.lo) > 1 ? " safer" : ratioShown(mult.hi) < 1 ? " worse" : "";
+  return `<span class="mpi-card-mult${marks.cls || verdict}"${marks.attrs}>${text}</span>`;
 }
 
 // The VMT line of a company's card when the window holds none of its miles.
@@ -4797,10 +4913,14 @@ function renderMpiSummaryCards(series) {
     // The tooltip states the denominators only; the per-month VMT rationales
     // are in the sanity section's VMT-sources table (embedded here they made
     // the tooltip 7,000-8,700px tall).
+    // The value on one line and its range on the next (until 2026-11-17 the
+    // range sat in parentheses beside it), the range only when the band has
+    // width, as before.
     const effectiveVmtLine = () => {
       const tip = `Effective VMT = estimated miles times estimated reporting completeness for months whose incident reports are still arriving; raw window VMT for comparison: ${fmtWhole(row.vmtRawBest)}. ${fiveDayLine(row.mpiEstimates.fatality)}`;
-      const shown = `Effective VMT: ${fmtWhole(row.vmtBest)}${row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? ` (${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)})` : ""}`;
-      return `<div class="mpi-card-vmt"${htmlTipAttrs(`${shown} ${tip}`, tip)}>${shown}</div>`;
+      const shown = [`Effective VMT: ${fmtWhole(row.vmtBest)}`,
+        ...(row.vmtMin !== row.vmtBest || row.vmtMax !== row.vmtBest ? [`Range: ${fmtWhole(row.vmtMin)} \u2013 ${fmtWhole(row.vmtMax)}`] : [])];
+      return `<div class="mpi-card-vmt"${htmlTipAttrs(`${shown.join(" ")} ${tip}`, tip)}>${shown.join("<br>")}</div>`;
     };
     const noMilesLine = `<div class="mpi-card-vmt">${NO_MILES_NOTE}</div>`;
     // Each source once, by URL (one label per URL: BENCHMARK_SOURCES).
@@ -4810,9 +4930,11 @@ function renderMpiSummaryCards(series) {
     // dangling "Benchmarks:" with an empty list (2026-09-26).
     const vmtLine = HUMAN_HELMERS.includes(row.helmer) ? benchmarksLine
       : row.vmtBest > 0 ? effectiveVmtLine() : noMilesLine;
-    const stressLine = row.vmtBest > 0
-      ? (() => { const stress = helmerHumanStress(row, "all"); return `<div class="mpi-card-stress">${CARD_STRESS_LABEL} ${stressBadge(stress, stress.av.k)} ${fmtRatio(stress.ratioLo)}x \u2013 ${fmtRatio(stress.ratioHi)}x</div>`; })()
-      : "";
+    // Until 2026-11-17 a line under the VMT gave the All-incidents stress
+    // verdict, the line's 95% CI over the human band's ends (headed "All
+    // incidents:", CARD_STRESS_LABEL); the human's layout of that day dropped
+    // it, each multiplier carrying its own 95% interval, and the verdicts stay
+    // in the sensitivity table.
     // An unchecked helmer's card stays, grayed (class unchecked), as the
     // other views gray rather than drop; until 2026-10-03 every card rendered
     // ungrayed whatever was checked, even with nothing checked (audit #67).
@@ -4820,22 +4942,28 @@ function renderMpiSummaryCards(series) {
       <div class="mpi-card${monthHelmerEnabled[row.helmer] ? "" : " unchecked"}" style="border-left-color:${HELMER_COLORS[row.helmer]}">
         <div class="mpi-card-helmer">${helmerLabel(row.helmer)}</div>
         ${vmtLine}
-        ${stressLine}
         ${METRIC_DEFS.map(m => {
           const est = row.mpiEstimates[m.key];
           if (!est) return "";
           const hl = m.key === selectedMetricKey ? " highlighted" : "";
           const humanBench = m.humanMPI && m.humanMPI[row.helmer]; // this row's cohort (human cards)
           const humanRef = m.humanMPI && m.humanMPI.HumansAV; // ADS "Nx vs humans" baseline
-          const humanGeo = humanRef ? Math.sqrt(humanRef.lo * humanRef.hi) : null;
-          // Point estimate everywhere is the posterior median (finite even at k=0),
-          // so the multiple is always a plain Nx. (est.k===null excludes humans.)
-          // It prints in the one ratio format (fmtRatio) and its colour follows
-          // the value printed (ratioShown), so "1.00x" is never the worse red;
-          // a multiplier resting on zero incidents gets the prior-only marking
-          // instead of a colour, like its stress badge (audit #16, #55).
-          const mult = (humanGeo && est.k !== null) ? est.postMedian / humanGeo : null;
-          const multStr = mult !== null ? ` ${cardMultSpan(mult, est.k)}` : "";
+          // The multiplier and its 95% interval (multiplierInterval: the
+          // median and 95% interval of the line's MPI over the human MPI),
+          // the multiplier in parentheses after the MPI and its interval in
+          // parentheses after the MPI's 95% CI, in the human's layout of
+          // 2026-11-17 (until then the multiplier alone, the line's median
+          // over the band's geometric middle). It prints in the one ratio
+          // format (fmtRatio); its color follows its interval as printed
+          // (cardMultSpan); a multiplier resting on zero incidents gets the
+          // prior-only marking instead of a color (audit #16, #55).
+          // (est.k === null excludes the human cards.)
+          // Each figure and its pair stay on one line (mpi-card-whole): the
+          // MPI with its multiplier, the CI, and the multiplier's interval,
+          // so that a line too long for the card breaks between them.
+          const mult = (humanRef && est.k !== null) ? multiplierInterval(est, humanRef) : null;
+          const [multStr, multRange] = mult === null ? ["", ""]
+            : [` (${cardMultSpan(mult, est.k)})`, ` <span class="mpi-card-whole">(${fmtRatio(mult.lo)}x \u2013 ${fmtRatio(mult.hi)}x)</span>`];
           const kLine = est.k !== null ? `${countHtml(m, splur(est.k, "incident"))} \u2192 ` : "";
           const ciLabel = est.k !== null ? "95% CI" : "Range";
           const srcLine = (est.k === null && humanBench)
@@ -4850,8 +4978,8 @@ function renderMpiSummaryCards(series) {
             : "";
           return `
           <div class="mpi-card-metric${m.primary ? " primary" : ""}${hl}" data-metric="${m.key}">
-            <div>${m.cardLabel}: ${kLine}<span class="mpi-card-mpi">${fmtWhole(est.postMedian)} MPI</span>${multStr}</div>
-            <div class="mpi-card-ci">${ciLabel}: ${fmtWhole(est.lo)} \u2013 ${fmtWhole(est.hi)}${srcHint}</div>
+            <div>${m.cardLabel}: ${kLine}<span class="mpi-card-whole"><span class="mpi-card-mpi">${fmtWhole(est.postMedian)} MPI</span>${multStr}</span></div>
+            <div class="mpi-card-ci">${ciLabel}: <span class="mpi-card-whole">${fmtWhole(est.lo)} \u2013 ${fmtWhole(est.hi)}</span>${multRange}${srcHint}</div>
             ${srcLine}
           </div>`;
         }).join("")}

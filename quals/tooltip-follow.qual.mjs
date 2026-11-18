@@ -10,7 +10,12 @@
 //    after the page scrolls the tip is beside the target's new corner;
 //  - a tip a pointer shows afterwards is the pointer's: a scroll does not move
 //    it to the focused target (it stays where the pointer put it, or, in
-//    Chromium, which fires pointerleave as the marker scrolls away, hides);
+//    Chromium, which fires pointerleave as the marker scrolls away, hides, or
+//    shows the marker the scroll brought under the pointer: since 2026-11-17,
+//    when the Nov-16-2026 release's data put Tesla's September 2025 marker
+//    40 px from the human band's, so that the scroll slid it under the
+//    pointer and Chromium showed its tip, where this qual required the first
+//    marker's text);
 //  - a tip follows its target only while focus is on it: once a redraw has
 //    removed the focused marker (focus falls to <body>), a scroll leaves the
 //    tip hidden (Chromium) or where it was (Firefox, WebKit), not at the
@@ -77,10 +82,18 @@ try {
       await page.evaluate(() => window.scrollBy(0, 40));
       await frames(page);
       const hoverAfter = await page.evaluate(() => { const t = document.getElementById("chart-tip"); const r = t.getBoundingClientRect(); return { shown: getComputedStyle(t).display !== "none", at: [Math.round(r.left), Math.round(r.top)], text: t.textContent.slice(0, 30) }; });
+      // The marker under the pointer now, which the scroll may have brought
+      // there (the pointer has not moved).
+      const under = await page.evaluate(([x, y]) => {
+        const el = document.elementFromPoint(x, y), target = el === null ? null : el.closest("[data-tip]");
+        return target === null ? null : target.getAttribute("data-tip").slice(0, 30);
+      }, [other.x, other.y]);
       // (Chromium fires pointerleave when a scroll moves the marker from under
-      // the pointer, which hides the tip; the others leave it shown.)
-      if (hoverAfter.shown && (hoverAfter.text !== other.text || hoverAfter.at[0] !== hovered[0] || hoverAfter.at[1] !== hovered[1]))
-        problems.push(`${engineName}: a hovered marker's tip (${JSON.stringify(other.text)} at ${JSON.stringify(hovered)}) became ${JSON.stringify(hoverAfter)} after a scroll`);
+      // the pointer, which hides the tip, and pointerenter on a marker the
+      // scroll brings under it, which shows that marker's; the others leave
+      // the first tip shown.)
+      if (hoverAfter.shown && (!(hoverAfter.text === other.text || hoverAfter.text === under) || hoverAfter.at[0] !== hovered[0] || hoverAfter.at[1] !== hovered[1]))
+        problems.push(`${engineName}: a hovered marker's tip (${JSON.stringify(other.text)} at ${JSON.stringify(hovered)}) became ${JSON.stringify(hoverAfter)} after a scroll (the marker under the pointer then: ${JSON.stringify(under)})`);
       if (page.errors.length > 0) problems.push(`${engineName}: page errors ${JSON.stringify(page.errors)}`);
       await page.context().close();
 
@@ -120,7 +133,7 @@ try {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: in Chromium, Firefox and WebKit, on the default view, focus an MPI-chart marker from the keyboard, scroll the page 120 px; then hover another marker and scroll 40 px; then, on a fresh page, focus a marker from the keyboard, narrow the window to 700 px (the charts redraw without it) and scroll 100 px.
-Expectata: the focused marker's tip beside its corner before and after the scroll; after the second scroll the tip is the hovered marker's, where the pointer put it, or hidden (Chromium's pointerleave), never moved to the focused marker; after the redraw focus is on BODY and the tip is hidden or where it was.
+Expectata: the focused marker's tip beside its corner before and after the scroll; after the second scroll the tip is where the pointer put it, with the hovered marker's text or that of a marker the scroll brought under the pointer, or hidden (Chromium's pointerleave), never moved to the focused marker; after the redraw focus is on BODY and the tip is hidden or where it was.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: a tooltip keyboard focus shows follows its target as the page scrolls, and a pointer's tip stays the pointer's, in three engines");

@@ -118,7 +118,8 @@ or if a month that has become measurable has no observation.
 It also reads two local input files:
 
 - `data/vmt.csv` — the in-repo VMT master (see "VMT master" below)
-- `data/faultfrac.csv` — the fault-fraction judgments
+- `data/faultfrac.csv` — the fault values, which `data/faultrate.py` writes from the
+  blind raters' ratings in `data/fault-ratings.csv` ("Each NHTSA release", step 5)
 
 The slurp pipeline is:
 
@@ -269,28 +270,42 @@ release needs:
 Then what the release brings:
 
 5. `data/faultfrac.csv`, the fault batch: a row for every new in-scope
-   incident, rated under the fault criterion. slurp stops and lists the
-   unrated Report IDs (since 2026-10-31, decision #4); the batch reads their
-   filings from the newest snapshot, which the stopped run has saved:
+   incident. slurp stops and lists the unrated Report IDs (since 2026-10-31,
+   decision #4). Then
 
    ```bash
-   python3 -B -c "
-   import sys; sys.path.insert(0, 'data'); import slurp
-   rows = slurp.filed_incident_rows(slurp.newest_snapshot_rows())
-   inc = list(slurp.public_service_incidents(rows).values())
-   inc += slurp.second_involvement_rows(inc).values()
-   unrated = slurp.unrated_reports(inc, slurp.parse_vmt_months(slurp.read_vmt_master()),
-                                   slurp.load_fault_data()[1])
-   for r in unrated: print(r['Report ID'], r['Incident Date'], r['Narrative'])"
+   python3 data/faultrate.py
    ```
 
-   `slurp.fault_master_row(r)` gives a new row's six mirrored columns (for a
-   second AV's row, Report ID + "-B", its own fields and its report's filed
-   severity). The
-   run also stops on a row whose report is no longer an in-scope incident (a
+   rates every in-scope incident that lacks ratings and writes
+   `data/faultfrac.csv` (since 2026-11-17; the human, 2026-11-16: "a simple,
+   repeatable method for getting faultfracs from blind sub-agents with known
+   parameters"). A rater is one headless model call (`MODEL` and `EFFORT` in
+   `faultrate.py`) that gets `data/fault-criterion.md` as its whole system
+   prompt and one report: its month, time and road type, each party's
+   movement and contact area, the AV's speed at contact, and the narrative
+   with the company's name replaced. It runs in an empty folder outside the
+   repo with no tools. Three raters rate each incident. Every rating is kept
+   in `data/fault-ratings.csv`; an incident's fault value is the median of
+   its three, and its reasoning is the median rater's line (at most 80
+   characters, which the output schema enforces). Nobody edits a value. A
+   second AV's case (Report ID + "-B") carries that AV's own fields and
+   quotes the narrative's sentence that names it. The script reads the
+   filings from the newest snapshot, which the stopped slurp run has saved,
+   and a stopped rating run resumes.
+
+   Each rating carries the id of the instrument that made it: the
+   criterion's text, the model, the effort, the output schema and the case
+   format together. After a change to any of them `faultrate.py` stops until
+   `data/fault-ratings.csv` is deleted, and then rates every incident again
+   (about 27M tokens for 2,392 incidents), so one method covers every row
+   (`quals/fault-ratings.qual.mjs`).
+
+   Both scripts stop on a report that is no longer an in-scope incident (a
    later filing re-coded or retired it, or a re-filing replaced it): find
-   out why, then delete the row, as for 30270-8403, -14625 and -4881. A
-   fault value off the 0.05 grid, or outside 0-1, stops it too.
+   out why, then delete its ratings and its `data/faultfrac.csv` row, as for
+   30270-8403, -14625 and -4881. A fault value off the 0.05 grid, or outside
+   0-1, stops slurp too.
 6. The narrative reviews, each a table in `slurp.py` with the narrative's own
    words beside its entry (`TELEOP_DRIVEN_REPORTS`,
    `REMOTE_LANGUAGE_ADS_DRIVEN`, `SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN`,
@@ -341,13 +356,24 @@ path at that month's exit rate (`TESLA_PATH_START`; the qual's
 them, and Waymo's and Zoox's miles low edges (`MILES_FORECAST`) against
 their newest `data/vmt.csv` month held flat through the day before the
 forecast date (since 2026-11-03), so a new ghost row moves both edges.
-Re-pin the knife-edge verdicts in `quals/stress-test.qual.mjs` as its
-comments say, and its default-window fault-flip table (`WANT_DEFAULT_FLIPS`:
-each line's printed multiplier, the verdict it reaches and its All-incidents
-verdict, since 2026-10-31) when a release or a VMT or fault re-pin moves it.
-`quals/tesla-no-monitor.qual.mjs` pins Tesla's list, the monitor-aboard
-list, the line's crashes by month and its miles by month, and goes red on a
-new no-monitor crash or row until they are re-pinned.
+After the slurp, `quals/vehicles-involved.qual.mjs` goes red on each new
+narrative that counts its vehicles ("All three vehicles sustained damage")
+until `VEHICLES_INVOLVED` holds its count and those words (four narratives in
+the Nov-16-2026 release); add them and run slurp again.
+No qual pins a verdict, a multiple, a count or a cumulative copied from the
+page's own output (since 2026-11-17, the human's "sure, convert outcome pins
+to sanity check ranges"; until then a release meant re-pinning
+`quals/stress-test.qual.mjs`'s knife-edge verdicts and fault-flip table,
+`quals/vmt-ledger.qual.mjs`'s newest cumulatives and month, and
+`quals/tesla-no-monitor.qual.mjs`'s crashes by month). Such figures are
+recounted from the data, derived from the reviewed cutoff, or held to wide
+sanity ranges, so a release that leaves a qual red on one of them has either
+broken a figure (a digit too many, a dropped denominator) or holds news: look
+at it before widening the range, and widen it with the human.
+`quals/tesla-no-monitor.qual.mjs` still holds Tesla's list, the
+monitor-aboard list and the page's and deck's miles for the months Tesla's
+page has measured whole (source figures), and goes red on a Tesla report of
+2026 that is on neither list.
 `quals/passenger-classification.qual.mjs` checks the riders a release's
 Tesla reports carry against their `PASSENGER_OVERRIDE` entries (since
 2026-10-31; until then it pinned the list of Tesla reports with a rider,
@@ -400,10 +426,18 @@ Editing rules:
   then lowercased, every character but a letter, digit, underscore, hyphen or
   space dropped, each space a hyphen; a repeated id takes -1, -2 and so on),
   and the page shows the link as a link to that section (since 2026-11-05;
-  until then these pointers were prose). A link of another form stops the
+  until then these pointers were prose). A web page is linked the same way,
+  its target the page's `https://` address (since 2026-11-17), and every web
+  address in a rationale is written as a link, so that the table shows none
+  as plain text. Where a source asks for its address to show beside the link,
+  as Robotaxi Tracker does, the link's text is the address:
+  `[https://robotaxitracker.com/cameras](https://robotaxitracker.com/cameras)`.
+  A link of another form stops the
   page at load (`crashla.js` `vmtRationale`): its text must hold a character
-  other than a blank and no square bracket, its target `data/#` and an anchor
-  of lowercase letters, digits and hyphens. So a heading meant for links needs
+  other than a blank and no square bracket, its target either `data/#` and an
+  anchor of lowercase letters, digits and hyphens, or `https://` and an
+  address with no blank, parenthesis, square or angle bracket, or quote. So a
+  heading meant for links needs
   an id of that form (an underscore, from a word such as `vmt_min` or from a
   code span, or an accented letter gives one the page does not read), and
   outside a link `data/#` may stand only inside a longer path or address
@@ -414,7 +448,9 @@ Editing rules:
   Methodology") goes unchecked. `quals/vmt-rationale-text.qual.mjs` checks
   that each link's anchor is the id of one of this file's headings, in the
   form the page reads, so renaming a heading turns it red until the links to
-  it follow. Its heading reader (`quals/rationale-links.mjs`,
+  it follow; that each web link's address is of the form the page reads; and
+  that no web address stands outside a link (whether a web page exists is not
+  checked: no qual depends on the network). Its heading reader (`quals/rationale-links.mjs`,
   `headingAnchors`) reads this file's blocks as kramdown, which GitHub Pages
   runs, reads them (a heading in a list item, a quote or a definition, at its
   content column or on a lazy line, is a heading; one in an HTML element read
@@ -509,20 +545,44 @@ ledger, 2026-10-27 (later)):
 
 - Tesla's no-monitor line, from Tesla's weekly page: the measured part is
   the page's miles for the month so far (city sums, linear within each
-  week). The rest is projected from the last published weeks as the
-  geometric mean of two projections: the geometric mean of holding the last
-  week flat and continuing its growth, and continuing the three-week growth.
-  The projected part's range is that projection times e^(±0.30 √(h/7)), h
-  being the days from the last published Sunday to the month's end
-  (×0.66-1.51 at 13 days, ×0.53-1.88 at 31), combined with the measured part,
-  with a log term for the gap between Tesla's page and its deck added in
-  quadrature: 0.066, 1.96 times the root mean square of the monthly
-  ln(deck / page) over April-September 2026 (about 6.8%). The 0.30 is a judgment, about 1.5 times what steady-growth
-  weeks needed; it held every all-city 7-31-day stretch from late April to
-  early October 2026, a regime of 1-30% weekly growth. When the page is more
-  than five weeks behind the month's end, or a new city or vehicle type puts
-  a launch-sized step in one of the last three published weeks, a human
-  sets the central, with at least ×0.5-2 on the unmeasured part.
+  week). Days the page has not measured are estimated from the data in
+  hand, with no growth assumed (the human, 2026-11-16: "assume as little as
+  possible ... whatever the uncertainty is, the confidence bands should
+  reflect that"). The data is Robotaxi Tracker's Camera watch
+  ([Robotaxi Tracker](https://robotaxitracker.com),
+  https://robotaxitracker.com/cameras), which counts Cybercabs per 1,000
+  vehicles on Austin's public traffic cameras each UTC day. K, the miles
+  per unit of camera rate, is the geometric mean, over the weeks both
+  series cover, of Tesla's all-city weekly miles over the week's mean
+  camera rate: 258,938 over the four weeks of Sep 21-Oct 18, 2026, each
+  week within 10% of it. An unmeasured day gets K times its week's mean
+  rate, over 7; a day past the camera's last week gets the last week's
+  rate (no growth, no fall). Range: the camera-covered days times
+  e^(±t s √(1 + 1/n)), n being the weeks both series cover, s the sample
+  standard deviation of ln(weekly miles / camera rate) over them and t
+  Student's 97.5% point at n − 1 degrees of freedom (×0.78-1.29 at four
+  weeks: the 95% prediction interval for one new week, applied to all such
+  days at once); the days past the camera's last week ×0.5-2; the parts'
+  edges summed with the measured part; then a log term for the gap between
+  Tesla's page and its deck added in quadrature: 0.066, 1.96 times the
+  root mean square of the monthly ln(deck / page) over April-September
+  2026 (about 6.8%). The one assumption is that the ratio holds. It would
+  fail if Cybercabs' share of Tesla's miles, or Austin's share, moved far
+  from the calibration weeks': cars in cities the Austin cameras cannot
+  see are counted only through the ratio (Tesla opened Fort Worth on Nov 2
+  and San Antonio about Nov 9, 2026). `quals/tesla-camera-miles.qual.mjs`
+  holds the weekly figures and recomputes the rows. To extend them: open
+  the Camera watch page in a browser, press "Show data" under "Over time",
+  average the Cybercab column over each Monday-Sunday week and add the
+  weeks to the qual (Robotaxi Tracker's terms forbid scraping, so read the
+  page by hand; its llms.txt asks for credit by name with a link and the
+  visible URL wherever its data is used); add Tesla's own weeks to the
+  calibration as its page publishes them. Until 2026-11-16 the unmeasured
+  days were projected at the last weeks' growth (the geometric mean of
+  holding the last week flat and continuing its growth, and of continuing
+  the three-week growth, ×e^(±0.30 √(h/7)), with a human-set central past
+  five weeks): for Oct 19-31, 2026 that gave 1,382,000 miles where the
+  camera rate gives 1,032,000.
 - Tesla, every operator mode: floor = the no-monitor line's floor;
   central = the no-monitor central plus June 2026's measured monitor-aboard
   remainder (33,000 miles); top = the central × e to the root-sum-square of
@@ -547,12 +607,27 @@ ledger, 2026-10-27 (later)):
   which holds December 2025's 6,500.65 miles a driving day on; until then
   the per-day rate between Zoox's two latest statements, each held at its
   midpoint), held flat unless a dated, quantified change is known (a
-  reported pause of known length removes its days); band ×e^(-1.96σ) to
-  ×e^(1.96σ′) on the month's rounded miles, edges rounded to 1,000, with
-  σ = √(0.065² + 0.07²h + 0.09²) (statement rounding, drift, month noise),
-  σ′ = √(σ² + 0.10²) while fleet growth is announced but unquantified, and h
-  the months from the governing window's midpoint to the month's midpoint
-  (definitions in "Zoox anchors" below). Every Zoox constant is a prior:
+  reported pause of known length removes its days). Band, through the month
+  of Zoox's last statement (August 2026): ×e^(-1.96σ) to ×e^(1.96σ) on the
+  month's rounded miles, edges rounded to 1,000, with
+  σ = √(0.065² + 0.07²h + 0.09²) (statement rounding, drift, month noise) and
+  h the months from the governing window's midpoint to the month's midpoint
+  (definitions in "Zoox anchors" below). Band, a month after it: nothing
+  measures either share (no statement, no CPUC month), so the month takes the
+  range for days with no data, half to twice its miles, its middle unchanged
+  (since 2026-11-17, the human's "whatever the uncertainty is, the confidence
+  bands should reflect that"; until then the formula ran on, with 0.10 added
+  in quadrature on the upside from October 2026 for fleet growth announced
+  but not quantified: ×0.71-1.40 for September 2026). Half to twice is
+  checked on California's own record: the California rule, run from each
+  measured month of CPUC's and the DMV's series to the measured months 3, 4
+  and 5 months later, gives 18 forecasts, none outside half to twice the
+  measured month (the lowest 0.51 of it) and 6 outside the formula's range,
+  all low; `quals/zoox-vmt-model.qual.mjs` reruns it and goes red when a new
+  measured month lands outside. When CPUC measures a month's California
+  share, restate that month's band with the human (California measured, the
+  rest half to twice, as June-December 2025's bands are). The formula's
+  constants are priors:
   read as ranges, Zoox's statements allow one flat Las Vegas rate from
   December 2025 on, so they show no change in it to test the constants
   against (read at their midpoints, until 2026-11-03, they showed one). The
@@ -1003,7 +1078,7 @@ The rationales of the Tesla rows for those months say so.
 
 ## Fault CSV synchronization
 
-The `faultfrac.csv` file is partly local judgment and partly mirrored NHTSA data.
+The `faultfrac.csv` file is partly the blind raters' ratings and partly mirrored NHTSA data.
 
 Their schema is:
 
@@ -1014,13 +1089,17 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 The rule is:
 
 - The first six columns come from the latest deduplicated NHTSA master data
-- The last two columns (`faultfrac`, `reasoning`) are the judgment columns
+- The last two columns (`faultfrac`, `reasoning`) come from
+  `data/fault-ratings.csv`: the median of the incident's three blind ratings
+  and the median rater's one line. `data/faultrate.py` writes them and nobody
+  edits them (`quals/fault-ratings.qual.mjs`; until 2026-11-17 they were
+  agents' judgments, batch by batch, with adjudication and a few overrides)
 - `faultfrac` is on a 0.05 grid (0, 0.05, 0.1, ..., 1): the page sums fault
   values in twentieths and refuses any other value, rendering nothing, so
   `data/slurp.py` stops on a value off the grid or outside 0-1
   (`quals/fault-grid.qual.mjs`)
-- `reasoning` is an agent's English (every row's judgment was written by
-  agents under the faultfrac criterion), so the page shows it as AI text,
+- `reasoning` is a rater's English (one line of at most 80 characters, as
+  `data/fault-criterion.md` asks), so the page shows it as AI text,
   opened with `AI_TEXT_PREFIX` ("Claude: ") in both places it appears: the
   fault cell's tooltip, which is plain text, and the fault line under the
   opened narrative, which is the line's own label (`NARRATIVE_FAULT_LABEL`),
@@ -1130,7 +1209,7 @@ If the question is "what data does the app currently use?", the answer is:
 
 - `data/incidents.js` and `data/vmt.js` are the generated artifacts the app uses at runtime
 - `data/slurp.py` is the code that regenerates those artifacts from live NHTSA data plus the local masters
-- `data/vmt.csv` is the in-repo master for VMT estimates; `data/faultfrac.csv` is the master for fault judgments
+- `data/vmt.csv` is the in-repo master for VMT estimates; `data/fault-ratings.csv` holds the blind raters' fault ratings, from which `data/faultrate.py` writes `data/faultfrac.csv`'s fault values
 - the checked-in `nhtsa-*.csv` files under `data/snapshots/` are archival snapshots, not inputs to the current slurp run
 
 ## Regeneration

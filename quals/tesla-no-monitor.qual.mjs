@@ -29,8 +29,11 @@ const ABOARD = ["13781-13644", "13781-13645", "13781-13646", "13781-13648", "137
 const MILES = { "2026-01": [547, 1077], "2026-02": [791, 0], "2026-03": [2966, 3525], "2026-04": [29638, 28202],
   "2026-05": [73616, 75206], "2026-06": [123823, 123384], "2026-07": [246410, 251469],
   "2026-08": [483680, 467685], "2026-09": [971738, 925284] };
-// The line's in-scope crashes by month in NHTSA's Oct-15-2026 file.
-const MONTHLY = { "2026-05": 2, "2026-06": 3, "2026-07": 3, "2026-08": 6 };
+// (Until 2026-11-17 a table here, MONTHLY, pinned the line's crashes by month
+// as NHTSA's Oct-15-2026 file had them, to be re-pinned at each release; the
+// counts are now recounted from data/incidents.js, check (4). The human:
+// "sure, convert outcome pins to sanity check ranges"; a recount is exact
+// whatever the data.)
 
 // (1) The pipeline: the reviewed lists, the series table, and the guard.
 const py = String.raw`
@@ -107,23 +110,19 @@ const unclassified = tesla2026.filter(rid => !SHEET.includes(rid) && !ABOARD.inc
 assert.deepEqual(unclassified, [], `Replicata: classify every in-scope 2026 Tesla report.\nExpectata: each on Tesla's list or among the monitor-aboard reports.\nResultata: unclassified ${JSON.stringify(unclassified)}.`);
 
 // (3) The line's miles: the safety page's figure, inside a band holding both readings; and Tesla's coverage.
-// The rows through NHTSA's data-through month: a later row is a ghost month's
-// estimate, which has no complete reading yet (quals/ghost-month.qual.mjs;
-// its floor, the partial reading, in quals/tesla-unsupervised-floor.qual.mjs).
-// Until 2026-10-26 every teslanomonitor row was checked here.
-// (The data-through month is read, never assumed: until 2026-11-06 an
-// incidents.js without its marked date stopped here on a TypeError naming
-// nothing.)
-const dataThroughMatch = /NHTSA_DATA_THROUGH_DATE_START \*\/\s*"(\d{4}-\d{2})/.exec(text);
-assert.ok(dataThroughMatch !== null,
-  `Replicata: read NHTSA_DATA_THROUGH_DATE in data/incidents.js, the "YYYY-MM-DD" after its /* NHTSA_DATA_THROUGH_DATE_START */ marker.
-Expectata: one, the month through which the teslanomonitor rows are checked.
-Resultata: none in ${JSON.stringify(text.slice(0, 300))}.`);
-const dataThrough = dataThroughMatch[1];
+// The rows of the months Tesla's page has measured whole (MILES): a later row
+// is an estimate, which has no complete reading (its floor, the partial
+// reading, in quals/tesla-unsupervised-floor.qual.mjs; the estimate itself in
+// quals/tesla-camera-miles.qual.mjs). Until 2026-10-26 every teslanomonitor
+// row was checked here, and until 2026-11-17 every row through NHTSA's
+// data-through month, which had to equal MILES' months: a release whose
+// data-through month Tesla's page had not measured whole (October 2026, the
+// page ending at Oct 18) could not pass.
 const vmtCsv = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
-const rows = vmtCsv.slice(1).filter(p => p[0] === "teslanomonitor" && p[1] <= dataThrough);
+const lineRows = vmtCsv.slice(1).filter(p => p[0] === "teslanomonitor");
+const rows = lineRows.filter(p => MILES[p[1]] !== undefined);
 const months = rows.map(p => p[1]);
-assert.deepEqual(months, Object.keys(MILES), `Replicata: list data/vmt.csv's teslanomonitor months.\nExpectata: ${Object.keys(MILES).join(", ")}.\nResultata: ${months.join(", ")}.`);
+assert.deepEqual(months, Object.keys(MILES), `Replicata: list data/vmt.csv's teslanomonitor months that Tesla's page has measured whole.\nExpectata: a row for each, in order: ${Object.keys(MILES).join(", ")}.\nResultata: ${months.join(", ")}.`);
 // A deck reading under the chart's ~100-mile resolution (February's 0: its
 // January and February points sit at one height) says nothing about the month;
 // there the lower edge is at most half the page's figure.
@@ -173,10 +172,18 @@ const app = JSON.parse(vm.runInContext(`
   });`, ctx));
 assert.ok(app.all.indexOf("TeslaNoMonitor") === app.all.indexOf("Tesla") + 1 && app.enabled === false,
   `Replicata: read ALL_HELMERS and the default toggles.\nExpectata: TeslaNoMonitor right after Tesla, off by default.\nResultata: ${JSON.stringify(app.all)}, enabled=${app.enabled}.`);
-const wantMonths = Object.keys(MILES).map(m => [m, MONTHLY[m] ?? 0, MILES[m][0]]);
-assert.deepEqual(app.months, wantMonths,
-  `Replicata: build monthSeriesData() and read the TeslaNoMonitor line month by month.
-Expectata: ${JSON.stringify(wantMonths)} ([month, crashes, miles]).
+// The line month by month: every month its data/vmt.js rows hold, each with
+// the crashes recounted from data/incidents.js (the records whose series
+// name the line, by their month) and the miles of its data/vmt.js row.
+const MONTH_NO = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
+const monthOf = label => `${label.slice(4)}-${String(MONTH_NO[label.slice(0, 3)]).padStart(2, "0")}`;
+const crashesIn = m => data.filter(r => r.series.includes("TeslaNoMonitor") && monthOf(r.date) === m).length;
+const wantMonths = jsRows.filter(p => p[0] === "teslanomonitor").map(p => [p[1], crashesIn(p[1]), Number(p[2])]);
+const listed = data.filter(r => r.series.includes("TeslaNoMonitor")).length;
+assert.ok(wantMonths.length > 0 && JSON.stringify(app.months) === JSON.stringify(wantMonths) &&
+    wantMonths.reduce((n, m) => n + m[1], 0) === listed,
+  `Replicata: build monthSeriesData() and read the TeslaNoMonitor line month by month; recount its crashes from data/incidents.js and read its miles from data/vmt.js.
+Expectata: ${JSON.stringify(wantMonths)} ([month, crashes, miles]), the crashes summing to the ${listed} records whose series name the line.
 Resultata: ${JSON.stringify(app.months)}.`);
 
 // (5) Readers see the line's label, never its internal key: every chart,
@@ -231,4 +238,4 @@ assert.deepEqual(leaks.slice(0, 6), [],
 Expectata: no "TeslaNoMonitor" (the line reads as its label, ${JSON.stringify(vm.runInContext("helmerLabel('TeslaNoMonitor')", viewCtx))}).
 Resultata: ${leaks.length} occurrences, e.g. ${JSON.stringify(leaks.slice(0, 6))}.`);
 
-console.log(`qual pass: Tesla's no-monitor line holds Tesla's ${Object.values(MONTHLY).reduce((a, b) => a + b, 0)} listed in-scope crashes over its own no-monitor miles, inherits Tesla's coverage, and sits off by default beside Tesla`);
+console.log(`qual pass: Tesla's no-monitor line holds Tesla's ${listed} listed in-scope crashes over its own no-monitor miles, inherits Tesla's coverage, and sits off by default beside Tesla`);

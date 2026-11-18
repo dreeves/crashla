@@ -7,44 +7,41 @@ import { parseCsv } from "./csv-parse.mjs";
 // helmer_cumulative_vmt is the exact running sum of the monthly vmt column.
 // The ledger must also stay ahead of NHTSA: slurp.py aborts if NHTSA reports
 // an incident in a month with no VMT row, so each monthly cycle adds the next
-// month's rows BEFORE the ~mid-month data drop. The freshness pin below
-// advances with each cycle (2026-09-25 cycle: rows through 2026-09; 2026-10-27:
-// through 2026-10, the first ghost month, quals/ghost-month.qual.mjs).
+// month's rows BEFORE the ~mid-month data drop: every line runs through at
+// least the month after the data-through month, read from data/slurp.py's
+// NHTSA_DATA_THROUGH_DATE (the ghost month, quals/ghost-month.qual.mjs).
+// Until 2026-11-17 that month was a literal here, FRESH_THROUGH, moved by hand
+// at each release.
+//
+// Sanity ranges (since 2026-11-17). Until then this qual pinned each line's
+// newest cumulative (CUME_PINS), a figure copied from the file it checks and
+// re-pinned whenever a row was restated; the human: "maybe they should be
+// sanity checks, like only failing on insane numbers, not merely mildly
+// surprising numbers?", then "sure, convert outcome pins to sanity check
+// ranges". The running sums are still exact, and each line's rows are
+// recomputed or held to their sources elsewhere (waymo-vmt-model,
+// zoox-vmt-model, tesla-vmt-provenance, tesla-unsupervised-floor,
+// tesla-no-monitor, tesla-camera-miles, vmt-rationale-text). What a slip of
+// a digit would break is checked here:
+//   - a month's miles lie within a factor of the month before's: JUMP.mature
+//     once the month before reached RAMP_BELOW miles (the most seen on
+//     2026-11-17: x2.28, Tesla's no-monitor line in October 2026), JUMP.ramp
+//     below it, where a line is starting up (the most seen: x12.6, Tesla's
+//     second month);
+//   - each band edge lies within BAND of the month's miles (seen: x0.29 to
+//     x3.51, Tesla's first month).
 
 // teslanomonitor (2026-10-23) is a second Tesla line, not a company: the miles
 // Tesla counts as driven with no safety monitor aboard (Jan 2026 on).
 const HELMERS = ["waymo", "tesla", "zoox", "teslanomonitor"];
-const FRESH_THROUGH = "2026-10";
-
-// Regression pins for the latest estimate rows (authored values, not external
-// anchors — external anchors live in the *-vmt-provenance quals). A silent
-// edit or a running-sum slip on the newest rows trips these.
-const CUME_PINS = {
-  // 2026-09-29: hub thru-Jun-2026 chain, Atlanta D withdrawn (Waymo's CSV4 v2);
-  // 2026-10-03: 339,595,163 -> 339,495,163, September's Maricopa term less
-  // ~0.1M for the measured Phoenix weather pauses (Sep 16-18 and Sep 29)
-  // 2026-11-02: 339,495,163 -> 339,440,163, the pre-series offset's central
-  // from its range's floor, 150,000, to its middle, 205,000 (open question
-  // 20(b), approved): every knot's cumulative central, and every one from
-  // December 2022 on, 55,000 lower
-  "waymo|2026-09": 339440163,
-  // 2026-10-23: 3,630,000 -> 4,241,000, Jul-Sep re-pinned on Tesla's own
-  // no-safety-monitor miles (robotaxi safety page + Q3-2026 deck) plus June's
-  // measured monitor-aboard remainder (approved 2026-10-23)
-  "tesla|2026-09": 4241000,
-  // 2026-10-03: 3,571,000 -> 3,530,920, the CA DMV rebuild of the early rows
-  // (approved 2026-09-29): the series now excludes 40,080 pre-series
-  // driverless miles from the official ~1.3M as of Dec 31, 2025
-  // 2026-10-27: 3,530,920 -> 3,579,920, Zoox's 2026 rows rebuilt on one
-  // method, the per-day rate between its statements (zoox-vmt-model.qual)
-  // 2026-11-03: 3,579,920 -> 3,589,920, one smooth path through all four of
-  // Zoox's statements as ranges (open question 29, approved): the 2026 rows
-  // at December 2025's Las Vegas rate, January-September 10,000 higher
-  "zoox|2026-09": 3589920,
-  // 2026-10-23: Tesla's weekly no-monitor miles (tesla.com/robotaxi/safety)
-  // summed by month, Jan-Sep 2026
-  "teslanomonitor|2026-09": 1933209,
-};
+const RAMP_BELOW = 100000;
+const JUMP = { ramp: 20, mature: 4 };
+const BAND = [0.1, 10];
+const cutoff = /^NHTSA_DATA_THROUGH_DATE = "(\d{4}-\d{2})-\d{2}"$/m.exec(fs.readFileSync("data/slurp.py", "utf8"));
+assert.ok(cutoff !== null,
+  `Replicata: read NHTSA_DATA_THROUGH_DATE from data/slurp.py.
+Expectata: a line NHTSA_DATA_THROUGH_DATE = "YYYY-MM-DD".
+Resultata: none.`);
 
 // Quote-aware CSV parse (quals/csv-parse.mjs): a naive comma split can't tell
 // a column boundary from a comma inside an unquoted rationale, and slurp.py's
@@ -66,7 +63,7 @@ const nextMonth = m => {
   return `${mo === 12 ? y + 1 : y}-${String(mo === 12 ? 1 : mo + 1).padStart(2, "0")}`;
 };
 
-const state = {}; // helmer -> { month, cume }
+const state = {}; // helmer -> { month, cume, vmt }
 for (const r of rows) {
   assert.ok(HELMERS.includes(r.helmer),
     `Replicata: parse a data/vmt.csv line as a row.
@@ -84,6 +81,10 @@ Resultata: vmt ${r.vmt}, cume ${r.cume}.`);
     `Replicata: check ${r.helmer} ${r.month}'s monthly band.
 Expectata: 0 < vmt_min <= vmt <= vmt_max (the app asserts band ordering only for months already active in vmt.js; future rows awaiting incident data need the guard here).
 Resultata: [${r.vmin}, ${r.vmax}] around ${r.vmt}.`);
+  assert.ok(r.vmin >= BAND[0] * r.vmt && r.vmax <= BAND[1] * r.vmt,
+    `Replicata: compare ${r.helmer} ${r.month}'s band edges with its miles.
+Expectata: each edge within x${BAND[0]} to x${BAND[1]} of the month's miles (a sanity range: an edge outside it has a digit too many or too few, or the range needs widening with the human).
+Resultata: [${r.vmin}, ${r.vmax}] around ${r.vmt}: x${(r.vmin / r.vmt).toFixed(3)} to x${(r.vmax / r.vmt).toFixed(2)}.`);
   const prev = state[r.helmer];
   if (prev === undefined) {
     assert.equal(r.cume, r.vmt,
@@ -99,24 +100,21 @@ Resultata: ${r.month}.`);
       `Replicata: add ${r.helmer} ${r.month}'s vmt (${r.vmt}) to the prior cumulative (${prev.cume}).
 Expectata: helmer_cumulative_vmt is the exact running sum (${prev.cume + r.vmt}).
 Resultata: ${r.cume}.`);
+    const factor = prev.vmt < RAMP_BELOW ? JUMP.ramp : JUMP.mature;
+    assert.ok(r.vmt <= factor * prev.vmt && prev.vmt <= factor * r.vmt,
+      `Replicata: compare ${r.helmer} ${r.month}'s miles (${r.vmt}) with the month before's (${prev.vmt}).
+Expectata: within a factor of ${factor} (${JUMP.mature} once the month before reached ${RAMP_BELOW} miles, ${JUMP.ramp} below it, where a line is starting up): a sanity range, so a month outside it has a digit too many or too few, or is news that needs the range widened with the human.
+Resultata: a factor of ${(Math.max(r.vmt / prev.vmt, prev.vmt / r.vmt)).toFixed(2)}.`);
   }
-  state[r.helmer] = { month: r.month, cume: r.cume };
+  state[r.helmer] = { month: r.month, cume: r.cume, vmt: r.vmt };
 }
 
+const ghostMonth = nextMonth(cutoff[1]);
 for (const h of HELMERS) {
-  assert.ok(state[h] !== undefined && state[h].month >= FRESH_THROUGH,
+  assert.ok(state[h] !== undefined && state[h].month >= ghostMonth,
     `Replicata: find ${h}'s latest row in data/vmt.csv.
-Expectata: rows extend through at least ${FRESH_THROUGH} (added ahead of the NHTSA data drop for that month).
+Expectata: rows through at least ${ghostMonth}, the month after the data-through month of data/slurp.py's NHTSA_DATA_THROUGH_DATE (${cutoff[1]}), added ahead of that month's NHTSA data.
 Resultata: latest ${h} month is ${state[h]?.month}.`);
 }
 
-for (const [key, cume] of Object.entries(CUME_PINS)) {
-  const [h, month] = key.split("|");
-  const row = rows.find(r => r.helmer === h && r.month === month);
-  assert.ok(row !== undefined && row.cume === cume,
-    `Replicata: read the ${h} ${month} row.
-Expectata: helmer_cumulative_vmt pinned at ${cume}.
-Resultata: ${row === undefined ? "row missing" : row.cume}.`);
-}
-
-console.log(`qual pass: vmt.csv ledger is contiguous with exact running sums through ${Object.values(state).map(s => s.month).join("/")}`);
+console.log(`qual pass: vmt.csv ledger is contiguous with exact running sums through ${Object.values(state).map(s => s.month).join("/")} (at least ${ghostMonth}, the month after the data-through month), each month within a factor of ${JUMP.mature} of the month before (${JUMP.ramp} while a line is under ${RAMP_BELOW} miles a month) and each band edge within x${BAND[0]} to x${BAND[1]} of its month's miles`);

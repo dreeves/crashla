@@ -62,13 +62,30 @@ import { parseCsv } from "./csv-parse.mjs";
 //     (2025's statements only), except December's 10e2343 value, which the
 //     statements rule out (at least 250,000: 1.25M at Dec 31 less 1M at Nov
 //     30). (Until 2026-11-03 this held the first two only.)
-//   - Bands, 2026: vmt x e^(-1.96 sigma) to vmt x e^(1.96 sigma'), sigma =
-//     sqrt(0.065^2 + 0.07^2 h + 0.09^2) (statement rounding, drift, month
-//     noise), h = months from the midpoint of the stretch between the
-//     statements around the month (January-March: Jan 1-Mar 24; April on:
-//     Mar 25-Aug 5) to the month's; sigma' adds 0.10 in quadrature from
-//     October, when fleet growth was announced but not quantified (the NTA's
-//     100-vehicle cap expired Sep 25). Edges round to 1,000.
+//   - Bands, 2026, through the last statement's month (August): vmt x
+//     e^(-1.96 sigma) to vmt x e^(1.96 sigma), sigma = sqrt(0.065^2 +
+//     0.07^2 h + 0.09^2) (statement rounding, drift, month noise), h = months
+//     from the midpoint of the stretch between the statements around the
+//     month (January-March: Jan 1-Mar 24; April on: Mar 25-Aug 5) to the
+//     month's. Edges round to 1,000.
+//   - Bands, the months after it (since 2026-11-17; the human's "whatever
+//     the uncertainty is, the confidence bands should reflect that",
+//     2026-11-16, and "ok, if you're sure those are the best numbers",
+//     2026-11-17): nothing measures either share of such a month (no
+//     statement after Aug 5, 2026; no California month after CPUC's last),
+//     so it takes the range the repo gives days with no data, half to twice
+//     its miles (data/README.md, Ghost months), its middle unchanged. Until
+//     then these months kept the formula, with 0.10 added in quadrature on
+//     the upside from October for fleet growth announced but not quantified
+//     (the NTA's 100-vehicle cap expired Sep 25): x0.71-1.40 for September,
+//     x0.68-1.55 for November. That range was too narrow for the California
+//     share alone: the model's California rule (a month's daily rate grown
+//     e^0.05 a calendar month) run from each measured month to the measured
+//     months as far ahead as these are from CPUC's last (3, 4 and 5 months)
+//     gives 18 forecasts on CPUC's and the DMV's series, 6 of them outside
+//     the formula's range, all low, and none outside half to twice (the
+//     backtest below, which goes red when a new measured month lands outside
+//     it: the sign that half to twice is too narrow).
 //
 // Cumulative bands: one sweep over the whole series from its exact zero
 // (May 2024), forward with the monthly bands and back from each knot: the
@@ -326,7 +343,8 @@ assert.ok(byMonth["2025-12"].vmin >= decMin,
 Expectata: at least ${decMin} (1.25M at Dec 31 less 1M at Nov 30: the statements' least December).
 Resultata: ${byMonth["2025-12"].vmin}.`);
 
-// 2026 on: each month rounds to 10,000, its band from the formula above.
+// 2026 on: each month rounds to 10,000, its band from the formula above
+// through the last statement's month and half to twice its miles after it.
 // Day of year of each 2026 month's first day, and of its mean day (Jan 16).
 const M26 = M.filter(m => m >= "2026-01");
 const FIRST = {};
@@ -335,17 +353,41 @@ const monthMid = m => FIRST[m] + (daysIn(m) - 1) / 2;
 const Q1 = { first: 1, last: 83 };   // Jan 1 - Mar 24
 const W2 = { first: 84, last: 217 }; // Mar 25 - Aug 5
 const winMid = w => (w.first + w.last) / 2;
+const LAST_STATEMENT_MONTH = "2026-08"; // "more than 3 million miles on public roads", Aug 5, 2026
+const NO_DATA = [0.5, 2];               // the range for a month nothing measures
+const sigmaOf = h => Math.sqrt(0.065 ** 2 + 0.07 ** 2 * h + 0.09 ** 2);
 for (const m of M26) {
   const vmt = round(T[M.indexOf(m)], 10000);
   const h = Math.abs(monthMid(m) - winMid(m <= "2026-03" ? Q1 : W2)) / 30.44;
-  const sigma = Math.sqrt(0.065 ** 2 + 0.07 ** 2 * h + 0.09 ** 2);
-  const sigmaUp = m >= "2026-10" ? Math.sqrt(sigma ** 2 + 0.10 ** 2) : sigma;
-  expected[m] = {
-    vmt,
-    vmin: round(vmt * Math.exp(-1.96 * sigma), 1000),
-    vmax: round(vmt * Math.exp(1.96 * sigmaUp), 1000),
-  };
+  const [lo, hi] = m > LAST_STATEMENT_MONTH ? NO_DATA : [Math.exp(-1.96 * sigmaOf(h)), Math.exp(1.96 * sigmaOf(h))];
+  expected[m] = { vmt, vmin: round(vmt * lo, 1000), vmax: round(vmt * hi, 1000) };
 }
+
+// The backtest behind NO_DATA for the California share: California's rule
+// for a month CPUC has not measured (caDay: the last measured month's daily
+// rate grown e^GROWTH a calendar month), run from each measured month of
+// each series (CPUC's driverless pilot miles, November 2025 on; the CA DMV's
+// driverless miles, June-November 2025) to each measured month as far ahead
+// as the no-data months are from CPUC's last month. Each forecast must lie
+// within half to twice what was measured; the count outside the formula's
+// range is reported, not required.
+const LAST_CPUC_MONTH = Object.keys(CPUC).sort().at(-1);
+const AHEAD = [...new Set(M26.filter(m => m > LAST_STATEMENT_MONTH).map(m => monthNo(m) - monthNo(LAST_CPUC_MONTH)))];
+assert.ok(AHEAD.length > 0 && AHEAD.every(k => k > 0),
+  `Replicata: list how many months after CPUC's last California month (${LAST_CPUC_MONTH}) each zoox month after ${LAST_STATEMENT_MONTH} is.
+Expectata: at least one such month, each after CPUC's last (a month CPUC has measured has a measured California share: restate its band, California measured plus half to twice the rest, with the human).
+Resultata: ${JSON.stringify(AHEAD)}.`);
+const monthAfter = (m, k) => { const n = monthNo(m) - 1 + k; return `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, "0")}`; };
+const SERIES = { "CPUC's driverless pilot miles": { "2025-11": CPUC_NOV_2025, "2025-12": CPUC_DEC_2025, ...CPUC }, "the CA DMV's driverless miles": CA_DMV };
+const forecasts = Object.entries(SERIES).flatMap(([name, s]) => Object.keys(s).flatMap(from => AHEAD
+  .filter(k => s[monthAfter(from, k)] !== undefined)
+  .map(k => ({ name, from, k, ratio: (s[from] / daysIn(from) * Math.exp(GROWTH * k)) / (s[monthAfter(from, k)] / daysIn(monthAfter(from, k))) }))));
+const outsideNoData = forecasts.filter(f => !(f.ratio >= NO_DATA[0] && f.ratio <= NO_DATA[1]));
+const outsideFormula = forecasts.filter(f => Math.abs(Math.log(f.ratio)) > 1.96 * sigmaOf(f.k));
+assert.ok(forecasts.length >= 10 && outsideNoData.length === 0,
+  `Replicata: run California's rule for an unmeasured month (the last measured month's daily rate grown e^${GROWTH} a calendar month) from each measured month of ${Object.keys(SERIES).join(" and ")} to each measured month ${AHEAD.join(", ")} months later.
+Expectata: at least 10 forecasts, each within x${NO_DATA[0]} to x${NO_DATA[1]} of the measured month (the range a month with no data takes; one outside it says that range is too narrow for the California share: widen it with the human).
+Resultata: ${forecasts.length} forecasts, ${outsideNoData.length} outside: ${JSON.stringify(outsideNoData)}.`);
 
 // --- Cumulative bands ------------------------------------------------------------
 const perDay = m => T[M.indexOf(m)] / daysIn(m); // the model's miles a day
@@ -394,4 +436,4 @@ Expectata: each month's miles, band, cumulative and cumulative band equal the mo
 Resultata: ${mismatches.join("; ")}.`);
 
 const fmt = v => Math.round(v).toLocaleString("en-US");
-console.log(`qual pass: Zoox's rows from June 2025 follow the model: the smoothest path through all four statements (roughness ${roughness(u).toFixed(7)}; binding ${BINDING.join(", ")}; Mar 24 at ${fmt(slack["Mar 24, 2026 at least 1.88M"] + S1[0])}, Aug 5 at ${fmt(slack["Aug 5, 2026 at least 3.00M"] + S2[0])}; Las Vegas ${x.slice(0, 7).map(fmt).join(" / ")} a driving day June-December 2025, then ${fmt(x[N - 1])}), the 1M crossing on Dec ${crossingDay.toFixed(4)}, December ${want25[6]}, bands holding the ${Object.keys(SHAPES).length} earlier shapes, knots at end-November [${knots["2025-11"]}], end-December [${knots["2025-12"]}] and end-March [${knots["2026-03"]}], a floor at end-July (${knots["2026-07"][0]})`);
+console.log(`qual pass (${forecasts.length} California forecasts ${AHEAD.join(", ")} months ahead: none outside half to twice the measured month, ${outsideFormula.length} outside the formula's range, forecast over measured ${Math.min(...forecasts.map(f => f.ratio)).toFixed(2)} to ${Math.max(...forecasts.map(f => f.ratio)).toFixed(2)}): Zoox's rows from June 2025 follow the model: the smoothest path through all four statements (roughness ${roughness(u).toFixed(7)}; binding ${BINDING.join(", ")}; Mar 24 at ${fmt(slack["Mar 24, 2026 at least 1.88M"] + S1[0])}, Aug 5 at ${fmt(slack["Aug 5, 2026 at least 3.00M"] + S2[0])}; Las Vegas ${x.slice(0, 7).map(fmt).join(" / ")} a driving day June-December 2025, then ${fmt(x[N - 1])}), the 1M crossing on Dec ${crossingDay.toFixed(4)}, December ${want25[6]}, bands holding the ${Object.keys(SHAPES).length} earlier shapes, knots at end-November [${knots["2025-11"]}], end-December [${knots["2025-12"]}] and end-March [${knots["2026-03"]}], a floor at end-July (${knots["2026-07"][0]})`);

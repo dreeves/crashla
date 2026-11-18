@@ -832,11 +832,6 @@ tbody tr:hover { background: var(--accent-wash); }
   color: var(--ink-soft);
   margin-bottom: 0.35rem;
 }
-.mpi-card-stress {
-  font-size: var(--fs-xs);
-  color: var(--ink-soft);
-  margin-bottom: 0.45rem;
-}
 .mpi-card-metric {
   margin-bottom: 0.4rem;
   font-size: var(--fs-sm);
@@ -847,16 +842,18 @@ tbody tr:hover { background: var(--accent-wash); }
 .mpi-card-metric:not(.primary) {
   color: var(--ink-soft);
 }
-.mpi-card-mult {
-  font-size: var(--fs-xs);
-  margin-left: 0.3em;
-}
+/* The multiplier sits in parentheses after the MPI, at the line's size (until
+   2026-11-17 it followed the MPI at --fs-xs with a 0.3em margin). */
 .mpi-card-mult.safer { color: var(--safer); }
 .mpi-card-mult.worse { color: var(--worse); }
 .mpi-card-ci {
   font-size: var(--fs-xs);
   color: var(--ink-soft);
 }
+/* A card's figure kept on one line with its pair (an MPI with its
+   multiplier, a CI, a multiplier's interval), so that a long line breaks
+   between them, not inside one (2026-11-17). */
+.mpi-card-whole { white-space: nowrap; }
 /* A finger-sized hit area on the [?] hint without moving the line. */
 .mpi-card-src {
   padding: 0.4rem;

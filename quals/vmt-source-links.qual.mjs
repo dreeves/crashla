@@ -3,29 +3,38 @@
 // data/README.md with a markdown link, "[<text>](data/#<anchor>)"
 // (quals/rationale-links.mjs), which the sanity section's VMT sources table
 // (id sanity-vmt-sources) shows as an a element to that section of the site,
-// where GitHub Pages renders data/README.md at data/. Checked with the app
+// where GitHub Pages renders data/README.md at data/. Since 2026-11-17 a
+// link may also lead to a web page, "[<text>](https://<address>)" (the
+// human's "yes to linkifying the robotaxitracker thing", the site asking for
+// a clickable link beside its visible address; until then this qual required
+// a link to another page to stop the page at load). Checked with the app
 // loaded in node (quals/load-app.mjs):
 //  1. in each window below, each line's cell holds one a element per link of
 //     the rationales it shows (its analysis months', and its ghost months'
 //     when the window ends at the newest NHTSA month), in order, each with
-//     href="data/#<anchor>" as its only attribute (as the sanity section's
-//     other links have only their href) and the link's text, escaped, as its
-//     content; and its text outside those a elements (each read as a
+//     its target (data/#<anchor>, or a web page's https:// address, escaped
+//     as text is, so its "&" reads "&amp;") as href, its only attribute (as
+//     the sanity section's other links have only their href), and the
+//     link's text, escaped, as its content; and its text outside those a elements (each read as a
 //     blank) holds no link syntax: no "](" and no target "data/#" (but
 //     inside a longer path or address, as the site's address in prose:
 //     quals/rationale-links.mjs, OPEN_TARGET);
-//  2. a synthetic rationale with two links, a band in square brackets, and &,
-//     < and > in its text and in a link's text (no rationale holds those
-//     today, so check 1 alone could not see a dropped escape), given to one
+//  2. a synthetic rationale with two links to sections and one to a web
+//     page whose address holds "&", a band in square brackets, and &, < and >
+//     in its text and in a link's text (no rationale holds those today, so
+//     check 1 alone could not see a dropped escape), given to one
 //     line's analysis rows and to its ghost row, renders as
 //     quals/rationale-links.mjs's rationaleMarkup gives it;
 //  3. parseVmtCsv and parseGhostVmtCsv, which read the rationales at load,
-//     stop on a link of the wrong form (each case in BAD below), with details
+//     stop on a link of the wrong form (each case in BAD below: a target
+//     that is neither a section nor an https:// address, among them plain
+//     http, another scheme and a path on the site, and a web address holding
+//     a blank, a quote, a parenthesis or an angle bracket), with details
 //     naming the row's line and its rationale, so the page stops with the
 //     error banner (error-banner.qual loads such a data/vmt.js); and they
-//     read unchanged a well-formed link, a band in square brackets, square
-//     brackets that do not pair (a half-open interval, a nested one), and the
-//     site's address in prose.
+//     read unchanged a well-formed link of either kind, a band in square
+//     brackets, square brackets that do not pair (a half-open interval, a
+//     nested one), and a web address in prose, the site's own among them.
 // No words are checked: the rationales' wording is free (the human's rule of
 // 2026-11-03), so no window is required to show a link (the pass line counts
 // them); vmt-rationale-text.qual checks each link's anchor against
@@ -115,7 +124,7 @@ for (const [name, win] of Object.entries(WINDOWS)) {
       if (rationales.length > 0) problems.push(`${name} (${win.join("..")}), ${helmer}: no row in the table, where ${rationales.length} rationales are shown`);
       continue;
     }
-    const want = rationales.flatMap(r => rationaleLinks(r)).map(l => ({ attrs: ` href="${l.target}"`, html: escText(l.text) }));
+    const want = rationales.flatMap(r => rationaleLinks(r)).map(l => ({ attrs: ` href="${escText(l.target)}"`, html: escText(l.text) }));
     const got = anchorsOf(cell);
     found += got.length;
     if (JSON.stringify(got) !== JSON.stringify(want))
@@ -132,7 +141,7 @@ for (const [name, win] of Object.entries(WINDOWS)) {
 // the month heads the app writes (its first and last month, and the ghost
 // month with the human's note).
 {
-  const SYNTHETIC = `Synthetic & <b>not bold</b> > text: a band [2,075,000, 3,289,000], two links ([data/README.md, Zoox anchors](data/#zoox-anchors); [R&D <notes> > x](data/#ghost-months)), and "quotes".`;
+  const SYNTHETIC = `Synthetic & <b>not bold</b> > text: a band [2,075,000, 3,289,000], two links ([data/README.md, Zoox anchors](data/#zoox-anchors); [R&D <notes> > x](data/#ghost-months)), a web page ([https://example.org/a?b=1&c=2](https://example.org/a?b=1&c=2)), and "quotes".`;
   const SYNTHETIC_GHOST = `Ghost & <i>x</i>: [data/README.md, Ghost months](data/#ghost-months) [1.05M, 3.00M].`;
   const win = WINDOWS.default;
   vm.runInContext(`
@@ -145,11 +154,11 @@ for (const [name, win] of Object.entries(WINDOWS)) {
   const ghost = run("ghostVmtRows.filter(r => r.helmer === 'Zoox').map(r => r.month)").sort();
   assert.ok(zoox.length > 1 && ghost.length > 0 && win[1] === last,
     `Replicata: list Zoox's analysis and ghost months for the default window, ${win.join("..")}. Expectata: two or more analysis months and a ghost month, the window ending at the newest NHTSA month (${last}). Resultata: ${JSON.stringify({ zoox, ghost })}.`);
-  // Two links in SYNTHETIC, one in SYNTHETIC_GHOST for each ghost month.
+  // Three links in SYNTHETIC, one in SYNTHETIC_GHOST for each ghost month.
   const want = [`${zoox[0]} – ${zoox[zoox.length - 1]}: ${rationaleMarkup(SYNTHETIC)}`,
     ...ghost.map(m => `${m} (<span class="vmt-ghost-note">${escText(NOTE)}</span>): ${rationaleMarkup(SYNTHETIC_GHOST)}`)].join("<br>");
-  if (cell !== want || anchorsOf(cell).length !== 2 + ghost.length)
-    problems.push(`a synthetic rationale given to Zoox's rows: the cell is ${JSON.stringify(cell)}, with ${cell === undefined ? 0 : anchorsOf(cell).length} a elements; want ${JSON.stringify(want)}, with ${2 + ghost.length}`);
+  if (cell !== want || anchorsOf(cell).length !== 3 + ghost.length)
+    problems.push(`a synthetic rationale given to Zoox's rows: the cell is ${JSON.stringify(cell)}, with ${cell === undefined ? 0 : anchorsOf(cell).length} a elements; want ${JSON.stringify(want)}, with ${3 + ghost.length}`);
 }
 
 // --- 3. a link of the wrong form stops the page at load ----------------------
@@ -183,6 +192,13 @@ const GOOD = [
   "a half-open interval [0.995, 1.05) and a nested bracket [a [b] c].",
   // The site's address in prose, its "data/#" inside a longer path.
   "the section on the site, teslapologetics.dreev.es/data/#ghost-months, and https://teslapologetics.dreev.es/data/#zoox-anchors, beside a link [data/README.md, Ghost months](data/#ghost-months).",
+  // A link to a web page (since 2026-11-17), its text its address or other
+  // words, its address with a query and a fragment; and a web address in
+  // prose, parentheses and all, which is no link.
+  "a link to a web page ([https://robotaxitracker.com/cameras](https://robotaxitracker.com/cameras)).",
+  "a web link with a query, [the hub](https://waymo.com/safety/impact/?a=1&b=2#top), beside a section link [data/README.md, Ghost months](data/#ghost-months).",
+  "a link to the site's own page by its address, [the notes](https://teslapologetics.dreev.es/data/#ghost-months).",
+  "a web address in prose, https://example.org/a_(b), and one over plain http, http://example.org/, are no links.",
 ];
 const BAD = {
   "a link with no text": "see [](data/#zoox-anchors).",
@@ -192,7 +208,15 @@ const BAD = {
   "an anchor with a space": "see [data/README.md, Zoox anchors](data/#zoox anchors).",
   "an anchor with an underscore": "see [data/README.md, Zoox anchors](data/#zoox_anchors).",
   "an anchor with a period": "see [data/README.md, Zoox anchors](data/#zoox.anchors).",
-  "a link to another page": "see [the hub](https://waymo.com/safety/impact/).",
+  "a web link over plain http": "see [the hub](http://waymo.com/safety/impact/).",
+  "a link with another scheme": "write to [the owner](mailto:owner@example.org).",
+  "a link to a path on the site": "see [the notes](IGNOREME.html).",
+  "a web link with no address": "see [the hub](https://).",
+  "a web link whose address holds a blank": "see [the hub](https://waymo.com/safety impact/).",
+  "a web link whose address holds a quote": "see [the hub](https://waymo.com/\"x\").",
+  "a web link whose address holds an angle bracket": "see [the hub](https://waymo.com/<x>).",
+  "a web link whose address holds a parenthesis": "see [the hub](https://example.org/a_(b)).",
+  "a web link whose address holds a square bracket": "see [the hub](https://example.org/a[1]).",
   "a link to data/ with no anchor": "see [data/README.md](data/).",
   "a link whose target is left open": "see [data/README.md, Zoox anchors](data/#zoox-anchors.",
   "a link whose text is left open": "see ([data/README.md, Zoox anchors(data/#zoox-anchors)).",
@@ -220,7 +244,7 @@ for (const parser of Object.keys(PARSERS)) {
 
 assert.deepEqual(problems, [],
   `Replicata: build the sanity section in node for the windows ${Object.entries(WINDOWS).map(([n, w]) => `${n} (${w.join("..")})`).join(", ")} and read the VMT sources table (id sanity-vmt-sources); give Zoox's rows a synthetic rationale with links, a band and markup; and read rationales with a link of the wrong form through parseVmtCsv and parseGhostVmtCsv.
-Expectata: each line's cell holds one a element per link of the rationales it shows, in order, with href="data/#<anchor>" alone and the link's text escaped, and no link syntax ("](" or a target "data/#" but inside a longer path or address) outside them; the synthetic rationale renders as rationaleMarkup gives it; each wrong form (${Object.keys(BAD).join("; ")}) stops both parsers with details naming line 2 and the rationale, and a well-formed link, a band, square brackets that do not pair, or the site's address in prose (${GOOD.length} rationales) read unchanged.
+Expectata: each line's cell holds one a element per link of the rationales it shows, in order, with its target (data/#<anchor> or an https:// address, escaped) as href alone and the link's text escaped, and no link syntax ("](" or a target "data/#" but inside a longer path or address) outside them; the synthetic rationale renders as rationaleMarkup gives it; each wrong form (${Object.keys(BAD).join("; ")}) stops both parsers with details naming line 2 and the rationale, and a well-formed link to a section or to a web page, a band, square brackets that do not pair, or a web address in prose (${GOOD.length} rationales) read unchanged.
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 12).join("\n")}`);
-console.log(`qual pass: the VMT sources table draws each rationale link as an a element to its section (a elements by window: ${counts.join(", ")}), escapes the text around and inside it, and leaves no link syntax; ${Object.keys(BAD).length} wrong forms of a link stop both CSV readers at load`);
+console.log(`qual pass: the VMT sources table draws each rationale link as an a element to its section or web page (a elements by window: ${counts.join(", ")}), escapes the text around and inside it, and leaves no link syntax; ${Object.keys(BAD).length} wrong forms of a link stop both CSV readers at load`);
