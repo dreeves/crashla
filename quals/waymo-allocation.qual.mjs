@@ -52,6 +52,15 @@ const ca = lines.map((line, i) => {
     miles: Number(total), days: next - first, mid: (first + next) / 2};
 });
 const byMonth = Object.fromEntries(ca.map(r => [r.month, r]));
+const sources = JSON.parse(fs.readFileSync("data/waymo-ca-sources.json", "utf8"));
+for (const line of lines) {
+  const [month, , , , deployment, pilot] = line.split(",");
+  const refs = sources.filter(s => s.months.includes(month)).map(s => [s.program, String(s.id)]).sort();
+  const recorded = [["deployment", deployment], ["pilot", pilot]];
+  const expected = month < "2023-08" ? [["deployment", "pre-deployment"], ...refs] : refs;
+  assert.deepEqual(recorded, expected,
+    `Replicata: trace the ${month} California miles to their CPUC reports.\nExpectata: the deployment and pilot source IDs listed for that month.\nResultata: ${deployment} and ${pilot}, with manifest entries ${JSON.stringify(refs)}.`);
+}
 
 // Independent raw-file sentinels: first deployment, a material pilot share,
 // both sides of the California shutdown, and the recent pilot expansion.
@@ -61,6 +70,9 @@ for (const [month, deployment, pilot] of [
   ["2025-05", 5336125.61, 18838.88],
   ["2025-06", 3567131.71, 14818.41],
   ["2026-06", 9023791.29, 660876.68],
+  ["2026-07", 9479564.71, 552165.69],
+  ["2026-08", 10699558.22, 668812.55],
+  ["2026-09", 13122059.75, 67872.16],
 ]) {
   assert.deepEqual([byMonth[month]?.deployment, byMonth[month]?.pilot], [deployment, pilot],
     `Replicata: compare California ${month} to its CPUC driverless deployment and pilot files.\nExpectata: ${deployment} and ${pilot} miles.\nResultata: ${JSON.stringify(byMonth[month])}.`);

@@ -808,7 +808,7 @@ miles at the end of 2023, an analyst's estimate, against Waymo's 10.066M).
 deadhead; `data/waymo-ca-sources.json` identifies each public ZIP URL, member,
 field and member SHA256. `!` separates nested ZIP members; the hash is of the
 uncompressed CSV or XLSX member, not the ZIP. Older pilot workbooks use the
-`Fleetwide Data` sheet. The files retain the full measured December 2022–June
+`Fleetwide Data` sheet. The files retain the full measured December 2022–September
 2026 series so the extraction and calibration can be checked. Before
 December 2022 there is no California series, so July 2021–November 2022 is
 residual only.

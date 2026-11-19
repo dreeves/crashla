@@ -360,5 +360,31 @@
     ],
     "field": "Total Waymo vehicle miles traveled during passenger service by all vehicles in Waymo's list of Autonomous Vehicle equipment",
     "sheet": "Fleetwide Data"
+  },
+  {
+    "id": 28,
+    "program": "deployment",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2026q3.zip",
+    "member": "Waymo Deployment 2026Q3/Driverless Deployment/PSG0038152_2026_11_AV_Month_Part0-Deployment.csv",
+    "sha256": "a8da1a12ebbacf5658ef2576a1d9538a2d88320fc7c4b44dbee1d812955eef76",
+    "months": [
+      "2026-07",
+      "2026-08",
+      "2026-09"
+    ],
+    "field": "TotalVMTZEV"
+  },
+  {
+    "id": 29,
+    "program": "pilot",
+    "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot-2026q3.zip",
+    "member": "AV Pilot 2026Q3/Waymo/Driverless Pilot (Public)/PSG0038152_2026_11_AV_Month_Part0-Pilot.csv",
+    "sha256": "6ccc2daefa8bde7e5ef5f17aba03b2a47b45565427b64ce1f8d107b321b9bde9",
+    "months": [
+      "2026-07",
+      "2026-08",
+      "2026-09"
+    ],
+    "field": "TotalVMTZEV"
   }
 ]
