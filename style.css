@@ -373,6 +373,15 @@ td.num.pair > span { white-space: nowrap; }
 .table-scroll th > button { all: unset; }
 :where(.table-scroll) tbody tr:nth-child(even) { background: var(--wash); }
 tbody tr:hover { background: var(--accent-wash); }
+/* A preprint's row (crashla.js RECORD_MARKS): a crash report its company has
+   published and NHTSA's files do not hold yet. A hatch over the row's own
+   ground (plain, zebra or hover: this rule follows those and sets only the
+   image) and a bar at its left edge set it apart; its narrative says what it
+   is (PREPRINT_LABEL), so the row reads the same without either. */
+tbody tr.preprint {
+  background-image: repeating-linear-gradient(-45deg, transparent 0 7px, var(--line-soft) 7px 8px);
+}
+tbody tr.preprint td:first-child { box-shadow: inset 4px 0 0 var(--iffy); }
 /* Wide generated tables pan inside their own box instead of widening the page. */
 .table-wrap { overflow-x: auto; }
 /* "VMT sources": a methodology line may break inside a long token (a URL), so

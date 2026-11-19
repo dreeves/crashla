@@ -252,22 +252,33 @@ Expectata: [${round4(octBest)}, ${round4(octLo)}, ${r.max}]: 7 observed over 46 
 Resultata: ${JSON.stringify(o.triple)}.`);
 
 // 3. data/vmt.js carries that triple in the data-through month, for every
-// line, and (1, 1, 1) elsewhere; the Monthly-track product is unchanged.
+// line whose incidents run through NHTSA's cutoff, and (1, 1, 1) elsewhere;
+// the Monthly-track product is unchanged. Since 2026-11-18 a line's
+// data-through-month row can take its coverage from its company's own list
+// of crash reports instead (data/slurp.py preprint_coverage: its
+// incidents_through is then the list's date; quals/preprints.qual.mjs checks
+// it); until then this read every line.
 const ctx = vm.createContext({ console, Math, Number,
   document: { getElementById() { return null; }, createElement() { return { textContent: "", innerHTML: "" }; } } });
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const rows = JSON.parse(vm.runInContext(`JSON.stringify(parseVmtCsv(VMT_CSV_TEXT).map(x => ({
-  helmer: x.helmer, month: x.month, rec: [x.coverage, x.coverageMin, x.coverageMax], inc: [x.incCov, x.incCovMin, x.incCovMax]})))`, ctx));
+  helmer: x.helmer, month: x.month, rec: [x.coverage, x.coverageMin, x.coverageMax], inc: [x.incCov, x.incCovMin, x.incCovMax], through: x.through})))`, ctx));
 const D = r.dataThrough.slice(0, 7);
-const wrong = rows.filter(x => JSON.stringify(x.rec) !== JSON.stringify(x.month === D ? r.release : [1, 1, 1]));
+const onNhtsa = rows.filter(x => x.through === r.dataThrough);
+const wrong = onNhtsa.filter(x => JSON.stringify(x.rec) !== JSON.stringify(x.month === D ? r.release : [1, 1, 1]));
 assert.deepEqual(wrong, [],
-  `Replicata: read every line's receipt coverage from data/vmt.js.
+  `Replicata: read from data/vmt.js the receipt coverage of every row whose incidents run through NHTSA's cutoff (${r.dataThrough}).
 Expectata: ${JSON.stringify(r.release)} in the data-through month ${D}, [1, 1, 1] in every other month.
 Resultata: ${JSON.stringify(wrong.slice(0, 6))}.`);
-const dRows = rows.filter(x => x.month === D);
+const elsewhere = rows.filter(x => x.through !== r.dataThrough && x.month !== D);
+assert.deepEqual(elsewhere, [],
+  `Replicata: list data/vmt.js's rows whose incidents_through is not NHTSA's cutoff.
+Expectata: all in the data-through month ${D}.
+Resultata: ${JSON.stringify(elsewhere.slice(0, 6))}.`);
+const dRows = onNhtsa.filter(x => x.month === D);
 const products = dRows.map(x => x.rec[0] * x.inc[0]);
-assert.ok(dRows.length >= 3 && products.every(p => Math.abs(p - r.allIncidentRatio) <= 5e-5 * r.release[0] + 1e-12),
+assert.ok(dRows.length >= 2 && products.every(p => Math.abs(p - r.allIncidentRatio) <= 5e-5 * r.release[0] + 1e-12),
   `Replicata: multiply each line's receipt coverage best by its incident coverage best in ${D} (data/vmt.js).
 Expectata: the month's all-incident observed / expected, ${r.allIncidentRatio} (recounted here), within the 4-decimal rounding of the incident coverage: the Monthly-track metrics' exposure does not depend on the receipt estimate.
 Resultata: ${JSON.stringify(products)}.`);

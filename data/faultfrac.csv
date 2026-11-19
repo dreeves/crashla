@@ -37,6 +37,14 @@ reportID,speed,crashwith,svhit,cphit,severity,faultfrac,reasoning
 13781-17179,0,SUV,rear left,front right,Property Damage. No Injured Reported,0,AV stopped in traffic; SUV from behind sideswiped it while changing lanes
 13781-17191,2,Other Fixed Object,front,,Property Damage. No Injured Reported,1,AV drove at 2 mph into a stationary chain across the exit; easy to see and stop
 13781-17193,0,Pickup Truck,front,rear,Property Damage. No Injured Reported,0,AV parked and unoccupied; pickup reversed out of its spot into AV's front
+13781-17203,0,SUV,front left,front left,Unknown,0,AV was stopped at the stop sign; an SUV hit by a third car was knocked into it
+13781-17299,0,Pickup Truck,rear,front,Property Damage. No Injured Reported,0,"AV stopped in traffic; truck stopped behind it, then crept forward into its rear"
+13781-17300,1,SUV,rear,front left + front,Property Damage. No Injured Reported,0.05,AV slowed to yield to crosswalk pedestrians mid-turn; following SUV hit its rear
+13781-17301,6,Other Fixed Object,front + top,,Property Damage. No Injured Reported,1,AV drove at low speed into a stationary chain blocking the lot entrance
+13781-17302,1,Other Fixed Object,front,,Property Damage. No Injured Reported,1,"AV turning into alley drove into a stationary, visible fence"
+13781-17303,4,SUV,rear right,front right,Property Damage. No Injured Reported,0.15,SUV ran stop sign into AV with right of way; AV braking kept its rear in path
+13781-17304,1,Other Fixed Object,front right,,Property Damage. No Injured Reported,1,"AV turned into a stationary, visible metal gate in a parking lot at low speed"
+13781-17305,0,Passenger Car,right,rear,Property Damage. No Injured Reported,0.1,"AV stopped in lot, hit by reversing car; little chance to avoid beyond a honk"
 30270-1501,0,Passenger Car,left,unknown,No Injuries Reported,0.1,AV stopped in aisle; car backed into it; only a honk or repositioning might help
 30270-1583,21,Passenger Car,front left + front,rear left + rear + rear right,No Injuries Reported,0.2,"Car cut in, braked at once on yellow; alert driver could only partly expect it"
 30270-1730,0,SUV,rear + rear right,unknown,No Injuries Reported,0.2,"Stopped AV hit by slow-reversing SUV; AV stopped by driveway, could have honked"

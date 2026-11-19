@@ -21,14 +21,25 @@
 //      empty folder, the masking, what a case shows and hides, the median).
 //   2. Its identity, instrument_id(), changes with the criterion's text.
 //   3. data/fault-ratings.csv holds every rating: reportID, rater, faultfrac,
-//      reasoning, instrument. Every rating was made by the current instrument
-//      (so an edit to the criterion, the model or the case format leaves this
-//      qual red until every incident is rated again: one method for every row).
+//      reasoning, instrument, case. Every rating was made by the current
+//      instrument (so an edit to the criterion, the model or the case format
+//      leaves this qual red until every incident is rated again: one method
+//      for every row), and of its report's current case: its case is
+//      case_id() of the text a rater reads for the report now (since
+//      2026-11-18, the human: "hash is smart to avoid special cases, smart.
+//      yes to that"), so a report whose case has changed (an NHTSA update to
+//      its filing, or NHTSA's row taking a preprint's place) leaves this qual
+//      red until data/faultrate.py rates it again.
 //   4. Every data/faultfrac.csv row has exactly RATERS ratings, raters 1 to
 //      RATERS, and no rating lacks a row; each rating is on the 0.05 grid in
 //      0 to 1, with a reason of 1 to 80 characters that names no company.
 //   5. Each data/faultfrac.csv value is the median of its ratings, and its
 //      reasoning is that of the lowest-numbered rater at the median.
+//   6. data/faultrate.py rates a report again when its case has changed: run
+//      on a copy of the ratings in which one report's ratings carry another
+//      case, with a stand-in rater, it makes RATERS ratings of that report's
+//      current case and no other, drops the old ones, keeps every other
+//      rating as it was, and writes the fault file from the new ratings.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -69,6 +80,7 @@ print(json.dumps({
                f.median_rating([(1, 0.4, "one"), (2, 0.0, "two"), (3, 0.2, "three")]),
                f.median_rating([(3, 0.5, "three"), (2, 0.5, "two"), (1, 0.9, "one")])],
     "fields": f.RATING_FIELDS,
+    "caseIds": [f.case_id("one case"), f.case_id("one case"), f.case_id("one case.")] if hasattr(f, "case_id") else None,
 }))
 `;
 let inst = null;
@@ -113,8 +125,25 @@ if (inst) {
   check(JSON.stringify(inst.median) === JSON.stringify([[0.1, "one"], [0.2, "three"], [0.5, "two"]]),
     "take median_rating() of (0.1, 0.3, 0.1), of (0.4, 0, 0.2) and of raters 3, 2, 1 at (0.5, 0.5, 0.9).",
     'the median value with the reason of the lowest-numbered rater at it: [0.1, "one"], [0.2, "three"], [0.5, "two"].', JSON.stringify(inst.median));
-  check(JSON.stringify(inst.fields) === JSON.stringify(["reportID", "rater", "faultfrac", "reasoning", "instrument"]),
-    "read RATING_FIELDS.", "reportID, rater, faultfrac, reasoning, instrument.", JSON.stringify(inst.fields));
+  check(JSON.stringify(inst.fields) === JSON.stringify(["reportID", "rater", "faultfrac", "reasoning", "instrument", "case"]),
+    "read RATING_FIELDS.", "reportID, rater, faultfrac, reasoning, instrument, case.", JSON.stringify(inst.fields));
+  check(inst.caseIds !== null && inst.caseIds.every(id => /^[0-9a-f]{12}$/.test(id)) && inst.caseIds[0] === inst.caseIds[1] && inst.caseIds[0] !== inst.caseIds[2],
+    'compute case_id() of "one case" twice and of "one case." once.',
+    "12-digit hex ids, the same for the same text and different for a text one character longer.", JSON.stringify(inst.caseIds));
+}
+
+// The current case of every in-scope incident, as data/faultrate.py builds it.
+let current = null;
+try {
+  current = JSON.parse(execFileSync("python3", ["-B", "-c", `
+import json, sys
+sys.path.insert(0, "data")
+import faultrate as f
+print(json.dumps({rid: f.case_id(f.case_text(row, quote)) for rid, (row, quote) in f.incident_rows().items()}))
+`], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 1 << 26 }));
+} catch (e) {
+  check(false, "compute case_id(case_text()) for every in-scope incident (data/faultrate.py incident_rows()).",
+    "the module answers.", String(e.stderr || e.message).trim().split("\n").slice(-3).join(" | "));
 }
 
 // ---- 3 to 5: the ratings on file --------------------------------------------
@@ -127,9 +156,10 @@ if (inst && fs.existsSync(RATINGS)) {
   const fi = Object.fromEntries(fh.map((h, i) => [h, i]));
   const by = new Map();
   const bad = [];
-  for (const [rid, rater, ff, reason, instrument] of ratings) {
+  for (const [rid, rater, ff, reason, instrument, kase] of ratings) {
     const v = Number(ff), k = Number(rater);
     if (instrument !== inst.id) bad.push(`${rid} rater ${rater}: made by instrument ${instrument}, not the current ${inst.id}`);
+    if (current && kase !== current[rid]) bad.push(`${rid} rater ${rater}: made of case ${kase}, not its current case ${current[rid]} (run python3 data/faultrate.py, which rates it again)`);
     if (!(Number.isInteger(k) && k >= 1 && k <= inst.raters)) bad.push(`${rid}: rater ${rater} is not 1 to ${inst.raters}`);
     if (!(ff.trim() !== "" && v >= 0 && v <= 1 && Math.abs(v * 20 - Math.round(v * 20)) < 1e-9)) bad.push(`${rid} rater ${rater}: faultfrac ${ff} is not on the 0.05 grid in 0 to 1`);
     if (!(reason.length >= 1 && reason.length <= inst.reasonMax)) bad.push(`${rid} rater ${rater}: a reason of ${reason.length} characters`);
@@ -150,8 +180,55 @@ if (inst && fs.existsSync(RATINGS)) {
   }
   check(bad.length === 0,
     `read ${RATINGS} (${ratings.length} ratings) against data/faultfrac.csv (${faults.length} rows) and the current instrument (${inst.id}).`,
-    `every row has ${inst.raters} ratings by the current instrument, each on the 0.05 grid with a reason of 1 to ${inst.reasonMax} characters naming no company; each fault value is its ratings' median and its reasoning the median rater's; no rating lacks a row.`,
+    `every row has ${inst.raters} ratings by the current instrument, each of its report's current case and on the 0.05 grid with a reason of 1 to ${inst.reasonMax} characters naming no company; each fault value is its ratings' median and its reasoning the median rater's; no rating lacks a row.`,
     `${bad.length} problems, the first: ${bad.slice(0, 8).join(" | ")}`);
+}
+
+// ---- 6: a report whose case has changed is rated again -----------------------
+if (inst && current && fs.existsSync(RATINGS)) {
+  const run6 = `
+import csv, io, json, pathlib, sys, tempfile
+sys.path.insert(0, "data")
+import faultrate as f, slurp
+calls = []
+def fake_rate(cli, system, case, folder):
+    calls.append(case)
+    return 0.35, "a stand-in rater's line", 0
+real = pathlib.Path(f.RATINGS).read_text()
+rows = list(csv.DictReader(io.StringIO(real)))
+target = rows[0]["reportID"]
+stale = [dict(r, case="000000000000") if r["reportID"] == target else r for r in rows]
+with tempfile.TemporaryDirectory() as d:
+    ratings, faults = pathlib.Path(d) / "ratings.csv", pathlib.Path(d) / "faultfrac.csv"
+    with open(ratings, "w", newline="") as out:
+        w = csv.DictWriter(out, fieldnames=f.RATING_FIELDS, lineterminator="\\n"); w.writeheader(); w.writerows(stale)
+    f.RATINGS, slurp.FAULT_INPUT, f.rate, f.cli_path = ratings, faults, fake_rate, (lambda: "stand-in")
+    f.main()
+    after = list(csv.DictReader(io.StringIO(ratings.read_text())))
+    fault_rows = {r["reportID"]: r for r in csv.DictReader(io.StringIO(faults.read_text()))}
+rid_cases = {rid: f.case_id(f.case_text(row, quote)) for rid, (row, quote) in f.incident_rows().items() if rid == target}
+print(json.dumps({"target": target, "calls": len(calls), "callCases": sorted({f.case_id(c) for c in calls}),
+                  "want": rid_cases[target],
+                  "targetAfter": [r for r in after if r["reportID"] == target],
+                  "othersEqual": [r for r in after if r["reportID"] != target] == [r for r in rows if r["reportID"] != target],
+                  "fault": fault_rows.get(target)}))
+`;
+  let r6 = null;
+  try {
+    r6 = JSON.parse(execFileSync("python3", ["-B", "-c", run6], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 1 << 26 }).trim().split("\n").at(-1));
+  } catch (e) {
+    check(false, "run data/faultrate.py's main() on a copy of the ratings with a stand-in rater.", "it runs.",
+      String(e.stderr || e.message).trim().split("\n").slice(-3).join(" | "));
+  }
+  if (r6) {
+    const t = r6.targetAfter;
+    check(r6.calls === inst.raters && r6.callCases.length === 1 && r6.callCases[0] === r6.want
+        && t.length === inst.raters && t.every(x => x.case === r6.want && x.faultfrac === "0.35" && x.instrument === inst.id)
+        && r6.othersEqual && r6.fault && r6.fault.faultfrac === "0.35" && r6.fault.reasoning === "a stand-in rater's line",
+      `run data/faultrate.py's main() on a copy of ${RATINGS} in which ${r6.target}'s ratings carry the case 000000000000, with a stand-in rater that gives 0.35.`,
+      `it asks the rater ${inst.raters} times, each time ${r6.target}'s current case (${r6.want}); ${r6.target} then has ${inst.raters} ratings of 0.35 of that case and the old ones are gone; every other rating is as it was; the fault file gives ${r6.target} 0.35 and the stand-in's line.`,
+      JSON.stringify({ calls: r6.calls, callCases: r6.callCases, targetAfter: t.map(x => [x.rater, x.faultfrac, x.case]), othersEqual: r6.othersEqual, fault: r6.fault }));
+  }
 }
 
 assert.deepEqual(problems, [], `\n${problems.join("\n\n")}`);

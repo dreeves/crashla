@@ -776,44 +776,54 @@ Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
 // nothing on the five-day track, which held ~14% (decision 23(a) of the
 // 2026-11-01 open questions, 2026-11-02). Until 2026-09-26 the chart derived
 // its worst case as vmtMin / vmtRawMin, i.e. (receipt best / receipt min) x
-// incCovMin = 24% for 2026-08 while the sanity table said 17.3%.
+// incCovMin = 24% for 2026-08 while the sanity table said 17.3%. Each line's
+// note is checked against its own row: since 2026-11-18 a line's
+// data-through-month row can take its coverage from its company's own list
+// of crash reports (data/slurp.py preprint_coverage), so the lines no longer
+// share one pair of figures (until then this required one pair for all).
 {
   const dt = vm.runInContext(`
     (() => { const rows = parseVmtCsv(VMT_CSV_TEXT); const m = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
       // The month's row is read, never assumed (until 2026-11-06 a VMT CSV
       // without one stopped here on a TypeError naming nothing). assert is
       // crashla.js's, which throws its message with the details appended.
-      const r = rows.find(x => x.month === m);
-      assert(r !== undefined, "Replicata: read data/vmt.js's analysis rows (parseVmtCsv(VMT_CSV_TEXT)) and find one for the data-through month " + m + ".\\nExpectata: one, its receipt and incident coverage the figures the coverage notes give.\\nResultata: none; the newest month there is", rows.map(x => x.month).sort().at(-1));
-      return { month: m, coverage: r.coverage, coverageMin: r.coverageMin, incCov: r.incCov, incCovMin: r.incCovMin }; })()`, ctx);
-  const wantMonthly = [Math.round(dt.coverage * dt.incCov * 100), Math.round(dt.coverage * dt.incCovMin * 100)];
-  const wantFiveDay = [Math.round(dt.coverage * 100), Math.round(dt.coverageMin * 100)];
+      const r = rows.filter(x => x.month === m);
+      assert(r.length > 0, "Replicata: read data/vmt.js's analysis rows (parseVmtCsv(VMT_CSV_TEXT)) and find those for the data-through month " + m + ".\\nExpectata: one or more, each line's receipt and incident coverage the figures its coverage notes give.\\nResultata: none; the newest month there is", rows.map(x => x.month).sort().at(-1));
+      return { month: m, lines: JSON.parse(JSON.stringify(Object.fromEntries(r.map(x => [x.helmer,
+        { coverage: x.coverage, coverageMin: x.coverageMin, incCov: x.incCov, incCovMin: x.incCovMin }])))) }; })()`, ctx);
+  // Each line's two figures, on the Monthly track and on the five-day track.
+  const wantMonthly = h => { const x = dt.lines[h]; return [Math.round(x.coverage * x.incCov * 100), Math.round(x.coverage * x.incCovMin * 100)]; };
+  const wantFiveDay = h => { const x = dt.lines[h]; return [Math.round(x.coverage * 100), Math.round(x.coverageMin * 100)]; };
   // The chart's targets and their accessible names, each the mark's company
   // label then its tip (seriesMarkName): the ADS dots are the ones named for
   // an ADS line. The coverage note gives two figures, ~best% then
   // ~worst%. Until 2026-10-29 this told the ADS dots by their tooltips'
   // word "incident" and found the figure by the words "worst case".
+  const adsLinesHere = appValue("ADS_SERIES");
   const prefixes = appValue("ADS_SERIES.map(h => seriesMarkName(h, ''))").map(escAttr);
-  const adsTips = [...plain.chartMpiAll.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
-    .filter(m => m[1].startsWith(dt.month + "\n") && prefixes.some(p => m[2] === p + m[1])).map(m => m[1]);
+  // [line, tooltip] for each ADS dot of the month on a chart's markup
+  const lineTips = html => [...html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
+    .filter(m => m[1].startsWith(dt.month + "\n"))
+    .flatMap(m => prefixes.flatMap((p, i) => m[2] === p + m[1] ? [[adsLinesHere[i], m[1]]] : []));
   const figuresOf = t => (t.match(/~\d+%/g) || []).map(p => Number(p.slice(1, -1)));
-  const monthly = [...new Set(adsTips.map(t => JSON.stringify(figuresOf(t))))];
-  assert.ok(adsTips.length >= 1 && monthly.length === 1 && monthly[0] === JSON.stringify(wantMonthly),
+  const adsTips = lineTips(plain.chartMpiAll);
+  const monthlyOff = adsTips.filter(([h, t]) => JSON.stringify(figuresOf(t)) !== JSON.stringify(wantMonthly(h)))
+    .map(([h, t]) => `${h}: ${JSON.stringify(figuresOf(t))}, want ${JSON.stringify(wantMonthly(h))}`);
+  assert.ok(adsTips.length >= 1 && monthlyOff.length === 0,
     `Replicata: read the ${dt.month} ADS dot tooltips on the default (Monthly-track) MPI chart (the targets named for an ADS line).
-Expectata: every one's coverage note gives the month's whole completeness, ~${wantMonthly[0]}% (worst case ~${wantMonthly[1]}%): receipt coverage ${dt.coverage} x incident coverage ${dt.incCov} (worst ${dt.incCovMin}).
-Resultata: ${JSON.stringify(monthly)} from ${adsTips.length} tooltips.`);
+Expectata: each one's coverage note gives its line's whole completeness for the month: its row's receipt coverage x incident coverage, then x the incident coverage's low edge.
+Resultata: ${JSON.stringify(monthlyOff)} from ${adsTips.length} tooltips.`);
   const fiveDayTips = vm.runInContext(`
     (() => { const s = monthSeriesData(); const start = s.months.indexOf(DEFAULT_START_MONTH);
       const saved = selectedMetricKey; selectedMetricKey = "fatality";
       const html = renderAllHelmersMpiChart(sliceSeries(s, start, s.months.length - 1)); selectedMetricKey = saved;
-      const prefixes = ADS_SERIES.map(h => escAttr(seriesMarkName(h, '')));
-      return [...html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
-        .filter(m => m[1].startsWith(${JSON.stringify(dt.month)} + "\\n") && prefixes.some(p => m[2] === p + m[1])).map(m => m[1]); })()`, ctx);
-  const fiveDay = [...new Set(fiveDayTips.map(t => JSON.stringify(figuresOf(t))))];
-  assert.ok(fiveDayTips.length >= 1 && fiveDay.length === 1 && fiveDay[0] === JSON.stringify(wantFiveDay),
+      return html; })()`, ctx);
+  const fiveDayOff = lineTips(fiveDayTips).filter(([h, t]) => JSON.stringify(figuresOf(t)) !== JSON.stringify(wantFiveDay(h)))
+    .map(([h, t]) => `${h}: ${JSON.stringify(figuresOf(t))}, want ${JSON.stringify(wantFiveDay(h))}`);
+  assert.ok(lineTips(fiveDayTips).length >= 1 && fiveDayOff.length === 0,
     `Replicata: the same month's ADS dot tooltips on a five-day-track metric (fatality).
-Expectata: every one's coverage note gives the receipt coverage alone, ~${wantFiveDay[0]}% (worst case ~${wantFiveDay[1]}%): five-day metrics carry no Monthly-track thinning, but the release holds only part of the month's five-day reports.
-Resultata: ${JSON.stringify(fiveDay)} from ${fiveDayTips.length} tooltips, e.g. ${JSON.stringify(fiveDayTips.slice(0, 1))}.`);
+Expectata: each one's coverage note gives its line's receipt coverage alone, best then low edge: five-day metrics carry no Monthly-track thinning, but the data hold only part of the month's five-day reports.
+Resultata: ${JSON.stringify(fiveDayOff)} from ${lineTips(fiveDayTips).length} tooltips, e.g. ${JSON.stringify(lineTips(fiveDayTips).slice(0, 1))}.`);
 }
 // (c) The card's Effective-VMT tooltip states the numbers only; the per-month
 // VMT rationales live in the sanity section's VMT-sources table (embedded

@@ -21,7 +21,7 @@ assert.ok(
   preprocess.includes("def fetch_nhtsa_csv(stamp):") &&
     preprocess.includes("def read_vmt_master():") &&
     !preprocess.includes("def fetch_vmt_sheet_raw") &&
-    preprocess.includes("def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):") &&
+    preprocess.includes("def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months, list_cov):") &&
     preprocess.includes("def release_month_coverage(data_through_date, last_month, counts, vmt):") &&
     preprocess.includes("def snapshot_csv_if_changed(prefix, text, stamp):") &&
     preprocess.includes("urllib.request.urlopen"),

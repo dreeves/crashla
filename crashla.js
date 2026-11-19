@@ -1581,7 +1581,7 @@ function rationaleHtml(rationale) {
 function parseVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   assert(lines.length > 1, "VMT sheet CSV must include header and rows");
-  assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,coverage_min,coverage_max,incident_coverage,incident_coverage_min,incident_coverage_max,rationale",
+  assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,coverage_min,coverage_max,incident_coverage,incident_coverage_min,incident_coverage_max,incidents_through,rationale",
     "VMT sheet CSV header mismatch", {header: lines[0]});
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -1589,7 +1589,7 @@ function parseVmtCsv(text) {
     if (line === "") continue;
     const N = "\\d+(?:\\.\\d+)?"; // number pattern
     const re = new RegExp(
-      `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(.*)$`
+      `^([^,]+),(\\d{4}-\\d{2}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(${N}),(\\d{4}-\\d{2}-\\d{2}),(.*)$`
     );
     const hit = re.exec(line);
     assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
@@ -1602,6 +1602,13 @@ function parseVmtCsv(text) {
     // observed / expected, its high edge FIVE_DAY_RECEIPT_COVERAGE_MAX
     // (release_month_coverage; until 2026-10-31 a measured constant triple).
     // Scales the raw VMT that five-day-track metrics (m.fiveDay) use.
+    // Since 2026-11-18 a row can take its two coverage triples from a
+    // company's own list of its crash reports instead, where that list holds
+    // more of the month than NHTSA's file does (slurp.py preprint_coverage:
+    // the list's miles over the row's, and the company's on-time share of
+    // Monthly reports); the row's incidents_through column, parsed as
+    // `through`, is the date its incidents run through, NHTSA's receipt
+    // cutoff or that list's date.
     const coverage    = Number(hit[9]);
     const coverageMin = Number(hit[10]);
     const coverageMax = Number(hit[11]);
@@ -1639,7 +1646,8 @@ function parseVmtCsv(text) {
       incCov,
       incCovMin,
       incCovMax,
-      rationale: vmtRationale(hit[15], i + 1),
+      through: hit[15],
+      rationale: vmtRationale(hit[16], i + 1),
     });
   }
   assert(rows.length > 0, "VMT sheet CSV has no data rows");
@@ -1918,8 +1926,12 @@ function vmtEndTooltip(month, miles, edge) {
 // the reports NHTSA had received by the cutoff date shown, about X% of the
 // month's eventual incidents (worst case about Y%), so it is far below the
 // month's full count.
-function vmtPartialNote(share, worst) {
-  return `Count above only includes incidents received by ${NHTSA_DATA_THROUGH_DATE}: ~${Math.round(share * 100)}% of the month's eventual incidents (worst case ~${Math.round(worst * 100)}%)`;
+// The date is the row's own (data/vmt.js incidents_through): NHTSA's receipt
+// cutoff, or, on a row whose coverage comes from a company's own list of its
+// crash reports (slurp.py preprint_coverage), the date that list runs
+// through. Until 2026-11-18 it was NHTSA's cutoff on every row.
+function vmtPartialNote(through, share, worst) {
+  return `Count above only includes incidents received by ${through}: ~${Math.round(share * 100)}% of the month's eventual incidents (worst case ~${Math.round(worst * 100)}%)`;
 }
 // The share of a month's eventual incidents that the release holds, best and
 // worst, as the effective miles scale it (monthSeriesData): on the five-day
@@ -1939,7 +1951,7 @@ function receivedShare(row, fiveDay) {
 // elsewhere). The VMT charts' count is all incidents, a Monthly-track count.
 function partialCountLine(row, fiveDay) {
   const share = receivedShare(row, fiveDay);
-  return share.worst < 0.999 ? `\n${vmtPartialNote(share.best, share.worst)}` : "";
+  return share.worst < 0.999 ? `\n${vmtPartialNote(row.through, share.best, share.worst)}` : "";
 }
 
 function helmerMonthRows(series, helmer) {
@@ -2604,6 +2616,7 @@ function monthSeriesData() {
         month,
         coverage: vmt.coverage, // receipt coverage best (< 1 only in the data-through month)
         coverageMin: vmt.coverageMin, // and its low edge (receivedShare)
+        through: vmt.through, // the date the row's incidents run through (vmtPartialNote)
         // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * vmt.coverage * vmt.incCovMin,
         vmtBest: vmt.vmtBest * vmt.coverage * vmt.incCov,
@@ -5942,6 +5955,23 @@ const NARRATIVE_FAULT_LABEL = "Fault fraction:";
 // 2026-10-04: each AV involved counts) as a row of its own, with the report's
 // narrative after this label, so the row does not read as a duplicate filing.
 const SECOND_INVOLVEMENT_LABEL = "[Second AV in this report]";
+// A preprint is a crash report as its company has published it, for a report
+// NHTSA's files do not hold yet (data/slurp.py PREPRINT_LIST: Tesla's own
+// list of the crashes it has reported; a record carries `preprint: true`
+// until the NHTSA release that publishes its report). The incident browser
+// leads such a row's narrative with this label and sets the row apart
+// (style.css tr.preprint).
+// label must say that this incident is not in NHTSA's published data
+// yet and comes from the company's own list of the crashes it has reported
+// to NHTSA.
+const PREPRINT_LABEL = "[Via Tesla, not yet in NHTSA's data]";
+// The incident browser's record marks: a field whose presence sets a
+// record's row apart, the label the row's narrative then leads with, and the
+// class the row then takes (none for a second AV, whose label is enough).
+const RECORD_MARKS = [
+  {field: "secondOf", label: SECOND_INVOLVEMENT_LABEL, rowClass: ""},
+  {field: "preprint", label: PREPRINT_LABEL, rowClass: "preprint"},
+];
 function narrativeToggleName(reportId) {
   return `Narrative of report ${reportId}`;
 }
@@ -6049,8 +6079,11 @@ function renderTable() {
     const filedText = isCbi
       ? "[\"Confidential Business Information\"]"
       : (r.narrative || "");
-    // A second AV's row (secondOf names its report) leads with its label.
-    const narrativeText = r.secondOf === undefined ? filedText : `${SECOND_INVOLVEMENT_LABEL} ${filedText}`;
+    // A marked record's row (RECORD_MARKS: a second AV, a preprint) leads
+    // its narrative with each mark's label and takes each mark's class.
+    const marks = RECORD_MARKS.filter(mark => r[mark.field] !== undefined);
+    const narrativeText = [...marks.map(mark => mark.label), filedText].join(" ");
+    tr.className = marks.map(mark => mark.rowClass).join(" ").trim();
     const narrativeClass = isCbi ? "narrative-cell cbi" : "narrative-cell";
 
     const fault = faultFrac(r.reportId);
@@ -6721,6 +6754,11 @@ In general we mistrust anything Tesla says except numbers in their official repo
       </tr>`);
     }
   }
+  // The rows of the table whose coverage comes from a company's own list of
+  // its crash reports: their incidents run through that list's date, not
+  // NHTSA's receipt cutoff (data/vmt.js incidents_through).
+  const listCovered = vmt.filter(r => ADS_HELMERS.includes(r.helmer) && r.through !== NHTSA_DATA_THROUGH_DATE)
+    .map(r => `${r.helmer} ${r.month} (through ${r.through})`);
   sections.push(`
 <h3>Incident coverage for partial months</h3>
 <p>
@@ -6729,6 +6767,7 @@ In general we mistrust anything Tesla says except numbers in their official repo
 NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Monthly (must be reported by the following month).
 Claude notes: 
 <span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the estimated fraction of its 5-Day-track incidents present in this release (their count over the count expected at each company's rate in its most recent earlier month with at least 3 such incidents, leaving out a company with no such month, as for incident coverage; the high end is the largest share a first release has held, padded), not a fraction of days.</span>
+<span class="ai-text">A company's own list of the crashes it has reported to NHTSA can hold more of a month than NHTSA's file does; a row then takes its coverage from that list. Its calendar coverage is the share of the month's miles driven through the date the list runs through, with no range (the list holds every crash through that date and none after), and its incident coverage is the share of the company's Monthly reports that have reached NHTSA on time, down to that share's 95% lower bound (a list can lack a crash its company files late). Rows of this table on a list's coverage: ${escHtml(listCovered.join(", ") || "none")}.</span>
 </p>
     <div class="table-wrap"><table id="sanity-coverage">
       <thead><tr>
@@ -7549,6 +7588,11 @@ function loadPredmarketData() {
     assert(inc.secondOf === undefined ||
       (inc.secondOf !== inc.reportId && incidentData.some(other => other.reportId === inc.secondOf)),
       "incident secondOf must name another incident's report", {reportId: inc.reportId, secondOf: inc.secondOf});
+    // A preprint's record (data/slurp.py PREPRINT_LIST: a report its company
+    // has published and NHTSA's files do not hold yet) says so with true; no
+    // other record has the field.
+    assert(inc.preprint === undefined || inc.preprint === true,
+      "incident preprint must be true or absent", {reportId: inc.reportId, preprint: inc.preprint});
     if (inc.fault !== null) {
       const f = inc.fault.faultfrac;
       assert(typeof f === "number" && f >= 0 && f <= 1,
@@ -7576,8 +7620,12 @@ function loadPredmarketData() {
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
     : "";
   const throughPart = `<span class="ai-text">NHTSA report-receipt cutoff: ${NHTSA_DATA_THROUGH_DATE}.</span>`;
+  // The preprints (PREPRINT_LABEL): incidents that come from a company's own
+  // list and not from NHTSA's files, which the sentence before this one names
+  // as the source.
+  const preprintPart = `<span class="ai-text">Incidents not yet in NHTSA's data, taken from a company's own list of its reports: ${fmtCount(incidentData.filter(r => r.preprint !== undefined).length)}.</span>`;
   byId("colophon").innerHTML =
-    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} ${throughPart} · ` +
+    `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} ${throughPart} ${preprintPart} · ` +
     `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a> · ` +
     `web design inspired by <a href="https://ncase.me">nicky case</a>`;
   initInputModality();

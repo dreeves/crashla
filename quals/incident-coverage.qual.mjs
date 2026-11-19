@@ -30,6 +30,7 @@ const vmtData = vm.runInContext(`
     incCov: r.incCov,
     incCovMin: r.incCovMin,
     incCovMax: r.incCovMax,
+    through: r.through,
   }))
 `, ctx);
 
@@ -52,11 +53,19 @@ Resultata: ${row.incCovMin} <= ${row.incCov} <= ${row.incCovMax}.`);
 // expected (since 2026-10-31, decision D6; quals/receipt-coverage.qual.mjs
 // recounts it), with the high edge FIVE_DAY_RECEIPT_COVERAGE_MAX, a reviewed
 // constant read here from data/slurp.py. The generated CSV must carry one
-// such triple, shared by every line, for the data-through month and
-// (1, 1, 1) everywhere else. (Until 2026-10-31 this required the literal
-// constant FIVE_DAY_RECEIPT_COVERAGE = (best, lo, hi), the median of earlier
-// months' first-release shares and its padded range.)
-const dataThroughMonth = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx).slice(0, 7);
+// such triple, shared by every line whose incidents run through NHTSA's
+// cutoff, for the data-through month and (1, 1, 1) everywhere else. (Until
+// 2026-10-31 this required the literal constant FIVE_DAY_RECEIPT_COVERAGE =
+// (best, lo, hi), the median of earlier months' first-release shares and its
+// padded range.) Since 2026-11-18 a line's data-through-month row can take
+// its coverage from its company's own list of crash reports instead, where
+// that list holds more of the month (data/slurp.py preprint_coverage); such
+// a row's incidents_through is the list's date, and
+// quals/preprints.qual.mjs checks its coverage. Until then this required
+// the one triple of every line.
+const nhtsaCutoff = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx);
+const dataThroughMonth = nhtsaCutoff.slice(0, 7);
+const onNhtsa = row => row.through === nhtsaCutoff;
 const slurpSource = readFileSync(new URL("../data/slurp.py", import.meta.url), "utf8");
 const covMatch = slurpSource.match(/^FIVE_DAY_RECEIPT_COVERAGE_MAX = ([0-9.]+)$/m);
 assert.ok(covMatch,
@@ -64,12 +73,17 @@ assert.ok(covMatch,
 Expectata: the reviewed high edge of the receipt coverage is a literal constant.
 Resultata: not found.`);
 const covHi = Number(covMatch[1]);
-const dataThroughTriples = [...new Set(vmtData.filter(r => r.month === dataThroughMonth)
+const dataThroughTriples = [...new Set(vmtData.filter(r => r.month === dataThroughMonth && onNhtsa(r))
   .map(r => JSON.stringify([r.coverage, r.coverageMin, r.coverageMax])))];
 assert.ok(dataThroughTriples.length === 1,
-  `Replicata: read every line's receipt coverage in the data-through month ${dataThroughMonth}.
-Expectata: one triple shared by every line (the coverage is pooled over the companies).
+  `Replicata: read the receipt coverage, in the data-through month ${dataThroughMonth}, of every line whose incidents run through NHTSA's cutoff (${nhtsaCutoff}).
+Expectata: one triple shared by those lines (the coverage is pooled over the companies).
 Resultata: ${JSON.stringify(dataThroughTriples)}.`);
+const offCutoff = vmtData.filter(r => !onNhtsa(r) && r.month !== dataThroughMonth);
+assert.equal(offCutoff.length, 0,
+  `Replicata: list the rows whose incidents_through is not NHTSA's cutoff (${nhtsaCutoff}).
+Expectata: all in the data-through month ${dataThroughMonth}: a company's list sets a row's coverage only while NHTSA's file holds less of that month.
+Resultata: ${JSON.stringify(offCutoff.map(r => `${r.helmer} ${r.month} ${r.through}`))}.`);
 const [covBest, covLo] = JSON.parse(dataThroughTriples[0]);
 assert.ok(0 < covLo && covLo < covBest && covBest < covHi && covHi < 1,
   `Replicata: inspect the data-through month's receipt-coverage triple.
@@ -81,7 +95,9 @@ for (const row of vmtData) {
     `Replicata: check coverage ordering for ${row.helmer} ${row.month}.
 Expectata: 0 < coverage_min <= coverage <= coverage_max <= 1.
 Resultata: ${row.coverageMin} <= ${row.coverage} <= ${row.coverageMax}.`);
-  const expected = row.month === dataThroughMonth ? [covBest, covLo, covHi] : [1, 1, 1];
+  // A row on a company list's coverage keeps its own triple (preprints.qual).
+  const expected = !onNhtsa(row) ? [row.coverage, row.coverageMin, row.coverageMax]
+    : row.month === dataThroughMonth ? [covBest, covLo, covHi] : [1, 1, 1];
   assert.deepEqual([row.coverage, row.coverageMin, row.coverageMax], expected,
     `Replicata: compare ${row.helmer} ${row.month} receipt coverage with the data-through month's triple.
 Expectata: ${JSON.stringify(expected)} (${row.month === dataThroughMonth ? "the data-through month" : "a fully received month"}).

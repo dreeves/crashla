@@ -11,7 +11,9 @@ OPERATOR_TYPE_OVERRIDE, TELEOP_DRIVEN_REPORTS, and the narrative tripwires
 beside them), keeps one report per Same Incident ID (a reviewed table says
 which when two are filed: SUPERSEDED_REPORTS, SPLIT_SAME_INCIDENT_REPORTS),
 adds a record for the second AV of each crash one report files for two of a
-helmer's AVs (SECOND_INVOLVEMENTS),
+helmer's AVs (SECOND_INVOLVEMENTS), reads beside NHTSA's files the reports a
+company has published that NHTSA's files do not hold yet (preprints:
+PREPRINT_LIST),
 joins in the in-repo VMT master (data/vmt.csv) and fault inputs
 (data/faultfrac.csv), and injects the data into data/incidents.js and
 data/vmt.js (between marker comments). Every check runs before any of
@@ -27,6 +29,8 @@ import json
 import math
 import re
 import urllib.request
+import xml.etree.ElementTree
+import zipfile
 from collections import Counter
 from pathlib import Path
 
@@ -71,6 +75,54 @@ NHTSA_OTHER_CSV_URL = (
     "https://static.nhtsa.gov/odi/ffdd/sgo-2021-01/"
     "SGO-2021-01_Incident_Reports_OTHER.csv"
 )
+# Preprints (2026-11-18; the human: "can we add the new incidents, style them
+# in a clear way to show they're not official yet, and incorporate them in a
+# fully principled way?"). A preprint is a crash report as its company has
+# published it, for a report NHTSA's files do not hold yet. Tesla's robotaxi
+# safety page (tesla.com/robotaxi/safety, "Download all SGO reportable
+# events") links a spreadsheet of every collision it reported to NHTSA "while
+# Robotaxi is driving autonomously with no safety monitor in the vehicle,
+# including when a remote operator is assisting or has taken control", under
+# NHTSA's Report IDs: the list. data/snapshots holds the file as Tesla serves
+# it, named for the date the list runs through (tesla-list-YYYYMMDD.xlsx;
+# data/README.md, Each NHTSA release, step 7, says how to refresh it). slurp
+# reads it beside NHTSA's files (list_rows() maps its rows onto NHTSA's
+# columns): a row whose report NHTSA's files hold is dropped, NHTSA's row
+# standing, and the rest are the preprints (preprint_rows()). A preprint goes
+# through every check an NHTSA row does and its record in data/incidents.js
+# carries `preprint: true`; at the release that publishes its report, NHTSA's
+# row takes its place with no further code. The NHTSA receipt and arrival
+# statistics read NHTSA's rows only. quals/preprints.qual.mjs holds the list
+# to its record against NHTSA: every list row NHTSA has published agrees with
+# one of that report's filed versions (24 of 24 on 2026-11-18).
+#   entity   the company, as NHTSA's Reporting Entity names it
+#   prefix   its snapshots' prefix in data/snapshots
+#   url      where Tesla serves the file (the page that links it answers 403
+#            to a script; this address does not)
+#   through  the date the list runs through (the safety page's "As of")
+#   miles    the company's no-monitor miles of that date's month through that
+#            date, the exposure the list's crashes of that month belong to
+#            (preprint_coverage()): Oct 1-18, 2026 on Tesla's safety page, the
+#            measured part of data/vmt.csv's teslanomonitor 2026-10 row
+PREPRINT_LIST = {
+    "entity": "Tesla, Inc.",
+    "prefix": "tesla-list",
+    "url": "https://digitalassets.tesla.com/tesla-contents/raw/upload/"
+           "Robotaxi-SGO-Report_10_18_2026.xlsx",
+    "through": "2026-10-18",
+    "miles": 1179333,
+}
+# What a list row carries where an NHTSA row carries its filing's type,
+# version and operator type, none of which the list gives. The type marks the
+# row as a preprint (no REPORT_TRACK entry: a preprint has no place in the
+# counts of NHTSA's arrivals). The version is the report's first: NHTSA's row
+# replaces a list row whatever its version (preprint_rows()). The operator
+# type is the list's own definition, no safety monitor in the vehicle; a
+# remote operator who drove is named in the narrative, which
+# check_teleop_classified() reads.
+PREPRINT_REPORT_TYPE = "Preprint"
+PREPRINT_REPORT_VERSION = "1"
+PREPRINT_OPERATOR_TYPE = "None"
 # NHTSA's canonical SGO page labels each release "through <date>": reports
 # RECEIVED through that date, which is the 15th of the month before the
 # release rolled forward to the next business day when the 15th falls on a
@@ -794,6 +846,11 @@ SEVERITY_OVERRIDE = {
     # Waymo stopped at a stop sign, rear-ended by a pickup; "The passengers in
     # the Waymo AV were transported from the scene to a hospital"
     "30270-16736": ("Unknown", "Minor W/ Hospitalization"),
+    # Added 2026-11-18 from Tesla's list (a preprint: PREPRINT_LIST), same
+    # convention. Tesla stopped at a stop sign; an SUV hit by a crossing car
+    # was pushed into it; "The driver of the passenger vehicle from the
+    # original collision was transported to the hospital for unknown reason."
+    "13781-17203": ("Unknown", "Minor W/ Hospitalization"),
     # Added 2026-10-03 (audit finding #44), the 2026-08-22 convention for an
     # affirmative field the narrative contradicts: Zoox 30610-15722 (JUL-2026
     # Austin), field "Property Damage. No Injured Reported"; rear-ended while
@@ -952,6 +1009,19 @@ PASSENGER_OVERRIDE = {
     "13781-17179": (PAX_BELTED, PAX_BELTED),  # "had one rider in the vehicle"
     "13781-17191": (PAX_NO, PAX_NO),       # "had no riders in the vehicle"
     "13781-17193": (PAX_NO, PAX_NO),       # "had no riders in the vehicle"
+    # Added 2026-11-18: the preprints of Tesla's Oct-18-2026 list
+    # (PREPRINT_LIST). The list has no belt field, so each entry's filed value
+    # is blank; when NHTSA's file holds the report, its filed code stops the
+    # run here for a re-read (data/README.md, Each NHTSA release, step 7).
+    "13781-17203": ("", PAX_BELT_UNSTATED),  # "had one rider present in the vehicle"
+    "13781-17299": ("", PAX_BELT_UNSTATED),  # "had two passengers in the vehicle"
+    "13781-17300": ("", PAX_BELT_UNSTATED),  # "had three passengers in the vehicle"
+    "13781-17301": ("", PAX_BELT_UNSTATED),  # "had two passengers in the vehicle"
+    # "had two passengers in the vehicle. The right passenger was unbuckled"
+    "13781-17302": ("", "Subject Vehicle - Not Belted - see Narrative"),
+    "13781-17303": ("", PAX_NO),           # "had no passengers in the vehicle"
+    "13781-17304": ("", PAX_NO),           # "had no passengers in the vehicle"
+    "13781-17305": ("", PAX_NO),           # "There were no passengers in the vehicle"
 }
 
 # Narrative wording that says whether anyone was aboard the AV itself, named by
@@ -1365,6 +1435,192 @@ def fetch_nhtsa_csv(stamp):
         texts[prefix] = payload.decode("utf-8")
         snapshot_csv_if_changed(prefix, texts[prefix], stamp)
     return nhtsa_rows(texts), headers_by_url
+
+
+# The company list's columns (its spreadsheet's header row), in order, and
+# the columns FIELDS reads from an NHTSA row that the list does not give,
+# blank in a list row (list_row()).
+LIST_COLUMNS = (
+    "report_id", "incident_date_local", "city", "state", "roadway_type",
+    "weather", "crash_with", "highest_injury_severity_alleged",
+    "subject_vehicle_pre_crash_speed (MPH)", "subject_vehicle_damage_area",
+    "crash_partner_damage_area", "air_bags_deployed", "narrative",
+)
+LIST_ABSENT_COLUMNS = (
+    "Incident Time (24:00)", "SV Pre-Crash Movement", "CP Pre-Crash Movement",
+    "Were All Passengers Belted?", "Report Submission Date", "Narrative - CBI?",
+)
+LIST_NO_CONTACT_AREA = "N/A"   # a damage-area cell with no area to name
+XLSX_NS = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+XLSX_EPOCH = datetime.date(1899, 12, 30)   # day 0 of a spreadsheet's date serials
+
+
+def latest_list_path():
+    """The newest snapshot of the company list (PREPRINT_LIST)."""
+    paths = sorted(SNAPSHOT_DIR.glob(f"{PREPRINT_LIST['prefix']}-*.xlsx"))
+    must(paths,
+         "no snapshot of the company list to read (save the file PREPRINT_LIST "
+         "names: data/README.md, Each NHTSA release, step 7)",
+         pattern=f"{PREPRINT_LIST['prefix']}-*.xlsx", directory=relpath(SNAPSHOT_DIR))
+    return paths[-1]
+
+
+def read_list_cells(path):
+    """The rows of the spreadsheet at <path> as {column header: cell text}, in
+    the header's order: its one sheet, whose first row holds the headers. A
+    cell is a shared string or a number, as Tesla's file writes them; any
+    other kind stops the run."""
+    with zipfile.ZipFile(path) as book:
+        names = book.namelist()
+        sheets = sorted(n for n in names if re.fullmatch(r"xl/worksheets/sheet\d+\.xml", n))
+        must(len(sheets) == 1 and "xl/sharedStrings.xml" in names,
+             "the company list's spreadsheet must hold one sheet and its "
+             "shared strings", file=relpath(path), sheets=sheets)
+        strings = ["".join(t.text or "" for t in si.iter(XLSX_NS + "t"))
+                   for si in xml.etree.ElementTree.fromstring(
+                       book.read("xl/sharedStrings.xml")).iter(XLSX_NS + "si")]
+        sheet = xml.etree.ElementTree.fromstring(book.read(sheets[0]))
+    grid = []
+    for row in sheet.iter(XLSX_NS + "row"):
+        cells = {}
+        for cell in row.iter(XLSX_NS + "c"):
+            kind, value = cell.get("t"), cell.find(XLSX_NS + "v")
+            must(kind in (None, "n", "s") and value is not None,
+                 "a cell of the company list is neither a shared string nor a "
+                 "number", file=relpath(path), cell=cell.get("r"), kind=kind)
+            column = re.match(r"[A-Z]+", cell.get("r")).group()
+            cells[column] = strings[int(value.text)] if kind == "s" else value.text
+        grid.append(cells)
+    must(len(grid) > 1, "the company list's spreadsheet has no rows under its "
+         "header", file=relpath(path), rows=len(grid))
+    header = grid[0]
+    must(all(set(cells) <= set(header) for cells in grid[1:]),
+         "a row of the company list has a cell in a column with no header",
+         file=relpath(path), header=header)
+    return [{header[column]: cells.get(column, "") for column in header}
+            for cells in grid[1:]]
+
+
+def list_row(cells):
+    """One row of the company list (<cells>: a read_list_cells() row) as a row
+    in NHTSA's columns: what the list gives under NHTSA's names, as the list
+    writes it (main() strips cells as it does NHTSA's); its date's month as
+    the Incident Date; its weather as the one matching "Weather - ..." column
+    and its damage areas as NHTSA's Y columns; blanks for LIST_ABSENT_COLUMNS;
+    and the PREPRINT_* values where the list gives no filing type, version or
+    operator type. Its Same Incident ID is its Report ID: the list gives none,
+    and its row is alone under its Report ID until NHTSA's replaces it.
+
+    Stops on a row that is not as described: other columns, a date that is no
+    whole day or is after the date the list runs through, a speed that is no
+    whole number, a weather value FIELDS has no column for, a damage area
+    CONTACT_AREA_LABELS lacks."""
+    must(tuple(cells) == LIST_COLUMNS,
+         "the company list's columns are not the ones list_row() maps "
+         "(compare the spreadsheet's header with LIST_COLUMNS in data/slurp.py "
+         "and map what changed: data/README.md, Each NHTSA release, step 7)",
+         columns=list(cells), expected=list(LIST_COLUMNS))
+    rid = cells["report_id"]
+    serial = float(cells["incident_date_local"])
+    must(serial.is_integer(), "a company-list date is not a whole day",
+         reportId=rid, value=cells["incident_date_local"])
+    day = XLSX_EPOCH + datetime.timedelta(days=int(serial))
+    must(day.isoformat() <= PREPRINT_LIST["through"],
+         "a crash on the company list is dated after the date the list runs "
+         "through (PREPRINT_LIST's through in data/slurp.py is the list's own "
+         "\"As of\" date: data/README.md, Each NHTSA release, step 7)",
+         reportId=rid, date=day.isoformat(), through=PREPRINT_LIST["through"])
+    speed = float(cells["subject_vehicle_pre_crash_speed (MPH)"])
+    must(speed.is_integer() and speed >= 0,
+         "a company-list speed is not a whole number of miles per hour",
+         reportId=rid, value=cells["subject_vehicle_pre_crash_speed (MPH)"])
+    weather_columns = [f for f in FIELDS if f.startswith("Weather - ")]
+    weather = f"Weather - {cells['weather']}"
+    must(weather in weather_columns,
+         "a company-list weather value has no \"Weather - ...\" column among "
+         "FIELDS in data/slurp.py", reportId=rid, value=cells["weather"],
+         columns=weather_columns)
+    row = {column: "" for column in LIST_ABSENT_COLUMNS}
+    row.update({column: "Y" if column == weather else "" for column in weather_columns})
+    for cell, prefix in (("subject_vehicle_damage_area", "SV Contact Area"),
+                         ("crash_partner_damage_area", "CP Contact Area")):
+        areas = [area.strip() for area in cells[cell].split(",")
+                 if area.strip() != LIST_NO_CONTACT_AREA]
+        must(set(areas) <= set(CONTACT_AREA_LABELS) and len(set(areas)) == len(areas),
+             "a company-list contact area is not one of CONTACT_AREA_LABELS in "
+             "data/slurp.py, or is named twice", reportId=rid, column=cell,
+             value=cells[cell])
+        row.update({f"{prefix} - {label}": "Y" if label in areas else ""
+                    for label in CONTACT_AREA_LABELS})
+    month_abbr = {num: abbr for abbr, num in MONTH_ABBR_TO_NUM.items()}
+    row.update({
+        "Report ID": rid,
+        "Report Version": PREPRINT_REPORT_VERSION,
+        "Report Type": PREPRINT_REPORT_TYPE,
+        "Reporting Entity": PREPRINT_LIST["entity"],
+        "Same Incident ID": rid,
+        "Driver / Operator Type": PREPRINT_OPERATOR_TYPE,
+        "Incident Date": f"{month_abbr[f'{day.month:02d}']}-{day.year}",
+        "City": cells["city"],
+        "State": cells["state"],
+        "Roadway Type": cells["roadway_type"],
+        "Crash With": cells["crash_with"],
+        "Highest Injury Severity Alleged": cells["highest_injury_severity_alleged"],
+        "SV Precrash Speed (MPH)": str(int(speed)),
+        "Any Air Bags Deployed?": cells["air_bags_deployed"],
+        "Narrative": cells["narrative"],
+    })
+    return row
+
+
+def list_rows(path):
+    """Every row of the company-list snapshot at <path> in NHTSA's columns
+    (list_row()). Stops unless the file is the one named for the date the
+    list runs through, no Report ID is on it twice, and its Report IDs are
+    TESLA_NO_MONITOR_REPORTS, the no-monitor line's members (the list is that
+    line's definition; a new list changes both)."""
+    wanted = f"{PREPRINT_LIST['prefix']}-{PREPRINT_LIST['through'].replace('-', '')}.xlsx"
+    must(path.name == wanted,
+         "the newest company-list snapshot is not named for the date the list "
+         "runs through (PREPRINT_LIST's through in data/slurp.py and the "
+         "file's name must be the list's own \"As of\" date: data/README.md, "
+         "Each NHTSA release, step 7)", file=path.name, expected=wanted)
+    rows = [list_row(cells) for cells in read_list_cells(path)]
+    ids = [r["Report ID"] for r in rows]
+    must(len(set(ids)) == len(ids), "the company list names a Report ID twice",
+         reports=sorted(rid for rid, n in Counter(ids).items() if n > 1))
+    must(set(ids) == TESLA_NO_MONITOR_REPORTS,
+         "the company list's Report IDs are not TESLA_NO_MONITOR_REPORTS (the "
+         "list has changed: bring the set in data/slurp.py in line with it: "
+         "data/README.md, Each NHTSA release, step 7)",
+         onlyOnList=sorted(set(ids) - TESLA_NO_MONITOR_REPORTS),
+         onlyInSet=sorted(TESLA_NO_MONITOR_REPORTS - set(ids)))
+    return rows
+
+
+def preprint_rows(nhtsa):
+    """The preprints: the rows of the company list (its newest snapshot) whose
+    Report ID none of NHTSA's rows <nhtsa> has. Stops on one dated after
+    NHTSA's data-through month: the analysis ends at that month, and a month
+    only a list covers has no rule yet."""
+    held = {r["Report ID"] for r in nhtsa}
+    preprints = [r for r in list_rows(latest_list_path()) if r["Report ID"] not in held]
+    later = sorted(r["Report ID"] for r in preprints
+                   if nhtsa_month_to_iso(r["Incident Date"]) > NHTSA_DATA_THROUGH_DATE[:7])
+    must(not later,
+         "a preprint is dated after NHTSA's data-through month (the company "
+         "list reaches a month NHTSA's file has not begun; how to count a month "
+         "only a list covers is undecided: ask the human)",
+         reports=later, dataThrough=NHTSA_DATA_THROUGH_DATE)
+    return preprints
+
+
+def newest_report_rows():
+    """The rows every incident count reads, from the newest snapshots:
+    NHTSA's (newest_snapshot_rows()) and the preprints, as main() reads them
+    after a live fetch."""
+    nhtsa = newest_snapshot_rows()
+    return nhtsa + preprint_rows(nhtsa)
 
 
 def modified_date_from_last_modified(last_modified):
@@ -2000,8 +2256,59 @@ def parse_vmt_months(raw_text):
     return {row[1].strip() for row in _vmt_data_rows(raw_text)}
 
 
-def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
-    """Add coverage + incident_coverage columns to the raw VMT CSV text.
+def preprint_coverage(vmt):
+    """The coverage the company list (PREPRINT_LIST) gives each line of its
+    company for the month the list runs through: {(line, iso_month): (receipt
+    coverage triple, Monthly-track incident coverage triple, the list's
+    date)}, shaped as NHTSA's are (build_vmt_csv). <vmt> is
+    parse_vmt_values().
+
+    Receipt coverage: the list holds every crash of the month through its
+    date and none after, so it covers the list's miles (the company's
+    no-monitor miles of the month through that date) out of the row's miles,
+    best, low and high alike. On the all-modes line the row's other miles
+    (a safety monitor aboard, which the list leaves out) count as uncovered.
+
+    Incident coverage: a list can lack a crash its company files late. Its
+    best value is the share of the company's Monthly-track reports that
+    reached NHTSA on time, over MONTHLY_ARRIVAL_OBSERVATIONS' months with
+    both counts measured; its low edge that share's Wilson 95% lower bound;
+    its high edge 1 (the list may be complete). The five-day track takes no
+    such factor: no five-day report of the company has arrived late.
+
+    Stops if the list's miles exceed a line's miles for the month."""
+    company = HELMER_SHORT[PREPRINT_LIST["entity"]]
+    month = PREPRINT_LIST["through"][:7]
+    measured = [counts for counts in MONTHLY_ARRIVAL_OBSERVATIONS[company].values()
+                if len(counts) > 1]
+    on_time = sum(counts[0] for counts in measured)
+    filed = sum(sum(counts) for counts in measured)
+    must(filed > 0, "no measured Monthly-report arrivals for the company "
+         "whose list this is (MONTHLY_ARRIVAL_OBSERVATIONS)", company=company)
+    share = on_time / filed
+    z = 1.96
+    low = ((share + z * z / (2 * filed)
+            - z * math.sqrt(share * (1 - share) / filed + z * z / (4 * filed * filed)))
+           / (1 + z * z / filed))
+    incident = (round(share, 4), round(low, 4), 1.0)
+    result = {}
+    for line in sorted(s for s, c in SERIES_COMPANY.items() if c == company):
+        must((line, month) in vmt,
+             "a line of the company list's company has no data/vmt.csv row "
+             "for the month the list runs through", line=line, month=month)
+        covered = round(PREPRINT_LIST["miles"] / vmt[(line, month)], 4)
+        must(0 < covered <= 1,
+             "the company list's miles exceed a line's miles for the month "
+             "the list runs through (PREPRINT_LIST's miles in data/slurp.py "
+             "against that data/vmt.csv row)", line=line, month=month,
+             listMiles=PREPRINT_LIST["miles"], rowMiles=vmt[(line, month)])
+        result[(line, month)] = ((covered, covered, covered), incident,
+                                 PREPRINT_LIST["through"])
+    return result
+
+
+def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months, list_cov):
+    """Add the coverage columns and incidents_through to the raw VMT CSV text.
 
     inc_cov: dict from incident_coverage() and monthly_lag_coverage(),
     mapping (helmer, iso_month) to (best, lo, hi) tuples.  Missing keys
@@ -2012,6 +2319,18 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
     active_months: set of ISO months to include — every master month at or
     before the latest incident month (strictly-future master months are
     excluded; months with VMT but no incidents stay in).
+    list_cov: preprint_coverage(), the coverage the company list gives its
+    company's lines for the month it runs through.
+
+    A row takes the coverage of whichever source holds more of its
+    incidents: NHTSA's file (coverage_by_month and inc_cov) or, on a row
+    list_cov names, the company list, by the larger product of the two best
+    values (NHTSA's on a tie). So the list sets a row's coverage only while
+    NHTSA's file holds less of that month than the list does: in the month
+    the list runs through while that is NHTSA's data-through month, and never
+    once NHTSA's file has the month whole. incidents_through is the date the
+    row's incidents run through: NHTSA's receipt cutoff, or the list's date
+    on a row that takes the list's coverage.
     """
     rows = list(csv.reader(io.StringIO(raw_text)))
     must(len(rows) > 1, "VMT master CSV must include header and rows")
@@ -2026,19 +2345,23 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months):
                      "kyoom_min", "kyoom_max", "vmt_min", "vmt_max",
                      "coverage", "coverage_min", "coverage_max",
                      "incident_coverage", "incident_coverage_min",
-                     "incident_coverage_max", "rationale"])
+                     "incident_coverage_max", "incidents_through", "rationale"])
     for row in rows[1:]:
         if not any(cell.strip() for cell in row):
             continue
         month = row[1].strip()
         if month not in active_months:
             continue
-        ic_best, ic_lo, ic_hi = inc_cov.get(
-            (SERIES_COMPANY[_canonical_helmer(row[0].strip())], month), (1, 1, 1))
-        cov_best, cov_lo, cov_hi = coverage_by_month.get(month, (1, 1, 1))
+        line = _canonical_helmer(row[0].strip())
+        nhtsa = (coverage_by_month.get(month, (1, 1, 1)),
+                 inc_cov.get((SERIES_COMPANY[line], month), (1, 1, 1)),
+                 NHTSA_DATA_THROUGH_DATE)
+        (cov_best, cov_lo, cov_hi), (ic_best, ic_lo, ic_hi), through = max(
+            [nhtsa, list_cov.get((line, month), nhtsa)],
+            key=lambda source: source[0][0] * source[1][0])
         nums, rationale = _vmt_master_cells(row)
         writer.writerow([row[0], row[1], *nums, cov_best, cov_lo, cov_hi,
-                         ic_best, ic_lo, ic_hi, rationale])
+                         ic_best, ic_lo, ic_hi, through, rationale])
     return out_buf.getvalue().rstrip("\n")
 
 
@@ -2111,6 +2434,8 @@ def js_template_literal(text):
 EXPECTED_REPORT_TYPES = {
     "1-Day", "5-Day", "10-Day Update", "Monthly", "Update",
     "No New or Updated Incident Reports", "Monthly - No Incident",
+    # not NHTSA's: what list_row() gives a company list's row
+    PREPRINT_REPORT_TYPE,
 }
 # The Report Types that file no crash: a reporting entity's statement that it
 # has none to report, "No New or Updated Incident Reports" (in older files
@@ -2429,10 +2754,11 @@ must(all(len(v) == 2 and v[1] in PAX_CLASS for v in PASSENGER_OVERRIDE.values())
 # autonomously with no safety monitor in the vehicle, including when a remote
 # operator is assisting or has taken control": these 32 reports, May 23 to Oct
 # 18, 2026, 15 of them newer than NHTSA's Oct-15 file. Its fields and
-# narratives match NHTSA's (2026-10-23 cross-check). Re-read the spreadsheet
-# at every release: an in-scope Tesla report from TESLA_NO_MONITOR_FROM on
-# stops the run (incident_series) until it is here or in
-# TESLA_MONITOR_ABOARD_REPORTS.
+# narratives match NHTSA's (2026-10-23 cross-check). Since 2026-11-18 slurp
+# reads that spreadsheet itself (PREPRINT_LIST) and list_rows() stops unless
+# its Report IDs are exactly this set, so a newer list changes both. An
+# in-scope Tesla report from TESLA_NO_MONITOR_FROM on stops the run
+# (incident_series) until it is here or in TESLA_MONITOR_ABOARD_REPORTS.
 TESLA_NO_MONITOR_REPORTS = frozenset({
     "13781-15399", "13781-15400", "13781-15395", "13781-15342", "13781-15809",
     "13781-15808", "13781-16255", "13781-16294", "13781-16256", "13781-16679",
@@ -2455,7 +2781,9 @@ TESLA_NO_MONITOR_FROM = "2026-01"
 # Each line the page plots and the company whose reports and coverage it uses:
 # each company is its own; TeslaNoMonitor is Tesla's subset. Its data/vmt.csv
 # rows ("teslanomonitor") carry Tesla's no-monitor miles; build_vmt_csv gives
-# them Tesla's coverage, and the pooled incident coverage counts companies only.
+# them Tesla's coverage (NHTSA's, or the company list's where that holds more
+# of the month: preprint_coverage()), and the pooled incident coverage counts
+# companies only.
 SERIES_COMPANY = {"Waymo": "Waymo", "Tesla": "Tesla", "Zoox": "Zoox",
                   "TeslaNoMonitor": "Tesla"}
 # A derived line's member reports: (company, reviewed Report IDs).
@@ -2792,12 +3120,17 @@ def main():
     rows, nhtsa_headers = fetch_nhtsa_csv(run_stamp)
     must(len(rows) > 0, "NHTSA CSV has no rows")
     release_rows = rows
+    # The preprints: the company list's rows NHTSA's files do not hold
+    # (PREPRINT_LIST). They take every check below as NHTSA's rows do;
+    # release_rows, which the receipt and arrival statistics read, stays
+    # NHTSA's alone.
+    preprints = preprint_rows(rows)
     nhtsa_last_modified, _etag = nhtsa_headers[NHTSA_ADS_CSV_URL]
     nhtsa_modified_date = modified_date_from_last_modified(nhtsa_last_modified)
 
     # Anti-Postel: fail loud on unexpected field values.
     valid_rows = []
-    for i, r in enumerate(rows):
+    for i, r in enumerate(rows + preprints):
         rt = r["Report Type"].strip()
         must(rt in EXPECTED_REPORT_TYPES,
              "unexpected Report Type (classify it in EXPECTED_REPORT_TYPES in "
@@ -2876,11 +3209,14 @@ def main():
     # filing, and the second AV of each crash one report files for two
     # (SECOND_INVOLVEMENTS; decision #47). An entry's "_crash" is the report
     # whose crash-level fields and overrides its record takes, its "_fields"
-    # what the record adds. The receipt and Monthly-track coverage counts read
-    # the filings themselves (they measure when reports arrive).
+    # what the record adds: `preprint` on a company list's row (PREPRINT_LIST),
+    # `secondOf` on a second AV. The receipt and Monthly-track coverage counts
+    # read NHTSA's filings themselves (they measure when reports arrive).
     in_scope = public_service_incidents(rows)
-    by_incident = {r["Report ID"]: {"_row": r, "_crash": r["Report ID"], "_fields": {}}
-                   for r in in_scope.values()}
+    by_incident = {r["Report ID"]: {
+        "_row": r, "_crash": r["Report ID"],
+        "_fields": {"preprint": True} if r["Report Type"].strip() == PREPRINT_REPORT_TYPE else {}}
+        for r in in_scope.values()}
     for rid, second in second_involvement_rows(in_scope.values()).items():
         by_incident[second["Report ID"]] = {"_row": second, "_crash": rid,
                                             "_fields": {"secondOf": rid}}
@@ -2949,7 +3285,8 @@ def main():
          "of the release's cutoff: data/README.md, Each NHTSA release, step 1)",
          submission_month=max(submission_months), last_month=last_month)
     vmt_values = parse_vmt_values(vmt_raw)
-    track_counts = monthly_track_counts(rows)
+    track_counts = monthly_track_counts(
+        [r for r in rows if r["Report Type"].strip() != PREPRINT_REPORT_TYPE])
     last_month_coverage = release_month_coverage(
         NHTSA_DATA_THROUGH_DATE, last_month, track_counts, vmt_values)
     coverage_by_month = {last_month: last_month_coverage}
@@ -3109,6 +3446,7 @@ def main():
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
     vmt_text = build_vmt_csv(
         vmt_raw, inc_cov, coverage_by_month, vmt_months,
+        preprint_coverage(vmt_values),
     ).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
     ghost_template = "\n`" + js_template_literal(ghost_text) + "\n`\n"

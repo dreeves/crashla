@@ -162,11 +162,11 @@ for (const [name, win] of Object.entries(WINDOWS)) {
 }
 
 // --- 3. a link of the wrong form stops the page at load ----------------------
-const HEAD = "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,coverage_min,coverage_max,incident_coverage,incident_coverage_min,incident_coverage_max,rationale";
+const HEAD = "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,coverage,coverage_min,coverage_max,incident_coverage,incident_coverage_min,incident_coverage_max,incidents_through,rationale";
 const GHOST_HEAD = "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,rationale";
 const quoted = s => `"${s.replace(/"/g, '""')}"`;
 const PARSERS = {
-  parseVmtCsv: r => `${HEAD}\nzoox,2026-01,100,100,90,110,90,110,1,1,1,1,1,1,${quoted(r)}`,
+  parseVmtCsv: r => `${HEAD}\nzoox,2026-01,100,100,90,110,90,110,1,1,1,1,1,1,2026-02-17,${quoted(r)}`,
   parseGhostVmtCsv: r => `${GHOST_HEAD}\nzoox,2026-11,100,100,90,110,90,110,${quoted(r)}`,
 };
 // The JSON details at the end of an assert's message (crashla.js fail),

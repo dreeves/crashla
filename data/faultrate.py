@@ -27,9 +27,17 @@ rating on file carries the id it was made with. Ratings by another instrument
 stop the run (change the criterion, and every incident is rated again: one
 method for every row).
 
+Every rating also carries the id of the case it was made from (case_id(),
+since 2026-11-18; the human: "hash is smart to avoid special cases, smart. yes
+to that"). A report whose case has changed since it was rated, by an NHTSA
+update to its filing or by NHTSA's row taking the place of a preprint's
+(slurp.PREPRINT_LIST), is rated again: its old ratings are dropped and RATERS
+new ones made. A change to how slurp builds rows changes many cases at once;
+the run says how many reports it will rate again before it starts.
+
 A stopped run resumes: ratings are saved as they arrive, and a later run rates
 only what is missing. data/faultfrac.csv is written once every incident has
-its RATERS ratings.
+its RATERS ratings of its current case.
 
 quals/fault-ratings.qual.mjs holds this file to that description.
 """
@@ -61,7 +69,7 @@ ATTEMPTS = 4           # calls per rating before the run stops on it
 
 CRITERION = slurp.DATA_DIR / "fault-criterion.md"
 RATINGS = slurp.DATA_DIR / "fault-ratings.csv"
-RATING_FIELDS = ["reportID", "rater", "faultfrac", "reasoning", "instrument"]
+RATING_FIELDS = ["reportID", "rater", "faultfrac", "reasoning", "instrument", "case"]
 
 SCHEMA = {
     "type": "object",
@@ -103,6 +111,13 @@ def instrument_id(criterion_text):
     text, the model, the effort, the output schema or the case format."""
     parts = [criterion_text, MODEL, EFFORT, json.dumps(SCHEMA, sort_keys=True), CASE_FORMAT, SECOND_LINE, MASK_NAME, NOT_STATED]
     return hashlib.sha256("\x1f".join(parts).encode("utf-8")).hexdigest()[:12]
+
+
+def case_id(case):
+    """The case's name: 12 hex digits that change with the text of the case
+    (case_text()), which every rating carries, so that a report whose case has
+    changed since it was rated is rated again (main())."""
+    return hashlib.sha256(case.encode("utf-8")).hexdigest()[:12]
 
 
 def mask(text):
@@ -184,10 +199,13 @@ def rate(cli, system, case, folder):
 
 
 def incident_rows():
-    """{Report ID: (the report's NHTSA row, the second AV's quote or "")} for
-    every in-scope incident of the analysis window: the incidents slurp counts,
-    read from the newest snapshots as slurp's fault stop reads them."""
-    filed = slurp.filed_incident_rows(slurp.newest_snapshot_rows())
+    """{Report ID: (the report's row, the second AV's quote or "")} for every
+    in-scope incident of the analysis window: the incidents slurp counts,
+    read from the newest snapshots as slurp's fault stop reads them, NHTSA's
+    rows and the preprints (slurp.PREPRINT_LIST: a company list's rows NHTSA's
+    files do not hold yet, in NHTSA's columns; the fields such a list does not
+    give, the time and both movements, read "not stated" in its case)."""
+    filed = slurp.filed_incident_rows(slurp.newest_report_rows())
     incidents = list(slurp.public_service_incidents(filed).values())
     incidents += slurp.second_involvement_rows(incidents).values()
     window = slurp.unrated_reports(incidents, slurp.parse_vmt_months(slurp.read_vmt_master()), set())
@@ -223,6 +241,8 @@ def main():
     criterion = CRITERION.read_text()
     instrument = instrument_id(criterion)
     rows = incident_rows()
+    cases = {rid: case_text(row, quote) for rid, (row, quote) in rows.items()}
+    current = {rid: case_id(case) for rid, case in cases.items()}
     ratings = read_ratings()
     other = sorted({r["instrument"] for r in ratings} - {instrument})
     must(not other,
@@ -236,11 +256,17 @@ def main():
          "re-coded or retired the report, or a re-filing replaced it): find out why from the newest snapshot, then "
          "delete those ratings and the report's data/faultfrac.csv row (data/README.md, Each NHTSA release, step 5)",
          reports=gone)
+    # A report whose case has changed since it was rated (an NHTSA update to
+    # its filing, or NHTSA's row in place of a preprint's) is rated again: its
+    # ratings are of another case, so they are dropped and made anew.
+    changed = sorted({r["reportID"] for r in ratings if r["case"] != current[r["reportID"]]}, key=id_order)
+    ratings = [r for r in ratings if r["case"] == current[r["reportID"]]]
     have = {(r["reportID"], int(r["rater"])) for r in ratings}
     must(len(have) == len(ratings), "data/fault-ratings.csv holds a rater's rating of a report twice")
     jobs = [(rid, rater) for rid in sorted(rows, key=id_order) for rater in range(1, RATERS + 1) if (rid, rater) not in have]
     print(f"instrument {instrument}: {MODEL}, {EFFORT} effort, {RATERS} raters; {len(rows)} in-scope incidents, "
-          f"{len(ratings)} ratings on file, {len(jobs)} to make")
+          f"{len(ratings)} ratings on file of their reports' current cases, {len(jobs)} to make; "
+          f"reports whose case has changed since they were rated, rated again: {changed}")
 
     if jobs:
         cli, folder = cli_path(), blind_dir()
@@ -250,9 +276,9 @@ def main():
 
         def job(pair):
             rid, rater = pair
-            row, quote = rows[rid]
-            value, reason, used = rate(cli, criterion, case_text(row, quote), folder)
-            rating = {"reportID": rid, "rater": rater, "faultfrac": f"{value:g}", "reasoning": reason, "instrument": instrument}
+            value, reason, used = rate(cli, criterion, cases[rid], folder)
+            rating = {"reportID": rid, "rater": rater, "faultfrac": f"{value:g}", "reasoning": reason,
+                      "instrument": instrument, "case": current[rid]}
             with lock:                               # saved as it arrives, so a stopped run resumes
                 with open(RATINGS, "a", newline="") as f:
                     csv.DictWriter(f, fieldnames=RATING_FIELDS, lineterminator="\n").writerow(rating)

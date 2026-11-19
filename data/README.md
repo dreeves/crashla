@@ -19,6 +19,12 @@ When you run `python3 data/slurp.py`, it fetches:
 - The current Level 2 (ADAS) and OTHER incident CSVs from NHTSA, of which it
   reads only the reports an ADS drove (`MISFILED_ADS_REPORTS`, below)
 
+and it reads, from `data/snapshots`, the newest copy of Tesla's own list of
+the crashes it has reported to NHTSA (`tesla-list-YYYYMMDD.xlsx`; see
+"Preprints" below). That file is not fetched by a run: its address changes
+with each list Tesla posts, and the page that links it refuses scripts, so a
+person saves each new list ("Each NHTSA release", step 7).
+
 The live URLs are defined in `data/slurp.py` as:
 
 - `NHTSA_ADS_CSV_URL`
@@ -134,7 +140,13 @@ The slurp pipeline is:
    name a contact area stop agreeing with the moved values —
    `quals/contact-labels.qual.mjs`); add the `MISFILED_ADS_REPORTS` rows of
    the ADAS and OTHER files, moved the same way, after checking those files
-   for any other Waymo, Tesla or Zoox report an ADS could have driven (above)
+   for any other Waymo, Tesla or Zoox report an ADS could have driven
+   (above). Then the preprints join NHTSA's rows: the rows of Tesla's own
+   list (`PREPRINT_LIST`, read from its newest snapshot) whose Report ID no
+   NHTSA file holds, mapped onto NHTSA's columns (`list_rows()`,
+   `preprint_rows()`; "Preprints" below). They take every step from here on
+   as NHTSA's rows do, except that the receipt and arrival statistics (steps
+   8 and 11) read NHTSA's rows only
 3. Validate every row against the whitelists (report type, operator type,
    reporting entity, severity, date formats), the per-helmer operator scope
    (every helmer row must file a counted or an excluded type), the
@@ -219,7 +231,11 @@ The slurp pipeline is:
     (`MONTHLY_ARRIVAL_LAG`) — the generated CSV in `data/vmt.js` carries these
     six columns after `vmt_max`; every other month gets 1. Tesla's
     no-monitor rows take Tesla's coverage, and the pooled incident coverage
-    counts the companies only
+    counts the companies only. A row takes its coverage from Tesla's own
+    list instead where that list holds more of the month than NHTSA's file
+    does (`preprint_coverage()`; "Preprints" below), and a seventh column,
+    `incidents_through`, gives the date each row's incidents run through:
+    NHTSA's receipt cutoff, or the list's date on such a row
 12. Every check has passed: write `data/faultfrac.csv`'s six mirrored columns
     (see "Fault CSV synchronization" below), the incident data into
     `data/incidents.js`, and the VMT CSV text into `data/vmt.js`, with the
@@ -301,6 +317,18 @@ Then what the release brings:
    (about 27M tokens for 2,392 incidents), so one method covers every row
    (`quals/fault-ratings.qual.mjs`).
 
+   Each rating also carries the id of the case it was made from, a hash of
+   the text the rater read (`case_id()`, since 2026-11-18). A report whose
+   case has changed since it was rated, by an NHTSA update to its filing or
+   by NHTSA's row taking a preprint's place (step 7), is rated again: the
+   run drops its old ratings and makes three new ones, and names those
+   reports before it starts (about 15k tokens a report). A change to how
+   `slurp.py` builds rows (a field moved under another label, say) changes
+   many cases at once and so re-rates many reports. Run `faultrate.py` at
+   every release: with nothing new or changed it rates nothing and rewrites
+   `data/faultfrac.csv` from the ratings on file; `quals/fault-ratings.qual.mjs` goes red
+   on a rating of a case that is no longer the report's.
+
    Both scripts stop on a report that is no longer an in-scope incident (a
    later filing re-coded or retired it, or a re-filing replaced it): find
    out why, then delete its ratings and its `data/faultfrac.csv` row, as for
@@ -334,8 +362,9 @@ Then what the release brings:
    from its narrative, the 2026-07-15 convention: a hospital transport is
    "Minor W/ Hospitalization", an injury without one "Minor W/O
    Hospitalization", none mentioned "Property Damage. No Injured Reported";
-   Tesla's 13781-17203, filed Unknown with the other driver taken to a
-   hospital, is due in the Nov 2026 release); a re-filing that changes a
+   Tesla's 13781-17203, on Tesla's list as Unknown with the other driver
+   taken to a hospital, has its entry since 2026-11-18, as a preprint); a
+   re-filing that changes a
    value an override was reviewed against (severity, airbag, city and state,
    passenger code, operator type: re-read the narrative), and an override
    entry that names no in-scope incident of the window; an incident with no
@@ -346,6 +375,37 @@ Then what the release brings:
    below); an occupancy disagreement (`PASSENGER_OVERRIDE` /
    `OCCUPANCY_LANGUAGE_REVIEWED`); and the contact-area label check
    (`CURRENT_FILE_CONTACT_LABEL`).
+
+7. Tesla's list (`PREPRINT_LIST` in `slurp.py`; "Preprints" below). Open
+   https://www.tesla.com/robotaxi/safety in a browser (it answers 403 to a
+   script) and read its "As of" date and the address of "Download all SGO
+   reportable events".
+   - A newer list: save it as Tesla serves it,
+     `curl -sS -o data/snapshots/tesla-list-YYYYMMDD.xlsx "<address>"` with
+     the list's own date in the name; set `PREPRINT_LIST`'s `url`, `through`
+     (that date) and `miles` (Tesla's no-monitor miles of that date's month
+     through that date, from the safety page's weekly figures, as the
+     `teslanomonitor` row of `data/vmt.csv` for that month reads them); and
+     bring `TESLA_NO_MONITOR_REPORTS` in line with the list's Report IDs.
+     `slurp.py` stops until the three agree, and on a list it cannot read as
+     before (a new column, weather value or contact area), or whose newest
+     crash is after NHTSA's data-through month (ask the human: a month only
+     a list covers has no rule yet). Each preprint then needs what any new
+     Tesla report needs (step 6: a `PASSENGER_OVERRIDE` entry, its filed
+     value blank because the list has no belt field; a `SEVERITY_OVERRIDE`
+     entry for a severity of Unknown) and its fault ratings (step 5).
+   - A preprint that NHTSA's new file now holds: NHTSA's row has taken its
+     place. `slurp.py` stops on its `PASSENGER_OVERRIDE` entry, reviewed
+     against the list's blank belt field: re-read the narrative against the
+     filed code (step 6). Then run step 5: the report's case has changed
+     (the list gives no time and no pre-crash movements, and its narrative
+     can differ by a word: 13781-17015's "through a work zone" is "near a
+     work zone" in NHTSA's filing), so `faultrate.py` rates it again from
+     NHTSA's row.
+   - Score the list: among the crashes NHTSA's new file holds for the days
+     the list covered, count those the list lacked, and record the count in
+     the ledger (`preprint_coverage()` assumes about one Monthly-track crash
+     in ten is missing, from Tesla's record of late filings).
 
 Then the quals: `quals/growth-ghost-month.qual.mjs` needs the growth chart's
 rows for the new ghost month (`crashla.js` `FLEET_HISTORY` and
@@ -1076,6 +1136,80 @@ understate Tesla's crash rate by an amount no public source measures; the
 no-monitor line, whose miles exclude every monitor-aboard trip, avoids it.
 The rationales of the Tesla rows for those months say so.
 
+## Preprints
+
+A preprint is a crash report as its company has published it, for a report
+NHTSA's files do not hold yet (since 2026-11-18; the human: "can we add the
+new incidents, style them in a clear way to show they're not official yet,
+and incorporate them in a fully principled way?"). There is one source of
+them: Tesla's robotaxi safety page (https://www.tesla.com/robotaxi/safety)
+links, under "Download all SGO reportable events", a spreadsheet of every
+collision Tesla reported to NHTSA "while Robotaxi is driving autonomously
+with no safety monitor in the vehicle, including when a remote operator is
+assisting or has taken control", under NHTSA's own Report IDs. NHTSA's file
+of a given release holds the reports it had received by the 15th of the
+month before, so Tesla's list runs ahead of it: the list of Oct 18, 2026
+held eight October crashes (13781-17203 and 13781-17299 to -17305) that the
+Nov-16 release, of reports received through Oct 15, did not. Their Report
+IDs, from the one sequence NHTSA numbers every company's reports in, are
+above that release's highest (30610-17196): Tesla had filed them, and NHTSA
+had not published them.
+
+- **The file.** `data/snapshots/tesla-list-YYYYMMDD.xlsx` is the spreadsheet
+  as Tesla serves it, named for the date the list runs through
+  (`PREPRINT_LIST` in `slurp.py` holds that date, the address and the miles
+  below). `slurp.py` reads the newest one (`read_list_cells()`, by the
+  standard library) and maps each row onto NHTSA's columns (`list_row()`):
+  the month of its date, its place, road, weather, crash partner, severity,
+  speed, damage areas, airbag text and narrative. The list gives no time, no
+  pre-crash movements, no belt field, no report type or version and no
+  operator type: the first four are blank, a list row's type is "Preprint",
+  its version 1, and its operator type "None", the list's own definition (a
+  remote operator who drove is named in the narrative, which the
+  teleoperator tripwire reads).
+- **NHTSA's row stands.** A list row whose Report ID an NHTSA file holds is
+  dropped; the others are the preprints (`preprint_rows()`). So a preprint
+  turns official at the release that publishes its report, with no code
+  change ("Each NHTSA release", step 7, has the two things to do then).
+- **Same checks, same raters.** A preprint goes through scope, the narrative
+  tripwires, the reviewed tables and the blind fault raters as an NHTSA row
+  does (the raters' case reads "not stated" for the time and the movements).
+  Its record in `data/incidents.js` carries `preprint: true`, and the
+  incident browser sets its row apart and says what it is.
+- **The list's record against NHTSA** (`quals/preprints.qual.mjs`): each of
+  the 24 list rows NHTSA had published by 2026-11-18 agrees with a filed
+  version of its report on month, place, road, weather, crash partner,
+  severity, speed, airbags and contact areas; 23 narratives are NHTSA's word
+  for word (its redactions aside) and one differs by a word (13781-17015:
+  the list's "proceeding straight through a work zone" is "proceeding
+  straight near a work zone" in NHTSA's filing).
+- **Coverage** (`preprint_coverage()`). For the month the list runs through,
+  the list holds every no-monitor crash through its date and none after. So
+  each Tesla line's row for that month can take, in place of NHTSA's
+  receipt and incident coverage, the list's: receipt coverage = Tesla's
+  no-monitor miles of the month through the list's date (`PREPRINT_LIST`'s
+  `miles`: 1,179,333 for Oct 1-18, 2026) over the row's miles, best, low and
+  high alike (0.5334 on the no-monitor line; 0.5255 on the all-modes line,
+  whose monitor-aboard miles the list does not cover and which therefore
+  count for nothing that month); and Monthly-track incident coverage = the
+  share of Tesla's Monthly reports that reached NHTSA on time, over
+  `MONTHLY_ARRIVAL_OBSERVATIONS`' months with both counts measured (17 of
+  19 = 0.8947), from that share's Wilson 95% lower bound (0.6861) to 1: a
+  list drawn up two days after its last crash can lack one Tesla files
+  late. A row takes whichever source holds more of it, by the product of
+  the two best values (NHTSA's on a tie), so the list sets a row's coverage
+  only while NHTSA's file holds less of that month than the list does.
+  `data/vmt.js`'s `incidents_through` column gives each row's date.
+- **Known limits.** The coverage columns scale the row's whole-month band,
+  whose width comes from the days after the list's date, so the covered
+  miles get a band of -12%/+15% (no-monitor) and -13%/+30% (all modes)
+  where the measured miles warrant about -8%/+3%; exact would take columns
+  for the covered miles' own band. A preprint dated after NHTSA's
+  data-through month stops the run (a month only a list covers has no rule
+  yet). A report rated from its preprint is rated again when NHTSA files
+  it: its case changes, and `faultrate.py` rates every report whose case
+  has changed (step 5).
+
 ## Fault CSV synchronization
 
 The `faultfrac.csv` file is partly the blind raters' ratings and partly mirrored NHTSA data.
@@ -1171,6 +1305,14 @@ That includes:
   open question 1 downloaded at that time, byte for byte (MD5 equal to NHTSA's
   ETags, bd1851bc87845049b3aa4dc87bfe2617 and
   9f95c03bb060934a07956c960cec9ccf; Last-Modified Oct 15, 2026 12:30 GMT)
+
+`data/snapshots/` also holds Tesla's own list of the crashes it has reported
+(`tesla-list-YYYYMMDD.xlsx`, since 2026-11-18: "Preprints" above), each list
+as Tesla served it and named for the date it runs through. A run reads the
+newest and fetches none; a person saves each new one ("Each NHTSA release",
+step 7). The first, `tesla-list-20261018.xlsx`, was downloaded on 2026-11-18
+(Last-Modified Oct 20, 2026 21:22 GMT; MD5 equal to the server's ETag,
+6d688f725e00740281b937a5ffc8ee19).
 
 (The `vmt-sheet-*.csv` snapshots are historical: they archived the VMT Google
 Sheet export back when that sheet was the master. The master now lives at

@@ -212,7 +212,8 @@ const vmt = run(`(() => {
     counts[k] = (counts[k] || 0) + 1;
   }
   const rows = vmtRows.map(r => ({helmer: r.helmer, month: r.month, best: r.vmtBest, lo: r.vmtMin, hi: r.vmtMax,
-      cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax, coverage: r.coverage, incCov: r.incCov, incCovMin: r.incCovMin}));
+      cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax, coverage: r.coverage, incCov: r.incCov, incCovMin: r.incCovMin,
+      through: r.through}));
   vmtRows = live;
   return {svgs: out, counts, rows, lines: ADS_SERIES, laggedRows: lagged.length,
     throughDate: NHTSA_DATA_THROUGH_DATE,
@@ -262,14 +263,18 @@ for (const helmer of vmt.lines) {
       });
       const partial = r.coverage * r.incCovMin < 0.999;
       const best100 = Math.round(100 * r.coverage * r.incCov), worst100 = Math.round(100 * r.coverage * r.incCovMin);
-      const carries = dot[0].includes(vmt.throughDate) && dot[0].includes(`~${best100}%`) && dot[0].includes(`~${worst100}%`);
+      // The note names the row's own date: NHTSA's receipt cutoff, or the
+      // date of the company's own list on a row whose coverage that list
+      // sets (data/vmt.js incidents_through, since 2026-11-18; until then
+      // NHTSA's cutoff on every row).
+      const carries = dot[0].includes(r.through) && dot[0].includes(`~${best100}%`) && dot[0].includes(`~${worst100}%`);
       // In the cumulative view no tooltip may carry the note: there the date
       // alone gives it away.
-      const noted = mode === "month" ? carries : dot[0].includes(vmt.throughDate);
+      const noted = mode === "month" ? carries : dot[0].includes(r.through);
       const wantNote = partial && mode === "month";
       if (mode === "month" && lagged.has(`${helmer}|${r.month}`)) lagMonthsChecked++;
       if (noted !== wantNote || partial !== (r.month === throughMonth || lagged.has(`${helmer}|${r.month}`)))
-        fail(`${where}: ${wantNote ? `a partially received month's count (the data-through month, or a month inside the helmer's Monthly-report lag) must say it holds the reports received through ${vmt.throughDate}, ~${best100}% of the month's incidents (worst case ~${worst100}%)` : partial ? "a running total through a partially received month must carry no partial-reporting note (the note describes the month's own count)" : "a fully reported month must carry no partial-reporting note"}; tooltip ${JSON.stringify(dot[0])}`);
+        fail(`${where}: ${wantNote ? `a partially received month's count (the data-through month, or a month inside the helmer's Monthly-report lag) must say it holds the reports received through ${r.through}, ~${best100}% of the month's incidents (worst case ~${worst100}%)` : partial ? "a running total through a partially received month must carry no partial-reporting note (the note describes the month's own count)" : "a fully reported month must carry no partial-reporting note"}; tooltip ${JSON.stringify(dot[0])}`);
       if (vmt.edge !== null) for (const [edge, v] of [[vmt.edge.lo, lo], [vmt.edge.hi, hi]]) {
         const end = mine.filter(t => { const l = t.split("\n"); return l.length === 3 && l[2] === edge && sameFigures(l[1], [fmtWhole(v)]); });
         if (end.length !== 1) fail(`${where}: expected one range-end tooltip giving ${fmtWhole(v)} and the end's label ${JSON.stringify(edge)}; found ${JSON.stringify(mine)}`);

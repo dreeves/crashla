@@ -368,12 +368,17 @@ const ctx = vm.createContext({
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const rows = JSON.parse(vm.runInContext(`JSON.stringify(parseVmtCsv(VMT_CSV_TEXT).map(x => ({
-  helmer: x.helmer, month: x.month, inc: [x.incCov, x.incCovMin, x.incCovMax], rec: [x.coverage, x.coverageMin, x.coverageMax]})))`, ctx));
+  helmer: x.helmer, month: x.month, inc: [x.incCov, x.incCovMin, x.incCovMax], rec: [x.coverage, x.coverageMin, x.coverageMax], through: x.through})))`, ctx));
 const dataThroughMonth = r.dataThrough.slice(0, 7);
-const pooled = rows.filter(x => x.month === dataThroughMonth).map(x => JSON.stringify(x.inc));
-assert.ok(pooled.length >= 3 && new Set(pooled).size === 1 && JSON.parse(pooled[0])[0] < 1,
-  `Replicata: read every helmer's incident coverage in the data-through month ${dataThroughMonth} from data/vmt.js.
-Expectata: one pooled triple shared by every helmer, below 1.
+// The helmers whose data-through-month row runs through NHTSA's cutoff share
+// the pooled triple. Since 2026-11-18 a helmer's row can take its coverage
+// from its company's own list of crash reports instead (data/slurp.py
+// preprint_coverage: its incidents_through is then the list's date;
+// quals/preprints.qual.mjs checks it); until then this read every helmer.
+const pooled = rows.filter(x => x.month === dataThroughMonth && x.through === r.dataThrough).map(x => JSON.stringify(x.inc));
+assert.ok(pooled.length >= 2 && new Set(pooled).size === 1 && JSON.parse(pooled[0])[0] < 1,
+  `Replicata: read from data/vmt.js the incident coverage, in the data-through month ${dataThroughMonth}, of every helmer whose incidents run through NHTSA's cutoff (${r.dataThrough}).
+Expectata: one pooled triple shared by those helmers (two or more), below 1.
 Resultata: ${JSON.stringify(pooled)}.`);
 const wrong = [];
 for (const x of rows) {
