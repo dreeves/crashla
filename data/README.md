@@ -318,7 +318,10 @@ Then what the release brings:
    (`quals/fault-ratings.qual.mjs`).
 
    Each rating also carries the id of the case it was made from, a hash of
-   the text the rater read (`case_id()`, since 2026-11-18). A report whose
+   the text the rater read (`case_id()`, since 2026-11-18). Any character
+   changed changes the id, but whitespace does not (every run of it counts
+   as one space) and neither does how a character is encoded (the text is
+   hashed in Unicode normal form C). A report whose
    case has changed since it was rated, by an NHTSA update to its filing or
    by NHTSA's row taking a preprint's place (step 7), is rated again: the
    run drops its old ratings and makes three new ones, and names those

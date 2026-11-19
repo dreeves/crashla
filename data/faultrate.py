@@ -54,6 +54,7 @@ import sys
 import tempfile
 import threading
 import time
+import unicodedata
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import slurp  # noqa: E402  (the pipeline: which incidents are in scope, and the fault file's format)
@@ -116,8 +117,15 @@ def instrument_id(criterion_text):
 def case_id(case):
     """The case's name: 12 hex digits that change with the text of the case
     (case_text()), which every rating carries, so that a report whose case has
-    changed since it was rated is rated again (main())."""
-    return hashlib.sha256(case.encode("utf-8")).hexdigest()[:12]
+    changed since it was rated is rated again (main()). Any character changed
+    changes it, but not whitespace or how a character is encoded: the text is
+    hashed in Unicode normal form C with every run of whitespace (spaces,
+    tabs, line breaks, no-break spaces) made one space and none at either end,
+    two changes that cannot change what a rater reads (the human, 2026-11-18:
+    "if even a character changed, re-rating is correct. we could canonicalize
+    whitespace perhaps")."""
+    canonical = " ".join(unicodedata.normalize("NFC", case).split())
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:12]
 
 
 def mask(text):

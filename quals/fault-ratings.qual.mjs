@@ -29,7 +29,13 @@
 //      2026-11-18, the human: "hash is smart to avoid special cases, smart.
 //      yes to that"), so a report whose case has changed (an NHTSA update to
 //      its filing, or NHTSA's row taking a preprint's place) leaves this qual
-//      red until data/faultrate.py rates it again.
+//      red until data/faultrate.py rates it again. Any character changed
+//      counts ("if even a character changed, re-rating is correct"), but not
+//      whitespace or the Unicode encoding of a character: case_id() hashes
+//      the text with every run of whitespace made one space and in Unicode
+//      normal form C (the human: "we could canonicalize whitespace perhaps",
+//      and of the other ideas offered, "i think everything but 1 is trying
+//      to be too clever").
 //   4. Every data/faultfrac.csv row has exactly RATERS ratings, raters 1 to
 //      RATERS, and no rating lacks a row; each rating is on the 0.05 grid in
 //      0 to 1, with a reason of 1 to 80 characters that names no company.
@@ -81,6 +87,10 @@ print(json.dumps({
                f.median_rating([(3, 0.5, "three"), (2, 0.5, "two"), (1, 0.9, "one")])],
     "fields": f.RATING_FIELDS,
     "caseIds": [f.case_id("one case"), f.case_id("one case"), f.case_id("one case.")] if hasattr(f, "case_id") else None,
+    "caseSame": [f.case_id(t) for t in ["Caf\\u00e9 at 9 mph.\\nThe AV stopped.", "Cafe\\u0301  at 9 mph. \\n\\n The AV\\u00a0stopped.\\t",
+                                        " Caf\\u00e9 at 9 mph. The AV stopped."]] if hasattr(f, "case_id") else None,
+    "caseOther": [f.case_id(t) for t in ["Caf\\u00e9 at 9 mph. The AV stopped", "Caf\\u00e9 at 99 mph. The AV stopped.",
+                                         "Cafe at 9 mph. The AV stopped.", "caf\\u00e9 at 9 mph. The AV stopped."]] if hasattr(f, "case_id") else None,
 }))
 `;
 let inst = null;
@@ -130,6 +140,11 @@ if (inst) {
   check(inst.caseIds !== null && inst.caseIds.every(id => /^[0-9a-f]{12}$/.test(id)) && inst.caseIds[0] === inst.caseIds[1] && inst.caseIds[0] !== inst.caseIds[2],
     'compute case_id() of "one case" twice and of "one case." once.',
     "12-digit hex ids, the same for the same text and different for a text one character longer.", JSON.stringify(inst.caseIds));
+  const same = inst.caseSame, other = inst.caseOther;
+  check(same !== null && new Set(same).size === 1 && other.every(id => id !== same[0]) && new Set(other).size === other.length,
+    'compute case_id() of "Café at 9 mph.\\nThe AV stopped." written three ways (é composed and decomposed, line breaks, runs of spaces, a no-break space, a tab, spaces at either end) and of four texts each one character away (no final period, 99 for 9, e for é, a lowercase c).',
+    "one id for the three writings, which differ only in whitespace and Unicode form, and a different id for each of the four.",
+    JSON.stringify({ same, other }));
 }
 
 // The current case of every in-scope incident, as data/faultrate.py builds it.
