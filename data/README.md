@@ -675,21 +675,23 @@ ledger, 2026-10-27 (later)):
   month's rounded miles, edges rounded to 1,000, with
   σ = √(0.065² + 0.07²h + 0.09²) (statement rounding, drift, month noise) and
   h the months from the governing window's midpoint to the month's midpoint
-  (definitions in "Zoox anchors" below). Band, a month after it: nothing
-  measures either share (no statement, no CPUC month), so the month takes the
-  range for days with no data, half to twice its miles, its middle unchanged
-  (since 2026-11-17, the human's "whatever the uncertainty is, the confidence
-  bands should reflect that"; until then the formula ran on, with 0.10 added
-  in quadrature on the upside from October 2026 for fleet growth announced
-  but not quantified: ×0.71-1.40 for September 2026). Half to twice is
-  checked on California's own record: the California rule, run from each
-  measured month of CPUC's and the DMV's series to the measured months 3, 4
-  and 5 months later, gives 18 forecasts, none outside half to twice the
-  measured month (the lowest 0.51 of it) and 6 outside the formula's range,
-  all low; `quals/zoox-vmt-model.qual.mjs` reruns it and goes red when a new
-  measured month lands outside. When CPUC measures a month's California
-  share, restate that month's band with the human (California measured, the
-  rest half to twice, as June-December 2025's bands are). The formula's
+  (definitions in "Zoox anchors" below). September 2026 falls after the last
+  company mileage statement. Its California bounds are the filed driverless
+  pilot miles times 1.05 and 1.33. Add half the estimated Las Vegas miles
+  to the low edge and twice those miles to the high edge. For October and
+  November neither part is measured, so the range is half to twice the
+  rounded U.S. estimate, the rule adopted on 2026-11-17. Until that date
+  the formula ran on, with 0.10 added in quadrature on the upside from
+  October for fleet growth announced but unquantified.
+  For the current one- and two-month forecast horizons the California
+  rule gives 28 comparisons with later observations in CPUC's and the DMV's
+  series. The forecast divided by actual ranged from 0.69 to 1.51. All
+  were inside half to twice and five were outside the earlier formula's
+  range. When June was the last filing, the three- to five-month check
+  had 18 comparisons, six outside the formula's range and none outside
+  half to twice. `quals/zoox-vmt-model.qual.mjs` reruns the check. When
+  CPUC measures another month's California share, restate that month's
+  band with the human. The formula's
   constants are priors:
   read as ranges, Zoox's statements allow one flat Las Vegas rate from
   December 2025 on, so they show no change in it to test the constants
@@ -736,6 +738,44 @@ Hub-vs-CPUC California (2026-09-25). The hub's four California counties ran
 1.040x CPUC's statewide TotalVMTZEV (deployment + pilot) in Q1 2026 and
 1.058x in Q2, cause unknown. Extension months built from a CPUC-basis
 California estimate multiply it by 1.058 [1.040, 1.076].
+The July–September 2026 rows use the Q3 filing's statewide deployment and
+pilot miles. Their California component uses the same Q2 conversion as before
+(30,625,484 / 28,957,564, both in whole miles), with the ±3% range used for
+measured California months in April–June. The numerator is the increase in
+the four California counties' rider-only miles between Waymo's
+[March CSV4](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV4%20-%20Miles%20and%20Benchmark%20Crashes%20for%20Dynamic%20Benchmark%20202009-202603-2022benchmark.csv)
+and [June CSV4 v2](https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV4%20-%20Miles%20and%20Benchmark%20Crashes%20for%20Dynamic%20Benchmark%20202009-202606-2022benchmark_v2.csv).
+
+The filing includes San Diego passenger service. The older newer-metro
+subtotal also included San Diego, and the public filing gives no monthly
+mileage for that city. For July, August and September, San Diego accounted
+for 0 of 12, 0 of 14 and 3 of 25 in-scope reports in those metros in the
+November 16 NHTSA release (Miami includes Miami Beach). Assuming the same
+reported crashes per mile across those metros, the September subtraction
+is 3/25 × 2.85M = 342,000 miles, leaving 2.508M. The original 2.85M was
+estimated before September's reports were available. The reports apportion
+that subtotal and also enter the safety comparison.
+
+The uncertainty in this split has two parts. Let `s` be San Diego's share
+of reported crashes and `r` its reported crashes per mile relative to its
+peers. Its share of miles is `m = s / (s + r × (1 − s))`. Take the endpoints
+of the two-sided 95% Clopper–Pearson interval for `s` and allow `r` to
+range from 4.5/6.6 to 9.5/6.6 using the young-market rates below. The 95%
+confidence level applies to the crash share under the binomial model. The
+crash interval and rate range give modeled mileage shares of 0–34.5% in
+July, 0–30.7% in August and 1.8–40.0% in September. Multiply the original subtotal's low edge by `1 − m_high`
+and its high edge by `1 − m_low`. [Waymo's Q3 CPUC narrative, p. 6 (deployment ZIP)](https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2026q3.zip)
+documents August demo rides in San Diego, so even a month with zero reports
+allows for overlap. October
+and November carry September's disjoint components at their daily rates
+and retain the existing adjustments for subsequent openings, expansion
+and weather.
+
+Recheck the split if later NHTSA filings change the September counts.
+When Waymo publishes Q3 county miles, compare the counties it covers with
+the statewide CPUC geography. If San Diego still lacks a hub benchmark, its
+miles belong in the newer-metro subtotal when building the hub-based U.S.
+anchor. The statewide CPUC total already includes its passenger service.
 
 Pre-series offset (a range since 2026-10-31, decision #49b of the 2026-10-04
 audit). The series starts in July 2021, NHTSA's SGO reporting floor, so
@@ -787,7 +827,8 @@ in the benchmarked metros), cross-checked against fleet counts (TxDMV
 registry; local reporting) and rider disclosures (Dallas "nearly 150,000
 riders since February", Houston ">100,000", Orlando ">60,000"). Monthly
 excluded-metro estimates carried in the 2026 rows: Apr 1.4M, May 1.45M,
-Jun 1.8M, Jul 2.0M, Aug 2.3M, Sep 2.85M (lo/hi in the row bands). The Jun
+Jun 1.8M, Jul 2.0M, Aug 2.3M, Sep 2.508M (2.85M before removing San
+Diego's estimated share above; lo/hi in the row bands). The Jun
 2026 anchor's E best (6.65M) is the carried monthly sum. Its lo and hi
 (4.0M / 10.2M) apply the same proxy to the hub's own crash list: the 41
 unbenchmarked-county crashes of Jan-Jun 2026 at the young-market rate
@@ -976,9 +1017,9 @@ rounded outward: end-March 1,861,485-2,123,912 (1,859,918-2,127,109 until
 the Mar 25-Aug 5 rate; its upper edge was 2,121,276 until 2026-11-02).
 "More than" sets only a floor: Zoox's own "more than one
 million autonomous miles" (Mar 11, 2026) came when the series stood near
-1.84M, so the August statement gives end-July a floor of 2,878,404 (3.00M
+1.84M, so the August statement gives end-July a floor of 2,880,077 (3.00M
 less the pre-series high edge and up to 1.3x the model's miles for Aug 1-5;
-2,880,483 until 2026-11-03) and no ceiling; the upper edge chains on from
+2,878,404 before the Q3 filing, 2,880,483 until 2026-11-03) and no ceiling; the upper edge chains on from
 March. Months between knots chain forward and narrow back
 from the next knot. The as-of window is a judgment: Zoox's mileage
 statements can lag, as the Mar 11 one shows.
@@ -1015,12 +1056,12 @@ measured months as measured, and counting per driving day keeps January's
 outage out of the criterion. Two of the statements bind: the path's
 lifetime reaches 1M at the end of Nov 30 (the crossing falls at the start
 of Dec 1) and stands at 1.25M at Dec 31. The others hold with room:
-1,887,653 at Mar 24, 3,090,510 at Aug 5, and an end-July series of
-3,003,038 against the floor's 2,878,404. Since none after Dec 31 binds, the
+1,887,653 at Mar 24, 3,083,678 at Aug 5, and an unrounded end-July series of
+2,997,493 against the floor's 2,880,077. Since none after Dec 31 binds, the
 path holds December's rate from then on, so "held flat after Aug 5", the
 earlier rule, now follows from the criterion. The share runs 784, 1,246,
 1,934, 2,898, 4,123, 5,435 and 6,501 miles a day June-December, then
-6,500.65 a day through October 2026: June-December 46,024 / 65,241 /
+6,500.65 a day through November 2026: June-December 2025 46,024 / 65,241 /
 96,029 / 121,954 / 170,087 / 219,315 / 250,001 miles, December absorbing
 the rounding residue. `quals/zoox-vmt-model.qual.mjs` checks that the path
 is the smoothest near it (every other statement holds strictly, both
@@ -1065,12 +1106,18 @@ from January on. California is CPUC's driverless pilot miles × 1.19 for the
 DMV-reported driverless miles CPUC misses, an assumption: 1.19 is the
 midpoint of 1.05-1.33, the measured DMV/CPUC ratio having fallen from 3.97
 to 1.33 over Apr-Nov 2025 (the Dec-2025 row, built on the DMV's own figures,
-implies 1.33). It is measured through June
-and grown e^0.05 a calendar month after it, constant within a month.
+implies 1.33). CPUC measures driverless pilot miles through September.
+Zoox filed 69,125.74 miles in July, 70,865.34 in August and 69,362.69 in
+September under permit 0038380-P. These are `TotalVMTZEV` for months 7–9
+in `AV Pilot 2026Q3/Zoox/Driverless/Q3_2026_CPUC_PUBLIC_Driverless_Month-Level.csv`
+(member SHA256 `8b713dd61713d7b37a33a6dbf510f45d686a1091f0099495c9bc79ad470a0c5c`).
+[CPUC Q3 pilot filing (ZIP)](https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/av-pilot-2026q3.zip)
+After September the California daily rate grows by e^0.05 each calendar month
+and stays constant within the month.
 January's Las Vegas passenger outage, Jan 22-26, counts as 5 days without
-Las Vegas driving. Months round to 10,000: January-October 210,000 /
-230,000 / 260,000 / 250,000 / 280,000 / 280,000 / 290,000 / 290,000 /
-290,000 / 300,000. Until 2026-11-03 the 2026 rows were the per-day rate
+Las Vegas driving. Months round to 10,000: January-November 210,000 /
+230,000 / 260,000 / 250,000 / 280,000 / 280,000 / 280,000 / 290,000 /
+280,000 / 290,000 / 290,000. Until 2026-11-03 the 2026 rows were the per-day rate
 between consecutive statements, each held at its midpoint: Jan 1-Mar 24 (83
 days) the March statement's midpoint, 1.94M, less the smooth path's Dec-31
 lifetime, 1.25M, 690,000 miles, 7,171.76 a Las Vegas driving day (from
@@ -1078,12 +1125,12 @@ lifetime, 1.25M, 690,000 miles, 7,171.76 a Las Vegas driving day (from
 640,000, 6,530.74 a day), and Mar 25-Aug 5 (134 days) the midpoints'
 difference, 1,160,000, 6,180.83 a day, held flat after Aug 5 (220,000 /
 250,000 / 280,000 / 240,000 / 270,000 / 270,000 / 280,000 / 280,000 /
-280,000 / 290,000). Bands follow the formula in "Ghost months" above, with
-no growth term before October; h is in months of 30.44 days, from the
+280,000 / 290,000). Through August 2026 bands follow the statement-based
+formula in "Ghost months" above. Its h is in months of 30.44 days, from the
 midpoint of the stretch between the two statements around the month (the
 mean of its first and last days: Feb 11 for Jan 1-Mar 24, which governs
 January-March, and the end of May 30 for Mar 25-Aug 5, which governs April
-on) to the month's mean day (Jan 16, Feb 14.5, ...).
+through August) to the month's mean day (Jan 16, Feb 14.5, ...).
 `quals/zoox-vmt-model.qual.mjs` recomputes every row, band and cumulative
 band from June 2025 from these inputs.
 

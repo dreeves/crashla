@@ -4343,26 +4343,32 @@ const MILES_FORECAST = [
   // alone.
   { helmer: "Tesla", components: teslaComponents(teslaCumulativeMiles, TESLA_EYES_OFF.cumulative) },
   { helmer: "Waymo", components: [
-    // US. End-2026 ~407M (383.6M through November, data/vmt.csv, plus ~23M);
-    // 2027 adds ~470-495M: an average fleet of ~8,500 at ~155 miles a car-day
-    // (Q2 2026: 608k a day over ~3,800-3,900 cars; September: 714k over
-    // ~4,300). Low: November's 730k a day held flat for the 396 days from Dec
-    // 1, 2026 through Dec 31, 2027 (673M; 667M until 2026-11-17, October's
-    // 718k a day from Nov 1; 680M until 2026-10-31, against a flat hold then
-    // given as 676M). High: an average fleet of ~13k.
-    { weight: 1, parts: [{ best: 880000000, lo: 673000000, hi: 1200000000 }] },
+    // US. The revised November estimate puts cumulative miles at 392.7M.
+    // Holding its 817k miles a day in December gives ~418M at end-2026.
+    // The October forecast's 880M central then implies ~462M miles in 2027,
+    // or ~149 miles a car-day for its assumed average fleet of ~8,500.
+    // It originally assumed ~470-495M at ~155 miles a car-day. Q2 2026 ran
+    // 608k a day over ~3,800-3,900 cars and September now runs 801k over ~4,300.
+    // The low edge holds November's daily rate flat for the 396 days from
+    // Dec 1, 2026 through Dec 31, 2027 (716M). The July-August CPUC update
+    // alone gave 674M, after 673M on the November row of 2026-11-17.
+    // Before then the floor was 667M on October's 718k a day from Nov 1,
+    // and 680M until 2026-10-31, against a flat hold then given as 676M.
+    // High: an average fleet of ~13k.
+    { weight: 1, parts: [{ best: 880000000, lo: 716000000, hi: 1200000000 }] },
   ] },
   { helmer: "Zoox", components: [
-    // End-2026 ~4.50M (the data/vmt.csv model: 4,189,920 through November,
-    // then December ~310,000 on its method); 2027 adds ~8.3-8.8M: an average
-    // fleet of ~270-285 at ~85 miles a vehicle-day (now ~75-100, November's
-    // 10,000 a day on ~100-133 vehicles). Low: today's rate held flat,
-    // November's 300,000 over its 30 days for the 396 days from Dec 1, 2026
-    // through Dec 31, 2027 (8.15M; 8.01M until 2026-11-17, October's row from
-    // Nov 1; 7.86M until 2026-11-03, 7.5M until 2026-10-31;
-    // quals/fleet-forecast.qual.mjs re-derives it, and Waymo's, from
-    // data/vmt.csv's newest month).
-    { weight: 1, parts: [{ best: 13000000, lo: 8150000, hi: 24000000 }] },
+    // The mileage model reaches 4,149,920 through November and gives December
+    // about 300,000 more, or ~4.45M at end-2026. The 13M central then implies
+    // ~8.55M in 2027, within the original ~8.3-8.8M for an average fleet of
+    // ~270-285 at ~85 miles a vehicle-day. November's ~9,667 a day on
+    // ~100-133 vehicles gives ~73-97 miles a vehicle-day.
+    // The low edge holds November's 290,000 over its 30 days flat for the 396
+    // days from Dec 1, 2026 through Dec 31, 2027 (7.98M). The November row
+    // before the Q3 filing gave 8.15M. October's row gave 8.01M until
+    // 2026-11-17, after 7.86M until 2026-11-03 and 7.5M until 2026-10-31.
+    // quals/fleet-forecast.qual.mjs re-derives both flat edges from data/vmt.csv.
+    { weight: 1, parts: [{ best: 13000000, lo: 7980000, hi: 24000000 }] },
   ] },
 ];
 

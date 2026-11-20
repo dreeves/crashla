@@ -18,7 +18,7 @@ import { parseCsv } from "./csv-parse.mjs";
 //     CPUC's driverless pilot miles (TCP 0038380-P) x 1.19 for the
 //     DMV-reported driverless miles CPUC misses (an assumption: the midpoint
 //     of 1.05-1.33, the DMV/CPUC ratio having fallen from 3.97 to 1.33 over
-//     Apr-Nov 2025), measured through June and grown e^0.05 a calendar month
+//     Apr-Nov 2025), measured through September and grown e^0.05 a calendar month
 //     after it.
 //   - The rest, mostly Las Vegas: one rate per Las Vegas driving day each
 //     month (January 2026's outage, Jan 22-26, taken as 5 days without Las
@@ -71,21 +71,24 @@ import { parseCsv } from "./csv-parse.mjs";
 //   - Bands, the months after it (since 2026-11-17; the human's "whatever
 //     the uncertainty is, the confidence bands should reflect that",
 //     2026-11-16, and "ok, if you're sure those are the best numbers",
-//     2026-11-17): nothing measures either share of such a month (no
-//     statement after Aug 5, 2026; no California month after CPUC's last),
-//     so it takes the range the repo gives days with no data, half to twice
-//     its miles (data/README.md, Ghost months), its middle unchanged. Until
+//     2026-11-17): a month with neither a statement nor filed California miles
+//     takes the range the repo gives days with no data, half to twice its
+//     miles (data/README.md, Ghost months), its middle unchanged. September
+//     2026 now has filed California miles: California takes the DMV/CPUC
+//     factor's 1.05–1.33 range and the rest takes half to twice. Until
 //     then these months kept the formula, with 0.10 added in quadrature on
 //     the upside from October for fleet growth announced but not quantified
 //     (the NTA's 100-vehicle cap expired Sep 25): x0.71-1.40 for September,
 //     x0.68-1.55 for November. That range was too narrow for the California
 //     share alone: the model's California rule (a month's daily rate grown
-//     e^0.05 a calendar month) run from each measured month to the measured
-//     months as far ahead as these are from CPUC's last (3, 4 and 5 months)
-//     gives 18 forecasts on CPUC's and the DMV's series, 6 of them outside
+//     e^0.05 a calendar month), checked when the latest CPUC month was June
+//     2026 at horizons of 3, 4 and 5 months, gave 18 forecasts on CPUC's
+//     and the DMV's series, 6 of them outside
 //     the formula's range, all low, and none outside half to twice (the
 //     backtest below, which goes red when a new measured month lands outside
-//     it: the sign that half to twice is too narrow).
+//     it: the sign that half to twice is too narrow). With CPUC through
+//     September, the one- and two-month horizons give 28 comparisons.
+//     Forecast/actual is 0.69–1.51, with five outside the earlier formula.
 //
 // Cumulative bands: one sweep over the whole series from its exact zero
 // (May 2024), forward with the monthly bands and back from each knot: the
@@ -122,7 +125,7 @@ const CROSS = 1000000;
 // --- Inputs ---------------------------------------------------------------------
 // California: the CA DMV's driverless miles (permit AVDT004) June-November
 // 2025, December from CPUC's December/November ratio; CPUC's driverless
-// miles x 1.19 from January 2026, measured through June, then June's daily
+// miles x 1.19 from January 2026, measured through September, then September's daily
 // rate grown e^GROWTH a calendar month.
 const CA_DMV = { "2025-06": 22507.9, "2025-07": 26629.5, "2025-08": 36071.5, "2025-09": 35016.9, "2025-10": 42285.5, "2025-11": 56274.8 };
 const CPUC_NOV_2025 = 42347.31, CPUC_DEC_2025 = 36481.55;
@@ -132,11 +135,15 @@ const CA_2025_HI = { ...CA_DMV, "2025-12": CPUC_DEC_2025 / 0.6 };
 const CPUC = {
   "2026-01": 31996.94, "2026-02": 38162.55, "2026-03": 51137.72,
   "2026-04": 47322.83, "2026-05": 65708.40, "2026-06": 67922.81,
+  // AV Pilot 2026Q3/Zoox/Driverless/Q3_2026_CPUC_PUBLIC_Driverless_Month-Level.csv,
+  // TotalVMTZEV for Month 7, 8 and 9.
+  "2026-07": 69125.74, "2026-08": 70865.34, "2026-09": 69362.69,
 };
 const DMV_FACTOR = 1.19;
 const GROWTH = 0.05;
-const caDay = m => m <= "2026-06" ? CPUC[m] / daysIn(m)
-  : CPUC["2026-06"] / 30 * Math.exp(GROWTH * (monthNo(m) - monthNo("2026-06")));
+const LAST_CPUC_MONTH = Object.keys(CPUC).sort().at(-1);
+const caDay = m => m <= LAST_CPUC_MONTH ? CPUC[m] / daysIn(m)
+  : CPUC[LAST_CPUC_MONTH] / daysIn(LAST_CPUC_MONTH) * Math.exp(GROWTH * (monthNo(m) - monthNo(LAST_CPUC_MONTH)));
 // Days without Las Vegas driving: January 2026's passenger outage, Jan 22-26.
 const LV_PAUSE = { "2026-01": 5 };
 const may = byMonth["2025-05"];
@@ -344,7 +351,8 @@ Expectata: at least ${decMin} (1.25M at Dec 31 less 1M at Nov 30: the statements
 Resultata: ${byMonth["2025-12"].vmin}.`);
 
 // 2026 on: each month rounds to 10,000, its band from the formula above
-// through the last statement's month and half to twice its miles after it.
+// through the last statement's month, then the component bands if California
+// is measured or half to twice the whole month's miles otherwise.
 // Day of year of each 2026 month's first day, and of its mean day (Jan 16).
 const M26 = M.filter(m => m >= "2026-01");
 const FIRST = {};
@@ -354,13 +362,18 @@ const Q1 = { first: 1, last: 83 };   // Jan 1 - Mar 24
 const W2 = { first: 84, last: 217 }; // Mar 25 - Aug 5
 const winMid = w => (w.first + w.last) / 2;
 const LAST_STATEMENT_MONTH = "2026-08"; // "more than 3 million miles on public roads", Aug 5, 2026
+const RESTATED_THROUGH = "2026-09"; // human-approved bands for filed months beyond the statement
 const NO_DATA = [0.5, 2];               // the range for a month nothing measures
 const sigmaOf = h => Math.sqrt(0.065 ** 2 + 0.07 ** 2 * h + 0.09 ** 2);
 for (const m of M26) {
-  const vmt = round(T[M.indexOf(m)], 10000);
+  const i = M.indexOf(m);
+  const vmt = round(T[i], 10000);
   const h = Math.abs(monthMid(m) - winMid(m <= "2026-03" ? Q1 : W2)) / 30.44;
-  const [lo, hi] = m > LAST_STATEMENT_MONTH ? NO_DATA : [Math.exp(-1.96 * sigmaOf(h)), Math.exp(1.96 * sigmaOf(h))];
-  expected[m] = { vmt, vmin: round(vmt * lo, 1000), vmax: round(vmt * hi, 1000) };
+  const lv = x[i] * LV_DAYS[i];
+  const [lo, hi] = m <= LAST_STATEMENT_MONTH ? [vmt * Math.exp(-1.96 * sigmaOf(h)), vmt * Math.exp(1.96 * sigmaOf(h))]
+    : m <= RESTATED_THROUGH ? [CPUC[m] * 1.05 + lv * NO_DATA[0], CPUC[m] * 1.33 + lv * NO_DATA[1]]
+    : [vmt * NO_DATA[0], vmt * NO_DATA[1]];
+  expected[m] = { vmt, vmin: round(lo, 1000), vmax: round(hi, 1000) };
 }
 
 // The backtest behind NO_DATA for the California share: California's rule
@@ -371,10 +384,9 @@ for (const m of M26) {
 // as the no-data months are from CPUC's last month. Each forecast must lie
 // within half to twice what was measured; the count outside the formula's
 // range is reported, not required.
-const LAST_CPUC_MONTH = Object.keys(CPUC).sort().at(-1);
-const AHEAD = [...new Set(M26.filter(m => m > LAST_STATEMENT_MONTH).map(m => monthNo(m) - monthNo(LAST_CPUC_MONTH)))];
+const AHEAD = [...new Set(M26.filter(m => m > LAST_STATEMENT_MONTH && m > RESTATED_THROUGH).map(m => monthNo(m) - monthNo(LAST_CPUC_MONTH)))];
 assert.ok(AHEAD.length > 0 && AHEAD.every(k => k > 0),
-  `Replicata: list how many months after CPUC's last California month (${LAST_CPUC_MONTH}) each zoox month after ${LAST_STATEMENT_MONTH} is.
+  `Replicata: list how many months after CPUC's last California month (${LAST_CPUC_MONTH}) each zoox month beyond the last statement and California restatement is.
 Expectata: at least one such month, each after CPUC's last (a month CPUC has measured has a measured California share: restate its band, California measured plus half to twice the rest, with the human).
 Resultata: ${JSON.stringify(AHEAD)}.`);
 const monthAfter = (m, k) => { const n = monthNo(m) - 1 + k; return `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, "0")}`; };

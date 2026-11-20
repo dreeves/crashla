@@ -10,6 +10,12 @@ import { parseCsv } from "./csv-parse.mjs";
 // question 15, "Rebuild on Waymo's figures") the model covers the series from
 // its July 2021 start; until then it began at July 2024 and the earlier rows
 // kept an older ramp that did not follow Waymo's figures.
+const [caHeader, ...caMonths] = parseCsv(fs.readFileSync("data/waymo-ca.csv", "utf8"));
+const totalCol = caHeader.indexOf("total");
+assert.ok(totalCol >= 0,
+  `Replicata: read the column names in data/waymo-ca.csv.
+Expectata: a total column for combined deployment and pilot miles.
+Resultata: ${caHeader.join(",")}.`);
 const expected = JSON.parse(execFileSync("python3", ["data/waymo_vmt.py"], {encoding: "utf8"}));
 const names = ["helmer", "month", "vmt", "helmer_cumulative_vmt", "kyoom_min", "kyoom_max", "vmt_min", "vmt_max", "rationale"];
 const master = parseCsv(fs.readFileSync("data/vmt.csv", "utf8")).slice(1)
@@ -62,6 +68,51 @@ for (const [month, published, minus, plus, residue] of [
 Expectata: central ${central}, bounds ${bounds}.
 Resultata: ${JSON.stringify(row)}.`);
 }
+
+// California covers San Diego. Remove its estimated share from the newer
+// metros while retaining their original total and the three mature metros.
+const q2Ratio = 30625484 / 28957564; // Q2 California hub miles / CPUC miles
+// Counts from data/snapshots/nhtsa-current-20261116T120804.csv: public-service
+// Waymo reports in San Diego divided by those in all newer metros, including
+// Miami Beach. Later releases can revise the counts available for this estimate.
+// For zero reports the two-sided 95% Clopper-Pearson upper endpoint solves
+// (1 - p)^n = .025. For 3 of 25 the endpoints are the .025 quantile of
+// Beta(3, 23) and the .975 quantile of Beta(4, 22), respectively.
+const retained = (share, rateRatio) => (1 - share) / (1 - share + share / rateRatio);
+const q3 = new Map();
+for (const [month, mature, newerBest, newerLo, newerHi, share, shareLo, shareHi] of [
+  ["2026-07", 7060000, 2000000, 1200000, 3300000, 0/12, 0, 1 - 0.025 ** (1/12)],
+  ["2026-08", 7460000, 2300000, 1400000, 3800000, 0/14, 0, 1 - 0.025 ** (1/14)],
+  ["2026-09", 7580000, 2850000, 1700000, 4800000, 3/25, 0.025465396647733, 0.312190307286235],
+]) {
+  const filed = Number(caMonths.find(r => r[0] === month)[totalCol]);
+  const ca = filed * q2Ratio;
+  q3.set(month, [
+    ca + mature + newerBest * (1 - share),
+    ca * 0.97 + mature * 0.75 + newerLo * retained(shareHi, 4.5/6.6),
+    ca * 1.03 + mature * 1.25 + newerHi * retained(shareLo, 9.5/6.6),
+  ]);
+}
+const wantedMonthly = Array.from(q3, ([month, miles]) => [month, ...miles.map(Math.round)]);
+const septemberBeforePhoenixPause = q3.get("2026-09")[0] + 100000;
+for (const [month, days, k, adjustments] of [
+  // October: Phoenix pause, openings, storm, rain, area expansion.
+  ["2026-10", 31, 4, -50000 + 150000 - 50000 - 70000 + 20000],
+  // November: full month of openings and area expansion.
+  ["2026-11", 30, 5, 250000 + 130000],
+]) {
+  const best = septemberBeforePhoenixPause * days / 30 + adjustments;
+  const band = [best, best * Math.exp(-(0.17 + 0.028*k)), best * Math.exp(0.15 + 0.02*k)];
+  wantedMonthly.push([month, ...band.map(miles => 1000 * Math.round(miles / 1000))]);
+}
+const actualMonthly = wantedMonthly.map(([month]) => {
+  const row = master.find(r => r.month === month);
+  return [month, row.vmt, row.vmt_min, row.vmt_max];
+});
+assert.deepEqual(actualMonthly, wantedMonthly,
+  `Replicata: combine filed Q3 California miles with the other metros and carry September's daily rate into October and November.
+Expectata: monthly US miles and bounds ${JSON.stringify(wantedMonthly)} allowing for the San Diego split in Q3 and the forecast horizon thereafter.
+Resultata: ${JSON.stringify(actualMonthly)}.`);
 
 // The authored rows after the model (April 2026 on) chain their cumulative
 // bands from the model's March 2026 knot with their own monthly bands:
