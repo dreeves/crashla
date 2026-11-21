@@ -1,0 +1,15 @@
+#!/bin/sh
+# AGENTS.md rule 15: git is human-only in this repo. git runs this hook before
+# a push, however git was started; a non-zero exit stops the push. It refuses
+# a push from a process Claude Code spawned (CLAUDE_CODE_CHILD_SESSION=1: see
+# .githooks/reference-transaction, which stops every other change to refs);
+# anyone else's push passes on the first line below.
+#
+# Active once the human has run, once per clone:
+#   git config core.hooksPath .githooks
+# quals/git-guard-hooks.qual.mjs holds this file to its behavior.
+[ "${CLAUDE_CODE_CHILD_SESSION:-}" = 1 ] || exit 0
+# TODO: English copy. Meaning: "git-guard: this push is blocked. In this repo
+# git is human-only (AGENTS.md rule 15). Don't try to get around this rule."
+echo "git-guard: haec propulsio (push) vetita est. In hoc repositorio git solius hominis est (AGENTS.md, regula 15). Noli hanc regulam circumvenire." >&2
+exit 1

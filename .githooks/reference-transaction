@@ -1,0 +1,33 @@
+#!/bin/sh
+# AGENTS.md rule 15: git is human-only in this repo.
+#
+# git runs this hook whenever any command is about to change a ref (commit,
+# reset to another commit, branch, tag, merge, rebase, cherry-pick, stash,
+# pull, fetch), however git was started: typed, or from a script in any
+# language, which the guards that read a command line cannot see into
+# (.claude/settings.json's deny list, ~/.claude/hooks/git-guard.py, Codex's
+# rules). --no-verify does not skip it. git passes the change's state as $1
+# and honors a non-zero exit only while the change can still be stopped; once
+# the change is "committed" or "aborted" the exit status is ignored.
+#
+# It refuses a change made from a process Claude Code spawned: Claude Code
+# sets CLAUDE_CODE_CHILD_SESSION=1 in those (its Bash tool, and every script
+# that tool starts) and not in a person's own terminal, where its IDE
+# extensions set only CLAUDECODE=1. Anyone else's git passes on the first
+# line below. (Codex's sandbox keeps .git read-only by itself.)
+#
+# Not covered, because git has no hook for it: staging (git add) and commands
+# that only rewrite working files (restore, clean, reset --hard to the same
+# commit).
+#
+# Active once the human has run, once per clone:
+#   git config core.hooksPath .githooks
+# quals/git-guard-hooks.qual.mjs holds this file to its behavior. It runs
+# nothing but the shell, so there is nothing in it to be missing or to fail.
+[ "${CLAUDE_CODE_CHILD_SESSION:-}" = 1 ] || exit 0
+if [ "${1:-}" = committed ] || [ "${1:-}" = aborted ]; then exit 0; fi
+# TODO: English copy. Meaning: "git-guard: this git change is blocked. In this
+# repo git is human-only (AGENTS.md rule 15): an agent's process may read git
+# (status, diff, log) and never change it. Don't try to get around this rule."
+echo "git-guard: haec mutatio git vetita est. In hoc repositorio git solius hominis est (AGENTS.md, regula 15): processui agentis legere licet (status, diff, log), mutare numquam. Noli hanc regulam circumvenire." >&2
+exit 1
