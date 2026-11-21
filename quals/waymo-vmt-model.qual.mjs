@@ -72,6 +72,34 @@ Resultata: ${JSON.stringify(row)}.`);
 // California covers San Diego. Remove its estimated share from the newer
 // metros while retaining their original total and the three mature metros.
 const q2Ratio = 30625484 / 28957564; // Q2 California hub miles / CPUC miles
+// The judged parts of the July-November 2026 rows (data/vmt.csv's rationales;
+// data/README.md, Waymo anchors and Ghost months), named since 2026-11-20 so
+// that the page's list of assumptions (crashla.js ASSUMPTIONS) is checked
+// against them (quals/assumptions-list.qual.mjs reads these consts; until
+// then it pinned copies of them): California's filed miles times q2Ratio
+// within CA_BAND, and the three mature metros extrapolated from the hub's Q2
+// monthly rates within MATURE_BAND (July-September, multipliers of the
+// estimate); E_RATE, the newer metros' reports per million miles (Austin's
+// and Atlanta's young-market rate) with the low and high rate the San Diego
+// split allows; SAN_DIEGO, San Diego's reports of the newer metros' in
+// September 2026; the weather pauses taken off (PAUSES) and the openings and
+// added service area put on (OPENINGS), by month and part; and GHOST_BAND,
+// October's and November's range, e^-(lo[0] + lo[1] k) to e^(hi[0] + hi[1] k)
+// times the estimate for a month k months past Q2.
+const CA_BAND = [0.97, 1.03];
+const MATURE_BAND = [0.75, 1.25];
+const E_RATE = { best: 6.6, lo: 4.5, hi: 9.5 };
+const SAN_DIEGO = { reports: 3, of: 25 };
+const PAUSES = {
+  "2026-09": { phoenix: 100000 },
+  "2026-10": { phoenix: 50000, storms: 50000, rain: 70000 },
+};
+const OPENINGS = {
+  "2026-10": { opened: 150000, area: 20000 },
+  "2026-11": { opened: 250000, area: 130000 },
+};
+const GHOST_BAND = { lo: [0.17, 0.028], hi: [0.15, 0.02] };
+const total = parts => Object.values(parts).reduce((a, b) => a + b, 0);
 // Counts from data/snapshots/nhtsa-current-20261116T120804.csv: public-service
 // Waymo reports in San Diego divided by those in all newer metros, including
 // Miami Beach. Later releases can revise the counts available for this estimate.
@@ -79,30 +107,34 @@ const q2Ratio = 30625484 / 28957564; // Q2 California hub miles / CPUC miles
 // (1 - p)^n = .025. For 3 of 25 the endpoints are the .025 quantile of
 // Beta(3, 23) and the .975 quantile of Beta(4, 22), respectively.
 const retained = (share, rateRatio) => (1 - share) / (1 - share + share / rateRatio);
-const q3 = new Map();
-for (const [month, mature, newerBest, newerLo, newerHi, share, shareLo, shareHi] of [
+// [month, the three mature metros' miles, the newer metros' best, low and
+// high (before the San Diego split), San Diego's share of the newer metros'
+// reports and its Clopper-Pearson low and high]
+const Q3_METROS = [
   ["2026-07", 7060000, 2000000, 1200000, 3300000, 0/12, 0, 1 - 0.025 ** (1/12)],
   ["2026-08", 7460000, 2300000, 1400000, 3800000, 0/14, 0, 1 - 0.025 ** (1/14)],
-  ["2026-09", 7580000, 2850000, 1700000, 4800000, 3/25, 0.025465396647733, 0.312190307286235],
-]) {
+  ["2026-09", 7580000, 2850000, 1700000, 4800000, SAN_DIEGO.reports / SAN_DIEGO.of, 0.025465396647733, 0.312190307286235],
+];
+const q3 = new Map();
+for (const [month, mature, newerBest, newerLo, newerHi, share, shareLo, shareHi] of Q3_METROS) {
   const filed = Number(caMonths.find(r => r[0] === month)[totalCol]);
   const ca = filed * q2Ratio;
   q3.set(month, [
     ca + mature + newerBest * (1 - share),
-    ca * 0.97 + mature * 0.75 + newerLo * retained(shareHi, 4.5/6.6),
-    ca * 1.03 + mature * 1.25 + newerHi * retained(shareLo, 9.5/6.6),
+    ca * CA_BAND[0] + mature * MATURE_BAND[0] + newerLo * retained(shareHi, E_RATE.lo / E_RATE.best),
+    ca * CA_BAND[1] + mature * MATURE_BAND[1] + newerHi * retained(shareLo, E_RATE.hi / E_RATE.best),
   ]);
 }
 const wantedMonthly = Array.from(q3, ([month, miles]) => [month, ...miles.map(Math.round)]);
-const septemberBeforePhoenixPause = q3.get("2026-09")[0] + 100000;
+const septemberBeforePhoenixPause = q3.get("2026-09")[0] + total(PAUSES["2026-09"]);
 for (const [month, days, k, adjustments] of [
-  // October: Phoenix pause, openings, storm, rain, area expansion.
-  ["2026-10", 31, 4, -50000 + 150000 - 50000 - 70000 + 20000],
+  // October: openings and area expansion, less the Phoenix pause, storm and rain.
+  ["2026-10", 31, 4, total(OPENINGS["2026-10"]) - total(PAUSES["2026-10"])],
   // November: full month of openings and area expansion.
-  ["2026-11", 30, 5, 250000 + 130000],
+  ["2026-11", 30, 5, total(OPENINGS["2026-11"])],
 ]) {
   const best = septemberBeforePhoenixPause * days / 30 + adjustments;
-  const band = [best, best * Math.exp(-(0.17 + 0.028*k)), best * Math.exp(0.15 + 0.02*k)];
+  const band = [best, best * Math.exp(-(GHOST_BAND.lo[0] + GHOST_BAND.lo[1] * k)), best * Math.exp(GHOST_BAND.hi[0] + GHOST_BAND.hi[1] * k)];
   wantedMonthly.push([month, ...band.map(miles => 1000 * Math.round(miles / 1000))]);
 }
 const actualMonthly = wantedMonthly.map(([month]) => {

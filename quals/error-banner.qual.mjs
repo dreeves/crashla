@@ -35,6 +35,15 @@
 //    where parseVmtCsv or parseGhostVmtCsv reads the rationale, and the
 //    banner shows the link assert's message, whose details name the row's
 //    line, 2, and its rationale, and its button dismisses it.
+//  - a crashla.js one of whose assumptions entries stops its own text (since
+//    2026-11-20, when the page's list of assumptions began asserting, in its
+//    entries for Tesla's own list, that the rows on a list's coverage are what
+//    the entry describes, which the release after the list's month makes
+//    false): the banner shows the entry's error, its button dismisses it, and
+//    every other view draws (the charts, the summary cards, the incident
+//    table and the sanity section), the list itself left empty. Until
+//    2026-11-20 (review) the list was drawn before them, and such an entry
+//    left the page with nothing but the banner.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ENGINES, serveRepo, drawnAll } from "./browser.mjs";
@@ -91,6 +100,12 @@ const badLink = (segment, link) => {
 };
 const openTargetVmt = badLink("VMT_CSV_TEXT", " ([data/README.md, Ghost months](data/#ghost-months");
 const capitalAnchorVmt = badLink("GHOST_VMT_CSV_TEXT", " [data/README.md, Ghost months](data/#Ghost-Months).");
+// An assumptions entry that stops: the first entry's text made to throw by a
+// statement served just before the init block, as nanRangeApp is (an entry
+// whose premise a release made false, such as reporting-tesla-list's, stops
+// at its assert the same way; this does not wait for a release to make one).
+const STALE_ENTRY = "probe-assumptions-entry-stops";
+const staleEntryApp = appJs.replace(INIT, `\nASSUMPTIONS[0].text = () => { throw new Error(${JSON.stringify(STALE_ENTRY)}); };${INIT}`);
 
 const banner = () => {
   const b = document.getElementById("url-banner");
@@ -98,13 +113,19 @@ const banner = () => {
   return { shown: getComputedStyle(b).display !== "none", errorShown: e !== null && getComputedStyle(e).display !== "none",
     error: e === null ? null : e.textContent, lead: typeof PAGE_ERROR_LEAD === "string" ? PAGE_ERROR_LEAD : null };
 };
+// What a stopped load drew (the list of assumptions' rows among it).
+const drew = () => {
+  const q = s => document.querySelectorAll(s).length;
+  return { charts: q("svg.month-svg"), cards: q(".mpi-card"), rows: q("#incidents-body tr"), sanity: q("#sanity-checks table"),
+    assumptions: q("#assumptions-list tr[id^='assumption-']") };
+};
 const server = await serveRepo();
 const problems = [];
 // A load that init stops: the default view with one file served changed. The
 // banner must show the lead-in and a message naming each of `names`, and its
 // button must dismiss it, which works even though init stopped early (until
 // 2026-11-01 its handler was wired late in init, so a skewed deploy's banner
-// could not be dismissed).
+// could not be dismissed). It returns what the load drew.
 const stoppedLoad = async (browser, engineName, what, file, body, names) => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, route => route.abort("internetdisconnected"));
@@ -118,9 +139,11 @@ const stoppedLoad = async (browser, engineName, what, file, body, names) => {
   if (!(errors.length > 0 && b.shown && b.errorShown && b.lead !== null && b.lead.trim() !== "" &&
         b.error.startsWith(b.lead) && names.every(n => b.error.includes(n))))
     problems.push(`${engineName}, ${what}: page errors ${JSON.stringify(errors)}; banner ${JSON.stringify(b)}; want the banner naming ${names.join(", ")}`);
+  const views = await page.evaluate(drew);
   await page.evaluate(() => document.getElementById("url-banner-dismiss").click());
   if ((await page.evaluate(banner)).shown) problems.push(`${engineName}, ${what}: the banner's button does not dismiss the error banner`);
   await ctx.close();
+  return views;
 };
 try {
   for (const [engineName, engine] of Object.entries(ENGINES)) {
@@ -143,6 +166,13 @@ try {
         /\/data\/vmt\.js$/, openTargetVmt, ['"lineNo":2', '"rationale":"']);
       await stoppedLoad(browser, engineName, "data/vmt.js whose first ghost rationale holds a link whose anchor is in capitals",
         /\/data\/vmt\.js$/, capitalAnchorVmt, ['"lineNo":2', '"rationale":"']);
+      // --- an assumptions entry that stops ---------------------------------
+      {
+        const what = "crashla.js whose first assumptions entry's text throws";
+        const views = await stoppedLoad(browser, engineName, what, /\/crashla\.js$/, staleEntryApp, [STALE_ENTRY]);
+        if (!(views.charts >= 6 && views.cards >= 6 && views.rows > 100 && views.sanity >= 5 && views.assumptions === 0))
+          problems.push(`${engineName}, ${what}: the page drew ${JSON.stringify(views)}; want every view but the list (at least 6 charts, 6 cards, 100 incident rows and 5 sanity tables) and the list empty`);
+      }
       // --- errors on a page that drew -------------------------------------
       {
         const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
@@ -178,8 +208,8 @@ try {
 }
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data), with Waymo's first fully knotted month's band top widened to its running sum (a release that moved the knot), with crashla.js served with Waymo's PRE_SERIES_OFFSET range set to NaN, and with data/vmt.js's first analysis rationale given a link whose target is left open and its first ghost rationale a link whose anchor is in capitals; then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
-Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; for the moved knot checkPreSeriesOffsets's, naming Waymo, the month the data gives and PRE_SERIES_OFFSET's; for the NaN range its range assert's, naming Waymo, "NaN" and the type "number"; for each malformed link the link assert's, its details naming line 2 and the rationale; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
+  `Replicata: in Chromium, Firefox and WebKit, load the default view with data/vmt.js served without GHOST_VMT_CSV_TEXT (a deploy pairing this crashla.js with the previous release's data), with Waymo's first fully knotted month's band top widened to its running sum (a release that moved the knot), with crashla.js served with Waymo's PRE_SERIES_OFFSET range set to NaN, with data/vmt.js's first analysis rationale given a link whose target is left open and its first ghost rationale a link whose anchor is in capitals, and with crashla.js served with its first assumptions entry's text made to throw (as an entry a release made stale does); then load it whole, throw an error from a timer, reject a promise unhandled, and press the banner's button.
+Expectata: the banner (#url-banner) shows PAGE_ERROR_LEAD and the error's message (naming GHOST_VMT_CSV_TEXT; for the moved knot checkPreSeriesOffsets's, naming Waymo, the month the data gives and PRE_SERIES_OFFSET's; for the NaN range its range assert's, naming Waymo, "NaN" and the type "number"; for each malformed link the link assert's, its details naming line 2 and the rationale; for the stopping entry its error, with every other view drawn and the list empty; then each probe's message), stays hidden on a page that drew with no error, and its button dismisses it.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: an uncaught error or unhandled rejection, at init or after it, shows the page's banner with its message, in three engines");

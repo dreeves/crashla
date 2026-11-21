@@ -569,7 +569,10 @@ let faultData = {}; // reportId -> {faultfrac, reasoning}
 let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, TeslaNoMonitor: false, Waymo: true, Zoox: false};
 // Collapsible page sections (each <section class="collapsible" id="sec-<id>">).
 // Collapsed set is shareable via the URL so a link can foreground one section.
-const SECTION_IDS = ["controls", "vmt", "mpi", "dist", "browser", "markets", "summary", "sanity", "fleet"];
+// In index.html's order (url-state.qual): "assumptions" (2026-11-20), the list
+// of what the page's figures assume, sits between the summary cards and the
+// sanity section.
+const SECTION_IDS = ["controls", "vmt", "mpi", "dist", "browser", "markets", "summary", "assumptions", "sanity", "fleet"];
 let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // Unified metric definitions. Each entry fully specifies one MPI variant:
 // key/blank (-> label), cardLabel (summary card), incField, countFn (plus
@@ -1393,7 +1396,9 @@ const HUMAN_HELMERS = ["HumansAV", "HumansUS", "HumansRideshare"];
 // The ADS lines the page plots: each company (ADS_HELMERS, the reporting
 // entities an incident belongs to) and, beside Tesla, Tesla's driving with no
 // safety monitor in the vehicle (2026-10-23): the in-scope Tesla reports on
-// Tesla's own no-monitor list (slurp.py TESLA_NO_MONITOR_REPORTS) over Tesla's
+// Tesla's own no-monitor list (slurp.py TESLA_NO_MONITOR_REPORTS), and since
+// 2026-11-20 those newer than the list whose narratives name no monitor
+// (slurp.py TESLA_NO_MONITOR_ADDITIONS, until a list holds them), over Tesla's
 // own no-monitor miles (data/vmt.csv "teslanomonitor" rows). An incident's
 // `series` names every line it counts toward.
 const ADS_SERIES = ["Tesla", "TeslaNoMonitor", "Waymo", "Zoox"];
@@ -1556,14 +1561,21 @@ const RATIONALE_LINK = /\[(?=[^\[\]]*[^\[\]\s])([^\[\]]+)\]\((data\/#[a-z0-9-]+|
 // address.
 function vmtRationale(field, lineNo) {
   const rationale = csvUnquote(field);
+  checkRationaleLinks(rationale, {lineNo});
+  return rationale;
+}
+// The two checks above, of any text drawn with rationaleHtml: a VMT row's
+// rationale (vmtRationale, details {lineNo}) and, since 2026-11-20, an entry
+// of the assumptions list (renderAssumptions, details {assumption}). Until
+// then they were vmtRationale's own lines, unchanged here.
+function checkRationaleLinks(rationale, details) {
   const rest = rationale.replace(RATIONALE_LINK, " ");
   assert(!rest.includes("]("),
     "a rationale's \"](\" must open the target of a link, [<text>](data/#<anchor>) or [<text>](https://<address>), its text holding a character other than a blank and no square bracket, its anchor lowercase letters, digits and hyphens, its address without a blank, parenthesis, square or angle bracket, or quote",
-    {lineNo, rationale});
+    {...details, rationale});
   assert(!/(?:^|[^\w.\/:-])data\/#/.test(rest),
     "a rationale's link is left open: outside its links [<text>](data/#<anchor>), no target data/# may stand but inside a longer path or address",
-    {lineNo, rationale});
-  return rationale;
+    {...details, rationale});
 }
 
 // A rationale as the VMT sources table shows it: its text escaped (escHtml),
@@ -4161,7 +4173,9 @@ function renderFleetForecastChart() {
 // since 2026-10-28, growth-ghost-month.qual.mjs): November 2026, in progress
 // when written (2026-11-17), as on a typical day of the month (mid-November).
 // Tesla's October and November are its miles rows' (October 465 [312, 788]
-// until 2026-11-17, on the row of before the camera estimate). Waymo and
+// until 2026-11-17, on the row of before the camera estimate; October 402
+// [281, 653] and November 609 [341, 1221] until 2026-11-20, on the bands of
+// before the camera estimate's drift term). Waymo and
 // Zoox have published no fleet count since September, so each runs
 // September's count on at a pace. Waymo: 4,300 on Sep 1, then ~280 cars a
 // month (above 2026's average of ~180 a month, as Ojai imports ramp: ~5,100
@@ -4189,8 +4203,8 @@ const FLEET_HISTORY = {
     {month: "2026-07", best: 50, lo: 35, hi: 77},
     {month: "2026-08", best: 93, lo: 65, hi: 145},
     {month: "2026-09", best: 186, lo: 132, hi: 294},
-    {month: "2026-10", best: 402, lo: 281, hi: 653},
-    {month: "2026-11", best: 609, lo: 341, hi: 1221},
+    {month: "2026-10", best: 402, lo: 280, hi: 656},
+    {month: "2026-11", best: 609, lo: 335, hi: 1234},
   ],
   Waymo: [
     {month: "2025-05", best: 1500, lo: 1300, hi: 1700},
@@ -4260,11 +4274,14 @@ const RIDES_HISTORY = {
   // 2026-11 (added 2026-11-17; growth-ghost-month.qual.mjs) are estimate
   // months of data/vmt.csv, so each band divides the kyoom band by the
   // corridor's far ends, as RIDES_FORECAST does: 4,241,000 / 6.2, 4,004,800
-  // / 8.3, 4,976,000 / 4.7; 6,485,000 / 6.2, 5,950,800 / 8.3, 7,902,000 /
-  // 4.7; and 9,776,000 / 6.2, 7,991,800 / 8.3, 13,686,000 / 4.7. (2026-09
+  // / 8.3, 4,976,000 / 4.7; 6,485,000 / 6.2, 5,934,800 / 8.3, 7,921,000 /
+  // 4.7; and 9,776,000 / 6.2, 7,930,800 / 8.3, 13,782,000 / 4.7. (2026-09
   // sat on September's cumulative of before the 2026-10-23 re-pin, 3,630,000
   // [3,194,800, 4,506,000], until 2026-10-28; 2026-10 on October's of before
-  // the camera estimate, 6,835,000 [6,079,800, 8,611,000], until 2026-11-17.)
+  // the camera estimate, 6,835,000 [6,079,800, 8,611,000], until 2026-11-17;
+  // 2026-10 and 2026-11 on the cumulative bands of before the camera
+  // estimate's drift term, [5,950,800, 7,902,000] and [7,991,800,
+  // 13,686,000], until 2026-11-20.)
   // Re-derive a row whenever its month's cumulative miles change.
   Tesla: [
     {month: "2025-09", best: 19500,  lo: 14500,  hi: 26000},
@@ -4272,8 +4289,8 @@ const RIDES_HISTORY = {
     {month: "2026-03", best: 277000, lo: 207000, hi: 365000},
     {month: "2026-06", best: 394000, lo: 294000, hi: 519000},
     {month: "2026-09", best: 684000, lo: 483000, hi: 1059000},
-    {month: "2026-10", best: 1046000, lo: 717000, hi: 1681000},
-    {month: "2026-11", best: 1577000, lo: 963000, hi: 2912000},
+    {month: "2026-10", best: 1046000, lo: 715000, hi: 1685000},
+    {month: "2026-11", best: 1577000, lo: 956000, hi: 2932000},
   ],
   // Waymo pinned to published cumulative milestones (rides-provenance.qual):
   // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
@@ -4376,6 +4393,15 @@ const MILES_FORECAST = [
 // 0.6-0.85 on-trip share; rides-provenance.qual pins the implied ratio to
 // [4.5, 8.5]). Divides the miles scenarios into the rides scenarios.
 const TESLA_MILES_PER_RIDE = { lo: 4.7, best: 6.2, hi: 8.3 };
+// The corridor's basis, named for the page's assumptions list (ASSUMPTIONS,
+// 2026-11-20): an assumed 4-5 mile paid ride (loadedMiles) over a 60-85% share
+// of fleet miles with a rider aboard (riderShare). The corridor's edges are
+// its far ends, to a tenth, which the load asserts.
+const TESLA_RIDE_BASIS = { loadedMiles: [4, 5], riderShare: [0.6, 0.85] };
+assert(TESLA_MILES_PER_RIDE.lo === Math.round(10 * TESLA_RIDE_BASIS.loadedMiles[0] / TESLA_RIDE_BASIS.riderShare[1]) / 10 &&
+  TESLA_MILES_PER_RIDE.hi === Math.round(10 * TESLA_RIDE_BASIS.loadedMiles[1] / TESLA_RIDE_BASIS.riderShare[0]) / 10,
+  "TESLA_MILES_PER_RIDE's edges must be TESLA_RIDE_BASIS's loaded miles over its rider shares, to a tenth",
+  {TESLA_MILES_PER_RIDE, TESLA_RIDE_BASIS});
 // A band of Tesla robotaxi miles as rides on that corridor: a low corridor
 // value gives the HIGH rides edge, so lo/hi swap.
 function teslaRidesBand(miles) {
@@ -6310,6 +6336,545 @@ const DISPERSION_VERDICT = {
   mild: "mildly overdispersed",
   over: "overdispersed",
 };
+// The assessment's limits, named for the assumptions list (2026-11-20; until
+// then literals in the assessment's ternary chain, with the same values):
+// the fewest incidents the test tells anything from, and the dispersion index
+// below which a company's months are underdispersed, consistent with Poisson
+// and mildly overdispersed.
+const DISPERSION_LIMITS = {minIncidents: 20, under: 0.5, poisson: 2, mild: 5};
+
+// --- Assumptions ----------------------------------------------------------
+// The page's list of what its figures take as given rather than measure (the
+// human, 2026-11-20: "can we get all such assumptions clearly listed in one
+// place on the page?"): the section #sec-assumptions, between the summary
+// cards' section and the sanity section, one table per group
+// (ASSUMPTION_GROUPS), drawn once at init (renderAssumptions; nothing in it
+// depends on the window, the companies checked or the metric). An entry of
+// ASSUMPTIONS:
+//   id         a stable key (kebab-case), the row's id (assumption-<id>) and
+//              the key quals/assumptions-list.qual.mjs checks it by;
+//   group      an ASSUMPTION_GROUPS id;
+//   values     the literal figures its text shows that the page holds nowhere
+//              else, each checked against its source by the qual (a Python
+//              builder's constant, a qual's, a relation on data/vmt.csv), or,
+//              where nothing machine-readable holds it, on the qual's list of
+//              figures with no machine source;
+//   text       a function of the values giving the row's text (green AI
+//              text, English: the human's rule of 2026-11-03), which may hold
+//              links of the form rationales use (rationaleHtml draws them);
+//              every other figure it shows is read live from this file's
+//              constants or the VMT rows (vmtRowAt), so it follows them;
+//   where      [file, names] pairs: where the value is set (the names a
+//              file's constants, functions or headings, or for data/vmt.csv a
+//              line and its months), drawn as plain text: they are names of
+//              files, constants and data/README.md's sections, which a reader
+//              looks up, not copy (rule 7 does not reach them, so they are
+//              neither AI text nor Latin);
+//   covers     (mileage entries) {line: [first month, last month]}: the
+//              data/vmt.csv months whose estimate the entry describes;
+//   bands      (human-benchmark entries) [metric key, cohort] pairs of
+//              METRIC_DEFS' human bands it describes;
+//   forecasts  (growth entries) [table, helmer] pairs.
+// The qual requires every data/vmt.csv line-month to be covered, every human
+// band and forecast described, and every module-level constant of the Python
+// builders and the model quals named in some entry's where or classified as
+// no assumption, so a release's new month, a new band or a new constant turns
+// it red until this list says how it is set (data/README.md, Each NHTSA
+// release).
+
+// The VMT row of a line (ADS_SERIES) and month: an analysis row (vmtRows) or
+// a ghost month's (ghostVmtRows), asserted to exist.
+function vmtRowAt(line, month) {
+  const row = [...vmtRows, ...ghostVmtRows].find(r => r.helmer === line && r.month === month);
+  assert(row !== undefined, "the assumptions list reads a VMT row that does not exist", {line, month});
+  return row;
+}
+// A line's months in the VMT rows, ghost months included, in order.
+function vmtLineMonths(line) {
+  return [...vmtRows, ...ghostVmtRows].filter(r => r.helmer === line).map(r => r.month).sort();
+}
+// Figures as the assumptions list prints them: a date ("Oct 18, 2026"), a
+// month ("June 2026"), an authored figure to its own precision, at most four
+// significant figures ("6.65M", "4M", "2.508M", "6B"), and a share to a tenth
+// of a percent ("26.9%", "52%").
+const ASSUMPTION_DAY = new Intl.DateTimeFormat(NUMBER_LOCALE, {month: "short", day: "numeric", year: "numeric", timeZone: "UTC"});
+const ASSUMPTION_MONTH = new Intl.DateTimeFormat(NUMBER_LOCALE, {month: "long", year: "numeric", timeZone: "UTC"});
+const ASSUMPTION_FIGURE = new Intl.NumberFormat(NUMBER_LOCALE, {notation: "compact", maximumSignificantDigits: 4});
+const fmtDay = iso => ASSUMPTION_DAY.format(Date.parse(iso));
+const fmtMonth = iso => ASSUMPTION_MONTH.format(Date.parse(iso + "-01"));
+const fmtFigure = v => ASSUMPTION_FIGURE.format(v);
+const fmtPct1 = share => `${Math.round(share * 1000) / 10}%`;
+
+const ASSUMPTION_GROUPS = [
+  // TODO: group heading meaning "Tesla's miles"
+  {id: "tesla", title: "Milia Teslae"},
+  // TODO: group heading meaning "Waymo's miles"
+  {id: "waymo", title: "Milia Waymo"},
+  // TODO: group heading meaning "Zoox's miles"
+  {id: "zoox", title: "Milia Zoox"},
+  // TODO: group heading meaning "How completely crashes are reported"
+  {id: "reporting", title: "Quam plene collisiones nuntiantur"},
+  // TODO: group heading meaning "Which crashes count, and fault"
+  {id: "incidents", title: "Quae collisiones numerantur, et culpa"},
+  // TODO: group heading meaning "The statistical model"
+  {id: "model", title: "Exemplar statisticum"},
+  // TODO: group heading meaning "Human benchmarks"
+  {id: "humans", title: "Mensurae hominum"},
+  // TODO: group heading meaning "Growth and forecasts"
+  {id: "growth", title: "Incrementum et praedictiones"},
+];
+const ASSUMPTION_COLUMNS = [
+  // TODO: column header meaning "Assumption"
+  "Suppositio",
+  // TODO: column header meaning "Where it is set"
+  "Ubi statuitur",
+];
+const ASSUMPTIONS_INTRO = "Each row names something the figures on this page take as given rather than measure: its value, what it affects, and whether the page's ranges and 95% CIs allow for it.";
+
+const ASSUMPTIONS = [
+  // --- Tesla's miles --------------------------------------------------------
+  {id: "tesla-deck-reading", group: "tesla", values: {},
+    text: () => `From July 2025 through June 2026 Tesla's miles are its own 'Cumulative Paid Robotaxi Miles' chart, read from the vector paths of its Q4-2025, Q1-2026 and Q2-2026 update decks (${fmtWhole(vmtRowAt("Tesla", "2026-06").vmtCume)} miles by June 30, 2026), and taken as every mile of its Texas robotaxi service, empty driving included, with or without a safety monitor aboard. Every all-modes Tesla rate through June 2026 rests on this reading (the Tesla (no safety monitor) line's rest on Tesla's safety page instead, below); if 'paid' means only miles with a rider aboard, the true total and Tesla's miles per incident are higher.`,
+    covers: {Tesla: ["2025-07", "2026-06"]},
+    where: [["data/vmt.csv", "tesla 2025-07 – 2026-06"], ["quals/tesla-vmt-provenance.qual.mjs", "PINS"]]},
+  {id: "tesla-deck-ranges", group: "tesla", values: {cumLo: 0.97, cumHi: 1.15, monLo: 0.85, monHi: 1.25},
+    text: v => `From September 2025 those months' ranges are judgment: a month-end total ${v.cumLo} to ${v.cumHi} times the chart's reading, and a month ${v.monLo} to ${v.monHi} times its miles, inside the difference of its month-end ranges. Under the rider-aboard reading, the ${Math.round(100 * (1 - TESLA_RIDE_BASIS.riderShare[1]))}% to ${Math.round(100 * (1 - TESLA_RIDE_BASIS.riderShare[0]))}% share of empty driving that Tesla's ride counts assume (below) would put the total ${(1 / TESLA_RIDE_BASIS.riderShare[1]).toFixed(2)} to ${(1 / TESLA_RIDE_BASIS.riderShare[0]).toFixed(2)} times the chart, above the ranges' top.`,
+    where: [["data/vmt.csv", "tesla 2025-09 – 2026-06"], ["crashla.js", "TESLA_RIDE_BASIS"]]},
+  {id: "tesla-launch-months", group: "tesla", values: {augLo: 18481, augHi: 19697},
+    text: v => {
+      const [jun, jul, aug] = ["2025-06", "2025-07", "2025-08"].map(month => vmtRowAt("Tesla", month));
+      return `For June to August 2025 the three decks' readings disagree: July's month-end total is the one reading at or above Elluswamy's 'more than seven thousand miles' on the Jul 23, 2025 call, ${fmtWhole(jul.vmtCume)}; June's is Robotaxi Tracker's estimate ([https://robotaxitracker.com](https://robotaxitracker.com)), ${fmtWhole(jun.vmtCume)}, its range (${fmtWhole(jun.kyoomMin)} to ${fmtWhole(jun.kyoomMax)}) holding all three readings; August's is about ${fmtWhole(aug.vmtCume)}, a little above all three (${fmtWhole(v.augLo)} to ${fmtWhole(v.augHi)}). They enter every Tesla window that starts before September 2025, and August's month-end range also bounds every window that starts in September 2025.`;
+    },
+    covers: {Tesla: ["2025-06", "2025-08"]},
+    where: [["data/vmt.csv", "tesla 2025-06 – 2025-08"], ["quals/tesla-vmt-provenance.qual.mjs", "DECK_READINGS, CALL_FLOOR_JUL_2025"]]},
+  {id: "tesla-bay-area", group: "tesla", values: {},
+    text: () => `Tesla's Bay Area service, which has a person in the driver's seat, is taken to be outside the chart: Tesla tracks it as a separate series, and the chart's ${fmtWhole(vmtRowAt("Tesla", "2025-08").vmtBest)} miles in August 2025 are too few to hold it. Its miles are left out of every Tesla rate, and so are its crashes, which Tesla files, when NHTSA's rules call for a report, in NHTSA's driver-assistance file, which the page does not count; no range carries this.`,
+    where: [["data/vmt.csv", "tesla 2025-09 – 2026-06"]]},
+  {id: "tesla-drivers-seat", group: "tesla", values: {},
+    text: () => `From September 2025 to June 2026 the chart's miles may include trips with a safety monitor in the driver's seat (Tesla said so of highway trips in September 2025, and a rider reported routine ones in Austin in January 2026). A crash on such a trip, if it ran as FSD (Supervised), would be filed, if at all, in that driver-assistance file, and only when a Level 2 trigger such as a hospital transport or an airbag deployment applies, while its miles stay in Tesla's rates: a bias in Tesla's favor of unknown size that no range carries.`,
+    where: [["data/vmt.csv", "tesla 2025-09 – 2026-06"]]},
+  {id: "tesla-no-monitor-scope", group: "tesla", values: {floorFrom: "2026-07"},
+    text: v => `Tesla's no-monitor miles are taken as Tesla defines them on its Robotaxi Safety Report page: driving with no safety monitor in the car, remote help or takeover included. Tesla does not say whether repositioning, employee rides or Cybercab testing are in them. They are the whole denominator of the Tesla (no safety monitor) line, which starts in ${fmtMonth(vmtLineMonths("TeslaNoMonitor")[0])}, and the floor of Tesla's all-modes line from ${fmtMonth(v.floorFrom)}; no range carries the question.`,
+    where: [["data/vmt.csv", "teslanomonitor"], ["data/README.md", "Tesla's no-monitor line"]]},
+  {id: "tesla-no-monitor-band", group: "tesla", values: {pct: 3},
+    text: v => `For January to September 2026 a month's no-monitor miles are the safety page's city totals at its end, read between the page's weekly figures as if each week's miles were spread evenly over its days. Its range runs ${v.pct}% beyond the lower and the higher of the page's and the update deck's readings (its low edge at least half the page's figure), a judgment for that reading. The Tesla (no safety monitor) line's rates for those months rest on it.`,
+    covers: {TeslaNoMonitor: ["2026-01", "2026-09"]},
+    where: [["data/vmt.csv", "teslanomonitor 2026-01 – 2026-09"], ["quals/tesla-unsupervised-floor.qual.mjs", "NO_MONITOR"]]},
+  {id: "tesla-monitor-aboard", group: "tesla", values: {held: 33000},
+    text: v => {
+      const deck = vmtRowAt("Tesla", "2026-06").vmtBest, page = vmtRowAt("TeslaNoMonitor", "2026-06").vmtBest;
+      return `From July 2026 Tesla's all-modes line adds the miles driven with a safety monitor aboard. These have not been measured since June 2026 and are held at June's remainder, ${fmtWhole(deck - page)} (the deck's ${fmtWhole(deck)} less the page's ${fmtWhole(page)}), rounded to ${fmtWhole(v.held)} a month. The line's range allows none of them at the bottom and, at the top, a monitor-aboard share up to June's ${Math.round(100 * (deck - page) / deck)}%; every all-modes rate from July 2026 rests on it.`;
+    },
+    covers: {Tesla: ["2026-07", "2026-11"]},
+    where: [["quals/tesla-camera-miles.qual.mjs", "MONITOR_ABOARD"], ["data/vmt.csv", "tesla 2026-07 – 2026-11"]]},
+  {id: "tesla-oct-nov-ranges", group: "tesla", values: {within: 1.2, shareTop: 1.27, gap: 0.066},
+    text: v => `In October and November 2026 the all-modes top combines the no-monitor top and that June share as independent errors (the same rule gives July to September's tops, the higher no-monitor reading times ${v.shareTop}, within ${v.within}%). Both Tesla lines' ranges also widen by ${v.gap} on a log scale (about ${(100 * (Math.exp(v.gap) - 1)).toFixed(1)}%), combined as an independent error, for the gap between Tesla's safety page and its deck: 1.96 times the root mean square of their monthly gap over April to September 2026.`,
+    where: [["quals/tesla-camera-miles.qual.mjs", "PAGE_DECK_GAP"], ["data/README.md", "Ghost months"]]},
+  {id: "tesla-camera-ratio", group: "tesla", values: {pageThrough: "2026-10-18", readOn: "2026-11-16", K: 258938, n: 4, calFrom: "2026-09-21", calTo: "2026-10-18"},
+    text: v => `Past the last day Tesla's safety page showed when last read (${fmtDay(v.pageThrough)}; read on ${fmtDay(v.readOn)}), its no-monitor miles are estimated from Robotaxi Tracker's Camera watch ([https://robotaxitracker.com/cameras](https://robotaxitracker.com/cameras)), Cybercabs per 1,000 vehicles seen on Austin's public traffic cameras. Each day gets ${fmtWhole(v.K)} miles per unit of its Monday-to-Sunday week's mean rate, over 7: the geometric mean of the ratio of Tesla's weekly miles to that rate over the ${v.n} weeks both cover (${fmtDay(v.calFrom)} to ${fmtDay(v.calTo)}). Both Tesla lines' October and November 2026 miles rest on that ratio holding, which it would not if Cybercabs' share of Tesla's miles, Austin's share or the other traffic those cameras see changed. While Tesla's own list covers October (below), October's exposure is scaled to the miles Tesla's page measured through ${fmtDay(v.pageThrough)}, so the ratio reaches October's rates only through its range.`,
+    covers: {Tesla: ["2026-10", "2026-11"], TeslaNoMonitor: ["2026-10", "2026-11"]},
+    where: [["quals/tesla-camera-miles.qual.mjs", "TESLA_WEEKS, CAMERA_WEEKS, MEASURED"], ["data/slurp.py", "CAMERA_TABLE, camera_week_means"], ["data/README.md", "Ghost months"]]},
+  {id: "tesla-camera-calibration", group: "tesla", values: {lo: 0.78, hi: 1.29, n: 4},
+    text: v => `Each estimated day's range starts at ${v.lo} to ${v.hi} times its miles, the 95% prediction interval for one new week from those ${v.n} weeks' scatter, and the days' edges are added as if every day's error ran the same way.`,
+    where: [["quals/tesla-camera-miles.qual.mjs", "T975"]]},
+  {id: "tesla-camera-drift", group: "tesla", values: {z: 1.96, drift: 0.07, mid: "2026-10-05", fDay: "2026-10-19", lDay: "2026-11-15", fLo: 0.76, fHi: 1.31, lLo: 0.74, lHi: 1.35},
+    text: v => `Each estimated day's range then widens for drift since those weeks, in Robotaxi Tracker's Cybercab detector, its cameras or the ratio itself: ${v.z} × ${v.drift} on a log scale times the square root of the day's distance in months from the weeks' middle (the start of ${fmtDay(v.mid)}), combined with the first part as independent errors. That gives ${v.fLo} to ${v.fHi} times on ${fmtDay(v.fDay)} and ${v.lLo} to ${v.lHi} times on ${fmtDay(v.lDay)}. The ${v.drift} is the drift allowance of Zoox's ranges (below), an assumed number with no data behind it.`,
+    where: [["quals/tesla-camera-miles.qual.mjs", "DRIFT, Z975, MONTH_DAYS"]]},
+  {id: "tesla-camera-held", group: "tesla", values: {heldFrom: "2026-11-16", heldTo: "2026-11-30", noLo: 0.5, noHi: 2, heldMiles: 1739000, partFrom: "2026-11-16", partTo: "2026-11-19", weekdays: 0.794, waymo: 0.952},
+    text: v => `The days after the camera table's last whole week (${fmtDay(v.heldFrom)} to ${fmtDay(v.heldTo)}) are held at that week's rate, with no growth or fall, and take ${v.noLo} to ${v.noHi} times their miles, the range this page gives days with no data. The drift allowance is not added to them. They hold ${fmtWhole(v.heldMiles)} of ${fmtMonth(v.heldTo.slice(0, 7))}'s ${fmtWhole(vmtRowAt("TeslaNoMonitor", v.heldTo.slice(0, 7)).vmtBest)} no-monitor miles, and their rate starts the growth forecast's path (below). Only whole Monday-to-Sunday weeks enter. In the newest saved table's last week, whole or not (${fmtDay(v.partFrom)} to ${fmtDay(v.partTo)}), Cybercabs' rate runs ${v.weekdays} times the same weekdays' a week before, Waymo's on the same cameras ${v.waymo} times.`,
+    where: [["quals/tesla-camera-miles.qual.mjs", "NO_DATA, CAMERA_WEEKS"], ["data/slurp.py", "CAMERA_TABLE"], ["data/vmt.csv", "teslanomonitor 2026-11 – 2026-11"], ["crashla.js", "TESLA_PATH_START"]]},
+
+  // --- Waymo's miles --------------------------------------------------------
+  {id: "waymo-definition", group: "waymo", values: {oldFrom: "2022-12", oldTo: "2025-03", depFrom: "2023-08"},
+    text: v => `Waymo's published 'rider-only miles' are taken as every US mile its cars drove with no human driver, empty driving included and none abroad (Waymo does not say); every Waymo rate rests on this, and no range carries it. CPUC's older pilot figures, ${fmtMonth(v.oldFrom)} to ${fmtMonth(v.oldTo)}, which count miles 'during passenger service', are read as the pilot program's driverless miles, empty driving included, the scope of the field that follows them; from ${fmtMonth(v.depFrom)} they are added to CPUC's deployment miles, and before then they stand alone. California miles that CPUC misses fall into the rest of the US estimate, so this moves only how the miles between two published totals split among the months.`,
+    where: [["data/README.md", "Waymo anchors"], ["data/waymo-ca-sources.json", "field"]]},
+  {id: "waymo-hub-anchors", group: "waymo", values: {eBest: 6650000, eLo: 4000000, eHi: 10200000, decAtlanta: 3500000, decE: 3700000},
+    text: v => `From March 2025 each Waymo lifetime anchor is its Safety Impact hub's 'All Locations' total, taken as exact, plus E: an estimate of the miles in places the hub did not yet count at that date. Through December 2025 E was mostly Atlanta (about ${fmtFigure(v.decAtlanta)} of December 2025's ${fmtFigure(v.decE)}, sized as the hub's March 2026 Atlanta total less a guessed first-quarter increment), and also held Santa Clara and Mountain View until the hub counted them and, from late 2025, the newer metros; in 2026 it is Miami, Dallas, Houston, San Antonio, Orlando and Nashville, and from July 2026 also Denver, Las Vegas, San Diego and Tampa. E was ${fmtFigure(v.eBest)} at the June 2026 anchor (${fmtFigure(v.eLo)} to ${fmtFigure(v.eHi)}). E's range is the anchor's whole range, and Waymo's rates from 2025 on rest on it.`,
+    where: [["data/waymo_vmt.py", "KNOTS"], ["data/README.md", "Waymo anchors"]]},
+  {id: "waymo-e-size", group: "waymo", values: {rate: 6.6, rLo: 4.5, rHi: 9.5, sepE: 2508000, eLo: 0.6, eHi: 1.7},
+    text: v => `In 2026 E is sized from the crash reports filed in those metros, at ${v.rate} reports per million miles, the rate of two young benchmarked markets, Austin and Atlanta, checked against fleet and rider counts and dated openings. The range of ${v.rLo} to ${v.rHi} around that rate sets only the June 2026 anchor's E range, with counting noise, and the San Diego split's edges (below). Each month's own E from April 2026 (${fmtWhole(v.sepE)} in September 2026) and its range, about ${v.eLo} to ${v.eHi} times it before that split, are judgment informed by those counts, and September's was set before September's reports were in. So for the miles E holds, Waymo's crash rate is set by assumption, not measured.`,
+    where: [["data/README.md", "Waymo anchors"], ["quals/waymo-vmt-model.qual.mjs", "E_RATE, Q3_METROS"]]},
+  {id: "waymo-pre-series", group: "waymo", values: {c: 205000, lo: 150000, hi: 260000},
+    text: v => `Every Waymo lifetime figure is taken to include the same miles driven before July 2021, where the series starts: ${fmtWhole(v.c)} (${fmtWhole(v.lo)} to ${fmtWhole(v.hi)}), from Waymo's yearly totals, with January to June 2021 between its late-2020 daily rate and half of 2021's miles. That shared ${fmtWhole(PRE_SERIES_OFFSET.Waymo.range)}-mile range is in every month-end range and cancels in windows starting after ${fmtMonth(PRE_SERIES_OFFSET.Waymo.from)}.`,
+    where: [["data/waymo_vmt.py", "OFFSET"], ["crashla.js", "PRE_SERIES_OFFSET"]]},
+  {id: "waymo-early-figures", group: "waymo", values: {o714: 7150000, floor: 14800000, floorMonth: "2024-03", jLo: 0.5, jHi: 2},
+    text: v => `Waymo's figures before 2025 are read at their printed precision, with a judgment where one is loose: Swiss Re's count 'to 8/1/2023' may include August 1, 'over 7.14 million' (October 2023) means under ${fmtFigure(v.o714)}, 'Over ${fmtFigure(v.floor)}' (${fmtMonth(v.floorMonth)}) is a floor on all of Waymo's miles, and January 22 to 31, 2023, after the first million, are allowed ${v.jLo} to ${v.jHi} times January's earlier daily rate. Only windows reaching back before 2025 rest on them.`,
+    where: [["data/waymo_vmt.py", "KNOTS, FLOORS"]]},
+  {id: "waymo-allocation", group: "waymo", values: {alloc: 0.2, caFrom: "2022-12"},
+    text: v => `Between Waymo's published totals through March 2026, California's months from ${fmtMonth(v.caFrom)} are CPUC's measured miles and the rest is spread by daily rates drawn as straight lines between the intervals' midpoints, each interval's total kept. Only that rest carries a range: ${v.alloc.toFixed(2)} on a log scale times √((n − 1)/2) for an interval of n months up to six (${v.alloc.toFixed(2)} for three), and half to twice for 2022's twelve months. That width is a prior checked by hiding California's measured months, not on national data.`,
+    covers: {Waymo: ["2021-07", "2026-03"]},
+    where: [["data/waymo_vmt.py", "ALLOC, CALIBRATED_MONTHS, LONG_INTERVAL_WIDTH"]]},
+  {id: "waymo-california-ratio", group: "waymo", values: {q2: 1.0576, q1: 1.04, ca: 3},
+    text: v => `From July 2026 Waymo's California miles are CPUC's filed miles times ${v.q2}, the ratio of the hub's four California counties to CPUC's statewide total in the second quarter of 2026 (from April to June it only splits that measured quarter by CPUC's months; the first quarter's ratio was ${v.q1.toFixed(3)}). That is one quarter's measurement carried through ${fmtMonth(vmtLineMonths("Waymo").at(-1))}, October and November at September's filed daily rate. Its share of the range is ${v.ca}% either way from April to September 2026; in October and November it lies inside those months' whole-row ranges (below).`,
+    where: [["quals/waymo-vmt-model.qual.mjs", "q2Ratio, CA_BAND"], ["data/README.md", "Waymo anchors"]]},
+  {id: "waymo-county-extrapolation", group: "waymo", values: {q2pct: 10, q3pct: 25},
+    text: v => `For April to June 2026 the hub's measured second-quarter miles for Phoenix, Austin and Atlanta are split into months by the earlier months' shape, within ${v.q2pct}% either way; for July to September they are extrapolated from those monthly rates by dated events, such as Phoenix's freeway rides from July 29, within ${v.q3pct}% either way. Both are judgment, and a month's range adds its parts' edges as if their errors ran the same way.`,
+    covers: {Waymo: ["2026-04", "2026-09"]},
+    where: [["data/vmt.csv", "waymo 2026-04 – 2026-09"], ["quals/waymo-vmt-model.qual.mjs", "MATURE_BAND"]]},
+  {id: "waymo-san-diego", group: "waymo", values: {sdN: 3, sdOf: 25, rate: 6.6, rLo: 4.5, rHi: 9.5},
+    text: v => `San Diego's miles, which CPUC's statewide filing now holds, are taken out of the uncounted metros' estimate by San Diego's share of those metros' crash reports (${v.sdN} of ${v.sdOf} in September 2026), assuming equal crashes per mile. The range allows for that share's sampling error and a San Diego rate of ${v.rLo} to ${v.rHi} reports per million miles against ${v.rate}.`,
+    where: [["data/README.md", "Waymo anchors"], ["quals/waymo-vmt-model.qual.mjs", "SAN_DIEGO, E_RATE, retained"]]},
+  {id: "waymo-weather", group: "waymo", values: {sep: 100000, oct: 170000},
+    text: v => `Weather pauses come off Waymo's estimate where Robotaxi Tracker's app-availability data ([https://robotaxitracker.com/wait-times](https://robotaxitracker.com/wait-times)) shows every pickup point in a city unavailable. They are converted to miles by judgment: about ${fmtWhole(v.sep)} in September 2026 and ${fmtWhole(v.oct)} in October. November's are not yet counted, and no range carries the conversion.`,
+    where: [["data/vmt.csv", "waymo 2026-09 – 2026-10"], ["quals/waymo-vmt-model.qual.mjs", "PAUSES"]]},
+  {id: "waymo-projection", group: "waymo", values: {octAdd: 170000, novAdd: 380000},
+    text: v => {
+      const last = vmtLineMonths("Waymo").at(-1);
+      const low = MILES_FORECAST.find(f => f.helmer === "Waymo").components[0].parts[0].lo;
+      return `October and November 2026 repeat each part of September's estimate at its daily rate, with no growth, plus judged allowances for openings and added service area (about ${fmtWhole(v.octAdd)} in October and ${fmtWhole(v.novAdd)} in November), less those pauses. ${fmtMonth(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}, the newest NHTSA month, enters Waymo's rates this way; the months after it show only on the charts, and the last, ${fmtMonth(last)}, held flat, sets the low edge of Waymo's miles forecast (${fmtFigure(low)}, below).`;
+    },
+    covers: {Waymo: ["2026-10", "2026-11"]},
+    where: [["data/vmt.csv", "waymo 2026-10 – 2026-11"], ["data/README.md", "Ghost months"], ["quals/waymo-vmt-model.qual.mjs", "OPENINGS"]]},
+  {id: "waymo-ghost-range", group: "waymo", values: {caTo: "2026-09"},
+    text: v => {
+      const [oct, nov] = ["2026-10", "2026-11"].map(month => vmtRowAt("Waymo", month));
+      const edge = (row, side) => (row[side] / row.vmtBest).toFixed(3);
+      return `Their ranges, ${edge(oct, "vmtMin")} to ${edge(oct, "vmtMax")} times the estimate for October and ${edge(nov, "vmtMin")} to ${edge(nov, "vmtMax")} for November, come from a backtest of extrapolating CPUC's monthly California miles and the hub's quarterly county miles four months ahead, November's five months an extension of it. They widen with the months since the latest quarter both have measured, the second quarter of 2026, though CPUC has since measured California through ${fmtMonth(v.caTo)}, and the uncounted metros' estimate has no allowance of its own in them.`;
+    },
+    where: [["data/README.md", "Ghost months"], ["quals/waymo-vmt-model.qual.mjs", "GHOST_BAND"]]},
+
+  // --- Zoox's miles ---------------------------------------------------------
+  {id: "zoox-statements", group: "zoox", values: {s0: [1250000, 1350000], s1: [1880000, 2000000], s2: [3000000, 3200000]},
+    text: v => `Zoox's four mileage statements are read as ranges: its millionth mile 'just last week' (said Monday, Dec 8, 2025) as December 1 to 7; 'approximately 1.3 million' at Dec 31, 2025 as ${fmtFigure(v.s0[0])} to ${fmtFigure(v.s0[1])}; 'nearly two million' (Mar 24, 2026) as ${fmtFigure(v.s1[0])} to ${fmtFigure(v.s1[1])}; 'more than 3 million' (Aug 5, 2026) as ${fmtFigure(v.s2[0])} to ${fmtFigure(v.s2[1])}, though the month-end ranges take only its floor. Each is taken as all-time driverless miles in every city, without safety-driver testing; every Zoox rate from June 2025 rests on them.`,
+    where: [["quals/zoox-vmt-model.qual.mjs", "S0, S1, S2, CROSS"], ["data/README.md", "Zoox anchors"]]},
+  {id: "zoox-path", group: "zoox", values: {},
+    text: () => `Zoox's miles outside California, mostly Las Vegas, follow the smoothest path those statements allow: the least month-to-month change in their daily rate from May 2025. It runs along two of the statements' edges, the most miles allowed through Nov 30, 2025 (the millionth mile not before Dec 1) and the fewest through Dec 31, 2025 (1.25 million), so June to November 2025's miles sit at the high end of what the statements allow and December 2025's, and the rate held after them, at the low end; the ranges allow the rest.`,
+    where: [["quals/zoox-vmt-model.qual.mjs", "BINDING, CONSTRAINTS"]]},
+  {id: "zoox-flat-rate", group: "zoox", values: {rate: 6500.65, pause: 5, cap: 100, nhtsaCars: 600},
+    text: v => `From December 2025 that path holds Las Vegas at ${v.rate.toLocaleString(NUMBER_LOCALE, {minimumFractionDigits: 2})} miles a driving day through ${fmtMonth(vmtLineMonths("Zoox").at(-1))}, with no growth, since no later statement requires a change; a passenger outage on January 22 to 26, 2026 counts as ${v.pause} days without driving there. The end of Las Vegas's ${v.cap}-car cap (Sep 25, 2026) and the ${v.nhtsaCars} cars NHTSA now allows at once are not modeled.`,
+    where: [["quals/zoox-vmt-model.qual.mjs", "LV_PAUSE"], ["data/vmt.csv", "zoox 2025-12 – 2026-11"]]},
+  {id: "zoox-early-las-vegas", group: "zoox", values: {},
+    text: () => `For May 2024 to May 2025 Zoox's Las Vegas miles are taken as equal to its California driverless miles in the CA DMV's reports, with half to twice that in the range. For June to December 2025 a month's range is its California miles plus half to twice its Las Vegas share, cut to what the statements allow. No Las Vegas mileage exists to check either.`,
+    covers: {Zoox: ["2024-05", "2025-12"]},
+    where: [["data/vmt.csv", "zoox 2024-05 – 2025-12"], ["quals/zoox-vmt-model.qual.mjs", "LV_MAY_RATE"]]},
+  {id: "zoox-pre-series", group: "zoox", values: {pre: 40080, ca: 20174, lv: 19906},
+    text: v => `The series starts in ${fmtMonth(vmtLineMonths("Zoox")[0])}, with Zoox's first counted crash. The ${fmtWhole(v.pre)} driverless miles before it (California's ${fmtWhole(v.ca)} from February 2023 plus ${fmtWhole(v.lv)} assumed for Las Vegas, equal to California's June 2023 to April 2024, at half to twice) come off every statement, and their shared ${fmtWhole(PRE_SERIES_OFFSET.Zoox.range)}-mile range cancels in windows starting after ${fmtMonth(PRE_SERIES_OFFSET.Zoox.from)}.`,
+    where: [["quals/zoox-vmt-model.qual.mjs", "PRE, PRE_C"], ["crashla.js", "PRE_SERIES_OFFSET"]]},
+  {id: "zoox-december-california", group: "zoox", values: {dec: 48480, decLo: 36482, decHi: 60803, share: 0.6},
+    text: v => `December 2025's California miles, ${fmtWhole(v.dec)}, assume November's ratio of DMV to CPUC miles held in December, within ${fmtWhole(v.decLo)}, CPUC's own December figure, to ${fmtWhole(v.decHi)}, the reading in which CPUC's figure is ${Math.round(100 * v.share)}% of the DMV's. With the path pinned at 1.25 million on Dec 31, an error here passes, the other way, into Las Vegas's daily rate and so into every 2026 month, and no range carries that.`,
+    where: [["quals/zoox-vmt-model.qual.mjs", "CA_2025, CA_2025_LO, CA_2025_HI"]]},
+  {id: "zoox-dmv-factor", group: "zoox", values: {f: 1.19, lo: 1.05, hi: 1.33, lastCpuc: "2026-09", g: 5.1},
+    text: v => `From January 2026 Zoox's California miles are CPUC's driverless pilot miles times ${v.f}, for the miles the DMV counts and CPUC does not: the middle of ${v.lo} to ${v.hi}, ${v.hi} being November 2025's measured ratio, with no 2026 ratio measured. After CPUC's last month (${fmtMonth(v.lastCpuc)}) they grow ${v.g}% a month, a prior. Only September 2026's range carries the factor's spread.`,
+    where: [["quals/zoox-vmt-model.qual.mjs", "DMV_FACTOR, GROWTH"]]},
+  {id: "zoox-range-formula", group: "zoox", values: {r: 0.065, d: 0.07, n: 0.09},
+    text: v => `For January to August 2026 a month's range is e^(±1.96σ) times its miles, with σ = √(${v.r}² + ${v.d}² × h + ${v.n}²): the statements' rounding, drift in the rate per square root of a month (h months from the middle of the stretch between the statements around the month) and month-to-month noise. All three numbers are priors with no data behind them, since read as ranges the statements allow one flat rate.`,
+    covers: {Zoox: ["2026-01", "2026-08"]},
+    where: [["quals/zoox-vmt-model.qual.mjs", "sigmaOf, Q1, W2"], ["data/README.md", "Ghost months"]]},
+  {id: "zoox-no-data", group: "zoox", values: {lo: 1.05, hi: 1.33, noLo: 0.5, noHi: 2},
+    text: v => `September 2026's range is CPUC's filed California miles times ${v.lo} to ${v.hi} plus half to twice the rest. October and November, which nothing measures, take ${v.noLo} to ${v.noHi} times their whole estimate, the range this page gives months with no data, which may be too narrow at the top now that Las Vegas's vehicle cap has ended. ${fmtMonth(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}, the newest NHTSA month, enters Zoox's rates with its range.`,
+    covers: {Zoox: ["2026-09", "2026-11"]},
+    where: [["quals/zoox-vmt-model.qual.mjs", "NO_DATA, LAST_STATEMENT_MONTH, RESTATED_THROUGH"]]},
+  {id: "zoox-carry", group: "zoox", values: {lo: 0.7, hi: 1.3},
+    text: v => `The March 2026 statement is carried to the end of March, its low edge from its date at ${v.lo} times the path's daily miles and its high edge from a week before it at ${v.hi} times; the August statement is carried back to the end of July as a floor only, August 1 to 5 taken off at up to ${v.hi} times. A judgment that sets how far the end-March 2026 range and the end-July floor reach.`,
+    where: [["data/README.md", "Zoox anchors"], ["quals/zoox-vmt-model.qual.mjs", "CARRY, JULY_FLOOR"]]},
+
+  // --- How completely crashes are reported -----------------------------------
+  {id: "reporting-receipt-share", group: "reporting", values: {minRef: 3},
+    text: v => {
+      const month = NHTSA_DATA_THROUGH_DATE.slice(0, 7), row = vmtRowAt("Waymo", month);
+      assert(row.through === NHTSA_DATA_THROUGH_DATE,
+        "the assumptions list reads the release's receipt coverage from a row on NHTSA's coverage", {month, through: row.through});
+      return `NHTSA's newest release holds only reports received by ${fmtDay(NHTSA_DATA_THROUGH_DATE)}, so for its newest month (${fmtMonth(month)}) the share of the eventual five-day reports already in is estimated. The estimate is those received over the count expected at each company's crash rate per mile in its latest month with at least ${v.minRef} such reports: ${fmtPct1(row.coverage)} (${fmtPct1(row.coverageMin)} to ${fmtPct1(row.coverageMax)}). Its low edge carries only counting noise; a crash rate that changed between the two months is not carried.`;
+    },
+    where: [["data/slurp.py", "release_month_coverage, pooled_reference_rate"]]},
+  {id: "reporting-receipt-top", group: "reporting", values: {max: 0.52, record: 0.5, recordMonth: "2026-02"},
+    text: v => `That share's top, ${fmtPct1(v.max)}, is the largest share a first release has held (${fmtPct1(v.record)}, ${fmtMonth(v.recordMonth)}) plus ${Math.round(100 * (v.max - v.record))} percentage points: the reading in which the newest month's low count is real, not lagging.`,
+    where: [["data/slurp.py", "FIVE_DAY_RECEIPT_COVERAGE_MAX, FIVE_DAY_RECEIPT_OBSERVATIONS, RECEIPT_MONTHS_EXCLUDED"]]},
+  {id: "reporting-incident-share", group: "reporting", values: {record: 0.26},
+    text: v => {
+      const row = vmtRowAt("Waymo", NHTSA_DATA_THROUGH_DATE.slice(0, 7));
+      return `Monthly-track metrics (${METRIC_DEFS.filter(m => m.fiveDay !== true).map(m => m.cardLabel).join(", ")}) also take the share of the newest month's incidents of every kind already in, estimated the same way: ${fmtPct1(row.incCov)} of what the five-day share implies (${fmtPct1(row.incCovMin)} to ${fmtPct1(row.incCovMax)}), so about ${fmtPct1(row.coverage * row.incCov)} of the month's eventual incidents in all (${fmtPct1(row.coverage * row.incCovMin)} to ${fmtPct1(row.coverageMax * row.incCovMax)}). Its top, ${fmtPct1(row.incCovMax)}, assumes every Monthly-track incident may already be in, which puts the combined top at ${fmtPct1(row.coverageMax * row.incCovMax)}, against at most ${fmtPct1(v.record)} of a month's eventual incidents in any first release from December 2025 to September 2026.`;
+    },
+    where: [["data/slurp.py", "incident_coverage"]]},
+  {id: "reporting-pooled", group: "reporting", values: {},
+    text: () => `One pair of shares serves every company, pooled over Waymo, Tesla and Zoox, though their reports reach NHTSA on different schedules. Tesla's NHTSA filings count in the pool even where Tesla's own rows take its list (below), and the Tesla (no safety monitor) line takes the shares Tesla's rows take: NHTSA's, or in a month Tesla's list covers, the list's share of the line's own miles.`,
+    where: [["data/slurp.py", "pooled_reference_rate"]]},
+  {id: "reporting-earlier-months", group: "reporting", values: {month: "2026-08", late: 23, of: 43},
+    text: v => `Every month before the newest is taken as fully reported unless half or more of a company's Monthly reports for its latest checked month came a release late (none now). Yet ${v.late} of Waymo's ${v.of} ${fmtMonth(v.month)} Monthly-track reports came a release late, so a month can be counted short for one release; no range carries this.`,
+    where: [["data/slurp.py", "MONTHLY_ARRIVAL_LAG, MONTHLY_ARRIVAL_OBSERVATIONS, MONTHLY_ARRIVAL_MONTHS_EXCLUDED, FIVE_DAY_SHARE_OBSERVATIONS"]]},
+  {id: "reporting-five-day", group: "reporting", values: {},
+    text: () => `The five-day metrics (${METRIC_DEFS.filter(m => m.fiveDay === true).map(m => m.cardLabel).join(", ")}) are taken to be reported within five days of the company learning of the crash, as NHTSA requires for a death, a hospital transport, an airbag deployment, a struck pedestrian, cyclist or motorcyclist, or a tow-away, so their newest month takes only the five-day share. Some airbag crashes have in fact been first filed in Monthly reports.`,
+    where: [["crashla.js", "METRIC_DEFS"], ["data/slurp.py", "REPORT_TRACK"]]},
+  {id: "reporting-thinning", group: "reporting", values: {},
+    text: () => `Within a track, every metric's newest month is thinned by the same share, as if the reports already in were a random sample of the month's eventual ones.`,
+    where: [["crashla.js", "monthSeriesData"]]},
+  {id: "reporting-range-product", group: "reporting", values: {},
+    text: () => `The newest month's thinned miles range pairs the low miles with the low shares and the high miles with the high shares, and is read as a 95% range, wider than the combined uncertainty would make it.`,
+    where: [["crashla.js", "monthSeriesData, windowVmtBand"]]},
+  {id: "reporting-sgo-exemption", group: "reporting", values: {},
+    text: () => `Since June 16, 2025 NHTSA has not required a report of a minor crash in which another vehicle struck the AV (under $1,000 of damage, nobody taken to a hospital, no airbag or other trigger). The page does not add such crashes back (the sanity section's note on reporting thresholds sizes the loss at roughly a quarter to a third of Waymo's property-damage reports of a stopped AV being struck), so its all-incident and nonstationary counts run low against the human benchmarks, which include them. The at-fault metrics are taken as nearly immune, since an exempt crash, another vehicle striking the AV, is taken to be almost never the AV's fault.`,
+    where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "reporting-unfiled", group: "reporting", values: {},
+    text: () => `Companies are taken to file every crash NHTSA requires; only when reports arrive is measured, and a crash never filed has no allowance anywhere.`,
+    where: [["data/slurp.py", "MONTHLY_ARRIVAL_OBSERVATIONS"]]},
+  {id: "reporting-tesla-list", group: "reporting", values: {through: "2026-10-18", miles: 1179333},
+    text: v => {
+      const listed = vmtRows.filter(r => r.through !== NHTSA_DATA_THROUGH_DATE);
+      assert(JSON.stringify(listed.map(r => r.helmer).sort()) === JSON.stringify(["Tesla", "TeslaNoMonitor"]) &&
+        listed.every(r => r.month === v.through.slice(0, 7) && r.through === v.through),
+        "the assumptions entry reporting-tesla-list (crashla.js ASSUMPTIONS) reads the rows whose incidents run through its values' date, Tesla's two lines in that date's month: after a release or a new list update its values, or, when no row is on a list's coverage, remove it and reporting-tesla-list-complete",
+        {listed: listed.map(r => [r.helmer, r.month, r.through]), through: v.through});
+      const [all, noMonitor] = ["Tesla", "TeslaNoMonitor"].map(line => listed.find(r => r.helmer === line));
+      return `For Tesla's ${fmtMonth(v.through.slice(0, 7))}, its own list of the crashes it has reported, through ${fmtDay(v.through)}, stands in for NHTSA's file while it holds more of the month. The share reported is the list's ${fmtWhole(v.miles)} no-monitor miles over the row's miles (${fmtPct1(noMonitor.coverage)} on the no-monitor line, ${fmtPct1(all.coverage)} on the all-modes line, whose monitor-aboard miles count as uncovered), with no range, and it scales the row's whole miles range although those miles are measured.`;
+    },
+    where: [["data/slurp.py", "PREPRINT_LIST, preprint_coverage"]]},
+  {id: "reporting-tesla-list-complete", group: "reporting", values: {onTime: 17, filed: 19},
+    text: v => {
+      const row = vmtRows.find(r => r.through !== NHTSA_DATA_THROUGH_DATE);
+      assert(row !== undefined, "the assumptions entry reporting-tesla-list-complete (crashla.js ASSUMPTIONS) reads a row on a list's coverage: when no row is on one, remove it and reporting-tesla-list");
+      return `That list is taken to lack a Monthly-track crash only as often as Tesla's Monthly reports have reached NHTSA late (${v.onTime} of ${v.filed} on time), so it holds ${fmtPct1(row.incCov)} of the month's Monthly-track crashes (${fmtPct1(row.incCovMin)} to ${fmtPct1(row.incCovMax)}). Five-day metrics take the list as complete.`;
+    },
+    where: [["data/slurp.py", "preprint_coverage"]]},
+
+  // --- Which crashes count, and fault ---------------------------------------
+  {id: "incidents-operator-scope", group: "incidents", values: {n: 3},
+    text: v => `A crash counts when the car was in a mode whose miles are in its company's denominator: for Tesla with or without a safety monitor aboard or a remote operator, and for Waymo and Zoox only with no safety driver aboard, remote help included. ${v.n} Waymo reports' operator codes are corrected from their narratives.`,
+    where: [["data/slurp.py", "PUBLIC_SERVICE_OPERATOR_TYPES, EXCLUDED_OPERATOR_TYPES, OPERATOR_TYPE_OVERRIDE, SAFETY_DRIVER_EXEMPT_ENTITIES"]]},
+  {id: "incidents-remote-driving", group: "incidents", values: {n: 5, remote: 3, manual: 1},
+    text: v => `The ${v.n} Tesla crashes in which a remote operator, not the software, was driving count on no line. The miles such operators drive stay in Tesla's denominators, taken as negligible since remote takeovers are low-speed recoveries. Reports that mention a remote operator or carry its operator code (${v.remote}), or mention manual driving (${v.manual}), count: on review the software was driving at contact.`,
+    where: [["data/slurp.py", "TELEOP_DRIVEN_REPORTS, REMOTE_LANGUAGE_ADS_DRIVEN, SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN"]]},
+  {id: "incidents-no-monitor-list", group: "incidents", values: {teleop: 3, additions: 0},
+    text: v => `A Tesla crash counts on the Tesla (no safety monitor) line exactly when a remote operator was not driving (${v.teleop} on Tesla's list were, and count on no line) and either Tesla's own list of no-monitor crashes holds it or it is newer than that list and its narrative names no safety monitor (${v.additions} so far, each reviewed at the release that brings it until a list holds it). That second rule takes a narrative to name the monitor whenever one was aboard, as every in-scope Tesla narrative of 2026 has. Reports whose narratives put a monitor aboard count only on the all-modes line.`,
+    where: [["data/slurp.py", "TESLA_NO_MONITOR_REPORTS, TESLA_NO_MONITOR_ADDITIONS, TESLA_MONITOR_ABOARD_REPORTS, SAFETY_MONITOR_PATTERN, TESLA_NO_MONITOR_FROM"]]},
+  {id: "incidents-other-files", group: "incidents", values: {n: 1},
+    text: v => `Only NHTSA's files for automated driving systems are counted, plus ${splur(v.n, "report")} found misfiled in its other files and the crashes on Tesla's own list that NHTSA has not yet published (below). A report in those other files with the operator type Consumer or In-Vehicle (Commercial / Test) is taken without review as a person's driving, and one of any other type is reviewed: among the first, Tesla's own-fleet reports in the driver-assistance file, though some from Austin and Dallas in 2026 cannot be ruled out as robotaxi trips, and an alleged fatality in Austin in July 2026 coded Consumer in its OTHER file.`,
+    where: [["data/slurp.py", "MISFILED_ADS_REPORTS, NON_ADS_FILE_REVIEW_TYPES, NON_ADS_FILE_EXCLUDED"]]},
+  {id: "incidents-preprints", group: "incidents", values: {through: "2026-10-18", operator: "None", type: "Preprint", version: "1",
+    blank: ["Incident Time (24:00)", "SV Pre-Crash Movement", "CP Pre-Crash Movement", "Were All Passengers Belted?", "Report Submission Date", "Narrative - CBI?"], published: 24},
+    text: v => {
+      const preprints = incidents.filter(r => r.preprint === true).length;
+      return `Crashes on Tesla's own list of the no-monitor crashes it has reported (through ${fmtDay(v.through)}) that no NHTSA file holds yet count too, marked in the incident browser: ${fmtCount(preprints)} now. Each takes the list's fields as filed and leaves blank what the list does not give (${v.blank.map(c => `'${c}'`).join(", ")}); its operator type is '${v.operator}', from the list's own definition (no safety monitor in the vehicle), and its report type '${v.type}', version ${v.version}, which no count of NHTSA's arrivals reads. Each is checked and rated from the list's narrative, the list taken for what NHTSA will publish: each of the ${fmtCount(v.published)} crashes on it that NHTSA has published matches one of NHTSA's filings on every coded field and, word for word or nearly, in its narrative. NHTSA's row replaces a preprint when NHTSA publishes the report, and is rated afresh.`;
+    },
+    where: [["data/slurp.py", "PREPRINT_LIST, list_row, preprint_rows, PREPRINT_OPERATOR_TYPE, PREPRINT_REPORT_TYPE, PREPRINT_REPORT_VERSION, LIST_ABSENT_COLUMNS"], ["quals/preprints.qual.mjs", ""]]},
+  {id: "incidents-second-cars", group: "incidents", values: {},
+    text: () => {
+      const second = incidents.filter(r => r.secondOf !== undefined);
+      return `When one report covers two of the same company's cars, the second counts as an incident of its own and carries the crash's outcome (${second.length} such cars so far: ${Object.entries(countByHelmer(second)).map(([helmer, n]) => `${helmerLabel(helmer)} ${n}`).join(", ")}), as the human benchmarks count crashed vehicles.`;
+    },
+    where: [["data/slurp.py", "SECOND_INVOLVEMENTS"]]},
+  {id: "incidents-latest-filing", group: "incidents", values: {},
+    text: () => `A report's latest version is taken as the true one, with a few reviewed exceptions: a crash split in two, and a re-filing that replaces another report.`,
+    where: [["data/slurp.py", "SPLIT_SAME_INCIDENT_REPORTS, SUPERSEDED_REPORTS"]]},
+  {id: "incidents-stationary", group: "incidents", values: {},
+    text: () => `An incident is stationary only when the AV's reported speed at contact is exactly 0 mph, and a missing speed counts as moving. Only the road type 'Parking Lot' marks a parking lot, so parking garages count as roadway; the nonstationary metrics rest on both.`,
+    where: [["crashla.js", "speedBinForIncident, monthSeriesData"]]},
+  {id: "incidents-contact-areas", group: "incidents", values: {agree: 75},
+    text: v => `NHTSA's current file is taken to publish its front and rear contact-area columns under rotated labels, which the page moves back. The run stops unless narratives agree with the moved labels in at least ${v.agree}% of tested cases, and NHTSA has not confirmed the rotation. Contact areas enter the cases the fault raters read.`,
+    where: [["data/slurp.py", "CURRENT_FILE_CONTACT_LABEL, CONTACT_AREA_MIN_AGREEMENT"]]},
+  {id: "incidents-severity", group: "incidents", values: {},
+    text: () => {
+      assert(SEVERITY_INFO["Serious"].hosp === true && SEVERITY_INFO["Minor W/ Hospitalization"].hosp === true &&
+        SEVERITY_INFO["Moderate W/ Hospitalization"].hosp === true && SEVERITY_INFO["Minor"].injury === true &&
+        SEVERITY_INFO["Moderate"].injury === true && SEVERITY_INFO["Minor"].hosp === undefined && SEVERITY_INFO["Moderate"].hosp === undefined,
+        "the assumptions list's severity entry says 'W/ Hospitalization' and a bare 'Serious' are a hospital transport and a bare 'Minor' or 'Moderate' an injury without one; SEVERITY_INFO must say so too");
+      return `Injury, hospitalization+, serious injury+ and fatality count the severity each filing alleges for anyone in the crash: 'W/ Hospitalization' and a bare 'Serious' are read as a hospital transport, and the older bare 'Minor' and 'Moderate' as none. Where a filing's severity is Unknown or its narrative flatly contradicts it, a reviewed value from the narrative replaces it, a stated transport becoming Minor W/ Hospitalization unless a source says the injury was serious.`;
+    },
+    where: [["crashla.js", "SEVERITY_INFO"], ["data/slurp.py", "SEVERITY_OVERRIDE"]]},
+  {id: "incidents-airbag", group: "incidents", values: {},
+    text: () => `An airbag deployment in any vehicle in the crash counts, and a deployment the filing leaves unknown counts as none. A few deployments a narrative states but the filing's fields cannot record are added.`,
+    where: [["data/slurp.py", "AIRBAG_OVERRIDE"]]},
+  {id: "incidents-fatal-fraction", group: "incidents", values: {},
+    text: () => `Each fatal crash counts as 1 divided by the number of vehicles involved, read from its narrative, whoever was at fault, and the model treats that fraction as a count of incidents.`,
+    where: [["crashla.js", "FRACTIONAL_DEATH_NOTE"], ["data/slurp.py", "VEHICLES_INVOLVED"]]},
+  {id: "incidents-passengers", group: "incidents", values: {},
+    text: () => `For the passenger table only, Tesla's safety monitor is not a passenger, and a Tesla narrative silent on who was aboard counts as unknown.`,
+    where: [["data/slurp.py", "PASSENGER_OVERRIDE"], ["crashla.js", "PAX_PRESENT"]]},
+  {id: "fault-criterion", group: "incidents", values: {},
+    text: () => `An incident's fault value is the chance that an expert human driver in the AV's place would have avoided the crash, not legal fault, judged from the company's own report in steps of ${1 / FAULT_GRID}: a stopped AV hit with no time or room to react is 0, and an easy-to-see stationary object driven into is 1. The at-fault metrics rest on it.`,
+    where: [["data/fault-criterion.md", ""], ["crashla.js", "FAULT_GRID"]]},
+  {id: "fault-raters", group: "incidents", values: {raters: 3, model: "claude-opus-5-5", effort: "medium"},
+    text: v => `Each value is the median of ${v.raters} independent ratings by ${v.model} at ${v.effort} effort, each rater given one report, with the company's name masked, and the rating criterion above (data/fault-criterion.md) as its instructions, and nothing else. Nobody adjusts a value afterward, and the raters' spread is in no range or 95% CI.`,
+    where: [["data/faultrate.py", "MODEL, EFFORT, RATERS, MASK_NAME"]]},
+
+  // --- The statistical model ------------------------------------------------
+  {id: "model-constant-rate", group: "model", values: {},
+    text: () => `Within the selected window each line's incidents of a metric are a Poisson count at one constant rate per mile, pooling every month, city and software version in it (the MPI-over-time chart fits each month alone). A rate that changed is averaged by mileage, and no 95% CI widens for it.`,
+    where: [["crashla.js", "estimateMpiWindow"]]},
+  {id: "model-prior", group: "model", values: {},
+    text: () => {
+      const a = mixtureComponents(0, null)[0].a, tail = (1 - CI_MASS_DEFAULT_PCT / 100) / 2;
+      const times = p => 1 / gammaquant(a, 1, p);
+      return `The rate's prior is the Jeffreys prior, so with no incidents the ${CI_MASS_DEFAULT_PCT}% CI runs from ${times(1 - tail).toPrecision(3)} to ${fmtWhole(times(tail))} times the miles, and the printed figure, the median, is ${times(0.5).toFixed(2)} times. With few incidents the prior decides much of the result, and no other prior is shown.`;
+    },
+    where: [["crashla.js", "mixtureComponents"]]},
+  {id: "model-miles-prior", group: "model", values: {},
+    text: () => `Every miles range is read as a 95% range with its central value the most likely, and the 5% of the weight outside it is split between the sides by their widths, so even an edge that is a hard floor is crossed with some weight. The incident count is taken to say nothing about the miles.`,
+    where: [["crashla.js", "splitPriorSigmas"]]},
+  {id: "model-window-range", group: "model", values: {},
+    text: () => `A window's miles range is the overlap of its months' ranges added up and the difference of the month-end ranges at its two ends (the larger of their lows and the smaller of their highs, which may come from different ones), read as a 95% range. Adding the months' edges treats every month's error as running the same way, and the month-end ranges on the charts add up the same way.`,
+    where: [["crashla.js", "windowVmtBand"]]},
+  {id: "model-fault-mixture", group: "model", values: {},
+    text: () => `Each incident's fault value is used as an independent probability that the AV was at fault, so the at-fault count's spread comes only from those values. An error shared by the ratings is not carried, except in the fault-flip table, which moves every value toward 1 by one shared fraction.`,
+    where: [["crashla.js", "poissonBinomialWeights, faultFlipMultiplier"]]},
+  {id: "model-benchmark-readings", group: "model", values: {},
+    text: () => `A human benchmark range is read three ways. In the sensitivity table it is hard limits ('robustly safer' needs the AV's whole 95% CI above the range's top); in the cards' multipliers and the distribution chart it is a 95% range drawn independently of the line; and in the MPI-over-time chart's fan it is one flat band at every level. So a card can color a multiplier green where the table calls the comparison ambiguous.`,
+    where: [["crashla.js", "helmerHumanStress, multiplierInterval"]]},
+  {id: "model-dispersion", group: "model", values: {},
+    text: () => `The Poisson dispersion table calls fewer than ${DISPERSION_LIMITS.minIncidents} incidents too few to tell, and grades the index at ${DISPERSION_LIMITS.under}, ${DISPERSION_LIMITS.poisson} and ${DISPERSION_LIMITS.mild}; the limits are judgment and feed no other figure.`,
+    where: [["crashla.js", "DISPERSION_LIMITS"]]},
+
+  // --- Human benchmarks -----------------------------------------------------
+  {id: "humans-all-incidents", group: "humans", values: {},
+    text: () => {
+      const h = METRIC_BY_KEY.all.humanMPI;
+      return `Humans (AV cities) all incidents, ${fmtFigure(h.HumansAV.lo)} to ${fmtFigure(h.HumansAV.hi)} miles per crashed vehicle, run from Kusano et al. 2024's underreporting-adjusted rate to its police-reported rate for Waymo's benchmark areas, taken to stand for every line's cities in 2025 and 2026. Humans (US average) runs from CRSS 2024's police-reported national rate (${fmtFigure(h.HumansUS.hi)}) to that rate roughly doubled for unreported crashes by Blincoe et al.'s shares (${fmtFigure(h.HumansUS.lo)}).`;
+    },
+    bands: [["all", "HumansAV"], ["all", "HumansUS"]],
+    where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "humans-stopped", group: "humans", values: {av: 14.6, us: 12.9},
+    text: v => `The nonstationary bands remove the vehicles stopped in the roadway at impact, ${v.av}% in AV cities and ${v.us}% nationally (CRSS 2024), to match the AV side's dropping of its 0 mph incidents. Vehicles coded as slowing or starting before the crash, some of them at 0 mph at impact, stay in, so the share is a floor. Both benchmarks already leave out parking lots, so nonstationary non-parking-lot uses the same bands.`,
+    bands: [["nonstationary", "HumansAV"], ["nonstationary", "HumansUS"], ["roadwayNonstationary", "HumansAV"], ["roadwayNonstationary", "HumansUS"]],
+    where: [["crashla.js", "METRIC_DEFS"], ["quals/human-benchmark-provenance.qual.mjs", "CRSS2024"]]},
+  {id: "humans-at-fault", group: "humans", values: {share: 0.5},
+    text: v => {
+      const h = METRIC_BY_KEY.atfault.humanMPI;
+      return `The human at-fault bands run from every crash at the any-damage level being the driver's fault (a share of 1, judgment, the edge kindest to the AVs) to ${Math.round(100 * v.share)}% of police-reported crashes (the legal-fault floor): Humans (AV cities) ${fmtFigure(h.HumansAV.lo)} to ${fmtFigure(h.HumansAV.hi)}, Humans (US average) ${fmtFigure(h.HumansUS.lo)} to ${fmtFigure(h.HumansUS.hi)}.`;
+    },
+    bands: [["atfault", "HumansAV"], ["atfault", "HumansUS"]],
+    where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "humans-at-fault-injury", group: "humans", values: {p: 94, half: 50},
+    text: v => {
+      const h = METRIC_BY_KEY.atfaultInjury.humanMPI;
+      return `The at-fault injury bands divide the injury bands by ${v.p}% at one edge (NHTSA's share of crashes whose critical reason was the driver, taken as the most an expert could avoid, though NHTSA says it is neither cause nor fault) and by ${v.half}% at the other: Humans (AV cities) ${fmtFigure(h.HumansAV.lo)} to ${fmtFigure(h.HumansAV.hi)}, Humans (US average) ${fmtFigure(h.HumansUS.lo)} to ${fmtFigure(h.HumansUS.hi)}.`;
+    },
+    bands: [["atfaultInjury", "HumansAV"], ["atfaultInjury", "HumansUS"]],
+    where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "humans-hub-areas", group: "humans", values: {},
+    text: () => {
+      const band = key => METRIC_BY_KEY[key].humanMPI.HumansAV;
+      return `Humans (AV cities) injury (${fmtFigure(band("injury").lo)} to ${fmtFigure(band("injury").hi)}), airbag (${fmtFigure(band("airbag").lo)} to ${fmtFigure(band("airbag").hi)}) and serious injury+ (${fmtFigure(band("seriousInjury").lo)} to ${fmtFigure(band("seriousInjury").hi)}) span the highest and lowest human rates Waymo's Safety Impact hub gives for its five areas, from 2022 crashes weighted to where Waymo drove through June 2026. The injury band carries the hub's correction for injury crashes never reported to police (after Blincoe et al. 2023), the airbag band none. They are taken to stand for Tesla's and Zoox's cities too.`;
+    },
+    bands: [["injury", "HumansAV"], ["airbag", "HumansAV"], ["seriousInjury", "HumansAV"]],
+    where: [["crashla.js", "METRIC_DEFS"], ["quals/human-benchmark-provenance.qual.mjs", "SRC"]]},
+  {id: "humans-hospitalization", group: "humans", values: {rInj: 0.543, rAb: 0.657, usHosp: 31.9, unknown: 3.5},
+    text: v => {
+      const h = METRIC_BY_KEY.hospitalization.humanMPI.HumansAV;
+      return `Humans (AV cities) hospitalization+ (${fmtFigure(h.lo)} to ${fmtFigure(h.hi)}) applies CRSS 2024's ratios, for urban non-interstate passenger vehicles nationally, of hospital-transport crashes to injury crashes (${v.rInj}) and to airbag crashes (${v.rAb}) to the hub's five areas. That assumes the national ratios hold in each area, and that an SGO 'W/ Hospitalization' matches a CRSS transport. The ratios are applied to the hub's observed, police-reported rates with no allowance for crashes never reported to police (the US band adds the ${v.usHosp}% of injury-crash vehicles that go unreported), and CRSS's unknown transport codes count as none (about ${v.unknown}% more if imputed): both make humans look safer.`;
+    },
+    bands: [["hospitalization", "HumansAV"]],
+    where: [["crashla.js", "METRIC_DEFS"], ["quals/human-benchmark-provenance.qual.mjs", "CRSS2024"]]},
+  {id: "humans-us-severe", group: "humans", values: {inj: 28, hosp: 31.9},
+    text: v => {
+      const band = key => METRIC_BY_KEY[key].humanMPI.HumansUS;
+      return `Humans (US average) injury (${fmtFigure(band("injury").lo)} to ${fmtFigure(band("injury").hi)}) and hospitalization+ (${fmtFigure(band("hospitalization").lo)} to ${fmtFigure(band("hospitalization").hi)}) raise CRSS's police-reported national rates by Blincoe et al.'s shares of unreported crashes (${v.inj}%, the middle of their 24% and 32%, and ${v.hosp}%, an upper bound for crashes that severe). Its airbag (${fmtFigure(band("airbag").lo)} to ${fmtFigure(band("airbag").hi)}) and serious injury+ (${fmtFigure(band("seriousInjury").lo)} to ${fmtFigure(band("seriousInjury").hi)}) bands sit between the national injury and fatality rates where those metrics sit between them in AV cities, a model with no data behind it; CRSS's direct national rates fall inside both.`;
+    },
+    bands: [["injury", "HumansUS"], ["hospitalization", "HumansUS"], ["airbag", "HumansUS"], ["seriousInjury", "HumansUS"]],
+    where: [["crashla.js", "METRIC_DEFS"], ["quals/human-benchmark-provenance.qual.mjs", "BLINCOE2023_INJURY_UNREPORTED"]]},
+  {id: "humans-fatality", group: "humans", values: {peak: 1.2, floor: 0.95, r24: 1.01, pct: 8},
+    text: v => {
+      const h = METRIC_BY_KEY.fatality.humanMPI.HumansAV;
+      return `Humans (AV cities) fatality, ${fmtFigure(h.lo)} to ${fmtFigure(h.hi)} miles per death, is IIHS's urban rate, banded from 2021's ${v.peak.toFixed(2)} deaths per 100 million miles to a judged ${v.floor.toFixed(2)}, below 2024's ${v.r24.toFixed(2)}. It counts deaths where the AV side's fractional count sums to fatal crashes, about ${v.pct}% fewer, so the comparison leans that much toward the AVs.`;
+    },
+    bands: [["fatality", "HumansAV"]],
+    where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "humans-fatality-other", group: "humans", values: {},
+    text: () => {
+      const h = METRIC_BY_KEY.fatality.humanMPI;
+      return `Humans (US average) fatality spans FARS 2024's deaths and fatal crashes per mile (${fmtFigure(h.HumansUS.lo)} to ${fmtFigure(h.HumansUS.hi)}); Humans (Uber/Lyft) fatality spans Uber's and Lyft's own reported death rates for 2019 to 2022 (${fmtFigure(h.HumansRideshare.lo)} to ${fmtFigure(h.HumansRideshare.hi)}).`;
+    },
+    bands: [["fatality", "HumansUS"], ["fatality", "HumansRideshare"]],
+    where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "humans-rideshare-lean", group: "humans", values: {},
+    text: () => `Every other Humans (Uber/Lyft) band is the AV-cities band leaned from ${RIDESHARE_WORST} times worse to ${RIDESHARE_BEST} times safer (sober professional drivers against heavy urban driving and app distraction). That is a judgment: the rideshare crash rates the linked papers cite are all less safe than these bands' least safe edges. These bands are drawn dashed.`,
+    bands: METRIC_DEFS.filter(m => m.humanMPI.HumansRideshare.derived === true).map(m => [m.key, "HumansRideshare"]),
+    where: [["crashla.js", "RIDESHARE_WORST, RIDESHARE_BEST"]]},
+  {id: "humans-constant", group: "humans", values: {fall: 16},
+    text: v => `Human rates are held constant over every month, though the crash data behind them span 2005 to 2024 (NHTSA's critical-reason share, from 2005 to 2007 crashes; Blincoe et al.'s 24%, from 2010; the hub's rates, from 2022; CRSS, FARS and IIHS through 2024), and IIHS's urban death rate alone fell ${v.fall}% from 2021 to 2024.`,
+    where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "humans-comparator", group: "humans", values: {austinSep: 72.5},
+    text: v => `Cards and the sensitivity table compare every line with Humans (AV cities) only. For injury, at-fault injury, hospitalization+, airbag and serious injury+ that range spans Waymo's five areas; for all incidents, nonstationary and at-fault it comes from Kusano et al. 2024's rates for Waymo's benchmark areas, and for fatality from IIHS's urban rate for the whole US. Zoox drives mostly in Las Vegas, which is none of those areas; most of Tesla's miles are Austin's, one of the five (every Tesla mile through March 2026, and ${v.austinSep}% of September 2026's no-monitor miles).`,
+    where: [["crashla.js", "helmerHumanStress"]]},
+  {id: "humans-surface-streets", group: "humans", values: {},
+    text: () => `Most AV-cities bands are surface-street rates while the AV counts include some freeway driving (Waymo's from late 2025, Tesla's highway rides from September 2025); the difference is taken as immaterial.`,
+    where: [["crashla.js", "METRIC_DEFS"]]},
+
+  // --- Growth and forecasts -------------------------------------------------
+  {id: "growth-date", group: "growth", values: {},
+    text: () => `Every forecast is for ${fmtDay(GROWTH_FORECAST_DATE)}: the fleet on that day, and rides and miles through the day before. Each band was authored by judgment for that one horizon, so its width does not grow with the time ahead.`,
+    where: [["crashla.js", "GROWTH_FORECAST_DATE"]]},
+  {id: "growth-band-reading", group: "growth", values: {},
+    text: () => `A forecast band's central value is its most likely value, and its edges hold 90% between them, the 10% outside split between the sides by their widths.`,
+    where: [["crashla.js", "splitLogNormalSigmas"]]},
+  {id: "growth-tesla-scenarios", group: "growth", values: {},
+    text: () => {
+      const [a, b] = TESLA_ROBOTAXI_SCENARIOS;
+      return `Tesla's future is three scenarios: A, a slow robotaxi ramp to ${fmtWhole(a.best)} miles a day on ${fmtDay(GROWTH_FORECAST_DATE)} (${fmtWhole(a.lo)} to ${fmtWhole(a.hi)}); B, an aggressive Cybercab scale-up to ${fmtWhole(b.best)} (${fmtWhole(b.lo)} to ${fmtWhole(b.hi)}); and C, eyes-off driving on customers' cars added to A or B. Each band is judgment.`;
+    },
+    forecasts: [["FLEET_FORECAST", "Tesla"], ["MILES_FORECAST", "Tesla"], ["RIDES_FORECAST", "Tesla"]],
+    where: [["crashla.js", "TESLA_ROBOTAXI_SCENARIOS"]]},
+  {id: "growth-tesla-weights", group: "growth", values: {price: 18.46, distinct: 1.3, waymo: 14000, cYes: 0.8},
+    text: v => {
+      const [a, b] = TESLA_ROBOTAXI_SCENARIOS;
+      return `Their weights, A ${a.weight}, B ${b.weight} and C ${TESLA_EYES_OFF.weight}, are fit so the forecast matches one thinly traded Manifold market's price (${v.price}%) that Tesla will have more ride-hail cars than Waymo on Dec 31, 2027. The fit assumes ${v.distinct} distinct cars per car-equivalent, Waymo's end-2027 fleet near ${fmtWhole(v.waymo)} (another market) and a ${v.cYes} chance that C resolves it yes; C's weight is judged, and the price's own uncertainty is not carried. The Prediction Markets panel feeds no figure.`;
+    },
+    where: [["quals/tesla-forecast-inputs.qual.mjs", "MARKET_PRICE, DISTINCT_PER_CAR_EQUIVALENT, WAYMO_MEDIAN, C_COUNTS"], ["crashla.js", "TESLA_EYES_OFF"]]},
+  {id: "growth-eyes-off", group: "growth", values: {},
+    text: () => {
+      const e = TESLA_EYES_OFF;
+      return `Scenario C adds ${fmtWhole(e.cars.best)} customer cars driving eyes-off on ${fmtDay(GROWTH_FORECAST_DATE)} (${fmtWhole(e.cars.lo)} to ${fmtWhole(e.cars.hi)}) at ${e.milesPerCarDay.best} miles a day each (about Tesla's supervised-FSD miles per active car in the third quarter of 2026; ${e.milesPerCarDay.lo} to ${e.milesPerCarDay.hi}), the two moving together. It also adds ${fmtFigure(e.cumulative.best)} eyes-off miles through 2027 (${fmtFigure(e.cumulative.lo)} to ${fmtFigure(e.cumulative.hi)}), with one Tesla-network ride per ${Math.round(1 / e.ridesPerMile)} of them. C is taken to rise and fall with A or B.`;
+    },
+    where: [["crashla.js", "TESLA_EYES_OFF"]]},
+  {id: "growth-car-equivalents", group: "growth", values: {uLo: 120, uHi: 250, juneCars: 30},
+    text: v => `Tesla's fleet, past and forecast, counts car-equivalents: its miles a day over ${TESLA_MILES_PER_CAR_DAY} miles a car-day, about June 2026's miles over Tesla's roughly ${v.juneCars} active cars, held for every month and scenario (the past points' ranges allow ${v.uLo} to ${v.uHi}). June 2025 shows the launch fleet instead, ${FLEET_HISTORY.Tesla[0].best} cars.`,
+    where: [["crashla.js", "TESLA_MILES_PER_CAR_DAY, FLEET_HISTORY"]]},
+  {id: "growth-tesla-path", group: "growth", values: {},
+    text: () => `Tesla's robotaxi miles grow at one constant rate from ${fmtDay(TESLA_PATH_START.day)}, at ${fmtWhole(TESLA_PATH_START.milesPerDay)} miles a day (the camera estimate's late-November rate, with no growth past its last measured week), to each scenario edge's daily miles on ${fmtDay(GROWTH_FORECAST_DATE)}. November's own range is carried into no forecast.`,
+    where: [["crashla.js", "TESLA_PATH_START, teslaCumulativeMiles"]]},
+  {id: "growth-tesla-rides", group: "growth", values: {},
+    text: () => `Tesla's rides are its miles over ${TESLA_MILES_PER_RIDE.lo} to ${TESLA_MILES_PER_RIDE.hi} miles a ride (${TESLA_MILES_PER_RIDE.best} central): an assumed ${TESLA_RIDE_BASIS.loadedMiles[0]} to ${TESLA_RIDE_BASIS.loadedMiles[1]} mile paid ride over a ${Math.round(100 * TESLA_RIDE_BASIS.riderShare[0])}% to ${Math.round(100 * TESLA_RIDE_BASIS.riderShare[1])}% share of miles with a rider aboard, held from ${fmtMonth(RIDES_HISTORY.Tesla[0].month)} through 2027.`,
+    where: [["crashla.js", "TESLA_MILES_PER_RIDE, TESLA_RIDE_BASIS, RIDES_HISTORY"]]},
+  {id: "growth-waymo-fleet", group: "growth", values: {plan: 20000},
+    text: v => {
+      const [base, toPlan] = FLEET_FORECAST.find(f => f.helmer === "Waymo").components;
+      const band = c => `${fmtWhole(c.parts[0].best)}, ${fmtWhole(c.parts[0].lo)} to ${fmtWhole(c.parts[0].hi)}`;
+      return `Waymo's fleet on ${fmtDay(GROWTH_FORECAST_DATE)} is a judged mix: ${base.weight} on a base path (${band(base)}) and ${toPlan.weight} toward a reported plan of ${fmtWhole(v.plan)} cars by the end of 2027 (${band(toPlan)}).`;
+    },
+    forecasts: [["FLEET_FORECAST", "Waymo"]],
+    where: [["crashla.js", "FLEET_FORECAST"]]},
+  {id: "growth-waymo-miles-rides", group: "growth", values: {},
+    text: () => {
+      const [miles, rides] = [MILES_FORECAST, RIDES_FORECAST].map(table => table.find(f => f.helmer === "Waymo").components[0].parts[0]);
+      return `Waymo's miles through 2027 (${fmtFigure(miles.best)}, ${fmtFigure(miles.lo)} to ${fmtFigure(miles.hi)}) and rides (${fmtFigure(rides.best)}, ${fmtFigure(rides.lo)} to ${fmtFigure(rides.hi)}) are authored from an assumed 2027 fleet and use per car, not tied to the fleet forecast. The miles' low edge holds ${fmtMonth(vmtLineMonths("Waymo").at(-1))}'s daily miles flat, so only the band's lower tail lets them shrink.`;
+    },
+    forecasts: [["MILES_FORECAST", "Waymo"], ["RIDES_FORECAST", "Waymo"]],
+    where: [["crashla.js", "MILES_FORECAST, RIDES_FORECAST"]]},
+  {id: "growth-zoox", group: "growth", values: {limit: 1000},
+    text: v => {
+      const [fleet, miles, rides] = [FLEET_FORECAST, MILES_FORECAST, RIDES_FORECAST].map(table => table.find(f => f.helmer === "Zoox").components[0].parts[0]);
+      return `Zoox's fleet on ${fmtDay(GROWTH_FORECAST_DATE)} (${fmtWhole(fleet.best)}, ${fmtWhole(fleet.lo)} to ${fmtWhole(fleet.hi)}) and its miles (${fmtFigure(miles.best)}, ${fmtFigure(miles.lo)} to ${fmtFigure(miles.hi)}) and rides (${fmtFigure(rides.best)}, ${fmtFigure(rides.lo)} to ${fmtFigure(rides.hi)}) through 2027 are authored separately by judgment from an assumed 2027 fleet and use. The fleet's top is the ${fmtWhole(v.limit)} cars at once NHTSA's authorization allows on request, and the miles' low edge holds ${fmtMonth(vmtLineMonths("Zoox").at(-1))}'s daily miles flat.`;
+    },
+    forecasts: [["FLEET_FORECAST", "Zoox"], ["MILES_FORECAST", "Zoox"], ["RIDES_FORECAST", "Zoox"]],
+    where: [["crashla.js", "FLEET_FORECAST, MILES_FORECAST, RIDES_FORECAST"]]},
+  {id: "growth-history", group: "growth", values: {ridersLo: 1.2, ridersHi: 2},
+    text: v => `On the growth chart, Waymo's and Zoox's fleet and ride points between and after published figures are hand estimates run on at judged monthly paces, and their ranges are judgment with no stated coverage. Zoox's rides also assume ${v.ridersLo.toFixed(1)} to ${v.ridersHi.toFixed(1)} riders a ride.`,
+    where: [["crashla.js", "FLEET_HISTORY, RIDES_HISTORY"]]},
+  {id: "growth-floor", group: "growth", values: {},
+    text: () => `Quals hold the forecasts to a prior that fleets, miles and rides do not shrink: a fleet forecast's 5th percentile may not sit below the newest observed low edge, nor its median below the newest observed value; Tesla's robotaxi miles and fleet medians may not sit below what the last week its safety page measured implies, held flat to the forecast date; and Waymo's rides median may not sit below its newest low edge plus the weekly ride floor Waymo has stated.`,
+    where: [["quals/fleet-forecast.qual.mjs", ""], ["quals/tesla-forecast-floor.qual.mjs", ""], ["quals/rides-provenance.qual.mjs", ""]]},
+  {id: "growth-trajectory", group: "growth", values: {},
+    text: () => `The growth chart joins the last point to each forecast with a straight line on its log scale, which implies steady growth. Its shaded band joins the last point's range to the forecast's 90% range, ranges set at different confidence.`,
+    where: [["crashla.js", "renderFleetTimeSeriesChart"]]},
+];
+
+// The section's body: the intro, then each group's table, its rows in
+// ASSUMPTIONS order: the entry's text as AI text (its links drawn as the VMT
+// sources table draws a rationale's, rationaleHtml, after the same checks of
+// their form, checkRationaleLinks) and where its value is set.
+function renderAssumptions() {
+  for (const group of ASSUMPTION_GROUPS) {
+    assert(ASSUMPTIONS.some(e => e.group === group.id), "an assumptions group has no entry", {group: group.id});
+  }
+  const tables = ASSUMPTION_GROUPS.map(group => {
+    const rows = ASSUMPTIONS.filter(e => e.group === group.id).map(e => {
+      const text = e.text(e.values);
+      assert(typeof text === "string" && text !== "", "an assumption's text must be a non-empty string", {id: e.id});
+      checkRationaleLinks(text, {assumption: e.id});
+      return `<tr id="assumption-${e.id}"><td class="ai-text derivation">${rationaleHtml(text)}</td><td>${escHtml(e.where.map(([file, names]) => `${file} ${names}`.trim()).join("; "))}</td></tr>`;
+    });
+    return `<h3>${escHtml(group.title)}</h3><div class="table-wrap"><table class="source-table vmt-sources" id="assumptions-${group.id}"><thead><tr><th>${escHtml(ASSUMPTION_COLUMNS[0])}</th><th>${escHtml(ASSUMPTION_COLUMNS[1])}</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+  });
+  return `<p class="month-note"><span class="ai-text">${escHtml(ASSUMPTIONS_INTRO)}</span></p>${tables.join("")}`;
+}
 
 function buildSanityChecks() {
   const rows = activeIncidents();
@@ -6530,10 +7095,10 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
     const rates = monthData.map(r =>
       r.vmt > 0 ? (r.count / r.vmt * 1e6).toFixed(1) : "\u2014");
     // With few total incidents the test has no power; flag that
-    const verdict = totalK < 20 ? DISPERSION_VERDICT.fewIncidents
-      : dispIdx < 0.5 ? DISPERSION_VERDICT.under
-      : dispIdx < 2 ? DISPERSION_VERDICT.poisson
-      : dispIdx < 5 ? DISPERSION_VERDICT.mild
+    const verdict = totalK < DISPERSION_LIMITS.minIncidents ? DISPERSION_VERDICT.fewIncidents
+      : dispIdx < DISPERSION_LIMITS.under ? DISPERSION_VERDICT.under
+      : dispIdx < DISPERSION_LIMITS.poisson ? DISPERSION_VERDICT.poisson
+      : dispIdx < DISPERSION_LIMITS.mild ? DISPERSION_VERDICT.mild
       : DISPERSION_VERDICT.over;
     dispRows.push(`<tr>
       <td>${escHtml(helmerLabel(helmer))}</td>
@@ -7616,11 +8181,11 @@ function loadPredmarketData() {
   faultData = buildFaultDataFromIncidents(incidentData);
   // Everything that is not a chart first (the URL state, the colophon, the
   // listeners, the markets), then the charts' column, then the views, which
-  // build their non-chart parts before their charts (buildMonthlyViews), and
-  // last the growth charts: a chart that cannot draw leaves the rest of the
-  // page working. Until 2026-10-04 init measured the column and drew the
-  // charts first, so in a hidden iframe or a ~130 px window the page stayed
-  // blank and dead (audit #32).
+  // build their non-chart parts before their charts (buildMonthlyViews), then
+  // the growth charts, and last the assumptions list: a chart or an entry
+  // that cannot draw leaves the rest of the page working. Until 2026-10-04
+  // init measured the column and drew the charts first, so in a hidden iframe
+  // or a ~130 px window the page stayed blank and dead (audit #32).
   loadUiStateFromLocation();
   const modifiedPart = NHTSA_MODIFIED_DATE
     ? ` NHTSA data last modified ${NHTSA_MODIFIED_DATE}.`
@@ -7673,4 +8238,12 @@ function loadPredmarketData() {
   buildMonthlyViews();
   byId("chart-fleet-timeseries").innerHTML = renderFleetTimeSeriesChart();
   byId("chart-fleet-forecast").innerHTML = renderFleetForecastChart();
+  // The assumptions list (2026-11-20): static, so drawn once, here, after
+  // every other view (still in this task, so it is there when the browser
+  // puts the reader in place). An entry that no longer describes the data (a
+  // stale one after a release: data/README.md, Each NHTSA release) stops its
+  // render, which leaves the banner and an empty list and every other view
+  // drawn (error-banner.qual). Until 2026-11-20 (review) it was drawn before
+  // the views, and such an entry left the page with nothing but the banner.
+  byId("assumptions-list").innerHTML = renderAssumptions();
 }

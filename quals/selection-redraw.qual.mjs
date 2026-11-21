@@ -10,7 +10,10 @@
 //  - a checkbox change or a metric change redraws the legends, the charts,
 //    the cards and the headings, and writes the URL once, building none of
 //    the month series, the slider, the sanity section or the incident browser;
-//  - what it draws is what a full rebuild draws for the new selection.
+//  - what it draws is what a full rebuild draws for the new selection;
+//  - (since 2026-11-20) neither a checkbox, the select nor a slider release,
+//    run through the slider's own listeners, draws the assumptions list
+//    again (renderAssumptions), which depends on none of them.
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
@@ -51,6 +54,9 @@ const run = src => JSON.parse(JSON.stringify(vm.runInContext(src, ctx)));
 vm.runInContext(`
   incidents = INCIDENT_DATA;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  // The ghost months too, as init reads them (since 2026-11-20: the
+  // assumptions list, which a release's commit must not draw, reads them).
+  ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
   // The stub's elements outlive a render, so a rebuild drops the listeners
   // the last one attached (a browser's re-render makes new elements).
@@ -113,8 +119,15 @@ Expectata: none of them changes: they do not depend on the selection.
 Resultata: changed after ${JSON.stringify(independence.changed)}.`);
 
 // --- The checkbox and the select redraw only what depends on them ----------
+// (The assumptions list, drawn once at init by renderAssumptions since
+// 2026-11-20, depends on none of the selection or the window: neither a
+// checkbox, the select nor a slider release draws it again.)
+assert.equal(run(`typeof renderAssumptions`), "function",
+  `Replicata: read crashla.js's renderAssumptions.
+Expectata: a function, the assumptions list's renderer, whose calls this qual counts.
+Resultata: ${run(`typeof renderAssumptions`)}.`);
 const NAMES = { monthSeriesData: "series", renderDateRangeControls: "slider", buildSanityChecks: "sanity",
-  buildBrowser: "browser", renderWindowedViews: "draw", renderMonthlyLegends: "legends" };
+  buildBrowser: "browser", renderWindowedViews: "draw", renderMonthlyLegends: "legends", renderAssumptions: "assumptions" };
 const steps = run(`(() => {
   const counts = {};
   const orig = {};
@@ -157,11 +170,47 @@ const steps = run(`(() => {
   }
   return out;
 })()`);
-const want = { series: 0, slider: 0, sanity: 0, browser: 0, draw: 1, legends: 1 };
+const want = { series: 0, slider: 0, sanity: 0, browser: 0, draw: 1, legends: 1, assumptions: 0 };
 const bad = steps.filter(s => JSON.stringify(s.counts) !== JSON.stringify(want) || s.writes !== 1 || s.differ.length > 0);
+// A slider release, through the slider's own listeners (renderDateRangeControls:
+// a thumb's input event draws the window's views in the next frame, its change
+// event commits it there, rebuilding the sanity section and the incident
+// browser and writing the address), the start thumb moved to the last six
+// months. Until 2026-11-20 (review) this ran those four functions by hand, so
+// a call to renderAssumptions added to the commit went unseen.
+const slider = run(`(() => {
+  const counts = {};
+  const orig = {};
+  for (const [name, key] of Object.entries(${JSON.stringify(NAMES)})) {
+    counts[key] = 0;
+    orig[name] = globalThis[name];
+    globalThis[name] = function () { counts[key]++; return orig[name].apply(this, arguments); };
+  }
+  const writesBefore = __writes.length;
+  // crashla.js's assert: a thumb with no such listener stops this qual.
+  const fire = (id, type) => {
+    assert(el(id).listeners[type] !== undefined, "the date slider's thumb has no listener of this type", {id, type});
+    for (const fn of el(id).listeners[type]) fn({target: el(id)});
+  };
+  const max = fullMonthSeries.months.length - 1;
+  // The stub keeps an input's value across renders, where a browser takes it
+  // from the rendered markup: the end thumb is set to the default window's
+  // end, the last month, and the start thumb to its new place.
+  el("date-range-max").value = String(max);
+  el("date-range-min").value = String(max - 5);
+  fire("date-range-min", "input");
+  fire("date-range-min", "change");
+  for (const [name, f] of Object.entries(orig)) globalThis[name] = f;
+  return {counts, writes: __writes.length - writesBefore, window: [monthRangeStart, monthRangeEnd], want: [max - 5, max]};
+})()`);
+const sliderWant = { series: 0, slider: 0, sanity: 1, browser: 1, draw: 1, legends: 0, assumptions: 0 };
+assert.ok(JSON.stringify(slider.counts) === JSON.stringify(sliderWant) && slider.writes === 1 && JSON.stringify(slider.window) === JSON.stringify(slider.want),
+  `Replicata: on the default view, move the date slider's start thumb to the last six months and release it (its input event, then its change event, through the slider's own listeners), counting the calls of ${Object.keys(NAMES).join(", ")} and the address writes.
+Expectata: the window ${JSON.stringify(slider.want)}, drawn once and committed once (${JSON.stringify(sliderWant)}, one address write): the assumptions list, which does not depend on the window, not drawn again.
+Resultata: the window ${JSON.stringify(slider.window)}, ${JSON.stringify(slider.counts)}, ${slider.writes} address writes.`);
 assert.ok(bad.length === 0,
   `Replicata: on the default view, check and uncheck Zoox, Humans (US average) and Waymo by their checkboxes, then pick the injury, fatality and all-incidents metrics in the select; after each, rebuild every view from scratch and compare.
 Expectata: each change redraws the legends once and the charts, cards and headings once (renderWindowedViews), writes the URL once, and builds none of the month series, the date slider, the sanity section or the incident browser (${JSON.stringify(want)}); what it leaves is what the full rebuild draws.
 Resultata: ${JSON.stringify(bad.length > 0 ? bad : steps)}.`);
 
-console.log("qual pass: a helmer or metric change redraws the legends, charts and cards only, and leaves what a full rebuild draws");
+console.log("qual pass: a helmer or metric change redraws the legends, charts and cards only, and leaves what a full rebuild draws; neither they nor a slider release redraw the assumptions list");

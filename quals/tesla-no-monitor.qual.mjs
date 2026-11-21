@@ -10,10 +10,18 @@ import { parseCsv } from "./csv-parse.mjs";
 // software-only number stands next to the all-modes one. Its crashes are the
 // in-scope Tesla reports on Tesla's own list of SGO reports "while Robotaxi is
 // driving autonomously with no safety monitor in the vehicle"
-// (tesla.com/robotaxi/safety, Robotaxi-SGO-Report_10_18_2026.xlsx); its miles
+// (tesla.com/robotaxi/safety, Robotaxi-SGO-Report_10_18_2026.xlsx), and those
+// newer than the list whose narratives a review finds name no monitor
+// (data/slurp.py TESLA_NO_MONITOR_ADDITIONS, until a list holds them;
+// quals/tesla-monitor-review.qual.mjs); its miles
 // are Tesla's own no-monitor miles (data/vmt.csv "teslanomonitor" rows, the
 // safety page's weekly series by month, the Q3-2026 deck chart the second
 // reading). Each incident lists every line it counts toward (`series`).
+// Restated 2026-11-20 under the human's "ok" for audit finding A1: checks (1)
+// and (2) required the line to hold exactly the list's reports and an
+// unclassified report to stop in incident_series(); the line now also holds
+// the reviewed additions, and the unclassified stop is check_monitor_reviewed(),
+// which lists every such report at once, as the passenger review does.
 
 // Tesla's spreadsheet, as published Oct 20, 2026 (32 reports, May 23 to Oct 18).
 const SHEET = ["13781-15399", "13781-15400", "13781-15395", "13781-15342", "13781-15809", "13781-15808",
@@ -41,19 +49,25 @@ import sys, json
 sys.path.insert(0, 'data')
 import slurp
 out = {'noMonitor': sorted(slurp.TESLA_NO_MONITOR_REPORTS), 'aboard': sorted(slurp.TESLA_MONITOR_ABOARD_REPORTS),
+       'additions': sorted(slurp.TESLA_NO_MONITOR_ADDITIONS),
        'from': slurp.TESLA_NO_MONITOR_FROM, 'company': slurp.SERIES_COMPANY}
 out['seriesNoMonitor'] = slurp.incident_series('Tesla', '13781-16671', '2026-08')
 out['seriesAboard'] = slurp.incident_series('Tesla', '13781-16672', '2026-08')
 out['seriesOld'] = slurp.incident_series('Tesla', '13781-11507', '2025-07')
 out['seriesWaymo'] = slurp.incident_series('Waymo', '30270-16196', '2026-08')
-def stops(*args):
+def stops(fn, *args):
     try:
-        slurp.incident_series(*args)
+        fn(*args)
         return ''
     except AssertionError as e:
         return str(e)
-out['unclassified'] = stops('Tesla', '13781-99999', '2026-09')
-out['listedTooEarly'] = stops('Tesla', '13781-15399', '2025-12')
+text = open('data/incidents.js').read()
+start = text.index('/* INCIDENT_DATA_START */') + len('/* INCIDENT_DATA_START */')
+records = json.loads(text[start:text.index('/* INCIDENT_DATA_END */', start)])
+out['unclassified'] = stops(slurp.check_monitor_reviewed,
+                            records + [{'reportId': '13781-99999', 'helmer': 'Tesla', 'date': 'SEP-2026', 'narrative': 'The ADS had no passengers present in the vehicle.'}],
+                            slurp.filed_incident_rows(slurp.newest_report_rows()))
+out['listedTooEarly'] = stops(slurp.incident_series, 'Tesla', '13781-15399', '2025-12')
 # Every line's incident months need that line's VMT row (else the page refuses them).
 def raises(fn):
     try:
@@ -84,10 +98,11 @@ assert.deepEqual([out.seriesNoMonitor, out.seriesAboard, out.seriesOld, out.seri
   `Replicata: call slurp.incident_series for a listed no-monitor Tesla report, a monitor-aboard one, a 2025 one and a Waymo one.
 Expectata: [Tesla, TeslaNoMonitor], [Tesla], [Tesla], [Waymo].
 Resultata: ${JSON.stringify([out.seriesNoMonitor, out.seriesAboard, out.seriesOld, out.seriesWaymo])}.`);
-assert.ok(/TESLA_NO_MONITOR_REPORTS/.test(out.unclassified) && /TESLA_NO_MONITOR_FROM/.test(out.listedTooEarly),
-  `Replicata: call slurp.incident_series for an unclassified Tesla report of 2026-09, and for a listed report dated before 2026-01.
-Expectata: both stop the run, naming the table to update.
-Resultata: ${JSON.stringify([out.unclassified, out.listedTooEarly])}.`);
+assert.ok(/TESLA_NO_MONITOR_ADDITIONS/.test(out.unclassified) && /TESLA_MONITOR_ABOARD_REPORTS/.test(out.unclassified)
+    && out.unclassified.includes("13781-99999") && /TESLA_NO_MONITOR_FROM/.test(out.listedTooEarly),
+  `Replicata: call slurp.check_monitor_reviewed on data/incidents.js's records plus an unclassified Tesla report of 2026-09 (with the newest snapshots' rows), and slurp.incident_series for a listed report dated before 2026-01.
+Expectata: both stop the run, naming the tables to update (the first names the report and the two reviewed tables, TESLA_NO_MONITOR_ADDITIONS and TESLA_MONITOR_ABOARD_REPORTS).
+Resultata: ${JSON.stringify([out.unclassified.slice(0, 600), out.listedTooEarly])}.`);
 
 assert.ok(/TeslaNoMonitor/.test(out.vmtGap) && /2026-10/.test(out.vmtGap) && out.vmtOk === "",
   `Replicata: call slurp.check_series_have_vmt with a TeslaNoMonitor incident of 2026-10 and only Tesla's 2026-10 row, then with both rows.
@@ -95,19 +110,22 @@ Expectata: the first stops the run naming ("TeslaNoMonitor", "2026-10"); the sec
 Resultata: ${JSON.stringify([out.vmtGap, out.vmtOk])}.`);
 
 // (2) incidents.js: every record's lines; the no-monitor line holds exactly the
-// listed in-scope Tesla reports.
+// listed in-scope Tesla reports and the reviewed additions (data/slurp.py's
+// TESLA_NO_MONITOR_ADDITIONS, Tesla reports newer than its list whose
+// narratives name no monitor).
 const text = fs.readFileSync("data/incidents.js", "utf8");
 const data = JSON.parse(text.slice(text.indexOf("/* INCIDENT_DATA_START */") + 25,
   text.indexOf("/* INCIDENT_DATA_END */")).trim().replace(/;$/, ""));
+const onLine = rid => SHEET.includes(rid) || out.additions.includes(rid);
 const badSeries = data.filter(r => !Array.isArray(r.series) || r.series[0] !== r.helmer
-  || JSON.stringify(r.series) !== JSON.stringify(r.helmer === "Tesla" && SHEET.includes(r.reportId) ? ["Tesla", "TeslaNoMonitor"] : [r.helmer]));
+  || JSON.stringify(r.series) !== JSON.stringify(r.helmer === "Tesla" && onLine(r.reportId) ? ["Tesla", "TeslaNoMonitor"] : [r.helmer]));
 assert.deepEqual(badSeries.map(r => [r.reportId, r.series]), [],
   `Replicata: read every data/incidents.js record's series.
-Expectata: [helmer], plus TeslaNoMonitor for in-scope Tesla reports on Tesla's spreadsheet.
+Expectata: [helmer], plus TeslaNoMonitor for in-scope Tesla reports on Tesla's spreadsheet or among the reviewed additions (${JSON.stringify(out.additions)}).
 Resultata: ${JSON.stringify(badSeries.slice(0, 5).map(r => [r.reportId, r.series]))}.`);
 const tesla2026 = data.filter(r => r.helmer === "Tesla" && r.date.endsWith("2026")).map(r => r.reportId);
-const unclassified = tesla2026.filter(rid => !SHEET.includes(rid) && !ABOARD.includes(rid));
-assert.deepEqual(unclassified, [], `Replicata: classify every in-scope 2026 Tesla report.\nExpectata: each on Tesla's list or among the monitor-aboard reports.\nResultata: unclassified ${JSON.stringify(unclassified)}.`);
+const unclassified = tesla2026.filter(rid => !onLine(rid) && !ABOARD.includes(rid));
+assert.deepEqual(unclassified, [], `Replicata: classify every in-scope 2026 Tesla report.\nExpectata: each on Tesla's list, among the reviewed additions or among the monitor-aboard reports.\nResultata: unclassified ${JSON.stringify(unclassified)}.`);
 
 // (3) The line's miles: the safety page's figure, inside a band holding both readings; and Tesla's coverage.
 // The rows of the months Tesla's page has measured whole (MILES): a later row
@@ -238,4 +256,4 @@ assert.deepEqual(leaks.slice(0, 6), [],
 Expectata: no "TeslaNoMonitor" (the line reads as its label, ${JSON.stringify(vm.runInContext("helmerLabel('TeslaNoMonitor')", viewCtx))}).
 Resultata: ${leaks.length} occurrences, e.g. ${JSON.stringify(leaks.slice(0, 6))}.`);
 
-console.log(`qual pass: Tesla's no-monitor line holds Tesla's ${listed} listed in-scope crashes over its own no-monitor miles, inherits Tesla's coverage, and sits off by default beside Tesla`);
+console.log(`qual pass: Tesla's no-monitor line holds Tesla's ${listed} in-scope crashes on its list or reviewed as no-monitor (${out.additions.length} of them reviewed additions) over its own no-monitor miles, inherits Tesla's coverage, and sits off by default beside Tesla`);

@@ -1,0 +1,12 @@
+# Git is human-only in this repo (AGENTS.md rule 15): an agent may read git
+# state (status, diff, log, show, blame) and never change it. Codex's sandbox
+# already keeps .git read-only; this blocks the typed command outright, with
+# no escalation prompt. Git run from inside a script is the sandbox's and the
+# repo hooks' to stop: a prefix rule sees only the command line.
+prefix_rule(
+    pattern=["git", ["add", "am", "apply", "branch", "checkout", "cherry-pick", "clean", "commit", "fetch", "gc", "merge", "mv", "pull", "push", "rebase", "reset", "restore", "revert", "rm", "stash", "switch", "tag", "update-index", "update-ref", "worktree"]],
+    decision="forbidden",
+    justification="AGENTS.md rule 15: git is human-only in this repo. Read-only git (status, diff, log, show) is fine.",
+    match=["git commit -m x", "git add .", "git push", "git stash", "git checkout main"],
+    not_match=["git status", "git diff", "git log --oneline", "git show HEAD", "git blame README.md"],
+)

@@ -19,7 +19,10 @@ joins in the in-repo VMT master (data/vmt.csv) and fault inputs
 data/vmt.js (between marker comments). Every check runs before any of
 data/incidents.js, data/vmt.js and data/faultfrac.csv is written, so a run
 that stops writes only the NHTSA snapshots it fetched (data/README.md, Each
-NHTSA release).
+NHTSA release). After main(), a run saves Robotaxi Tracker's camera table
+(camera_table_step(), which asks the person at the terminal first); a stop
+there comes after main() has written those three files, and leaves only the
+camera table unsaved.
 """
 
 import csv
@@ -27,7 +30,11 @@ import datetime
 import io
 import json
 import math
+import os
 import re
+import shutil
+import subprocess
+import sys
 import urllib.request
 import xml.etree.ElementTree
 import zipfile
@@ -123,6 +130,47 @@ PREPRINT_LIST = {
 PREPRINT_REPORT_TYPE = "Preprint"
 PREPRINT_REPORT_VERSION = "1"
 PREPRINT_OPERATOR_TYPE = "None"
+# Robotaxi Tracker's Camera watch (https://robotaxitracker.com/cameras; credit
+# Robotaxi Tracker, https://robotaxitracker.com, by name with a link and the
+# visible address, as its llms.txt asks): Cybercabs, and other companies'
+# cars, per 1,000 vehicles on Austin's public traffic cameras each UTC day.
+# Tesla's miles for the days its own safety page has not measured rest on the
+# daily Cybercab rate (quals/tesla-camera-miles.qual.mjs; data/README.md,
+# Ghost months). The site's terms forbid scraping and its robots.txt
+# automated harvesting, so no script fetches it (AGENTS.md's standing rule):
+# a person copies the page's "Show data" table from a browser, and at the end
+# of a run in a terminal camera_table_step() asks that person, opens the page
+# in their own browser once they press Enter, reads the copy from the
+# clipboard and saves it in data/snapshots, named for the local date it was
+# saved (robotaxitracker-cameras-YYYYMMDD.tsv; the human, 2026-11-20: "can you
+# remember to prompt me with that command line? actually can we make it part
+# of slurp.py?", the tables published with the repo by the human's choice).
+# camera_table_days() reads a table, stopping on any text that is not one, and
+# camera_week_means() averages its whole weeks; the quals read the newest
+# saved table through both (quals/camera-table.mjs).
+#   url          the page, which the step opens and nothing here fetches
+#   prefix       the saved tables' prefix in data/snapshots
+#   instruction  what the person does on the page (as the command line the
+#                human ran on 2026-11-20 printed it)
+#   header       the table's first line: its columns, tab-separated
+#   caption      its last line, after the days
+#   dash         a day's value before its column's detector started
+#   rate         the column Tesla's estimate reads
+#   locale       the locale pbpaste reads the clipboard in (its output's
+#                encoding follows the locale; the tables are UTF-8)
+#   weekdays, months  the names in a day's label ("Thu, Nov 19 (UTC)")
+CAMERA_TABLE = {
+    "url": "https://robotaxitracker.com/cameras",
+    "prefix": "robotaxitracker-cameras",
+    "instruction": 'Press "Show data" under "Over time", select the table, Cmd-C, then press Enter here.',
+    "header": ("Day (UTC)", "Waymo", "Cybercab", "Robotaxi Model Y (est.)", "Zoox", "Avride"),
+    "caption": "A line starts the day its detector did.",
+    "dash": "\u2014",   # an em dash
+    "rate": "Cybercab",
+    "locale": "en_US.UTF-8",
+    "weekdays": ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"),
+    "months": ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+}
 # NHTSA's canonical SGO page labels each release "through <date>": reports
 # RECEIVED through that date, which is the 15th of the month before the
 # release rolled forward to the next business day when the 15th falls on a
@@ -1576,9 +1624,12 @@ def list_row(cells):
 def list_rows(path):
     """Every row of the company-list snapshot at <path> in NHTSA's columns
     (list_row()). Stops unless the file is the one named for the date the
-    list runs through, no Report ID is on it twice, and its Report IDs are
-    TESLA_NO_MONITOR_REPORTS, the no-monitor line's members (the list is that
-    line's definition; a new list changes both)."""
+    list runs through, no Report ID is on it twice, it holds no report a
+    review classified when no list held it (TESLA_NO_MONITOR_ADDITIONS, which
+    then moves into TESLA_NO_MONITOR_REPORTS; TESLA_MONITOR_ABOARD_REPORTS,
+    which it contradicts), and its Report IDs are TESLA_NO_MONITOR_REPORTS
+    (the list is the no-monitor line's definition, the additions aside; a new
+    list changes both)."""
     wanted = f"{PREPRINT_LIST['prefix']}-{PREPRINT_LIST['through'].replace('-', '')}.xlsx"
     must(path.name == wanted,
          "the newest company-list snapshot is not named for the date the list "
@@ -1589,6 +1640,17 @@ def list_rows(path):
     ids = [r["Report ID"] for r in rows]
     must(len(set(ids)) == len(ids), "the company list names a Report ID twice",
          reports=sorted(rid for rid, n in Counter(ids).items() if n > 1))
+    must(not set(ids) & set(TESLA_NO_MONITOR_ADDITIONS),
+         "the company list now holds reviewed no-monitor additions: move each "
+         "from TESLA_NO_MONITOR_ADDITIONS into TESLA_NO_MONITOR_REPORTS in "
+         "data/slurp.py (data/README.md, Each NHTSA release, step 7)",
+         reports=sorted(set(ids) & set(TESLA_NO_MONITOR_ADDITIONS)))
+    must(not set(ids) & set(TESLA_MONITOR_ABOARD_REPORTS),
+         "the company list holds reports reviewed as monitor-aboard "
+         "(TESLA_MONITOR_ABOARD_REPORTS in data/slurp.py): the list and the "
+         "narratives disagree (re-read each and ask the human: data/README.md, "
+         "Each NHTSA release, step 7)",
+         reports=sorted(set(ids) & set(TESLA_MONITOR_ABOARD_REPORTS)))
     must(set(ids) == TESLA_NO_MONITOR_REPORTS,
          "the company list's Report IDs are not TESLA_NO_MONITOR_REPORTS (the "
          "list has changed: bring the set in data/slurp.py in line with it: "
@@ -2323,14 +2385,14 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months, list_cov)
     company's lines for the month it runs through.
 
     A row takes the coverage of whichever source holds more of its
-    incidents: NHTSA's file (coverage_by_month and inc_cov) or, on a row
-    list_cov names, the company list, by the larger product of the two best
-    values (NHTSA's on a tie). So the list sets a row's coverage only while
-    NHTSA's file holds less of that month than the list does: in the month
-    the list runs through while that is NHTSA's data-through month, and never
-    once NHTSA's file has the month whole. incidents_through is the date the
-    row's incidents run through: NHTSA's receipt cutoff, or the list's date
-    on a row that takes the list's coverage.
+    incidents (row_coverage()): NHTSA's file (coverage_by_month and inc_cov)
+    or, on a row list_cov names, the company list, by the larger product of
+    the two best values (NHTSA's on a tie). So the list sets a row's coverage
+    only while NHTSA's file holds less of that month than the list does: in
+    the month the list runs through while that is NHTSA's data-through month,
+    and never once NHTSA's file has the month whole. incidents_through is the
+    date the row's incidents run through: NHTSA's receipt cutoff, or the
+    list's date on a row that takes the list's coverage.
     """
     rows = list(csv.reader(io.StringIO(raw_text)))
     must(len(rows) > 1, "VMT master CSV must include header and rows")
@@ -2353,16 +2415,55 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months, list_cov)
         if month not in active_months:
             continue
         line = _canonical_helmer(row[0].strip())
-        nhtsa = (coverage_by_month.get(month, (1, 1, 1)),
-                 inc_cov.get((SERIES_COMPANY[line], month), (1, 1, 1)),
-                 NHTSA_DATA_THROUGH_DATE)
-        (cov_best, cov_lo, cov_hi), (ic_best, ic_lo, ic_hi), through = max(
-            [nhtsa, list_cov.get((line, month), nhtsa)],
-            key=lambda source: source[0][0] * source[1][0])
+        ((cov_best, cov_lo, cov_hi), (ic_best, ic_lo, ic_hi), through), _listed = row_coverage(
+            line, month, inc_cov, coverage_by_month, list_cov)
         nums, rationale = _vmt_master_cells(row)
         writer.writerow([row[0], row[1], *nums, cov_best, cov_lo, cov_hi,
                          ic_best, ic_lo, ic_hi, through, rationale])
     return out_buf.getvalue().rstrip("\n")
+
+
+def row_coverage(line, month, inc_cov, coverage_by_month, list_cov):
+    """The coverage <line>'s data/vmt.js row for <month> takes (build_vmt_csv()'s
+    other arguments): ((receipt coverage triple, Monthly-track incident
+    coverage triple, the date the row's incidents run through), whether that
+    is the company list's). It is the list's (<list_cov>, preprint_coverage())
+    where the list holds more of the row's incidents than NHTSA's file does,
+    by the product of the two best values, and NHTSA's otherwise (on a tie
+    too). Until 2026-11-20 build_vmt_csv() chose by itself."""
+    nhtsa = (coverage_by_month.get(month, (1, 1, 1)),
+             inc_cov.get((SERIES_COMPANY[line], month), (1, 1, 1)),
+             NHTSA_DATA_THROUGH_DATE)
+    listed = list_cov.get((line, month), nhtsa)
+    from_list = listed[0][0] * listed[1][0] > nhtsa[0][0] * nhtsa[1][0]
+    return (listed if from_list else nhtsa), from_list
+
+
+def check_list_covered_rows(incidents, inc_cov, coverage_by_month, list_cov):
+    """Stop the run unless every incident among <incidents> (the records being
+    written) that counts on a row taking the company list's coverage
+    (row_coverage(); the other arguments build_vmt_csv()'s) is one of the
+    list's reports (TESLA_NO_MONITOR_REPORTS, its Report IDs: list_rows()).
+    That coverage fits the list's own crashes: the list's miles through its
+    date, less an allowance for the crashes its company files late. A crash
+    the list lacks there (a reviewed no-monitor addition, or a monitor-aboard
+    report on the every-mode line, whose miles that coverage counts as
+    uncovered) has no rule yet."""
+    unlisted = sorted({(series, nhtsa_month_to_iso(rec["date"]), rec["reportId"])
+                       for rec in incidents for series in rec["series"]
+                       if (series, nhtsa_month_to_iso(rec["date"])) in list_cov
+                       and rec["reportId"] not in TESLA_NO_MONITOR_REPORTS
+                       and row_coverage(series, nhtsa_month_to_iso(rec["date"]),
+                                        inc_cov, coverage_by_month, list_cov)[1]})
+    must(not unlisted,
+         "a row that takes Tesla's list's coverage (the month the list runs "
+         "through, while the list holds more of it than NHTSA's file) counts "
+         "crashes the list does not hold: that coverage fits the list's own "
+         "crashes (its miles through its date, less an allowance for crashes "
+         "Tesla files late), and how to count another crash there is undecided "
+         "(ask the human: data/README.md, Each NHTSA release, step 7)",
+         rows=[{"line": line, "month": month, "reportId": rid} for line, month, rid in unlisted],
+         listThrough=PREPRINT_LIST["through"], dataThrough=NHTSA_DATA_THROUGH_DATE)
 
 
 def _vmt_master_cells(row):
@@ -2756,9 +2857,10 @@ must(all(len(v) == 2 and v[1] in PAX_CLASS for v in PASSENGER_OVERRIDE.values())
 # 18, 2026, 15 of them newer than NHTSA's Oct-15 file. Its fields and
 # narratives match NHTSA's (2026-10-23 cross-check). Since 2026-11-18 slurp
 # reads that spreadsheet itself (PREPRINT_LIST) and list_rows() stops unless
-# its Report IDs are exactly this set, so a newer list changes both. An
-# in-scope Tesla report from TESLA_NO_MONITOR_FROM on stops the run
-# (incident_series) until it is here or in TESLA_MONITOR_ABOARD_REPORTS.
+# its Report IDs are exactly this set, so a newer list changes both. Every
+# in-scope Tesla report from TESLA_NO_MONITOR_FROM on is here, in
+# TESLA_NO_MONITOR_ADDITIONS or in TESLA_MONITOR_ABOARD_REPORTS, or the run
+# stops (check_monitor_reviewed()).
 TESLA_NO_MONITOR_REPORTS = frozenset({
     "13781-15399", "13781-15400", "13781-15395", "13781-15342", "13781-15809",
     "13781-15808", "13781-16255", "13781-16294", "13781-16256", "13781-16679",
@@ -2768,13 +2870,70 @@ TESLA_NO_MONITOR_REPORTS = frozenset({
     "13781-17301", "13781-17302", "13781-17203", "13781-17303", "13781-17299",
     "13781-17304", "13781-17305",
 })
-# In-scope Tesla reports from TESLA_NO_MONITOR_FROM on with a safety monitor
-# aboard: each narrative says so ("a safety monitor present in the vehicle",
-# "Safety monitor was present"), and none is on Tesla's list.
-TESLA_MONITOR_ABOARD_REPORTS = frozenset({
-    "13781-13644", "13781-13645", "13781-13646", "13781-13648", "13781-14630",
-    "13781-14631", "13781-15017", "13781-16672",
-})
+# Tesla reports that Tesla's latest list does not hold, classified from their
+# narratives (since 2026-11-20, audit finding A1; the human: "ok", to "At each
+# release, every Tesla report newer than Tesla's latest list gets a reviewed
+# entry (no-monitor or monitor-aboard), quoting the narrative's words, like
+# the passenger table. The run stops if Tesla's next list disagrees with any
+# entry."). NHTSA's release after a list holds Tesla's reports of the days
+# after the list's date, and of crashes Tesla filed after drawing it up. The
+# narrative test: Tesla's narratives name a safety monitor when one is aboard
+# ("The ADS had a safety monitor present in the vehicle with no passengers"),
+# and of Tesla's 30 in-scope crashes from May 2026 to Oct 18, 2026, the one
+# whose narrative names a monitor (13781-16672) is the one its list leaves
+# out; the other 29 are on it. Each table is keyed by Report ID and holds the
+# narrative's words the review read, verbatim (check_reviewed_quotes() stops
+# the run when the report's latest filing no longer holds them), and
+# check_monitor_reviewed() holds every entry to the narrative test
+# (SAFETY_MONITOR_PATTERN): a re-filing that names a monitor in an addition's
+# narrative, or none in a monitor-aboard report's, stops the run for a
+# re-read.
+#
+# TESLA_NO_MONITOR_ADDITIONS: no safety monitor aboard. Each entry is (the
+# words, the receipt cutoff of the release whose review added it, that
+# release's NHTSA_DATA_THROUGH_DATE: NHTSA's file held the report by then).
+# The words are the narrative's sentence that says who was aboard, the
+# sentence in which Tesla names a monitor when one is aboard ("The ADS had no
+# riders in the vehicle"), or the whole narrative where no sentence says. An
+# addition counts on the no-monitor line until a list holds it; then
+# list_rows() stops until it moves into TESLA_NO_MONITOR_REPORTS.
+# check_monitor_reviewed() stops the run on one that Tesla's latest list
+# should hold and lacks: one Tesla had filed by the list's date, by that
+# cutoff or by the end of the month of its first filing. A list holds the
+# no-monitor crashes Tesla had reported by its date (each row carries its
+# filing's Report ID), so a crash Tesla files after that date is on no list
+# of that date, whatever the crash's own date: Tesla files some late
+# (13781-17193, an Aug 22 crash, in October).
+TESLA_NO_MONITOR_ADDITIONS = {}
+# TESLA_MONITOR_ABOARD_REPORTS: a safety monitor aboard (in-scope Tesla
+# reports from TESLA_NO_MONITOR_FROM on); the words name the monitor. None is
+# on Tesla's list, and list_rows() stops on a list that holds one. (Until
+# 2026-11-20, a set of these Report IDs.)
+TESLA_MONITOR_ABOARD_REPORTS = {
+    "13781-13644": "Safety monitor and one passenger were present",
+    "13781-13645": "Safety monitor was present and no passengers were inside the vehicle",
+    "13781-13646": "Safety monitor was present and no passengers were inside the vehicle",
+    "13781-13648": "Safety monitor and two passengers were present",
+    "13781-14630": "The ADS had a safety monitor present in the vehicle with one passenger",
+    "13781-14631": "The ADS had a safety monitor present in the vehicle with no passengers",
+    "13781-15017": "The ADS had a safety monitor present in the vehicle with no passengers",
+    "13781-16672": "The ADS had a safety monitor present in the vehicle with no passengers",
+}
+# The narrative test's words: a Tesla narrative names the safety monitor this
+# way when one is aboard (every in-scope Tesla report from
+# TESLA_NO_MONITOR_FROM on, 37 on 2026-11-20, names one exactly when it is in
+# TESLA_MONITOR_ABOARD_REPORTS). A narrative that negates it ("no safety
+# monitor") would read as naming one, and stop the run on an addition: no
+# Tesla narrative has done so, and how to read one is undecided (ask the
+# human).
+SAFETY_MONITOR_PATTERN = re.compile(r"\bsafety\s+monitor\b", re.I)
+must(all(isinstance(entry, tuple) and len(entry) == 2
+         and isinstance(entry[1], str)
+         and re.fullmatch(r"\d{4}-\d{2}-\d{2}", entry[1]) is not None
+         for entry in TESLA_NO_MONITOR_ADDITIONS.values()),
+     "TESLA_NO_MONITOR_ADDITIONS entries must be (the narrative's words, the "
+     "receipt cutoff of the release whose review added the entry, as "
+     "YYYY-MM-DD: data/README.md, Each NHTSA release, step 7)")
 # Tesla's no-monitor service began Jan 22, 2026; its safety page counts miles
 # and crashes from that day, so no report before this month is on the line.
 TESLA_NO_MONITOR_FROM = "2026-01"
@@ -2786,10 +2945,18 @@ TESLA_NO_MONITOR_FROM = "2026-01"
 # companies only.
 SERIES_COMPANY = {"Waymo": "Waymo", "Tesla": "Tesla", "Zoox": "Zoox",
                   "TeslaNoMonitor": "Tesla"}
-# A derived line's member reports: (company, reviewed Report IDs).
-DERIVED_SERIES_REPORTS = {"TeslaNoMonitor": ("Tesla", TESLA_NO_MONITOR_REPORTS)}
-must(not TESLA_NO_MONITOR_REPORTS & TESLA_MONITOR_ABOARD_REPORTS,
-     "a Tesla report cannot be both on Tesla's no-monitor list and monitor-aboard")
+# A derived line's member reports: (company, a function giving its reviewed
+# Report IDs from the tables that hold them, read at each call, so the line
+# holds no copy of them). The no-monitor line's are those on Tesla's latest
+# list and the reviewed additions. (Until 2026-11-20 the second item was a
+# set, TESLA_NO_MONITOR_REPORTS.)
+DERIVED_SERIES_REPORTS = {"TeslaNoMonitor": (
+    "Tesla", lambda: TESLA_NO_MONITOR_REPORTS | set(TESLA_NO_MONITOR_ADDITIONS))}
+must(not (TESLA_NO_MONITOR_REPORTS & set(TESLA_NO_MONITOR_ADDITIONS)
+          or TESLA_NO_MONITOR_REPORTS & set(TESLA_MONITOR_ABOARD_REPORTS)
+          or set(TESLA_NO_MONITOR_ADDITIONS) & set(TESLA_MONITOR_ABOARD_REPORTS)),
+     "a Tesla report is in two of TESLA_NO_MONITOR_REPORTS (Tesla's list), "
+     "TESLA_NO_MONITOR_ADDITIONS and TESLA_MONITOR_ABOARD_REPORTS")
 must(set(SERIES_COMPANY.values()) == set(HELMER_SHORT.values()) and
      set(HELMER_SHORT.values()) <= set(SERIES_COMPANY) and
      set(DERIVED_SERIES_REPORTS) == set(SERIES_COMPANY) - set(HELMER_SHORT.values()),
@@ -2811,20 +2978,96 @@ def check_series_have_vmt(incidents, vmt):
 def incident_series(helmer, rid, month):
     """The lines an in-scope incident counts toward: its company, plus every
     derived line (DERIVED_SERIES_REPORTS) of that company listing the report.
-    Stops on a Tesla report from TESLA_NO_MONITOR_FROM on that has no monitor
-    classification, and on a listed report dated before that month."""
+    Stops on a listed report dated before TESLA_NO_MONITOR_FROM;
+    check_monitor_reviewed() stops on a Tesla report from that month on that
+    no table classifies (until 2026-11-20 this function did, one report at a
+    time)."""
     must(rid not in TESLA_NO_MONITOR_REPORTS or month >= TESLA_NO_MONITOR_FROM,
          "a report on Tesla's no-monitor list predates that service "
-         "(TESLA_NO_MONITOR_FROM; data/README.md, Each NHTSA release, step 6)", reportId=rid, month=month)
-    must(helmer != "Tesla" or month < TESLA_NO_MONITOR_FROM or
-         rid in TESLA_NO_MONITOR_REPORTS or rid in TESLA_MONITOR_ABOARD_REPORTS,
-         "in-scope Tesla report with no monitor classification: add it to "
-         "TESLA_NO_MONITOR_REPORTS if Tesla's latest no-monitor list "
-         "(tesla.com/robotaxi/safety) has it, else to "
-         "TESLA_MONITOR_ABOARD_REPORTS once its narrative or Tesla puts a "
-         "monitor aboard: data/README.md, Each NHTSA release, step 6", reportId=rid, month=month)
-    return [helmer] + [series for series, (company, rids) in DERIVED_SERIES_REPORTS.items()
-                       if company == helmer and rid in rids]
+         "(TESLA_NO_MONITOR_FROM; data/README.md, Each NHTSA release, step 7)", reportId=rid, month=month)
+    return [helmer] + [series for series, (company, members) in DERIVED_SERIES_REPORTS.items()
+                       if company == helmer and rid in members()]
+
+
+def check_monitor_reviewed(incidents, rows):
+    """Stop the run unless every in-scope Tesla report from
+    TESLA_NO_MONITOR_FROM on among <incidents> (the records being written) is
+    on Tesla's latest list (TESLA_NO_MONITOR_REPORTS) or reviewed
+    (TESLA_NO_MONITOR_ADDITIONS, TESLA_MONITOR_ABOARD_REPORTS), every reviewed
+    entry names such a report, each reviewed report's narrative passes the
+    narrative test (an addition's names no safety monitor, a monitor-aboard
+    report's names one: SAFETY_MONITOR_PATTERN), and Tesla's latest list
+    (PREPRINT_LIST) holds every addition Tesla had filed by the list's date.
+    Tesla had filed an addition by the earlier of its entry's receipt cutoff
+    (NHTSA's file held it then) and the end of the month of its first filing
+    among <rows> (the validated rows: Report Version 1's Report Submission
+    Date, which NHTSA gives as a month). Stops too on an entry whose cutoff is
+    after this release's, or before the month of the report's first filing.
+    A crash's own month says nothing here: Tesla files some crashes late
+    (13781-17193, an Aug 22 crash, in October), and a list dated before the
+    filing lacks them."""
+    tesla = {r["reportId"]: r for r in incidents
+             if r["helmer"] == "Tesla" and nhtsa_month_to_iso(r["date"]) >= TESLA_NO_MONITOR_FROM}
+    reviewed = set(TESLA_NO_MONITOR_ADDITIONS) | set(TESLA_MONITOR_ABOARD_REPORTS)
+    must(set(tesla) <= TESLA_NO_MONITOR_REPORTS | reviewed and reviewed <= set(tesla),
+         "in-scope Tesla reports from TESLA_NO_MONITOR_FROM on that are neither "
+         "on Tesla's latest list (TESLA_NO_MONITOR_REPORTS) nor reviewed (read "
+         "each narrative and add the report, with the words that say who was "
+         "aboard, to TESLA_NO_MONITOR_ADDITIONS with this release's "
+         "NHTSA_DATA_THROUGH_DATE if it names no safety monitor, else to "
+         "TESLA_MONITOR_ABOARD_REPORTS; a second Tesla robotaxi's record, the "
+         "Report ID + \"-B\", has no rule yet: ask the human), or reviewed "
+         "entries that name no such report (drop them): data/README.md, Each "
+         "NHTSA release, step 7",
+         unreviewed=sorted(set(tesla) - TESLA_NO_MONITOR_REPORTS - reviewed),
+         stale=sorted(reviewed - set(tesla)))
+    misread = sorted(rid for rid in reviewed
+                     if (SAFETY_MONITOR_PATTERN.search(tesla[rid]["narrative"]) is not None)
+                     != (rid in TESLA_MONITOR_ABOARD_REPORTS))
+    must(not misread,
+         "reviewed Tesla reports whose narrative fails the narrative test: an "
+         "entry of TESLA_NO_MONITOR_ADDITIONS whose narrative names a safety "
+         "monitor, or one of TESLA_MONITOR_ABOARD_REPORTS whose narrative names "
+         "none (the report was re-filed or misread: re-read it and move or fix "
+         "the entry in data/slurp.py; a narrative that names a monitor only to "
+         "say none was aboard has no rule yet: ask the human: data/README.md, "
+         "Each NHTSA release, step 7)",
+         reports=misread)
+    first = {r["Report ID"]: r["Report Submission Date"].strip() for r in rows
+             if int(r["Report Version"]) == 1}
+    unfiled = sorted(rid for rid in TESLA_NO_MONITOR_ADDITIONS if not first.get(rid))
+    must(not unfiled,
+         "a TESLA_NO_MONITOR_ADDITIONS entry's report has no first filing "
+         "(Report Version 1) with a Report Submission Date in NHTSA's file "
+         "(read the report in the newest snapshot and ask the human: "
+         "data/README.md, Each NHTSA release, step 7)",
+         reports=unfiled)
+    misdated = sorted(rid for rid, (_words, received) in TESLA_NO_MONITOR_ADDITIONS.items()
+                      if not nhtsa_month_to_iso(first[rid]) <= received[:7]
+                      or received > NHTSA_DATA_THROUGH_DATE)
+    must(not misdated,
+         "a TESLA_NO_MONITOR_ADDITIONS entry's receipt cutoff is after this "
+         "release's (NHTSA_DATA_THROUGH_DATE) or before the month of its "
+         "report's first filing (the cutoff is that of the release whose review "
+         "added the entry: data/README.md, Each NHTSA release, step 7)",
+         reports=misdated, dataThrough=NHTSA_DATA_THROUGH_DATE)
+    through = PREPRINT_LIST["through"]
+
+    def month_end(month):
+        """The ISO date of <month>'s last day."""
+        return (datetime.date.fromisoformat(month_shift(month, 1) + "-01")
+                - datetime.timedelta(days=1)).isoformat()
+    filed_by = {rid: min(received, month_end(nhtsa_month_to_iso(first[rid])))
+                for rid, (_words, received) in TESLA_NO_MONITOR_ADDITIONS.items()}
+    held = sorted(rid for rid, day in filed_by.items() if day <= through)
+    must(not held,
+         "TESLA_NO_MONITOR_ADDITIONS entries that Tesla's latest list should "
+         "hold and does not (Tesla had filed each by the list's date: by its "
+         "entry's receipt cutoff or by the end of its first filing's month): "
+         "Tesla's list and the review disagree (re-read each narrative and ask "
+         "the human: data/README.md, Each NHTSA release, step 7)",
+         reports=held, filedBy={rid: filed_by[rid] for rid in held},
+         listThrough=through)
 
 
 def operator_in_scope(row):
@@ -3033,15 +3276,20 @@ def reviewed_quotes():
     a remote human drove (TELEOP_DRIVEN_REPORTS), which ones the ADS drove
     though their narrative trips a tripwire (REMOTE_LANGUAGE_ADS_DRIVEN,
     SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN), whose filed passenger code stands
-    against their narrative (OCCUPANCY_LANGUAGE_REVIEWED), and how many
+    against their narrative (OCCUPANCY_LANGUAGE_REVIEWED), how many
     vehicles a crash involved (VEHICLES_INVOLVED, the words of its (count,
-    words) entries)."""
+    words) entries), and whether a Tesla report Tesla's latest list does not
+    hold had a safety monitor aboard (TESLA_NO_MONITOR_ADDITIONS,
+    TESLA_MONITOR_ABOARD_REPORTS; since 2026-11-20)."""
     return {"TELEOP_DRIVEN_REPORTS": TELEOP_DRIVEN_REPORTS,
             "REMOTE_LANGUAGE_ADS_DRIVEN": REMOTE_LANGUAGE_ADS_DRIVEN,
             "SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN": SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN,
             "OCCUPANCY_LANGUAGE_REVIEWED": OCCUPANCY_LANGUAGE_REVIEWED,
             "VEHICLES_INVOLVED": {rid: words for rid, (_count, words)
-                                  in VEHICLES_INVOLVED.items()}}
+                                  in VEHICLES_INVOLVED.items()},
+            "TESLA_NO_MONITOR_ADDITIONS": {rid: words for rid, (words, _received)
+                                           in TESLA_NO_MONITOR_ADDITIONS.items()},
+            "TESLA_MONITOR_ABOARD_REPORTS": TESLA_MONITOR_ABOARD_REPORTS}
 
 
 must(all(isinstance(v, tuple) and len(v) == 2 and isinstance(v[0], int)
@@ -3061,7 +3309,8 @@ def check_reviewed_quotes(rows):
     re-filing that drops them must be re-read before the entry applies again
     (TELEOP_DRIVEN_REPORTS since 2026-10-31, open question 10's
     reviewed-value rule for the table that takes reports out of scope; the
-    other four since 2026-11-02, open question 26(b) and (c))."""
+    next four since 2026-11-02, open question 26(b) and (c); the two Tesla
+    monitor tables since 2026-11-20, audit finding A1)."""
     latest = latest_filings(rows)
     stale = {name: sorted(rid for rid, words in table.items()
                           if rid not in latest or words not in latest[rid]["Narrative"])
@@ -3070,7 +3319,8 @@ def check_reviewed_quotes(rows):
          "a reviewed entry's quoted words are not in its report's latest filed "
          "narrative (the report was re-filed or is gone: re-read it and "
          "update or drop the entry in data/slurp.py: data/README.md, Each "
-         "NHTSA release, step 6)",
+         "NHTSA release, step 6, or step 7 for TESLA_NO_MONITOR_ADDITIONS and "
+         "TESLA_MONITOR_ABOARD_REPORTS)",
          stale=stale)
 
 
@@ -3108,6 +3358,221 @@ def unrated_reports(rows, vmt_months, fault_ids):
 
 INCIDENT_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
 SUBMISSION_DATE_RE = __import__("re").compile(r"^[A-Z]{3}-\d{4}$")
+
+
+def camera_day_label(day):
+    """A day's label in a Camera watch table (CAMERA_TABLE): "Thu, Nov 19 (UTC)"."""
+    return (f"{CAMERA_TABLE['weekdays'][day.weekday()]}, "
+            f"{CAMERA_TABLE['months'][day.month - 1]} {day.day} (UTC)")
+
+
+def camera_table_days(text, saved_on, source):
+    """The days of a Camera watch table (CAMERA_TABLE) that a person copied on
+    the local date <saved_on>, newest first: [(date, {column: its value, or
+    None where the table shows CAMERA_TABLE's dash})]. <source> names the text
+    in a stop. Stops, saying what is wrong, unless <text> is exactly such a
+    table: the header line; one line per UTC day, newest first, with no day
+    missing or repeated and a cell for each column; the newest day on or
+    before <saved_on> and less than a year before it (which gives its year,
+    and so every day's: each label's weekday is checked against it); each
+    value a plain decimal (digits, then a point and digits or nothing) or the
+    dash, a column's dashes only on its oldest days (its days before its
+    detector started, as the caption says: a dash after a day with a value,
+    a detector that stopped or a day the site left out, has no rule here);
+    and the caption as the last line, with nothing after it (not even a line
+    end). A table read from a file keeps its bytes: a carriage return is no
+    line end."""
+    t = CAMERA_TABLE
+    lines = text.split("\n")
+    must(lines[0] == "\t".join(t["header"]),
+         f"{source}: its first line is not the camera table's header (if Robotaxi "
+         "Tracker has changed its table, CAMERA_TABLE in data/slurp.py and the "
+         "quals that read it change with the human)",
+         line=lines[0], header="\t".join(t["header"]))
+    must(len(lines) > 2 and lines[-1] == t["caption"],
+         f"{source}: its last line is not the camera table's caption, or no day "
+         "stands between the header and the caption",
+         last=lines[-1], caption=t["caption"], lines=len(lines))
+    rows = [line.split("\t") for line in lines[1:-1]]
+    for i, row in enumerate(rows):
+        must(len(row) == len(t["header"]),
+             f"{source}: a day's line does not hold one cell per column",
+             line=i + 2, day=row[0], cells=len(row), columns=len(t["header"]))
+    # The newest day: the one day on or before the save date, less than a year
+    # before it, whose label is the first line's (a label comes back only a
+    # year later, and then with another weekday).
+    recent = {camera_day_label(saved_on - datetime.timedelta(days=k)):
+              saved_on - datetime.timedelta(days=k) for k in range(365)}
+    newest = recent.get(rows[0][0])
+    must(newest is not None,
+         f"{source}: its newest day is no day on or before the save date and less "
+         "than a year before it, with that weekday",
+         day=rows[0][0], saved_on=saved_on.isoformat())
+    days = []
+    for i, row in enumerate(rows):
+        day = newest - datetime.timedelta(days=i)
+        must(row[0] == camera_day_label(day),
+             f"{source}: its days do not run back one at a time from the newest "
+             "(a day out of order, missing or repeated, or a wrong weekday)",
+             line=i + 2, day=row[0], expected=camera_day_label(day))
+        cells = dict(zip(t["header"][1:], row[1:]))
+        for column, cell in cells.items():
+            must(cell == t["dash"] or re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", cell),
+                 f"{source}: a value is neither a plain decimal nor {t['dash']}",
+                 line=i + 2, day=row[0], column=column, value=cell)
+        days.append((day, {column: None if cell == t["dash"] else float(cell)
+                           for column, cell in cells.items()}))
+    # Newest first, a column's days with a value come before its dashes, and
+    # none after them.
+    for column in t["header"][1:]:
+        valued = [values[column] is not None for _day, values in days]
+        must(valued == sorted(valued, reverse=True),
+             f"{source}: a {t['dash']} in its {column} column comes after a day with "
+             f"a value (a column's {t['dash']} marks its days before its detector "
+             "started, its oldest)",
+             column=column, dashes=[day.isoformat() for day, values in days if values[column] is None])
+    return days
+
+
+def camera_week_means(days):
+    """CAMERA_TABLE's rate column averaged over each whole Monday-Sunday week of
+    <days> (camera_table_days()), one with a value on all seven of its days,
+    rounded to four decimals: {its Monday (ISO): (mean, days averaged)}. A week
+    the table holds only part of, or with a day before the detector started
+    (only a table's oldest days can be such), is left out."""
+    weeks = {}
+    for day, values in sorted(days, key=lambda d: d[0]):
+        weeks.setdefault(day - datetime.timedelta(days=day.weekday()), []).append(
+            values[CAMERA_TABLE["rate"]])
+    return {monday.isoformat(): (round(sum(rates) / len(rates), 4), len(rates))
+            for monday, rates in weeks.items() if len(rates) == 7 and None not in rates}
+
+
+def newest_camera_table():
+    """The newest Camera watch table saved in data/snapshots, by the date in its
+    name: (its path, that date, its text, its days: camera_table_days()).
+    Stops on a saved table whose name is not <prefix>-YYYYMMDD.tsv."""
+    paths = sorted(SNAPSHOT_DIR.glob(f"{CAMERA_TABLE['prefix']}-*.tsv"))
+    must(paths,
+         "no camera table saved in data/snapshots (data/README.md, Snapshot "
+         "storage policy)",
+         pattern=f"{CAMERA_TABLE['prefix']}-*.tsv", directory=relpath(SNAPSHOT_DIR))
+    named = re.compile(rf"{re.escape(CAMERA_TABLE['prefix'])}-([0-9]{{8}})\.tsv")
+    odd = [path.name for path in paths if not named.fullmatch(path.name)]
+    must(not odd,
+         "a saved camera table is not named for the date it was saved "
+         f"({CAMERA_TABLE['prefix']}-YYYYMMDD.tsv), so which is the newest is not "
+         "known", names=odd)
+    path = paths[-1]
+    saved_on = datetime.datetime.strptime(named.fullmatch(path.name)[1], "%Y%m%d").date()
+    text = path.read_bytes().decode("utf-8")
+    return path, saved_on, text, camera_table_days(text, saved_on, relpath(path))
+
+
+def camera_table_step(terminal, run, ask, which, today):
+    """Save Robotaxi Tracker's newest Camera watch table (CAMERA_TABLE), which a
+    person copies from the page in their own browser. It runs at the end of a
+    slurp run (the __main__ block), after main() has written its files, never
+    inside main(), which the quals run; a stop here leaves only the table
+    unsaved. <terminal>: whether stdin and stdout are both terminals, a person
+    running slurp by hand; <run>, <ask>, <which>: subprocess.run, input and
+    shutil.which; <today>: the local date, which names the saved file. When
+    stdin or stdout is not a terminal (an agent's or a script's run) it prints
+    how a person saves the table, and opens, reads and writes nothing. In a
+    terminal it checks that open and pbpaste exist and that a table is saved,
+    then asks before it opens anything: Enter goes on, "skip" opens, reads and
+    saves nothing, and any other answer stops (so a terminal no person types
+    into, an agent's, stops at the question, or waits there, before any
+    request). It then opens the page with macOS's open, waits for Enter once
+    the person has copied the table (any other answer stops), reads the
+    clipboard with pbpaste in CAMERA_TABLE's locale, checks it (UTF-8, and
+    camera_table_days()) and saves its bytes as
+    data/snapshots/<prefix>-YYYYMMDD.tsv only when they differ from the newest
+    saved table, and never over a saved table (a different copy the same day
+    stops). It then prints the days whose values changed or that are gone,
+    and the whole weeks whose mean is new, changed or gone: Tesla's
+    camera-estimated rows in data/vmt.csv rest on those means."""
+    t = CAMERA_TABLE
+    target = SNAPSHOT_DIR / f"{t['prefix']}-{today:%Y%m%d}.tsv"
+    print(f"\nRobotaxi Tracker's camera table ({t['url']}; data/README.md, Ghost months):")
+    if not terminal:
+        print("  Not run in a terminal (stdin or stdout is not one), so nothing was "
+              "opened, read or saved. A person saves the table, never a script or an "
+              "agent (the site's terms forbid scraping): run python3 data/slurp.py in "
+              "a terminal, or at the repo's root run")
+        print(f"  (set -C && echo 'Press Enter to open {t['url']} in your browser.' && read && "
+              f"open {t['url']} && echo '{t['instruction']}' && read && "
+              f"LC_ALL={t['locale']} pbpaste > {relpath(SNAPSHOT_DIR)}/{t['prefix']}-$(date +%Y%m%d).tsv)")
+        return
+    missing = [name for name in ("open", "pbpaste") if which(name) is None]
+    must(not missing,
+         "the camera step needs macOS's open and pbpaste, to open the page in your "
+         "browser and read the table you copy; nothing was opened or saved",
+         missing=missing)
+    previous, _previous_on, previous_text, previous_days = newest_camera_table()
+    answer = ask(f"  Press Enter to open {t['url']} in your browser and save its table, "
+                 "or type skip and press Enter to save nothing: ")
+    must(answer in ("", "skip"),
+         "answer the camera step with Enter or skip; nothing was opened, read or saved",
+         answer=answer)
+    if answer == "skip":
+        print("  Skipped: nothing was opened, read or saved.")
+        return
+    run(["open", t["url"]], check=True)
+    answer = ask(f"  The page is open in your browser. {t['instruction']} ")
+    must(answer == "",
+         "answer the camera step's second question with Enter once the table is "
+         "copied; nothing was read or saved",
+         answer=answer)
+    raw = run(["pbpaste"], capture_output=True, check=True,
+              env={**os.environ, "LC_ALL": t["locale"]}).stdout
+    # "replace" only lets the check below say what is wrong: a byte that is not
+    # UTF-8 comes back from the round trip as another.
+    text = raw.decode("utf-8", "replace")
+    must(text.encode("utf-8") == raw,
+         f"the clipboard's text is not UTF-8 (pbpaste reads it in LC_ALL={t['locale']}); "
+         "nothing was saved",
+         clipboard=raw[:120])
+    days = camera_table_days(text, today, "the clipboard's camera table (nothing was saved)")
+    if text == previous_text:
+        print(f"  Unchanged since {relpath(previous)}: nothing saved.")
+        return
+    must(days[0][0] >= previous_days[0][0],
+         "the clipboard's camera table ends before the newest saved one (an older "
+         "copy?); nothing was saved",
+         clipboard_newest=days[0][0].isoformat(),
+         saved_newest=previous_days[0][0].isoformat(), saved=relpath(previous))
+    must(target.name > previous.name,
+         "a camera table is saved for today or a later date already, and a saved "
+         "table is never replaced (copy the table again another day); nothing was "
+         "saved",
+         today=today.isoformat(), saved=relpath(previous))
+    target.write_bytes(raw)
+    # What moved: each day of the saved table whose line differs in the new one
+    # (the site can reprocess its days) or is gone from it, and each whole week
+    # whose mean is new, changed or gone.
+    old_lines = {line.split("\t")[0]: line for line in previous_text.split("\n")[1:-1]}
+    new_lines = {line.split("\t")[0]: line for line in text.split("\n")[1:-1]}
+    changed = [f"{old_lines[day]} -> {new_lines.get(day, '(no longer in the table)')}".replace("\t", "  ")
+               for day in old_lines if new_lines.get(day) != old_lines[day]]
+    old_weeks, new_weeks = camera_week_means(previous_days), camera_week_means(days)
+
+    def mean(weeks, monday):
+        return f"{weeks[monday][0]:.4f}" if monday in weeks else "none"
+    weeks = [f"week of {monday}: {mean(old_weeks, monday)} -> {mean(new_weeks, monday)}"
+             for monday in sorted(set(old_weeks) | set(new_weeks))
+             if old_weeks.get(monday) != new_weeks.get(monday)]
+    print(f"  Saved {relpath(target)} ({days[-1][0]} to {days[0][0]}), against "
+          f"{relpath(previous)} ({previous_days[-1][0]} to {previous_days[0][0]}).")
+    print("  Days whose values changed: " + ("".join("\n    " + line for line in changed) or "none"))
+    print(f"  Whole Monday-Sunday weeks whose {t['rate']} mean is new, changed or gone: "
+          + ("; ".join(weeks) or "none"))
+    print("  Tesla's camera-estimated rows in data/vmt.csv rest on these weekly means: "
+          "redo the rows they move (data/README.md, Ghost months, the Tesla bullet). "
+          "quals/tesla-camera-miles.qual.mjs recomputes every camera-estimated Tesla "
+          "row (the months in its MONTHS, which must name each) and fails until they "
+          "match; quals/assumptions-list.qual.mjs reads the newest table too "
+          "(crashla.js ASSUMPTIONS' camera entries).")
 
 
 def main():
@@ -3402,6 +3867,7 @@ def main():
         rec.update(entry["_fields"])
         incidents.append(rec)
     check_passengers_reviewed(incidents)
+    check_monitor_reviewed(incidents, rows)
     check_overrides_apply(incidents)
     # Every in-scope incident of the window must be rated (decision #4,
     # 2026-10-04: "slurp stops"; until 2026-10-31 an unrated one was written
@@ -3441,12 +3907,13 @@ def main():
          "a helmer-month has both the pooled and the Monthly-lag coverage",
          both=sorted(set(inc_cov) & set(lag_coverage)))
     inc_cov = {**inc_cov, **lag_coverage}
+    list_cov = preprint_coverage(vmt_values)
+    check_list_covered_rows(incidents, inc_cov, coverage_by_month, list_cov)
 
     # Inject data into separate JS files
     incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
     vmt_text = build_vmt_csv(
-        vmt_raw, inc_cov, coverage_by_month, vmt_months,
-        preprint_coverage(vmt_values),
+        vmt_raw, inc_cov, coverage_by_month, vmt_months, list_cov,
     ).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
     ghost_template = "\n`" + js_template_literal(ghost_text) + "\n`\n"
@@ -3521,3 +3988,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # After main(), never inside it (the quals run main() offline): a person
+    # running slurp by hand saves Robotaxi Tracker's newest camera table once
+    # they answer the step's first question, and any other run only says how
+    # (CAMERA_TABLE).
+    camera_table_step(terminal=sys.stdin.isatty() and sys.stdout.isatty(),
+                      run=subprocess.run, ask=input, which=shutil.which,
+                      today=datetime.date.today())

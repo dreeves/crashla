@@ -205,10 +205,15 @@ Resultata: aria-valuetext is ${JSON.stringify(vt[0])}.`);
     };
   }));
   const wrong = heads.filter(h => h.toggles !== 1 || h.tabIndex !== 0 || h.expanded !== String(!h.collapsed));
-  assert.ok(heads.length === 9 && wrong.length === 0,
+  // One heading per section of crashla.js's SECTION_IDS, read from the page
+  // (until 2026-11-20, when the assumptions section made ten, nine were
+  // pinned here; restated under the human's go of that day, the intent
+  // unchanged).
+  const sectionCount = await page.evaluate(() => SECTION_IDS.length);
+  assert.ok(heads.length === sectionCount && wrong.length === 0,
     `[${engine}] Replicata: load the page with x=browser.sanity and inspect every section heading.
-Expectata: each heading holds one role=button toggle in the Tab order whose aria-expanded says whether its section is open.
-Resultata: ${JSON.stringify(wrong.length === 0 ? heads : wrong)}.`);
+Expectata: ${sectionCount} headings (SECTION_IDS), each holding one role=button toggle in the Tab order whose aria-expanded says whether its section is open.
+Resultata: ${heads.length} headings: ${JSON.stringify(wrong.length === 0 ? heads : wrong)}.`);
   const browserToggle = page.locator("#sec-browser .sec-head [role=button]");
   await browserToggle.focus();
   await page.keyboard.press("Enter");

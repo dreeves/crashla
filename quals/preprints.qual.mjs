@@ -42,6 +42,12 @@
 //     crash dated after the list's date, a file whose name is not the list's
 //     date, Report IDs that differ from TESLA_NO_MONITOR_REPORTS, a preprint
 //     dated after NHTSA's data-through month, or list miles above a row's.
+//     It stops too on a list that disagrees with a review of a report newer
+//     than the list before it (since 2026-11-20, audit finding A1;
+//     quals/tesla-monitor-review.qual.mjs): one holding a reviewed
+//     no-monitor addition (TESLA_NO_MONITOR_ADDITIONS: move it into the
+//     list's Report IDs) or a report reviewed as monitor-aboard
+//     (TESLA_MONITOR_ABOARD_REPORTS).
 // (5) The page: a partially received month's note names the row's own date;
 //     the incident browser gives a preprint's row a class the stylesheet
 //     styles and leads its narrative with PREPRINT_LABEL.
@@ -185,10 +191,21 @@ out['stops'] = {
     'fileName': stop(lambda: slurp.list_rows(path), PREPRINT_LIST=dict(L, through='2031-01-09')),
     'reportIds': stop(lambda: slurp.list_rows(path), TESLA_NO_MONITOR_REPORTS=frozenset(sorted(slurp.TESLA_NO_MONITOR_REPORTS)[1:])),
 }
+# A report on the list, reviewed instead as a no-monitor addition or as
+# monitor-aboard (its Report ID taken out of the list's set)
+on_list = sorted(slurp.TESLA_NO_MONITOR_REPORTS)[0]
+off_list = slurp.TESLA_NO_MONITOR_REPORTS - {on_list}
+out['stops']['moveIt'] = stop(lambda: slurp.list_rows(path), TESLA_NO_MONITOR_REPORTS=off_list,
+                              TESLA_NO_MONITOR_ADDITIONS={**slurp.TESLA_NO_MONITOR_ADDITIONS,
+                                                          on_list: ('reviewed words', slurp.NHTSA_DATA_THROUGH_DATE)})
+out['stops']['aboardListed'] = stop(lambda: slurp.list_rows(path), TESLA_NO_MONITOR_REPORTS=off_list,
+                                    TESLA_MONITOR_ABOARD_REPORTS={**slurp.TESLA_MONITOR_ABOARD_REPORTS, on_list: 'reviewed words'})
+out['onList'] = on_list
 synth_cells = dict(next(c for c in listed_cells if c['report_id'] == source), report_id='13781-99999')
 synth_ids = slurp.TESLA_NO_MONITOR_REPORTS | {'13781-99999'}
-with_synth = dict(read_list_cells=lambda p: listed_cells + [synth_cells], TESLA_NO_MONITOR_REPORTS=synth_ids,
-                  DERIVED_SERIES_REPORTS={'TeslaNoMonitor': ('Tesla', synth_ids)})
+# (Until 2026-11-20 DERIVED_SERIES_REPORTS, which held a copy of the line's
+# members, was patched too; it reads TESLA_NO_MONITOR_REPORTS when called now.)
+with_synth = dict(read_list_cells=lambda p: listed_cells + [synth_cells], TESLA_NO_MONITOR_REPORTS=synth_ids)
 before_month = slurp.month_shift(day(synth_cells['incident_date_local']).strftime('%Y-%m'), -1) + '-15'
 out['stops']['afterNhtsa'] = stop(lambda: slurp.preprint_rows(ROWS), NHTSA_DATA_THROUGH_DATE=before_month, **with_synth)
 
@@ -290,12 +307,13 @@ Resultata: ${S.reportRows[0]}.`);
 const stopWants = {
   weather: /weather/i, area: /contact area/i, speed: /speed/i, missingColumn: /column/i, extraColumn: /column/i,
   afterDate: /after|later|through/i, fileName: /name|date/i, reportIds: /TESLA_NO_MONITOR_REPORTS/, afterNhtsa: /data-through/i,
-  miles: /miles/i,
+  miles: /miles/i, moveIt: /move.*TESLA_NO_MONITOR_ADDITIONS/is, aboardListed: /TESLA_MONITOR_ABOARD_REPORTS/,
 };
 const stopProblems = Object.entries(stopWants)
-  .filter(([name, want]) => !want.test(S.stops[name])).map(([name]) => `${name}: ${S.stops[name] === "" ? "no stop" : JSON.stringify(S.stops[name].slice(0, 160))}`);
+  .filter(([name, want]) => !want.test(S.stops[name]) || (["moveIt", "aboardListed"].includes(name) && !S.stops[name].includes(S.onList)))
+  .map(([name]) => `${name}: ${S.stops[name] === "" ? "no stop" : JSON.stringify(S.stops[name].slice(0, 160))}`);
 assert.ok(S.stops.none === "" && stopProblems.length === 0,
-  `Replicata: give data/slurp.py a list it cannot read as described, one fault at a time: a weather value NHTSA's four columns lack ("Hail"), a contact area outside CONTACT_AREA_LABELS ("Roof"), a speed of 2.5, a row missing a column, a row with a column the list does not have, a crash dated after the list's date, a file not named for the list's date, Report IDs differing from TESLA_NO_MONITOR_REPORTS, a preprint dated after NHTSA's data-through month, and list miles above a row's own miles.
+  `Replicata: give data/slurp.py a list it cannot read as described, one fault at a time: a weather value NHTSA's four columns lack ("Hail"), a contact area outside CONTACT_AREA_LABELS ("Roof"), a speed of 2.5, a row missing a column, a row with a column the list does not have, a crash dated after the list's date, a file not named for the list's date, Report IDs differing from TESLA_NO_MONITOR_REPORTS, a preprint dated after NHTSA's data-through month, list miles above a row's own miles, and a list holding a report (${S.onList}) reviewed as a no-monitor addition, then as monitor-aboard.
 Expectata: each stops the run and says what is wrong; the unchanged row stops nothing.
 Resultata: the unchanged row ${S.stops.none === "" ? "passes" : "stops: " + JSON.stringify(S.stops.none.slice(0, 160))}; ${JSON.stringify(stopProblems, null, 1)}.`);
 

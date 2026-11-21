@@ -26,7 +26,8 @@
 // today (2026-10-05).
 // Also text-fragment links (#:~:text=), which no script can see in Firefox
 // or WebKit: one to a heading between the incident browser and the sanity
-// section, or to the growth section's heading, shows that heading, on a
+// section (the markets', the summary's and, since 2026-11-20, the
+// assumptions section's), or to the growth section's heading, shows that heading, on a
 // desktop and on phones, as before 2026-10-05 (with the views built after
 // the first frame, the empty box moved the first two ~700 px out of the
 // window in Firefox and WebKit, and the page grew ~13,000-29,000 px above the
@@ -41,9 +42,11 @@ import { ENGINES, devices, serveRepo, openPage } from "./browser.mjs";
 const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 // Tesla's incidents of May 2026: two rows, a box shorter than its cap.
 const SHORT = "?f=Tesla&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault&d=2026-05.2026-05";
-const BELOW = ["#sec-browser", "#sec-markets", "#sec-summary", "#sec-sanity", "#sec-fleet"];
+// (The assumptions section, between the summary and sanity sections, joined
+// these lists and the text-fragment links on 2026-11-20.)
+const BELOW = ["#sec-browser", "#sec-markets", "#sec-summary", "#sec-assumptions", "#sec-sanity", "#sec-fleet"];
 const PHONE = ["#sec-browser", "#sec-sanity", "#sec-fleet"];
-const SHORT_BELOW = ["#sec-markets", "#sec-sanity", "#sec-fleet"];
+const SHORT_BELOW = ["#sec-markets", "#sec-assumptions", "#sec-sanity", "#sec-fleet"];
 // A text-fragment link to a section's heading: the heading's text as
 // index.html gives it (the text the browsers search before the script runs),
 // read from the section with that id. Until 2026-10-31 the three headings'
@@ -54,7 +57,7 @@ const headingText = id => {
   assert.ok(m, `Replicata: read the heading of ${id} in index.html. Expectata: <h2 class="sec-head"><span class="sec-toggle">(its text)</span></h2> right after the section's opening tag. Resultata: none.`);
   return m[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").trim();
 };
-const TEXT_LINKS = ["#sec-markets", "#sec-summary", "#sec-fleet"].map(id => [headingText(id), id]);
+const TEXT_LINKS = ["#sec-markets", "#sec-summary", "#sec-assumptions", "#sec-fleet"].map(id => [headingText(id), id]);
 // The fragment directive's own delimiters ("-" and ",", besides "&") are
 // escaped, so the heading's text is searched for whole.
 const textDirective = text => encodeURIComponent(text).replace(/-/g, "%2D");

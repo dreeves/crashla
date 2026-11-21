@@ -32,9 +32,13 @@ const SUMMARY = () => {
     markets: q("#predmarket-panel .pm-card"), sanity: document.getElementById("sanity-checks").textContent.length,
     colophon: document.getElementById("colophon").textContent.length > 0,
     chartViewW: typeof chartViewW === "number" ? chartViewW : null,
+    // The assumptions list's rows and its entries (since 2026-11-20).
+    assumptions: q("#assumptions-list tr[id^='assumption-']"),
+    entries: typeof ASSUMPTIONS === "undefined" ? 0 : ASSUMPTIONS.length,
   };
 };
-const drewAll = s => s.charts >= 6 && s.cards >= 6 && s.rows > 100 && s.markets > 10 && s.sanity > 5000 && s.colophon;
+const drewAll = s => s.charts >= 6 && s.cards >= 6 && s.rows > 100 && s.markets > 10 && s.sanity > 5000 && s.colophon &&
+  s.entries > 0 && s.assumptions === s.entries;
 // A section heading toggles its section.
 const TOGGLES = async () => {
   const sec = document.getElementById("sec-browser");
@@ -80,7 +84,7 @@ Resultata: the page's frames ${JSON.stringify(page.frames().map(f => f.url()))}.
         await frame.waitForFunction(drawnAll, null, { timeout: 10000 }).catch(() => {});
         const shown = await frame.evaluate(SUMMARY);
         const toggles = await frame.evaluate(TOGGLES);
-        if (!drewAll(shown) || !toggles || shown.chartViewW < 500) problems.push(`${engineName}, iframe ${what} at load then shown 900 px wide: ${JSON.stringify({ shown, toggles })}; want every chart, card, row, market and the sanity section drawn, the charts at the shown width, and the section toggles working`);
+        if (!drewAll(shown) || !toggles || shown.chartViewW < 500) problems.push(`${engineName}, iframe ${what} at load then shown 900 px wide: ${JSON.stringify({ shown, toggles })}; want every chart, card, row, market, the sanity section and a row for each entry of the assumptions list drawn, the charts at the shown width, and the section toggles working`);
         if (errors.length > 0) problems.push(`${engineName}, iframe ${what}: page errors ${JSON.stringify(errors)}`);
         await context.close();
       }
@@ -141,7 +145,7 @@ Resultata: the page's frames ${JSON.stringify(page.frames().map(f => f.url()))}.
       const entries = await page.evaluate(() => performance.getEntriesByType("navigation").length);
       const drawn = await page.evaluate(SUMMARY);
       if (entries !== 0) problems.push(`firefox with dom.enable_performance_navigation_timing false lists ${entries} navigation entries, so this case tests nothing`);
-      if (!drewAll(drawn)) problems.push(`firefox with Navigation Timing off: ${JSON.stringify(drawn)}; want every chart, card, row, market and the sanity section drawn`);
+      if (!drewAll(drawn)) problems.push(`firefox with Navigation Timing off: ${JSON.stringify(drawn)}; want every chart, card, row, market, the sanity section and the assumptions list's rows drawn`);
       if (errors.length > 0) problems.push(`firefox with Navigation Timing off: page errors ${JSON.stringify(errors)}`);
       await context.close();
     } finally {
@@ -154,7 +158,7 @@ Resultata: the page's frames ${JSON.stringify(page.frames().map(f => f.url()))}.
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: in Chromium, Firefox and WebKit, load the page in an iframe styled display:none (then width:0), show it 900 px wide; load it in a 130 CSS px window, then widen it to 1200; and load it at 1200 px with style.css forcing #month-panel to zero width. Then load it at 1200 px in a Firefox launched with dom.enable_performance_navigation_timing false.
-Expectata: no page error; every chart, summary card, incident row, market card and the sanity section drawn; the charts at the shown width (900 units once the column allows); the section toggles working. And a 1200 px page whose stylesheet collapses the charts' column still fails loudly ("the charts' column has no width"). The Firefox without Navigation Timing (no navigation entry) draws everything too, with no page error.
+Expectata: no page error; every chart, summary card, incident row, market card, the sanity section and a row for each entry of the assumptions list drawn; the charts at the shown width (900 units once the column allows); the section toggles working. And a 1200 px page whose stylesheet collapses the charts' column still fails loudly ("the charts' column has no width"). The Firefox without Navigation Timing (no navigation entry) draws everything too, with no page error.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: the page draws in a hidden or zero-width iframe and in a 130 px window, and redraws its charts once it has width, in Chromium, Firefox and WebKit, and draws in a Firefox that lists no navigation entry");

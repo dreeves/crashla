@@ -11,7 +11,8 @@
 // in Chromium, Firefox and WebKit:
 //  - every view is built in the script's task: the first frame that shows
 //    the charts and the cards also shows the incident table, the sanity
-//    section and the growth charts;
+//    section, the growth charts and (since 2026-11-20) a row for every
+//    entry of the assumptions list;
 //  - before the script runs, the controls and the charts' places hold the
 //    room they take in the default view: the "Vehicle Miles Traveled" heading
 //    sits where the drawn page has it (crashla.js withheld here);
@@ -63,7 +64,8 @@ const WATCH = `
         window.__order.chartFrame = { frame: window.__order.frames,
           rows: document.querySelectorAll("#incidents-body tr").length,
           sanity: document.querySelectorAll("#sanity-checks h3").length,
-          growth: document.querySelectorAll("#chart-fleet-timeseries svg, #chart-fleet-forecast svg").length };
+          growth: document.querySelectorAll("#chart-fleet-timeseries svg, #chart-fleet-forecast svg").length,
+          assumptions: document.querySelectorAll("#assumptions-list tr[id^='assumption-']").length };
       } else watch();
     });
   })();`;
@@ -87,14 +89,18 @@ try {
       const seen = await page.evaluate(() => ({ ...window.__order, shift: window.__shift,
         shiftSupported: PerformanceObserver.supportedEntryTypes.includes("layout-shift"), shiftObserveError: window.__shiftObserveError,
         built: { rows: document.querySelectorAll("#incidents-body tr").length, sanity: document.querySelectorAll("#sanity-checks h3").length,
-          growth: document.querySelectorAll("#chart-fleet-timeseries svg, #chart-fleet-forecast svg").length },
+          growth: document.querySelectorAll("#chart-fleet-timeseries svg, #chart-fleet-forecast svg").length,
+          assumptions: document.querySelectorAll("#assumptions-list tr[id^='assumption-']").length },
+        // The assumptions list's entries (since 2026-11-20), every one a row
+        // once the page is built.
+        entries: typeof ASSUMPTIONS === "undefined" ? 0 : ASSUMPTIONS.length,
         vmtHeadingTop: document.querySelector("#sec-vmt .sec-head").getBoundingClientRect().top + scrollY,
         boxHeight: document.querySelector(".table-scroll").getBoundingClientRect().height,
         boxVisibility: getComputedStyle(document.querySelector(".table-scroll")).contentVisibility }));
       const first = seen.chartFrame;
       if (first === null) problems.push(`${engineName}: no frame showed the charts and cards (${seen.frames} frames watched)`);
-      else if (!(first.rows === seen.built.rows && first.sanity === seen.built.sanity && first.growth === 2)) problems.push(`${engineName}: the first frame that showed the charts and cards (frame ${first.frame}) had ${first.rows} incident rows, ${first.sanity} sanity headings and ${first.growth} growth charts built, of the ${seen.built.rows}, ${seen.built.sanity} and 2 the page then holds`);
-      if (!(seen.built.rows > 100 && seen.built.sanity > 5 && seen.built.growth === 2)) problems.push(`${engineName}: after load the page built ${JSON.stringify(seen.built)}`);
+      else if (!(first.rows === seen.built.rows && first.sanity === seen.built.sanity && first.growth === 2 && first.assumptions === seen.built.assumptions)) problems.push(`${engineName}: the first frame that showed the charts and cards (frame ${first.frame}) had ${first.rows} incident rows, ${first.sanity} sanity headings, ${first.growth} growth charts and ${first.assumptions} assumptions rows built, of the ${seen.built.rows}, ${seen.built.sanity}, 2 and ${seen.built.assumptions} the page then holds`);
+      if (!(seen.built.rows > 100 && seen.built.sanity > 5 && seen.built.growth === 2 && seen.entries > 0 && seen.built.assumptions === seen.entries)) problems.push(`${engineName}: after load the page built ${JSON.stringify(seen.built)}, its ASSUMPTIONS holding ${seen.entries} entries`);
       if (seen.boxVisibility !== "auto") problems.push(`${engineName}: the default view's incident box (${seen.built.rows} rows) has content-visibility ${JSON.stringify(seen.boxVisibility)}, not "auto"`);
       // A filter click to a short table (Tesla's 23 rows) and back to all.
       for (const label of ["Tesla", "All"]) {
@@ -171,7 +177,7 @@ try {
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: in Chromium, Firefox and WebKit, load the default view at 1200x900, watching every animation frame from the document's start, then click the "Tesla" filter and the "All" filter; load the default view again with crashla.js withheld; then load c=HumansAV (no company checked) and wait up to 30 s for it to draw.
-Expectata: the first frame that shows the charts and cards also shows every incident row, the sanity section and both growth charts; no page error; the incident box has content-visibility auto in the default view and after each filter click; Chromium supports and observes layout-shift entries and records a layout shift under 0.01; the "Vehicle Miles Traveled" heading sits within 1 px of the same place before the script runs and once the page is drawn; the empty incident box before the script runs is, within 1 px, as tall as the drawn page's, both where it sits off screen and once scrolled on screen; and with no company checked (c=HumansAV) the page draws within 30 s, with no page error, and the company charts' box is empty and 0 px tall.
+Expectata: the first frame that shows the charts and cards also shows every incident row, the sanity section, both growth charts and a row for each ASSUMPTIONS entry; no page error; the incident box has content-visibility auto in the default view and after each filter click; Chromium supports and observes layout-shift entries and records a layout shift under 0.01; the "Vehicle Miles Traveled" heading sits within 1 px of the same place before the script runs and once the page is drawn; the empty incident box before the script runs is, within 1 px, as tall as the drawn page's, both where it sits off screen and once scrolled on screen; and with no company checked (c=HumansAV) the page draws within 30 s, with no page error, and the company charts' box is empty and 0 px tall.
 Resultata: ${problems.length} problems:
 ${problems.join("\n")}`);
 console.log("qual pass: a load paints the page whole, with every view built in the script's task, keeps the incident box's layout skipping through filter clicks, and shifts nothing, in three engines");

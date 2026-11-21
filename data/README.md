@@ -23,7 +23,13 @@ and it reads, from `data/snapshots`, the newest copy of Tesla's own list of
 the crashes it has reported to NHTSA (`tesla-list-YYYYMMDD.xlsx`; see
 "Preprints" below). That file is not fetched by a run: its address changes
 with each list Tesla posts, and the page that links it refuses scripts, so a
-person saves each new list ("Each NHTSA release", step 7).
+person saves each new list ("Each NHTSA release", step 7). At the end of a run
+in a terminal it also saves, in `data/snapshots`, Robotaxi Tracker's camera
+table, which a person copies from the page in a browser once they answer the
+step's first question (the camera step, after `main()`). Slurp writes nothing
+from it: Tesla's camera-estimated rows in `data/vmt.csv` are redone from it
+("Ghost months" below, the Tesla bullet), and the quals read the newest saved
+table.
 
 The live URLs are defined in `data/slurp.py` as:
 
@@ -198,7 +204,8 @@ The slurp pipeline is:
    strip the narratives' fact-free filing boilerplate
    (`quals/narrative-boilerplate.qual.mjs`), join in the fault fractions,
    and list the lines each incident counts toward (`series`: its company, and
-   Tesla's no-monitor line for a report on Tesla's no-monitor list; see
+   Tesla's no-monitor line for a report on Tesla's no-monitor list or, newer
+   than that list, reviewed as one, `TESLA_NO_MONITOR_ADDITIONS`; see
    "Tesla's no-monitor line" below).
    A filed severity, airbag, city, state or passenger value that no longer
    matches the one its override was reviewed against, an in-scope incident
@@ -210,9 +217,15 @@ The slurp pipeline is:
    passenger classes do not list (`PAX_CLASS`), or a narrative that says who
    was aboard the AV ("An occupied Zoox autonomous vehicle", "unoccupied",
    "had no occupants") against its filed passenger code, unreviewed, stops the
-   run, as do an in-scope Tesla report from January 2026 on that is on neither
-   of the two reviewed monitor lists and an incident on a line with no
-   `data/vmt.csv` row for its month. No SGO field counts the vehicles, so
+   run, as do an in-scope Tesla report from January 2026 on that is neither on
+   Tesla's latest list nor in a reviewed monitor table, a monitor table's entry
+   that names no such report, a reviewed report whose narrative fails the
+   narrative test (an addition's names a safety monitor, a monitor-aboard
+   report's names none), an addition whose receipt cutoff is after the
+   release's own or before its first filing's month, a no-monitor addition
+   that Tesla's latest list should hold (one Tesla had filed by the list's
+   date; all of these "Each NHTSA release", step 7), and an incident on a line
+   with no `data/vmt.csv` row for its month. No SGO field counts the vehicles, so
    each `VEHICLES_INVOLVED` entry is (the count, the narrative's words that
    give it), and a re-filing whose narrative no longer holds those words
    stops the run for a re-count, as it does for the words the narrative
@@ -233,22 +246,34 @@ The slurp pipeline is:
     no-monitor rows take Tesla's coverage, and the pooled incident coverage
     counts the companies only. A row takes its coverage from Tesla's own
     list instead where that list holds more of the month than NHTSA's file
-    does (`preprint_coverage()`; "Preprints" below), and a seventh column,
-    `incidents_through`, gives the date each row's incidents run through:
-    NHTSA's receipt cutoff, or the list's date on such a row
+    does (`preprint_coverage()`, `row_coverage()`; "Preprints" below), and a
+    seventh column, `incidents_through`, gives the date each row's incidents
+    run through: NHTSA's receipt cutoff, or the list's date on such a row.
+    Such a row that counts a crash the list does not hold stops the run
+    (`check_list_covered_rows()`; "Each NHTSA release", step 7)
 12. Every check has passed: write `data/faultfrac.csv`'s six mirrored columns
     (see "Fault CSV synchronization" below), the incident data into
     `data/incidents.js`, and the VMT CSV text into `data/vmt.js`, with the
     ghost months' master rows, as they stand, in its second segment
     (`GHOST_VMT_CSV_TEXT`). A run that stops writes none of the three (until
     2026-10-31 `data/faultfrac.csv` was synced before most checks)
+13. After `main()`, never inside it (the quals run `main()`): the camera
+    step, `camera_table_step()` ("Ghost months" below, the Tesla bullet). In
+    a terminal it asks first, then opens Robotaxi Tracker's camera page in
+    the person's own browser and saves the table they copy, when it differs
+    from the newest saved one and no table is saved for that day or a later
+    one; when stdin or stdout is not a terminal (an agent's or a script's
+    run) it opens, reads and writes nothing and prints how a person saves
+    the table. Its stops come after step 12's writes and leave only the
+    camera table unsaved
 
 ## Each NHTSA release
 
 `slurp.py` stops until these are done; each stop names the step below that
-covers it. A run that stops writes only the release's snapshots (pipeline
-step 1), so re-run it after each step. The first four are the constants every
-release needs:
+covers it. A run that stops writes only the release's snapshots (pipeline step
+1; a stop in the camera step, which runs after `main()`, comes after step 12's
+writes and leaves only the camera table unsaved), so re-run it after each
+step. The first four are the constants every release needs:
 
 1. `NHTSA_DATA_THROUGH_DATE`: the new release's cutoff.
 2. `FIVE_DAY_RECEIPT_OBSERVATIONS`: the month that just became final (the
@@ -373,10 +398,10 @@ Then what the release brings:
    entry that names no in-scope incident of the window; an incident with no
    city or state (`LOCATION_OVERRIDE`); a new in-scope Tesla report
    (`PASSENGER_OVERRIDE`, from its narrative, "Unknown" when the narrative
-   says nothing about who was aboard, and `TESLA_NO_MONITOR_REPORTS`
-   or `TESLA_MONITOR_ABOARD_REPORTS`: re-read Tesla's latest no-monitor list,
-   below); an occupancy disagreement (`PASSENGER_OVERRIDE` /
-   `OCCUPANCY_LANGUAGE_REVIEWED`); and the contact-area label check
+   says nothing about who was aboard; and, from the same reading, whether a
+   safety monitor was aboard, step 7); an occupancy disagreement
+   (`PASSENGER_OVERRIDE` / `OCCUPANCY_LANGUAGE_REVIEWED`); and the
+   contact-area label check
    (`CURRENT_FILE_CONTACT_LABEL`).
 
 7. Tesla's list (`PREPRINT_LIST` in `slurp.py`; "Preprints" below). Open
@@ -393,10 +418,63 @@ Then what the release brings:
      `slurp.py` stops until the three agree, and on a list it cannot read as
      before (a new column, weather value or contact area), or whose newest
      crash is after NHTSA's data-through month (ask the human: a month only
-     a list covers has no rule yet). Each preprint then needs what any new
+     a list covers has no rule yet). It stops too on a list that holds a
+     report reviewed when no list held it (next bullet): an entry of
+     `TESLA_NO_MONITOR_ADDITIONS` moves into `TESLA_NO_MONITOR_REPORTS` (drop
+     the entry; the list now backs it), and one of
+     `TESLA_MONITOR_ABOARD_REPORTS` means the list and the narrative disagree
+     (re-read it and ask the human). A report the newer list drops (on the
+     older list, not on the newer one: the stop names it, `onlyInSet`) is
+     Tesla's list changing its mind: read it and ask the human before the
+     set follows the list (then the run stops on it as unreviewed, and an
+     addition for it stops again whenever Tesla had filed it by the newer
+     list's date). Each preprint then needs what any new
      Tesla report needs (step 6: a `PASSENGER_OVERRIDE` entry, its filed
      value blank because the list has no belt field; a `SEVERITY_OVERRIDE`
      entry for a severity of Unknown) and its fault ratings (step 5).
+   - A Tesla report the latest list does not hold (since 2026-11-20, audit
+     finding A1): NHTSA's release after a list holds Tesla's reports of the
+     days after the list's date, and of crashes Tesla filed after drawing
+     the list up. Read its narrative, at the same reading as its
+     `PASSENGER_OVERRIDE` entry (step 6). Tesla's narratives name a safety
+     monitor when one is aboard ("The ADS had a safety monitor present in
+     the vehicle with no passengers"): of Tesla's 30 in-scope crashes from
+     May to Oct 18, 2026, the one whose narrative names a monitor
+     (13781-16672) is the one the list leaves out, and the other 29 are on
+     it (`quals/tesla-monitor-review.qual.mjs` holds the narratives to that
+     record). If the narrative names a monitor aboard, add the report to
+     `TESLA_MONITOR_ABOARD_REPORTS` with those words; if not, to
+     `TESLA_NO_MONITOR_ADDITIONS` with its sentence that says who was aboard
+     ("The ADS had no riders in the vehicle"), or the whole narrative where
+     no sentence says, and this release's `NHTSA_DATA_THROUGH_DATE` (step 1):
+     NHTSA's file held the report by that cutoff. The words are copied
+     verbatim, and a re-filing whose narrative no longer holds them stops the
+     run, as for step 6's tables; so does one whose narrative fails the
+     narrative test (an addition's names a safety monitor, a monitor-aboard
+     report's names none: move or fix the entry; a narrative that names a
+     monitor only to say none was aboard has no rule yet: ask the human). A
+     second Tesla robotaxi's record (the Report ID + "-B",
+     `SECOND_INVOLVEMENTS`) has no rule yet: ask the human. An addition
+     counts on the no-monitor line until a list holds it (the bullet above).
+     `slurp.py` stops, listing them all, on an in-scope Tesla report from
+     January 2026 on in none of the three tables and on an entry of the two
+     that names no such report; on an addition whose cutoff is after this
+     release's or before the month of the report's first filing; and on an
+     addition Tesla's latest list should hold and does not. A list holds the
+     no-monitor crashes Tesla had reported by its date (each row carries its
+     filing's Report ID), so it should hold an addition Tesla had filed by
+     then: by its entry's cutoff, or by the end of the month of its first
+     filing (NHTSA gives a filing's month only). A crash's own month says
+     nothing here: Tesla files some crashes late (13781-17193, an Aug 22
+     crash, in October), and a list dated before the filing lacks them. On
+     that stop, re-read the narrative and ask the human. It stops too where
+     a row that takes the list's coverage (the month the list runs through,
+     while the list holds more of it than NHTSA's file: `row_coverage()`)
+     counts a crash the list does not hold, an addition or a monitor-aboard
+     report (on the every-mode line): that coverage fits the list's own
+     crashes, its miles through its date less an allowance for crashes Tesla
+     files late, and how to count another crash there is undecided (ask the
+     human).
    - A preprint that NHTSA's new file now holds: NHTSA's row has taken its
      place. `slurp.py` stops on its `PASSENGER_OVERRIDE` entry, reviewed
      against the list's blank belt field: re-read the narrative against the
@@ -409,6 +487,17 @@ Then what the release brings:
      the list covered, count those the list lacked, and record the count in
      the ledger (`preprint_coverage()` assumes about one Monthly-track crash
      in ten is missing, from Tesla's record of late filings).
+8. Robotaxi Tracker's camera table (pipeline step 13: the step runs after
+   `main()` has written its files, so its stops leave only the table
+   unsaved). A live `python3 data/slurp.py` run in a terminal ends with the
+   camera step: press Enter to open the page (or type skip, which opens and
+   saves nothing), copy its table, press Enter again. When it names a week
+   new, changed or gone, redo Tesla's camera-estimated rows and what rests
+   on them ("Ghost months", the Tesla bullet). The new ghost month's Tesla
+   rows (step 4) rest on the camera too: `quals/tesla-camera-miles.qual.mjs`
+   fails until its `MONTHS` names the month, and then until the rows are its
+   recomputation. A run whose stdin or stdout is not a terminal (an agent's)
+   only prints how a person saves the table: no agent opens the site.
 
 Then the quals: `quals/growth-ghost-month.qual.mjs` needs the growth chart's
 rows for the new ghost month (`crashla.js` `FLEET_HISTORY` and
@@ -436,13 +525,42 @@ at it before widening the range, and widen it with the human.
 `quals/tesla-no-monitor.qual.mjs` still holds Tesla's list, the
 monitor-aboard list and the page's and deck's miles for the months Tesla's
 page has measured whole (source figures), and goes red on a Tesla report of
-2026 that is on neither list.
+2026 that is on neither list nor among the reviewed no-monitor additions
+(step 7), and on a monitor-aboard entry its own list of them lacks (add the
+Report ID there at the release that adds the entry); `slurp.py` stops on a
+reviewed report whose narrative fails the narrative test (step 7), and
+`quals/tesla-monitor-review.qual.mjs` goes red on any Tesla narrative of
+those months that names a safety monitor while the report counts on the
+no-monitor line, Tesla's list's reports included, or names none while it is
+listed as monitor-aboard.
 `quals/passenger-classification.qual.mjs` checks the riders a release's
 Tesla reports carry against their `PASSENGER_OVERRIDE` entries (since
 2026-10-31; until then it pinned the list of Tesla reports with a rider,
 re-pinned each release); a Tesla narrative that says nothing about who was
 aboard (13781-16941, due in the Nov 2026 release) passes its narrative check
 only when stored as (filed code, "Unknown") (the human, 2026-11-02).
+
+The page's list of assumptions (the section "Assumptions", `crashla.js`
+`ASSUMPTIONS`, since 2026-11-20) says how each month's miles are estimated,
+and `quals/assumptions-list.qual.mjs` goes red until it covers every
+line-month of `data/vmt.csv`: at each release extend the `covers` span of
+the entry whose method the new ghost month follows (or add an entry for a
+new method), and update the entries whose months or rules the release
+changed (the newest month's coverage, the list's month and counts, a moved
+knot). Two entries, `reporting-tesla-list` and `reporting-tesla-list-complete`,
+stop the list's render at load unless the rows on a list's coverage are
+Tesla's two lines in one month, through the date their values hold (no such
+row is left once a release puts that month on NHTSA's coverage): update
+their values, or remove both. Such a stop shows the page's error banner with
+the entry's assert and leaves the list empty, and every other view draws:
+the list is drawn last at init (since 2026-11-20; `quals/error-banner.qual.mjs`
+serves an entry that stops). The qual also goes red when a figure an entry holds no longer matches
+its source (a constant of `slurp.py`, `faultrate.py`, `waymo_vmt.py` or a
+model qual, or a relation on `data/vmt.csv`), when a new module-level
+constant of a builder or a model qual is neither named in an entry nor
+listed in its `NOT_ASSUMPTIONS`, and when a human band or a forecast no
+entry describes is added; an entry's text is the place to say what the
+change assumes.
 
 A data change that moves the first fully knotted month of a line with a
 pre-series offset range (today Waymo and Zoox; the definition is above
@@ -544,6 +662,11 @@ commit the master together with the regenerated artifacts.
 
 ### Ghost months
 
+The rules below, and the anchors' and allocations' in the sections after
+this one, are listed in plain words on the page in the section "Assumptions"
+(`crashla.js` `ASSUMPTIONS`, since 2026-11-20), each with where its figures
+are set (Each NHTSA release, above, says when to update it).
+
 A ghost month is a month after NHTSA's data-through month for which
 `data/vmt.csv` holds rows: the month in progress, or a finished month no
 NHTSA release has reached yet. `slurp.py` (`ghost_vmt_csv`) copies their rows
@@ -620,32 +743,73 @@ ledger, 2026-10-27 (later)):
   camera rate: 258,938 over the four weeks of Sep 21-Oct 18, 2026, each
   week within 10% of it. An unmeasured day gets K times its week's mean
   rate, over 7; a day past the camera's last week gets the last week's
-  rate (no growth, no fall). Range: the camera-covered days times
-  e^(±t s √(1 + 1/n)), n being the weeks both series cover, s the sample
-  standard deviation of ln(weekly miles / camera rate) over them and t
-  Student's 97.5% point at n − 1 degrees of freedom (×0.78-1.29 at four
-  weeks: the 95% prediction interval for one new week, applied to all such
-  days at once); the days past the camera's last week ×0.5-2; the parts'
-  edges summed with the measured part; then a log term for the gap between
-  Tesla's page and its deck added in quadrature: 0.066, 1.96 times the
-  root mean square of the monthly ln(deck / page) over April-September
-  2026 (about 6.8%). The one assumption is that the ratio holds. It would
-  fail if Cybercabs' share of Tesla's miles, or Austin's share, moved far
-  from the calibration weeks': cars in cities the Austin cameras cannot
+  rate (no growth, no fall). Range: each camera-covered day times
+  e^(±w), w = √((t s √(1 + 1/n))² + (1.96 × 0.07)² h). In the first term
+  n is the weeks both series cover, s the sample standard deviation of
+  ln(weekly miles / camera rate) over them and t Student's 97.5% point at
+  n − 1 degrees of freedom (×0.78-1.29 at four weeks: the 95% prediction
+  interval for one new week). The second is drift since those weeks, in
+  the site's Cybercab detector or its cameras or in the ratio itself,
+  which nothing measures (the human, 2026-11-20: "yes please to accounting
+  for the detector uncertainty/drift"; the site's table notes that "A line
+  starts the day its detector did"): 0.07 is the drift prior of Zoox's
+  formula below (ln per square root of a month), an assumed number with no
+  data behind it, and h the day's distance in months (days / 30.44) from
+  the middle of the weeks both series cover (Oct 5, 00:00 UTC, between
+  Oct 4 and Oct 5, for Sep 21-Oct 18, 2026), measured to the day's own
+  middle: ×0.76-1.31 on Oct 19, 2026, ×0.74-1.35 on Nov 15 (until
+  2026-11-20 every such day took the first term alone). The days' edges
+  are summed (their errors taken as moving together); the days past the
+  camera's last whole week ×0.5-2; the parts' edges summed with the
+  measured part; then a log term for the gap between Tesla's page and its
+  deck added in quadrature: 0.066, 1.96 times the root mean square of the
+  monthly ln(deck / page) over April-September 2026 (about 6.8%). The one
+  assumption is that the ratio holds, up to the drift the band allows. It
+  would fail if Cybercabs' share of Tesla's miles, or Austin's share, moved
+  far from the calibration weeks': cars in cities the Austin cameras cannot
   see are counted only through the ratio (Tesla opened Fort Worth on Nov 2
   and San Antonio about Nov 9, 2026). `quals/tesla-camera-miles.qual.mjs`
-  holds the weekly figures and recomputes the rows. To extend them: open
-  the Camera watch page in a browser, press "Show data" under "Over time",
-  average the Cybercab column over each Monday-Sunday week and add the
-  weeks to the qual (Robotaxi Tracker's terms forbid scraping, so read the
-  page by hand; its llms.txt asks for credit by name with a link and the
-  visible URL wherever its data is used); add Tesla's own weeks to the
-  calibration as its page publishes them. Until 2026-11-16 the unmeasured
-  days were projected at the last weeks' growth (the geometric mean of
-  holding the last week flat and continuing its growth, and of continuing
-  the three-week growth, ×e^(±0.30 √(h/7)), with a human-set central past
-  five weeks): for Oct 19-31, 2026 that gave 1,382,000 miles where the
-  camera rate gives 1,032,000.
+  recomputes the rows from Tesla's weeks, which it holds as entered by hand
+  (add Tesla's own weeks to the calibration as its page publishes them),
+  and the camera rates, which it reads from the newest table saved in
+  `data/snapshots` (`robotaxitracker-cameras-YYYYMMDD.tsv`, through
+  `quals/camera-table.mjs` and `data/slurp.py`'s `camera_table_days()` and
+  `camera_week_means()`): each whole Monday-Sunday week's mean of the
+  Cybercab column, a week the table holds only part of waiting for its
+  last day (until 2026-11-20 the qual held the weekly means, copied by
+  hand). A person saves each table: Robotaxi Tracker's terms forbid
+  scraping and its robots.txt automated harvesting, so no script fetches
+  the page (its llms.txt asks for credit by name with a link and the
+  visible URL wherever its data is used). At the end of a live
+  `python3 data/slurp.py` run in a terminal, the camera step
+  (`camera_table_step()`, after `main()`, never inside it) asks that person
+  first (Enter goes on; skip opens and saves nothing), then opens the page
+  in their own browser, waits while they press "Show data" under "Over
+  time", select the table and copy it, then reads the clipboard, checks the
+  table and saves it when it differs from the newest saved one, never over a
+  saved table (a different copy the same day stops with nothing saved; a run
+  whose stdin or stdout is not a terminal, an agent's, only prints how a
+  person saves it). It then lists the days the site changed (it can
+  reprocess them) and the whole weeks whose mean is new, changed or gone. A
+  week moves the rows of the months holding its days and, when it is the
+  table's last whole week, of the days after it, which take its rate; a
+  calibration week (Sep 21-Oct 18, 2026) moves them all. After any such week
+  the rows it moves are redone from the newest table
+  (`quals/tesla-camera-miles.qual.mjs`, which recomputes every Tesla row
+  from October 2026 on, its `MONTHS` naming each, fails until they are, its
+  message giving the figures), and with them what rests on them: their
+  rationales' figures, `data/vmt.js` (slurp), the growth chart's Tesla
+  points and `TESLA_PATH_START` (`quals/growth-ghost-month.qual.mjs`), and
+  the assumptions list's camera entries (`quals/assumptions-list.qual.mjs`,
+  which reads the newest table too: a table that only adds days to its last
+  week moves the `tesla-camera-held` entry's figures, and one whose last
+  whole week reaches past the last month `MONTHS` names stops it until that
+  month's rows are added). Until 2026-11-16 the unmeasured days were
+  projected at the last weeks' growth (the geometric mean of holding the
+  last week flat and continuing its growth, and of continuing the three-week
+  growth, ×e^(±0.30 √(h/7)), with a human-set central past five weeks): for
+  Oct 19-31, 2026 that gave 1,382,000 miles where the camera rate gives
+  1,032,000.
 - Tesla, every operator mode: floor = the no-monitor line's floor;
   central = the no-monitor central plus June 2026's measured monitor-aboard
   remainder (33,000 miles); top = the central × e to the root-sum-square of
@@ -1152,12 +1316,19 @@ that subset as a line of its own, `TeslaNoMonitor` in the app.
   "while Robotaxi is driving autonomously with no safety monitor in the
   vehicle" (the page's spreadsheet download; `TESLA_NO_MONITOR_REPORTS` in
   `slurp.py`, 32 reports as of the Oct 18, 2026 spreadsheet, 15 of them newer
-  than NHTSA's Oct-15 file). Scope is the company line's: the crashes a
-  remote human drove (`TELEOP_DRIVEN_REPORTS`) count on neither line, though
-  Tesla's list includes them. `TESLA_MONITOR_ABOARD_REPORTS` holds the 2026
-  reports whose narratives put a monitor aboard.
-- Coverage: the same as Tesla's rows, since the line's reports are a subset
-  of Tesla's filings.
+  than NHTSA's Oct-15 file), and the reports newer than Tesla's latest list
+  whose narratives name no monitor (`TESLA_NO_MONITOR_ADDITIONS`, each with
+  the narrative's words and the receipt cutoff of the release whose review
+  added it, until a list holds them; "Each NHTSA release", step 7). Scope is
+  the company line's: the crashes a remote human drove
+  (`TELEOP_DRIVEN_REPORTS`) count on neither line, though Tesla's list
+  includes them. `TESLA_MONITOR_ABOARD_REPORTS` holds the 2026 reports whose
+  narratives put a monitor aboard, each with the words that do.
+- Coverage: what Tesla's rows take, since the line's reports are a subset
+  of Tesla's filings: NHTSA's shares, or in a month Tesla's own list covers,
+  the list's share of the line's own miles (Preprints, below: in October 2026
+  53.3% on this line against 52.6% on the all-modes line, whose
+  monitor-aboard miles the list does not cover).
 
 Driver's-seat trips (disclosed since 2026-10-31, the human's answer to open
 question 13). The every-mode line's miles for September 2025-June 2026 may
@@ -1252,11 +1423,22 @@ had not published them.
   `data/vmt.js`'s `incidents_through` column gives each row's date.
 - **Known limits.** The coverage columns scale the row's whole-month band,
   whose width comes from the days after the list's date, so the covered
-  miles get a band of -12%/+15% (no-monitor) and -13%/+30% (all modes)
-  where the measured miles warrant about -8%/+3%; exact would take columns
+  miles get a band of -13%/+17% (no-monitor) and -14%/+31% (all modes;
+  -12%/+15% and -13%/+30% until 2026-11-20, when the camera-estimated days
+  took a drift term) where the measured miles warrant about -8%/+3%; exact would take columns
   for the covered miles' own band. A preprint dated after NHTSA's
   data-through month stops the run (a month only a list covers has no rule
-  yet). A report rated from its preprint is rated again when NHTSA files
+  yet), and so does a row that takes the list's coverage and counts a crash
+  the list lacks (`check_list_covered_rows()`): a reviewed no-monitor
+  addition ("Each NHTSA release", step 7), or a monitor-aboard report on the
+  every-mode line. That coverage fits the list's own crashes (its miles
+  through the list's date, less the allowance for crashes Tesla files late,
+  the every-mode line's other miles counted as uncovered), and neither is
+  one of them. Once NHTSA's file holds the list's month whole, at the next
+  release, that month's rows take NHTSA's coverage and the line's crashes
+  of the month are the list's and the additions'
+  (`quals/tesla-monitor-review.qual.mjs` builds that release). A report
+  rated from its preprint is rated again when NHTSA files
   it: its case changes, and `faultrate.py` rates every report whose case
   has changed (step 5).
 
@@ -1363,6 +1545,23 @@ newest and fetches none; a person saves each new one ("Each NHTSA release",
 step 7). The first, `tesla-list-20261018.xlsx`, was downloaded on 2026-11-18
 (Last-Modified Oct 20, 2026 21:22 GMT; MD5 equal to the server's ETag,
 6d688f725e00740281b937a5ffc8ee19).
+
+`data/snapshots/` also holds Robotaxi Tracker's Camera watch tables
+(`robotaxitracker-cameras-YYYYMMDD.tsv`, since 2026-11-20; credit
+[Robotaxi Tracker](https://robotaxitracker.com), https://robotaxitracker.com,
+the page https://robotaxitracker.com/cameras), each the bytes a person
+copied from the page's "Show data" table in a browser, named for the local
+date it was saved. No script fetches the site (its terms forbid scraping and
+its robots.txt automated harvesting): `data/slurp.py`'s camera step ("Ghost
+months", the Tesla bullet) saves a copy only when it differs from the newest
+saved table, and never over a saved table (a different second copy the same
+day stops with nothing saved), and the quals read the newest
+(`quals/camera-table.mjs`). The first,
+`robotaxitracker-cameras-20261120.tsv`, is the table the human saved on
+2026-11-20 (sha256
+d448dffba9a55ac0a00e465e595d569f350ffd2aa649457b7020b42fc732a384). If
+Robotaxi Tracker's owner declines this site's use of its figures (AGENTS.md,
+open question 39), the tables come out with them.
 
 (The `vmt-sheet-*.csv` snapshots are historical: they archived the VMT Google
 Sheet export back when that sheet was the master. The master now lives at

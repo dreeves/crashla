@@ -32,6 +32,15 @@ Expectata: the at-fault MPI metric is selected by default.
 Resultata: selectedMetricKey was ${defaults.selectedMetricKey}.`,
 );
 
+// Every section opens by default, the assumptions section (2026-11-20)
+// among them: a fresh load collapses none.
+const sections = JSON.parse(JSON.stringify(vm.runInContext(`({ids: SECTION_IDS, collapsed: sectionCollapsed})`, ctx)));
+assert.ok(sections.ids.includes("assumptions") && sections.ids.every(id => sections.collapsed[id] === false) &&
+  Object.keys(sections.collapsed).length === sections.ids.length,
+  `Replicata: load crashla.js fresh (no URL state) and read SECTION_IDS and sectionCollapsed.
+Expectata: SECTION_IDS includes the assumptions section, and every section is open (false) by default.
+Resultata: SECTION_IDS ${JSON.stringify(sections.ids)}; sectionCollapsed ${JSON.stringify(sections.collapsed)}.`);
+
 const defaultEnabledKeys = JSON.parse(JSON.stringify(vm.runInContext(
   `METRIC_DEFS.filter(m => m.defaultEnabled).map(m => m.key)`, ctx)));
 
@@ -43,4 +52,4 @@ Expectata: exactly one metric (atfault) is the default; selectedMetricKey derive
 Resultata: defaultEnabled keys were ${JSON.stringify(defaultEnabledKeys)}.`,
 );
 
-console.log("qual pass: default UI state is HumansAV+Tesla+Waymo with the at-fault metric");
+console.log("qual pass: default UI state is HumansAV+Tesla+Waymo with the at-fault metric, every section open");

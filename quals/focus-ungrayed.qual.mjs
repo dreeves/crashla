@@ -17,14 +17,20 @@ import { ENGINES, serveRepo, openPage } from "./browser.mjs";
 const server = await serveRepo();
 const DEFAULT_QUERY = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 
-// For every Tab stop in the summary cards, the sanity checks and the market
-// panel: whether it matched :focus-visible when focused from the keyboard's
-// side, and the opacity it is drawn at (its own times its ancestors').
+// For every Tab stop in the summary cards, the sanity checks, the market
+// panel and (since 2026-11-20) the assumptions list: whether it matched
+// :focus-visible when focused from the keyboard's side, and the opacity it is
+// drawn at (its own times its ancestors').
 const sweep = page => page.evaluate(() => {
   const drawnOpacity = el => { let o = 1; for (let e = el; e !== null; e = e.parentElement) o *= parseFloat(getComputedStyle(e).opacity); return o; };
-  const stops = [...document.querySelectorAll("#sec-summary, #sec-sanity, #sec-markets")]
-    .flatMap(sec => [...sec.querySelectorAll('a[href], button, input, select, [tabindex="0"]')]);
-  const out = { stops: stops.length, grayedBefore: 0, notVisible: [], dim: [] };
+  const STOPS = 'a[href], button, input, select, [tabindex="0"]';
+  const stops = [...document.querySelectorAll("#sec-summary, #sec-sanity, #sec-markets, #sec-assumptions")]
+    .flatMap(sec => [...sec.querySelectorAll(STOPS)]);
+  // The assumptions section's own Tab stops: its heading's toggle, so the
+  // sweep reaches the section whatever its entries hold, and any links in
+  // its entries.
+  const sectionStops = document.querySelectorAll(`#sec-assumptions :is(${STOPS})`).length;
+  const out = { stops: stops.length, sectionStops, grayedBefore: 0, notVisible: [], dim: [] };
   for (const el of stops) {
     const where = `${el.tagName}.${el.getAttribute("class")} ${(el.getAttribute("aria-label") || el.textContent).trim().slice(0, 40)}`;
     // Unfocused first: a focused neighbour un-grays the card they share.
@@ -48,13 +54,13 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
   await page.focus("#month-metric-select");
   await page.keyboard.press("Shift");
   const s = await sweep(page);
-  assert.ok(s.stops > 100 && s.grayedBefore >= 50 && s.notVisible.length === 0 && s.dim.length === 0,
+  assert.ok(s.stops > 100 && s.sectionStops > 0 && s.grayedBefore >= 50 && s.notVisible.length === 0 && s.dim.length === 0,
     `[${engine}] Replicata: load the default view (Humans (US average), Humans (Uber/Lyft) and Zoox unchecked, so their
 cards are grayed; markets offline, so every market row is grayed) and focus each Tab stop in the summary cards, the
-sanity checks and the market panel from the keyboard.
+sanity checks, the market panel and the assumptions list from the keyboard.
 Expectata: each focused element is drawn at opacity 1 (its own and its ancestors'), so its focus ring keeps its full
-contrast; the elements are grayed while not focused.
-Resultata: ${s.stops} stops, ${s.grayedBefore} grayed while unfocused; ${s.notVisible.length} did not match
+contrast; the elements are grayed while not focused; the assumptions section holds at least one Tab stop (its heading's toggle).
+Resultata: ${s.stops} stops (${s.sectionStops} in the assumptions section), ${s.grayedBefore} grayed while unfocused; ${s.notVisible.length} did not match
 :focus-visible (${JSON.stringify(s.notVisible.slice(0, 3))}); ${s.dim.length} drawn below opacity 1 while focused,
 e.g. ${JSON.stringify(s.dim.slice(0, 4))}.`);
 

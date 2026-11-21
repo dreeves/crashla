@@ -121,6 +121,13 @@ const S0 = [1250000, 1350000];
 const S1 = [1880000, 2000000];
 const S2 = [3000000, 3200000];
 const CROSS = 1000000;
+// The path's daily miles a statement is carried at to a month's end, its low
+// edge at CARRY[0] times them and its high at CARRY[1]: the March 2026
+// statement to the end of March (Cumulative bands, below), the August one back
+// to the end of July (JULY_FLOOR); named since 2026-11-20 so that the page's
+// list of assumptions (crashla.js ASSUMPTIONS) is checked against it
+// (quals/assumptions-list.qual.mjs).
+const CARRY = [0.7, 1.3];
 
 // --- Inputs ---------------------------------------------------------------------
 // California: the CA DMV's driverless miles (permit AVDT004) June-November
@@ -174,8 +181,8 @@ const monthMiles = m => { const c = new Array(N).fill(0); c[M.indexOf(m)] = LV_D
 // The lifetime at the end of day d of month m.
 const lifetimeAt = (m, d) => add(lin(may.cume + PRE_C), ...M.slice(0, M.indexOf(m)).map(monthMiles), scale(monthMiles(m), d / daysIn(m)));
 // The end-July floor (Cumulative bands, below): 3.00M less the pre-series
-// miles' high edge and up to 1.3x the model's miles for Aug 1-5.
-const JULY_FLOOR = add(lin(S2[0] - PRE[1]), scale(monthMiles("2026-08"), -1.3 * 5 / daysIn("2026-08")));
+// miles' high edge and up to CARRY[1] (1.3) times the model's miles for Aug 1-5.
+const JULY_FLOOR = add(lin(S2[0] - PRE[1]), scale(monthMiles("2026-08"), -CARRY[1] * 5 / daysIn("2026-08")));
 // Each statement as h >= 0, h a form.
 const atLeast = (f, v) => add(f, lin(-v));
 const atMost = (f, v) => add(lin(v), scale(f, -1));
@@ -407,8 +414,8 @@ const knots = {
   "2025-11": [Math.floor(crossLo - PRE[1]), Math.ceil(CROSS - PRE[0])],
   "2025-12": [Math.floor(S0[0] - PRE[1]), Math.ceil(S0[1] - PRE[0])],
   "2026-03": [
-    Math.floor(S1[0] - PRE[1] + 0.7 * 7 * perDay("2026-03")),
-    Math.ceil(S1[1] - PRE[0] + 1.3 * 14 * perDay("2026-03")),
+    Math.floor(S1[0] - PRE[1] + CARRY[0] * 7 * perDay("2026-03")),
+    Math.ceil(S1[1] - PRE[0] + CARRY[1] * 14 * perDay("2026-03")),
   ],
   "2026-07": [Math.floor(value(JULY_FLOOR, x)), Infinity],
 };

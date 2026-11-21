@@ -58,10 +58,14 @@ assert.equal(onlyDecl(num.body, "white-space", "td.num, th.num"), "nowrap");
   const ctx = vm.createContext({ console, document: { getElementById: id => (nodes.has(id) || nodes.set(id, new Stub()), nodes.get(id)), createElement: () => new Stub() } });
   vm.runInContext(dataScript, ctx, { filename: "data.js" });
   vm.runInContext(appScript, ctx, { filename: "crashla.js" });
+  // The sanity section and, since 2026-11-20, the assumptions section's
+  // tables (assumptions-<group>), whose cells are all text.
   const html = vm.runInContext(`incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT); faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
+    ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
     fullMonthSeries = monthSeriesData();
     activeSeries = sliceSeries(fullMonthSeries, fullMonthSeries.months.indexOf(DEFAULT_START_MONTH), fullMonthSeries.months.length - 1);
-    buildSanityChecks(); document.getElementById("sanity-checks").innerHTML`, ctx);
+    buildSanityChecks(); document.getElementById("sanity-checks").innerHTML + renderAssumptions()`, ctx);
+  const assumptionTables = JSON.parse(vm.runInContext(`JSON.stringify(ASSUMPTION_GROUPS.map(g => "assumptions-" + g.id))`, ctx));
   const FIGURES = new Set(["sanity-stress", "sanity-fault-flip", "sanity-benchmarks"]);
   const isNum = attrs => /\bclass="[^"]*\bnum\b/.test(attrs);
   const kind = text => /^[\u2014\u221e]$/.test(text) ? "stand-in" : /^[\d.,;\s\u2013x\u221eKMBT]*\d[\d.,;\s\u2013x\u221eKMBT]*$/.test(text) ? "figure" : "text";
@@ -90,9 +94,9 @@ Resultata: ${JSON.stringify(m[2].slice(0, 300))}.`);
       if ((figures && !thNum) || (text && thNum)) problems.push(`${id} column ${j + 1}: header ${thNum ? "" : "not "}numeric, its cells ${figures ? "figures" : "text"} (e.g. ${JSON.stringify(cells[0] && cells[0].text.slice(0, 40))})`);
     });
   }
-  const missing = [...FIGURES].filter(id => !seen.has(id));
+  const missing = [...FIGURES, ...assumptionTables].filter(id => !seen.has(id));
   assert.ok(problems.length === 0 && missing.length === 0,
-    `Replicata: render the sanity section (default window) and compare each table's header cells with its body cells.
+    `Replicata: render the sanity section (default window) and the assumptions section, and compare each table's header cells with its body cells.
 Expectata: a header cell carries class="num" exactly when its column's body cells do; in ${[...FIGURES].join(", ")}, exactly the columns of figures carry it.
 Resultata: ${missing.length ? `no table ${JSON.stringify(missing)}; ` : ""}${JSON.stringify(problems)}.`);
 }

@@ -399,6 +399,19 @@ tbody tr.preprint td:first-child { box-shadow: inset 4px 0 0 var(--iffy); }
    longest word it was ~130px, about 14 characters a line (until 2026-10-05,
    audit #21). */
 .source-table td.derivation { min-width: 18em; }
+/* The assumptions list (crashla.js renderAssumptions): its where column, file
+   and constant names, gets a set share of the table and breaks a name only if
+   it cannot fit there (the table's overflow-wrap: anywhere lets a column
+   shrink to a few characters); below 40rem each row's where line sits under
+   its text and the column headers go, since beside the 18em text column it
+   held 5-7 characters a line, split names mid-word and panned its table at
+   320 px (until 2026-11-20, review of the section). */
+#assumptions-list td:last-child { width: 30%; overflow-wrap: break-word; }
+@media (max-width: 40rem) {
+  #assumptions-list thead { display: none; }
+  #assumptions-list tr, #assumptions-list td { display: block; }
+  #assumptions-list td:last-child { width: auto; border-top: none; padding-top: 0; }
+}
 /* An incident date ("JUL-2025") stays on one line: Chromium and WebKit broke
    every one at its hyphen (Firefox did not). The width the whole date needs
    comes out of the narrative preview, the one column that truncates rather

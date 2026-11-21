@@ -343,6 +343,23 @@ Expectata: sectionCollapsed restored (browser+sanity collapsed, all others open)
 Resultata: sectionCollapsed was ${JSON.stringify(collapseState.restored)}.`,
 );
 
+// The assumptions section (2026-11-20) rides x= like every other section: a
+// link naming it with the sanity section collapses those two, and its own
+// encoding names them in SECTION_IDS order.
+vm.runInContext("sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));", ctx);
+{
+  const round = JSON.parse(JSON.stringify(vm.runInContext(`(() => {
+    const allOpen = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
+    sectionCollapsed = {...allOpen};
+    applyUiStateQuery("f=All&s=-&a=1&c=Tesla.Waymo.Zoox&m=all&x=assumptions.sanity");
+    const restored = {...sectionCollapsed};
+    return {restored, expected: {...allOpen, assumptions: true, sanity: true}, query: encodeUiStateQuery()};
+  })()`, ctx)));
+  assert.ok(JSON.stringify(round.restored) === JSON.stringify(round.expected) && round.query.includes("x=assumptions.sanity"),
+    `Replicata: apply a query with x=assumptions.sanity, then encode the UI state again.
+Expectata: the assumptions and sanity sections collapsed, every other open, and the query naming x=assumptions.sanity.
+Resultata: sectionCollapsed ${JSON.stringify(round.restored)}; query ${round.query}.`);
+}
 vm.runInContext("sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));", ctx);
 
 let threwBadCollapse = false;
@@ -438,6 +455,16 @@ assert.deepEqual(
   sectionIds.slice().sort(),
   `Replicata: collect collapsible section ids from index.html and from SECTION_IDS.
 Expectata: the two sets match exactly (no orphan markup or unbacked id).
+Resultata: html=${JSON.stringify(htmlSectionIds)}, SECTION_IDS=${JSON.stringify(sectionIds)}.`,
+);
+// And in the same order (since 2026-11-20, when the assumptions section
+// joined): x= lists collapsed sections in SECTION_IDS order, so a link reads
+// in the page's own order.
+assert.deepEqual(
+  htmlSectionIds,
+  sectionIds,
+  `Replicata: list the collapsible section ids in index.html's document order and in SECTION_IDS.
+Expectata: the same ids in the same order.
 Resultata: html=${JSON.stringify(htmlSectionIds)}, SECTION_IDS=${JSON.stringify(sectionIds)}.`,
 );
 // Each collapsible section needs a clickable .sec-head (the collapse toggle).

@@ -36,8 +36,9 @@ import { ENGINES, devices, serveRepo, openPage, drawnAll } from "./browser.mjs";
 // The default view (the incident box full: its cap) and a short table
 // (Tesla's incidents of May 2026, two rows: the box shorter than its cap).
 const PAGES = {
+  // (#sec-assumptions, between the summary and sanity sections, since 2026-11-20.)
   default: { query: "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault", short: false,
-    sections: ["#sec-browser", "#sec-markets", "#sec-sanity", "#sec-fleet"] },
+    sections: ["#sec-browser", "#sec-markets", "#sec-assumptions", "#sec-sanity", "#sec-fleet"] },
   short: { query: "?f=Tesla&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault&d=2026-05.2026-05", short: true,
     sections: ["#sec-markets", "#sec-sanity", "#sec-fleet"] },
 };

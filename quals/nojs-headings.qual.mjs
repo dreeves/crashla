@@ -7,15 +7,28 @@
 // 2026-10-04 #66). Since 2026-10-04 crashla.js initCollapsibles gives the
 // spans their role and Tab stop when it wires them; quals/keyboard-focus.qual.mjs
 // checks the scripted page, which is unchanged.
+//
+// The count of headings is crashla.js's SECTION_IDS (one collapsible section
+// each), read from the app: until 2026-11-20, when the assumptions section
+// made ten, this qual pinned nine (restated under the human's go of that day,
+// "can we get all such assumptions clearly listed in one place on the page?",
+// with its intent unchanged: every heading plain without JavaScript).
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
+import { appScript } from "./load-app.mjs";
 import { ENGINES, serveRepo } from "./browser.mjs";
+
+const app = vm.createContext({ console, document: {
+  getElementById() { return null; }, createElement() { return { textContent: "", innerHTML: "" }; } } });
+vm.runInContext(appScript, app, { filename: "crashla.js" });
+const SECTIONS = vm.runInContext("SECTION_IDS.length", app);
 
 const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const toggles = [...html.matchAll(/<span class="sec-toggle"([^>]*)>/g)].map(m => m[1]);
-assert.ok(toggles.length === 9 && toggles.every(attrs => !/\b(role|tabindex|aria-expanded)=/.test(attrs)),
-  `Replicata: read index.html's nine section-heading spans (class "sec-toggle").
-Expectata: plain markup: no role, tabindex or aria-expanded (crashla.js initCollapsibles adds them).
+assert.ok(toggles.length === SECTIONS && toggles.every(attrs => !/\b(role|tabindex|aria-expanded)=/.test(attrs)),
+  `Replicata: read index.html's section-heading spans (class "sec-toggle"), one for each of crashla.js's ${SECTIONS} SECTION_IDS.
+Expectata: ${SECTIONS} spans, in plain markup: no role, tabindex or aria-expanded (crashla.js initCollapsibles adds them).
 Resultata: ${toggles.length} spans: ${JSON.stringify(toggles)}.`);
 
 const server = await serveRepo();
@@ -30,14 +43,14 @@ for (const [engine, launcher] of Object.entries(ENGINES)) {
     buttons: [...document.querySelectorAll('[role="button"]')].map(e => e.textContent.trim()),
     stops: [...document.querySelectorAll("[tabindex]")].map(e => `${e.tagName}.${e.getAttribute("class")}`),
   }));
-  assert.ok(seen.headings.length === 9 && seen.buttons.length === 0 && seen.stops.length === 0,
+  assert.ok(seen.headings.length === SECTIONS && seen.buttons.length === 0 && seen.stops.length === 0,
     `[${engine}] Replicata: open the page with JavaScript disabled and read its section headings, role="button" elements
 and tabindex attributes.
-Expectata: nine plain headings; no role="button" element and no tabindex anywhere.
+Expectata: ${SECTIONS} plain headings (crashla.js's SECTION_IDS); no role="button" element and no tabindex anywhere.
 Resultata: ${JSON.stringify(seen)}.`);
   await context.close();
   await browser.close();
 }
 await server.close();
 
-console.log("qual pass: without JavaScript the nine section headings are plain headings, in Chromium, Firefox and WebKit");
+console.log(`qual pass: without JavaScript the ${SECTIONS} section headings are plain headings, in Chromium, Firefox and WebKit`);
