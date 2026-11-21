@@ -130,6 +130,18 @@ out = {
   'otherUnchanged': slurp.reviewed_belted('30270-11302', 'Subject Vehicle - All Belted'),
   'zoox15826': list(slurp.PASSENGER_OVERRIDE.get('30610-15826', ())),
   'zooxRefiledTrips': raises(slurp.reviewed_belted, '30610-15826', 'Subject Vehicle - All Belted'),
+  'waymo16828': list(slurp.PASSENGER_OVERRIDE.get('30270-16828', ())),
+}
+# One stop lists every entry reviewed against another filed value (audit
+# 2026-11-20, A46): two changed entries among four reports, then none.
+def stop_of(fn, *a):
+    try: fn(*a); return ''
+    except AssertionError as e: return str(e)
+check_reviews = getattr(slurp, 'check_passenger_reviews', None)
+out['reviewStops'] = {'two': 'data/slurp.py has no check_passenger_reviews', 'none': 'data/slurp.py has no check_passenger_reviews'} if check_reviews is None else {
+  'two': stop_of(check_reviews, {'13781-11375': 'Unknown', '30610-15826': 'Subject Vehicle - All Belted',
+                                  '13781-11507': 'Unknown', '30270-11302': 'Subject Vehicle - All Belted'}),
+  'none': stop_of(check_reviews, {'13781-11375': 'Subject Vehicle - All Belted', '13781-11507': 'Unknown', '30270-11302': 'Unknown'}),
 }
 # The tripwire on synthetic rows: one positive per wording, both directions
 base = {'Reporting Entity': 'Zoox, Inc.', 'Driver / Operator Type': 'None', 'Report ID': 'synthetic-occupancy',
@@ -140,6 +152,10 @@ out['trips'] = {
   'unoccupiedCodedBelted': raises(slurp.check_occupancy_classified, dict(base, **{'Were All Passengers Belted?': belted}, Narrative='An unoccupied Zoox vehicle in autonomy was stopped.')),
   'waymoNoOccupantsCodedBelted': raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC', 'Were All Passengers Belted?': belted}, Narrative='The Waymo AV, which had no occupants, was stopped.')),
   'occupiedCodedUnknown': raises(slurp.check_occupancy_classified, dict(base, **{'Were All Passengers Belted?': 'Unknown'}, Narrative='An occupied Zoox autonomous vehicle was stopped.')),
+  # a passenger who was not belted was aboard (audit 2026-11-20, A40)
+  'notBeltedCodedNone': raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC'}, Narrative='The Waymo AV sustained damage. The passenger in the Waymo AV was not belted at the time of the collision as they were preparing to exit the vehicle.')),
+  'unbeltedCodedUnknown': raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC', 'Were All Passengers Belted?': 'Unknown'}, Narrative='A passenger in the Waymo AV was unbelted at the time of the collision.')),
+  'noSeatBeltCodedNone': raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC'}, Narrative='The ADS was engaged in autonomous mode, and the three passengers in the Waymo AV were not wearing seatbelts.')),
 }
 out['passes'] = {
   'occupiedCodedBelted': not raises(slurp.check_occupancy_classified, dict(base, **{'Were All Passengers Belted?': belted}, Narrative='An occupied Zoox autonomous vehicle was stopped.')),
@@ -147,6 +163,9 @@ out['passes'] = {
   'laneOccupied': not raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC'}, Narrative='A bus crossed into the lane occupied by the Waymo AV.')),
   'passengerExited': not raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC'}, Narrative='After the passenger in the Waymo AV had exited, a car struck it.')),
   'listed': not raises(slurp.check_occupancy_classified, dict(base, **{'Report ID': '30610-15826'}, Narrative='An occupied Zoox autonomous vehicle was stopped.')),
+  'notBeltedCodedNotBelted': not raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC', 'Were All Passengers Belted?': 'Subject Vehicle - Not Belted - see Narrative'}, Narrative='The passenger in the Waymo AV was not belted at the time of the collision.')),
+  'notBeltedListed': not raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC', 'Report ID': '30270-16828'}, Narrative='The passenger in the Waymo AV was not belted at the time of the collision.')),
+  'beltline': not raises(slurp.check_occupancy_classified, dict(base, **{'Reporting Entity': 'Waymo LLC'}, Narrative='The Waymo AV approached the Westside Beltline Connector trail.')),
   'outOfScope': not raises(slurp.check_occupancy_classified, dict(base, **{'Driver / Operator Type': 'In-Vehicle (Commercial / Test)'}, Narrative='An occupied Zoox autonomous vehicle was stopped.')),
 }
 # Calibration: every in-scope Waymo/Zoox report's latest narrative in the
@@ -203,7 +222,7 @@ assert.equal(run.status, 0, `Replicata: load data/slurp.py and exercise its pass
 Expectata: PASSENGER_OVERRIDE, reviewed_belted(), check_passengers_reviewed() and check_occupancy_classified() exist and run.
 Resultata: exit ${run.status}; ${run.stderr.slice(-800)}`);
 const g = JSON.parse(run.stdout.trim().split("\n").at(-1));
-const {trips, passes, unclassified, flagged, listedNotFlagged, reviewedKept, main, template, paxClass, novelCode, paxMap, ...guards} = g;
+const {trips, passes, unclassified, flagged, listedNotFlagged, reviewedKept, main, template, paxClass, novelCode, paxMap, reviewStops, ...guards} = g;
 
 // The incidents counted with a rider are the ones the reviewed map stores a
 // rider for (decision #57b, 2026-10-04: derived from PASSENGER_OVERRIDE, the
@@ -231,23 +250,36 @@ assert.deepEqual(guards, {
   otherUnchanged: "Subject Vehicle - All Belted",
   zoox15826: ["Subject Vehicle - No Passenger In Vehicle", "Subject Vehicle - Passenger In Vehicle, Belt Use Not Stated"],
   zooxRefiledTrips: true,
+  waymo16828: ["Subject Vehicle - No Passenger In Vehicle", "Subject Vehicle - Not Belted - see Narrative"],
 }, `Replicata: exercise slurp.py's passenger guards on data/incidents.js and synthetic variants.
-Expectata: every in-scope Tesla report has a PASSENGER_OVERRIDE entry; an unlisted Tesla report, or an entry (Tesla or Zoox) whose report is no longer in scope, stops the run; a monitor-only "All Belted" filing becomes the no-passenger code; a filing re-filed with a different value stops the run; Zoox 30610-15826 (filed no passenger, "An occupied Zoox autonomous vehicle") stores a passenger, belt use not stated; unlisted values pass through unchanged.
+Expectata: every in-scope Tesla report has a PASSENGER_OVERRIDE entry; an unlisted Tesla report, or an entry (Tesla or Zoox) whose report is no longer in scope, stops the run; a monitor-only "All Belted" filing becomes the no-passenger code; a filing re-filed with a different value stops the run; Zoox 30610-15826 (filed no passenger, "An occupied Zoox autonomous vehicle") stores a passenger, belt use not stated; Waymo 30270-16828 (filed no passenger, "The passenger in the Waymo AV was not belted at the time of the collision") stores an unbelted passenger; unlisted values pass through unchanged.
 Resultata: ${JSON.stringify(guards)}.`);
+// One stop for every entry reviewed against another filed value (2026-11-21,
+// audit finding A46 of 2026-11-20). At the release that publishes Tesla's
+// preprints NHTSA's rows carry a filed code where each preprint's entry was
+// reviewed against the list's blank: until then the run stopped on one report
+// a run, under a message that named a re-filing only. The stop names both
+// steps of data/README.md's release checklist that bring it: a re-filing's
+// (6) and a replaced preprint's (7).
+assert.ok(["13781-11375", "30610-15826"].every(id => reviewStops.two.includes(id)) && !reviewStops.two.includes("13781-11507") &&
+    !reviewStops.two.includes("30270-11302") && /Each NHTSA release, step 6/.test(reviewStops.two) && /step 7/.test(reviewStops.two) && reviewStops.none === "",
+  `Replicata: call slurp.py's check_passenger_reviews with four reports' filed passenger values: 13781-11375 and 30610-15826 changed from the values their PASSENGER_OVERRIDE entries were reviewed against, 13781-11507 as reviewed, and 30270-11302, which has no entry; then with none changed.
+Expectata: one stop naming both changed reports and neither of the others, and both steps of data/README.md's "Each NHTSA release" that cover it (6, a re-filing; 7, NHTSA's row in a preprint's place); no stop when none changed.
+Resultata: ${JSON.stringify({ two: reviewStops.two.slice(0, 700), none: reviewStops.none.slice(0, 300) })}.`);
 const silent = Object.entries(trips).filter(([, t]) => !t).map(([k]) => k);
 assert.deepEqual(silent, [],
-  `Replicata: call slurp.py's check_occupancy_classified on unlisted in-scope reports whose narrative says who was aboard against their filed code ("occupied" filed no passenger or Unknown, "unoccupied" or Waymo's "had no occupants" filed with a belted passenger).
+  `Replicata: call slurp.py's check_occupancy_classified on unlisted in-scope reports whose narrative says who was aboard against their filed code ("occupied" filed no passenger or Unknown, "unoccupied" or Waymo's "had no occupants" filed with a belted passenger, a passenger "not belted", "unbelted" or "not wearing seatbelts" filed no passenger or Unknown).
 Expectata: each one stops the run.
 Resultata: passed silently: ${JSON.stringify(silent)}.`);
 const tripped = Object.entries(passes).filter(([, p]) => !p).map(([k]) => k);
 assert.deepEqual(tripped, [],
-  `Replicata: call check_occupancy_classified on reports that agree with their code, say nothing about the AV's own occupancy ("the lane occupied by the Waymo AV", a passenger who had exited), are listed (30610-15826), or are out of scope.
+  `Replicata: call check_occupancy_classified on reports that agree with their code (a passenger "not belted" filed with a passenger code among them), say nothing about the AV's own occupancy ("the lane occupied by the Waymo AV", a passenger who had exited, the "Beltline" trail), are listed (30610-15826, 30270-16828), or are out of scope.
 Expectata: none stops the run.
 Resultata: stopped on ${JSON.stringify(tripped)}.`);
-assert.deepEqual({unclassified, listedNotFlagged, flags15826: flagged.includes("30610-15826")},
-  {unclassified: [], listedNotFlagged: [], flags15826: true},
+assert.deepEqual({unclassified, listedNotFlagged, flags15826: flagged.includes("30610-15826"), flags16828: flagged.includes("30270-16828")},
+  {unclassified: [], listedNotFlagged: [], flags15826: true, flags16828: true},
   `Replicata: run the occupancy tripwire over every in-scope Waymo and Zoox report's latest narrative in the newest snapshots, as filed and with each report unlisted.
-Expectata: nothing unclassified; the disagreement the calibration found (30610-15826) is one the tripwire flags; and every Waymo or Zoox report classified in PASSENGER_OVERRIDE or OCCUPANCY_LANGUAGE_REVIEWED is one it flags (so no wording the classifications rest on can drop out of the pattern unnoticed).
+Expectata: nothing unclassified; the disagreements the calibrations found (30610-15826, "An occupied Zoox autonomous vehicle" filed no passenger; 30270-16828, "The passenger in the Waymo AV was not belted" filed no passenger) are ones the tripwire flags; and every Waymo or Zoox report classified in PASSENGER_OVERRIDE or OCCUPANCY_LANGUAGE_REVIEWED is one it flags (so no wording the classifications rest on can drop out of the pattern unnoticed).
 Resultata: unclassified ${JSON.stringify(unclassified)}, flagged ${JSON.stringify(flagged)}, classified but not flagged ${JSON.stringify(listedNotFlagged)}.`);
 assert.match(main, /says who was aboard/,
   `Replicata: run slurp.main() offline on the snapshots plus one unlisted in-scope Zoox row (a 2025 copy of ${template}, "An unoccupied Zoox ... vehicle") filed "Subject Vehicle - All Belted".
@@ -281,8 +313,17 @@ Resultata: ${novelCode === "" ? "accepted" : JSON.stringify(novelCode.slice(0, 3
 // that wording against its own code (except reports listed in slurp.py's
 // OCCUPANCY_LANGUAGE_REVIEWED, whose filed code stands by review):
 const OCC_NONE = /\bunoccupied\s+(?:Zoox|Waymo)\b|\bhad\s+no\s+occupants\b/i;
-const OCC_PRESENT = /\boccupied\s+(?:Zoox|Waymo)\b/i;
-const others = JSON.parse(vm.runInContext(`JSON.stringify(INCIDENT_DATA.filter(r => r.helmer !== "Tesla").map(r => ({id: r.reportId, helmer: r.helmer, belted: r.belted, narrative: r.narrative})))`, ctx));
+// Since 2026-11-21 (audit 2026-11-20, A40) also a narrative that says a
+// passenger was not belted: 30270-16828 (SEP-2026 Austin) says "The passenger
+// in the Waymo AV was not belted at the time of the collision" and was filed
+// "Subject Vehicle - No Passenger In Vehicle".
+const OCC_PRESENT = /\boccupied\s+(?:Zoox|Waymo)\b|\bnot\s+belted\b|\bunbelted\b|\bnot\s+wearing\s+(?:a\s+)?seat\s*-?\s*belts?\b/i;
+// A second AV's record (secondOf: data/slurp.py SECOND_INVOLVEMENTS) is left
+// out: it carries its report's narrative, which speaks of the reporting AV's
+// passengers (30270-11224: "The passenger in the moving Waymo AV was not
+// belted", the stopped Waymo's own code Unknown), under the passenger code
+// its reviewed entry gives; the report's own record is read.
+const others = JSON.parse(vm.runInContext(`JSON.stringify(INCIDENT_DATA.filter(r => r.helmer !== "Tesla" && r.secondOf === undefined).map(r => ({id: r.reportId, helmer: r.helmer, belted: r.belted, narrative: r.narrative})))`, ctx));
 const occMismatch = [];
 let occStated = 0;
 for (const r of others.filter(r => !reviewedKept.includes(r.id))) {
@@ -293,13 +334,19 @@ for (const r of others.filter(r => !reviewedKept.includes(r.id))) {
   if (says.length !== 1 || says[0] !== coded) occMismatch.push(`${r.helmer} ${r.id}: narrative ${says.join("+")}, coded ${coded} (${JSON.stringify(r.belted)})`);
 }
 assert.deepEqual(occMismatch, [],
-  `Replicata: for each Waymo and Zoox incident whose narrative says "occupied"/"unoccupied" of the AV, or that it "had no occupants", compare its \`belted\` class with that statement.
-Expectata: they agree ("An occupied Zoox autonomous vehicle" -> PAX_PRESENT; "unoccupied" or "had no occupants" -> PAX_NONE).
+  `Replicata: for each Waymo and Zoox incident whose narrative says "occupied"/"unoccupied" of the AV, that it "had no occupants", or that a passenger was "not belted", "unbelted" or "not wearing" a seat belt, compare its \`belted\` class with that statement.
+Expectata: they agree ("An occupied Zoox autonomous vehicle" or an unbelted passenger -> PAX_PRESENT; "unoccupied" or "had no occupants" -> PAX_NONE).
 Resultata: ${JSON.stringify(occMismatch, null, 1)}.`);
 const z15826 = others.find(r => r.id === "30610-15826");
 assert.ok(z15826 !== undefined && present.has(z15826.belted),
   `Replicata: read Zoox 30610-15826 (JUN-2026 San Francisco, "An occupied Zoox autonomous vehicle was stopped at a traffic light") from data/incidents.js.
 Expectata: counted with a passenger (PAX_PRESENT), via slurp.py's PASSENGER_OVERRIDE.
 Resultata: ${z15826 === undefined ? "row missing" : JSON.stringify(z15826.belted)}.`);
+
+const w16828 = others.find(r => r.id === "30270-16828");
+assert.ok(w16828 !== undefined && present.has(w16828.belted),
+  `Replicata: read Waymo 30270-16828 (SEP-2026 Austin, "The passenger in the Waymo AV was not belted at the time of the collision as they were preparing to exit the vehicle") from data/incidents.js.
+Expectata: counted with a passenger (PAX_PRESENT), via slurp.py's PASSENGER_OVERRIDE.
+Resultata: ${w16828 === undefined ? "row missing" : JSON.stringify(w16828.belted)}.`);
 
 console.log(`qual pass: all ${dataVals.length} distinct belted values are classified (PAX_NONE/PAX_PRESENT/PAX_UNKNOWN), disjoint, with both no-passenger encodings counted as no-passenger; Tesla's ${tesla.length} records count riders as their narratives state (${riders.length} with a passenger); ${occStated} Waymo/Zoox records that state their AV's occupancy agree with their codes; guarded in slurp.py`);

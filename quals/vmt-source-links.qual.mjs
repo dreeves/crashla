@@ -10,8 +10,12 @@
 // a link to another page to stop the page at load). Checked with the app
 // loaded in node (quals/load-app.mjs):
 //  1. in each window below, each line's cell holds one a element per link of
-//     the rationales it shows (its analysis months', and its ghost months'
-//     when the window ends at the newest NHTSA month), in order, each with
+//     the rationales it shows (its analysis months', and those of its rows
+//     in data/vmt.js's second segment that the window shows, its pending and
+//     ghost months: every one from the window's first month on when the
+//     window ends at the slider's last month, else those inside the window;
+//     a line with only such rows in the window has a row too, since
+//     2026-11-21), in order, each with
 //     its target (data/#<anchor>, or a web page's https:// address, escaped
 //     as text is, so its "&" reads "&amp;") as href, its only attribute (as
 //     the sanity section's other links have only their href), and the
@@ -23,8 +27,9 @@
 //     page whose address holds "&", a band in square brackets, and &, < and >
 //     in its text and in a link's text (no rationale holds those today, so
 //     check 1 alone could not see a dropped escape), given to one
-//     line's analysis rows and to its ghost row, renders as
-//     quals/rationale-links.mjs's rationaleMarkup gives it;
+//     line's analysis rows and to its pending and ghost rows, renders as
+//     quals/rationale-links.mjs's rationaleMarkup gives it, each such row
+//     headed by its month and its own note (the app's, read from the row);
 //  3. parseVmtCsv and parseGhostVmtCsv, which read the rationales at load,
 //     stop on a link of the wrong form (each case in BAD below: a target
 //     that is neither a section nor an https:// address, among them plain
@@ -68,7 +73,6 @@ const run = expr => JSON.parse(JSON.stringify(vm.runInContext(expr, ctx)));
 const months = run("fullMonthSeries.months");
 const LINES = run("ADS_SERIES");
 const LABEL = run("Object.fromEntries(ADS_SERIES.map(h => [h, helmerLabel(h)]))");
-const NOTE = run("VMT_GHOST_NOTE");
 const last = months[months.length - 1];
 const WINDOWS = {
   default: [run("DEFAULT_START_MONTH"), last],
@@ -93,16 +97,18 @@ const cells = ([a, b]) => {
   assert.ok(table !== null, `Replicata: build the sanity section for ${a}..${b}. Expectata: a table with id sanity-vmt-sources. Resultata: none.`);
   return Object.fromEntries([...table[1].matchAll(/<tr>\s*<td>([^<]*)<\/td>\s*<td class="ai-text">([\s\S]*?)<\/td>\s*<\/tr>/g)].map(m => [m[1], m[2]]));
 };
+// A line's rows of data/vmt.js's second segment (its pending and ghost
+// months) that a window shows, in month order: those from the window's first
+// month on when it ends at the slider's last month, else those inside it.
+const shownGhost = (helmer, [a, b]) => run(`ghostVmtRows.filter(r => r.helmer === ${JSON.stringify(helmer)}).map(r => ({month: r.month, rationale: r.rationale, note: r.note}))`)
+  .filter(r => r.month >= a && (b === last || r.month <= b)).sort((x, y) => (x.month < y.month ? -1 : 1));
 // The rationales a window shows for a line, in the table's order: one per
-// run of months its analysis rows share (in month order), then its ghost
-// rows' when the window ends at the newest NHTSA month.
+// run of months its analysis rows share (in month order), then those rows'.
 const shown = (helmer, [a, b]) => {
   const rows = run(`vmtRows.filter(r => r.helmer === ${JSON.stringify(helmer)}).map(r => ({month: r.month, rationale: r.rationale}))`)
     .filter(r => r.month >= a && r.month <= b).sort((x, y) => (x.month < y.month ? -1 : 1));
   const runs = rows.filter((r, i) => i === 0 || rows[i - 1].rationale !== r.rationale).map(r => r.rationale);
-  const ghost = b === last ? run(`ghostVmtRows.filter(r => r.helmer === ${JSON.stringify(helmer)}).map(r => ({month: r.month, rationale: r.rationale}))`)
-    .sort((x, y) => (x.month < y.month ? -1 : 1)).map(r => r.rationale) : [];
-  return [...runs, ...ghost];
+  return [...runs, ...shownGhost(helmer, [a, b]).map(r => r.rationale)];
 };
 // A cell's a elements.
 const anchorsOf = cell => [...cell.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map(m => ({ attrs: m[1], html: m[2] }));
@@ -136,10 +142,10 @@ for (const [name, win] of Object.entries(WINDOWS)) {
 }
 
 // --- 2. a synthetic rationale with links, a band and markup ------------------
-// Zoox's analysis rows in the default window take SYNTHETIC and its ghost row
-// SYNTHETIC_GHOST; the cell must be the markup rationaleMarkup gives, after
-// the month heads the app writes (its first and last month, and the ghost
-// month with the human's note).
+// Zoox's analysis rows in the default window take SYNTHETIC and its rows of
+// the second segment SYNTHETIC_GHOST; the cell must be the markup
+// rationaleMarkup gives, after the month heads the app writes (its first and
+// last month, and each pending or ghost month with its own note).
 {
   const SYNTHETIC = `Synthetic & <b>not bold</b> > text: a band [2,075,000, 3,289,000], two links ([data/README.md, Zoox anchors](data/#zoox-anchors); [R&D <notes> > x](data/#ghost-months)), a web page ([https://example.org/a?b=1&c=2](https://example.org/a?b=1&c=2)), and "quotes".`;
   const SYNTHETIC_GHOST = `Ghost & <i>x</i>: [data/README.md, Ghost months](data/#ghost-months) [1.05M, 3.00M].`;
@@ -151,12 +157,12 @@ for (const [name, win] of Object.entries(WINDOWS)) {
   const cell = cells(win)[escText(LABEL.Zoox)];
   vm.runInContext(`[...vmtRows, ...ghostVmtRows].forEach((r, i) => { r.rationale = savedRationales[i]; });`, ctx);
   const zoox = run("vmtRows.filter(r => r.helmer === 'Zoox').map(r => r.month)").filter(m => m >= win[0] && m <= win[1]).sort();
-  const ghost = run("ghostVmtRows.filter(r => r.helmer === 'Zoox').map(r => r.month)").sort();
-  assert.ok(zoox.length > 1 && ghost.length > 0 && win[1] === last,
-    `Replicata: list Zoox's analysis and ghost months for the default window, ${win.join("..")}. Expectata: two or more analysis months and a ghost month, the window ending at the newest NHTSA month (${last}). Resultata: ${JSON.stringify({ zoox, ghost })}.`);
-  // Three links in SYNTHETIC, one in SYNTHETIC_GHOST for each ghost month.
+  const ghost = shownGhost("Zoox", win);
+  assert.ok(zoox.length > 1 && ghost.length > 0 && win[1] === last && ghost.every(g => typeof g.note === "string" && g.note.trim() !== ""),
+    `Replicata: list Zoox's analysis months and its pending and ghost rows for the default window, ${win.join("..")}. Expectata: two or more analysis months and at least one row of the second segment, each with a note, the window ending at the slider's last month (${last}). Resultata: ${JSON.stringify({ zoox, ghost: ghost.map(g => [g.month, g.note]) })}.`);
+  // Three links in SYNTHETIC, one in SYNTHETIC_GHOST for each such row.
   const want = [`${zoox[0]} – ${zoox[zoox.length - 1]}: ${rationaleMarkup(SYNTHETIC)}`,
-    ...ghost.map(m => `${m} (<span class="vmt-ghost-note">${escText(NOTE)}</span>): ${rationaleMarkup(SYNTHETIC_GHOST)}`)].join("<br>");
+    ...ghost.map(g => `${g.month} (<span class="vmt-ghost-note">${escText(g.note)}</span>): ${rationaleMarkup(SYNTHETIC_GHOST)}`)].join("<br>");
   if (cell !== want || anchorsOf(cell).length !== 3 + ghost.length)
     problems.push(`a synthetic rationale given to Zoox's rows: the cell is ${JSON.stringify(cell)}, with ${cell === undefined ? 0 : anchorsOf(cell).length} a elements; want ${JSON.stringify(want)}, with ${3 + ghost.length}`);
 }

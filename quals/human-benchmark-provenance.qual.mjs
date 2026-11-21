@@ -16,7 +16,8 @@
 // (red), then the bands. Since 2026-10-03 this qual also pins the
 // Hospitalization+ and nonstationary bands to their CRSS 2024 derivations
 // (blocks below), beside its older pins of WAYMO_PUBLISHED_IPMM and the
-// Uber/Lyft fatality band.
+// Uber/Lyft fatality band, which since 2026-11-21 is re-derived from the two
+// companies' published rates and FARS 2024's vehicles per fatal crash.
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
@@ -270,30 +271,75 @@ Resultata: srcLinks ${JSON.stringify(h.srcLinks)}; src ${h.src}`);
   }
 }
 
-// --- HumansRideshare fatality band: the sourced Uber/Lyft rates ---
-// 0.62 (Uber 2019-2020) to 0.95 (Lyft 2021-2022) fatalities per 100M VMT ->
-// 106M/161M MPI. Lyft's report (2020-2022, p. 11) gives 2021 as 36 deaths at
-// 0.86 and 2022 as 50 at 1.02 per 100M VMT, so its mile-weighted rate is
-// 86 / (36/0.86 + 50/1.02) = 86 / 90.88 = 0.946; until 2026-10-03 the src
-// said 0.94 (the plain mean of 0.86 and 1.02) while calling it mile-weighted
-// (audit #71). The edge is 106M either way. The only rideshare-specific
-// published per-mile rate; every nonfatal rideshare band is a computed proxy
-// (derived: true). Pinned so a regen or loop change can't silently overwrite
-// the one sourced band. Sits entirely above the IIHS urban band (83M-105M) —
-// rideshare ran ~30-50% safer than the urban average in the same years
-// (subset-chain.qual's 2x sanity bound).
+// --- HumansRideshare fatality band: Uber's and Lyft's rates on the AV side's basis ---
+// The one rideshare-specific per-mile rate that is published: 0.62 (Uber,
+// 2019-2020) to 0.95 (Lyft, 2021-2022) fatalities per 100M VMT. Lyft's
+// report (2020-2022, p. 11) gives 2021 as 36 deaths at 0.86 and 2022 as 50 at
+// 1.02 per 100M VMT, so its mile-weighted rate is 86 / (36/0.86 + 50/1.02) =
+// 86 / 90.88 = 0.946; until 2026-10-03 the src said 0.94 (the plain mean of
+// 0.86 and 1.02) while calling it mile-weighted (audit #71).
+// Those rates count every death in a crash involving one of the platform's
+// cars in full (Uber's 2021-2022 report, Appendix V: "Each rate is double
+// counting the same fatality"), where the AV side counts each fatal crash
+// once across its vehicles (1/vehiclesInvolved). Until 2026-11-21 the band
+// took the rates as published, 106M-161M miles per death (audit A12 of
+// 2026-11-20). The human chose to put it on the AV side's basis: the rates
+// divided by the national number of vehicles per fatal crash, FARS 2024's
+// 56,011 vehicles in 36,297 fatal crashes (NHTSA 813791), 1.543; so
+// 1e8/0.946 x 1.543 = 163M to 1e8/0.62 x 1.543 = 249M, each edge to three
+// significant figures. Every nonfatal rideshare band is a computed proxy
+// (derived: true); this one is sourced, and pinned so a regeneration or a
+// change of that loop cannot overwrite it. It sits entirely above the IIHS
+// urban band (83M-105M); subset-chain.qual holds it within twice that band's
+// top.
+// The source figures, with their links (re-pin here FIRST, red, when a
+// report or FARS updates):
+const RIDESHARE_REPORTS = {
+  // Uber US Safety Report: 2019-2020, deaths per 100M miles
+  uber: { rate: 0.62, url: "https://www.uber.com/us/en/about/reports/us-safety-report/" },
+  // Lyft Safety Transparency Report, 2020-2022, p. 11: [deaths, deaths per 100M miles] for 2021 and 2022
+  lyft: { years: [[36, 0.86], [50, 1.02]], url: "https://www.lyft.com/blog/posts/2024-safety-transparency-report" },
+};
+// FARS 2024 (NHTSA 813791): vehicles involved in fatal crashes, and fatal crashes.
+const FARS2024_FATAL = { vehicles: 56011, crashes: 36297, url: "https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791" };
 {
   const rs = humanBands("fatality").HumansRideshare;
-  const lyftMileWeighted = 86 / (36 / 0.86 + 50 / 1.02);
-  assert.ok(rs && rs.lo === 106000000 && Math.abs(rs.lo - 1e8 / lyftMileWeighted) / (1e8 / lyftMileWeighted) <= 0.01 &&
-    rs.hi === 161000000 && rs.derived !== true,
-    `Replicata: check the HumansRideshare fatality band.
-Expectata: the sourced Uber/Lyft rates -> lo 106M = 1e8/${lyftMileWeighted.toFixed(4)} ≈ ${Math.round(1e8 / lyftMileWeighted)} to 3 significant figures (within 1%), hi 161M, not a derived proxy.
-Resultata: ${JSON.stringify(rs)}.`);
-  assert.match(rs.src, /0\.62.*0\.95/,
-    `Replicata: inspect the rideshare fatality provenance.
-Expectata: it states the 0.62-0.95 per-100M source rates (0.95 = Lyft's mile-weighted 2021-2022 rate).
-Resultata: ${rs.src}.`);
+  const lyftRate = RIDESHARE_REPORTS.lyft.years.reduce((n, [deaths]) => n + deaths, 0) / RIDESHARE_REPORTS.lyft.years.reduce((n, [deaths, rate]) => n + deaths / rate, 0);
+  const factor = FARS2024_FATAL.vehicles / FARS2024_FATAL.crashes;
+  const sig3 = x => Number(x.toPrecision(3));
+  const expLo = sig3(1e8 / lyftRate * factor), expHi = sig3(1e8 / RIDESHARE_REPORTS.uber.rate * factor);
+  assert.ok(rs && rs.lo === expLo && rs.hi === expHi && rs.derived !== true,
+    `Replicata: derive the HumansRideshare fatality band from Uber's rate (${RIDESHARE_REPORTS.uber.rate} deaths per 100M miles), Lyft's mile-weighted rate (${lyftRate.toFixed(4)}) and FARS 2024's vehicles per fatal crash (${FARS2024_FATAL.vehicles} / ${FARS2024_FATAL.crashes} = ${factor.toFixed(4)}).
+Expectata: lo = 1e8/${lyftRate.toFixed(4)} x ${factor.toFixed(4)} = ${expLo} and hi = 1e8/${RIDESHARE_REPORTS.uber.rate} x ${factor.toFixed(4)} = ${expHi}, each to three significant figures (the published rates count each death in full for a platform car; the factor puts them on the AV side's count, one fatal crash across its vehicles); not a derived proxy.
+Resultata: ${JSON.stringify(rs && { lo: rs.lo, hi: rs.hi, derived: rs.derived })}.`);
+  // The app's own inputs are these source figures (its constants, which the
+  // band and the assumptions list read).
+  const app = JSON.parse(vm.runInContext(`JSON.stringify({
+    rates: typeof RIDESHARE_FATALITY_RATES === "undefined" ? null : RIDESHARE_FATALITY_RATES,
+    fars: typeof FARS_2024_FATAL_CRASHES === "undefined" ? null : FARS_2024_FATAL_CRASHES })`, ctx));
+  assert.ok(app.rates !== null && app.fars !== null && app.rates.uber === RIDESHARE_REPORTS.uber.rate && Math.abs(app.rates.lyft - lyftRate) < 1e-12
+      && app.fars.vehicles === FARS2024_FATAL.vehicles && app.fars.crashes === FARS2024_FATAL.crashes,
+    `Replicata: read crashla.js's RIDESHARE_FATALITY_RATES and FARS_2024_FATAL_CRASHES.
+Expectata: Uber's ${RIDESHARE_REPORTS.uber.rate}, Lyft's mile-weighted ${lyftRate}, and FARS 2024's ${FARS2024_FATAL.vehicles} vehicles in ${FARS2024_FATAL.crashes} fatal crashes.
+Resultata: ${JSON.stringify(app)}.`);
+  // Every figure the src states is one its sources hold: the two rates as the
+  // reports print them (Lyft's two yearly rates and their average to two
+  // decimals), the factor to two decimals, FARS's two counts, the years the
+  // figures are of, and the 100 of the rates' unit. No figure is required to
+  // appear (the human's rule of 2026-11-03: a figure is checked where it is
+  // stated; until 2026-11-21 this check required the src to state the rates,
+  // which a rewording that left one out turned red). The band's links cite the
+  // two reports and FARS 2024.
+  const YEARS = ["2019", "2020", "2021", "2022", "2024"]; // Uber's rate is of 2019-2020, Lyft's of 2021-2022, FARS's counts of 2024
+  const held = new Set([String(RIDESHARE_REPORTS.uber.rate), lyftRate.toFixed(2), ...RIDESHARE_REPORTS.lyft.years.map(([, rate]) => String(rate)),
+    factor.toFixed(2), FARS2024_FATAL.vehicles.toLocaleString("en-US"), FARS2024_FATAL.crashes.toLocaleString("en-US"), ...YEARS, "100"]);
+  const stated = [...rs.src.matchAll(/\d+(?:,\d{3})*(?:\.\d+)?/g)].map(m => m[0]);
+  const unheld = stated.filter(f => !held.has(f));
+  const links = [RIDESHARE_REPORTS.uber.url, RIDESHARE_REPORTS.lyft.url, FARS2024_FATAL.url].filter(u => !rs.srcLinks.includes(u));
+  assert.ok(unheld.length === 0 && links.length === 0,
+    `Replicata: read every figure in the rideshare fatality band's src, and its srcLinks.
+Expectata: each figure the src states is one of ${[...held].join(", ")} (the reports' rates, the factor, FARS 2024's two counts, the years and the unit's 100), and the links cite both reports and FARS 2024 (NHTSA 813791).
+Resultata: figures the sources do not hold ${JSON.stringify(unheld)}; links missing ${JSON.stringify(links)}; src ${rs.src}`);
 }
 
 // --- HumansUS fatality band: numerator-consistent with the AV side ---
@@ -307,7 +353,7 @@ Resultata: ${rs.src}.`);
 // whole-count-per-vehicle basis contradicts the 1/N division the AV side
 // performs. Re-pin here FIRST (red) when FARS updates.
 {
-  const FARS2024 = { deaths: 39254, fatalCrashes: 36297, vmt100M: 32940.31 };
+  const FARS2024 = { deaths: 39254, fatalCrashes: FARS2024_FATAL.crashes, vmt100M: 32940.31 };
   const band = humanBands("fatality").HumansUS;
   const expLo = 1e8 / (FARS2024.deaths / FARS2024.vmt100M);       // deaths basis ≈ 83.9M
   const expHi = 1e8 / (FARS2024.fatalCrashes / FARS2024.vmt100M); // fatal-crash basis ≈ 90.7M
@@ -402,4 +448,4 @@ Resultata: band [${h.lo}, ${h.hi}]; srcLinks ${JSON.stringify(h.srcLinks)}; comm
   }
 }
 
-console.log("qual pass: AV-cities injury/airbag/serious-injury+ bands pinned to the Waymo hub per-city rates (thru Jun 2026); geomean centrals ~match the blended benchmark; Hospitalization+ and nonstationary bands pinned to CRSS 2024; HumansUS fatality band pinned to the FARS 2024 deaths/fatal-crash numerators");
+console.log("qual pass: AV-cities injury/airbag/serious-injury+ bands pinned to the Waymo hub per-city rates (thru Jun 2026); geomean centrals ~match the blended benchmark; Hospitalization+ and nonstationary bands pinned to CRSS 2024; HumansUS fatality band pinned to the FARS 2024 deaths/fatal-crash numerators; Uber/Lyft fatality band re-derived from the two reports' rates over FARS 2024's vehicles per fatal crash");

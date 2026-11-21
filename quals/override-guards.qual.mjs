@@ -20,6 +20,12 @@
 //    narrative verbatim (until then the first two stored a reason, the third
 //    nothing re-checked, and VEHICLES_INVOLVED a bare count), and a re-filing
 //    whose narrative no longer holds the words stops the run for a re-read.
+//    Since 2026-11-21 so does AIRBAG_LANGUAGE_REVIEWED (the filed airbag
+//    value stands though the narrative mentions an airbag: audit 2026-11-20,
+//    A7; quals/airbag-tripwire.qual.mjs holds the tripwire itself). And the
+//    stop for PASSENGER_OVERRIDE entries reviewed against another filed
+//    passenger value lists every such report at once (A46 of that audit:
+//    until then one report a run).
 // 2. The overrides are keyed by Report ID, not Same Incident ID: a filing's
 //    Same Incident ID changes between versions (12 Waymo reports did, with VIN
 //    or Incident Date corrections, e.g. 30270-7157), and the override then
@@ -39,7 +45,9 @@ import { SLURP_OFFLINE_PY } from "./slurp-offline.mjs";
 const py = SLURP_OFFLINE_PY + String.raw`
 def brief(res, ids=()):
     rec = {r['reportId']: r for r in res['incidents'] or []}
-    return {'stop': res['stop'][:500], 'changed': res['changed'],
+    # (900 characters: the quoted-words stop names every quoting table, and
+    # the last, AIRBAG_LANGUAGE_REVIEWED, starts past the first 500)
+    return {'stop': res['stop'][:900], 'changed': res['changed'],
             'stored': {i: [rec[i]['severity'], rec[i]['airbagAny'], rec[i]['city'], rec[i]['vehiclesInvolved']] for i in ids if i in rec}}
 latest = {}
 for r in _filed:
@@ -60,6 +68,10 @@ out['unknownRefiled'] = brief(run_main([refile('30270-16261', **{'Highest Injury
 # 1. re-filings that change a reviewed field
 out['severityRefiled'] = brief(run_main([refile('30610-16451', **{'Highest Injury Severity Alleged': 'Minor W/O Hospitalization'})]), ['30610-16451'])
 out['airbagRefiled'] = brief(run_main([refile('30270-10573', **{'Any Air Bags Deployed?': 'Unknown'})]), ['30270-10573'])
+# two reports re-filed with another passenger value than their PASSENGER_OVERRIDE
+# entries were reviewed against (a Tesla report and Zoox 30610-15826): one stop names both
+out['passengersRefiled'] = brief(run_main([refile('13781-11375', **{'Were All Passengers Belted?': 'Unknown'}),
+                                           refile('30610-15826', **{'Were All Passengers Belted?': 'Subject Vehicle - All Belted'})]))
 # the teleoperator-driven exclusion rests on its quote: a re-filing without it
 teleop = latest['13781-15395']
 out['teleopRefiled'] = brief(run_main([refile('13781-15395', Narrative=teleop['Narrative'].replace(slurp.TELEOP_DRIVEN_REPORTS['13781-15395'], 'The vehicle made contact with a hidden tree stump'))]))
@@ -67,7 +79,10 @@ out['teleopRefiled'] = brief(run_main([refile('13781-15395', Narrative=teleop['N
 # them verbatim from its report's latest filed narrative, and a re-filing
 # without them stops the run (VEHICLES_INVOLVED: (count, words))
 QUOTED = ('TELEOP_DRIVEN_REPORTS', 'REMOTE_LANGUAGE_ADS_DRIVEN', 'SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN',
-          'OCCUPANCY_LANGUAGE_REVIEWED', 'VEHICLES_INVOLVED')
+          'OCCUPANCY_LANGUAGE_REVIEWED', 'AIRBAG_LANGUAGE_REVIEWED', 'VEHICLES_INVOLVED')
+missing_tables = [name for name in QUOTED if not hasattr(slurp, name)]
+assert not missing_tables, ("Replicata: read data/slurp.py's reviewed tables that quote a narrative (quals/override-guards.qual.mjs, QUOTED). "
+                            f"Expectata: each defined. Resultata: data/slurp.py defines no {missing_tables}.")
 def words(name, v):
     return (v[1] if isinstance(v, tuple) else None) if name == 'VEHICLES_INVOLVED' else v
 def quoted(name, rid, v):
@@ -81,6 +96,7 @@ def without_words(name, rid, table, new_words=''):
     return brief(run_main([refile(rid, Narrative=nar)], **{name: table}), [rid])
 out['remoteRefiled'] = without_words('REMOTE_LANGUAGE_ADS_DRIVEN', '30270-13378', slurp.REMOTE_LANGUAGE_ADS_DRIVEN)
 out['safetyRefiled'] = without_words('SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN', '30270-7075', slurp.SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN)
+out['airbagLanguageRefiled'] = without_words('AIRBAG_LANGUAGE_REVIEWED', '30270-16932', slurp.AIRBAG_LANGUAGE_REVIEWED)
 # OCCUPANCY_LANGUAGE_REVIEWED is empty: a synthetic entry for an unreviewed
 # in-scope Zoox report whose narrative says "An unoccupied Zoox autonomous
 # vehicle", then a re-filing without those words
@@ -151,6 +167,8 @@ const stops = {
     "30270-13378 (coded Remote; the ADS was driving, stationary, when a red-running cyclist struck it) re-filed without the narrative words its REMOTE_LANGUAGE_ADS_DRIVEN entry quotes"],
   safetyRefiled: ["30270-7075", listedIn("SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN", "30270-7075"),
     "30270-7075 (\"manual mode\" only for the return to the depot after the crash) re-filed without the narrative words its SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN entry quotes"],
+  airbagLanguageRefiled: ["30270-16932", listedIn("AIRBAG_LANGUAGE_REVIEWED", "30270-16932"),
+    "30270-16932 (the airbag field Unknown; \"Airbag deployment and tow status are unknown for both vehicles.\") re-filed without the narrative words its AIRBAG_LANGUAGE_REVIEWED entry quotes"],
   occupancyRefiled: [S.occupancyReport, listedIn("OCCUPANCY_LANGUAGE_REVIEWED", S.occupancyReport),
     `an OCCUPANCY_LANGUAGE_REVIEWED entry for ${S.occupancyReport} quoting "An unoccupied Zoox autonomous vehicle", and a re-filing of it without those words`],
   fatalCountRefiled: ["30270-9724", listedIn("VEHICLES_INVOLVED", "30270-9724"),
@@ -159,8 +177,8 @@ const stops = {
     "30270-16278 (4 vehicles, \"All four vehicles involved sustained damage.\") re-filed saying all five"],
 };
 assert.deepEqual(S.unquoted, { TELEOP_DRIVEN_REPORTS: [], REMOTE_LANGUAGE_ADS_DRIVEN: [], SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN: [],
-                               OCCUPANCY_LANGUAGE_REVIEWED: [], VEHICLES_INVOLVED: [] },
-  `Replicata: for each entry of TELEOP_DRIVEN_REPORTS, REMOTE_LANGUAGE_ADS_DRIVEN, SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN, OCCUPANCY_LANGUAGE_REVIEWED and VEHICLES_INVOLVED (its (count, words) pair's words), look for the entry's words in its report's latest filed narrative (newest snapshots).
+                               OCCUPANCY_LANGUAGE_REVIEWED: [], AIRBAG_LANGUAGE_REVIEWED: [], VEHICLES_INVOLVED: [] },
+  `Replicata: for each entry of TELEOP_DRIVEN_REPORTS, REMOTE_LANGUAGE_ADS_DRIVEN, SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN, OCCUPANCY_LANGUAGE_REVIEWED, AIRBAG_LANGUAGE_REVIEWED and VEHICLES_INVOLVED (its (count, words) pair's words), look for the entry's words in its report's latest filed narrative (newest snapshots).
 Expectata: every entry quotes a non-empty run of its report's narrative verbatim, the words the review rests on.
 Resultata: entries whose words are not in their narrative: ${JSON.stringify(S.unquoted)}.`);
 for (const [name, [id, re, what]] of Object.entries(stops)) {
@@ -170,6 +188,13 @@ for (const [name, [id, re, what]] of Object.entries(stops)) {
 Expectata: the run stops naming ${id} and ${re.source}, and writes nothing.
 Resultata: ${s.note ?? (s.stop === "" ? `completed, storing ${JSON.stringify(s.stored)}` : JSON.stringify(s.stop.slice(0, 300)))}; rewrote ${JSON.stringify(s.changed)}.`);
 }
+// One stop for every PASSENGER_OVERRIDE entry reviewed against another filed
+// value (audit 2026-11-20, A46): both re-filed reports named, nothing written.
+assert.ok(/PASSENGER_OVERRIDE/.test(S.passengersRefiled.stop) && ["13781-11375", "30610-15826"].every(id => S.passengersRefiled.stop.includes(id)) &&
+    S.passengersRefiled.changed.length === 0,
+  `Replicata: run slurp.main() offline with 13781-11375 (reviewed "Subject Vehicle - All Belted") re-filed "Unknown" and 30610-15826 (reviewed "Subject Vehicle - No Passenger In Vehicle") re-filed "Subject Vehicle - All Belted".
+Expectata: one stop naming PASSENGER_OVERRIDE and both reports, so that one run lists every entry to re-read (at the release that publishes Tesla's preprints, all eight), and nothing written.
+Resultata: ${S.passengersRefiled.stop === "" ? "completed" : JSON.stringify(S.passengersRefiled.stop.slice(0, 500))}; rewrote ${JSON.stringify(S.passengersRefiled.changed)}.`);
 assert.ok(S.sidChanged.stop === "" && JSON.stringify(S.sidChanged.stored) === JSON.stringify(S.sidBaseline.stored),
   `Replicata: re-file 30270-15022, -15301 (severity, vehicles involved), -15662 (location) and -10573 (airbag) as their next versions with only the Same Incident ID changed, and run slurp.main() offline.
 Expectata: it completes and stores what it stores without the re-filings, every override still applied: ${JSON.stringify(S.sidBaseline.stored)}.
@@ -179,4 +204,4 @@ assert.ok(typeof S.direct === "object" && ["severity", "airbag", "location", "ve
 Expectata: each table's stale entry stops the run, naming the report (SEVERITY_OVERRIDE, AIRBAG_OVERRIDE, LOCATION_OVERRIDE, VEHICLES_INVOLVED), and entries that all name stored incidents pass.
 Resultata: ${JSON.stringify(S.direct)}.`);
 
-console.log("qual pass: a re-filing that changes a reviewed severity or airbag value, or drops the narrative words a reviewed entry quotes (teleoperator-driven, ADS-driven despite remote or safety-driver language, occupancy kept as filed, vehicles involved), stops slurp, overrides follow their Report ID through Same Incident ID changes, a stale override entry stops it, and so does an in-scope Unknown severity");
+console.log("qual pass: a re-filing that changes a reviewed severity or airbag value, or drops the narrative words a reviewed entry quotes (teleoperator-driven, ADS-driven despite remote or safety-driver language, occupancy or airbag value kept as filed, vehicles involved), stops slurp, as does one that changes a reviewed passenger value (one stop naming every such report), overrides follow their Report ID through Same Incident ID changes, a stale override entry stops it, and so does an in-scope Unknown severity");

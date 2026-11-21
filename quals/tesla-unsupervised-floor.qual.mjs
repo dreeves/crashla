@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { parseCsv } from "./csv-parse.mjs";
+import { TESLA_PAGE_PART } from "./tesla-page-part.mjs";
 
 // Since its Q3-2026 update (Oct 21, 2026) Tesla publishes robotaxi miles only
 // for driving with no safety monitor in the vehicle; the "Cumulative Paid
@@ -39,8 +40,10 @@ const NO_MONITOR = {
 // that starts in the month before interpolated linearly. Oct 1-18, 2026:
 // 1,179,333 (the page as of Oct 18, read from the Wayback captures of Oct 21
 // to Oct 26, which hold identical data). Both Tesla lines' rows for the month
-// sit at or above it (added 2026-10-26, with the ghost months).
-const PARTIAL = { "2026-10": 1179333 };
+// sit at or above it (added 2026-10-26, with the ghost months). The figure is
+// read from the one place that holds it (quals/tesla-page-part.mjs; until
+// 2026-11-21 a literal here).
+const PARTIAL = Object.fromEntries(Object.entries(TESLA_PAGE_PART).map(([month, part]) => [month, part.miles]));
 // Floors are written rounded down to the thousand.
 const ROUNDING = 1000;
 

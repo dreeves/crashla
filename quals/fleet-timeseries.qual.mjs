@@ -267,7 +267,7 @@ assert.ok(new RegExp(`(^|[^\\d,.])${notes.perCarDay}(?!\\d|[.,]\\d)`).test(notes
 Expectata: it gives Tesla's car-equivalent rate, TESLA_MILES_PER_CAR_DAY (${notes.perCarDay} miles a car-day).
 Resultata: ${JSON.stringify(notes.out.fleet.note)}.`);
 
-// --- 8. The fleet view's y axis tops out at the decade above what it draws ---
+// --- 8. Each view's y frame holds what it draws; the fleet's tops out a decade above ---
 // The fleet trajectory's log axis framed 6 to 4,000,000 while nothing it drew
 // passed ~358,000 (the all-HW4 lane's 95th percentile then, on the tables of
 // 2026-11-01; ~324,000 from 2026-11-03 and ~319,000 since 2026-11-04, the
@@ -277,17 +277,36 @@ Resultata: ${JSON.stringify(notes.out.fleet.note)}.`);
 // at or above the largest value it draws: every lane's history ranges and its
 // forecast endpoint's 90% interval (the band and the error bar reach its 5th
 // and 95th percentiles).
-const frame = JSON.parse(JSON.stringify(vm.runInContext(`
+// And in every view, fleet, rides and miles, each value drawn lies inside the
+// frame, at or above yMin and at or below yMax: the plot clips its marks at
+// the frame, so a band edge outside it is cut at the axis with nothing to say
+// so. Until 2026-11-21 only the fleet view's floor was checked, and the miles
+// view's floor, 500, cut the low edge of Tesla's June 2025 band, 200, since
+// that band widened on 2026-10-31 (audit 2026-11-20, A37). The miles lanes
+// are read as the page draws them, with the pending and ghost months of
+// data/vmt.js's second segment.
+const frames = JSON.parse(JSON.stringify(vm.runInContext(`
 (() => {
-  const spec = growthMetricSpec("fleet");
-  const drawn = spec.lanes().flatMap(lane => lane.points.flatMap(p => [p.lo, p.best, p.hi]));
-  return { yMax: spec.yMax, yMin: spec.yMin, top: Math.max(...drawn), bottom: Math.min(...drawn) };
+  ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
+  return Object.fromEntries(${JSON.stringify(METRICS)}.map(key => {
+    const spec = growthMetricSpec(key);
+    const drawn = spec.lanes().flatMap(lane => lane.points.flatMap(p => [p.lo, p.best, p.hi].map(v => ({ v, lane: lane.label, month: p.month }))));
+    return [key, { yMin: spec.yMin, yMax: spec.yMax,
+      top: drawn.reduce((a, b) => (b.v > a.v ? b : a)), bottom: drawn.reduce((a, b) => (b.v < a.v ? b : a)) }];
+  }));
 })()
 `, ctx)));
-const decadeAbove = 10 ** Math.ceil(Math.log10(frame.top));
-assert.ok(frame.yMax === decadeAbove && frame.bottom >= frame.yMin,
-  `Replicata: read the fleet view's y frame (growthMetricSpec("fleet").yMin/yMax) and the largest and smallest values its lanes draw.
-Expectata: the top is the decade at or above the largest drawn value, ${decadeAbove.toLocaleString("en-US")} (the largest is ${Math.round(frame.top).toLocaleString("en-US")}), and nothing drawn falls under the bottom, ${frame.yMin}.
-Resultata: top ${frame.yMax.toLocaleString("en-US")}; smallest drawn ${frame.bottom}.`);
+const outside = METRICS.filter(key => !(frames[key].bottom.v >= frames[key].yMin && frames[key].top.v <= frames[key].yMax))
+  .map(key => `${key}: frame ${frames[key].yMin} to ${frames[key].yMax}; smallest drawn ${JSON.stringify(frames[key].bottom)}, largest ${JSON.stringify(frames[key].top)}`);
+assert.deepEqual(outside, [],
+  `Replicata: for each growth view (${METRICS.join(", ")}), read its y frame (growthMetricSpec(key).yMin and yMax) and the smallest and largest values its lanes draw (each point's value and its range's edges, the forecast endpoint's 90% interval included).
+Expectata: every drawn value inside its view's frame (the plot is clipped at the frame, so a value outside it is cut at the axis).
+Resultata: ${outside.join("; ")}.`);
+const frame = frames.fleet;
+const decadeAbove = 10 ** Math.ceil(Math.log10(frame.top.v));
+assert.ok(frame.yMax === decadeAbove,
+  `Replicata: read the fleet view's y frame (growthMetricSpec("fleet").yMax) and the largest value its lanes draw.
+Expectata: the top is the decade at or above the largest drawn value, ${decadeAbove.toLocaleString("en-US")} (the largest is ${Math.round(frame.top.v).toLocaleString("en-US")}).
+Resultata: top ${frame.yMax.toLocaleString("en-US")}.`);
 
-console.log("qual pass: fleet trajectory chart renders history + dashed extrapolation, sharing the FLEET_FORECAST endpoint; every growth view carries its note, the fleet view's giving Tesla's car-equivalent rate; the fleet axis tops out at the decade above what it draws");
+console.log("qual pass: fleet trajectory chart renders history + dashed extrapolation, sharing the FLEET_FORECAST endpoint; every growth view carries its note, the fleet view's giving Tesla's car-equivalent rate; every view's y frame holds what it draws, and the fleet axis tops out at the decade above it");

@@ -76,55 +76,94 @@ Stack AV narrative, 34952-11803 v1, and changed nothing else).
 
 Reports received through the cutoff cover only crashes from the first part
 of the data-through month (the five-day clock runs from the company's notice,
-plus processing). The share of that month's five-day-track incidents the
-release holds, its receipt coverage (best, lo, hi), is estimated from the
-month itself (`release_month_coverage`, since 2026-10-31), as the pooled
-Monthly-track incident coverage below is: observed = the month's in-scope
-five-day-track incidents in the release (an incident's track is its first
-filing's Report Type); expected = each company's five-day-track count in its
-most recent earlier month with at least 3 of them and miles (final at this,
-its second normal release), scaled by miles, pooled over the companies with
-miles in the month (a company with no such month stays out); best =
-observed / expected, lo = best ×
-exp(−1.96 √(1/observed + 1/reference)), and hi = `FIVE_DAY_RECEIPT_COVERAGE_MAX`
-(0.52), the highest share a first release has held, padded: the reading in
-which the month's low count is real rather than lagging. September 2026, in
-the Oct 15 file: 7 observed (all Waymo) of 51.6 expected (Waymo's August, 46,
-and Zoox's June, 4; Tesla has no month with 3), (0.1356, 0.0615, 0.52). Until
-then the coverage was the median of earlier months' first-release shares,
-(0.28, 0.20, 0.52), right only if that share held steady; it fell from 0.50
-in February 2026 to 0.21 in August. Those shares are still measured from
-`data/snapshots` history, as the share of a month's eventual five-day-track
-incidents present in the first release containing that month
-(`FIVE_DAY_RECEIPT_OBSERVATIONS`: Dec 2025 0.24, then Jan 0.33, Feb 0.50, Mar
-0.35, May 0.28, Jun 0.28, Jul 0.21, Aug 0.21 of 2026; Dec and Jan, whose first
-releases are the two legacy snapshots, entered 2026-10-31), and they set the
-high edge. April 2026 is excluded
-because its first release, May 15, was truncated. A month's denominator is
-final at its second normal release, so one observation is added per release,
-one release in arrears. The Monthly-track metrics' exposure does not depend on
-the receipt estimate: their incident coverage is conditional on the receipt
-best, so the product is the month's all-incident observed / expected.
+plus processing, and Monthly reports are due the 15th of the next month), so
+that month is only partly reported. Since 2026-11-21 no share of it is
+estimated (the human: "maximum conservativeness, don't show things when they
+involve arbitrary guesses"; "if we know when a helmer's crash reports end then
+we compute the exact VMT for the crashes. if not, we don't try to guess"). A
+line's month at or before the data-through month enters the rates only when
+
+- NHTSA's file is complete for the line's company and month: the month is
+  before the data-through month and outside the company's Monthly-report lag
+  (below). Its row of `data/vmt.js` is complete: its six coverage columns
+  are 1 and its incidents run through NHTSA's receipt cutoff; or
+- the company's own dated list covers it ("Preprints" below): the row counts
+  the list's crashes through its date over the miles driven through that
+  date.
+
+Every other line-month at or before the data-through month is **pending** (a
+provisional name): today Waymo's and Zoox's October 2026; in general the
+data-through month for a company with no list, and a company's lag months.
+A pending line-month's `data/vmt.csv` row goes with the ghost months in
+`data/vmt.js`'s second segment ("Ghost months" below): the VMT charts draw it
+faded, and no rate, card, verdict or table reads it. Its in-scope incidents
+are validated, reviewed and fault-rated as every incident is, and go in a
+second array of `data/incidents.js`, `PENDING_INCIDENT_DATA` (the record
+shape of `INCIDENT_DATA`), which the incident browser lists, grayed and
+labeled, and nothing counts. A crash of a list-covered month that the list
+lacks is pending too. `month_sources()` and `record_counted()` in `slurp.py`
+hold the rule; `quals/pending-months.qual.mjs` checks the two data files
+against a recount of the newest snapshots and runs synthetic releases.
+
+The first case rests on two premises about when a month's reports reach
+NHTSA's file. A month's five-day-track reports are all in by its second
+release: in the saved releases a month's in-scope five-day-track count has
+not grown after its second release (Dec 2025 13 at its first release, 55
+from its second on; Jan 2026 21, 63; Feb 19, 38; Apr 3, 58; May 16, 58; Jun
+17, 61; Jul 12, 58; Aug 10, 48; Sep 7, 61 so far), except March 2026 (25,
+53, then 72), whose second release, May 15, was truncated.
+`quals/assumptions-list.qual.mjs` recounts this from `data/snapshots` at
+every release (the assumptions entry `reporting-five-day`; "Each NHTSA
+release", step 2). And its Monthly-track reports arrive by that same release
+unless the company's lag says otherwise (next paragraph). A release cut
+short as May 15's was, or a Monthly batch that arrives partly late (Waymo's
+August 2026: 23 of 43 a release late; AGENTS.md, open question 36), still
+leaves a month counted short for one release, and no range carries that.
+
+Until 2026-11-21 the data-through month counted too, at an estimated share
+of its miles: a receipt coverage (the release's in-scope five-day-track
+incidents of the month over the count expected at each company's rate in an
+earlier month, pooled, with a high edge of 0.52; before 2026-10-31 the
+median of earlier months' first-release shares), and for Monthly-track
+metrics a pooled incident coverage on top; a lagged company's lagged months
+counted at its 5-Day share of incidents. Over nine first releases what
+eventually arrived ran from 0.70 to 1.68 times the five-day estimate
+(AGENTS.md ledger, 2026-11-20 (later 6)), and the human dropped it. The
+tables and functions it used are gone from `slurp.py`
+(`FIVE_DAY_RECEIPT_OBSERVATIONS`, `RECEIPT_MONTHS_EXCLUDED`,
+`FIVE_DAY_RECEIPT_COVERAGE_MAX`, `FIVE_DAY_SHARE_OBSERVATIONS`,
+`release_month_coverage()`, `pooled_reference_rate()`, `incident_coverage()`,
+`row_coverage()`, `check_list_covered_rows()`).
 
 Monthly-track (SGO Request No. 2) reports for a month are due by the 15th of
 the next, so they normally reach the file at the month's second release, and
-the app treats the month as complete from then on. Some companies' arrive
+the month is complete from then on. Some companies' arrive
 later: every in-scope Zoox Monthly-track report of January-July 2026 arrived
 one release after that, so in the Sep 15, 2026 file Zoox's July held only its
 one 5-Day report. `MONTHLY_ARRIVAL_LAG` in `slurp.py` is each company's extra
-lag in releases (all 0 since the Oct 15, 2026 file, which held every
-company's August reports, Zoox's included; Zoox's was 1 before), next to the
-observations it is measured from (`MONTHLY_ARRIVAL_OBSERVATIONS`: per company and incident month, the
+lag in releases, next to the observations it is measured from
+(`MONTHLY_ARRIVAL_OBSERVATIONS`: per company and incident month, the
 in-scope Monthly-track incidents by the release at which they first
-appeared). The months inside a company's lag get Monthly-track incident
-coverage = its in-scope 5-Day share instead of 1
-(`FIVE_DAY_SHARE_OBSERVATIONS`; while Zoox was lagged, Jan-Jun 2026: 17 of 27
-= 0.63, band from the lowest month, February's 0.25, to 1.0); five-day-track
-metrics are unaffected. The run stops if a lagged company's lagged month
-already holds a Monthly-track report (checked before the share tables, since
-it means the lag itself is wrong), if a table disagrees with the newest file,
-or if a month that has become measurable has no observation.
-`quals/monthly-arrival-lag.qual.mjs` re-measures the tables from
+appeared). Every lag has been 0 since the Oct 15, 2026 file (Zoox's was 1
+before), which held Zoox's three August reports and seven of Tesla's eight
+but only 20 of Waymo's 43: the other 23, and Tesla's eighth, arrived a
+release late (AGENTS.md, open question 36). A lag is read from the majority
+of the company's newest observed month, and at the Nov 16, 2026 release that
+month was September, whose Monthly reports had arrived (62 of Waymo's), so
+Waymo's lag stayed 0. The months inside a company's lag are pending for its lines, as
+the data-through month is (until 2026-11-21 they counted, with a
+Monthly-track incident coverage equal to the company's in-scope 5-Day
+share). The same table gives a list-covered month its allowance for crashes
+the list lacks: the share of the list's company's Monthly reports that
+arrived on time ("Preprints" below). The run stops if a lagged company's lagged month
+already holds a Monthly-track report (it means the lag itself is wrong), if
+the table disagrees with the newest file,
+if a month that has become measurable has no observation, or if its row
+holds its on-time count alone (since 2026-11-21: a row takes its second
+count, the reports that arrived a release late, at the month's third
+release, and no sooner)
+(`check_monthly_arrivals()`).
+`quals/monthly-arrival-lag.qual.mjs` re-measures the table from
 `data/snapshots` (its embedded script is the measurement recipe).
 
 It also reads two local input files:
@@ -151,10 +190,12 @@ The slurp pipeline is:
    list (`PREPRINT_LIST`, read from its newest snapshot) whose Report ID no
    NHTSA file holds, mapped onto NHTSA's columns (`list_rows()`,
    `preprint_rows()`; "Preprints" below). They take every step from here on
-   as NHTSA's rows do, except that the receipt and arrival statistics (steps
-   8 and 11) read NHTSA's rows only
+   as NHTSA's rows do, except that the Monthly-report arrival counts (step
+   8) read NHTSA's rows only
 3. Validate every row against the whitelists (report type, operator type,
-   reporting entity, severity, date formats), the per-helmer operator scope
+   reporting entity, severity, Roadway Type, date formats; the Roadway Type
+   one, `ROADWAY_CLASS`, also gives each value its class, a road or a parking
+   facility: step 12 and "Each NHTSA release", step 6), the per-helmer operator scope
    (every helmer row must file a counted or an excluded type), the
    teleoperator narrative tripwire, the safety-driver narrative tripwire
    (`check_safety_driver_classified`: a Waymo or Zoox narrative that puts a
@@ -170,7 +211,7 @@ The slurp pipeline is:
 4. Deduplicate by `Report ID` over every filed row, keeping the highest
    `Report Version` (a report's `Same Incident ID` can change between
    versions, and a later version can retire a report from scope)
-5. Filter the surviving versions to the operator modes whose miles are in each company's VMT denominator (`PUBLIC_SERVICE_OPERATOR_TYPES` / `EXCLUDED_OPERATOR_TYPES` in `slurp.py`: `"None"` and `"Remote (Commercial / Test)"` for all three, plus `"In-Vehicle (Commercial / Test)"` for Tesla, whose deck miles include monitor-aboard miles; Waymo/Zoox safety-driver modes are excluded because their miles are not in those denominators; `"Other, see Narrative"` is classified per report via `OPERATOR_TYPE_OVERRIDE`), drop crashes in which a remote human was driving (`TELEOP_DRIVEN_REPORTS`, guarded by a narrative tripwire) and reports a re-filing under a new Report ID replaced (`SUPERSEDED_REPORTS`; only from rows that hold the re-filing, so an earlier release's snapshot, from before it, keeps the original when the quals recount it), then keep one report per `Same Incident ID`. Two in-scope reports under one Same Incident ID stop the run, and so does a helmer's out-of-scope filing under an in-scope report's Same Incident ID (a re-filing that may have moved the crash out of scope), until `SUPERSEDED_REPORTS` says which report stands or `SPLIT_SAME_INCIDENT_REPORTS` lists one as another crash or vehicle (since 2026-10-31; until then the higher `Report Version` won, though different Report IDs' versions share no scale). Other reporting entities' filings are never in scope, so a duplicate one files (Transdev, Waymo's fleet operator) can neither displace nor retire a helmer's report (`quals/same-incident-dedup.qual.mjs`). Then each crash one report files for two of a helmer's AVs gets a record for the second AV (`SECOND_INVOLVEMENTS`, since 2026-10-31; decision #47 of 2026-10-04: each AV involved counts, as in the crashed-vehicle human benchmarks and Waymo's own crash list, hub CSV2, which lists each such report twice but 30270-11224, counted since 2026-11-02 though the hub lists it once, since every AV a narrative shows struck counts, the human's answer to open question 19; two AVs that each filed a report, as in Atlanta in August 2026, already counted twice): the report's crash-level fields and their overrides (severity, airbag, place, vehicles involved), the second AV's own speed, movements, crash partner, passengers and contact areas as the narrative gives them, the Report ID + "-B", `secondOf` naming the report (the incident browser marks the row), and a fault row of its own. A narrative that names a second AV of its company (`SECOND_AV_PATTERN`) stops the run until the report is in `SECOND_INVOLVEMENTS` or in `SECOND_AV_REVIEWED` with the reason (`quals/second-involvements.qual.mjs`). The receipt and Monthly-track coverage counts read the reports, since they measure when reports arrive
+5. Filter the surviving versions to the operator modes whose miles are in each company's VMT denominator (`PUBLIC_SERVICE_OPERATOR_TYPES` / `EXCLUDED_OPERATOR_TYPES` in `slurp.py`: `"None"` and `"Remote (Commercial / Test)"` for all three, plus `"In-Vehicle (Commercial / Test)"` for Tesla, whose deck miles include monitor-aboard miles; Waymo/Zoox safety-driver modes are excluded because their miles are not in those denominators; `"Other, see Narrative"` is classified per report via `OPERATOR_TYPE_OVERRIDE`), drop crashes in which a remote human was driving (`TELEOP_DRIVEN_REPORTS`, guarded by a narrative tripwire) and reports a re-filing under a new Report ID replaced (`SUPERSEDED_REPORTS`; only from rows that hold the re-filing, so an earlier release's snapshot, from before it, keeps the original when the quals recount it), then keep one report per `Same Incident ID`. Two in-scope reports under one Same Incident ID stop the run, and so does a helmer's out-of-scope filing under an in-scope report's Same Incident ID (a re-filing that may have moved the crash out of scope), until `SUPERSEDED_REPORTS` says which report stands or `SPLIT_SAME_INCIDENT_REPORTS` lists one as another crash or vehicle (since 2026-10-31; until then the higher `Report Version` won, though different Report IDs' versions share no scale). Other reporting entities' filings are never in scope, so a duplicate one files (Transdev, Waymo's fleet operator) can neither displace nor retire a helmer's report (`quals/same-incident-dedup.qual.mjs`). Then each crash one report files for two of a helmer's AVs gets a record for the second AV (`SECOND_INVOLVEMENTS`, since 2026-10-31; decision #47 of 2026-10-04: each AV involved counts, as in the crashed-vehicle human benchmarks and Waymo's own crash list, hub CSV2, which lists each such report twice but 30270-11224, counted since 2026-11-02 though the hub lists it once, since every AV a narrative shows struck counts, the human's answer to open question 19; two AVs that each filed a report, as in Atlanta in August 2026, already counted twice): the report's crash-level fields and their overrides (severity, airbag, place, vehicles involved), the second AV's own speed, movements, crash partner, passengers and contact areas as the narrative gives them, the Report ID + "-B", `secondOf` naming the report (the incident browser marks the row), and a fault row of its own. A narrative that names a second AV of its company (`SECOND_AV_PATTERN`) stops the run until the report is in `SECOND_INVOLVEMENTS` or in `SECOND_AV_REVIEWED` with the reason (`quals/second-involvements.qual.mjs`). The Monthly-report arrival counts read the reports, since they measure when reports arrive
 6. Read the VMT master from `data/vmt.csv`: an incident month newer than its
    newest month stops the run, and so does a missing ghost month (see "Ghost
    months" below): at least the month after the data-through month, a row
@@ -180,10 +221,14 @@ The slurp pipeline is:
    the file's six mirrored columns are synced from the NHTSA rows only in the
    last step
 8. Verify the reviewed data-through cutoff against the CSV contents (the
-   newest incident month and newest submission month must both equal it),
-   estimate the data-through month's receipt coverage (observed / expected,
-   above), check the Monthly-report arrival tables against the release (see
-   above), and restrict to the app's VMT analysis window
+   newest incident month and newest submission month must both equal it:
+   `check_data_through_month()`), check the Monthly-report arrival table
+   against the release (`check_monthly_arrivals()`; see above), and decide
+   which line-months count (`month_sources()`, above): complete, covered by
+   the company list, or pending. The run stops on a list dated in a month
+   after the data-through month, and on a line with a pending month before a
+   month that counts (a lag month before a list-covered one): neither has a
+   rule ("Each NHTSA release", steps 3 and 7)
 9. Apply narrative-verified field overrides from `slurp.py`, each keyed by
    Report ID (severity, airbag, city and state — see
    `quals/field-overrides.qual.mjs` for the pins;
@@ -200,7 +245,35 @@ The slurp pipeline is:
    Roadway Type, for one, is taken as filed, since none is so contradicted —
    13781-11784's "Intersection" is literally true of the aisle junction in
    the parking lot its narrative describes (decision of 2026-10-30, on the
-   audit's finding that it counts in Tesla's non-parking-lot metric). Then
+   audit's finding that it counts in Tesla's non-parking-lot metric); the
+   filed value's class, a road or a parking facility, comes from the one
+   reviewed table of them (`ROADWAY_CLASS`, since 2026-11-21).
+   A filed city is such a field where the narrative's opening names another
+   place and Waymo's own crash list gives an address there: six Waymo
+   reports filed "Los Angeles" whose narratives open "operating in West
+   Hollywood, California" are stored as West Hollywood (30270-9763 since
+   2026-10-04; 30270-13369, -13556, -13550, -14586 and -15285 since
+   2026-11-21, audit finding A39, which read the list's addresses). No rate
+   reads the city; the sanity section's Geography table does.
+   NHTSA's field plus the report's own narrative is the one rule for every
+   company's airbag and severity values (the human, 2026-11-21: "agreed.
+   consistently respect the NHTSA data"): Waymo's own crash list (its Safety
+   Impact hub's CSV2, column "Is Any Vehicle Airbag Deployment") is not a
+   source for them. Of 1,970 shared reports the list differs from the stored
+   airbag value on 7 (the 2026-11-20 audit, A8): list yes, field no on
+   30270-10833, -13303, -13955, -14496 and -14977, none of whose narratives
+   mentions an airbag; list no on 30270-11450, whose field and narrative both
+   report one, and on 30270-6542, an `AIRBAG_OVERRIDE` entry. Tesla and Zoox
+   publish no such list, and Waymo's contradicts its own filings in both
+   directions; adopting it would have lowered Waymo's default-window airbag
+   median 4-7%, the verdict safer either way.
+   A hospital transport the narrative states counts whatever its cause
+   (since 2026-11-21, the human's choice on audit finding A38): 30270-8940,
+   filed "No Injuries Reported", whose other driver "was experiencing a
+   medical emergency and was transported from the scene in an ambulance", is
+   stored as "Minor W/ Hospitalization", as the human benchmark counts anyone
+   transported; counting it applies that one rule again, where leaving it out
+   would add a second, about why a person was taken. Then
    strip the narratives' fact-free filing boilerplate
    (`quals/narrative-boilerplate.qual.mjs`), join in the fault fractions,
    and list the lines each incident counts toward (`series`: its company, and
@@ -208,15 +281,30 @@ The slurp pipeline is:
    than that list, reviewed as one, `TESLA_NO_MONITOR_ADDITIONS`; see
    "Tesla's no-monitor line" below).
    A filed severity, airbag, city, state or passenger value that no longer
-   matches the one its override was reviewed against, an in-scope incident
+   matches the one its override was reviewed against (the passenger stop
+   lists every such entry at once, before any record is built:
+   `check_passenger_reviews()`, since 2026-11-21), an in-scope incident
    left with severity "Unknown" (the app counts it as no injury), an incident
-   left with no city or state, an override entry that names no in-scope
+   left with no city or state, an in-scope incident with a blank severity or
+   narrative, or with a speed that is neither blank nor a whole number of
+   miles per hour (`quals/record-fields.qual.mjs`; since 2026-11-21, audit
+   finding A23: the page refuses a record with no severity, a blank narrative
+   passes every narrative review unread, and until then a speed such as
+   "0.0" was stored as no speed, which the page counts as moving; a blank
+   speed is still stored as none, as 30270-5114's and 30270-7938's are), an
+   override entry that names no in-scope
    incident of the window (`quals/override-guards.qual.mjs`), an in-scope
    Tesla report with no reviewed passenger entry, a passenger entry for a
    report no longer in scope, a filed passenger code that crashla.js's three
-   passenger classes do not list (`PAX_CLASS`), or a narrative that says who
+   passenger classes do not list (`PAX_CLASS`), a narrative that says who
    was aboard the AV ("An occupied Zoox autonomous vehicle", "unoccupied",
-   "had no occupants") against its filed passenger code, unreviewed, stops the
+   "had no occupants", and since 2026-11-21 a rider "not belted", "unbelted"
+   or "not wearing a seat belt") against its filed passenger code, unreviewed
+   (the narrative read is the crash's own report's: a second AV's record
+   carries that narrative under its own reviewed passenger code), or a
+   narrative that mentions an airbag while the filed field marks no
+   deployment, unreviewed (`check_airbag_classified()`, since 2026-11-21,
+   audit finding A7; `quals/airbag-tripwire.qual.mjs`), stops the
    run, as do an in-scope Tesla report from January 2026 on that is neither on
    Tesla's latest list nor in a reviewed monitor table, a monitor table's entry
    that names no such report, a reviewed report whose narrative fails the
@@ -225,36 +313,48 @@ The slurp pipeline is:
    release's own or before its first filing's month, a no-monitor addition
    that Tesla's latest list should hold (one Tesla had filed by the list's
    date; all of these "Each NHTSA release", step 7), and an incident on a line
-   with no `data/vmt.csv` row for its month. No SGO field counts the vehicles, so
+   with no `data/vmt.csv` row for its month. Every check of this step and the
+   next reads the pending incidents as it reads the counted ones. No SGO field counts the vehicles, so
    each `VEHICLES_INVOLVED` entry is (the count, the narrative's words that
    give it), and a re-filing whose narrative no longer holds those words
    stops the run for a re-count, as it does for the words the narrative
    reviews of checklist step 6 quote (since 2026-11-02; until then vehicles
-   involved had nothing to re-check)
+   involved had nothing to re-check). The count is the narrative's own, a
+   floor where it says "at least", and none is taken from outside NHTSA's
+   data, since outside reporting reaches some crashes more than others (the
+   human, 2026-11-21): for the January 2025 San Francisco fatal crash,
+   30270-9724, the narrative gives 6 vehicles and firefighters, by CBS San
+   Francisco, KTVU and ABC7, 7 (1/6 of a death against 1/7)
 10. Stop on any in-scope incident of the window with no `data/faultfrac.csv`
     row (a second AV's record, Report ID + "-B", included), listing them all
     (since 2026-10-31, decision #4: until then an
     unrated incident was written with fault null, and the app drops its whole
     month, miles included, from every at-fault number;
     `quals/fault-batch-stop.qual.mjs`)
-11. Apply the data-through month's receipt coverage (`coverage`,
-    `coverage_min`, `coverage_max`) and the pooled Monthly-track incident
-    coverage (`incident_coverage`, `_min`, `_max`), plus the Monthly-track
-    incident coverage of the months inside each company's Monthly-report lag
-    (`MONTHLY_ARRIVAL_LAG`) — the generated CSV in `data/vmt.js` carries these
-    six columns after `vmt_max`; every other month gets 1. Tesla's
-    no-monitor rows take Tesla's coverage, and the pooled incident coverage
-    counts the companies only. A row takes its coverage from Tesla's own
-    list instead where that list holds more of the month than NHTSA's file
-    does (`preprint_coverage()`, `row_coverage()`; "Preprints" below), and a
-    seventh column, `incidents_through`, gives the date each row's incidents
-    run through: NHTSA's receipt cutoff, or the list's date on such a row.
-    Such a row that counts a crash the list does not hold stops the run
-    (`check_list_covered_rows()`; "Each NHTSA release", step 7)
+11. Split the incidents (`record_counted()`): one counts when every line it
+    names counts its month, from NHTSA's file (a complete month) or from the
+    company list (a list-covered month, and then only a crash on the list);
+    every other one is pending. A record counted on one of its lines and
+    pending on another stops the run. And give each analysis row its coverage
+    (`build_vmt_csv()`): the generated CSV in `data/vmt.js` carries six
+    coverage columns after `vmt_max` (`coverage`, `coverage_min`,
+    `coverage_max`, the share of the row's miles its source covers, and
+    `incident_coverage`, `_min`, `_max`, the share of that span's
+    Monthly-track crashes the source is taken to hold) and a seventh,
+    `incidents_through`, the date the row's incidents run through. A complete
+    row has 1 in all six and NHTSA's receipt cutoff; a list-covered row has
+    the list's coverage and date (`preprint_coverage()`; "Preprints" below).
+    A pending line-month has no row there
 12. Every check has passed: write `data/faultfrac.csv`'s six mirrored columns
-    (see "Fault CSV synchronization" below), the incident data into
-    `data/incidents.js`, and the VMT CSV text into `data/vmt.js`, with the
-    ghost months' master rows, as they stand, in its second segment
+    (see "Fault CSV synchronization" below), the counted incidents and the
+    pending ones into `data/incidents.js` (`INCIDENT_DATA`,
+    `PENDING_INCIDENT_DATA`) with each Roadway Type's class (`ROADWAY_CLASS`,
+    the page's copy of slurp's table: `crashla.js` counts a moving crash in
+    the nonstationary non-parking-lot metric when its road type's class is a
+    road, and refuses a record whose type the table lacks;
+    `quals/roadway-class.qual.mjs`), and the VMT CSV text into `data/vmt.js`, with
+    the pending line-months' and the ghost months' master rows, as they
+    stand, in its second segment
     (`GHOST_VMT_CSV_TEXT`). A run that stops writes none of the three (until
     2026-10-31 `data/faultfrac.csv` was synced before most checks)
 13. After `main()`, never inside it (the quals run `main()`): the camera
@@ -269,41 +369,74 @@ The slurp pipeline is:
 
 ## Each NHTSA release
 
-`slurp.py` stops until these are done; each stop names the step below that
-covers it. A run that stops writes only the release's snapshots (pipeline step
+`slurp.py` stops until these are done. A stop that a release's rows, a new
+list of Tesla's, a row added to `data/vmt.csv` or an entry of the arrival
+table can bring names, in its message, the step below that covers it
+(`quals/release-stops.qual.mjs` reads every `must()` call of `slurp.py` and
+goes red on one that names no step outside the functions it lists; since
+2026-11-21, audit finding A55: until then this paragraph said that each stop
+names its step, and 76 of the 145 did not, among them the forms of a list's
+dates, speeds, weather values and contact areas, a preprint dated after the
+data-through month and the date forms of NHTSA's rows). The stops that name
+none are about the form of what a person or the code wrote, which no step
+covers: a reviewed table's own form, checked when `slurp.py` loads (an entry
+of the wrong shape, a report in two tables that exclude each other); a file
+that is not in its own form (the archive file's columns, the header of
+`data/vmt.csv` or of `data/faultfrac.csv`, a fault row that is no number, a
+fetched file with no rows); the code's own bookkeeping; and the camera
+step's, which step 8 describes. A run that stops writes only the release's snapshots (pipeline step
 1; a stop in the camera step, which runs after `main()`, comes after step 12's
 writes and leaves only the camera table unsaved), so re-run it after each
 step. The first four are the constants every release needs:
 
 1. `NHTSA_DATA_THROUGH_DATE`: the new release's cutoff.
-2. `FIVE_DAY_RECEIPT_OBSERVATIONS`: the month that just became final (the
-   one before the new data-through month), measured from the snapshots
-   (`quals/receipt-observations.qual.mjs` recounts every row, an incident's
-   track being its crash's first filing's Report Type: a re-filing under a
-   new Report ID, listed in `SUPERSEDED_REPORTS`, takes the track of the
-   report it replaced, since 2026-11-02). `FIVE_DAY_RECEIPT_COVERAGE_MAX`
-   must stay at or above every observed share: raise it when a new
-   observation (or the data-through month's own observed / expected)
-   exceeds it. The run also stops when the data-through month holds no
-   in-scope five-day-track incident at all (a truncated release?).
-3. The Monthly-report arrival table, re-measured alongside the receipt
-   observations: each company's `MONTHLY_ARRIVAL_OBSERVATIONS` row for the
-   month whose third release this is (data-through month - 2); a check that
-   `MONTHLY_ARRIVAL_LAG` still matches each company's newest observed month;
-   and each lagged company's `FIVE_DAY_SHARE_OBSERVATIONS` row for the month
-   that just became final for it (data-through month - 1 - lag). If a lagged
+2. No constant since 2026-11-21 (the number stays, so that the steps below
+   keep theirs, which `slurp.py`'s stops, the quals and this file cite).
+   Until then this step entered `FIVE_DAY_RECEIPT_OBSERVATIONS`, the
+   first-release shares behind the estimate of the data-through month's
+   coverage, which the human dropped (above). What is measured here now is
+   the premise the new rule rests on, and a qual measures it, not `slurp.py`:
+   `quals/assumptions-list.qual.mjs` recounts from `data/snapshots`, for
+   every month with a saved second release, the in-scope five-day-track
+   incidents whose first filing that second release lacked, and goes red
+   when a month other than those its entry `reporting-five-day` names has
+   one. Then that month was counted short for a release: update the entry
+   and tell the human (a late five-day report has no rule, as a late
+   Monthly batch has the lag of step 3).
+3. The Monthly-report arrival table: each company's
+   `MONTHLY_ARRIVAL_OBSERVATIONS` row for the
+   month whose third release this is (data-through month - 2), and a check that
+   `MONTHLY_ARRIVAL_LAG` still matches each company's newest observed month.
+   It matters more since 2026-11-21: the table and the lag decide which
+   months count at all (a month inside a company's lag is pending for its
+   lines, where it used to count at an estimated share), and the table's
+   on-time share is the allowance of a list-covered month (step 7). If a lagged
    company's Monthly reports start arriving on time, the run stops on its
    lagged month: record that month's on-time count as its observation (for
    every company, since the rows cover the same months) and set the lag. On
    the Oct 15, 2026 release Tesla's July tie (one report on time, one late)
-   read as a lag of 1, but its and Zoox's August reports had all arrived, so
-   2026-08 entered early and every lag went to 0. A row entered early holds
-   on-time counts only: re-measure it, late column included, at the month's
-   third release (for 2026-08, the Nov 2026 release).
+   read as a lag of 1, but seven August reports of its own and Zoox's three
+   had arrived, so 2026-08 entered early and every lag went to 0 (an eighth
+   Tesla report and 23 of Waymo's 43 came a release late). A row entered
+   early holds on-time counts only: re-measure it, late column included, at
+   the month's third release, where `slurp.py` stops on a row that still
+   lacks its second count (since 2026-11-21; a 0 where no report arrived
+   late). The 2026-09 rows, entered early at the Nov 16, 2026 release as
+   (62,), (3,) and (10,), take theirs at the December 2026 release; a second
+   count entered before a month's third release stops the run too. A lag for a company
+   whose own list covers the data-through month stops the run (a pending
+   month would sit before a counted one, which has no rule): ask the human.
 4. `data/vmt.csv`: every line's row for the month after the new
    data-through month, its ghost month (see "Ghost months" below; the month
    in progress on release day), and a re-read of the previous ghost month's
-   rows, which become the new data-through month's. The run also stops on an
+   rows, which become the new data-through month's (pending, unless a list
+   covers the month) and of the rows of the month before it, which enter the
+   rates now. A release can also bring a late Waymo report of July, August
+   or September 2026, whose counts by metro split San Diego's miles out of
+   Waymo's rows from July on ("Waymo anchors"): `quals/waymo-vmt-model.qual.mjs`
+   recounts them from the regenerated `data/incidents.js` and goes red on a
+   changed count or an unlisted place, until the split and the rows it moves
+   are redone. The run also stops on an
    incident month newer than the master's newest month, and on an incident
    on a line with no row for its month (a new month with no `teslanomonitor`
    row).
@@ -323,7 +456,8 @@ Then what the release brings:
    repeatable method for getting faultfracs from blind sub-agents with known
    parameters"). A rater is one headless model call (`MODEL` and `EFFORT` in
    `faultrate.py`) that gets `data/fault-criterion.md` as its whole system
-   prompt and one report: its month, time and road type, each party's
+   prompt and one report: its month, time and road type, the other party's
+   type (NHTSA's "Crash With": an SUV, a pole or tree), each party's
    movement and contact area, the AV's speed at contact, and the narrative
    with the company's name replaced. It runs in an empty folder outside the
    repo with no tools. Three raters rate each incident. Every rating is kept
@@ -339,7 +473,8 @@ Then what the release brings:
    criterion's text, the model, the effort, the output schema and the case
    format together. After a change to any of them `faultrate.py` stops until
    `data/fault-ratings.csv` is deleted, and then rates every incident again
-   (about 27M tokens for 2,392 incidents), so one method covers every row
+   (about 35M tokens: the full run of 2026-11-17 used 35,364,400 for 2,392
+   incidents, 4,928 a rating), so one method covers every row
    (`quals/fault-ratings.qual.mjs`).
 
    Each rating also carries the id of the case it was made from, a hash of
@@ -365,11 +500,20 @@ Then what the release brings:
 6. The narrative reviews, each a table in `slurp.py` with the narrative's own
    words beside its entry (`TELEOP_DRIVEN_REPORTS`,
    `REMOTE_LANGUAGE_ADS_DRIVEN`, `SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN`,
-   `OCCUPANCY_LANGUAGE_REVIEWED` and `VEHICLES_INVOLVED` store those words
+   `OCCUPANCY_LANGUAGE_REVIEWED`, `AIRBAG_LANGUAGE_REVIEWED` and
+   `VEHICLES_INVOLVED` store those words
    verbatim, and a re-filing whose narrative no longer holds them stops the
-   run until the entry is re-read: since 2026-11-02 for all but the first):
+   run until the entry is re-read: since 2026-11-02 for all but the first,
+   and the airbag table since 2026-11-21):
    a value outside a whitelist (`EXPECTED_*`; a new
-   severity also needs `crashla.js`'s `SEVERITY_INFO`) or an unclassified
+   severity also needs `crashla.js`'s `SEVERITY_INFO`), a Roadway Type
+   outside `ROADWAY_CLASS` (read the reports that file it and give it its
+   class there: `"parking"` for a parking facility, as "Parking Lot" and
+   "Parking Garage" have, whose moving crashes stay out of the nonstationary
+   non-parking-lot metric, since its human bands cover roadway crashes only;
+   `"road"` otherwise, which "Unknown" has too, the cautious reading; since
+   2026-11-21, when NHTSA's new "Parking Garage" had entered that metric as
+   a road without a word) or an unclassified
    operator mode (`PUBLIC_SERVICE_OPERATOR_TYPES` /
    `EXCLUDED_OPERATOR_TYPES`); the teleoperator, safety-driver and second-AV
    tripwires (`TELEOP_DRIVEN_REPORTS` / `REMOTE_LANGUAGE_ADS_DRIVEN`,
@@ -391,16 +535,34 @@ Then what the release brings:
    "Minor W/ Hospitalization", an injury without one "Minor W/O
    Hospitalization", none mentioned "Property Damage. No Injured Reported";
    Tesla's 13781-17203, on Tesla's list as Unknown with the other driver
-   taken to a hospital, has its entry since 2026-11-18, as a preprint); a
+   taken to a hospital, has its entry since 2026-11-18, as a preprint); an
+   in-scope incident with a blank severity (a `SEVERITY_OVERRIDE` entry from
+   its narrative, as for an Unknown one) or a blank narrative (no rule: ask
+   the human), or with a speed that is neither blank nor a whole number of
+   miles per hour (ask the human how to store it; a blank speed is stored as
+   none, which the page counts as moving; all three since 2026-11-21); a
    re-filing that changes a
    value an override was reviewed against (severity, airbag, city and state,
-   passenger code, operator type: re-read the narrative), and an override
+   passenger code, operator type: re-read the narrative; the passenger stop
+   lists every such entry at once), and an override
    entry that names no in-scope incident of the window; an incident with no
    city or state (`LOCATION_OVERRIDE`); a new in-scope Tesla report
    (`PASSENGER_OVERRIDE`, from its narrative, "Unknown" when the narrative
    says nothing about who was aboard; and, from the same reading, whether a
    safety monitor was aboard, step 7); an occupancy disagreement
-   (`PASSENGER_OVERRIDE` / `OCCUPANCY_LANGUAGE_REVIEWED`); and the
+   (`PASSENGER_OVERRIDE` / `OCCUPANCY_LANGUAGE_REVIEWED`: a narrative that
+   calls the AV occupied or unoccupied, or a rider not belted, against the
+   filed passenger code); a narrative that mentions an airbag while the
+   filed "Any Air Bags Deployed?" marks no deployment (since 2026-11-21:
+   read it; if it says an airbag deployed, in any vehicle, the report takes
+   an `AIRBAG_OVERRIDE` entry, as 30270-17130 has, which Waymo reported
+   "because a vehicle involved was towed away and because of airbag
+   deployment" under a field of "No Subject Vehicle, No Crash Partner" and
+   which was stored with no airbag until then; if not, an
+   `AIRBAG_LANGUAGE_REVIEWED` entry
+   with the words that show the filed value stands, as 13781-11687's
+   retraction and 30270-16932's "Airbag deployment and tow status are
+   unknown for both vehicles." have); and the
    contact-area label check
    (`CURRENT_FILE_CONTACT_LABEL`).
 
@@ -415,10 +577,26 @@ Then what the release brings:
      through that date, from the safety page's weekly figures, as the
      `teslanomonitor` row of `data/vmt.csv` for that month reads them); and
      bring `TESLA_NO_MONITOR_REPORTS` in line with the list's Report IDs.
+     The page's figure takes a second edit, in the one place the quals hold
+     it: give `TESLA_PAGE_PART` in `quals/tesla-page-part.mjs` an entry for
+     that month with the same date and miles. `quals/preprints.qual.mjs` goes
+     red while `PREPRINT_LIST`'s date or miles differ from that entry (since
+     2026-11-21, audit finding A17: until then no qual compared the miles
+     with a source, so a list moved to a new date with the old miles passed
+     them all: in the audit's example, a list through Nov 15 kept at
+     October's miles, that month's coverage came out about a fifth low), the
+     month's Tesla rows are recomputed from the entry (`quals/tesla-camera-miles.qual.mjs`;
+     "Ghost months", the Tesla bullet), and `quals/assumptions-list.qual.mjs`
+     goes red until the page's entry `reporting-tesla-list` states the same
+     date and miles.
      `slurp.py` stops until the three agree, and on a list it cannot read as
      before (a new column, weather value or contact area), or whose newest
-     crash is after NHTSA's data-through month (ask the human: a month only
-     a list covers has no rule yet). It stops too on a list that holds a
+     crash, or whose own date, is after NHTSA's data-through month (ask the
+     human: a month only a list covers has no rule yet). A list dated in the
+     data-through month covers that month for Tesla's two lines (their rows
+     count the list's crashes over its miles; "Preprints" below); a list
+     dated earlier covers nothing NHTSA's file does not complete, and the
+     data-through month is then pending for Tesla too. It stops too on a list that holds a
      report reviewed when no list held it (next bullet): an entry of
      `TESLA_NO_MONITOR_ADDITIONS` moves into `TESLA_NO_MONITOR_REPORTS` (drop
      the entry; the list now backs it), and one of
@@ -455,7 +633,9 @@ Then what the release brings:
      monitor only to say none was aboard has no rule yet: ask the human). A
      second Tesla robotaxi's record (the Report ID + "-B",
      `SECOND_INVOLVEMENTS`) has no rule yet: ask the human. An addition
-     counts on the no-monitor line until a list holds it (the bullet above).
+     belongs to the no-monitor line until a list holds it (the bullet above);
+     it counts once NHTSA's file is complete for its month, and until then,
+     in a month the list covers or a pending one, it is pending.
      `slurp.py` stops, listing them all, on an in-scope Tesla report from
      January 2026 on in none of the three tables and on an entry of the two
      that names no such report; on an addition whose cutoff is after this
@@ -467,18 +647,23 @@ Then what the release brings:
      filing (NHTSA gives a filing's month only). A crash's own month says
      nothing here: Tesla files some crashes late (13781-17193, an Aug 22
      crash, in October), and a list dated before the filing lacks them. On
-     that stop, re-read the narrative and ask the human. It stops too where
-     a row that takes the list's coverage (the month the list runs through,
-     while the list holds more of it than NHTSA's file: `row_coverage()`)
-     counts a crash the list does not hold, an addition or a monitor-aboard
-     report (on the every-mode line): that coverage fits the list's own
-     crashes, its miles through its date less an allowance for crashes Tesla
-     files late, and how to count another crash there is undecided (ask the
-     human).
+     that stop, re-read the narrative and ask the human. A crash of the
+     month the list covers that the list does not hold, an addition or a
+     monitor-aboard report (on the every-mode line), is pending: the list's
+     coverage fits the list's own crashes, its miles through its date less
+     an allowance for crashes Tesla files late, so no other crash counts
+     there until NHTSA's file is complete for the month (since 2026-11-21;
+     until then the run stopped on such a row, `check_list_covered_rows()`,
+     the case undecided).
    - A preprint that NHTSA's new file now holds: NHTSA's row has taken its
      place. `slurp.py` stops on its `PASSENGER_OVERRIDE` entry, reviewed
      against the list's blank belt field: re-read the narrative against the
-     filed code (step 6). Then run step 5: the report's case has changed
+     filed code (step 6). One stop lists every such entry with its reviewed
+     and its filed value, and its message names this step (since
+     2026-11-21, audit finding A46: until then the run stopped on one report
+     at a time, which would have meant a run for each of October 2026's eight
+     preprints at the release that publishes them, under a message that spoke
+     only of a re-filed report). Then run step 5: the report's case has changed
      (the list gives no time and no pre-crash movements, and its narrative
      can differ by a word: 13781-17015's "through a work zone" is "near a
      work zone" in NHTSA's filing), so `faultrate.py` rates it again from
@@ -486,7 +671,13 @@ Then what the release brings:
    - Score the list: among the crashes NHTSA's new file holds for the days
      the list covered, count those the list lacked, and record the count in
      the ledger (`preprint_coverage()` assumes about one Monthly-track crash
-     in ten is missing, from Tesla's record of late filings).
+     in ten is missing, from Tesla's record of late filings). NHTSA's file
+     dates a crash by its month only, so for the list's last, partial month
+     a report the list lacks cannot be placed before or after the list's
+     date: that month's score waits for Tesla's next list, whose rows carry
+     exact days. The months the list covered whole score from NHTSA's file
+     alone (a no-monitor report of such a month that the list lacks is a
+     miss).
 8. Robotaxi Tracker's camera table (pipeline step 13: the step runs after
    `main()` has written its files, so its stops leave only the table
    unsaved). A live `python3 data/slurp.py` run in a terminal ends with the
@@ -503,7 +694,12 @@ Then the quals: `quals/growth-ghost-month.qual.mjs` needs the growth chart's
 rows for the new ghost month (`crashla.js` `FLEET_HISTORY` and
 `RIDES_HISTORY`; "Ghost months" below) and the start of Tesla's forecast
 path at that month's exit rate (`TESLA_PATH_START`; the qual's
-`PAGE_MEASURED` records the Tesla page figure the rate rests on), and
+`PAGE_MEASURED` records the no-monitor miles of the month's first stretch,
+which the rate leaves out: Tesla's page figure where the page has measured
+part of the month, as through Oct 18, 2026 (read from
+`quals/tesla-page-part.mjs`, step 7), and otherwise the camera
+estimate through its last whole week, as November 2026's 1,519,000 through
+Nov 15), and
 `quals/fleet-forecast.qual.mjs` then checks each Jan-1 fleet forecast against
 them, and Waymo's and Zoox's miles low edges (`MILES_FORECAST`) against
 their newest `data/vmt.csv` month held flat through the day before the
@@ -537,8 +733,9 @@ listed as monitor-aboard.
 Tesla reports carry against their `PASSENGER_OVERRIDE` entries (since
 2026-10-31; until then it pinned the list of Tesla reports with a rider,
 re-pinned each release); a Tesla narrative that says nothing about who was
-aboard (13781-16941, due in the Nov 2026 release) passes its narrative check
-only when stored as (filed code, "Unknown") (the human, 2026-11-02).
+aboard (13781-16941, which NHTSA's Nov 16, 2026 release published) passes its
+narrative check only when stored as (filed code, "Unknown") (the human,
+2026-11-02).
 
 The page's list of assumptions (the section "Assumptions", `crashla.js`
 `ASSUMPTIONS`, since 2026-11-20) says how each month's miles are estimated,
@@ -546,12 +743,14 @@ and `quals/assumptions-list.qual.mjs` goes red until it covers every
 line-month of `data/vmt.csv`: at each release extend the `covers` span of
 the entry whose method the new ghost month follows (or add an entry for a
 new method), and update the entries whose months or rules the release
-changed (the newest month's coverage, the list's month and counts, a moved
+changed (the list's month and counts, the arrival counts, a moved
 knot). Two entries, `reporting-tesla-list` and `reporting-tesla-list-complete`,
 stop the list's render at load unless the rows on a list's coverage are
 Tesla's two lines in one month, through the date their values hold (no such
-row is left once a release puts that month on NHTSA's coverage): update
-their values, or remove both. Such a stop shows the page's error banner with
+row is left once a release completes that month and no newer list covers
+the new one): update
+their values, or remove both, with `reporting-thinning` and
+`reporting-range-product`, which describe a list row. Such a stop shows the page's error banner with
 the entry's assert and leaves the list empty, and every other view draws:
 the list is drawn last at init (since 2026-11-20; `quals/error-banner.qual.mjs`
 serves an entry that stops). The qual also goes red when a figure an entry holds no longer matches
@@ -673,7 +872,7 @@ NHTSA release has reached yet. `slurp.py` (`ghost_vmt_csv`) copies their rows
 as they stand into `data/vmt.js`'s second segment, `GHOST_VMT_CSV_TEXT`, and
 the page draws them faded, with a dashed stretch of line, on the VMT charts
 (each company's and the combined one) whenever the date window ends at the
-newest NHTSA month; in those windows the sanity section's VMT sources table
+slider's last month; in those windows the sanity section's VMT sources table
 lists their rationales too, after each line's analysis months, each headed
 by the ghost tooltip's note. No rate uses a ghost month's miles: its crashes are not
 yet published, so its rows stay out of the analysis rows, the slider and
@@ -683,6 +882,24 @@ the master lacks the month after the data-through month, when a ghost month
 lacks a line's row, and on a row for a month that has not begun (a VMT row
 records miles already driven; forecasts live in `crashla.js`'s
 `MILES_FORECAST`). `quals/ghost-month.qual.mjs` pins all of it.
+
+Since 2026-11-21 the second segment also holds the pending line-months'
+rows: months at or before the data-through month that no rate counts yet
+(NHTSA's reports for them are still arriving and no dated list covers them;
+"What `data/slurp.py` actually reads" above has the rule, and
+`quals/pending-months.qual.mjs` checks it). The page tells the two kinds
+apart by the month, once, where it parses the segment (`crashla.js`
+`parseGhostVmtCsv`: a row at or before the data-through month carries the
+pending note, `VMT_PENDING_NOTE`, a later one the ghost note,
+`VMT_GHOST_NOTE`), and draws both the same way, each with its note: on the
+VMT charts, in the VMT sources table and on the growth charts' history
+points. The slider's last month is the newest month with an analysis row
+(the data-through month while a list covers it for some line, the month
+before it otherwise). A window that ends there runs to the present and shows
+every later row of the second segment; a window that ends earlier shows only
+its own months, so of that segment only a pending row inside it (`crashla.js`
+`windowShows`). The incident browser follows the same test for the pending
+incidents.
 
 The growth section's chart (Fleet size, Rides, Miles) draws the ghost months
 the same way, faded on the dashed stretch toward its Jan-1 forecast, with the
@@ -696,10 +913,15 @@ over its days at ~180 miles a car per day, Tesla's Q2 2026 utilization,
 cumulative miles over the miles-per-ride corridor (`TESLA_MILES_PER_RIDE`),
 so re-derive both whenever that row changes. Tesla's growth forecast starts
 from its newest month too (since 2026-10-30): `TESLA_PATH_START` is the day
-after that month, the month's cumulative, and its late-month rate, the
-no-monitor line's projection of the days after Tesla's page was last
-measured plus the monitor-aboard remainder (the all-modes row less the
-no-monitor row) at its average for the month; re-derive it with the rows.
+after that month, the month's cumulative, and its late-month rate: the
+no-monitor row's miles over the month's last stretch, the days after the
+last one Tesla's page measured or, in a month the page measured none of,
+after the camera's last whole week, plus the monitor-aboard remainder (the
+all-modes row less the no-monitor row) at its average for the month. For
+November 2026 the page had nothing, so the stretch is Nov 16-30, held at the
+last camera week's rate: the row's 3,258,000 less the 1,519,000 estimated
+for Nov 1-15, over 15 days, 115,933 a day, plus 1,100, 117,033 a day in all.
+Re-derive it with the rows.
 `quals/growth-ghost-month.qual.mjs` pins all of it. Waymo's and Zoox's
 miles forecasts rest on their newest month too: each one's low edge in
 `MILES_FORECAST` is its newest `data/vmt.csv` month's cumulative plus that
@@ -711,8 +933,10 @@ from `data/vmt.csv` and goes red until they match (since 2026-11-03).
 
 So each release adds every line's estimate for the month after its
 data-through month, a month that has begun by release day. When the next
-release arrives, that month becomes its data-through month and its band
-becomes the VMT prior of every rate, so re-read the rows then.
+release arrives, that month becomes its data-through month: pending for a
+line no list covers, a list row where one does. At the release after that
+it is complete and its band becomes the VMT prior of every rate, so re-read
+the rows at both.
 
 When a ghost month is measured (Tesla's page adds its weeks, CPUC or the
 hub covers it), score its row: record in AGENTS.md's ledger whether the
@@ -771,6 +995,8 @@ ledger, 2026-10-27 (later)):
   and San Antonio about Nov 9, 2026). `quals/tesla-camera-miles.qual.mjs`
   recomputes the rows from Tesla's weeks, which it holds as entered by hand
   (add Tesla's own weeks to the calibration as its page publishes them),
+  the page's figure for a month's measured part (`quals/tesla-page-part.mjs`,
+  the one place the quals hold it: "Each NHTSA release", step 7),
   and the camera rates, which it reads from the newest table saved in
   `data/snapshots` (`robotaxitracker-cameras-YYYYMMDD.tsv`, through
   `quals/camera-table.mjs` and `data/slurp.py`'s `camera_table_days()` and
@@ -827,6 +1053,34 @@ ledger, 2026-10-27 (later)):
   28, 2026, "more than 300 million fully autonomous miles"
   (https://blog.google/company-news/inside-google/message-ceo/alphabet-earnings-q3-2026/),
   gave only a floor, which the series clears.
+  `quals/waymo-vmt-model.qual.mjs` holds every month after September 2026 to
+  this rule (since 2026-11-21 it reads those months from `data/vmt.csv`;
+  until then it named October and November, and a later month's row was
+  checked by its cumulative chain alone): September's estimate before its
+  weather deduction at its per-day rate for the month's days, plus the
+  month's entry in the qual's `OPENINGS` and less its entry in `PAUSES`, in
+  the band above with k counted from June 2026. A month with no entry in both
+  stops the qual, so each new month's row comes with its two entries (an
+  empty one where nothing is put on or taken off).
+  November 2026 takes nothing off for Waymo's halt of freeway driving (its
+  `PAUSES` entry is empty). The California DMV barred Waymo from operating or
+  testing driverless cars on freeways on Nov 11, 2026, after three Waymo
+  vehicles entered a construction closure on U.S. 101 near Burlingame on Nov
+  5; the order became public on Nov 17, by when Waymo was "preventing its
+  robotaxis from accessing freeways in any of the markets it operates in,
+  including those outside of California" (TechCrunch, Nov 17, 2026,
+  https://techcrunch.com/2026/11/17/waymo-suspends-freeway-rides-nationwide-after-california-dmv-order/;
+  Fortune, Nov 18, 2026,
+  https://fortune.com/2026/11/18/waymo-driverless-freeway-ban-california-nationwide/).
+  Neither gives a date for the other markets or the freeway share of Waymo's
+  miles, and the one measured precedent shows growth stalling, not miles
+  lost: through the freeway suspension of May 21 to late July 2026, CPUC's
+  California driverless miles a day, deployment plus pilot (the basis the
+  rows use; `data/waymo-ca.csv`), ran about 316k in May, 323k in June and
+  324k in July, then 367k in August (+13%) and 440k in September (+20%).
+  Deployment alone fell 3.9% from May to June, and pilot miles rose by more.
+  The November row already holds September's daily rate with no growth, so
+  it deducts nothing, and its rationale says so.
 - Zoox: California (CPUC driverless miles × 1.19 for the DMV-reported miles
   CPUC misses) grown e^0.05 (about 5.1%) a calendar month from its last CPUC
   month, and the rest at the smooth path's Las Vegas rate (since 2026-11-03
@@ -900,8 +1154,11 @@ figures stand; no D.
 
 Hub-vs-CPUC California (2026-09-25). The hub's four California counties ran
 1.040x CPUC's statewide TotalVMTZEV (deployment + pilot) in Q1 2026 and
-1.058x in Q2, cause unknown. Extension months built from a CPUC-basis
-California estimate multiply it by 1.058 [1.040, 1.076].
+1.058x in Q2, cause unknown. Until 2026-11-19 the months after June, built
+from a projected CPUC-basis California estimate, multiplied it by 1.058
+[1.040, 1.076]; no row uses that bracketed band now. October and November
+2026 still carry the ratio itself (September's filed daily rate times
+1.0576), inside their whole-row band ("Ghost months").
 The July–September 2026 rows use the Q3 filing's statewide deployment and
 pilot miles. Their California component uses the same Q2 conversion as before
 (30,625,484 / 28,957,564, both in whole miles), with the ±3% range used for
@@ -929,13 +1186,24 @@ confidence level applies to the crash share under the binomial model. The
 crash interval and rate range give modeled mileage shares of 0–34.5% in
 July, 0–30.7% in August and 1.8–40.0% in September. Multiply the original subtotal's low edge by `1 − m_high`
 and its high edge by `1 − m_low`. [Waymo's Q3 CPUC narrative, p. 6 (deployment ZIP)](https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/consumer-protection-and-enforcement-division/documents/tlab/av-programs/waymo-deployment-2026q3.zip)
-documents August demo rides in San Diego, so even a month with zero reports
-allows for overlap. October
+documents August demo rides for San Diego community organizations ("Provided
+demo rides for several San Diego community organizations", under its Los
+Angeles Area heading; it does not say where the rides were given), so even a
+month with zero reports allows for overlap. October
 and November carry September's disjoint components at their daily rates
 and retain the existing adjustments for subsequent openings, expansion
 and weather.
 
-Recheck the split if later NHTSA filings change the September counts.
+`quals/waymo-vmt-model.qual.mjs` recounts the split's reports from
+`data/incidents.js` at every run (since 2026-11-21; until then this section
+asked for a recheck "if later NHTSA filings change the September counts",
+which nothing made): each of the three months' in-scope Waymo reports by
+place, every place listed in the qual as one of the hub's counties' or a
+newer metro's. It goes red when a count differs from the one its row was
+written for (a late report of July, August or September is enough) and on a
+place it does not list. Then redo the month's share and its Clopper–Pearson
+endpoints in the qual, the rows it recomputes, their rationales and the
+figures above ("Each NHTSA release", step 4).
 When Waymo publishes Q3 county miles, compare the counties it covers with
 the statewide CPUC geography. If San Diego still lacks a hub benchmark, its
 miles belong in the newer-metro subtotal when building the hub-based U.S.
@@ -1192,12 +1460,13 @@ The 1M-mile crossing and the smooth path (2026-11-02, the human's answer to
 open question 21, "Smooth path, honest bands"; it replaced the 2026-10-31
 reshape of decision #12 of the 2026-10-04 audit; since 2026-11-03, the
 human's answer to open question 29, "All four as ranges", one path through
-all four statements). Zoox's CTO Jesse
-Levinson, at Fortune Brainstorm AI in San Francisco on Monday, Dec 8, 2025:
-"Zoox crossed the 1 million mile technical threshold for autonomous rides
-just last week" (Fortune, Dec 8, 2025,
-https://fortune.com/2025/12/08/amazon-robotaxi-service-zoox-plans-fees-vegas-san-francisco/,
-and its Dec 9 newsletter,
+all four statements). Fortune, reporting what Zoox's CTO Jesse
+Levinson said at Fortune Brainstorm AI in San Francisco on Monday, Dec 8,
+2025: "Zoox crossed the 1 million mile technical threshold for autonomous
+rides just last week, Levinson said." The words are Fortune's account, not
+a quotation of him (Fortune, Dec 8, 2025,
+https://fortune.com/2025/12/08/amazon-robotaxi-service-zoox-plans-fees-vegas-san-francisco/;
+its Dec 9 newsletter has the same sentence ending "Levinson added",
 https://fortune.com/2025/12/09/zooxs-road-to-revenue-begins-to-materialize/;
 Fortune's Dec 17 piece has "A few weeks ago",
 https://fortune.com/2025/12/17/amazon-zoox-cofounder-dramatically-more-social-rival-waymo-tesla-cybercab/).
@@ -1311,7 +1580,12 @@ that subset as a line of its own, `TeslaNoMonitor` in the app.
   city; a month takes the city sums at its end, interpolated within that
   week. The Q3-2026 deck's chart "Cumulative Unsupervised Robotaxi Miles" is
   the second reading. Central: the page; band: the two readings widened 3%
-  each way, the lower edge at least half the page's figure.
+  each way, the lower edge at least half the page's figure. That is the rule
+  of the months Tesla's page has measured whole, January to September 2026.
+  October and November 2026, which the page measures through Oct 18 and not
+  at all, follow "Ghost months" above (the Tesla bullet): the page's miles
+  where it has them, then the estimate from Robotaxi Tracker's camera counts
+  ([Robotaxi Tracker](https://robotaxitracker.com), https://robotaxitracker.com).
 - Crashes: the in-scope Tesla reports on Tesla's own list of SGO reports
   "while Robotaxi is driving autonomously with no safety monitor in the
   vehicle" (the page's spreadsheet download; `TESLA_NO_MONITOR_REPORTS` in
@@ -1325,10 +1599,11 @@ that subset as a line of its own, `TeslaNoMonitor` in the app.
   includes them. `TESLA_MONITOR_ABOARD_REPORTS` holds the 2026 reports whose
   narratives put a monitor aboard, each with the words that do.
 - Coverage: what Tesla's rows take, since the line's reports are a subset
-  of Tesla's filings: NHTSA's shares, or in a month Tesla's own list covers,
+  of Tesla's filings: complete where NHTSA's file is complete for Tesla's
+  month; in a month Tesla's own list covers,
   the list's share of the line's own miles (Preprints, below: in October 2026
   53.3% on this line against 52.6% on the all-modes line, whose
-  monitor-aboard miles the list does not cover).
+  monitor-aboard miles the list does not cover); pending otherwise.
 
 Driver's-seat trips (disclosed since 2026-10-31, the human's answer to open
 question 13). The every-mode line's miles for September 2025-June 2026 may
@@ -1387,7 +1662,13 @@ had not published them.
   operator type: the first four are blank, a list row's type is "Preprint",
   its version 1, and its operator type "None", the list's own definition (a
   remote operator who drove is named in the narrative, which the
-  teleoperator tripwire reads).
+  teleoperator tripwire reads). A preprint's blank movement shows on the
+  page: the sanity section's Reporting threshold table counts the records
+  with no stated movement (a blank, or NHTSA's own "Unknown") in a column of
+  their own, right after "AV stopped" (`crashla.js` `SV_MOVEMENT_UNKNOWN`,
+  since 2026-11-21; until then they counted as not stopped without a word,
+  though three of the eight preprints' narratives say the car was stopped),
+  until NHTSA's row, which states the movement, replaces it.
 - **NHTSA's row stands.** A list row whose Report ID an NHTSA file holds is
   dropped; the others are the preprints (`preprint_rows()`). So a preprint
   turns official at the release that publishes its report, with no code
@@ -1405,11 +1686,14 @@ had not published them.
   the list's "proceeding straight through a work zone" is "proceeding
   straight near a work zone" in NHTSA's filing).
 - **Coverage** (`preprint_coverage()`). For the month the list runs through,
-  the list holds every no-monitor crash through its date and none after. So
-  each Tesla line's row for that month can take, in place of NHTSA's
-  receipt and incident coverage, the list's: receipt coverage = Tesla's
+  the list holds every no-monitor crash through its date and none after: a
+  known set of crashes over a known span of miles. So, while NHTSA's file is
+  not complete for that month (the list's month is the data-through month),
+  each Tesla line's row for it counts the list's span: receipt coverage = Tesla's
   no-monitor miles of the month through the list's date (`PREPRINT_LIST`'s
-  `miles`: 1,179,333 for Oct 1-18, 2026) over the row's miles, best, low and
+  `miles`: 1,179,333 for Oct 1-18, 2026, Tesla's page's figure, which
+  `quals/preprints.qual.mjs` holds to the quals' one copy of it,
+  `quals/tesla-page-part.mjs`) over the row's miles, best, low and
   high alike (0.5334 on the no-monitor line; 0.5255 on the all-modes line,
   whose monitor-aboard miles the list does not cover and which therefore
   count for nothing that month); and Monthly-track incident coverage = the
@@ -1417,9 +1701,12 @@ had not published them.
   `MONTHLY_ARRIVAL_OBSERVATIONS`' months with both counts measured (17 of
   19 = 0.8947), from that share's Wilson 95% lower bound (0.6861) to 1: a
   list drawn up two days after its last crash can lack one Tesla files
-  late. A row takes whichever source holds more of it, by the product of
-  the two best values (NHTSA's on a tie), so the list sets a row's coverage
-  only while NHTSA's file holds less of that month than the list does.
+  late. Once NHTSA's file is complete for the month (the release after),
+  the row is NHTSA's: complete, whatever the list says (`month_sources()`).
+  With no list for the data-through month, that month is pending for
+  Tesla's lines as for any company's. (Until 2026-11-21 NHTSA's file had an
+  estimated coverage of the data-through month, and a row took whichever
+  source held more of it, by the product of the two best values.)
   `data/vmt.js`'s `incidents_through` column gives each row's date.
 - **Known limits.** The coverage columns scale the row's whole-month band,
   whose width comes from the days after the list's date, so the covered
@@ -1427,15 +1714,17 @@ had not published them.
   -12%/+15% and -13%/+30% until 2026-11-20, when the camera-estimated days
   took a drift term) where the measured miles warrant about -8%/+3%; exact would take columns
   for the covered miles' own band. A preprint dated after NHTSA's
-  data-through month stops the run (a month only a list covers has no rule
-  yet), and so does a row that takes the list's coverage and counts a crash
-  the list lacks (`check_list_covered_rows()`): a reviewed no-monitor
-  addition ("Each NHTSA release", step 7), or a monitor-aboard report on the
-  every-mode line. That coverage fits the list's own crashes (its miles
+  data-through month stops the run, and so does a list dated in a later
+  month (a month only a list covers has no rule
+  yet). A crash of the list's month that the list lacks, a reviewed
+  no-monitor addition ("Each NHTSA release", step 7) or a monitor-aboard
+  report on the every-mode line, is pending (`record_counted()`; until
+  2026-11-21 it stopped the run, `check_list_covered_rows()`): the list's
+  coverage fits the list's own crashes (its miles
   through the list's date, less the allowance for crashes Tesla files late,
   the every-mode line's other miles counted as uncovered), and neither is
   one of them. Once NHTSA's file holds the list's month whole, at the next
-  release, that month's rows take NHTSA's coverage and the line's crashes
+  release, that month's rows are complete and the line's crashes
   of the month are the list's and the additions'
   (`quals/tesla-monitor-review.qual.mjs` builds that release). A report
   rated from its preprint is rated again when NHTSA files
@@ -1500,11 +1789,11 @@ They are useful for:
 - Manual inspection
 - Comparing an older snapshot against the latest live NHTSA fetch
 - The release history: they are NHTSA's Jan-2026 and Feb-2026 releases, the
-  first to hold December 2025's and January 2026's incidents, whose
-  five-day-track receipt shares `FIVE_DAY_RECEIPT_OBSERVATIONS` holds since
-  2026-10-31; `quals/receipt-observations.qual.mjs` and
-  `quals/monthly-arrival-lag.qual.mjs` read them with the timestamped
-  snapshots when they recount that history
+  first to hold December 2025's and January 2026's incidents;
+  `quals/monthly-arrival-lag.qual.mjs` (when each Monthly-track report
+  arrived) and `quals/assumptions-list.qual.mjs` (whether any five-day-track
+  report of a month first appeared after its second release) read them with
+  the timestamped snapshots when they recount that history
 
 They are not parsed as incident inputs in the current build pipeline.
 The only code-path interaction in `data/slurp.py` is that it may compare a

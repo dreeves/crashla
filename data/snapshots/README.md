@@ -18,6 +18,15 @@ Snapshot sources:
   reads only the reports an ADS drove (`MISFILED_ADS_REPORTS`); the first of
   each was downloaded by the 2026-10-31 research for open question 1, byte
   for byte NHTSA's file of the Oct-15-2026 release
+- `tesla-list-*.xlsx`: Tesla's own list of the crashes it has reported to
+  NHTSA with no safety monitor aboard, the spreadsheet its robotaxi safety
+  page (https://www.tesla.com/robotaxi/safety) links as "Download all SGO
+  reportable events", each as Tesla served it and named for the date the list
+  runs through (since 2026-11-18). A person saves each new list, since the
+  page that links it refuses scripts; `data/slurp.py` reads the newest and
+  fetches none (`data/README.md`, Preprints, and Each NHTSA release, step 7).
+  The first, `tesla-list-20261018.xlsx`, was downloaded on 2026-11-18 (MD5
+  6d688f725e00740281b937a5ffc8ee19, the server's ETag)
 - `robotaxitracker-cameras-*.tsv`: the Camera watch tables of
   [Robotaxi Tracker](https://robotaxitracker.com) (https://robotaxitracker.com;
   the page https://robotaxitracker.com/cameras), each the bytes a person copied

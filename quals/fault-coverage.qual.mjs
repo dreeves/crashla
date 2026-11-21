@@ -5,10 +5,22 @@ import vm from "node:vm";
 // Every incident in data/incidents.js must have a fault assessment row in
 // data/faultfrac.csv. Fail loudly when any are missing so backfill work is
 // surfaced rather than buried.
+// The incidents are the counted ones (INCIDENT_DATA) and, since 2026-11-21,
+// the pending ones (PENDING_INCIDENT_DATA: in NHTSA's file, their month not
+// fully reported yet, so no figure counts them): both are rated, at the
+// release that brings them, so that a pending incident enters the rates
+// with its fault value when its month completes. No incident is in both.
 
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync("data/incidents.js", "utf8"), ctx, { filename: "incidents.js" });
-const incidents = vm.runInContext("INCIDENT_DATA", ctx);
+// (copied into this realm's arrays: assert.deepEqual tells another realm's apart)
+const counted = [...vm.runInContext("INCIDENT_DATA", ctx)], pending = [...vm.runInContext("PENDING_INCIDENT_DATA", ctx)];
+const incidents = [...counted, ...pending];
+const inBoth = counted.map(r => r.reportId).filter(rid => pending.some(r => r.reportId === rid));
+assert.deepEqual(inBoth, [],
+  `Replicata: look for a Report ID in both arrays of data/incidents.js, INCIDENT_DATA and PENDING_INCIDENT_DATA.
+Expectata: none: an incident is counted or pending.
+Resultata: ${inBoth.join(", ")}.`);
 
 const csv = fs.readFileSync("data/faultfrac.csv", "utf8").trim().split("\n");
 const header = csv[0].split(",");
@@ -67,4 +79,4 @@ Resultata: ${totalMissing} unrated incident(s) in ${helmer}; gaps by month: ${ga
   );
 }
 
-console.log("qual pass: every incident has a fault assessment row");
+console.log(`qual pass: every incident has a fault assessment row (${counted.length} counted, ${pending.length} pending), and every row an incident`);

@@ -9,63 +9,84 @@
 // July final.
 //
 // data/slurp.py carries the measured lags (MONTHLY_ARRIVAL_LAG) with their
-// observations (MONTHLY_ARRIVAL_OBSERVATIONS), and every month inside a
-// helmer's extra lag gets a Monthly-track incident coverage equal to that
-// helmer's in-scope 5-Day share (FIVE_DAY_SHARE_OBSERVATIONS), band [its
-// lowest monthly share; 1.0], instead of 1. Five-day-track metrics are
-// unaffected (the 5-Day reports arrive on the normal schedule).
+// observations (MONTHLY_ARRIVAL_OBSERVATIONS). Since 2026-11-21 (the human's
+// decision to drop every estimate of a partly reported month: "if we know
+// when a helmer's crash reports end then we compute the exact VMT for the
+// crashes. if not, we don't try to guess") every month inside a helmer's
+// extra lag is PENDING for that helmer's lines: no analysis row in
+// data/vmt.js, its incidents in PENDING_INCIDENT_DATA, no figure counting it
+// (quals/pending-months.qual.mjs holds the rule and runs a lagged release
+// through main()). Until then such a month counted with a Monthly-track
+// incident coverage equal to the helmer's in-scope 5-Day share
+// (FIVE_DAY_SHARE_OBSERVATIONS, band [its lowest monthly share; 1.0]), and
+// NHTSA's data-through month with estimated shares of its own; the checks of
+// those shares went with them (this qual's old share recompute, its share
+// stops, its section 4 on the pooled coverage's reference month, and the
+// synthetic lag triple its sections 5 and 6 injected into the app).
 //
 // On the Oct-15-2026 release every helmer's in-scope August Monthly reports
 // had arrived on time, Zoox's three included, so every lag is 0 and no live
 // month is lagged. The lag machinery's checks therefore run on a synthetic
-// world with one lagged helmer (section 3b) and on a synthetic lagged month in
-// the app (sections 5 and 6), so they keep their teeth whoever is lagged.
+// world with one lagged helmer (section 3b), so they keep their teeth whoever
+// is lagged.
 //
 // This qual pins:
-//   1. the tables reproduce from data/snapshots history (an independent
-//      recompute), slurp's own track counts agree with that recompute, and
-//      the lags are the measured ones;
-//   2. data/vmt.js carries, for every helmer-month, the pooled triple in the
-//      data-through month, the lag triple in a lagged helmer's lagged months
-//      and (1, 1, 1) elsewhere, with receipt coverage untouched there;
-//      derived from the reviewed cutoff, so no re-pin is needed when a
-//      release advances it;
+//   1. the arrival table reproduces from data/snapshots history (an
+//      independent recompute), each row holds the counts its month's
+//      releases can have shown (two or more through the month whose third
+//      release this is, the on-time count alone after it; since 2026-11-21),
+//      slurp's own track counts agree with that recompute, and the lags are
+//      the measured ones;
+//   2. a lag's effect: month_sources(), on data/vmt.csv, leaves a helmer's
+//      lagged months without a source (pending) for each of its lines and
+//      every other month before the data-through month complete, with the
+//      live lags and with each helmer's lag raised by one where that leaves
+//      no pending month before a counted one; and data/vmt.js carries, for
+//      every line-month before the data-through month that has an analysis
+//      row, receipt and incident coverage (1, 1, 1), and no analysis row for
+//      a lagged month;
 //   3. slurp.main() stops (anti-Postel) on: a lag table missing a helmer, a
 //      lag that disagrees with its observations, a month that became
-//      measurable without an observation, observations that disagree with the
-//      newest file, and a share table for a helmer with no lag;
-//   3b. monthly_lag_coverage(), called directly on the synthetic world,
-//      returns the lag triple and stops on: a lagged month that already holds
-//      a Monthly-track report, and that stop comes BEFORE every share-table
-//      check (on the Oct-15-2026 release the zero-share stop fired first and
-//      asked for a coverage model when the lag was what had to change); a lag
-//      that disagrees with its observations; a share row that disagrees with
-//      the counts; a share table missing the month just final for its
-//      helmer; a lowest monthly share of 0; a share table for an unlagged
-//      helmer; a fractional lag; arrival tables covering different months; a
-//      month both observed and excluded; an observation for the data-through
+//      measurable without an observation, that month's row left with its
+//      on-time count alone (since 2026-11-21; audit 2026-11-20, A45), and
+//      observations that disagree with the newest file;
+//   3b. check_monthly_arrivals(), called directly on the synthetic world,
+//      accepts it and stops on: a lagged month that already holds a
+//      Monthly-track report; a lag that disagrees with its observations; a
+//      fractional lag; arrival tables covering different months; a month
+//      both observed and excluded; an observation for the data-through
 //      month; a measurable month without an observation, and that stop comes
 //      BEFORE the lag check (with the month gone, a tie in the month before it
 //      would otherwise read as a lag disagreement, as Tesla's 2026-07 would on
-//      the Nov-2026 release); and an arrival row that disagrees with the
-//      counts;
-//   4. a lagged month is never the reference month of the pooled
-//      data-through-month coverage (its count is incomplete);
-//   5. the app accepts the extra partially received month(s) at the end of a
-//      window and still rejects a partial month followed by a full one;
-//   6. with a lagged helmer shown, the MPI chart's "?" and that helmer's dot
-//      tooltip mark the lagged month on a Monthly-track metric; on every
-//      five-day-track metric the "?" follows the receipt coverage alone, so
-//      it marks the data-through month and the lagged month carries neither
-//      a "?" nor a coverage note; and (since 2026-11-03, open question 31) on
-//      every metric, in the default window and in the data-through month's
-//      one-month window, with the default lines and with Zoox added, every
-//      dot and error bar fades by its month's whole completeness at worst, as
-//      the chart's "?" markers (checked there too) do, and the y axis tops
-//      out at the first rung at or above the largest posterior median among
-//      the chart's dots, whatever each month's completeness (since
-//      2026-11-03, the human's choice; until then a fully received month
-//      lifted it to its top effective miles over its incident count).
+//      the Nov-2026 release); an arrival row that disagrees with the
+//      counts; and, since 2026-11-21, a row that does not hold what its
+//      releases can have shown: the measurable month's row with its on-time
+//      count alone (a row entered early, as 2026-09's were at the Nov-16-2026
+//      release, is re-measured at its third release: until then nothing
+//      required it, so with no report late the row stayed as it was and the
+//      list's allowance, which reads only rows with both counts, left the
+//      month out), and a later month's row with a second count, which no
+//      release can have measured yet. The first is also run on this
+//      release's own tables read as the next release would read them, the
+//      month before the data-through month on-time-only;
+//   5. the app accepts one partially received month at the end of a window
+//      (a list row, its line's newest analysis month) and rejects a partial
+//      month followed by a full one and a window with two partial months
+//      (from 2026-10-04 to 2026-11-21 it accepted several, the data-through
+//      month and a helmer's lagged months before it);
+//   6. on the MPI chart each month has its own "?", faded in by the largest
+//      incompleteness among the shown lines' dots (a list row's month is the
+//      only one that shows; a pending month has no dot), and a partially
+//      received month's dot tooltip gives its share on the metric's track;
+//      and (since 2026-11-03, open question 31) on every metric, in the
+//      default window and in the newest month's one-month window, with the
+//      default lines and with every company line shown, every dot and error
+//      bar fades by its month's whole completeness at worst, as the chart's
+//      "?" markers (checked there too) do, and the y axis tops out at the
+//      first rung at or above the largest posterior median among the chart's
+//      dots, whatever each month's completeness (since 2026-11-03, the
+//      human's choice; until then a fully received month lifted it to its
+//      top effective miles over its incident count).
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { spawnSync } from "node:child_process";
@@ -145,27 +166,45 @@ out['arrivalDiffs'] = [
     [h, m, list(c), trimmed(arrivals[(h, m)][j] for j in range(max([0, *arrivals[(h, m)]]) + 1))]
     for h, table in slurp.MONTHLY_ARRIVAL_OBSERVATIONS.items() for m, c in table.items()
     if trimmed(c) != trimmed(arrivals[(h, m)][j] for j in range(max([0, *arrivals[(h, m)]]) + 1))]
-out['shareDiffs'] = [
-    [h, m, list(c), [tracks[(h, m, 'five_day')], tracks[(h, m, 'five_day')] + tracks[(h, m, 'monthly')]]]
-    for h, table in slurp.FIVE_DAY_SHARE_OBSERVATIONS.items() for m, c in table.items()
-    if list(c) != [tracks[(h, m, 'five_day')], tracks[(h, m, 'five_day')] + tracks[(h, m, 'monthly')]]]
+# The form of each row, by the releases its month has had (counted here, not
+# through check_monthly_arrivals(), whose stops on a row of the wrong form are
+# tested below): a month through the one whose third release this is (two
+# months before the data-through month) holds at least two counts, its second
+# release's and the reports that arrived a release late, a 0 included; a later
+# month, entered early, holds its on-time count alone. The comparison above
+# trims trailing zeros, so it cannot tell (62,) from (62, 0) (audit 2026-11-20,
+# A45).
+out['arrivalForm'] = sorted(
+    [h, m, list(c)] for h, table in slurp.MONTHLY_ARRIVAL_OBSERVATIONS.items() for m, c in table.items()
+    if (len(c) < 2 if mnum(m) <= mnum(slurp.NHTSA_DATA_THROUGH_DATE[:7]) - 2 else len(c) != 1))
 impl = slurp.monthly_track_counts(newest)
 out['trackCountDiffs'] = sorted(['|'.join(k), impl.get(k, 0), tracks.get(k, 0)]
                                 for k in set(impl) | set(tracks) if impl.get(k, 0) != tracks.get(k, 0))
 
-# --- 2. what data/vmt.js must carry ------------------------------------------
+# --- 2. what a lag does: its months have no source ----------------------------
 D = slurp.NHTSA_DATA_THROUGH_DATE[:7]
-# Share tables exist exactly for the lagged helmers (stop (g) below pins
-# that), so iterating them covers every lagged month.
-expected_lag = {}
-for h, table in slurp.FIVE_DAY_SHARE_OBSERVATIONS.items():
-    lag = slurp.MONTHLY_ARRIVAL_LAG[h]
-    triple = [round(sum(n for n, _ in table.values()) / sum(d for _, d in table.values()), 4),
-              round(min(n / d for n, d in table.values() if d > 0), 4), 1.0]
-    for i in range(lag):
-        expected_lag[h + '|' + mstr(mnum(D) - lag + i)] = triple
-out['expectedLag'] = expected_lag
-out['shareStarts'] = {h: min(t) for h, t in slurp.FIVE_DAY_SHARE_OBSERVATIONS.items()}
+vmt = slurp.parse_vmt_values(slurp.read_vmt_master())
+list_cov = slurp.preprint_coverage(vmt)
+def lagged_months(lags):
+    return sorted(f'{line}|{mstr(mnum(D) - 1 - i)}' for line, h in slurp.SERIES_COMPANY.items() for i in range(lags[h])
+                  if (line, mstr(mnum(D) - 1 - i)) in vmt)
+def sources_under(lags):
+    saved = slurp.MONTHLY_ARRIVAL_LAG
+    slurp.MONTHLY_ARRIVAL_LAG = lags
+    try:
+        sources = slurp.month_sources(vmt, D, list_cov)
+    except AssertionError as exc:
+        return {'stop': str(exc)[:1200]}
+    finally:
+        slurp.MONTHLY_ARRIVAL_LAG = saved
+    before = [(line, month) for line, month in vmt if month < D]
+    return {'pending': sorted(f'{line}|{month}' for line, month in before if (line, month) not in sources),
+            'other': sorted({sources[key] for key in before if key in sources}),
+            'want': lagged_months(lags)}
+out['lagged'] = lagged_months(slurp.MONTHLY_ARRIVAL_LAG)
+out['liveSources'] = sources_under(dict(slurp.MONTHLY_ARRIVAL_LAG))
+out['raised'] = {h: sources_under({**slurp.MONTHLY_ARRIVAL_LAG, h: slurp.MONTHLY_ARRIVAL_LAG[h] + 1}) for h in slurp.MONTHLY_ARRIVAL_LAG}
+out['listCompanies'] = sorted({slurp.SERIES_COMPANY[line] for line, _month in list_cov})
 
 # --- 3. slurp stops on inconsistent inputs -----------------------------------
 inc_text = pathlib.Path('data/incidents.js').read_text()
@@ -209,66 +248,68 @@ stops['waymoLag'] = stop_message(newest, MONTHLY_ARRIVAL_LAG={**lags, 'Waymo': l
 due_month = mstr(mnum(D) - 2)
 stops['due'] = stop_message(newest, MONTHLY_ARRIVAL_OBSERVATIONS={
     h: {m: c for m, c in t.items() if m != due_month} for h, t in slurp.MONTHLY_ARRIVAL_OBSERVATIONS.items()})
+# (e) the month that is now measurable holds its on-time counts only
+stops['dueOnTimeOnly'] = stop_message(newest, MONTHLY_ARRIVAL_OBSERVATIONS={
+    h: {**t, due_month: t[due_month][:1]} for h, t in slurp.MONTHLY_ARRIVAL_OBSERVATIONS.items()})
 # (f) an arrival row that disagrees with the newest file
 waymo_obs = dict(slurp.MONTHLY_ARRIVAL_OBSERVATIONS['Waymo'])
 first_obs = min(waymo_obs)
 waymo_obs[first_obs] = (waymo_obs[first_obs][0] + 1, *waymo_obs[first_obs][1:])
 stops['arrivalTotal'] = stop_message(newest, MONTHLY_ARRIVAL_OBSERVATIONS={**slurp.MONTHLY_ARRIVAL_OBSERVATIONS, 'Waymo': waymo_obs})
-# (g) a share table for a helmer with no lag (dead data)
-unlagged_from = [h for h, lag in lags.items() if lag == 0]
-# The helmer is read, never assumed (until 2026-11-06 a release in which every
-# helmer is lagged stopped this qual on a bare ValueError from min(), naming
-# nothing).
-assert unlagged_from, ("Replicata: find a helmer with no Monthly-report lag in data/slurp.py's MONTHLY_ARRIVAL_LAG (quals/monthly-arrival-lag.qual.mjs, case (g)). "
-                       f"Expectata: at least one, the helmer this case gives a share table it must not have. Resultata: none; the lags are {lags}.")
-unlagged = min(unlagged_from)
-stops['deadShare'] = stop_message(newest, FIVE_DAY_SHARE_OBSERVATIONS={
-    **slurp.FIVE_DAY_SHARE_OBSERVATIONS, unlagged: {first_obs: (0, 1)}})
 out['stops'] = stops
 
-# --- 3b. monthly_lag_coverage() on a synthetic world, called directly -------
+# --- 3b. check_monthly_arrivals() on a synthetic world, called directly -------
 # Section 3 shows main() reaches the function. Here it runs on made-up months
 # 2031-01..2031-06 (data-through month 2031-06) with one lagged helmer, Zoox
-# (lag 1, lagged month 2031-05), whose Monthly-track arrivals and 5-Day shares
-# agree with the made-up counts: pooled share 8/16 = 0.5, lowest 1/4 = 0.25.
-# Each case breaks one thing, so only the must() under test can object; the
-# order case breaks two at once (a zero share AND a Monthly report in the
-# lagged month), and the lag's own stop must win.
+# (lag 1, lagged month 2031-05), whose Monthly-track arrivals agree with the
+# made-up counts. Each case breaks one thing, so only the must() under test
+# can object; the dueTie case breaks two at once (a measurable month without
+# an observation AND a tie before it), and the missing month's stop must win.
 counts = slurp.monthly_track_counts(newest)
-def direct_stop(counts=counts, **patch):
+def direct_stop(counts=counts, last_month=D, **patch):
     saved = {k: getattr(slurp, k) for k in patch}
     for k, v in patch.items(): setattr(slurp, k, v)
     try:
-        slurp.monthly_lag_coverage(counts, D)
+        slurp.check_monthly_arrivals(counts, last_month)
     except AssertionError as exc:
         return str(exc)[:300]
     finally:
         for k, v in saved.items(): setattr(slurp, k, v)
     return 'accepted'
 direct = {'baseline': direct_stop()}
+# The next release as it would read this one's tables were no Monthly report
+# of the month before the data-through month to arrive late: the counts
+# unchanged, that month's rows holding their on-time counts alone (as
+# 2026-09's do at the Nov-16-2026 release), the data-through month one later.
+# The month is then the measurable one, and its rows lack their second count.
+prev_month = mstr(mnum(D) - 1)
+out['prevMonth'] = prev_month
+direct['nextOnTimeOnly'] = direct_stop(last_month=mstr(mnum(D) + 1), MONTHLY_ARRIVAL_OBSERVATIONS={
+    h: {**t, prev_month: (counts[(h, prev_month, 'monthly')],)} for h, t in slurp.MONTHLY_ARRIVAL_OBSERVATIONS.items()})
 W_D = '2031-06'
 W_OBS = {'Waymo': {'2031-01': (5, 0), '2031-02': (6, 0), '2031-03': (4, 1), '2031-04': (5, 0)},
          'Tesla': {'2031-01': (1, 0), '2031-02': (2, 0), '2031-03': (0, 0), '2031-04': (1, 0)},
          'Zoox': {'2031-01': (0, 2), '2031-02': (0, 1), '2031-03': (0, 3), '2031-04': (0, 2)}}
 W_LAG = {'Waymo': 0, 'Tesla': 0, 'Zoox': 1}
-W_SHARES = {'Zoox': {'2031-01': (2, 4), '2031-02': (3, 4), '2031-03': (1, 4), '2031-04': (2, 4)}}
-def w_counts(obs=W_OBS, shares=W_SHARES, lagged_monthly=0):
+# The world's 5-Day-track counts, which the arrival checks do not read (a
+# month's Monthly-track count is all they compare).
+W_FIVE_DAY = {'2031-01': 2, '2031-02': 3, '2031-03': 1, '2031-04': 2}
+def w_counts(obs=W_OBS, lagged_monthly=0):
     c = collections.Counter()
     for h, t in obs.items():
         for m, arrived in t.items(): c[(h, m, 'monthly')] = sum(arrived)
-    for h, t in shares.items():
-        for m, (five_day, _total) in t.items(): c[(h, m, 'five_day')] = five_day
+    for m, five_day in W_FIVE_DAY.items(): c[('Zoox', m, 'five_day')] = five_day
     c[('Zoox', '2031-05', 'five_day')] = 1
     c[('Zoox', '2031-05', 'monthly')] = lagged_monthly
     return c
 def w_call(counts=None, **patch):
     tables = {'MONTHLY_ARRIVAL_OBSERVATIONS': W_OBS, 'MONTHLY_ARRIVAL_LAG': W_LAG,
-              'FIVE_DAY_SHARE_OBSERVATIONS': W_SHARES, 'MONTHLY_ARRIVAL_MONTHS_EXCLUDED': {}, **patch}
+              'MONTHLY_ARRIVAL_MONTHS_EXCLUDED': {}, **patch}
     saved = {k: getattr(slurp, k) for k in tables}
     for k, v in tables.items(): setattr(slurp, k, v)
     try:
-        got = slurp.monthly_lag_coverage(w_counts() if counts is None else counts, W_D)
-        return {f'{h}|{m}': list(t) for (h, m), t in got.items()}
+        got = slurp.check_monthly_arrivals(w_counts() if counts is None else counts, W_D)
+        return 'accepted' if got is None else repr(got)
     except AssertionError as exc:
         return str(exc)[:300]
     finally:
@@ -276,24 +317,10 @@ def w_call(counts=None, **patch):
 synthetic = {'baseline': w_call()}
 # a lagged month that already holds a Monthly-track report
 synthetic['tripwire'] = w_call(counts=w_counts(lagged_monthly=1))
-# the same, plus a month whose incidents were all Monthly-track (share 0):
-# the arrival row, the share row and the counts move together
-zero_obs = {**W_OBS, 'Zoox': {**W_OBS['Zoox'], '2031-03': (0, 4)}}
-zero_shares = {'Zoox': {**W_SHARES['Zoox'], '2031-03': (0, 4)}}
-synthetic['order'] = w_call(counts=w_counts(zero_obs, zero_shares, lagged_monthly=1),
-                            MONTHLY_ARRIVAL_OBSERVATIONS=zero_obs, FIVE_DAY_SHARE_OBSERVATIONS=zero_shares)
-synthetic['zeroShare'] = w_call(counts=w_counts(zero_obs, zero_shares),
-                                MONTHLY_ARRIVAL_OBSERVATIONS=zero_obs, FIVE_DAY_SHARE_OBSERVATIONS=zero_shares)
 # a lag that disagrees with its observations
 synthetic['zooxLag0'] = w_call(MONTHLY_ARRIVAL_LAG={**W_LAG, 'Zoox': 0})
 # a lag that is not a whole number of releases
 synthetic['wholeLag'] = w_call(MONTHLY_ARRIVAL_LAG={**W_LAG, 'Zoox': 1.5})
-# a share row that disagrees with the counts
-synthetic['share'] = w_call(FIVE_DAY_SHARE_OBSERVATIONS={'Zoox': {**W_SHARES['Zoox'], '2031-01': (3, 5)}})
-# a share table without the month just final for its helmer (2031-04)
-synthetic['shareSpan'] = w_call(FIVE_DAY_SHARE_OBSERVATIONS={'Zoox': {m: c for m, c in W_SHARES['Zoox'].items() if m != '2031-04'}})
-# a share table for a helmer with no lag
-synthetic['deadShare'] = w_call(FIVE_DAY_SHARE_OBSERVATIONS={**W_SHARES, 'Tesla': {'2031-01': (0, 1)}})
 # a release's arrival row added for some helmers only
 synthetic['sameMonths'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={**W_OBS, 'Waymo': {m: c for m, c in W_OBS['Waymo'].items() if m != '2031-04'}})
 # a month both observed and excluded
@@ -313,29 +340,26 @@ synthetic['dueTie'] = w_call(counts=w_counts(tie_obs), MONTHLY_ARRIVAL_OBSERVATI
     h: {m: c for m, c in t.items() if m != '2031-04'} for h, t in tie_obs.items()})
 # an arrival row that disagrees with the counts
 synthetic['arrivalTotal'] = w_call(MONTHLY_ARRIVAL_OBSERVATIONS={**W_OBS, 'Waymo': {**W_OBS['Waymo'], '2031-01': (6, 0)}})
+# the measurable month's rows (2031-04) left with their on-time counts alone,
+# the counts those rows total (so no other check can object)
+short_obs = {h: {**t, '2031-04': t['2031-04'][:1]} for h, t in W_OBS.items()}
+synthetic['onTimeOnly'] = w_call(counts=w_counts(short_obs), MONTHLY_ARRIVAL_OBSERVATIONS=short_obs)
+# the month after it (2031-05, Zoox's lagged month, which holds no Zoox
+# Monthly report) entered early: with its on-time counts alone, accepted;
+# with a second count, which no release can have measured, a stop
+early_obs = {'Waymo': {**W_OBS['Waymo'], '2031-05': (4,)}, 'Tesla': {**W_OBS['Tesla'], '2031-05': (1,)}, 'Zoox': {**W_OBS['Zoox'], '2031-05': (0,)}}
+synthetic['enteredEarly'] = w_call(counts=w_counts(early_obs), MONTHLY_ARRIVAL_OBSERVATIONS=early_obs)
+unmeasured_obs = {h: {**t, '2031-05': (*t['2031-05'], 0)} for h, t in early_obs.items()}
+synthetic['lateCountEarly'] = w_call(counts=w_counts(unmeasured_obs), MONTHLY_ARRIVAL_OBSERVATIONS=unmeasured_obs)
 out['direct'] = direct
 out['synthetic'] = synthetic
 
-# --- 4. a lagged month is never the pooled coverage's reference month --------
-def report(rid, month):
-    return {'Reporting Entity': 'Zoox, Inc.', 'Driver / Operator Type': 'None', 'Report ID': rid,
-            'Report Version': '1', 'Same Incident ID': rid, 'Incident Date': month,
-            'Report Submission Date': month, 'Report Type': '5-Day', 'Narrative': ''}
-ref_rows = ([report(f'jun-{i}', 'JUN-2026') for i in range(8)] +
-            [report(f'jul-{i}', 'JUL-2026') for i in range(4)] + [report('aug-0', 'AUG-2026')])
-ref_vmt = {('Zoox', '2026-06'): 100, ('Zoox', '2026-07'): 100, ('Zoox', '2026-08'): 100}
-saved_lag = slurp.MONTHLY_ARRIVAL_LAG
-slurp.MONTHLY_ARRIVAL_LAG = {**saved_lag, 'Zoox': 1}
-out['refLagged'] = slurp.incident_coverage(ref_rows, '2026-08', 0.32, ref_vmt)[('Zoox', '2026-08')][0]
-slurp.MONTHLY_ARRIVAL_LAG = {**saved_lag, 'Zoox': 0}
-out['refUnlagged'] = slurp.incident_coverage(ref_rows, '2026-08', 0.32, ref_vmt)[('Zoox', '2026-08')][0]
-slurp.MONTHLY_ARRIVAL_LAG = saved_lag
 print(json.dumps(out))
 `;
 const run = spawnSync("python3", ["-c", py], { cwd: new URL("..", import.meta.url), encoding: "utf8" });
 assert.equal(run.status, 0,
   `Replicata: run the Monthly-arrival-lag checks against data/slurp.py and data/snapshots.
-Expectata: slurp.py defines MONTHLY_ARRIVAL_LAG, MONTHLY_ARRIVAL_OBSERVATIONS, FIVE_DAY_SHARE_OBSERVATIONS and monthly_track_counts(), and the checks run.
+Expectata: slurp.py defines MONTHLY_ARRIVAL_LAG, MONTHLY_ARRIVAL_OBSERVATIONS, monthly_track_counts(), check_monthly_arrivals() and month_sources(), and the checks run.
 Resultata: exit ${run.status}; stderr ${run.stderr.slice(-1500)}`);
 const r = JSON.parse(run.stdout.trim().split("\n").at(-1));
 
@@ -351,16 +375,34 @@ assert.deepEqual(r.arrivalDiffs, [],
   `Replicata: recompute each helmer-month's Monthly-track arrivals from data/snapshots (in-scope incidents of the newest file, deduplicated as main() does; arrival = the first release whose data-through month is at least M+1 holding the surviving Report ID or a report it replaced, SUPERSEDED_REPORTS).
 Expectata: MONTHLY_ARRIVAL_OBSERVATIONS matches the recompute in every row.
 Resultata: [helmer, month, table, recomputed] ${JSON.stringify(r.arrivalDiffs)}.`);
-assert.deepEqual(r.shareDiffs, [],
-  `Replicata: recompute each lagged helmer-month's (in-scope 5-Day-track incidents, in-scope incidents) from the newest snapshots.
-Expectata: FIVE_DAY_SHARE_OBSERVATIONS matches in every row.
-Resultata: [helmer, month, table, recomputed] ${JSON.stringify(r.shareDiffs)}.`);
+assert.deepEqual(r.arrivalForm, [],
+  `Replicata: read each MONTHLY_ARRIVAL_OBSERVATIONS row's counts against the releases its month has had (data-through month ${r.dataThrough.slice(0, 7)}).
+Expectata: a month through the one whose third release this is (two months before the data-through month) holds at least two counts, its second release's and the reports that arrived a release late, a 0 included; a later month, entered early, holds its on-time count alone.
+Resultata: [helmer, month, row] ${JSON.stringify(r.arrivalForm)}.`);
 assert.deepEqual(r.trackCountDiffs, [],
   `Replicata: compare slurp.monthly_track_counts() on the newest snapshots with this qual's independent count, every helmer-month-track.
 Expectata: identical.
 Resultata: [key, slurp, qual] ${JSON.stringify(r.trackCountDiffs.slice(0, 8))}.`);
 
-// 2. data/vmt.js: the incident-coverage triple of every helmer-month.
+// 2. A lag's effect: its months are pending. month_sources() on data/vmt.csv
+// with the live lags, then with each helmer's lag raised by one release.
+const dataThroughMonth = r.dataThrough.slice(0, 7);
+assert.ok(JSON.stringify(r.liveSources.pending) === JSON.stringify(r.lagged) && JSON.stringify(r.liveSources.other) === JSON.stringify(["nhtsa"]),
+  `Replicata: call slurp.month_sources() on data/vmt.csv (data-through month ${dataThroughMonth}) with MONTHLY_ARRIVAL_LAG ${JSON.stringify(r.lag)} and list the line-months before ${dataThroughMonth} it gives no source, and the sources of the others.
+Expectata: no source (pending) for exactly each helmer's lagged months on each of its lines, ${JSON.stringify(r.lagged)}; every other month before the data-through month from NHTSA's file ("nhtsa").
+Resultata: ${JSON.stringify(r.liveSources)}.`);
+// A helmer whose list covers the data-through month cannot take a lag (a
+// pending month before a counted one stops the run: quals/pending-months.qual.mjs
+// (5d)); every other helmer's raised lag leaves its extra month pending.
+const raisedProblems = Object.entries(r.raised).filter(([helmer, got]) => r.listCompanies.includes(helmer)
+  ? !(typeof got.stop === "string" && got.stop.includes(dataThroughMonth))
+  : !(got.stop === undefined && got.want.length > r.lagged.length && JSON.stringify(got.pending) === JSON.stringify(got.want) && JSON.stringify(got.other) === JSON.stringify(["nhtsa"])));
+assert.deepEqual(raisedProblems, [],
+  `Replicata: call slurp.month_sources() on data/vmt.csv with each helmer's lag raised by one release in turn.
+Expectata: that helmer's lines have no source in one more month before ${dataThroughMonth} (the month is pending: no analysis row, no counted incident), and nothing else changes; for a helmer whose own list covers ${dataThroughMonth} (${JSON.stringify(r.listCompanies)}) the run stops instead, naming ${dataThroughMonth}, since a pending month would precede a counted one.
+Resultata: ${JSON.stringify(raisedProblems)}.`);
+// data/vmt.js: every analysis row before the data-through month is complete,
+// and no lagged month has one.
 const ctx = vm.createContext({
   console, Math, Number,
   document: { getElementById() { return null; }, createElement() { return { textContent: "", innerHTML: "" }; } },
@@ -369,38 +411,12 @@ vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const rows = JSON.parse(vm.runInContext(`JSON.stringify(parseVmtCsv(VMT_CSV_TEXT).map(x => ({
   helmer: x.helmer, month: x.month, inc: [x.incCov, x.incCovMin, x.incCovMax], rec: [x.coverage, x.coverageMin, x.coverageMax], through: x.through})))`, ctx));
-const dataThroughMonth = r.dataThrough.slice(0, 7);
-// The helmers whose data-through-month row runs through NHTSA's cutoff share
-// the pooled triple. Since 2026-11-18 a helmer's row can take its coverage
-// from its company's own list of crash reports instead (data/slurp.py
-// preprint_coverage: its incidents_through is then the list's date;
-// quals/preprints.qual.mjs checks it); until then this read every helmer.
-const pooled = rows.filter(x => x.month === dataThroughMonth && x.through === r.dataThrough).map(x => JSON.stringify(x.inc));
-assert.ok(pooled.length >= 2 && new Set(pooled).size === 1 && JSON.parse(pooled[0])[0] < 1,
-  `Replicata: read from data/vmt.js the incident coverage, in the data-through month ${dataThroughMonth}, of every helmer whose incidents run through NHTSA's cutoff (${r.dataThrough}).
-Expectata: one pooled triple shared by those helmers (two or more), below 1.
-Resultata: ${JSON.stringify(pooled)}.`);
-const wrong = [];
-for (const x of rows) {
-  if (x.month === dataThroughMonth) continue;
-  const lag = r.expectedLag[`${x.helmer}|${x.month}`];
-  const want = lag || [1, 1, 1];
-  if (JSON.stringify(x.inc) !== JSON.stringify(want) || JSON.stringify(x.rec) !== JSON.stringify([1, 1, 1]))
-    wrong.push({ helmer: x.helmer, month: x.month, incident: x.inc, receipt: x.rec, want });
-}
+const wrong = rows.filter(x => x.month < dataThroughMonth &&
+  (JSON.stringify(x.inc) !== "[1,1,1]" || JSON.stringify(x.rec) !== "[1,1,1]" || x.through !== r.dataThrough || r.lagged.includes(`${x.helmer}|${x.month}`)));
 assert.deepEqual(wrong, [],
-  `Replicata: compare every helmer-month's incident and receipt coverage in data/vmt.js with slurp.py's lag model.
-Expectata: in each helmer's lagged months (${JSON.stringify(r.expectedLag)}) incident coverage = (pooled 5-Day share, lowest monthly share, 1.0) and receipt coverage 1; every other month before the data-through month (1, 1, 1) for both.
+  `Replicata: read every analysis row of data/vmt.js for a month before the data-through month ${dataThroughMonth}.
+Expectata: receipt and incident coverage (1, 1, 1), its incidents through NHTSA's cutoff (${r.dataThrough}), and none for a helmer's lagged month (${JSON.stringify(r.lagged)}), which is pending.
 Resultata: ${JSON.stringify(wrong.slice(0, 6))}.`);
-// The window the 2026-10-03 decision named starts in 2026-01 (Zoox Jan-Jun
-// 2026, 17 of 27 in-scope incidents on the 5-Day track, February 1 of 4 the
-// lowest; its rows left FIVE_DAY_SHARE_OBSERVATIONS when its lag returned to
-// 0, and slurp.py's comment keeps them): a lagged helmer's share table starts
-// there.
-assert.ok(Object.values(r.shareStarts).every(m => m === "2026-01"),
-  `Replicata: read the first month of every FIVE_DAY_SHARE_OBSERVATIONS table in data/slurp.py.
-Expectata: 2026-01, the start of the approved window.
-Resultata: ${JSON.stringify(r.shareStarts)}.`);
 
 // 3. slurp stops on inconsistent inputs.
 assert.equal(r.regenOk, true,
@@ -412,8 +428,8 @@ const expectStops = {
   zooxLag: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Zoox'/,
   waymoLag: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Waymo'/,
   due: /^no Monthly-report arrival observation for a month that is now measurable/,
+  dueOnTimeOnly: /^a Monthly-report arrival row for a month whose third release has come holds its on-time count only/,
   arrivalTotal: /^MONTHLY_ARRIVAL_OBSERVATIONS disagree with this release/,
-  deadShare: /^FIVE_DAY_SHARE_OBSERVATIONS must cover exactly the lagged helmers/,
 };
 for (const [name, re] of Object.entries(expectStops)) {
   assert.match(r.stops[name], re,
@@ -423,101 +439,95 @@ Resultata: ${JSON.stringify(r.stops[name])}.`);
 }
 // 3b. The function itself, on this release's counts and on the synthetic world.
 assert.equal(r.direct.baseline, "accepted",
-  `Replicata: call slurp.monthly_lag_coverage() directly on the newest snapshots' track counts with the real tables.
+  `Replicata: call slurp.check_monthly_arrivals() directly on the newest snapshots' track counts with the real tables.
 Expectata: accepted.
 Resultata: ${JSON.stringify(r.direct.baseline)}.`);
-assert.deepEqual(r.synthetic.baseline, { "Zoox|2031-05": [0.5, 0.25, 1.0] },
-  `Replicata: call slurp.monthly_lag_coverage() on the synthetic world (Zoox lag 1; its 5-Day shares 2/4, 3/4, 1/4, 2/4; data-through month 2031-06).
-Expectata: only Zoox's lagged month 2031-05 gets a triple: (pooled share 8/16 = 0.5, lowest share 0.25, 1.0).
+assert.equal(r.synthetic.baseline, "accepted",
+  `Replicata: call slurp.check_monthly_arrivals() on the synthetic world (Zoox lag 1, its Monthly reports of 2031-01..04 all a release late; data-through month 2031-06).
+Expectata: accepted, returning nothing (the lagged month 2031-05 is pending by month_sources(); until 2026-11-21 this returned its coverage triple).
 Resultata: ${JSON.stringify(r.synthetic.baseline)}.`);
+assert.match(r.direct.nextOnTimeOnly, /^a Monthly-report arrival row for a month whose third release has come holds its on-time count only/,
+  `Replicata: call slurp.check_monthly_arrivals() on the newest snapshots' track counts as the next release would read them were no Monthly report of ${r.prevMonth} to arrive late: the data-through month one later, the real tables with ${r.prevMonth}'s rows holding their on-time counts alone.
+Expectata: it stops, naming the rows: ${r.prevMonth}'s third release has come, and its rows must take their second count, 0 included (data/README.md, Each NHTSA release, step 3).
+Resultata: ${JSON.stringify(r.direct.nextOnTimeOnly)}.`);
+assert.equal(r.synthetic.enteredEarly, "accepted",
+  `Replicata: call slurp.check_monthly_arrivals() on the synthetic world with rows for 2031-05, the month before the data-through month, holding their on-time counts alone.
+Expectata: accepted (a month entered early holds its on-time counts until its third release).
+Resultata: ${JSON.stringify(r.synthetic.enteredEarly)}.`);
 const tripwire = /^a lagged month already holds an in-scope Monthly-track report/;
 const expectSynthetic = {
   tripwire,
-  order: tripwire,
-  zeroShare: /^a lagged helmer's lowest monthly 5-Day share is 0/,
   zooxLag0: /^a helmer's MONTHLY_ARRIVAL_LAG disagrees with its observations.*'helmer': 'Zoox'/,
   wholeLag: /^MONTHLY_ARRIVAL_LAG values must be whole numbers of releases/,
-  share: /^FIVE_DAY_SHARE_OBSERVATIONS disagree with this release/,
-  shareSpan: /^a lagged helmer's FIVE_DAY_SHARE_OBSERVATIONS must hold every month from its first through the newest month final for it/,
-  deadShare: /^FIVE_DAY_SHARE_OBSERVATIONS must cover exactly the lagged helmers/,
   sameMonths: /^every helmer's MONTHLY_ARRIVAL_OBSERVATIONS must cover the same months/,
   observedExcluded: /^a month is both observed and excluded/,
   future: /^an arrival observation for the data-through month or later/,
   due: /^no Monthly-report arrival observation for a month that is now measurable/,
   dueTie: /^no Monthly-report arrival observation for a month that is now measurable/,
   arrivalTotal: /^MONTHLY_ARRIVAL_OBSERVATIONS disagree with this release/,
+  onTimeOnly: /^a Monthly-report arrival row for a month whose third release has come holds its on-time count only/,
+  lateCountEarly: /^a Monthly-report arrival row for a month whose third release has not come holds more than its on-time count/,
 };
 for (const [name, re] of Object.entries(expectSynthetic)) {
   assert.match(String(r.synthetic[name]), re,
-    `Replicata: call slurp.monthly_lag_coverage() on the synthetic world with inconsistent input "${name}"${name === "order" ? " (a month with 5-Day share 0 AND a Monthly-track report in Zoox's lagged month)" : ""}.
+    `Replicata: call slurp.check_monthly_arrivals() on the synthetic world with inconsistent input "${name}".
 Expectata: it stops with a message matching ${re}.
 Resultata: ${JSON.stringify(r.synthetic[name])}.`);
 }
 
-// 4. The reference month of the pooled data-through-month coverage skips a
-// lagged month: Zoox with June 8 incidents, July 4 (lagged: 5-Day only), August
-// 1, VMT 100 each, receipt 0.32. Lag 1 -> June is the reference: 1 / (8 x 0.32)
-// = 0.3906; lag 0 -> July: 1 / (4 x 0.32) = 0.7813.
-assert.ok(Math.abs(r.refLagged - 0.3906) < 1e-4 && Math.abs(r.refUnlagged - 0.7812) < 2e-4,
-  `Replicata: slurp.incident_coverage on synthetic Zoox rows (June 8, July 4, August 1 incidents) with Zoox's lag 1 and 0.
-Expectata: 0.3906 with lag 1 (June, complete, is the reference) and 0.7812 with lag 0 (July is).
-Resultata: ${r.refLagged} and ${r.refUnlagged}.`);
-
-// 5. The app: partially received months must be the window's newest. Zoox's
-// month before the data-through month gets a synthetic lag triple (0.6, 0.25,
-// 1.0), so a window ends in two partially received months whatever the live
-// lags are.
-const lagMonth = (() => {
-  const [y, m] = dataThroughMonth.split("-").map(Number), n = y * 12 + m - 2;
-  return `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, "0")}`;
-})();
-const injectLag = `vmtRows = parseVmtCsv(VMT_CSV_TEXT).map(x => x.helmer === "Zoox" && x.month === ${JSON.stringify(lagMonth)}
-    ? {...x, incCov: 0.6, incCovMin: 0.25, incCovMax: 1} : x);`;
+// 5. The app: a window holds at most one partially received month, after
+// every fully received one. The partial rows are the list rows (a month a
+// company's own dated list covers: receipt or incident coverage below 1),
+// each its line's newest analysis month. A line with one is read from the
+// data, never assumed; with none on the page (a release no list covers) the
+// same checks run on a line's newest month made partial.
 const app = JSON.parse(vm.runInContext(`(() => {
-  incidents = INCIDENT_DATA; ${injectLag}
-  faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
-  const zoox = monthSeriesData().points.map(p => p.helmers.Zoox).filter(Boolean).slice(-6);
+  loadIncidents(INCIDENT_DATA, PENDING_INCIDENT_DATA);
+  vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
+  const series = monthSeriesData();
   const sel = [r => r.vmtMin, r => r.vmtBest, r => r.vmtMax];
-  const partial = zoox.filter(r => r.vmtMin !== r.vmtMonthMin || r.vmtMax !== r.vmtMonthMax).map(r => r.month);
-  let trailing = "accepted";
-  try { windowVmtBand("Zoox", zoox, ...sel); } catch (e) { trailing = String(e.message); }
-  const bad = zoox.slice(0, -2).map((r, i) => i === 1 ? {...r, vmtMin: r.vmtMonthMin / 2} : r);
-  let middle = "accepted";
-  try { windowVmtBand("Zoox", bad, ...sel); } catch (e) { middle = String(e.message); }
-  return JSON.stringify({partial, trailing, middle});
+  const isPartial = r => r.vmtMin !== r.vmtMonthMin || r.vmtMax !== r.vmtMonthMax;
+  const attempt = (line, rows) => { try { windowVmtBand(line, rows, ...sel); return "accepted"; } catch (e) { return String(e.message); } };
+  return JSON.stringify(ADS_SERIES.map(line => {
+    const mine = series.points.map(p => p.helmers[line]).filter(Boolean).slice(-6);
+    const full = mine.filter(r => !isPartial(r));
+    const halved = r => ({...r, vmtMin: r.vmtMonthMin / 2});
+    return { line, months: mine.map(r => r.month), partial: mine.filter(isPartial).map(r => r.month),
+      trailing: attempt(line, mine),
+      // the newest fully received month made partial, alone at the end
+      one: attempt(line, [...full.slice(0, -1), halved(full.at(-1))]),
+      // a partial month followed by a full one
+      middle: attempt(line, full.slice(0, 4).map((r, i) => i === 1 ? halved(r) : r)),
+      // two partial months at the end
+      two: attempt(line, [...full.slice(0, -2), ...full.slice(-2).map(halved)]) };
+  }));
 })()`, ctx));
-const lagMonths = [...new Set([...Object.keys(r.expectedLag).filter(k => k.startsWith("Zoox|")).map(k => k.slice(5)), lagMonth])].sort();
-assert.deepEqual(app.partial, [...lagMonths, dataThroughMonth],
-  `Replicata: give Zoox's ${lagMonth} a lag triple (0.6, 0.25, 1.0) and list Zoox's Monthly-track partially received months among its last six in the app.
-Expectata: its lagged months then the data-through month, ${JSON.stringify([...lagMonths, dataThroughMonth])}.
-Resultata: ${JSON.stringify(app.partial)}.`);
-assert.equal(app.trailing, "accepted",
-  `Replicata: windowVmtBand over Zoox's last six months (Monthly-track selectors). Expectata: accepted. Resultata: ${app.trailing}.`);
-assert.match(app.middle, /precedes/,
-  `Replicata: windowVmtBand over four Zoox months whose second is made partial. Expectata: it throws (a partial month precedes a full one). Resultata: ${app.middle}.`);
+const listRowsOf = line => rows.filter(x => x.helmer === line && (x.rec.some(v => v !== 1) || x.inc.some(v => v !== 1))).map(x => x.month);
+const bandProblems = app.filter(x => x.months.length < 5 || JSON.stringify(x.partial) !== JSON.stringify(listRowsOf(x.line).filter(m => x.months.includes(m)))
+  || x.partial.length > 1 || (x.partial.length === 1 && x.partial[0] !== x.months.at(-1))
+  || x.trailing !== "accepted" || x.one !== "accepted" || x.middle === "accepted" || x.two === "accepted");
+assert.deepEqual(bandProblems, [],
+  `Replicata: for each line, take its last six months in the app and ask windowVmtBand (Monthly-track selectors) for the band of: those months as they are; its fully received months with the newest made partial; four fully received months with the second made partial; its fully received months with the newest two made partial.
+Expectata: at least five months each; its partially received months are its list rows, at most one, its newest; the first two windows accepted, the last two rejected (a partial month before a full one; two partial months).
+Resultata: ${JSON.stringify(bandProblems)}.`);
 
-// 6. The MPI-over-time chart with Zoox shown (the default view hides it, so
-// until the reviewer's 2026-10-04 addition nothing pinned this): each month's
-// "?" fades in by the largest incompleteness among the shown helmers' dots on
-// a Monthly-track metric, 1 - coverage x incident_coverage_min (the month's
-// whole completeness at worst, as the effective miles scale it; until
-// 2026-11-02 1 - incident_coverage_min alone, decision 23(a)), so a lagged
-// month gets its own "?", and the lagged helmer's dot tooltip carries that
-// month's coverage note. In a lagged month the receipt coverage is 1, so its
-// whole completeness is its incident coverage.
-// Zoox's month before the data-through month carries the synthetic lag
-// triple of section 5.
-// On All incidents, a Monthly-track metric that needs no fault ratings, so
-// every shown helmer-month with miles has a dot even before a release's
-// fault batch (on at-fault, an unrated month draws none).
-// On a five-day-track metric (each of METRIC_DEFS' fiveDay metrics is
-// checked; none needs fault ratings) the month's whole completeness is the
-// receipt coverage alone, so each month's "?" fades in by 1 - coverage_min:
-// the data-through month is marked, and the lagged month, whose receipt
-// coverage is 1 (the 5-Day reports arrive on the normal schedule), carries
-// neither a "?" nor a coverage note. Until 2026-11-02 that track drew every
-// "?" at opacity 0 (decision 23(a)), and until that day's review nothing here
-// pinned it.
+// 6. The MPI-over-time chart: each month's "?" fades in by the largest
+// incompleteness among the shown lines' dots on the metric's track, 1 - w,
+// w the month's whole completeness at worst as the effective miles scale it
+// (receivedShare's worst: coverage x incident_coverage_min on a Monthly-track
+// metric, until 2026-11-02 1 - incident_coverage_min alone, decision 23(a);
+// coverage_min on a five-day-track one, which until 2026-11-02 drew every "?"
+// at opacity 0). Each month has its own marker: a window holds at most one
+// partially received month per line, every line's in the same month (the
+// list's), so no two adjacent months are marked (from 2026-10-04, audit #36,
+// to 2026-11-21 a run of adjacent incomplete months, a lagged month and the
+// data-through month, shared one "?"). A partially received month's dot
+// tooltip carries its share on the metric's track, best then worst; a
+// pending line-month has no dot. Checked with every company line shown, on
+// All incidents (a Monthly-track metric that needs no fault ratings, so every
+// shown line-month with miles has a dot even before a release's fault batch)
+// and on each five-day-track metric.
 class EscStub { set textContent(v) { this.innerHTML = String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); } }
 const ctx6 = vm.createContext({ console, Math, Number,
   document: { getElementById() { return null; }, createElement() { return new EscStub(); } } });
@@ -526,103 +536,97 @@ vm.runInContext(appScript, ctx6, { filename: "crashla.js" });
 // The world is set up once: monthSeriesData computes every metric and every
 // line, so only the selected metric (and, in the last part, the shown lines
 // and the window) changes between the renders below.
-vm.runInContext(`incidents = INCIDENT_DATA; ${injectLag}
-  faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
+vm.runInContext(`loadIncidents(INCIDENT_DATA, PENDING_INCIDENT_DATA);
+  vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
   var section6DefaultLines = {...monthHelmerEnabled};
-  monthHelmerEnabled.Zoox = true;
+  for (const line of ADS_SERIES) monthHelmerEnabled[line] = true;
   var section6Series = monthSeriesData();`, ctx6);
-// The default-window chart on one metric with Zoox shown, and each month's
-// expected "?" opacity: the largest 1 - (the month's whole completeness at
-// worst for that metric's track) over the shown ADS helmers, read from the
-// coverage columns.
+// The default-window chart on one metric with every company line shown, and
+// each month's expected "?" opacity: the largest 1 - (the month's whole
+// completeness at worst for that metric's track) over the shown company
+// lines, read from the coverage columns.
 const renderOn = key => JSON.parse(vm.runInContext(`(() => {
   selectedMetricKey = ${JSON.stringify(key)};
   const s = section6Series, start = s.months.indexOf(DEFAULT_START_MONTH);
   const metric = selectedMonthMetric();
-  const ads = ADS_HELMERS.filter(h => monthHelmerEnabled[h]);
+  const ads = ADS_SERIES.filter(h => monthHelmerEnabled[h]);
   const csv = vmtRows;
   const months = s.months.slice(start);
   const track = metric.fiveDay === true
-    ? { worst: r => r.coverageMin, rule: "1 - coverage_min (the receipt coverage alone)" }
-    : { worst: r => r.coverage * r.incCovMin, rule: "1 - coverage x incident_coverage_min" };
+    ? { best: r => r.coverage, worst: r => r.coverageMin, rule: "1 - coverage_min (the receipt coverage alone)" }
+    : { best: r => r.coverage * r.incCov, worst: r => r.coverage * r.incCovMin, rule: "1 - coverage x incident_coverage_min" };
   return JSON.stringify({
     fiveDay: metric.fiveDay === true, metric: metric.key, ads, rule: track.rule,
     html: renderAllHelmersMpiChart(sliceSeries(s, start, s.months.length - 1)),
     months,
     expected: months.map(m => Math.max(0, ...csv.filter(r => r.month === m && ads.includes(r.helmer)).map(r => 1 - track.worst(r)))),
+    rows: csv.filter(r => months.includes(r.month) && ads.includes(r.helmer)).map(r => ({ line: r.helmer, month: r.month, best: track.best(r), worst: track.worst(r) })),
   });
 })()`, ctx6));
-// A run of adjacent incomplete months shares one "?" (audit 2026-10-04 #36:
-// on a phone the lagged month's and the data-through month's glyphs sat 3.6
-// units apart and read "??"), centred on the run at its largest
-// incompleteness; every complete month keeps its own at opacity 0.
 // (The markers are the month-tick texts that carry an opacity, found by that
 // rather than by their glyph since 2026-10-29.)
 const checkQmarks = chart => {
   const qmarks = [...chart.html.matchAll(/<text class="month-tick" x="([\d.]+)"[^>]*style="opacity:([\d.]+);pointer-events:none">[^<]*<\/text>/g)]
     .map(m => ({ x: Number(m[1]), opacity: m[2] }));
   const monthX = [...new Set([...chart.html.matchAll(/<circle class="month-dot" cx="([\d.]+)"/g)].map(m => Number(m[1])))].sort((a, b) => a - b);
-  const groups = [];
-  chart.expected.forEach((o, i) => { if (o > 0 && i > 0 && chart.expected[i - 1] > 0) groups[groups.length - 1].push(i); else groups.push([i]); });
-  const wantQ = groups.map(g => ({ months: g.map(i => chart.months[i]).join("+"),
-    x: (monthX[g[0]] + monthX[g[g.length - 1]]) / 2, opacity: Math.max(...g.map(i => chart.expected[i])).toFixed(3) }));
+  const wantQ = chart.months.map((month, i) => ({ month, x: monthX[i], opacity: chart.expected[i].toFixed(3) }));
   assert.ok(monthX.length === chart.months.length && qmarks.length === wantQ.length &&
     qmarks.every((q, i) => q.opacity === wantQ[i].opacity && Math.abs(q.x - wantQ[i].x) <= 0.01),
-    `Replicata: the "?" markers of the ${chart.where ?? "default-window MPI chart with Zoox shown"} (metric ${chart.metric}).
-Expectata: one per complete month at opacity 0 and one per run of adjacent incomplete months, centred on the run, at the run's largest ${chart.rule} over the shown ADS helmers: visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
-Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) => ({ ...q, at: wantQ[i] && wantQ[i].months })).filter(q => q.opacity !== "0.000"))}.`);
+    `Replicata: the "?" markers of the ${chart.where ?? "default-window MPI chart with every company line shown"} (metric ${chart.metric}).
+Expectata: one per month, over the month's dots, at the month's largest ${chart.rule} over the shown company lines (0 for a fully received month): visible ${JSON.stringify(wantQ.filter(q => q.opacity !== "0.000"))}, ${wantQ.length} in all.
+Resultata: ${qmarks.length} markers, visible ${JSON.stringify(qmarks.map((q, i) => ({ ...q, at: wantQ[i] && wantQ[i].month })).filter(q => q.opacity !== "0.000"))}.`);
 };
-const shown = renderOn("all");
-assert.ok(!shown.fiveDay && shown.ads.includes("Zoox"),
-  `Replicata: select All incidents and switch Zoox on. Expectata: a Monthly-track metric, Zoox shown. Resultata: ${shown.metric}, ${JSON.stringify(shown.ads)}.`);
-checkQmarks(shown);
-// A month's ADS dot tooltips, each with its helmer: the targets whose
-// accessible name is the helmer's mark-name prefix (seriesMarkName) and the
+// A month's company dot tooltips, each with its line: the targets whose
+// accessible name is the line's mark-name prefix (seriesMarkName) and the
 // tip. The coverage note's figures are ~best% then ~worst%. Until 2026-10-29
-// this told the ADS tooltips by their word "incident" and pinned the note's
-// words ("incident coverage", "worst case").
+// this told the company tooltips by their word "incident" and pinned the
+// note's words ("incident coverage", "worst case").
 const decode = s => s.replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const markPrefix = JSON.parse(vm.runInContext("JSON.stringify(Object.fromEntries(ADS_SERIES.map(h => [h, seriesMarkName(h, '')])))", ctx6));
 const tipsOf = (chart, month) => [...chart.html.matchAll(/data-tip="([^"]*)" tabindex="0" aria-label="([^"]*)"/g)]
   .map(m => ({ tip: decode(m[1]), name: decode(m[2]) }))
-  .map(t => ({ ...t, helmer: chart.ads.find(h => t.name === markPrefix[h] + t.tip) }))
-  .filter(t => t.helmer !== undefined && t.tip.startsWith(month + "\n"));
+  .map(t => ({ ...t, line: chart.ads.find(h => t.name === markPrefix[h] + t.tip) }))
+  .filter(t => t.line !== undefined && t.tip.startsWith(month + "\n"));
 const percents = tip => [...tip.matchAll(/~(\d+)%/g)].map(m => Number(m[1]));
-const laggedTriples = { ...r.expectedLag, [`Zoox|${lagMonth}`]: [0.6, 0.25, 1] };
-for (const [key, [best, lo]] of Object.entries(laggedTriples)) {
-  const [lagged, month] = key.split("|");
-  const want = [Math.round(best * 100), Math.round(lo * 100)];
-  const tips = tipsOf(shown, month);
-  assert.ok(tips.length === shown.ads.length && new Set(tips.map(t => t.helmer)).size === tips.length
-    && tips.every(t => JSON.stringify(percents(t.tip)) === JSON.stringify(t.helmer === lagged ? want : [])),
-    `Replicata: the ${month} ADS dot tooltips of that chart.
-Expectata: ${shown.ads.length} tooltips, one per shown ADS helmer; the lagged helmer's (${key}) gives its coverage as ~${want[0]}% (worst case ~${want[1]}%), the others no coverage figures.
-Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
-}
-// Every five-day-track metric, in the same world: only the data-through month
-// is incomplete on that track (a precondition, so the "?" check has a
-// visible marker to find), its "?" fades in by the receipt coverage alone,
-// and no lagged month's ADS dot tooltip carries a coverage note.
+// Each month's company dot tooltips on a chart: one per shown line with a row
+// that month (a pending line-month has no row and no dot), a partially
+// received row's giving its share (best, worst) and a fully received one's
+// no share.
+const checkTips = chart => {
+  const partialMonths = [...new Set(chart.rows.filter(x => x.worst < 0.999).map(x => x.month))];
+  for (const month of [...partialMonths, chart.months[0]]) {
+    const mine = chart.rows.filter(x => x.month === month);
+    const tips = tipsOf(chart, month);
+    const want = Object.fromEntries(mine.map(x => [x.line, x.worst < 0.999 ? [Math.round(x.best * 100), Math.round(x.worst * 100)] : []]));
+    assert.ok(tips.length === mine.length && new Set(tips.map(t => t.line)).size === tips.length
+      && tips.every(t => JSON.stringify(percents(t.tip)) === JSON.stringify(want[t.line])),
+      `Replicata: the ${month} company dot tooltips of the default-window MPI chart with every company line shown (metric ${chart.metric}).
+Expectata: one per shown line with a data/vmt.js analysis row that month (${mine.map(x => x.line).join(", ") || "none"}); a partially received row's gives its share of the month's eventual incidents on the metric's track as ~best% then ~worst% (${JSON.stringify(want)}), a fully received one's no share.
+Resultata: ${JSON.stringify(tips.map(t => [t.line, t.tip]))}.`);
+  }
+  return partialMonths;
+};
+const shown = renderOn("all");
+assert.ok(!shown.fiveDay && shown.ads.length >= 3,
+  `Replicata: select All incidents and switch every company line on. Expectata: a Monthly-track metric, three or more lines shown. Resultata: ${shown.metric}, ${JSON.stringify(shown.ads)}.`);
+checkQmarks(shown);
+const monthlyPartial = checkTips(shown);
+// Every five-day-track metric, in the same world: a list row is partial on
+// that track too, by its receipt coverage alone (the list holds the crashes
+// through its date), so the same month is marked.
 const fiveDayKeys = JSON.parse(vm.runInContext("JSON.stringify(METRIC_DEFS.filter(m => m.fiveDay === true).map(m => m.key))", ctx6));
 assert.ok(fiveDayKeys.length > 0,
   `Replicata: list the five-day-track metrics of METRIC_DEFS. Expectata: at least one. Resultata: none.`);
 for (const metricKey of fiveDayKeys) {
   const chart = renderOn(metricKey);
-  const marked = chart.months.filter((_m, i) => chart.expected[i] > 0);
-  assert.ok(chart.fiveDay && chart.ads.includes("Zoox") && JSON.stringify(marked) === JSON.stringify([dataThroughMonth]),
-    `Replicata: select ${metricKey}, switch Zoox on, and list the window's months in which a shown ADS helmer's receipt coverage at worst (coverage_min) is below 1.
-Expectata: a five-day-track metric, Zoox shown, and the data-through month ${dataThroughMonth} alone (Zoox's lagged ${lagMonth} has receipt coverage 1).
-Resultata: ${chart.metric}, five-day ${chart.fiveDay}, ${JSON.stringify(chart.ads)}, ${JSON.stringify(marked)}.`);
+  assert.ok(chart.fiveDay, `Replicata: select ${metricKey}. Expectata: a five-day-track metric. Resultata: ${chart.metric}, five-day ${chart.fiveDay}.`);
   checkQmarks(chart);
-  for (const key of Object.keys(laggedTriples)) {
-    const month = key.split("|")[1];
-    const tips = tipsOf(chart, month);
-    assert.ok(tips.length === chart.ads.length && new Set(tips.map(t => t.helmer)).size === tips.length
-      && tips.every(t => percents(t.tip).length === 0),
-      `Replicata: the ${month} ADS dot tooltips of the ${metricKey} chart (${key} lagged).
-Expectata: ${chart.ads.length} tooltips, one per shown ADS helmer, none with coverage figures: a lag holds back Monthly-track reports only, and the month's receipt coverage is 1.
-Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
-  }
+  const partial = checkTips(chart);
+  assert.deepEqual(partial, monthlyPartial,
+    `Replicata: list the default window's months in which a shown company line's receipt coverage at worst (coverage_min) is below 1 (metric ${metricKey}).
+Expectata: the months partial on the Monthly track, ${JSON.stringify(monthlyPartial)} (a list row counts a share of its month's miles on both tracks).
+Resultata: ${JSON.stringify(partial)}.`);
 }
 
 // The dots, error bars and y axis (open question 31; added 2026-11-03, when
@@ -650,12 +654,15 @@ Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
 // (2026-11-02) a five-day metric's partly received month counted as fully
 // received there, so the one-month 2026-09 airbag chart topped out at 8M
 // where 2M is due.
-// Checked on every metric, in the default window and in the data-through
-// month's one-month window, with the default lines and with Zoox added (whose
-// synthetic lagged month, section 5, is a second partly received month on
-// the Monthly track), with the "?" markers of each of those charts. A line's
+// Checked on every metric, in the default window and in the one-month window
+// of the series' newest month (the slider's last: the newest month with an
+// analysis row, where a list row is partly received; until 2026-11-21 the
+// data-through month, which has no analysis row now unless a list covers
+// it), with the default lines and with every company line shown, with the
+// "?" markers of each of those charts. A line's
 // month has a dot and an error bar where the series gives it a posterior for
-// the metric (an unrated month on an at-fault metric gets none), and the
+// the metric (an unrated month on an at-fault metric gets none, and a
+// pending line-month none on any), and the
 // medians the rule takes are the series' own; the marks' colours
 // tell the lines apart and their x positions the months. w is read from the
 // coverage columns of parseVmtCsv's rows, as for the "?" above. The chart's
@@ -667,11 +674,11 @@ Resultata: ${JSON.stringify(tips.map(t => [t.helmer, t.tip]))}.`);
 // default at-fault-injury chart, 0-500M by 100M, it named 100M as due, where
 // linearTicks on that chart's largest median, 74.1M, draws 0-80M by 20M.
 const appLinearTicks = vm.runInContext("linearTicks", ctx6);
-const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() => {
+const chartCase = (key, oneMonth, everyLine) => JSON.parse(vm.runInContext(`(() => {
   const saved = [selectedMetricKey, monthHelmerEnabled];
   selectedMetricKey = ${JSON.stringify(key)};
-  monthHelmerEnabled = {...section6DefaultLines${withZoox ? ", Zoox: true" : ""}};
-  const s = section6Series, end = s.months.indexOf(${JSON.stringify(dataThroughMonth)});
+  monthHelmerEnabled = {...section6DefaultLines${everyLine ? ", ...Object.fromEntries(ADS_SERIES.map(line => [line, true]))" : ""}};
+  const s = section6Series, end = s.months.length - 1;
   const start = ${oneMonth ? "end" : "s.months.indexOf(DEFAULT_START_MONTH)"};
   const metric = selectedMonthMetric();
   const appTicks = linearTicks, tickCalls = [];
@@ -688,7 +695,7 @@ const chartCase = (key, oneMonth, withZoox) => JSON.parse(vm.runInContext(`(() =
         csv: csv ? { coverage: csv.coverage, coverageMin: csv.coverageMin, incCovMin: csv.incCovMin } : null };
     }) }));
   [selectedMetricKey, monthHelmerEnabled] = saved;
-  return JSON.stringify({ metric: metric.key, fiveDay: metric.fiveDay === true, newest: s.months.length - 1, end,
+  return JSON.stringify({ metric: metric.key, fiveDay: metric.fiveDay === true, companyLines: ADS_SERIES,
     defaultStart: DEFAULT_START_MONTH, months, lines, html, tickCalls });
 })()`, ctx6));
 const TICK_UNIT = { "": 1, K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
@@ -710,13 +717,15 @@ const fadeOf = w => 0.35 + 0.65 * w;
 const metricKeys = JSON.parse(vm.runInContext("JSON.stringify(METRIC_DEFS.map(m => m.key))", ctx6));
 const frameProblems = [], fadeProblems = { dot: [], "error bar": [] }, axisProblems = [], qmarkCharts = [];
 let markCount = 0;
-for (const key of metricKeys) for (const oneMonth of [false, true]) for (const withZoox of [false, true]) {
-  const c = chartCase(key, oneMonth, withZoox);
-  const where = `MPI chart ${oneMonth ? `in the one-month ${dataThroughMonth} window` : "in the default window"} with the default lines${withZoox ? " and Zoox" : ""}`;
+let newestMonth = null;
+for (const key of metricKeys) for (const oneMonth of [false, true]) for (const everyLine of [false, true]) {
+  const c = chartCase(key, oneMonth, everyLine);
+  newestMonth = c.months.at(-1);
+  const where = `MPI chart ${oneMonth ? `in the one-month ${newestMonth} window` : "in the default window"} with ${everyLine ? "every company line" : "the default lines"}`;
   const at = `${c.metric}, ${where.slice("MPI chart ".length)}`;
-  if (c.end !== c.newest || !(oneMonth ? c.months.length === 1 : c.months[0] === c.defaultStart && c.months.length >= 2)
-    || (withZoox && !c.lines.some(l => l.line === "Zoox"))) {
-    frameProblems.push(`${at}: months ${c.months[0]}..${c.months.at(-1)} (the data-through month at index ${c.end}, the series' newest at ${c.newest}), lines ${c.lines.map(l => l.line).join(", ")}`);
+  if (!(newestMonth <= dataThroughMonth) || !(oneMonth ? c.months.length === 1 : c.months[0] === c.defaultStart && c.months.length >= 2)
+    || (everyLine && !c.companyLines.every(line => c.lines.some(l => l.line === line)))) {
+    frameProblems.push(`${at}: months ${c.months[0]}..${newestMonth} (the data-through month ${dataThroughMonth}), lines ${c.lines.map(l => l.line).join(", ")}`);
     continue;
   }
   // Each shown line-month with a dot: w and its median.
@@ -785,13 +794,13 @@ Resultata: none.`);
 }
 const caseCount = metricKeys.length * 2 * 2;
 assert.deepEqual(frameProblems, [],
-  `Replicata: render the MPI chart on each of the ${metricKeys.length} metrics, in the default window (${dataThroughMonth} its newest month) and in the one-month ${dataThroughMonth} window, with the default lines and with Zoox added (Zoox's ${lagMonth} lagged, as in section 5): ${caseCount} charts.
-Expectata: each window ends at the data-through month, the series' newest; each shown line in its own colour; every dot in a group carrying its opacity; every error bar read; one column of dots per month (the human cohort has a dot in every month).
+  `Replicata: render the MPI chart on each of the ${metricKeys.length} metrics, in the default window (${newestMonth} its newest month) and in the one-month ${newestMonth} window, with the default lines and with every company line shown: ${caseCount} charts.
+Expectata: each window ends at the series' newest month, at or before the data-through month ${dataThroughMonth}; each shown line in its own colour; every dot in a group carrying its opacity; every error bar read; one column of dots per month (the human cohort has a dot in every month).
 Resultata: ${frameProblems.length} problems: ${frameProblems.slice(0, 8).join("; ")}.`);
 for (const [kind, problems] of Object.entries(fadeProblems)) {
   assert.deepEqual(problems, [],
     `Replicata: those ${caseCount} charts' ${kind}s, each matched to its line by colour and to its month by x.
-Expectata: one ${kind} per shown line-month with a posterior, each at opacity 0.35 + 0.65 x w to 3 decimals, w the month's whole completeness at worst for the metric's track (coverage x incident_coverage_min on the Monthly track, coverage_min on the five-day track, 1 for a human cohort), so ${dataThroughMonth}'s company ${kind}s fade with the month's "?" and every fully received month's are opaque.
+Expectata: one ${kind} per shown line-month with a posterior, each at opacity 0.35 + 0.65 x w to 3 decimals, w the month's whole completeness at worst for the metric's track (coverage x incident_coverage_min on the Monthly track, coverage_min on the five-day track, 1 for a human cohort), so a partially received month's company ${kind}s fade with the month's "?" and every fully received month's are opaque.
 Resultata: ${problems.length} problems: ${problems.slice(0, 10).join("; ")}.`);
 }
 assert.deepEqual(axisProblems, [],
@@ -800,4 +809,4 @@ Expectata: 0 and evenly spaced rungs, the top one the first at or above the larg
 Resultata: ${axisProblems.length} of ${caseCount} charts wrong: ${axisProblems.slice(0, 8).join("; ")}.`);
 for (const chart of qmarkCharts) checkQmarks(chart);
 
-console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); live lagged months ${JSON.stringify(r.expectedLag)} in data/vmt.js; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer, the lag's own stop first; a synthetic lagged month (Zoox ${lagMonth}) on the MPI chart, on All incidents and on ${fiveDayKeys.length} five-day-track metrics; on ${caseCount} MPI charts (every metric, two windows, two line sets) ${markCount} dots and error bars fade by their month's whole completeness, the y axis tops out at the first rung at or above the largest median, and the "?" markers follow the same completeness`);
+console.log(`qual pass: Monthly-report arrival lags measured from data/snapshots (${JSON.stringify(r.lag)}); a lagged month has no source (live lagged months ${JSON.stringify(r.lagged)}; with each helmer's lag raised by one, ${Object.entries(r.raised).map(([h, got]) => `${h} ${got.stop === undefined ? JSON.stringify(got.pending) : "stops"}`).join(", ")}) and every analysis row before ${dataThroughMonth} is complete; slurp stops on ${Object.keys(expectStops).length} inconsistent inputs through main() and ${Object.keys(expectSynthetic).length} on a synthetic lagged helmer; the app takes one partially received month at a window's end and rejects two; on the MPI chart with every company line shown, on All incidents and on ${fiveDayKeys.length} five-day-track metrics, each month has its own "?" (partially received: ${JSON.stringify(monthlyPartial)}); on ${caseCount} MPI charts (every metric, two windows, two line sets) ${markCount} dots and error bars fade by their month's whole completeness, the y axis tops out at the first rung at or above the largest median, and the "?" markers follow the same completeness`);

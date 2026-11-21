@@ -12,8 +12,9 @@
 //     model, humans and growth, in that order, each with a title and at least
 //     one entry; every entry has a unique kebab-case id, a known group, a text
 //     function, a values object and where pairs [file, names], the file named.
-//  2. Render: renderAssumptions gives the intro (AI text in a month-note
-//     paragraph), then per group an h3 and a .table-wrap holding
+//  2. Render: renderAssumptions gives, with no intro (the human emptied it on
+//     2026-11-21: "goes without saying, I think"; until then a green
+//     month-note paragraph came first), per group an h3 and a .table-wrap holding
 //     table#assumptions-<group>, whose header row has the two column headers
 //     and whose body has one row tr#assumption-<id> per entry, in ASSUMPTIONS
 //     order: its first cell td.ai-text holding the entry's text with its
@@ -93,6 +94,7 @@ import { parseCsv } from "./csv-parse.mjs";
 import { LINK, DRAWN_LINK, rationaleMarkup, escText } from "./rationale-links.mjs";
 import { ENGINES, serveRepo, openPage, drawnAll } from "./browser.mjs";
 import { NEWEST_CAMERA_TABLE } from "./camera-table.mjs";
+import { TESLA_PAGE_PART } from "./tesla-page-part.mjs";
 
 const DEF = "?f=All&s=-&a=1&c=HumansAV.Tesla.Waymo&m=atfault";
 const GROUPS = ["tesla", "waymo", "zoox", "reporting", "incidents", "model", "humans", "growth"];
@@ -121,10 +123,10 @@ const app = src => vm.runInContext(src, ctx);
 const appJson = src => JSON.parse(app(`JSON.stringify(${src})`));
 app("incidents = INCIDENT_DATA; vmtRows = parseVmtCsv(VMT_CSV_TEXT); ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);");
 assert.ok(app(`typeof ASSUMPTIONS !== "undefined" && typeof ASSUMPTION_GROUPS !== "undefined" && typeof ASSUMPTION_COLUMNS !== "undefined" &&
-  typeof ASSUMPTIONS_INTRO !== "undefined" && typeof renderAssumptions === "function"`),
-  `Replicata: load crashla.js and read ASSUMPTIONS, ASSUMPTION_GROUPS, ASSUMPTION_COLUMNS, ASSUMPTIONS_INTRO and renderAssumptions.
-Expectata: the page's list of assumptions: its entries, its groups, its two column headers, its intro and the function that draws the section.
-Resultata: ${["ASSUMPTIONS", "ASSUMPTION_GROUPS", "ASSUMPTION_COLUMNS", "ASSUMPTIONS_INTRO", "renderAssumptions"].filter(n => app(`typeof ${n}`) === "undefined").join(", ")} undefined.`);
+  typeof renderAssumptions === "function"`),
+  `Replicata: load crashla.js and read ASSUMPTIONS, ASSUMPTION_GROUPS, ASSUMPTION_COLUMNS and renderAssumptions.
+Expectata: the page's list of assumptions: its entries, its groups, its two column headers and the function that draws the section.
+Resultata: ${["ASSUMPTIONS", "ASSUMPTION_GROUPS", "ASSUMPTION_COLUMNS", "renderAssumptions"].filter(n => app(`typeof ${n}`) === "undefined").join(", ")} undefined.`);
 const entries = app("ASSUMPTIONS");
 const groups = appJson("ASSUMPTION_GROUPS");
 const byId = new Map([...entries].map(e => [e.id, e]));
@@ -299,14 +301,11 @@ const PY_EXPRS = {
   longWidth: "waymo_vmt.LONG_INTERVAL_WIDTH",
   calibratedMonths: "waymo_vmt.CALIBRATED_MONTHS",
   ln2: "math.log(2)",
-  // The receipt share's reference month: of a newer month with 2 incidents
-  // and an older one with 3, the reference is the most recent with at least
-  // the threshold, so the reference count is 3 for a threshold of 3 (2 for a
-  // threshold under 3; none, a stop, above it).
-  minRef: "slurp.pooled_reference_rate({('Waymo', '2031-01'): 3, ('Waymo', '2031-02'): 2, ('Waymo', '2031-03'): 1}, '2031-03', " +
-    "{('Waymo', m): 1e6 for m in ('2031-01', '2031-02', '2031-03')}, {'Waymo': '2031-02'})[2]",
-  receiptMax: "slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX",
-  receiptRecord: "list(max((n / d, m) for m, (n, d) in slurp.FIVE_DAY_RECEIPT_OBSERVATIONS.items()))",
+  // The premise that a month's five-day reports are all in by the release
+  // after its first, measured on the saved releases (late_five_day() below):
+  // {month: the in-scope five-day-track incidents whose first filing its
+  // second release lacks}.
+  lateFiveDay: "late_five_day()",
   arrivals: "slurp.MONTHLY_ARRIVAL_OBSERVATIONS",
   lags: "slurp.MONTHLY_ARRIVAL_LAG",
   preprintList: "slurp.PREPRINT_LIST",
@@ -328,9 +327,13 @@ const PY_EXPRS = {
   contactAgreement: "slurp.CONTACT_AREA_MIN_AGREEMENT",
   raters: "[faultrate.RATERS, faultrate.MODEL, faultrate.EFFORT]",
   monthlyFirstAirbags: "monthly_first_airbags()",
+  // The vehicles counted in Waymo's January 2025 San Francisco fatal crash
+  // (its narrative's count), and each Roadway Type's class.
+  fatalCrashVehicles: 'slurp.VEHICLES_INVOLVED["30270-9724"][0]',
+  roadwayClass: "slurp.ROADWAY_CLASS",
 };
 const PY = String.raw`
-import ast, importlib.util, json, math, re, sys
+import ast, csv, importlib.util, json, math, re, sys
 def load(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
@@ -354,6 +357,35 @@ def monthly_first_airbags():
     ids = [r["Report ID"] for r in slurp.public_service_incidents(filed).values()]
     return sorted(rid for rid in ids if rid in records and records[rid]["airbagAny"]
                   and slurp.REPORT_TRACK.get(first.get(replaced.get(rid, rid))) == "monthly")
+def late_five_day():
+    # For each incident month whose second release data/snapshots holds (the
+    # last saved copy of NHTSA's current ADS file whose newest incident month
+    # is the month after it) and is not the newest release (a month at its
+    # second release has had no later one to grow in): the in-scope
+    # five-day-track incidents of that month in the newest saved file whose
+    # crash's first filing that second release lacks. An incident's track is
+    # its first filing's Report Type (REPORT_TRACK), a re-filing taking the
+    # report it replaced (SUPERSEDED_REPORTS), as in monthly_first_airbags().
+    paths = [*slurp.LEGACY_SNAPSHOT_PATHS["nhtsa-current"], *sorted(slurp.SNAPSHOT_DIR.glob("nhtsa-current-*.csv"))]
+    releases = {}
+    for path in paths:
+        with open(path, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+        releases[max(slurp.nhtsa_month_to_iso(r["Incident Date"].strip()) for r in rows if r["Incident Date"].strip())] = rows
+    newest = slurp.filed_incident_rows(releases[max(releases)])
+    first = {r["Report ID"]: r["Report Type"].strip() for r in newest if int(r["Report Version"]) == 1}
+    replaced = {new: old for old, new in slurp.SUPERSEDED_REPORTS.items()}
+    late = {}
+    for month in sorted(releases):
+        second = slurp.month_shift(month, 1)
+        if second not in releases or second == max(releases):
+            continue
+        held = {r["Report ID"] for r in releases[second]}
+        late[month] = sorted(r["Report ID"] for r in slurp.public_service_incidents(newest).values()
+                             if slurp.nhtsa_month_to_iso(r["Incident Date"].strip()) == month
+                             and slurp.REPORT_TRACK.get(first.get(replaced.get(r["Report ID"], r["Report ID"]))) == "five_day"
+                             and replaced.get(r["Report ID"], r["Report ID"]) not in held)
+    return late
 def list_counts():
     # The company list's rows (its newest snapshot, list_rows()) and its
     # preprints, the rows whose Report ID none of NHTSA's newest rows holds
@@ -361,7 +393,7 @@ def list_counts():
     return [len(slurp.list_rows(slurp.latest_list_path())), len(slurp.preprint_rows(slurp.newest_snapshot_rows()))]
 request = json.load(sys.stdin)
 env = {"slurp": slurp, "faultrate": faultrate, "waymo_vmt": waymo_vmt, "math": math, "monthly_first_airbags": monthly_first_airbags,
-       "list_counts": list_counts}
+       "list_counts": list_counts, "late_five_day": late_five_day}
 upper = {}
 for path in MODULES:
     names = []
@@ -445,7 +477,7 @@ const INVENTORY = {
     }),
   },
   "tesla-camera-ratio": {
-    pageThrough: qual(() => constOf(CAMERA, "MEASURED")["2026-10"].through),
+    pageThrough: qual(() => TESLA_PAGE_PART["2026-10"].through),
     readOn: doc(),
     K: qual(() => camera.K),
     n: qual(() => camera.n),
@@ -542,7 +574,21 @@ const INVENTORY = {
     rHi: rel(v => v === valuesOf("waymo-e-size").rHi ? [] : ["differs from waymo-e-size's rHi"]),
   },
   "waymo-weather": { sep: qual(() => total(constOf(WAYMO, "PAUSES")["2026-09"])), oct: qual(() => total(constOf(WAYMO, "PAUSES")["2026-10"])) },
-  "waymo-projection": { octAdd: qual(() => total(constOf(WAYMO, "OPENINGS")["2026-10"])), novAdd: qual(() => total(constOf(WAYMO, "OPENINGS")["2026-11"])) },
+  "waymo-projection": {
+    octAdd: qual(() => total(constOf(WAYMO, "OPENINGS")["2026-10"])), novAdd: qual(() => total(constOf(WAYMO, "OPENINGS")["2026-11"])),
+    // CPUC's California driverless miles a day (deployment plus pilot, the
+    // basis the rows use; data/waymo-ca.csv) in May, June and July 2026, the
+    // months of the freeway suspension, to the thousand; "did not fall": none
+    // under the month before it, April included.
+    caDay: rel(v => {
+      const tot = caCsv[0].indexOf("total");
+      const perDay = month => { const r = caCsv.find(x => x[0] === month); return r === undefined ? NaN : +r[tot] / daysIn(month); };
+      const months = ["2026-05", "2026-06", "2026-07"], run = ["2026-04", ...months].map(perDay);
+      return [...months.filter((m, i) => Math.round(perDay(m) / 1000) * 1000 !== v[i]).map((m, i) => `data/waymo-ca.csv's ${m} total over its days is ${perDay(m).toFixed(1)} a day, not about ${v[months.indexOf(m)]}`),
+        ...(v.length === months.length ? [] : [`${v.length} figures for ${months.length} months`]),
+        ...(run.every((x, i) => i === 0 || x >= run[i - 1]) ? [] : [`California's miles a day fell within April to July 2026: ${run.map(x => x.toFixed(0))}`])];
+    }),
+  },
   "waymo-ghost-range": { caTo: rel(v => caCsv.at(-1)[0] === v ? [] : [`data/waymo-ca.csv's last month is ${caCsv.at(-1)[0]}`]) },
   "zoox-statements": { s0: qual(() => constOf(ZOOX, "S0")), s1: qual(() => constOf(ZOOX, "S1")), s2: qual(() => constOf(ZOOX, "S2")) },
   "zoox-path": {},
@@ -565,12 +611,23 @@ const INVENTORY = {
   },
   "zoox-dmv-factor": {
     f: qual(() => constOf(ZOOX, "DMV_FACTOR")),
-    lo: rel(v => { const r = row("zoox", "2026-09"); const want = Math.round((constOf(ZOOX, "CPUC")["2026-09"] * v + 30 * zooxRate() * 0.5) / 1000) * 1000; return r.vmin === want ? [] : [`zoox 2026-09 vmt_min ${r.vmin}, CPUC x ${v} plus half the rest gives ${want}`]; }),
+    // The range is the model qual's dmvFactorRange (since 2026-11-21: until
+    // then lo was held only through September's floor, rounded to the
+    // thousand, which 1.04 gives too), its middle the factor, and it sets
+    // September 2026's edges.
+    lo: rel(v => {
+      const r = row("zoox", "2026-09"), range = constOf(ZOOX, "dmvFactorRange");
+      const want = Math.round((constOf(ZOOX, "CPUC")["2026-09"] * v + 30 * zooxRate() * 0.5) / 1000) * 1000;
+      return [...(range[0] === v ? [] : [`${ZOOX} dmvFactorRange is ${JSON.stringify(range)}`]),
+        ...(r.vmin === want ? [] : [`zoox 2026-09 vmt_min ${r.vmin}, CPUC x ${v} plus half the rest gives ${want}`])];
+    }),
     hi: rel(v => {
-      const r = row("zoox", "2026-09");
+      const r = row("zoox", "2026-09"), range = constOf(ZOOX, "dmvFactorRange");
       const want = Math.round((constOf(ZOOX, "CPUC")["2026-09"] * v + 30 * zooxRate() * 2) / 1000) * 1000;
       const ratio = round(constOf(ZOOX, "CA_DMV")["2025-11"] / constOf(ZOOX, "CPUC_NOV_2025"), 2);
-      return [...(r.vmax === want ? [] : [`zoox 2026-09 vmt_max ${r.vmax}, CPUC x ${v} plus twice the rest gives ${want}`]),
+      return [...(range.length === 2 && range[1] === v ? [] : [`${ZOOX} dmvFactorRange is ${JSON.stringify(range)}`]),
+        ...(within((range[0] + range[1]) / 2, constOf(ZOOX, "DMV_FACTOR"), 1e-12) ? [] : [`${ZOOX} DMV_FACTOR ${constOf(ZOOX, "DMV_FACTOR")} is not the middle of dmvFactorRange ${JSON.stringify(range)}`]),
+        ...(r.vmax === want ? [] : [`zoox 2026-09 vmt_max ${r.vmax}, CPUC x ${v} plus twice the rest gives ${want}`]),
         ...(ratio === v ? [] : [`November 2025's DMV/CPUC ratio is ${ratio}`])];
     }),
     lastCpuc: qual(() => Object.keys(constOf(ZOOX, "CPUC")).sort().at(-1)),
@@ -589,20 +646,17 @@ const INVENTORY = {
       ...span("zoox", "2026-10", "2026-11").filter(r => r.vmax !== v * r.vmt).map(r => `zoox ${r.month}: vmt_max ${r.vmax}, not ${v} x ${r.vmt}`)]),
   },
   "zoox-carry": { lo: qual(() => constOf(ZOOX, "CARRY")[0]), hi: qual(() => constOf(ZOOX, "CARRY")[1]) },
-  "reporting-receipt-share": { minRef: pyv("minRef") },
-  "reporting-receipt-top": {
-    max: pyv("receiptMax"),
-    record: pyv("receiptRecord", x => x[0]),
-    recordMonth: pyv("receiptRecord", x => x[1]),
+  "reporting-month-rule": {},
+  // The first month the premise is measured on, and the months it failed for.
+  "reporting-five-day": {
+    from: pyv("lateFiveDay", late => Object.keys(late).sort()[0]),
+    late: pyv("lateFiveDay", late => Object.keys(late).filter(m => late[m].length > 0).sort()),
   },
-  "reporting-incident-share": { record: doc() },
-  "reporting-pooled": {},
   "reporting-earlier-months": {
     month: pyv("arrivals", a => Object.entries(a.Waymo).filter(([, c]) => c.length === 2).sort((x, y) => y[1][1] - x[1][1])[0][0]),
     late: pyv("arrivals", (a, v) => a.Waymo[v.month][1]),
     of: pyv("arrivals", (a, v) => a.Waymo[v.month][0] + a.Waymo[v.month][1]),
   },
-  "reporting-five-day": {},
   "reporting-thinning": {},
   "reporting-range-product": {},
   "reporting-sgo-exemption": {},
@@ -631,7 +685,7 @@ const INVENTORY = {
   "incidents-contact-areas": { agree: pyv("contactAgreement", a => round(100 * a, 6)) },
   "incidents-severity": {},
   "incidents-airbag": {},
-  "incidents-fatal-fraction": {},
+  "incidents-fatal-fraction": { narrative: pyv("fatalCrashVehicles"), outside: doc() },
   "incidents-passengers": {},
   "fault-criterion": {},
   "fault-raters": { raters: pyv("raters", r => r[0]), model: pyv("raters", r => r[1]), effort: pyv("raters", r => r[2]) },
@@ -680,6 +734,7 @@ const INVENTORY = {
     pct: rel(v => { const us = band("fatality", "HumansUS"), fewer = 100 * (1 - us.lo / us.hi); return Math.round(fewer) === v ? [] : [`Humans (US average) fatality ${us.lo}-${us.hi}: fatal crashes ${fewer}% fewer than deaths`]; }),
   },
   "humans-fatality-other": {},
+  "humans-rideshare-fatal-basis": {},
   "humans-rideshare-lean": {},
   "humans-constant": { fall: rel(v => { const f = valuesOf("humans-fatality"); return Math.round(100 * (f.peak - f.r24) / f.peak) === v ? [] : [`humans-fatality's ${f.peak} and ${f.r24} give a fall of ${100 * (f.peak - f.r24) / f.peak}%`]; }) },
   "humans-comparator": { austinSep: doc() },
@@ -742,7 +797,10 @@ const DOC = [
   ["waymo-california-ratio", "q1", 1.04],
   ["waymo-county-extrapolation", "q2pct", 10],
   ["zoox-flat-rate", "cap", 100], ["zoox-flat-rate", "nhtsaCars", 600],
-  ["reporting-incident-share", "record", 0.26],
+  // The vehicles outside reports count in Waymo's January 2025 San Francisco
+  // fatal crash (firefighters, by CBS San Francisco, KTVU and ABC7; Koopman's
+  // own count), which the page does not use (the human, 2026-11-21).
+  ["incidents-fatal-fraction", "outside", 7],
   ["humans-hospitalization", "unknown", 3.5],
   ["humans-fatality", "r24", 1.01],
   ["humans-comparator", "austinSep", 72.5],
@@ -774,17 +832,16 @@ const texts = new Map([...entries].map(e => [e.id, e.text(e.values)]));
 {
   const html = app("renderAssumptions()");
   const [col0, col1] = appJson("ASSUMPTION_COLUMNS");
-  const intro = app("ASSUMPTIONS_INTRO");
-  const want = `<p class="month-note"><span class="ai-text">${escText(intro)}</span></p>` + groups.map(g =>
+  const want = groups.map(g =>
     `<h3>${escText(g.title)}</h3><div class="table-wrap"><table class="source-table vmt-sources" id="assumptions-${g.id}"><thead><tr><th>${escText(col0)}</th><th>${escText(col1)}</th></tr></thead><tbody>` +
     [...entries].filter(e => e.group === g.id).map(e => `<tr id="assumption-${e.id}"><td class="ai-text derivation">${rationaleMarkup(texts.get(e.id))}</td><td>${escText(e.where.map(([file, names]) => `${file} ${names}`.trim()).join("; "))}</td></tr>`).join("") +
     "</tbody></table></div>").join("");
   if (html !== want) {
     let i = 0; while (i < want.length && html[i] === want[i]) i++;
-    problems.push(`2 render: renderAssumptions() differs from the intro, headings, tables and rows built from ASSUMPTIONS at character ${i}: ${JSON.stringify(html.slice(Math.max(0, i - 80), i + 80))} where ${JSON.stringify(want.slice(Math.max(0, i - 80), i + 80))}`);
+    problems.push(`2 render: renderAssumptions() differs from the headings, tables and rows built from ASSUMPTIONS at character ${i}: ${JSON.stringify(html.slice(Math.max(0, i - 80), i + 80))} where ${JSON.stringify(want.slice(Math.max(0, i - 80), i + 80))}`);
   }
-  if (typeof intro !== "string" || intro.trim() === "" || typeof col0 !== "string" || col0.trim() === "" || typeof col1 !== "string" || col1.trim() === "") problems.push("2 render: an empty intro or column header");
-  for (const [id, text] of [...texts, ["(intro)", intro]]) {
+  if (typeof col0 !== "string" || col0.trim() === "" || typeof col1 !== "string" || col1.trim() === "") problems.push("2 render: an empty column header");
+  for (const [id, text] of texts) {
     const bad = ["undefined", "NaN", "null", "Infinity", "[object", "{"].filter(w => text.includes(w));
     if (bad.length > 0 || text.trim() === "") problems.push(`2 render: ${id}'s text ${text.trim() === "" ? "is empty" : `holds ${JSON.stringify(bad)}`}`);
   }
@@ -839,7 +896,7 @@ const CLAIMS = {
   // The camera estimate enters the list's month's rates only through its
   // range: each Tesla line's row of that month scales its miles to the list's
   // (coverage = the list's miles over the row's, to four decimals).
-  "tesla-camera-ratio": () => appJson(`vmtRows.filter(r => r.through !== NHTSA_DATA_THROUGH_DATE).map(r => [r.helmer, r.month, r.vmtBest, r.coverage])`)
+  "tesla-camera-ratio": () => appJson(`vmtRows.filter(r => !isCompleteRow(r)).map(r => [r.helmer, r.month, r.vmtBest, r.coverage])`)
     .filter(([, month, vmt, coverage]) => month !== pv("preprintList").through.slice(0, 7) || Math.abs(vmt * coverage - pv("preprintList").miles) > 0.5e-4 * vmt + 1)
     .map(([line, month, vmt, coverage]) => `${line} ${month}: ${vmt} x ${coverage} is not the list's ${pv("preprintList").miles} miles of ${pv("preprintList").through.slice(0, 7)}`),
   // The table's last week, from its Monday, is the held week (the table holds
@@ -851,6 +908,9 @@ const CLAIMS = {
     return monday && span >= 0 && span < 7 * DAY && week ? [] : [`the last week's days ${v.partFrom} to ${v.partTo} are not a week from its Monday that is the held week (from ${v.heldFrom}) or the week before it`];
   },
   "waymo-pre-series": () => app("PRE_SERIES_OFFSET.Waymo.range") === pv("offset")[2] - pv("offset")[1] ? [] : ["PRE_SERIES_OFFSET.Waymo.range is not OFFSET's range"],
+  // Nothing is taken off November 2026: the model qual's PAUSES entry for
+  // the month is empty (the freeway halt of Nov 11 deducts nothing).
+  "waymo-projection": () => total(constOf(WAYMO, "PAUSES")["2026-11"]) === 0 ? [] : [`${WAYMO} PAUSES takes ${total(constOf(WAYMO, "PAUSES")["2026-11"])} miles off November 2026`],
   "waymo-allocation": () => pv("longWidth") === pv("ln2") && pv("calibratedMonths") === 6 ? [] : [`LONG_INTERVAL_WIDTH ${pv("longWidth")} (half to twice is ln 2), CALIBRATED_MONTHS ${pv("calibratedMonths")}`],
   "zoox-statements": () => constOf(ZOOX, "CROSS") === 1000000 ? [] : [`the crossing statement is ${constOf(ZOOX, "CROSS")}, not the millionth mile`],
   "zoox-path": () => same([...constOf(ZOOX, "BINDING")].sort(), ["1M not crossed before Dec 1, 2025", "Dec 31, 2025 at least 1.25M"]) && constOf(ZOOX, "S0")[0] === 1250000 ? [] : [`the binding statements are ${JSON.stringify(constOf(ZOOX, "BINDING"))}`],
@@ -862,10 +922,56 @@ const CLAIMS = {
   },
   "zoox-early-las-vegas": () => span("zoox", "2024-05", "2025-05").filter(r => Math.abs(r.vmin - 0.75 * r.vmt) > 1 || Math.abs(r.vmax - 1.5 * r.vmt) > 1)
     .map(r => `zoox ${r.month}: ${r.vmin}-${r.vmax} is not 0.75 to 1.5 times ${r.vmt} (California plus half to twice as much again)`),
+  // The line-months the text names as pending: data/vmt.csv's rows at or
+  // before NHTSA's data-through month that neither NHTSA's file completes (a
+  // month before it, less the company's Monthly-report lag) nor the company
+  // list covers (each line of the list's company, in the list's month), by
+  // the rule as this qual restates it; the text reads the page's own second
+  // segment.
+  "reporting-month-rule": () => {
+    const T = app("NHTSA_DATA_THROUGH_DATE").slice(0, 7), list = pv("preprintList"), lags = pv("lags");
+    const monthNumber = m => +m.slice(0, 4) * 12 + +m.slice(5, 7);
+    const company = line => appJson("ADS_HELMERS").find(h => LINES[line].startsWith(h));
+    const listCompany = appJson("ADS_HELMERS").find(h => list.entity.startsWith(h));
+    const want = csvRows.filter(r => r.month <= T && !(monthNumber(r.month) <= monthNumber(T) - 1 - lags[company(r.line)])
+      && !(company(r.line) === listCompany && r.month === list.through.slice(0, 7))).map(r => `${LINES[r.line]} ${r.month}`).sort();
+    const got = appJson(`ghostVmtRows.filter(r => r.month <= NHTSA_DATA_THROUGH_DATE.slice(0, 7)).map(r => r.helmer + " " + r.month)`).sort();
+    return same(got, want) ? [] : [`the page's pending line-months are ${JSON.stringify(got)}, the rule gives ${JSON.stringify(want)}`];
+  },
   "reporting-earlier-months": () => Object.values(pv("lags")).every(l => l === 0) ? [] : [`MONTHLY_ARRIVAL_LAG is ${JSON.stringify(pv("lags"))}, not none`],
   "reporting-five-day": () => pv("monthlyFirstAirbags").length >= 1 ? [] : ["no in-scope airbag crash was first filed in a Monthly report"],
-  "reporting-tesla-list": () => appJson("vmtRows.filter(r => r.through !== NHTSA_DATA_THROUGH_DATE).map(r => [r.coverage, r.coverageMin, r.coverageMax])")
+  "reporting-tesla-list": () => appJson("vmtRows.filter(r => !isCompleteRow(r)).map(r => [r.coverage, r.coverageMin, r.coverageMax])")
     .filter(([c, lo, hi]) => c !== lo || c !== hi).map(t => `a row on the list's coverage has the range ${t}`),
+  // The figures of the crashes of the kind the Third Amended SGO exempts
+  // (crashla.js SGO_EXEMPT_KIND, which this entry and the sanity section's
+  // note print), recounted from the incidents: Waymo's, before the month the
+  // carve-out took effect, the AV stopped or parked at 0 mph, a motor vehicle
+  // as crash partner (VEHICLE_PARTNERS: every "Crash With" value Waymo has
+  // filed is listed here as a motor vehicle or not, so a new one stops this
+  // check) that was itself neither stopped nor parked, nobody injured. Their
+  // mean fault, and their share of Waymo's at-fault mass in the twelve months
+  // before that month, each to the percent; fault sums in twentieths (the
+  // values sit on the 0.05 grid).
+  "reporting-sgo-exemption": () => {
+    const k = appJson(`typeof SGO_EXEMPT_KIND === "undefined" ? null : SGO_EXEMPT_KIND`);
+    if (k === null) return ["crashla.js has no SGO_EXEMPT_KIND, the figures of Waymo's crashes of the exempted kind that the entry and the sanity section's note state"];
+    const VEHICLE_PARTNERS = ["Passenger Car", "SUV", "Pickup Truck", "Heavy Truck", "Van", "Bus", "Motorcycle", "First Responder Vehicle"];
+    const OTHER_PARTNERS = ["Other, see Narrative", "Other Fixed Object", "Animal", "Pole / Tree", "Non-Motorist: Cyclist", "Non-Motorist: Other",
+      "Non-Motorist: Pedestrian", "Non-Motorist: Scooter - Skateboard"];
+    const waymo = appJson(`INCIDENT_DATA.filter(r => r.helmer === "Waymo").map(r => ({ month: monthKeyFromIncidentLabel(r.date), partner: r.crashWith,
+      still: r.speed === 0 && SV_STATIONARY.has(r.svMovement), partnerMoving: !SV_STATIONARY.has(r.cpMovement), injured: INJURY_SEVERITIES.has(r.severity),
+      twentieths: Math.round(r.fault.faultfrac * FAULT_GRID) }))`);
+    const unlisted = [...new Set(waymo.map(r => r.partner))].filter(p => !VEHICLE_PARTNERS.includes(p) && !OTHER_PARTNERS.includes(p));
+    const kind = r => r.still && VEHICLE_PARTNERS.includes(r.partner) && r.partnerMoving && !r.injured;
+    const mass = rows => rows.reduce((a, r) => a + r.twentieths, 0) / app("FAULT_GRID");
+    const before = waymo.filter(r => r.month < k.before && kind(r));
+    const yearFrom = `${+k.before.slice(0, 4) - 1}${k.before.slice(4)}`;
+    const year = waymo.filter(r => r.month >= yearFrom && r.month < k.before);
+    const fault = 100 * mass(before) / before.length, share = 100 * mass(year.filter(kind)) / mass(year);
+    return [...unlisted.map(p => `Waymo's crash partner ${JSON.stringify(p)} is listed neither as a motor vehicle nor as another kind`),
+      ...(Math.round(fault) === k.faultPct ? [] : [`Waymo's ${before.length} crashes of the exempted kind before ${k.before} average ${fault.toFixed(2)}% fault, SGO_EXEMPT_KIND.faultPct says ${k.faultPct}`]),
+      ...(Math.round(share) === k.massPct ? [] : [`they carried ${mass(year.filter(kind))} of Waymo's ${mass(year)} at-fault mass from ${yearFrom} to the month before ${k.before}, ${share.toFixed(2)}%; SGO_EXEMPT_KIND.massPct says ${k.massPct}`])];
+  },
   "incidents-operator-scope": () => [
     ...(same(pv("operatorScope"), { "Tesla, Inc.": ["In-Vehicle (Commercial / Test)", "None", "Remote (Commercial / Test)"], "Waymo LLC": ["None", "Remote (Commercial / Test)"], "Zoox, Inc.": ["None", "Remote (Commercial / Test)"] }) ? [] : [`the counted modes are ${JSON.stringify(pv("operatorScope"))}`]),
     ...pv("operatorOverrides").filter(id => !id.startsWith("30270-")).map(id => `${id} is not a Waymo report`)],
@@ -877,10 +983,39 @@ const CLAIMS = {
     return records === pv("listCounts")[1] ? [] : [`data/incidents.js holds ${records} preprint records, the company list ${pv("listCounts")[1]} preprints`];
   },
   "incidents-latest-filing": () => pv("splits") === 1 && pv("superseded") === 1 ? [] : [`${pv("splits")} split crashes and ${pv("superseded")} re-filings, not one each`],
+  // "Unknown" has the class of "Street", a road, and not "Parking Lot"'s, in
+  // data/slurp.py's table; and the page's table, whose parking facilities the
+  // text lists, is that table.
+  "incidents-stationary": () => {
+    const table = pv("roadwayClass"), page = appJson("ROADWAY_CLASS");
+    return table.Unknown === table.Street && table.Street !== table["Parking Lot"] && same(Object.entries(page).sort(), Object.entries(table).sort()) ? [] :
+      [`data/slurp.py ROADWAY_CLASS ${JSON.stringify(table)} does not class "Unknown" with "Street" and apart from "Parking Lot", or the page's table differs: ${JSON.stringify(page)}`];
+  },
+  // The crash the text names: Waymo's fatal crash of January 2025 in San
+  // Francisco, stored with the narrative's count, which is under the outside
+  // one.
+  "incidents-fatal-fraction": () => {
+    const v = valuesOf("incidents-fatal-fraction");
+    const got = appJson(`INCIDENT_DATA.filter(r => r.reportId === "30270-9724").map(r => ({helmer: r.helmer, date: r.date, city: r.city, severity: r.severity, vehicles: r.vehiclesInvolved}))`);
+    return same(got, [{ helmer: "Waymo", date: "JAN-2025", city: "San Francisco", severity: "Fatality", vehicles: v.narrative }]) && v.narrative < v.outside ? [] :
+      [`report 30270-9724 is ${JSON.stringify(got)}, not Waymo's fatal crash of January 2025 in San Francisco with ${v.narrative} vehicles, fewer than the outside reports' ${v.outside}`];
+  },
   "incidents-severity": () => {
     const s = appJson("SEVERITY_INFO");
     return s.Serious.hosp === true && s["Minor W/ Hospitalization"].hosp === true && s["Moderate W/ Hospitalization"].hosp === true &&
       s.Minor.injury === true && s.Moderate.injury === true && s.Minor.hosp === undefined && s.Moderate.hosp === undefined ? [] : ["SEVERITY_INFO does not read 'W/ Hospitalization' and a bare 'Serious' as a transport and a bare 'Minor' and 'Moderate' as an injury without one"];
+  },
+  // The band's inputs in crashla.js are the source figures the provenance
+  // qual pins, and the band is Uber's and Lyft's rates over FARS 2024's
+  // vehicles per fatal crash (to its three significant figures).
+  "humans-rideshare-fatal-basis": () => {
+    const rates = appJson("RIDESHARE_FATALITY_RATES"), fars = appJson("FARS_2024_FATAL_CRASHES");
+    const reports = constOf(HUMANS, "RIDESHARE_REPORTS"), source = constOf(HUMANS, "FARS2024_FATAL");
+    const lyft = reports.lyft.years.reduce((n, [deaths]) => n + deaths, 0) / reports.lyft.years.reduce((n, [deaths, rate]) => n + deaths / rate, 0);
+    const b = band("fatality", "HumansRideshare"), factor = source.vehicles / source.crashes;
+    return rates.uber === reports.uber.rate && within(rates.lyft, lyft, 1e-12) && fars.vehicles === source.vehicles && fars.crashes === source.crashes
+      && within(b.lo, 1e8 / lyft * factor, 0.005) && within(b.hi, 1e8 / reports.uber.rate * factor, 0.005) ? [] :
+      [`crashla.js's rates ${JSON.stringify(rates)} and FARS counts ${JSON.stringify(fars)} against ${HUMANS}'s ${JSON.stringify({ uber: reports.uber.rate, lyft })} and ${JSON.stringify({ vehicles: source.vehicles, crashes: source.crashes })}; the band ${b.lo}-${b.hi} against ${1e8 / lyft * factor}-${1e8 / reports.uber.rate * factor}`];
   },
   "model-prior": () => {
     // Jeffreys: with no incidents the rate times the miles is Gamma(1/2, 1),
@@ -948,7 +1083,8 @@ for (const [id, check] of Object.entries(CLAIMS)) {
   problems.push(...forecasts.filter(f => !tables.includes(f)).map(f => `6 registries: an entry's forecasts name ${f}, no forecast`));
   const TEXT_CONSTANTS = ["TESLA_MILES_PER_CAR_DAY", "TESLA_MILES_PER_RIDE", "TESLA_RIDE_BASIS", "TESLA_ROBOTAXI_SCENARIOS", "TESLA_EYES_OFF",
     "TESLA_PATH_START", "GROWTH_FORECAST_DATE", "FLEET_HISTORY", "RIDES_HISTORY", "RIDESHARE_WORST", "RIDESHARE_BEST", "PRE_SERIES_OFFSET",
-    "DISPERSION_LIMITS", "FAULT_GRID", "SEVERITY_INFO", "CI_MASS_DEFAULT_PCT"];
+    "DISPERSION_LIMITS", "FAULT_GRID", "SEVERITY_INFO", "CI_MASS_DEFAULT_PCT", "RIDESHARE_FATALITY_RATES", "FARS_2024_FATAL_CRASHES", "ROADWAY_CLASS",
+    "SGO_EXEMPT_KIND"];
   const sources = [...entries].map(e => e.text.toString());
   problems.push(...TEXT_CONSTANTS.filter(c => !sources.some(s => new RegExp(`\\b${c}\\b`).test(s))).map(c => `6 registries: no entry's text reads ${c}`));
 }
@@ -979,7 +1115,7 @@ const NOT_ASSUMPTIONS = {
     CONTACT_AREA_MIN_MATCHES: "guard", HELMER_SHORT: "scope", NARRATIVE_BOILERPLATE: "format", NARRATIVE_UNCHANGED_PREAMBLE: "format",
     NARRATIVE_MOJIBAKE: "format", NARRATIVE_TYPOS: "format", NARRATIVE_AIRBAG_CORRECTION: "format", LOCATION_OVERRIDE: "correction",
     PAX_NO: "format", PAX_BELTED: "format", PAX_BELT_UNSTATED: "format", PAX_CLASS: "format", OCCUPANCY_PATTERN: "tripwire",
-    OCCUPANCY_LANGUAGE_REVIEWED: "reviewed", SECOND_INVOLVEMENT_SUFFIX: "format", SECOND_AV_PATTERN: "tripwire", SECOND_AV_REVIEWED: "reviewed",
+    OCCUPANCY_LANGUAGE_REVIEWED: "reviewed", AIRBAG_PATTERN: "tripwire", AIRBAG_LANGUAGE_REVIEWED: "reviewed", SECOND_INVOLVEMENT_SUFFIX: "format", SECOND_AV_PATTERN: "tripwire", SECOND_AV_REVIEWED: "reviewed",
     ARCHIVE_COLUMN_MAP: "format", ARCHIVE_ABSENT_COLUMNS: "format", NHTSA_SOURCES: "url", NON_ADS_SOURCES: "url", LIST_COLUMNS: "format",
     LIST_NO_CONTACT_AREA: "format", XLSX_NS: "format", XLSX_EPOCH: "format", FAULT_GRID: "guard",
     MONTH_ABBR_TO_NUM: "format", EXPECTED_REPORT_TYPES: "guard", NEGATIVE_FILING_TYPES: "format", EXPECTED_DRIVER_TYPES: "guard",

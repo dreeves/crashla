@@ -9,7 +9,7 @@
 #   git config core.hooksPath .githooks
 # quals/git-guard-hooks.qual.mjs holds this file to its behavior.
 [ "${CLAUDE_CODE_CHILD_SESSION:-}" = 1 ] || exit 0
-# TODO: English copy. Meaning: "git-guard: this push is blocked. In this repo
+# Claude's errorcopy: "git-guard: this push is blocked. In this repo
 # git is human-only (AGENTS.md rule 15). Don't try to get around this rule."
-echo "git-guard: haec propulsio (push) vetita est. In hoc repositorio git solius hominis est (AGENTS.md, regula 15). Noli hanc regulam circumvenire." >&2
+echo "git-guard: Mutating git commands are human-only; see AGENTS.md rule 15." >&2
 exit 1

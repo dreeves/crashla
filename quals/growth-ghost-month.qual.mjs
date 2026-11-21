@@ -3,12 +3,19 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 import { parseCsv } from "./csv-parse.mjs";
+import { TESLA_PAGE_PART } from "./tesla-page-part.mjs";
 
-// The growth charts (Fleet size, Rides, Miles) carry the ghost months the VMT
+// The growth charts (Fleet size, Rides, Miles) carry the faded months the VMT
 // charts carry (data/README.md, Ghost months), drawn the same way: every
-// line's history has a point at each ghost month and none later, the point
+// line's history has a point at each month of its company's rows in
+// data/vmt.js's second segment and none later, the point
 // faded (class month-ghost) on the dashed stretch that runs on to the Jan-1
-// forecast, its tooltip ending with the VMT charts' ghost note. Until
+// forecast, its tooltip ending with the note its VMT chart's dot ends with.
+// Those rows are the ghost months (after NHTSA's data-through month: the
+// ghost note) and, since 2026-11-21, a company's pending months (at or
+// before it, in no rate yet: the pending note; quals/pending-months.qual.mjs),
+// so a company's faded months are its own: today Waymo's and Zoox's start a
+// month before Tesla's, whose list covers the data-through month. Until
 // 2026-10-28 the Miles lines stopped at the newest NHTSA month (milesHistory
 // read the analysis rows only) and the Fleet and Rides tables at rows written
 // by hand on Oct 3 (Waymo and Tesla rides and Waymo and Zoox fleet at
@@ -52,10 +59,22 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT); ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT); checkGhostVmtRows();", ctx);
 
 const plain = v => JSON.parse(JSON.stringify(v));
+// The second segment's rows, each with the note the app gives its kind, and
+// a company's faded months: those of its rows there.
 const ghostRows = plain(vm.runInContext("ghostVmtRows", ctx));
-const ghostMonths = [...new Set(ghostRows.map(r => r.month))].sort();
+const dataThrough = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx).slice(0, 7);
+const ghostMonths = [...new Set(ghostRows.map(r => r.month).filter(m => m > dataThrough))].sort();
 const newestGhost = ghostMonths.at(-1);
-const GHOST_NOTE = vm.runInContext("VMT_GHOST_NOTE", ctx);
+const fadedRows = helmer => ghostRows.filter(r => r.helmer === helmer).sort((a, b) => (a.month < b.month ? -1 : 1));
+const fadedMonths = helmer => fadedRows(helmer).map(r => r.month);
+const NOTES = { ghost: vm.runInContext("VMT_GHOST_NOTE", ctx), pending: vm.runInContext("VMT_PENDING_NOTE", ctx) };
+{
+  const misnoted = ghostRows.filter(r => r.note !== (r.month > dataThrough ? NOTES.ghost : NOTES.pending)).map(r => `${r.helmer} ${r.month}`);
+  assert.ok(misnoted.length === 0 && NOTES.ghost !== NOTES.pending && ghostMonths.length > 0,
+    `Replicata: read the note of each row of data/vmt.js's second segment as the app parses it (parseGhostVmtCsv), with NHTSA's data-through month ${dataThrough}.
+Expectata: VMT_GHOST_NOTE on a row after ${dataThrough} (at least one such month), VMT_PENDING_NOTE, a different note, on a row at or before it.
+Resultata: rows with another note: ${JSON.stringify(misnoted)}; ghost months ${JSON.stringify(ghostMonths)}.`);
+}
 const METRICS = plain(vm.runInContext("GROWTH_METRIC_KEYS", ctx));
 const problems = [];
 
@@ -73,24 +92,24 @@ for (const key of METRICS) {
         problems.push(`${key} · ${lane.label}: the fork leaves from ${JSON.stringify(hist)}; want one ghost point at ${newestGhost}`);
       continue;
     }
-    for (const month of ghostMonths) {
-      if (!months.includes(month)) problems.push(`${key} · ${lane.label}: no history point at the ghost month ${month} (history ends at ${months.at(-1)})`);
+    const faded = fadedMonths(lane.helmer);
+    for (const month of faded) {
+      if (!months.includes(month)) problems.push(`${key} · ${lane.label}: no history point at ${month}, a month of ${lane.helmer}'s rows in the second segment (history ends at ${months.at(-1)})`);
     }
     if (months.at(-1) > newestGhost) problems.push(`${key} · ${lane.label}: a history point at ${months.at(-1)}, after the newest ghost month ${newestGhost}`);
     for (const p of hist) {
-      if (p.ghost !== ghostMonths.includes(p.month))
-        problems.push(`${key} · ${lane.label} ${p.month}: ghost is ${JSON.stringify(p.ghost)}; want ${ghostMonths.includes(p.month)}`);
+      if (p.ghost !== faded.includes(p.month))
+        problems.push(`${key} · ${lane.label} ${p.month}: ghost is ${JSON.stringify(p.ghost)}; want ${faded.includes(p.month)} (${lane.helmer}'s faded months are ${faded.join(", ")})`);
     }
   }
 }
 
-// --- 2. The Miles lines' ghost points are the VMT charts' ghost rows ---
+// --- 2. The Miles lines' faded points are the second segment's rows ---
 for (const lane of lanesOf("miles").filter(l => !l.branchOnly)) {
-  for (const month of ghostMonths) {
-    const row = ghostRows.find(r => r.helmer === lane.helmer && r.month === month);
-    const p = lane.points.find(q => q.month === month);
-    if (!row || !p || p.best !== row.vmtCume || p.lo !== row.kyoomMin || p.hi !== row.kyoomMax)
-      problems.push(`miles · ${lane.label} ${month}: point ${JSON.stringify(p)}; want the ghost row's cumulative ${row && row.vmtCume} [${row && row.kyoomMin}, ${row && row.kyoomMax}]`);
+  for (const row of fadedRows(lane.helmer)) {
+    const p = lane.points.find(q => q.month === row.month);
+    if (!p || p.best !== row.vmtCume || p.lo !== row.kyoomMin || p.hi !== row.kyoomMax)
+      problems.push(`miles · ${lane.label} ${row.month}: point ${JSON.stringify(p)}; want the row's cumulative ${row.vmtCume} [${row.kyoomMin}, ${row.kyoomMax}]`);
   }
 }
 
@@ -133,9 +152,13 @@ for (const p of fleetHistory.Tesla.filter(q => q.month >= PER_DAY_FROM)) {
 // forecast date (TESLA_ROBOTAXI_SCENARIOS), on top of that month's
 // cumulative. Since 2026-10-31 (the human's choice of 2026-10-30, "start at
 // Oct's exit rate") the start is the month's late-month rate: the no-monitor
-// line's projection of the days after Tesla's page was last measured, plus the
-// monitor-aboard remainder (the all-modes row less the no-monitor row) at its
-// average for the month. From 2026-10-29 to 2026-10-31 the path started at
+// row's miles over the month's last stretch (the days after the last one
+// Tesla's page measured or, in a month the page measured none of, after the
+// camera's last whole week: PAGE_MEASURED below), plus the monitor-aboard
+// remainder (the all-modes row less the no-monitor row) at its average for
+// the month. Until 2026-11-21 this comment and the two messages below named
+// only Tesla's page, though November 2026's first stretch is the camera
+// estimate's (audit 2026-11-20, A51). From 2026-10-29 to 2026-10-31 the path started at
 // October's typical day (mid-October, 83,677 a day against late October's
 // 107,347), so every scenario's cumulative stepped down at the month
 // boundary. A revised or newer row flags the forecast, and each
@@ -148,8 +171,20 @@ for (const p of fleetHistory.Tesla.filter(q => q.month >= PER_DAY_FROM)) {
   // so for November it is the camera estimate's 1,519,000 through Nov 15, the
   // days after it running at the last camera week's rate (data/README.md,
   // Ghost months). A newer month, or a re-derived one, needs its own entry
+  // here. The page's figures are read from the one place that holds them
+  // (quals/tesla-page-part.mjs; until 2026-11-21 October's was a literal
+  // here); a month the page measured no part of has its camera estimate
   // here.
-  const PAGE_MEASURED = {"2026-10": {through: 18, miles: 1179333}, "2026-11": {through: 15, miles: 1519000}};
+  const cameraEstimated = {"2026-11": {through: 15, miles: 1519000}};
+  const twice = Object.keys(cameraEstimated).filter(m => m in TESLA_PAGE_PART);
+  assert.deepEqual(twice, [],
+    `Replicata: read the months of this qual's camera-estimated first stretches against quals/tesla-page-part.mjs (TESLA_PAGE_PART).
+Expectata: no month in both: once Tesla's page has measured part of a month, its first stretch is the page's figure, and the camera estimate's entry here goes.
+Resultata: ${JSON.stringify(twice)}.`);
+  const PAGE_MEASURED = {
+    ...Object.fromEntries(Object.entries(TESLA_PAGE_PART).map(([m, part]) => [m, {through: Number(part.through.slice(8)), miles: part.miles}])),
+    ...cameraEstimated,
+  };
   const start = plain(vm.runInContext("TESLA_PATH_START", ctx));
   const month = master.map(r => r.month).sort().at(-1);
   const t = master.find(r => r.month === month);
@@ -160,12 +195,12 @@ for (const p of fleetHistory.Tesla.filter(q => q.month >= PER_DAY_FROM)) {
   const firstDay = new Date(Date.UTC(y, mo, 1)).toISOString().slice(0, 10); // the day after the month
   assert.ok(nm !== undefined && page !== undefined,
     `Replicata: read Tesla's newest month in data/vmt.csv (${month}), its teslanomonitor row and this qual's PAGE_MEASURED entry for it.
-Expectata: both, the inputs of TESLA_PATH_START's rate (re-derive the path's start from that month's rows and record Tesla's page figure here).
+Expectata: both, the inputs of TESLA_PATH_START's rate (re-derive the path's start from that month's rows and record here the no-monitor miles of the month's first stretch: Tesla's page figure, or the camera estimate through its last whole week where the page measured none of the month).
 Resultata: [teslanomonitor row, PAGE_MEASURED entry] = ${JSON.stringify([nm, page])}.`);
   {
     const exitRate = (Number(nm[2]) - page.miles) / (daysIn(month) - page.through) + (t.vmt - Number(nm[2])) / daysIn(month);
     if (start.day !== firstDay || start.cumulative !== t.cume || !(Math.abs(start.milesPerDay - exitRate) <= 1))
-      problems.push(`TESLA_PATH_START ${JSON.stringify(start)}; want day ${firstDay}, cumulative ${t.cume} (the tesla ${month} row) and ${exitRate.toFixed(1)} miles a day: the teslanomonitor row's ${nm[2]} less Tesla's page's ${page.miles} through day ${page.through}, over the month's other ${daysIn(month) - page.through} days, plus the tesla row's ${t.vmt} less the teslanomonitor row's over ${daysIn(month)} days`);
+      problems.push(`TESLA_PATH_START ${JSON.stringify(start)}; want day ${firstDay}, cumulative ${t.cume} (the tesla ${month} row) and ${exitRate.toFixed(1)} miles a day: the teslanomonitor row's ${nm[2]} less the ${page.miles} of its first stretch, through day ${page.through} (PAGE_MEASURED), over the month's other ${daysIn(month) - page.through} days, plus the tesla row's ${t.vmt} less the teslanomonitor row's over ${daysIn(month)} days`);
     // The path, summed day by day (midpoint of each day; the closed form is
     // the app's), from the start's rate to each scenario edge's daily miles
     // on the forecast date.
@@ -243,15 +278,17 @@ Resultata: none on <circle${a}>.`);
     .map(m => ({ d: m[1], color: m[2], dashed: m[3] !== undefined }));
   const lanes = lanesOf(key);
   const mainline = lanes.filter(l => !l.branchOnly);
-  const noted = tips.filter(t => t.endsWith(`\n${GHOST_NOTE}`));
-  if (noted.length !== mainline.length * ghostMonths.length)
-    problems.push(`${key}: ${noted.length} tooltips end with the ghost note; want ${mainline.length * ghostMonths.length} (one per line and ghost month)`);
+  const noted = tips.filter(t => Object.values(NOTES).some(note => t.endsWith(`\n${note}`)));
+  const wantNoted = mainline.reduce((n, lane) => n + fadedMonths(lane.helmer).length, 0);
+  if (noted.length !== wantNoted)
+    problems.push(`${key}: ${noted.length} tooltips end with the ghost note or the pending note; want ${wantNoted} (one per line and month of its company's rows in the second segment)`);
   for (const lane of mainline) {
+    const faded = fadedRows(lane.helmer);
     const ghosts = marks.filter(c => c.color === lane.color && c.ghost);
     const solid = paths.filter(p => p.color === lane.color && !p.dashed);
     const dashed = paths.filter(p => p.color === lane.color && p.dashed);
-    if (ghosts.length !== ghostMonths.length || solid.length !== 1 || dashed.length !== 1) {
-      problems.push(`${key} · ${lane.label}: ${ghosts.length} faded dots, ${solid.length} solid and ${dashed.length} dashed lines; want ${ghostMonths.length}, 1 and 1`);
+    if (ghosts.length !== faded.length || solid.length !== 1 || dashed.length !== 1) {
+      problems.push(`${key} · ${lane.label}: ${ghosts.length} faded dots, ${solid.length} solid and ${dashed.length} dashed lines; want ${faded.length}, 1 and 1`);
       continue;
     }
     const solidV = vertices(solid[0].d), dashedV = vertices(dashed[0].d);
@@ -265,18 +302,19 @@ Resultata: none on <circle${a}>.`);
     // The tooltip, the one whose first line names the lane's helmer and the
     // month (in any words and separators: until 2026-11-07 its head was read
     // as "<helmer> · <month>", so an edit of that separator in crashla.js
-    // turned this red), gives the point's values and ends with the ghost
-    // note; its other words are the page's and not checked (no wording pins,
-    // 2026-10-28).
-    for (const month of ghostMonths) {
+    // turned this red), gives the point's values and ends with its row's
+    // note (the ghost note, or the pending note for a month at or before the
+    // data-through month); its other words are the page's and not checked (no
+    // wording pins, 2026-10-28).
+    for (const { month, note } of faded) {
       const p = lane.points.find(q => q.month === month);
       if (!p) continue; // reported in section 1
       const values = figuresOf(p);
       const tip = tips.find(t => [lane.helmer, month].every(part => t.split("\n")[0].includes(part)));
       if (tip === undefined)
-        problems.push(`${key} · ${lane.label}: no tooltip whose first line names ${lane.helmer} and ${month}; want one giving ${values.join(", ")} and ending with the ghost note`);
-      else if (!tip.endsWith(`\n${GHOST_NOTE}`) || !values.every(v => tip.includes(v)))
-        problems.push(`${key} · ${lane.label}: the ${month} tooltip ${JSON.stringify(tip)} should give ${values.join(", ")} and end with the ghost note`);
+        problems.push(`${key} · ${lane.label}: no tooltip whose first line names ${lane.helmer} and ${month}; want one giving ${values.join(", ")} and ending with its row's note`);
+      else if (!tip.endsWith(`\n${note}`) || !values.every(v => tip.includes(v)))
+        problems.push(`${key} · ${lane.label}: the ${month} tooltip ${JSON.stringify(tip)} should give ${values.join(", ")} and end with its row's note, ${JSON.stringify(note)}`);
     }
   }
   // A fork's dashed line leaves from its helmer's faded dot.
@@ -288,7 +326,8 @@ Resultata: none on <circle${a}>.`);
       `Replicata: draw the growth chart on ${key} and find the line of the fork ${JSON.stringify(lane.label)}'s company (${lane.helmer}) among the lines drawn from history.
 Expectata: one, the line whose faded dot the fork leaves from.
 Resultata: none; the lines are ${JSON.stringify(mainline.map(l => [l.helmer, l.label]))}.`);
-    const from = marks.find(c => c.color === parent.color && c.ghost);
+    // The newest of them: the last faded dot in the line's order.
+    const from = marks.filter(c => c.color === parent.color && c.ghost).at(-1);
     const fork = paths.filter(p => p.color === lane.color && p.dashed);
     if (!from || fork.length !== 1 || vertices(fork[0].d)[0] !== `${from.x} ${from.y}`)
       problems.push(`${key} · ${lane.label}: the fork's dashed line ${JSON.stringify(fork.map(p => p.d))} does not leave from ${lane.helmer}'s faded dot ${from ? `${from.x} ${from.y}` : "(none)"}`);
@@ -314,7 +353,7 @@ vm.runInContext(`selectedGrowthMetric = "fleet"`, ctx);
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: load the app in vm with the analysis rows and the ghost rows (data/vmt.js) as init does, build and render the growth chart's Fleet size, Rides and Miles lines, and read FLEET_HISTORY, RIDES_HISTORY and data/vmt.csv.
-Expectata: every line's history in month order, with a point at each ghost month (${ghostMonths.join(", ")}), flagged ghost, and none later; each fork leaving from its helmer's newest point; the Miles points at the ghost months equal to the ghost rows' cumulative miles and bands; Tesla's fleet a point for every month from ${PER_DAY_FROM}, each its month's miles in data/vmt.csv over the month's days at ${MILES_PER_CAR_DAY} miles a car, its range covering that miles band; TESLA_PATH_START on the day after Tesla's newest month in data/vmt.csv, at that month's cumulative and its late-month rate, and each MILES_FORECAST robotaxi edge the cumulative along the path from it to the scenario's daily miles on the forecast date; Tesla's rides after 2026-06 the cumulative miles over the miles-per-ride corridor, within 500; and on the chart each ghost point a faded dot (class month-ghost) that the dashed line passes through from where the solid line ends, the solid line never reaching it, its tooltip giving the point's values and ending with the VMT charts' ghost note; and the cumulative forecasts' step at least three months past the newest ghost month.
+Expectata: every line's history in month order, with a point at each month of its company's rows in data/vmt.js's second segment (its pending months and the ghost months ${ghostMonths.join(", ")}), flagged ghost, and none later; each fork leaving from its helmer's newest point; the Miles points at those months equal to the rows' cumulative miles and bands; Tesla's fleet a point for every month from ${PER_DAY_FROM}, each its month's miles in data/vmt.csv over the month's days at ${MILES_PER_CAR_DAY} miles a car, its range covering that miles band; TESLA_PATH_START on the day after Tesla's newest month in data/vmt.csv, at that month's cumulative and its late-month rate, and each MILES_FORECAST robotaxi edge the cumulative along the path from it to the scenario's daily miles on the forecast date; Tesla's rides after 2026-06 the cumulative miles over the miles-per-ride corridor, within 500; and on the chart each such point a faded dot (class month-ghost) that the dashed line passes through from where the solid line ends, the solid line never reaching it, its tooltip giving the point's values and ending with its row's note (the VMT charts' ghost note, or their pending note); and the cumulative forecasts' step at least three months past the newest ghost month.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 12).join("\n")}`);
-console.log(`qual pass: every growth line carries the ghost months (${ghostMonths.join(", ")}) as the VMT charts do, faded on the dashed stretch with the ghost note; Tesla's fleet and rides there follow data/vmt.csv`);
+console.log(`qual pass: every growth line carries its company's faded months as the VMT charts do (the ghost months ${ghostMonths.join(", ")} and ${ghostRows.filter(r => r.month <= dataThrough).length} pending line-months), faded on the dashed stretch, each with its row's note; Tesla's fleet and rides there follow data/vmt.csv`);

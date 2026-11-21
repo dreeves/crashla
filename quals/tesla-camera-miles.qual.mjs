@@ -78,6 +78,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { NEWEST_CAMERA_TABLE } from "./camera-table.mjs";
+import { TESLA_PAGE_PART } from "./tesla-page-part.mjs";
 
 const TESLA_WEEKS = { "2026-09-21": 258043, "2026-09-28": 334281, "2026-10-05": 430621, "2026-10-12": 557694 };
 // The newest saved table's whole weeks (rule 4): each mean of seven days.
@@ -87,8 +88,11 @@ assert.deepEqual(shortWeeks, [],
 Expectata: each week's Cybercab mean taken over its seven days.
 Resultata: ${JSON.stringify(shortWeeks)}.`);
 const CAMERA_WEEKS = Object.fromEntries(Object.entries(NEWEST_CAMERA_TABLE.weeks).map(([monday, w]) => [monday, w.mean]));
-// Tesla's page, Oct 1-18, 2026 (4 days of the week of Sep 28, then two weeks).
-const MEASURED = { "2026-10": { miles: 1179333, through: "2026-10-18" } };
+// Tesla's page for the part of a month it has measured (Oct 1-18, 2026: 4
+// days of the week of Sep 28, then two weeks), from the one place that holds
+// the figure, which data/slurp.py's PREPRINT_LIST must equal
+// (quals/tesla-page-part.mjs; until 2026-11-21 a literal here).
+const MEASURED = TESLA_PAGE_PART;
 const MONTHS = ["2026-10", "2026-11"];
 const MONITOR_ABOARD = 33000, PAGE_DECK_GAP = 0.066, NO_DATA = [0.5, 2];
 // The drift term (rule 3): ln per square root of a month, at 1.96 for 95%,

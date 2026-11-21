@@ -5,7 +5,9 @@
 // real injuries — undetected until a Waymo serious-injury MPI discrepancy
 // surfaced it. SEVERITY_INFO is now the single source of truth; this qual
 // asserts (a) every data severity is classified, (b) the derived sets nest
-// and are rank-consistent, and (c) the specific regressions stay fixed.
+// and are rank-consistent, (c) the specific regressions stay fixed, and (f)
+// the Hospitalization+ set is the severities filed with a transport and the
+// serious-or-worse ones.
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { execFileSync } from "node:child_process";
@@ -96,6 +98,32 @@ Expectata: ssi (KABCO A+K) flag ⟺ rank ≥ 5 ("Serious"/"Fatality").
 Resultata: ssi=${!!rec.ssi}, rank=${rec.rank}.`);
 }
 
+// --- (f) HOSPITALIZATION+: which severities count as a hospital transport ---
+// Hospitalization+ counts a severity NHTSA files with a transport (its name
+// ends " W/ Hospitalization") and every serious-or-worse one (ssi: a bare
+// "Serious" implies a transport, a "Fatality" is beyond one). The nesting
+// and rank checks above leave the flag free below ssi: until 2026-11-21 a
+// "Minor W/ Hospitalization" or "Moderate W/ Hospitalization" row without it
+// passed this qual, which took most of each company's Hospitalization+
+// incidents out of the metric (audit 2026-11-20, A19; since 2026-11-20 the
+// page's own assert in its assumptions entry on severities stops on three of
+// the five rows, as long as that entry stands). So the flag follows from the
+// name and the ssi flag, row by row, and the set is written out here, as
+// monthly-series.qual writes out the serious-or-worse set (SSI_STRINGS):
+// these are NHTSA's severity values, data and not page copy.
+const HOSP_STRINGS = ["Minor W/ Hospitalization", "Moderate W/ Hospitalization", "Serious", "Serious W/ Hospitalization", "Fatality"];
+for (const [sev, rec] of Object.entries(info)) {
+  assert.strictEqual(
+    !!rec.hosp, sev.endsWith(" W/ Hospitalization") || !!rec.ssi,
+    `Replicata: SEVERITY_INFO[${JSON.stringify(sev)}] = ${JSON.stringify(rec)}.
+Expectata: hosp flag ⟺ the name ends " W/ Hospitalization" or the severity is serious or worse (ssi): a crash filed with a hospital transport, or as serious or fatal, counts in Hospitalization+, and no other does.
+Resultata: hosp=${!!rec.hosp}, ssi=${!!rec.ssi}.`);
+}
+assert.deepEqual([...hosp].sort(), [...HOSP_STRINGS].sort(),
+  `Replicata: read HOSPITALIZATION_SEVERITIES, the severities the Hospitalization+ metric counts.
+Expectata: exactly ${JSON.stringify(HOSP_STRINGS)} (a new severity with a transport is added here with its SEVERITY_INFO row).
+Resultata: ${JSON.stringify([...hosp].sort())}.`);
+
 // --- (e) SLURP <-> APP SYNC: every severity slurp admits is classified ------
 // data/slurp.py's EXPECTED_SEVERITIES is the ingestion whitelist (anti-Postel:
 // a new NHTSA string crashes slurp until a human adds it). Adding it there
@@ -132,4 +160,4 @@ expect(injury.has("Serious W/ Hospitalization") && hosp.has("Serious W/ Hospital
 expect(ranks["Serious W/ Hospitalization"] === ranks["Serious"],
   '"Serious W/ Hospitalization" ranks equal to "Serious" (same KABCO A meaning; both imply transport)');
 
-console.log("qual pass: every data severity is classified; injury/hospitalization/serious-injury sets nest, are rank-consistent, and the Minor/Serious silent-drop regressions stay fixed");
+console.log("qual pass: every data severity is classified; injury/hospitalization/serious-injury sets nest, are rank-consistent, the Hospitalization+ set is the severities filed with a transport and the serious-or-worse ones, and the Minor/Serious silent-drop regressions stay fixed");

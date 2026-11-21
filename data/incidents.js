@@ -2,6 +2,23 @@
 const NHTSA_FETCH_DATE = /* NHTSA_FETCH_DATE_START */"2026-11-20"/* NHTSA_FETCH_DATE_END */;
 const NHTSA_MODIFIED_DATE = /* NHTSA_MODIFIED_DATE_START */"2026-11-16"/* NHTSA_MODIFIED_DATE_END */;
 const NHTSA_DATA_THROUGH_DATE = /* NHTSA_DATA_THROUGH_DATE_START */"2026-10-15"/* NHTSA_DATA_THROUGH_DATE_END */;
+// Each Roadway Type's class, "road" or "parking" (a parking facility): slurp
+// writes it from its one reviewed table (data/slurp.py ROADWAY_CLASS), and
+// crashla.js counts a moving crash in the nonstationary non-parking-lot
+// metric when its road type's class is "road".
+const ROADWAY_CLASS = /* ROADWAY_CLASS_START */
+{
+  "Street": "road",
+  "Intersection": "road",
+  "Highway / Freeway": "road",
+  "Traffic Circle": "road",
+  "Rural Road": "road",
+  "Unpaved Road": "road",
+  "Unknown": "road",
+  "Parking Lot": "parking",
+  "Parking Garage": "parking"
+}
+/* ROADWAY_CLASS_END */;
 const INCIDENT_DATA = /* INCIDENT_DATA_START */
 [
   {
@@ -13992,7 +14009,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "state": "CA",
     "road": "Intersection",
     "crashWith": "Passenger Car",
-    "severity": "No Injuries Reported",
+    "severity": "Minor W/ Hospitalization",
     "speed": 0,
     "svMovement": "Stopped",
     "cpMovement": "Proceeding Straight",
@@ -46869,7 +46886,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "DEC-2025",
     "time": "09:36",
     "incidentId": "0d2954a0b45051c",
-    "city": "Los Angeles",
+    "city": "West Hollywood",
     "state": "CA",
     "road": "Street",
     "crashWith": "Passenger Car",
@@ -50712,7 +50729,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "JAN-2026",
     "time": "16:24",
     "incidentId": "455ee6bfa539476",
-    "city": "Los Angeles",
+    "city": "West Hollywood",
     "state": "CA",
     "road": "Street",
     "crashWith": "Pickup Truck",
@@ -51426,7 +51443,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "JAN-2026",
     "time": "19:38",
     "incidentId": "63c4aa594622616",
-    "city": "Los Angeles",
+    "city": "West Hollywood",
     "state": "CA",
     "road": "Street",
     "crashWith": "SUV",
@@ -59484,7 +59501,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "APR-2026",
     "time": "11:36",
     "incidentId": "f714f368c260da3",
-    "city": "Los Angeles",
+    "city": "West Hollywood",
     "state": "CA",
     "road": "Street",
     "crashWith": "Passenger Car",
@@ -64755,7 +64772,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "date": "MAY-2026",
     "time": "22:31",
     "incidentId": "d1da10f4bebadec",
-    "city": "Los Angeles",
+    "city": "West Hollywood",
     "state": "CA",
     "road": "Street",
     "crashWith": "SUV",
@@ -77963,7 +77980,7 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "wxRain": "",
     "wxCloudy": "",
     "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
     "svHit": "front left",
     "cpHit": "rear right",
     "fault": {
@@ -78717,584 +78734,6 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "fault": {
       "faultfrac": 0.05,
       "reasoning": "AV pulled away on green; SUV cutting into turn lane clipped its rear from behind"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17134",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "01:03",
-    "incidentId": "14277cbf41b006e",
-    "city": "Atlanta",
-    "state": "GA",
-    "road": "Street",
-    "crashWith": "Other, see Narrative",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 19,
-    "svMovement": "Proceeding Straight",
-    "cpMovement": "Unknown",
-    "narrative": "On October [XXX], 2026 at 1:03 AM EDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a dip in the roadway on [XXX] near [XXX].\n\nThe Waymo AV was traveling westbound on [XXX] as it approached a dip in the roadway. As the Waymo AV was traveling, the front right tire entered the dip, and as the Waymo AV passed over the dip, the undercarriage of the Waymo AV made contact with the roadway. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. \n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "bottom",
-    "cpHit": "unknown",
-    "fault": {
-      "faultfrac": 0.4,
-      "reasoning": "Stationary road dip at night; at 19 mph, an alert driver might spot it and slow"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17130",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "01:51",
-    "incidentId": "84475c6a04a27bf",
-    "city": "Austin",
-    "state": "TX",
-    "road": "Intersection",
-    "crashWith": "SUV",
-    "severity": "Minor W/O Hospitalization",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Traveling Wrong Way",
-    "narrative": "On October [XXX], 2026 at 1:51 AM CDT, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Austin, Texas was in a collision involving an SUV on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing southeast in the leftmost lane on [XXX], a one-way street, for a red light at the intersection with [XXX], with its left turn signal activated in preparation for a left turn onto [XXX]. After the light turned green, the Waymo AV proceeded forward and began to initiate a left turn onto [XXX]. As the Waymo AV entered the intersection, an SUV traveling northeastbound in the left lane on [XXX], entered the intersection with [XXX] against a red light and began making a left turn onto [XXX], towards the Waymo AV's lane of travel. As the SUV approached, the Waymo AV slowed to a stop to yield to the SUV, and the front of the SUV made contact with the front right side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV alleged minor injury.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away and because of airbag deployment. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "front right",
-    "cpHit": "front",
-    "fault": {
-      "faultfrac": 0.1,
-      "reasoning": "SUV ran red and turned into AV's path; AV with green had stopped before contact"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17131",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "02:19",
-    "incidentId": "886bb8a9799ab44",
-    "city": "Los Angeles",
-    "state": "CA",
-    "road": "Intersection",
-    "crashWith": "Pickup Truck",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Proceeding Straight",
-    "narrative": "On October [XXX], 2026 at 2:19 AM PDT, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a pickup truck on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing southwest in the second lane from the left on [XXX] for a red light at the intersection with [XXX]. While the Waymo AV was stopped, a pickup truck traveling southwestbound in the same lane approached the Waymo AV from behind, and the front of the pickup truck made contact with the rear of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "rear",
-    "cpHit": "front",
-    "fault": {
-      "faultfrac": 0.0,
-      "reasoning": "AV lawfully stopped at red light, rear-ended by pickup; no way to avoid"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-16979",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "06:10",
-    "incidentId": "fc62e78e74a7a31",
-    "city": "Tempe",
-    "state": "AZ",
-    "road": "Street",
-    "crashWith": "Passenger Car",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Lane / Road Departure",
-    "narrative": "On October [XXX], 2026 at 6:10 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Tempe, Arizona was in a collision involving a passenger car on [XXX] near [XXX].\n\nThe Waymo AV was stopped facing east in the rightmost lane on [XXX] in a queue of traffic stopped for a red light at the intersection with [XXX]. While the Waymo AV was stopped, a passenger car traveling eastbound in the rightmost lane approached the stationary Waymo AV from behind and began maneuvering left, into the adjacent left lane second from right lane, and the front right side of the passenger car made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": true,
-    "wxClear": "",
-    "wxRain": "",
-    "wxCloudy": "Y",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "rear left",
-    "cpHit": "front right",
-    "fault": {
-      "faultfrac": 0.0,
-      "reasoning": "AV stopped in queue at red light; car behind clipped it while changing lanes"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17066",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "06:19",
-    "incidentId": "91428dbd8d62b74",
-    "city": "Atlanta",
-    "state": "GA",
-    "road": "Street",
-    "crashWith": "Passenger Car",
-    "severity": "Serious W/ Hospitalization",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Other, see Narrative",
-    "narrative": "On October [XXX], 2026 at 6:19 AM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a passenger car on [XXX] near [XXX].\n\nThe Waymo AV was traveling southbound on [XXX] when a passenger car, traveling northbound on [XXX] at a high rate of speed, entered the intersection with [XXX], and the front of the passenger car made contact with the right side of an SUV traveling eastbound on [XXX]. The SUV and the passenger car both made contact with the east curb of [XXX] and a wall located along the curb, and the passenger car continued northwestbound across [XXX] towards the Waymo AV, entering the Waymo AV's lane of travel. As the Waymo AV slowed to a stop in-lane to yield to the passenger car, the front of the passenger car made contact with the front left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. All three vehicles involved sustained damage. Two passengers in the passenger car alleged serious injury and were transported from the scene to a hospital for medical treatment.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because individuals involved were transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": true,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front left",
-    "cpHit": "front",
-    "fault": {
-      "faultfrac": 0.0,
-      "reasoning": "Speeding car crashed into SUV, careened out of control into stopped AV"
-    },
-    "vehiclesInvolved": 3,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17139",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "06:35",
-    "incidentId": "c8826fa47339fcd",
-    "city": "Tempe",
-    "state": "AZ",
-    "road": "Parking Lot",
-    "crashWith": "Pole / Tree",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 4,
-    "svMovement": "Making Left Turn",
-    "cpMovement": "",
-    "narrative": "On October [XXX], 2026 at 6:35 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Tempe, Arizona was in a collision involving a parking bollard in a parking lot on [XXX] near [XXX].\n\nThe Waymo AV was traveling westbound in a parking lot on [XXX] when it slowed to a stop near a section of parking bollards located near the north curb. The Waymo proceeded forward and to the right momentarily, then initiated a left turn to continue southwestbound in the parking lot, and as the Waymo AV was turning left, the right side of the Waymo AV made contact with the parking bollard. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. Waymo became aware of the tow on October 12, 2026 after an additional review of available information.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "right",
-    "cpHit": "",
-    "fault": {
-      "faultfrac": 1.0,
-      "reasoning": "AV turned into a visible stationary parking bollard at low speed"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17062",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "08:51",
-    "incidentId": "afca1612e6d47e9",
-    "city": "San Francisco",
-    "state": "CA",
-    "road": "Street",
-    "crashWith": "Heavy Truck",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Passing",
-    "narrative": "On October [XXX], 2026 at 8:51 AM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX].\n\nThe Waymo AV was stopped facing southwest along the north curb on [XXX] with its left turn signal activated in preparation to merge onto southwestbound [XXX] after a passenger dropoff. The Waymo AV remained stopped, yielding to a pickup truck stopped facing southwest on [XXX] at the stop sign at the intersection with [XXX] ahead. While the Waymo AV was stopped, a heavy truck traveling southwestbound on [XXX] began passing the Waymo AV to the left and maneuvered to the right as it came to a stop behind the stopped pickup truck, to the immediate left of the Waymo AV. The pickup truck turned left onto [XXX] and the heavy truck proceeded forward and to the right and the rear right side of the heavy truck made contact with the front left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front left",
-    "cpHit": "rear right",
-    "fault": {
-      "faultfrac": 0.1,
-      "reasoning": "Stopped AV at curb hit by truck's rear swinging right; little chance to react"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17032",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "12:13",
-    "incidentId": "7901f2d7dbec830",
-    "city": "San Francisco",
-    "state": "CA",
-    "road": "Intersection",
-    "crashWith": "Other, see Narrative",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 8,
-    "svMovement": "Making Left Turn",
-    "cpMovement": "Other, see Narrative",
-    "narrative": "On October [XXX], 2026 at 12:13 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving raised pavement on [XXX] at [XXX].\n\nThe Waymo AV was traveling northbound on [XXX] when it initiated a left turn onto [XXX]. As the Waymo AV was completing the left turn onto[XXX], the undercarriage of the Waymo AV made contact with raised pavement at the entrance to [XXX]. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. A passenger in the Waymo AV was not belted at the time of collision.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - Not Belted - see Narrative",
-    "svHit": "bottom",
-    "cpHit": "unknown",
-    "fault": {
-      "faultfrac": 0.9,
-      "reasoning": "AV turned its underside into visible fixed raised pavement; expert would avoid"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17169",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "12:41",
-    "incidentId": "64b83dce0ec1c1e",
-    "city": "San Francisco",
-    "state": "CA",
-    "road": "Street",
-    "crashWith": "SUV",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 9,
-    "svMovement": "Proceeding Straight",
-    "cpMovement": "Entering Traffic",
-    "narrative": "On October [XXX], 2026, at 12:41 PM PDT, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California, was involved in a collision with an SUV on [XXX] near [XXX].\n\nThe Waymo AV was traveling northeastbound on [XXX] and slowing to yield for a stop sign as it approached the intersection with [XXX]. While the Waymo AV was slowing, an SUV initially stopped facing north in a parking space along the south curb proceeded forward as it exited the parking space, and entered the Waymo AV's lane of travel. As the Waymo AV continued forward, the SUV continued forward, and the front of the SUV made contact with the rear right side of the slowing Waymo AV. At the time of impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.   \n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it becomes available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "rear right",
-    "cpHit": "front",
-    "fault": {
-      "faultfrac": 0.1,
-      "reasoning": "SUV pulled out of a parking space into the side of an AV that had mostly passed"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-16980",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "12:49",
-    "incidentId": "29f912cd67e18dc",
-    "city": "Atlanta",
-    "state": "GA",
-    "road": "Street",
-    "crashWith": "Pickup Truck",
-    "severity": "Minor W/ Hospitalization",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Making Right Turn",
-    "narrative": "On October [XXX], 2026 at 12:49 PM EDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a pickup truck towing a trailer on [XXX] near [XXX].\n\nThe Waymo AV was traveling southbound on [XXX] when it initiated a left turn onto [XXX], a one-way street. As the Waymo AV was completing the left turn, it slowed to a stop in-lane on [XXX] to yield to a pickup truck, with an attached trailer, traveling westbound on [XXX], against the proper direction of traffic. The pickup truck slowed to a stop, adjacent and to the left of the Waymo AV, then initiated a right turn onto [XXX] and as the pickup truck was turning right, the left side of the pickup truck's trailer made contact with the left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. The passenger in the Waymo AV was transported from the scene to a hospital for medical treatment with alleged minor injuries. \n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because  an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "left",
-    "cpHit": "left",
-    "fault": {
-      "faultfrac": 0.15,
-      "reasoning": "Wrong-way truck's trailer swung into stopped AV; swing only partly foreseeable"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17030",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "14:02",
-    "incidentId": "6afbe3b4c36b7e3",
-    "city": "Atlanta",
-    "state": "GA",
-    "road": "Intersection",
-    "crashWith": "Heavy Truck",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Making Right Turn",
-    "narrative": "On October [XXX], 2026 at 2:02 PM EDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a heavy truck on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing west in the dedicated left turn lane on [XXX]for a red light at the intersection with [XXX], with its left turn signal activated in preparation for a left turn onto [XXX]. While the Waymo AV was stopped, a heavy truck traveling westbound in the adjacent right lane on [XXX] came to a stop at the red light, to the right of the Waymo AV. While the traffic light remained red, the heavy truck initiated a right turn onto [XXX], and as the heavy truck was turning right, the rear left side of the heavy truck's trailer made contact with the front right side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "Y",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "front right",
-    "cpHit": "rear left",
-    "fault": {
-      "faultfrac": 0.0,
-      "reasoning": "AV stopped legally in own lane; truck's trailer swung into it on turn, no escape"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17035",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "14:08",
-    "incidentId": "d122f95d4e82f9d",
-    "city": "Los Angeles",
-    "state": "CA",
-    "road": "Street",
-    "crashWith": "Other Fixed Object",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 17,
-    "svMovement": "Proceeding Straight",
-    "cpMovement": "",
-    "narrative": "On October [XXX], 2026 at 2:08 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a speed bump on [XXX] near [XXX].\n\nThe Waymo AV was traveling westbound on [XXX] and began slowing as it approached a speed bump. As the Waymo AV proceeded over the speed bump, the undercarriage of the Waymo AV made contact with the speed bump. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "bottom",
-    "cpHit": "",
-    "fault": {
-      "faultfrac": 1.0,
-      "reasoning": "AV crossed a visible, stationary speed bump at 17 mph; slower would avoid damage"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17162",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "16:42",
-    "incidentId": "02537566b199bb9",
-    "city": "San Francisco",
-    "state": "CA",
-    "road": "Street",
-    "crashWith": "Heavy Truck",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Passing",
-    "narrative": "On October [XXX], 2026 at 4:42 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX].\n\nThe Waymo AV was stopped facing southwest in-lane on a narrow portion of [XXX], with vehicles parked along the curb in both directions, with its hazard lights activated for a passenger pickup. While the Waymo AV was stopped, a heavy truck traveling southwestbound on [XXX] passed the Waymo AV to the left, and the right side of the heavy truck's utility trailer made contact with the front left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. Waymo became aware of the tow on October 13, 2026 after an additional review of available information.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - No Passenger In Vehicle",
-    "svHit": "front left",
-    "cpHit": "right",
-    "fault": {
-      "faultfrac": 0.1,
-      "reasoning": "Stopped AV hit by passing truck; in-lane pickup on narrow street invited squeeze"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17029",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "17:04",
-    "incidentId": "16a3a3b4444f4fc",
-    "city": "Beverly Hills",
-    "state": "CA",
-    "road": "Intersection",
-    "crashWith": "Passenger Car",
-    "severity": "Minor W/O Hospitalization",
-    "speed": 7,
-    "svMovement": "Passing",
-    "cpMovement": "Making Right Turn",
-    "narrative": "On October [XXX], 2026 at 5:04 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Beverly Hills, California was in a collision involving a passenger car on [XXX] at [XXX].\n\nThe Waymo AV was traveling eastbound in the rightmost lane on [XXX] and proceeding straight at the intersection with [XXX]. As the Waymo AV was approaching the exit of the intersection, a passenger car traveling northbound on [XXX] began making a right turn onto [XXX], entering the Waymo AV's lane of travel. As the passenger car continued turning right, the Waymo AV slowed and maneuvered to the left, and the front left side of the passenger car made contact with the right side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV alleged minor injuries.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "right",
-    "cpHit": "front left",
-    "fault": {
-      "faultfrac": 0.15,
-      "reasoning": "Turning car cut into AV's lane at exit; AV slowed and swerved, struck on side"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17033",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "17:17",
-    "incidentId": "4b30a6483efa637",
-    "city": "Austin",
-    "state": "TX",
-    "road": "Intersection",
-    "crashWith": "Passenger Car",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Proceeding Straight",
-    "narrative": "On October [XXX], 2026 at 5:17 PM CDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Austin, Texas was in a collision involving a passenger car on  [XXX] at [XXX].\n\nThe Waymo AV was stopped facing southwest in the left lane on [XXX] for a yield sign at a roundabout at [XXX], yielding to northwestbound traffic in the roundabout. While the Waymo AV was stopped, a passenger car traveling southwestbound in the left lane on [XXX] approached the Waymo AV from behind, and the front right side of the passenger car made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "",
-    "wxRain": "",
-    "wxCloudy": "Y",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "rear left",
-    "cpHit": "front right",
-    "fault": {
-      "faultfrac": 0.0,
-      "reasoning": "AV stopped properly at yield sign; rear-ended by following car"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17028",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "19:36",
-    "incidentId": "7afe13255ab9fe9",
-    "city": "San Francisco",
-    "state": "CA",
-    "road": "Street",
-    "crashWith": "Passenger Car",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 0,
-    "svMovement": "Stopped",
-    "cpMovement": "Proceeding Straight",
-    "narrative": "On October [XXX], 2026 at 7:36 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing east in the right lane on [XXX] for a red light at the intersection with [XXX]. While the Waymo AV was stopped, a passenger car that was initially stopped behind the Waymo AV proceeded forward, and the front of the passenger car made contact with the rear of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "rear",
-    "cpHit": "front",
-    "fault": {
-      "faultfrac": 0.0,
-      "reasoning": "AV stopped at red light; car stopped behind it crept forward into its rear"
-    },
-    "vehiclesInvolved": 2,
-    "series": [
-      "Waymo"
-    ]
-  },
-  {
-    "reportId": "30270-17065",
-    "version": "1",
-    "helmer": "Waymo",
-    "date": "OCT-2026",
-    "time": "21:04",
-    "incidentId": "1c248c141adbfaf",
-    "city": "Houston",
-    "state": "TX",
-    "road": "Parking Lot",
-    "crashWith": "Other, see Narrative",
-    "severity": "Property Damage. No Injured Reported",
-    "speed": 6,
-    "svMovement": "Making Left Turn",
-    "cpMovement": "Other, see Narrative",
-    "narrative": "On October [XXX], 2026 at 9:04 PM CDT,  a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Houston, Texas was in a collision involving raised pavement at the entrance of a parking lot on [XXX] near [XXX]. \n\nThe Waymo AV was traveling westbound in the left lane on [XXX] when it initiated a left turn into a parking lot on the left side of the roadway. As the Waymo AV was completing the left turn into the entrance of the parking lot, the undercarriage of the Waymo AV made contact with raised pavement at the entrance. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
-    "narrativeCbi": "",
-    "airbagAny": false,
-    "wxClear": "Y",
-    "wxRain": "",
-    "wxCloudy": "",
-    "wxPartlyCloudy": "",
-    "belted": "Subject Vehicle - All Belted",
-    "svHit": "bottom",
-    "cpHit": "unknown",
-    "fault": {
-      "faultfrac": 0.9,
-      "reasoning": "AV drove its underside onto stationary raised pavement; careful driver avoids it"
     },
     "vehiclesInvolved": 2,
     "series": [
@@ -81612,6 +81051,594 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     "series": [
       "Zoox"
     ]
+  }
+]
+/* INCIDENT_DATA_END */;
+// The in-scope incidents no line counts yet: those of a pending line-month (a
+// month at or before NHTSA's data-through month whose reports are still
+// arriving and that no dated company list covers) and the crashes of a
+// list-covered month that the list lacks. Same record shape, same checks and
+// ratings as INCIDENT_DATA's; the incident browser lists them, marked, and no
+// figure uses them (slurp.py month_sources, record_counted).
+const PENDING_INCIDENT_DATA = /* PENDING_INCIDENT_DATA_START */
+[
+  {
+    "reportId": "30270-17134",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "01:03",
+    "incidentId": "14277cbf41b006e",
+    "city": "Atlanta",
+    "state": "GA",
+    "road": "Street",
+    "crashWith": "Other, see Narrative",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 19,
+    "svMovement": "Proceeding Straight",
+    "cpMovement": "Unknown",
+    "narrative": "On October [XXX], 2026 at 1:03 AM EDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a dip in the roadway on [XXX] near [XXX].\n\nThe Waymo AV was traveling westbound on [XXX] as it approached a dip in the roadway. As the Waymo AV was traveling, the front right tire entered the dip, and as the Waymo AV passed over the dip, the undercarriage of the Waymo AV made contact with the roadway. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. \n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "bottom",
+    "cpHit": "unknown",
+    "fault": {
+      "faultfrac": 0.4,
+      "reasoning": "Stationary road dip at night; at 19 mph, an alert driver might spot it and slow"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17130",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "01:51",
+    "incidentId": "84475c6a04a27bf",
+    "city": "Austin",
+    "state": "TX",
+    "road": "Intersection",
+    "crashWith": "SUV",
+    "severity": "Minor W/O Hospitalization",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Traveling Wrong Way",
+    "narrative": "On October [XXX], 2026 at 1:51 AM CDT, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Austin, Texas was in a collision involving an SUV on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing southeast in the leftmost lane on [XXX], a one-way street, for a red light at the intersection with [XXX], with its left turn signal activated in preparation for a left turn onto [XXX]. After the light turned green, the Waymo AV proceeded forward and began to initiate a left turn onto [XXX]. As the Waymo AV entered the intersection, an SUV traveling northeastbound in the left lane on [XXX], entered the intersection with [XXX] against a red light and began making a left turn onto [XXX], towards the Waymo AV's lane of travel. As the SUV approached, the Waymo AV slowed to a stop to yield to the SUV, and the front of the SUV made contact with the front right side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV alleged minor injury.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away and because of airbag deployment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": true,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "front right",
+    "cpHit": "front",
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV ran red and turned into AV's path; AV with green had stopped before contact"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17131",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "02:19",
+    "incidentId": "886bb8a9799ab44",
+    "city": "Los Angeles",
+    "state": "CA",
+    "road": "Intersection",
+    "crashWith": "Pickup Truck",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Proceeding Straight",
+    "narrative": "On October [XXX], 2026 at 2:19 AM PDT, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a pickup truck on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing southwest in the second lane from the left on [XXX] for a red light at the intersection with [XXX]. While the Waymo AV was stopped, a pickup truck traveling southwestbound in the same lane approached the Waymo AV from behind, and the front of the pickup truck made contact with the rear of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "rear",
+    "cpHit": "front",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "AV lawfully stopped at red light, rear-ended by pickup; no way to avoid"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-16979",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "06:10",
+    "incidentId": "fc62e78e74a7a31",
+    "city": "Tempe",
+    "state": "AZ",
+    "road": "Street",
+    "crashWith": "Passenger Car",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Lane / Road Departure",
+    "narrative": "On October [XXX], 2026 at 6:10 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Tempe, Arizona was in a collision involving a passenger car on [XXX] near [XXX].\n\nThe Waymo AV was stopped facing east in the rightmost lane on [XXX] in a queue of traffic stopped for a red light at the intersection with [XXX]. While the Waymo AV was stopped, a passenger car traveling eastbound in the rightmost lane approached the stationary Waymo AV from behind and began maneuvering left, into the adjacent left lane second from right lane, and the front right side of the passenger car made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": true,
+    "wxClear": "",
+    "wxRain": "",
+    "wxCloudy": "Y",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "rear left",
+    "cpHit": "front right",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "AV stopped in queue at red light; car behind clipped it while changing lanes"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17066",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "06:19",
+    "incidentId": "91428dbd8d62b74",
+    "city": "Atlanta",
+    "state": "GA",
+    "road": "Street",
+    "crashWith": "Passenger Car",
+    "severity": "Serious W/ Hospitalization",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Other, see Narrative",
+    "narrative": "On October [XXX], 2026 at 6:19 AM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a passenger car on [XXX] near [XXX].\n\nThe Waymo AV was traveling southbound on [XXX] when a passenger car, traveling northbound on [XXX] at a high rate of speed, entered the intersection with [XXX], and the front of the passenger car made contact with the right side of an SUV traveling eastbound on [XXX]. The SUV and the passenger car both made contact with the east curb of [XXX] and a wall located along the curb, and the passenger car continued northwestbound across [XXX] towards the Waymo AV, entering the Waymo AV's lane of travel. As the Waymo AV slowed to a stop in-lane to yield to the passenger car, the front of the passenger car made contact with the front left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. All three vehicles involved sustained damage. Two passengers in the passenger car alleged serious injury and were transported from the scene to a hospital for medical treatment.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because individuals involved were transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": true,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "front left",
+    "cpHit": "front",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "Speeding car crashed into SUV, careened out of control into stopped AV"
+    },
+    "vehiclesInvolved": 3,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17139",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "06:35",
+    "incidentId": "c8826fa47339fcd",
+    "city": "Tempe",
+    "state": "AZ",
+    "road": "Parking Lot",
+    "crashWith": "Pole / Tree",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 4,
+    "svMovement": "Making Left Turn",
+    "cpMovement": "",
+    "narrative": "On October [XXX], 2026 at 6:35 AM MST a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Tempe, Arizona was in a collision involving a parking bollard in a parking lot on [XXX] near [XXX].\n\nThe Waymo AV was traveling westbound in a parking lot on [XXX] when it slowed to a stop near a section of parking bollards located near the north curb. The Waymo proceeded forward and to the right momentarily, then initiated a left turn to continue southwestbound in the parking lot, and as the Waymo AV was turning left, the right side of the Waymo AV made contact with the parking bollard. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. Waymo became aware of the tow on October 12, 2026 after an additional review of available information.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "right",
+    "cpHit": "",
+    "fault": {
+      "faultfrac": 1.0,
+      "reasoning": "AV turned into a visible stationary parking bollard at low speed"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17062",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "08:51",
+    "incidentId": "afca1612e6d47e9",
+    "city": "San Francisco",
+    "state": "CA",
+    "road": "Street",
+    "crashWith": "Heavy Truck",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Passing",
+    "narrative": "On October [XXX], 2026 at 8:51 AM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX].\n\nThe Waymo AV was stopped facing southwest along the north curb on [XXX] with its left turn signal activated in preparation to merge onto southwestbound [XXX] after a passenger dropoff. The Waymo AV remained stopped, yielding to a pickup truck stopped facing southwest on [XXX] at the stop sign at the intersection with [XXX] ahead. While the Waymo AV was stopped, a heavy truck traveling southwestbound on [XXX] began passing the Waymo AV to the left and maneuvered to the right as it came to a stop behind the stopped pickup truck, to the immediate left of the Waymo AV. The pickup truck turned left onto [XXX] and the heavy truck proceeded forward and to the right and the rear right side of the heavy truck made contact with the front left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "front left",
+    "cpHit": "rear right",
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Stopped AV at curb hit by truck's rear swinging right; little chance to react"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17032",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "12:13",
+    "incidentId": "7901f2d7dbec830",
+    "city": "San Francisco",
+    "state": "CA",
+    "road": "Intersection",
+    "crashWith": "Other, see Narrative",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 8,
+    "svMovement": "Making Left Turn",
+    "cpMovement": "Other, see Narrative",
+    "narrative": "On October [XXX], 2026 at 12:13 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving raised pavement on [XXX] at [XXX].\n\nThe Waymo AV was traveling northbound on [XXX] when it initiated a left turn onto [XXX]. As the Waymo AV was completing the left turn onto[XXX], the undercarriage of the Waymo AV made contact with raised pavement at the entrance to [XXX]. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. A passenger in the Waymo AV was not belted at the time of collision.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - Not Belted - see Narrative",
+    "svHit": "bottom",
+    "cpHit": "unknown",
+    "fault": {
+      "faultfrac": 0.9,
+      "reasoning": "AV turned its underside into visible fixed raised pavement; expert would avoid"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17169",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "12:41",
+    "incidentId": "64b83dce0ec1c1e",
+    "city": "San Francisco",
+    "state": "CA",
+    "road": "Street",
+    "crashWith": "SUV",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 9,
+    "svMovement": "Proceeding Straight",
+    "cpMovement": "Entering Traffic",
+    "narrative": "On October [XXX], 2026, at 12:41 PM PDT, a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California, was involved in a collision with an SUV on [XXX] near [XXX].\n\nThe Waymo AV was traveling northeastbound on [XXX] and slowing to yield for a stop sign as it approached the intersection with [XXX]. While the Waymo AV was slowing, an SUV initially stopped facing north in a parking space along the south curb proceeded forward as it exited the parking space, and entered the Waymo AV's lane of travel. As the Waymo AV continued forward, the SUV continued forward, and the front of the SUV made contact with the rear right side of the slowing Waymo AV. At the time of impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.   \n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it becomes available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "rear right",
+    "cpHit": "front",
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "SUV pulled out of a parking space into the side of an AV that had mostly passed"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-16980",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "12:49",
+    "incidentId": "29f912cd67e18dc",
+    "city": "Atlanta",
+    "state": "GA",
+    "road": "Street",
+    "crashWith": "Pickup Truck",
+    "severity": "Minor W/ Hospitalization",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Making Right Turn",
+    "narrative": "On October [XXX], 2026 at 12:49 PM EDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a pickup truck towing a trailer on [XXX] near [XXX].\n\nThe Waymo AV was traveling southbound on [XXX] when it initiated a left turn onto [XXX], a one-way street. As the Waymo AV was completing the left turn, it slowed to a stop in-lane on [XXX] to yield to a pickup truck, with an attached trailer, traveling westbound on [XXX], against the proper direction of traffic. The pickup truck slowed to a stop, adjacent and to the left of the Waymo AV, then initiated a right turn onto [XXX] and as the pickup truck was turning right, the left side of the pickup truck's trailer made contact with the left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. The passenger in the Waymo AV was transported from the scene to a hospital for medical treatment with alleged minor injuries. \n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because  an individual involved was transported from the scene to a hospital for medical treatment. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "left",
+    "cpHit": "left",
+    "fault": {
+      "faultfrac": 0.15,
+      "reasoning": "Wrong-way truck's trailer swung into stopped AV; swing only partly foreseeable"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17030",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "14:02",
+    "incidentId": "6afbe3b4c36b7e3",
+    "city": "Atlanta",
+    "state": "GA",
+    "road": "Intersection",
+    "crashWith": "Heavy Truck",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Making Right Turn",
+    "narrative": "On October [XXX], 2026 at 2:02 PM EDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Atlanta, Georgia was in a collision involving a heavy truck on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing west in the dedicated left turn lane on [XXX]for a red light at the intersection with [XXX], with its left turn signal activated in preparation for a left turn onto [XXX]. While the Waymo AV was stopped, a heavy truck traveling westbound in the adjacent right lane on [XXX] came to a stop at the red light, to the right of the Waymo AV. While the traffic light remained red, the heavy truck initiated a right turn onto [XXX], and as the heavy truck was turning right, the rear left side of the heavy truck's trailer made contact with the front right side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "Y",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "front right",
+    "cpHit": "rear left",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "AV stopped legally in own lane; truck's trailer swung into it on turn, no escape"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17035",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "14:08",
+    "incidentId": "d122f95d4e82f9d",
+    "city": "Los Angeles",
+    "state": "CA",
+    "road": "Street",
+    "crashWith": "Other Fixed Object",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 17,
+    "svMovement": "Proceeding Straight",
+    "cpMovement": "",
+    "narrative": "On October [XXX], 2026 at 2:08 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Los Angeles, California was in a collision involving a speed bump on [XXX] near [XXX].\n\nThe Waymo AV was traveling westbound on [XXX] and began slowing as it approached a speed bump. As the Waymo AV proceeded over the speed bump, the undercarriage of the Waymo AV made contact with the speed bump. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "bottom",
+    "cpHit": "",
+    "fault": {
+      "faultfrac": 1.0,
+      "reasoning": "AV crossed a visible, stationary speed bump at 17 mph; slower would avoid damage"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17162",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "16:42",
+    "incidentId": "02537566b199bb9",
+    "city": "San Francisco",
+    "state": "CA",
+    "road": "Street",
+    "crashWith": "Heavy Truck",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Passing",
+    "narrative": "On October [XXX], 2026 at 4:42 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a heavy truck on [XXX] near [XXX].\n\nThe Waymo AV was stopped facing southwest in-lane on a narrow portion of [XXX], with vehicles parked along the curb in both directions, with its hazard lights activated for a passenger pickup. While the Waymo AV was stopped, a heavy truck traveling southwestbound on [XXX] passed the Waymo AV to the left, and the right side of the heavy truck's utility trailer made contact with the front left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage. Waymo became aware of the tow on October 13, 2026 after an additional review of available information.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - No Passenger In Vehicle",
+    "svHit": "front left",
+    "cpHit": "right",
+    "fault": {
+      "faultfrac": 0.1,
+      "reasoning": "Stopped AV hit by passing truck; in-lane pickup on narrow street invited squeeze"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17029",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "17:04",
+    "incidentId": "16a3a3b4444f4fc",
+    "city": "Beverly Hills",
+    "state": "CA",
+    "road": "Intersection",
+    "crashWith": "Passenger Car",
+    "severity": "Minor W/O Hospitalization",
+    "speed": 7,
+    "svMovement": "Passing",
+    "cpMovement": "Making Right Turn",
+    "narrative": "On October [XXX], 2026 at 5:04 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Beverly Hills, California was in a collision involving a passenger car on [XXX] at [XXX].\n\nThe Waymo AV was traveling eastbound in the rightmost lane on [XXX] and proceeding straight at the intersection with [XXX]. As the Waymo AV was approaching the exit of the intersection, a passenger car traveling northbound on [XXX] began making a right turn onto [XXX], entering the Waymo AV's lane of travel. As the passenger car continued turning right, the Waymo AV slowed and maneuvered to the left, and the front left side of the passenger car made contact with the right side of the Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage. The passenger in the Waymo AV alleged minor injuries.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "right",
+    "cpHit": "front left",
+    "fault": {
+      "faultfrac": 0.15,
+      "reasoning": "Turning car cut into AV's lane at exit; AV slowed and swerved, struck on side"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17033",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "17:17",
+    "incidentId": "4b30a6483efa637",
+    "city": "Austin",
+    "state": "TX",
+    "road": "Intersection",
+    "crashWith": "Passenger Car",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Proceeding Straight",
+    "narrative": "On October [XXX], 2026 at 5:17 PM CDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Austin, Texas was in a collision involving a passenger car on  [XXX] at [XXX].\n\nThe Waymo AV was stopped facing southwest in the left lane on [XXX] for a yield sign at a roundabout at [XXX], yielding to northwestbound traffic in the roundabout. While the Waymo AV was stopped, a passenger car traveling southwestbound in the left lane on [XXX] approached the Waymo AV from behind, and the front right side of the passenger car made contact with the rear left side of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. Both vehicles sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "",
+    "wxRain": "",
+    "wxCloudy": "Y",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "rear left",
+    "cpHit": "front right",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "AV stopped properly at yield sign; rear-ended by following car"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17028",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "19:36",
+    "incidentId": "7afe13255ab9fe9",
+    "city": "San Francisco",
+    "state": "CA",
+    "road": "Street",
+    "crashWith": "Passenger Car",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 0,
+    "svMovement": "Stopped",
+    "cpMovement": "Proceeding Straight",
+    "narrative": "On October [XXX], 2026 at 7:36 PM PDT a Waymo Autonomous Vehicle (\"Waymo AV\") operating in San Francisco, California was in a collision involving a passenger car on [XXX] at [XXX].\n\nThe Waymo AV was stopped facing east in the right lane on [XXX] for a red light at the intersection with [XXX]. While the Waymo AV was stopped, a passenger car that was initially stopped behind the Waymo AV proceeded forward, and the front of the passenger car made contact with the rear of the stationary Waymo AV. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "rear",
+    "cpHit": "front",
+    "fault": {
+      "faultfrac": 0.0,
+      "reasoning": "AV stopped at red light; car stopped behind it crept forward into its rear"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
+  },
+  {
+    "reportId": "30270-17065",
+    "version": "1",
+    "helmer": "Waymo",
+    "date": "OCT-2026",
+    "time": "21:04",
+    "incidentId": "1c248c141adbfaf",
+    "city": "Houston",
+    "state": "TX",
+    "road": "Parking Lot",
+    "crashWith": "Other, see Narrative",
+    "severity": "Property Damage. No Injured Reported",
+    "speed": 6,
+    "svMovement": "Making Left Turn",
+    "cpMovement": "Other, see Narrative",
+    "narrative": "On October [XXX], 2026 at 9:04 PM CDT,  a Waymo Autonomous Vehicle (\"Waymo AV\") operating in Houston, Texas was in a collision involving raised pavement at the entrance of a parking lot on [XXX] near [XXX]. \n\nThe Waymo AV was traveling westbound in the left lane on [XXX] when it initiated a left turn into a parking lot on the left side of the roadway. As the Waymo AV was completing the left turn into the entrance of the parking lot, the undercarriage of the Waymo AV made contact with raised pavement at the entrance. At the time of the impact, the Waymo AV's Level 4 ADS was engaged in autonomous mode. The Waymo AV sustained damage.\n\nWaymo is reporting this crash under Request No. 1 of Standing General Order 2021-01 because a vehicle involved was towed away. Waymo may supplement or correct its reporting with additional information as it may become available.",
+    "narrativeCbi": "",
+    "airbagAny": false,
+    "wxClear": "Y",
+    "wxRain": "",
+    "wxCloudy": "",
+    "wxPartlyCloudy": "",
+    "belted": "Subject Vehicle - All Belted",
+    "svHit": "bottom",
+    "cpHit": "unknown",
+    "fault": {
+      "faultfrac": 0.9,
+      "reasoning": "AV drove its underside onto stationary raised pavement; careful driver avoids it"
+    },
+    "vehiclesInvolved": 2,
+    "series": [
+      "Waymo"
+    ]
   },
   {
     "reportId": "30610-17172",
@@ -81648,4 +81675,4 @@ const INCIDENT_DATA = /* INCIDENT_DATA_START */
     ]
   }
 ]
-/* INCIDENT_DATA_END */;
+/* PENDING_INCIDENT_DATA_END */;

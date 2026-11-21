@@ -53,11 +53,22 @@ const ca = lines.map((line, i) => {
 });
 const byMonth = Object.fromEntries(ca.map(r => [r.month, r]));
 const sources = JSON.parse(fs.readFileSync("data/waymo-ca-sources.json", "utf8"));
+// The first month of CPUC's deployment program, from the manifest: the
+// earliest month a deployment source lists. Before it a row's deployment
+// miles are zero, with no source ("pre-deployment"). Read from the manifest
+// since 2026-11-21 (until then the literal "2023-08", from commit 0b2f2e0),
+// and held to the mileage column: zero before that month, above zero from it.
+const firstDeployment = sources.filter(s => s.program === "deployment").flatMap(s => s.months).sort()[0];
+assert.match(String(firstDeployment), /^\d{4}-\d{2}$/,
+  `Replicata: list the months of data/waymo-ca-sources.json's deployment sources.\nExpectata: at least one, the earliest the program's first month.\nResultata: ${firstDeployment}.`);
+const zeroAfterStart = ca.filter(r => (r.month < firstDeployment) !== (r.deployment === 0)).map(r => r.month);
+assert.deepEqual(zeroAfterStart, [],
+  `Replicata: compare California's deployment miles with the first month the manifest lists a deployment source for (${firstDeployment}).\nExpectata: zero in every month before it and above zero from it on.\nResultata: otherwise in ${zeroAfterStart.join(", ")}.`);
 for (const line of lines) {
   const [month, , , , deployment, pilot] = line.split(",");
   const refs = sources.filter(s => s.months.includes(month)).map(s => [s.program, String(s.id)]).sort();
   const recorded = [["deployment", deployment], ["pilot", pilot]];
-  const expected = month < "2023-08" ? [["deployment", "pre-deployment"], ...refs] : refs;
+  const expected = month < firstDeployment ? [["deployment", "pre-deployment"], ...refs] : refs;
   assert.deepEqual(recorded, expected,
     `Replicata: trace the ${month} California miles to their CPUC reports.\nExpectata: the deployment and pilot source IDs listed for that month.\nResultata: ${deployment} and ${pilot}, with manifest entries ${JSON.stringify(refs)}.`);
 }

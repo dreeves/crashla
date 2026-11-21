@@ -138,9 +138,12 @@ Resultata: ${audit.targets} targets (${audit.faultCells} fault cells); not focus
 (${JSON.stringify(audit.copies.slice(0, 3))}).`);
 
   // Every narrative toggle has a short name of its own and the narrative as
-  // its description (#62).
+  // its description (#62). The table's rows are the window's counted
+  // incidents and, since 2026-11-21, the pending incidents of the months the
+  // window shows (windowPendingIncidents: listed, grayed and marked, counted
+  // nowhere); a pending row's toggle is held to the same rule.
   const narr = await page.evaluate(() => {
-    const want = new Set(activeIncidents().map(r => narrativeToggleName(r.reportId)));
+    const want = new Set([...activeIncidents(), ...windowPendingIncidents(activeSeries.months)].map(r => narrativeToggleName(r.reportId)));
     const names = [], bad = [];
     for (const b of document.querySelectorAll("#incidents-body .narrative-cell [role=button]")) {
       const name = b.getAttribute("aria-label");
@@ -157,8 +160,9 @@ Resultata: ${audit.targets} targets (${audit.faultCells} fault cells); not focus
   assert.ok(narr.toggles > 1000 && narr.toggles === narr.incidents && narr.unique === narr.toggles &&
     narr.nBad === 0 && narr.longest <= 40,
     `[${engine}] Replicata: read every incident narrative toggle's accessible name and description on the default view.
-Expectata: each is named by narrativeToggleName(its report id), at most 40 characters, one name per incident, and
-described (aria-describedby) by the narrative text inside it.
+Expectata: each is named by narrativeToggleName(its report id), at most 40 characters, one name per listed incident
+(the window's counted incidents and the pending ones of the months it shows), and described (aria-describedby) by the
+narrative text inside it.
 Resultata: ${JSON.stringify(narr)}.`);
 
   // Tab from the Cumulative-VMT radio lands on the first VMT chart mark, and
@@ -405,16 +409,17 @@ Expectata: its eight column headers, each holding one button named by its text (
 Resultata: column headers holding such a button: ${JSON.stringify(withButton)}.`);
     // #62 and #26: a narrative toggle is a button with a short name and the
     // narrative as its description; a fault cell is described by its row's
-    // fault reasoning.
-    const wanted = new Set(await page.evaluate(() => activeIncidents().map(r => narrativeToggleName(r.reportId))));
+    // fault reasoning. (The listed incidents: the counted ones and the
+    // pending ones the window shows, as above.)
+    const wanted = new Set(await page.evaluate(() => [...activeIncidents(), ...windowPendingIncidents(activeSeries.months)].map(r => narrativeToggleName(r.reportId))));
     const toggles = live.filter(n => n.role && n.role.value === "button" && n.name && wanted.has(n.name.value));
     const undescribed = toggles.filter(n => !n.description || n.description.value.length < 20).length;
     const faultLabel = await page.evaluate(() => NARRATIVE_FAULT_LABEL);
     const faultCells = live.filter(n => n.description && n.description.value.startsWith(faultLabel + " ")).length;
     assert.ok(toggles.length === wanted.size && toggles.length > 1000 && undescribed === 0 && faultCells === wanted.size,
       `[chromium] Replicata: read the incident table's narrative toggles and fault cells in the accessibility tree.
-Expectata: one button per incident, named by its short name and described by its narrative; one fault cell per
-incident described by its "${faultLabel}" line.
+Expectata: one button per listed incident, named by its short name and described by its narrative; one fault cell per
+listed incident described by its "${faultLabel}" line.
 Resultata: ${toggles.length} of ${wanted.size} toggles found by name, ${undescribed} without a description;
 ${faultCells} nodes described by a fault line.`);
   }

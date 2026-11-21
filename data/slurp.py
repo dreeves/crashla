@@ -16,7 +16,12 @@ company has published that NHTSA's files do not hold yet (preprints:
 PREPRINT_LIST),
 joins in the in-repo VMT master (data/vmt.csv) and fault inputs
 (data/faultfrac.csv), and injects the data into data/incidents.js and
-data/vmt.js (between marker comments). Every check runs before any of
+data/vmt.js (between marker comments). A line's month enters the rates only
+when NHTSA's file is complete for it or the company's own dated list covers
+it; every other month at or before NHTSA's data-through month is pending: its
+VMT row goes with the ghost months in data/vmt.js's second segment and its
+incidents in data/incidents.js's second array, which nothing counts
+(month_sources(), record_counted()). Every check runs before any of
 data/incidents.js, data/vmt.js and data/faultfrac.csv is written, so a run
 that stops writes only the NHTSA snapshots it fetched (data/README.md, Each
 NHTSA release). After main(), a run saves Robotaxi Tracker's camera table
@@ -98,8 +103,8 @@ NHTSA_OTHER_CSV_URL = (
 # standing, and the rest are the preprints (preprint_rows()). A preprint goes
 # through every check an NHTSA row does and its record in data/incidents.js
 # carries `preprint: true`; at the release that publishes its report, NHTSA's
-# row takes its place with no further code. The NHTSA receipt and arrival
-# statistics read NHTSA's rows only. quals/preprints.qual.mjs holds the list
+# row takes its place with no further code. The Monthly-report arrival
+# counts read NHTSA's rows only. quals/preprints.qual.mjs holds the list
 # to its record against NHTSA: every list row NHTSA has published agrees with
 # one of that report's filed versions (24 of 24 on 2026-11-18).
 #   entity   the company, as NHTSA's Reporting Entity names it
@@ -195,81 +200,65 @@ CAMERA_TABLE = {
 # incident month itself are rare but real (Tesla files early; the Feb-2026
 # release held four JAN-2026 ones) and are consistent with the cutoff.
 NHTSA_DATA_THROUGH_DATE = "2026-10-15"
-# Receipt coverage of the data-through month. Reports received through the
-# cutoff cover only crashes from the first part of that month: the five-day
-# clock runs from the company's notice, plus NHTSA processing. Since
-# 2026-10-31 (decision D6 of 2026-10-30) the share present is estimated from
-# the month itself, observed / expected, as incident_coverage() estimates the
-# Monthly track's (release_month_coverage()). Until then it was the median of
-# earlier months' first-release shares (FIVE_DAY_RECEIPT_COVERAGE = (0.28,
-# 0.20, 0.52): the median, and the observed range padded), which is right only
-# if that share holds steady; it fell from 0.50 in February 2026 to 0.21 in
-# August, and September's 7 five-day-track incidents in the Oct-15-2026 file,
-# the fewest yet, give 0.136 by observed / expected (band 0.0615-0.52; measured
-# on the Nov-16-2026 release: 7 of an eventual 61, 0.115).
+# Which months count (2026-11-21; the human, on the partly reported newest
+# month: "maximum conservativeness, don't show things when they involve
+# arbitrary guesses", and, restated: "if we know when a helmer's crash reports
+# end then we compute the exact VMT for the crashes. if not, we don't try to
+# guess."). Reports received through the cutoff cover only crashes from the
+# first part of the data-through month (the five-day clock runs from the
+# company's notice, plus NHTSA processing, and Monthly reports are due the
+# 15th of the next month), so that month is only partly reported. A line's
+# month at or before the data-through month T enters the rates (an analysis
+# row of data/vmt.js, its incidents in INCIDENT_DATA) only when
+#   (a) NHTSA's file is complete for the line's company and month: the month
+#       is before T and outside the company's Monthly-report lag (month <=
+#       T - 1 - MONTHLY_ARRIVAL_LAG[company]); or
+#   (b) the company's own dated list covers it (PREPRINT_LIST: each line of
+#       the list's company, in the list's month): the list's crashes through
+#       its date, over the list's miles (preprint_coverage()).
+# Every other line-month at or before T is PENDING (a provisional name: its
+# reports are still arriving): its data/vmt.csv row goes with the ghost
+# months in data/vmt.js's second segment, which the page draws faded and no
+# rate uses, and its in-scope incidents go, checked and rated as counted ones
+# are, in data/incidents.js's second array, PENDING_INCIDENT_DATA, which the
+# incident browser lists and nothing counts. So do the crashes of a
+# list-covered month that the list lacks: only crashes inside a known span
+# count (month_sources(), record_counted()).
 #
-# FIVE_DAY_RECEIPT_OBSERVATIONS records those first-release shares, measured
-# from data/snapshots history: (five-day-type public-service Waymo/Tesla/Zoox
-# incidents of month M present in the first release containing M) / (M's
-# eventual five-day-type total), deduplicated as main() does. An incident's
-# type is its crash's first filing's Report Type (REPORT_TRACK; a re-filing
-# under a new Report ID takes the report it replaced), so a later Update
-# leaves it in the count (2026-08's 30270-16286, a 5-Day report whose v2 is an
-# Update, first entered as 47). They set the band's high edge
-# (FIVE_DAY_RECEIPT_COVERAGE_MAX). Re-measure and re-review on each release;
-# quals/receipt-observations.qual.mjs recounts the table from data/snapshots.
-# Re-measured 2026-09-04 (the 2026-08-28 table read 18/38, 25/69, 16/57,
-# 17/60 — a transcription slip; every filter variant reproduces the counts
-# below, e.g. the Feb numerator includes Zoox 30610-14026).
-# A month's denominator is final at its second NORMAL release: verified across
-# every release snapshot (Dec 2025 13->55 then flat; Jan 2026 21->63 then
-# flat; Feb 19->38 then flat x6; Apr 3->58 flat; May 16->58
-# flat; Jun 17->61 flat; Jul 12->58 flat; Aug 10->48 flat). The one exception proves the rule — Mar ran 25->53->72
-# because its second release WAS the truncated May-15 one.
-# Dec 2025 and Jan 2026 entered 2026-10-31 (decision of that day on open
-# question 11): their first releases are the two legacy snapshots, which the
-# table had left out (quals/receipt-observations.qual.mjs now requires every
-# month data/snapshots can measure). Neither moves the high edge.
-FIVE_DAY_RECEIPT_OBSERVATIONS = {
-    "2025-12": (13, 55),   # Jan-2026 release (legacy snapshot nhtsa-2025-jun-dec.csv) vs the Oct-15-2026 file
-    "2026-01": (21, 63),   # Feb-2026 release (legacy snapshot nhtsa-2025-jun-2026-jan.csv) vs the Oct-15-2026 file
-    "2026-02": (19, 38),   # Mar-16-2026 release vs the Aug-17-2026 file
-    "2026-03": (25, 72),   # Apr-15-2026 release
-    "2026-05": (16, 58),   # Jun-15-2026 release
-    "2026-06": (17, 61),   # Jul-15-2026 release
-    "2026-07": (12, 58),   # Aug-17-2026 release vs the Sep-15-2026 file
-    "2026-08": (10, 48),   # Sep-15-2026 release vs the Oct-15-2026 file
-    "2026-09": (7, 61),    # Oct-15-2026 release vs the Nov-16-2026 file
-    # 2026-04 excluded: the May-15-2026 release was cut early (3 April
-    # incidents / 19 April submissions vs ~17 / ~90 in every other release).
-}
-# The receipt band's high edge: the highest first-release share on record
-# (February 2026's 19/38 = 0.50), padded, the reading in which the month's low
-# count is real rather than lagging. release_month_coverage() stops when an
-# observation exceeds it, or when the data-through month's own observed /
-# expected does: raise it then, if the observation stands (data/README.md,
-# Each NHTSA release, step 2).
-FIVE_DAY_RECEIPT_COVERAGE_MAX = 0.52
-# Months with no usable first-release observation, with the reason; every
-# other month from the first observation on must be measured (see
-# release_month_coverage).
-RECEIPT_MONTHS_EXCLUDED = {
-    "2026-04": "its first release (May 15, 2026) was truncated: 3 April "
-               "incidents of an eventual 58, 19 April submissions",
-}
-# Monthly-track report arrival, per helmer (modeled 2026-10-03, human
-# decision). SGO Request No. 2 (Monthly) reports for incident month M are due
-# by the 15th of M+1, so they normally reach the public file at the release
-# whose data-through month is M+1 (M's second release), and from then on the
-# app treats M as complete. A helmer whose Monthly reports land later leaves
-# months that look complete but are not: every in-scope Zoox Monthly-track
-# report of January-July 2026 reached the file one release late, so the
-# Sep-15-2026 file held only Zoox's one July 5-Day report (30610-15722).
-# MONTHLY_ARRIVAL_LAG is each helmer's extra lag, in releases. The months
-# inside it (the ones just before the data-through month) get a Monthly-track
-# incident coverage of the helmer's in-scope 5-Day share instead of 1
-# (monthly_lag_coverage()); five-day-track metrics are unaffected, because
-# the 5-Day reports arrive on the normal schedule.
+# (a) rests on two premises about when a month's reports reach NHTSA's file.
+# A month's five-day-track reports are complete at the release after its
+# first, measured across every release snapshot (the five-day-track count of
+# a month at its first release, then at every later one: Dec 2025 13->55
+# then flat; Jan 2026 21->63 then flat; Feb 19->38 then flat x6; Apr 3->58
+# flat; May 16->58 flat; Jun 17->61 flat; Jul 12->58 flat; Aug 10->48 flat;
+# Sep 7->61; Mar ran 25->53->72 because its second release was the truncated
+# May-15-2026 one). And its Monthly-track reports, due the 15th of the next
+# month, arrive by that same release unless the company's lag says otherwise
+# (below).
+#
+# Until 2026-11-21 the data-through month counted too, at an estimated share
+# of its miles: the share of its five-day-track incidents the release held
+# (observed over the count expected at each company's rate in an earlier
+# month; before 2026-10-31 the median of earlier months' first-release
+# shares), and for Monthly-track metrics the share of its incidents of every
+# kind, with ranges (FIVE_DAY_RECEIPT_OBSERVATIONS, FIVE_DAY_RECEIPT_COVERAGE_MAX,
+# release_month_coverage(), incident_coverage()); and a lagged company's
+# lagged months counted at its five-day share of incidents
+# (FIVE_DAY_SHARE_OBSERVATIONS). Over nine first releases what eventually
+# arrived ran from 0.70 to 1.68 times the five-day share's estimate (AGENTS.md
+# ledger, 2026-11-20 (later 6)), and the human dropped the estimate.
+#
+# Monthly-track report arrival, per helmer (measured since 2026-10-03). SGO
+# Request No. 2 (Monthly) reports for incident month M are due by the 15th of
+# M+1, so they normally reach the public file at the release whose
+# data-through month is M+1 (M's second release), and from then on M is
+# complete. A helmer whose Monthly reports land later leaves months that look
+# complete but are not: every in-scope Zoox Monthly-track report of
+# January-July 2026 reached the file one release late, so the Sep-15-2026
+# file held only Zoox's one July 5-Day report (30610-15722).
+# MONTHLY_ARRIVAL_LAG is each helmer's extra lag, in releases: the months
+# inside it (the ones just before the data-through month) are pending for
+# that helmer's lines, as the data-through month is.
 #
 # MONTHLY_ARRIVAL_OBSERVATIONS: for each helmer and incident month M, its
 # in-scope Monthly-track incidents (deduplicated as main() does, in the newest
@@ -279,10 +268,13 @@ RECEIPT_MONTHS_EXCLUDED = {
 # release whose data-through month is M+1, one release later, ...). Measured
 # from data/snapshots history; a month enters at the release whose
 # data-through month is M+2, when an arrival one release late is visible
-# (monthly_lag_coverage() requires it then). A lagged helmer's lagged month
+# (check_monthly_arrivals() requires it then). A lagged helmer's lagged month
 # that already holds a Monthly-track report enters one release early, at M+1,
-# with its on-time count (monthly_lag_coverage() stops until it does), and is
-# re-measured at M+2 like any other month: 2026-08 entered so on the
+# with its on-time count (check_monthly_arrivals() stops until it does), and is
+# re-measured at M+2 like any other month, when its row takes its second
+# count, the reports that arrived a release late, a 0 included
+# (check_monthly_arrivals() stops on a row still on-time-only then, since
+# 2026-11-21, and on a second count entered before then): 2026-08 entered so on the
 # Oct-15-2026 release, which already held Tesla's 7 and Zoox's 3 in-scope
 # August Monthly reports (and Waymo's 20). Re-measured on the Nov-16-2026
 # release, August gained 23 Waymo reports a release late (22 submitted
@@ -291,10 +283,13 @@ RECEIPT_MONTHS_EXCLUDED = {
 # reads as a lag of 1 by the majority rule below while September already held
 # 62 Waymo Monthly-track reports (Tesla 3, Zoox 10). The recipe and its independent
 # recompute are in quals/monthly-arrival-lag.qual.mjs; re-measure on each
-# release with FIVE_DAY_RECEIPT_OBSERVATIONS. Measurable from Dec 2025 (the
+# release. Measurable from Dec 2025 (the
 # oldest snapshot release holds data through Dec 2025), where Zoox's two
 # Monthly reports (30610-13660, -13661) arrived on time: the late pattern
-# holds for every 2026 month, and the table starts there.
+# holds for every 2026 month, and the table starts there. The table also
+# gives the list's allowance: the share of the list's company's Monthly
+# reports that arrived on time, over the months with both counts
+# (preprint_coverage()).
 MONTHLY_ARRIVAL_OBSERVATIONS = {
     "Waymo": {"2026-01": (30, 0), "2026-02": (34, 1), "2026-04": (53, 1),
               "2026-05": (42, 0), "2026-06": (46, 0), "2026-07": (31, 0),
@@ -307,7 +302,7 @@ MONTHLY_ARRIVAL_OBSERVATIONS = {
              "2026-08": (3, 0), "2026-09": (10,)},
 }
 # Months whose arrivals cannot be measured, with the reason; every other month
-# from the first observation on must be observed (monthly_lag_coverage()).
+# from the first observation on must be observed (check_monthly_arrivals()).
 MONTHLY_ARRIVAL_MONTHS_EXCLUDED = {
     "2026-03": "its second release (May 15, 2026) was truncated, so its "
                "Monthly reports reached the file one release late for "
@@ -318,11 +313,12 @@ MONTHLY_ARRIVAL_MONTHS_EXCLUDED = {
 }
 # Each helmer's lag is the extra lag of the majority of its newest observed
 # month with any Monthly-track incident (ties count as late), which
-# monthly_lag_coverage() checks. Zoox's was 1 from 2026-10-03 until the
+# check_monthly_arrivals() checks. Zoox's was 1 from 2026-10-03 until the
 # Oct-15-2026 release, where its August reports arrived on time; there
 # Tesla's July tie (13781-16255 on time; 13781-16294, submitted in August,
-# first in the Oct-15-2026 file) would have made Tesla's 1 too, but its August
-# reports had arrived on time as well. On the Nov-16-2026 release Waymo's
+# first in the Oct-15-2026 file) would have made Tesla's 1 too, but seven
+# August reports of its own had arrived on time as well (an eighth,
+# 13781-17193, came a release late). On the Nov-16-2026 release Waymo's
 # August (20 on time, 23 a release late: the first Waymo month with more than
 # one late report) would have made Waymo's 1, but September's 62 Monthly-track
 # reports, more than any month's total since June 2025 (April 2026's 54 the
@@ -331,18 +327,6 @@ MONTHLY_ARRIVAL_MONTHS_EXCLUDED = {
 # Waymo's August was counted 23 incidents short of its 89 for one release
 # (AGENTS.md, open question 36).
 MONTHLY_ARRIVAL_LAG = {"Waymo": 0, "Tesla": 0, "Zoox": 0}
-# For each helmer with a lag: (in-scope 5-Day-track incidents, all in-scope
-# incidents) per incident month, deduplicated as main() does and counted in
-# the newest file (monthly_lag_coverage() checks them against it), from
-# 2026-01 through the newest month that is final for the helmer (data-through
-# month - 1 - lag). Its lagged months' Monthly-track incident coverage is
-# (pooled share, lowest monthly share, 1.0): Zoox Jan-Jun 2026 = 17/27 =
-# 0.6296, February's 1/4 = 0.25 the lowest (on the Sep-15-2026 release; its
-# rows, with July's (1, 3), left the table when its lag returned to 0). A
-# month with share 0 would put the band's low edge at 0, which the app cannot
-# use: it stops the run for a decision (most of Tesla's 2026 months have no
-# 5-Day-track incident, so a Tesla lag would stop there).
-FIVE_DAY_SHARE_OBSERVATIONS = {}
 INCIDENT_JS = DATA_DIR / "incidents.js"
 VMT_JS      = DATA_DIR / "vmt.js"
 # In-repo master for the VMT estimates (one row per helmer-month).
@@ -534,7 +518,11 @@ VEHICLES_INVOLVED = {
     # car stopped behind it + speeding SUV + a fourth car the AV rotated into,
     # plus "at least two other vehicles" per SFPD ("five passengers in four of
     # the vehicles" injured) = 6 vehicles: the three with severe damage and
-    # "the other three vehicles".
+    # "the other three vehicles". The narrative's count is a floor ("at
+    # least"): firefighters, by CBS San Francisco, KTVU and ABC7, counted 7,
+    # as Koopman does. The 6 stays (the human, 2026-11-21): no count is taken
+    # from outside NHTSA's data, since outside reporting reaches some crashes
+    # more than others (audit finding A13 of 2026-11-20).
     "30270-9724": (6, "The Waymo AV, the passenger vehicle behind the Waymo "
                       "AV, and the SUV sustained severe damage. The extent of "
                       "the damage to the other three vehicles is currently "
@@ -782,6 +770,11 @@ NARRATIVE_AIRBAG_CORRECTION = re.compile(
 # 2026-10-30) the table was keyed by Same Incident ID and held the stored
 # value only; each entry's reviewed value is its report's filed severity on
 # that day, which matches what every entry's note says the field read.
+# The sources are NHTSA's field and the report's own narrative, for every
+# company (the human, 2026-11-21: "consistently respect the NHTSA data"): a
+# company's own published crash list is not one (data/README.md, pipeline
+# step 9, has the comparison with Waymo's). And a hospital transport the
+# narrative states counts whatever its cause (30270-8940, below).
 SEVERITY_OVERRIDE = {
     # Detached object from pickup; Waymo passenger alleged unspecified injury
     "30270-11361": ("Unknown", "Minor W/O Hospitalization"),
@@ -906,6 +899,18 @@ SEVERITY_OVERRIDE = {
     # and requested emergency services", no transport stated
     "30610-15722": ("Property Damage. No Injured Reported",
                     "Minor W/O Hospitalization"),
+    # Added 2026-11-21 (audit finding A38 of 2026-11-20): Waymo 30270-8940
+    # (OCT-2024, San Francisco), field "No Injuries Reported"; stopped in a
+    # queue at a red light, crept into from behind by a passenger car;
+    # "Law enforcement communicated to Waymo that the driver of the passenger
+    # car was experiencing a medical emergency and was transported from the
+    # scene in an ambulance". The rule (the human, 2026-11-21): a transport
+    # the narrative states counts, whatever its cause, as the human benchmark
+    # counts anyone transported (CRSS's transport codes); counting it applies
+    # the page's one rule again, where leaving it out would add a second
+    # rule, about why a person was taken. So the 2026-07-15 convention's
+    # value for a stated transport, Minor W/ Hospitalization
+    "30270-8940": ("No Injuries Reported", "Minor W/ Hospitalization"),
 }
 
 # Known-erroneous or missing upstream location fields, keyed by Report ID (by
@@ -931,6 +936,13 @@ SEVERITY_OVERRIDE = {
 # Flint Street", 85224; 30270-10141 "Tempe", "Parking lot near 1810 E Apache
 # Boulevard", 85281; 30270-9763 "West Hollywood", "Parking lot near 8280 Santa
 # Monica Boulevard", 90046.
+# Five more of West Hollywood's, by the same rule (added 2026-11-21, audit
+# finding A39 of 2026-11-20): 30270-13369 (DEC-2025), -13556 and -13550
+# (JAN-2026), -14586 (APR-2026) and -15285 (MAY-2026), each filed "Los
+# Angeles" under a narrative that opens "operating in West Hollywood,
+# California" (re-read at this build); the audit read the hub's address for
+# each in West Hollywood, zip 90046 (the hub was not re-read at this build,
+# which ran without the network).
 LOCATION_OVERRIDE = {
     "30270-7054": (("Phoenix", "CA"), ("Phoenix", "AZ")),
     "30270-11302": (("", ""), ("Los Angeles", "CA")),
@@ -939,6 +951,11 @@ LOCATION_OVERRIDE = {
     "30270-10112": (("Phoenix", "AZ"), ("Chandler", "AZ")),
     "30270-10141": (("Phoenix", "AZ"), ("Tempe", "AZ")),
     "30270-9763": (("Los Angeles", "CA"), ("West Hollywood", "CA")),
+    "30270-13369": (("Los Angeles", "CA"), ("West Hollywood", "CA")),
+    "30270-13556": (("Los Angeles", "CA"), ("West Hollywood", "CA")),
+    "30270-13550": (("Los Angeles", "CA"), ("West Hollywood", "CA")),
+    "30270-14586": (("Los Angeles", "CA"), ("West Hollywood", "CA")),
+    "30270-15285": (("Los Angeles", "CA"), ("West Hollywood", "CA")),
 }
 
 # Airbag deployments the SGO structured columns cannot record, keyed by Report
@@ -965,15 +982,61 @@ AIRBAG_OVERRIDE = {
     "30270-13877": ("No Subject Vehicle, No Crash Partner", True),
     # 30270-6542: "video appears to show that airbags deployed in the striking vehicle"
     "30270-6542": ("No", True),
+    # 30270-17130 (OCT-2026, Austin; added 2026-11-21, audit finding A7 of
+    # 2026-11-20): "Waymo is reporting this crash under Request No. 1 of
+    # Standing General Order 2021-01 because a vehicle involved was towed away
+    # and because of airbag deployment"; the column marks no deployment in
+    # either vehicle. The same sentence as 30270-9767's, a two-vehicle crash too
+    "30270-17130": ("No Subject Vehicle, No Crash Partner", True),
+}
+# The airbag tripwire (2026-11-21, audit finding A7): an in-scope incident
+# whose narrative mentions an airbag while its filed "Any Air Bags Deployed?"
+# marks no deployment (it holds no "Yes") stops the run
+# (check_airbag_classified()) until a human reads it: an AIRBAG_OVERRIDE entry
+# if the narrative says an airbag deployed, in any vehicle, else an entry
+# below with the narrative's words that show the filed value stands. Until
+# then nothing read a new narrative for this: 30270-17130 came in with
+# 30270-9767's sentence and was stored with no airbag. The sources stay
+# NHTSA's field and the report's own narrative, for every company (the human,
+# 2026-11-21). Calibrated 2026-11-21 on every filing of an in-scope report in
+# every file of data/snapshots (3,077 distinct filings, 2,546 versions of
+# 2,392 reports) and on the 32 rows of Tesla's list: the corpus writes
+# "airbag", "airbags" and "air bags" (191 times over every company's
+# narratives); 52 in-scope versions of 47 reports mention one, and the field
+# marks a deployment in every mentioning version of 38 of those reports. The
+# other nine are the six AIRBAG_OVERRIDE reports, the two below, and
+# 13781-11459, whose v3 carries the same correction as 13781-11687's and which
+# is out of every metric (TELEOP_DRIVEN_REPORTS), so its record is never
+# written and the tripwire never reads it. Of the 2,394 in-scope incidents a
+# run writes today (their latest filings, the preprints among them), 47
+# mention an airbag and the field marks a deployment on 39; the list's one
+# mention, 13781-17203's, is marked.
+AIRBAG_PATTERN = re.compile(r"air\s*-?\s*bag", re.I)
+# In-scope reports whose narrative mentions an airbag while the filed value
+# marks no deployment, and whose filed value stands, keyed by Report ID with
+# the narrative's words that show why, verbatim; check_reviewed_quotes() stops
+# the run when the report's latest filing no longer holds the words.
+AIRBAG_LANGUAGE_REVIEWED = {
+    # Tesla's v3 filing (MAR-2026) takes back the airbag and tow flags its v2
+    # had set in error
+    "13781-11687": "This is in error and the reports were updated to reflect "
+                   "that no airbags were deployed",
+    # Waymo slowed on a freeway and two vehicles behind it collided (no
+    # contact with the Waymo); the field is Unknown and the narrative knows no
+    # more, so no deployment is counted
+    "30270-16932": "Airbag deployment and tow status are unknown for both "
+                   "vehicles.",
 }
 
 # Reviewed passenger codes, keyed by Report ID: (the filed "Were All
 # Passengers Belted?" value the review read, the value to store), for reports
 # whose filed code disagrees with their own narrative about whether anyone was
 # aboard (the sanity section's Passenger presence table counts riders, as
-# against deadhead). reviewed_belted() must()s that the filed value is
-# unchanged (a re-filing stops the run for a re-read), and
-# check_passengers_reviewed() that every entry is an in-scope report.
+# against deadhead). check_passenger_reviews() must()s that each filed value
+# is the one its entry was reviewed against (a re-filing, or NHTSA's row
+# taking a preprint's place, stops the run for a re-read, one stop listing
+# every such entry), and check_passengers_reviewed() that every entry is an
+# in-scope report.
 #
 # Tesla files its in-car safety monitor as a passenger: a ride with only the
 # monitor aboard carries "Subject Vehicle - All Belted" (or "Unknown"), so the
@@ -983,9 +1046,10 @@ AIRBAG_OVERRIDE = {
 # in-scope Tesla report carries an entry (added 2026-10-03, audit finding
 # #10), and check_passengers_reviewed() stops the run on a Tesla report
 # without one until its narrative is read. Not every Tesla narrative does:
-# 13781-16941's (on Tesla's Oct-18-2026 list, not yet in NHTSA's file) says
-# nothing about who was aboard, and such a report is stored as (filed code,
-# "Unknown") (audit 2026-10-30, R3; the human, 2026-11-02, open question 18).
+# 13781-16941's (on Tesla's Oct-18-2026 list; in NHTSA's file since its Nov
+# 16, 2026 release, filed no passenger) says nothing about who was aboard, and
+# such a report is stored as (filed code, "Unknown") (audit 2026-10-30, R3;
+# the human, 2026-11-02, open question 18).
 #
 # Waymo and Zoox carry no in-car monitor, and their codes agree with their
 # narratives except where an entry below says otherwise; the occupancy
@@ -1015,6 +1079,11 @@ PASSENGER_OVERRIDE = {
     # Zoox, JUN-2026 San Francisco, filed no passenger: "An occupied Zoox
     # autonomous vehicle was stopped at a traffic light"; belt use not stated
     "30610-15826": (PAX_NO, PAX_BELT_UNSTATED),
+    # Waymo, SEP-2026 Austin, filed no passenger (added 2026-11-21, audit
+    # finding A40 of 2026-11-20): stopped for a dropoff, clipped by a passing
+    # pickup; "The passenger in the Waymo AV was not belted at the time of
+    # the collision as they were preparing to exit the vehicle"
+    "30270-16828": (PAX_NO, "Subject Vehicle - Not Belted - see Narrative"),
     # Tesla: every in-scope report (the monitor is not a passenger); a
     # narrative that says nothing about who was aboard is stored as
     # (filed code, "Unknown") (the human, 2026-11-02, open question 18)
@@ -1087,9 +1156,22 @@ PASSENGER_OVERRIDE = {
 # (30270-8877, 30270-13578, both coded no passenger), so it does not say who
 # was aboard at impact. Tesla's wording is read report by report (every Tesla
 # report has a PASSENGER_OVERRIDE entry).
+# Widened 2026-11-21 (audit finding A40 of 2026-11-20) to a narrative that
+# says a passenger was not belted, which puts one aboard: "not belted" (Waymo:
+# "The passenger in the Waymo AV was not belted at the time of the
+# collision"), "unbelted", "not wearing a seat belt". Calibrated on every
+# filing of an in-scope Waymo or Zoox report in every file of data/snapshots
+# (2,481 versions of 2,349 reports): 165 versions of 158 Waymo reports say
+# so, each filed with a passenger code but 30270-16828 (filed no passenger:
+# its PASSENGER_OVERRIDE entry), so the widened tripwire flags that report and
+# 30610-15826 and no other. Other seat-belt wording (a passenger who
+# "unbuckled their seatbelt shortly before the moment of impact", six
+# reports; 177 reports use some seat-belt word) is filed with a passenger
+# code everywhere too, and stays out of the pattern.
 OCCUPANCY_PATTERN = re.compile(
     r"\b(?P<none>unoccupied\s+(?:Zoox|Waymo)|had\s+no\s+occupants)\b|"
-    r"\b(?P<present>occupied\s+(?:Zoox|Waymo))\b", re.I)
+    r"\b(?P<present>occupied\s+(?:Zoox|Waymo)|not\s+belted|unbelted|"
+    r"not\s+wearing\s+(?:a\s+)?seat\s*-?\s*belts?)\b", re.I)
 # In-scope reports whose narrative trips OCCUPANCY_PATTERN against their filed
 # code but whose filed code stands, keyed by Report ID with the narrative's
 # words that show why, verbatim, and the reason as a comment (none so far);
@@ -1523,7 +1605,8 @@ def read_list_cells(path):
         sheets = sorted(n for n in names if re.fullmatch(r"xl/worksheets/sheet\d+\.xml", n))
         must(len(sheets) == 1 and "xl/sharedStrings.xml" in names,
              "the company list's spreadsheet must hold one sheet and its "
-             "shared strings", file=relpath(path), sheets=sheets)
+             "shared strings (data/README.md, Each NHTSA release, step 7)",
+             file=relpath(path), sheets=sheets)
         strings = ["".join(t.text or "" for t in si.iter(XLSX_NS + "t"))
                    for si in xml.etree.ElementTree.fromstring(
                        book.read("xl/sharedStrings.xml")).iter(XLSX_NS + "si")]
@@ -1535,15 +1618,18 @@ def read_list_cells(path):
             kind, value = cell.get("t"), cell.find(XLSX_NS + "v")
             must(kind in (None, "n", "s") and value is not None,
                  "a cell of the company list is neither a shared string nor a "
-                 "number", file=relpath(path), cell=cell.get("r"), kind=kind)
+                 "number (data/README.md, Each NHTSA release, step 7)",
+                 file=relpath(path), cell=cell.get("r"), kind=kind)
             column = re.match(r"[A-Z]+", cell.get("r")).group()
             cells[column] = strings[int(value.text)] if kind == "s" else value.text
         grid.append(cells)
     must(len(grid) > 1, "the company list's spreadsheet has no rows under its "
-         "header", file=relpath(path), rows=len(grid))
+         "header (data/README.md, Each NHTSA release, step 7)",
+         file=relpath(path), rows=len(grid))
     header = grid[0]
     must(all(set(cells) <= set(header) for cells in grid[1:]),
-         "a row of the company list has a cell in a column with no header",
+         "a row of the company list has a cell in a column with no header "
+         "(data/README.md, Each NHTSA release, step 7)",
          file=relpath(path), header=header)
     return [{header[column]: cells.get(column, "") for column in header}
             for cells in grid[1:]]
@@ -1570,7 +1656,8 @@ def list_row(cells):
          columns=list(cells), expected=list(LIST_COLUMNS))
     rid = cells["report_id"]
     serial = float(cells["incident_date_local"])
-    must(serial.is_integer(), "a company-list date is not a whole day",
+    must(serial.is_integer(), "a company-list date is not a whole day "
+         "(data/README.md, Each NHTSA release, step 7)",
          reportId=rid, value=cells["incident_date_local"])
     day = XLSX_EPOCH + datetime.timedelta(days=int(serial))
     must(day.isoformat() <= PREPRINT_LIST["through"],
@@ -1580,14 +1667,15 @@ def list_row(cells):
          reportId=rid, date=day.isoformat(), through=PREPRINT_LIST["through"])
     speed = float(cells["subject_vehicle_pre_crash_speed (MPH)"])
     must(speed.is_integer() and speed >= 0,
-         "a company-list speed is not a whole number of miles per hour",
+         "a company-list speed is not a whole number of miles per hour "
+         "(data/README.md, Each NHTSA release, step 7)",
          reportId=rid, value=cells["subject_vehicle_pre_crash_speed (MPH)"])
     weather_columns = [f for f in FIELDS if f.startswith("Weather - ")]
     weather = f"Weather - {cells['weather']}"
     must(weather in weather_columns,
          "a company-list weather value has no \"Weather - ...\" column among "
-         "FIELDS in data/slurp.py", reportId=rid, value=cells["weather"],
-         columns=weather_columns)
+         "FIELDS in data/slurp.py (data/README.md, Each NHTSA release, step 7)",
+         reportId=rid, value=cells["weather"], columns=weather_columns)
     row = {column: "" for column in LIST_ABSENT_COLUMNS}
     row.update({column: "Y" if column == weather else "" for column in weather_columns})
     for cell, prefix in (("subject_vehicle_damage_area", "SV Contact Area"),
@@ -1596,8 +1684,8 @@ def list_row(cells):
                  if area.strip() != LIST_NO_CONTACT_AREA]
         must(set(areas) <= set(CONTACT_AREA_LABELS) and len(set(areas)) == len(areas),
              "a company-list contact area is not one of CONTACT_AREA_LABELS in "
-             "data/slurp.py, or is named twice", reportId=rid, column=cell,
-             value=cells[cell])
+             "data/slurp.py, or is named twice (data/README.md, Each NHTSA release, step 7)",
+             reportId=rid, column=cell, value=cells[cell])
         row.update({f"{prefix} - {label}": "Y" if label in areas else ""
                     for label in CONTACT_AREA_LABELS})
     month_abbr = {num: abbr for abbr, num in MONTH_ABBR_TO_NUM.items()}
@@ -1638,7 +1726,8 @@ def list_rows(path):
          "Each NHTSA release, step 7)", file=path.name, expected=wanted)
     rows = [list_row(cells) for cells in read_list_cells(path)]
     ids = [r["Report ID"] for r in rows]
-    must(len(set(ids)) == len(ids), "the company list names a Report ID twice",
+    must(len(set(ids)) == len(ids), "the company list names a Report ID twice "
+         "(data/README.md, Each NHTSA release, step 7)",
          reports=sorted(rid for rid, n in Counter(ids).items() if n > 1))
     must(not set(ids) & set(TESLA_NO_MONITOR_ADDITIONS),
          "the company list now holds reviewed no-monitor additions: move each "
@@ -1672,7 +1761,7 @@ def preprint_rows(nhtsa):
     must(not later,
          "a preprint is dated after NHTSA's data-through month (the company "
          "list reaches a month NHTSA's file has not begun; how to count a month "
-         "only a list covers is undecided: ask the human)",
+         "only a list covers is undecided: ask the human; data/README.md, Each NHTSA release, step 7)",
          reports=later, dataThrough=NHTSA_DATA_THROUGH_DATE)
     return preprints
 
@@ -1698,28 +1787,13 @@ def month_shift(month, n):
     return f"{y}-{m + 1:02d}"
 
 
-def release_month_coverage(data_through_date, last_month, counts, vmt):
-    """Return the (best, lo, hi) receipt coverage of the data-through month:
-    the share of its in-scope five-day-track incidents that this release
-    holds, observed / expected (2026-10-31, decision D6), as
-    incident_coverage() estimates the Monthly track's. <counts> is
-    monthly_track_counts() of this release, <vmt> parse_vmt_values().
-
-    observed: the month's five-day-track incidents in this release; expected:
-    each company's five-day-track incidents in its reference month, the most
-    recent month before the data-through month (final at this, its second
-    normal release) with at least 3 of them and VMT, scaled by the VMT ratio
-    (pooled_reference_rate()). best = observed / expected; lo = best x
-    exp(-1.96 SE) with SE = sqrt(1/observed + 1/reference), the log-scale
-    bound incident_coverage() uses; hi = FIVE_DAY_RECEIPT_COVERAGE_MAX, the
-    reading in which the month's low count is real rather than lagging.
-
-    Fails loudly if the reviewed NHTSA_DATA_THROUGH_DATE month is not the
-    newest incident month (a new release without a reviewed cutoff), if a
-    month that became final has no FIVE_DAY_RECEIPT_OBSERVATIONS row, if an
-    observation exceeds FIVE_DAY_RECEIPT_COVERAGE_MAX, if the month has no
-    five-day-track incident, or if its observed / expected does.
-    """
+def check_data_through_month(data_through_date, last_month):
+    """Stop the run unless the reviewed NHTSA_DATA_THROUGH_DATE's month is the
+    newest incident month <last_month>: a new release without a reviewed
+    cutoff, or a cutoff the data has not reached. (Until 2026-11-21 this was
+    the first check of release_month_coverage(), which went on to estimate
+    the share of that month's five-day-track incidents the release holds; the
+    month is pending now, with no estimate: month_sources().)"""
     data_through_month = datetime.date.fromisoformat(
         data_through_date).strftime("%Y-%m")
     must(data_through_month == last_month,
@@ -1727,88 +1801,6 @@ def release_month_coverage(data_through_date, last_month, counts, vmt):
          "(set NHTSA_DATA_THROUGH_DATE in data/slurp.py to the new release's "
          "cutoff: data/README.md, Each NHTSA release, step 1)",
          data_through=data_through_date, last_month=last_month)
-    # Every month from the first observation through the month that just
-    # became final (the one before the data-through month: its second normal
-    # release is this one) must be observed or explicitly excluded, so the
-    # "re-measure on each release" step cannot be skipped silently.
-    due = month_shift(data_through_month, -1)
-    month = min(FIVE_DAY_RECEIPT_OBSERVATIONS)
-    while month <= due:
-        must(month in FIVE_DAY_RECEIPT_OBSERVATIONS
-             or month in RECEIPT_MONTHS_EXCLUDED,
-             "no five-day receipt observation for a month that is now final "
-             "(measure it from the snapshots and add it to "
-             "FIVE_DAY_RECEIPT_OBSERVATIONS in data/slurp.py, or exclude it "
-             "with a reason in RECEIPT_MONTHS_EXCLUDED: data/README.md, Each "
-             "NHTSA release, step 2)",
-             month=month, data_through=data_through_date)
-        month = month_shift(month, 1)
-    fracs = sorted(n / d for n, d in FIVE_DAY_RECEIPT_OBSERVATIONS.values())
-    must(fracs[-1] <= FIVE_DAY_RECEIPT_COVERAGE_MAX <= 1,
-         "FIVE_DAY_RECEIPT_COVERAGE_MAX in data/slurp.py must be at or above "
-         "every observed first-release share and at most 1 (raise it to cover "
-         "the new observation: data/README.md, Each NHTSA release, step 2)",
-         max=FIVE_DAY_RECEIPT_COVERAGE_MAX, observed=fracs)
-    five_day = {(helmer, month): n for (helmer, month, track), n in counts.items()
-                if track == "five_day"}
-    observed, expected, reference = pooled_reference_rate(
-        five_day, last_month, vmt,
-        {helmer: month_shift(last_month, -1) for helmer in set(HELMER_SHORT.values())})
-    must(observed > 0,
-         "the data-through month has no in-scope five-day-track incident in "
-         "this release, so its receipt coverage would be 0 (was the release "
-         "truncated, as May 15, 2026's was? check the file before going on: "
-         "data/README.md, Each NHTSA release, step 2)",
-         last_month=last_month, expected=round(expected, 1))
-    best = observed / expected
-    lo = best * math.exp(-1.96 * math.sqrt(1 / observed + 1 / reference))
-    must(best <= FIVE_DAY_RECEIPT_COVERAGE_MAX,
-         "the data-through month's observed share of its five-day-track "
-         "incidents exceeds FIVE_DAY_RECEIPT_COVERAGE_MAX in data/slurp.py "
-         "(check the counts; raise the constant if they stand: data/README.md, "
-         "Each NHTSA release, step 2)",
-         best=round(best, 4), observed=observed, expected=round(expected, 1),
-         max=FIVE_DAY_RECEIPT_COVERAGE_MAX)
-    print(f"  {last_month} five-day receipt coverage: best={best:.4f} lo={lo:.4f}"
-          f" (observed {observed} / expected {expected:.1f})")
-    return round(best, 4), round(lo, 4), FIVE_DAY_RECEIPT_COVERAGE_MAX
-
-
-def pooled_reference_rate(counts, last_month, vmt, complete_through):
-    """(observed, expected, reference) incidents, pooled over the companies
-    with VMT in <last_month>. <counts> maps (company, iso_month) to
-    incidents. observed: the companies' counts in <last_month>; expected:
-    each company's count in its reference month, the most recent month
-    through complete_through[company] with at least 3 incidents and VMT,
-    times the VMT ratio of <last_month> to that month; reference: the sum of
-    those reference months' counts. A company with no reference month stays
-    out of the pool. This is a stationary-rate heuristic; it does not prove
-    a reference month complete. The receipt coverage and the pooled
-    Monthly-track incident coverage both use it."""
-    companies = sorted(helmer for helmer in set(HELMER_SHORT.values())
-                       if vmt.get((helmer, last_month), 0) > 0)
-    must(companies,
-         "pooled coverage requires positive cutoff-month VMT",
-         last_month=last_month)
-    observed = expected = reference = 0
-    for helmer in companies:
-        refs = sorted((month for (company, month), n in counts.items()
-                       if company == helmer and month <= complete_through[helmer]
-                       and n >= 3 and vmt.get((helmer, month), 0) > 0),
-                      reverse=True)
-        if not refs:
-            continue
-        ref_count = counts[(helmer, refs[0])]
-        # NOTE: a company with VMT but ZERO observed incidents in the month
-        # stays in the pool: observing 0 where the reference predicts >0 is
-        # exactly the "not yet reported" evidence the rate ratio captures.
-        observed += counts.get((helmer, last_month), 0)
-        expected += ref_count * vmt[(helmer, last_month)] / vmt[(helmer, refs[0])]
-        reference += ref_count
-    must(expected > 0 and reference > 0,
-         "pooled coverage requires a usable reference month",
-         companies=companies, last_month=last_month)
-    return observed, expected, reference
 
 
 # Fault values sit on a 0.05 grid (0, 0.05, ..., 1): crashla.js faultSum sums
@@ -1957,7 +1949,8 @@ def _canonical_helmer(helmer_raw):
     """
     wanted = helmer_raw.strip().lower()
     hits = [v for v in SERIES_COMPANY if v.lower() == wanted]
-    must(len(hits) == 1, "VMT master helmer label is not a line SERIES_COMPANY names",
+    must(len(hits) == 1, "VMT master helmer label is not a line SERIES_COMPANY names "
+         "(data/README.md, Each NHTSA release, step 4)",
          helmer=helmer_raw, allowed=sorted(SERIES_COMPANY))
     return hits[0]
 
@@ -2053,87 +2046,14 @@ def public_service_incidents(rows):
     return by_incident
 
 
-def incident_coverage(nhtsa_rows, last_month, receipt_coverage, vmt):
-    """Compute conditional pooled incident coverage for the last month.
-
-    The best estimate is a pooled rate-ratio: observed incidents in the
-    cutoff month vs the count expected from each helmer's most recent usable
-    reference month that is complete for it (before the cutoff month and
-    outside its MONTHLY_ARRIVAL_LAG; VMT-scaled), clamped to (0, 1].  This is a
-    stationary-rate heuristic; it does not prove the reference month complete.
-    Assuming
-    f = 1.0 instead would assert "these are all the incidents" and
-    overstate the month's safety.  The lo bound is p_best * exp(-1.96 SE) (log-scale normal
-    approximation to the rate ratio); the hi bound is 1.0 (all incidents
-    may already be in).  The CI thus spans our ignorance about the true
-    conditional incident-coverage fraction f.
-
-    last_month: ISO month string (e.g. "2026-02") — the latest month with
-    any incident data.  Derived from the data, not hardcoded.
-    receipt_coverage: best-estimate fraction of that month's five-day-track
-    incidents present in the release (release_month_coverage()'s best). The
-    returned fractions are conditional on that receipt frontier; the product
-    receipt_coverage * best is invariant to the choice of receipt_coverage.
-    vmt: dict from parse_vmt_values(), mapping (helmer, iso_month) to VMT.
-
-    Returns {(helmer, iso_month): (best, lo, hi)} where best/lo/hi are the
-    conditional incident-coverage fractions.
-    """
-    # Count incidents per helmer-month, deduplicated exactly like the main
-    # ingestion path (public_service_incidents()).
-    counts = Counter(
-        (HELMER_SHORT[r["Reporting Entity"].strip()],
-         nhtsa_month_to_iso(r["Incident Date"].strip()))
-        for r in public_service_incidents(filed_incident_rows(nhtsa_rows)).values())
-
-    # Companies only: a derived line (SERIES_COMPANY) is a subset of its
-    # company's miles and incidents and takes the company's coverage.
-    last_month_helmers = sorted(
-        helmer for helmer in set(HELMER_SHORT.values())
-        if vmt.get((helmer, last_month), 0) > 0)
-
-    # Every fleet with cutoff-month VMT shares ONE pooled coverage value.
-    # Request No. 2 requires a report per qualifying crash; one Monthly row
-    # cannot certify that a company's entire cycle is complete. Per-fleet
-    # counts are too noisy to justify different factors. Each company's
-    # reference month is complete for it: before the cutoff month and outside
-    # its extra Monthly-report lag (MONTHLY_ARRIVAL_LAG; a lagged month still
-    # lacks its Monthly reports, so its count would understate the rate).
-    pooled_obs, expected, pooled_ref = pooled_reference_rate(
-        counts, last_month, vmt,
-        {helmer: month_shift(last_month, -1 - lag)
-         for helmer, lag in MONTHLY_ARRIVAL_LAG.items()})
-    # Expected through the cutoff at the reference rate.
-    pooled_exp = expected * receipt_coverage
-    result = {}
-    # Pooled rate-ratio point estimate (clamped to (0, 1]); using 1.0 would
-    # assert "these are all the incidents", overstating the month's safety.
-    p_best = max(0.01, min(1.0, pooled_obs / pooled_exp))
-    # Lower bound on the log scale: sqrt(1/obs + 1/ref) is the SE of
-    # log(rate ratio), and at obs = 12 the linear Wald interval it was used
-    # in until 2026-09-04 was skewed (0.134 vs 0.183) and could go negative
-    # (hidden by a clamp). The bound is positive by construction.
-    log_se = math.sqrt(1 / max(pooled_obs, 1) + 1 / pooled_ref)
-    p_lo = p_best * math.exp(-1.96 * log_se)
-    must(0 < p_lo <= p_best, "pooled incident-coverage bound out of range",
-         p_lo=p_lo, p_best=p_best)
-    for helmer in last_month_helmers:
-        last_key = (helmer, last_month)
-        result[last_key] = (round(p_best, 4), round(p_lo, 4), 1.0)
-    print(f"  {last_month} pooled incident_coverage: best={p_best:.4f}"
-          f" lo={p_lo:.4f} (observed {int(pooled_obs)} / expected {pooled_exp:.1f})")
-
-    return result
-
-
 # An incident's track is the Report Type of its crash's first filing: 1-Day
 # or 5-Day (the prompt reports of SGO Request No. 1) or Monthly (Request No.
 # 2). A re-filing under a new Report ID (SUPERSEDED_REPORTS) takes the track
 # of the report it replaced, that report's version-1 filing (since
-# 2026-11-02, the human's answer to open question 26(a)): the receipt and
-# arrival tables count a month's crashes by track in its first release, from
-# before the re-filing, and again in the newest file, so a crash keeps one
-# track. Until then the track was the surviving report's own version 1, so an
+# 2026-11-02, the human's answer to open question 26(a)): the arrival table
+# counts a month's crashes by track in the release they first appeared in,
+# from before the re-filing, and again in the newest file, so a crash keeps
+# one track. Until then the track was the surviving report's own version 1, so an
 # "Update"-typed re-filing stopped the run and a Monthly re-filing of a 5-Day
 # report moved its crash between tracks (quals/refiling-track.qual.mjs).
 REPORT_TRACK = {"1-Day": "five_day", "5-Day": "five_day", "Monthly": "monthly"}
@@ -2168,20 +2088,24 @@ def monthly_track_counts(rows):
     return counts
 
 
-def monthly_lag_coverage(counts, last_month):
-    """The Monthly-track incident coverage of the months inside each helmer's
-    extra Monthly-report lag (MONTHLY_ARRIVAL_LAG): {(helmer, iso_month):
-    (best, lo, 1.0)} for the lag's months just before the data-through month
-    <last_month>, best = the helmer's pooled in-scope 5-Day share and lo its
-    lowest monthly share (FIVE_DAY_SHARE_OBSERVATIONS); the high edge 1.0 says
-    the month may have no Monthly-track crash at all. <counts> is
-    monthly_track_counts() of this release.
-
-    Stops the run unless the tables cover the helmers they must, each lag is
+def check_monthly_arrivals(counts, last_month):
+    """Stop the run unless the Monthly-report arrival tables
+    (MONTHLY_ARRIVAL_OBSERVATIONS, MONTHLY_ARRIVAL_MONTHS_EXCLUDED,
+    MONTHLY_ARRIVAL_LAG) are measured through this release, whose data-through
+    month is <last_month>: the tables cover the helmers they must, each lag is
     what its observations say, every month that is now measurable is observed
-    (or excluded with a reason), the observations agree with this release, and
-    no lagged month already holds a Monthly-track report (which would mean
-    the helmer's Monthly reports are no longer late)."""
+    (or excluded with a reason), the observations agree with this release
+    (<counts>: monthly_track_counts() of it), and no lagged month already
+    holds a Monthly-track report (which would mean the helmer's Monthly
+    reports are no longer late). The lag decides which months are complete
+    (month_sources()), and the list's company's on-time share is the list's
+    allowance for late-filed crashes (preprint_coverage()). (Until 2026-11-21
+    this was monthly_lag_coverage(), which also gave a lagged month an
+    estimated Monthly-track incident coverage, the helmer's five-day share of
+    incidents; a lagged month is pending now.) Each row holds what can have
+    been measured: through the month whose third release this is, its on-time
+    count and the count that arrived a release late; after it, its on-time
+    count alone."""
     helmers = set(HELMER_SHORT.values())
     must(set(MONTHLY_ARRIVAL_LAG) == helmers == set(MONTHLY_ARRIVAL_OBSERVATIONS),
          "MONTHLY_ARRIVAL_LAG and MONTHLY_ARRIVAL_OBSERVATIONS must cover "
@@ -2190,7 +2114,8 @@ def monthly_lag_coverage(counts, last_month):
          observations=sorted(MONTHLY_ARRIVAL_OBSERVATIONS))
     must(all(isinstance(lag, int) and lag >= 0
              for lag in MONTHLY_ARRIVAL_LAG.values()),
-         "MONTHLY_ARRIVAL_LAG values must be whole numbers of releases",
+         "MONTHLY_ARRIVAL_LAG values must be whole numbers of releases "
+         "(data/README.md, Each NHTSA release, step 3)",
          lag=MONTHLY_ARRIVAL_LAG)
     observed = {tuple(sorted(table)) for table in
                 MONTHLY_ARRIVAL_OBSERVATIONS.values()}
@@ -2220,6 +2145,37 @@ def monthly_lag_coverage(counts, last_month):
              "MONTHLY_ARRIVAL_MONTHS_EXCLUDED: data/README.md, Each NHTSA "
              "release, step 3)", month=month, last_month=last_month)
         month = month_shift(month, 1)
+    # A row holds the counts its releases have shown. A month through the due
+    # month has had its third release, so its row holds the reports that
+    # arrived a release late too, a 0 included: a row entered early with its
+    # on-time count alone is re-measured then. Until 2026-11-21 nothing
+    # required it, so a row stayed on-time-only whenever no report had
+    # arrived late, and preprint_coverage(), which reads the rows with both
+    # counts, left its month out of the list's allowance (audit 2026-11-20,
+    # A45). A month after the due month has had two releases: its late count
+    # cannot be measured yet, and a second count there would enter the
+    # allowance unmeasured. Both run before the lag check: a row short of its
+    # late count reads as on time whatever arrived late.
+    held = sorted((helmer, month, arrived)
+                  for helmer, table in MONTHLY_ARRIVAL_OBSERVATIONS.items()
+                  for month, arrived in table.items())
+    on_time_only = [row for row in held if row[1] <= due and len(row[2]) < 2]
+    must(not on_time_only,
+         "a Monthly-report arrival row for a month whose third release has "
+         "come holds its on-time count only (re-measure the month from the "
+         "snapshots and give its row its second count, the in-scope "
+         "Monthly-track incidents that arrived a release late, 0 if none, in "
+         "MONTHLY_ARRIVAL_OBSERVATIONS in data/slurp.py: data/README.md, Each "
+         "NHTSA release, step 3)",
+         rows=on_time_only, due=due, last_month=last_month)
+    unmeasured = [row for row in held if row[1] > due and len(row[2]) != 1]
+    must(not unmeasured,
+         "a Monthly-report arrival row for a month whose third release has "
+         "not come holds more than its on-time count (the reports that arrive "
+         "a release late show only at its third release: keep the on-time "
+         "count alone until then, in MONTHLY_ARRIVAL_OBSERVATIONS in "
+         "data/slurp.py: data/README.md, Each NHTSA release, step 3)",
+         rows=unmeasured, due=due, last_month=last_month)
     # Each lag is the extra lag of the majority of its helmer's newest
     # observed month with any Monthly-track incident (ties count as late).
     for helmer, table in MONTHLY_ARRIVAL_OBSERVATIONS.items():
@@ -2252,9 +2208,7 @@ def monthly_lag_coverage(counts, last_month):
                  helmer=helmer, month=month, observed=arrived, release=release)
     lagged = {h for h, lag in MONTHLY_ARRIVAL_LAG.items() if lag > 0}
     # A lagged month that already holds an in-scope Monthly-track report
-    # contradicts the lag itself, so this stop runs before the share tables'
-    # checks: on the Oct-15-2026 release the zero-share stop below fired first
-    # and asked for a coverage model when the lag was what had to change.
+    # contradicts the lag itself.
     for helmer in sorted(lagged):
         lag = MONTHLY_ARRIVAL_LAG[helmer]
         for i in range(lag):
@@ -2266,46 +2220,6 @@ def monthly_lag_coverage(counts, last_month):
                  "count in MONTHLY_ARRIVAL_OBSERVATIONS and set its "
                  "MONTHLY_ARRIVAL_LAG: data/README.md, Each NHTSA release, step 3)", helmer=helmer, month=month,
                  monthly=counts[(helmer, month, "monthly")])
-    must(set(FIVE_DAY_SHARE_OBSERVATIONS) == lagged,
-         "FIVE_DAY_SHARE_OBSERVATIONS must cover exactly the lagged helmers "
-         "(data/README.md, Each NHTSA release, step 3)",
-         shares=sorted(FIVE_DAY_SHARE_OBSERVATIONS), lagged=sorted(lagged))
-    result = {}
-    for helmer, table in FIVE_DAY_SHARE_OBSERVATIONS.items():
-        lag = MONTHLY_ARRIVAL_LAG[helmer]
-        final = month_shift(last_month, -1 - lag)
-        span = [min(table)]
-        while span[-1] < final:
-            span.append(month_shift(span[-1], 1))
-        must(span[-1] == final and sorted(table) == span,
-             "a lagged helmer's FIVE_DAY_SHARE_OBSERVATIONS must hold every "
-             "month from its first through the newest month final for it "
-             "(data-through month - 1 - lag; data/README.md, Each NHTSA release, step 3)", helmer=helmer,
-             months=sorted(table), want=span)
-        for month, (five_day, total) in table.items():
-            release = (counts[(helmer, month, "five_day")],
-                       counts[(helmer, month, "five_day")]
-                       + counts[(helmer, month, "monthly")])
-            must((five_day, total) == release,
-                 "FIVE_DAY_SHARE_OBSERVATIONS disagree with this release "
-                 "(a row is the month's in-scope 5-Day-track and all in-scope "
-                 "incidents in the newest file: re-measure, data/README.md, Each NHTSA release, step 3)",
-                 helmer=helmer, month=month, observed=(five_day, total),
-                 release=release)
-        shares = [n / d for n, d in table.values() if d > 0]
-        must(shares and min(shares) > 0,
-             "a lagged helmer's lowest monthly 5-Day share is 0 (or it has no "
-             "incidents), so its lagged months' coverage band would reach 0: "
-             "decide how to bound it: data/README.md, Each NHTSA release, step 3", helmer=helmer, observations=table)
-        best = round(sum(n for n, _ in table.values())
-                     / sum(d for _, d in table.values()), 4)
-        lo = round(min(shares), 4)
-        for i in range(lag):
-            month = month_shift(last_month, i - lag)
-            result[(helmer, month)] = (best, lo, 1.0)
-            print(f"  {month} {helmer} Monthly-track coverage (Monthly-report "
-                  f"lag {lag}): best={best} lo={lo}")
-    return result
 
 
 def read_vmt_master():
@@ -2322,8 +2236,8 @@ def preprint_coverage(vmt):
     """The coverage the company list (PREPRINT_LIST) gives each line of its
     company for the month the list runs through: {(line, iso_month): (receipt
     coverage triple, Monthly-track incident coverage triple, the list's
-    date)}, shaped as NHTSA's are (build_vmt_csv). <vmt> is
-    parse_vmt_values().
+    date)}, the coverage columns of a list-covered row of data/vmt.js
+    (month_sources(), build_vmt_csv()). <vmt> is parse_vmt_values().
 
     Receipt coverage: the list holds every crash of the month through its
     date and none after, so it covers the list's miles (the company's
@@ -2346,7 +2260,8 @@ def preprint_coverage(vmt):
     on_time = sum(counts[0] for counts in measured)
     filed = sum(sum(counts) for counts in measured)
     must(filed > 0, "no measured Monthly-report arrivals for the company "
-         "whose list this is (MONTHLY_ARRIVAL_OBSERVATIONS)", company=company)
+         "whose list this is (MONTHLY_ARRIVAL_OBSERVATIONS: data/README.md, "
+         "Each NHTSA release, step 3)", company=company)
     share = on_time / filed
     z = 1.96
     low = ((share + z * z / (2 * filed)
@@ -2357,42 +2272,107 @@ def preprint_coverage(vmt):
     for line in sorted(s for s, c in SERIES_COMPANY.items() if c == company):
         must((line, month) in vmt,
              "a line of the company list's company has no data/vmt.csv row "
-             "for the month the list runs through", line=line, month=month)
+             "for the month the list runs through (data/README.md, Each NHTSA "
+             "release, steps 4 and 7)", line=line, month=month)
         covered = round(PREPRINT_LIST["miles"] / vmt[(line, month)], 4)
         must(0 < covered <= 1,
              "the company list's miles exceed a line's miles for the month "
              "the list runs through (PREPRINT_LIST's miles in data/slurp.py "
-             "against that data/vmt.csv row)", line=line, month=month,
+             "against that data/vmt.csv row: data/README.md, Each NHTSA release, step 7)",
+             line=line, month=month,
              listMiles=PREPRINT_LIST["miles"], rowMiles=vmt[(line, month)])
         result[(line, month)] = ((covered, covered, covered), incident,
                                  PREPRINT_LIST["through"])
     return result
 
 
-def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months, list_cov):
-    """Add the coverage columns and incidents_through to the raw VMT CSV text.
+# What a complete row's coverage columns say: every incident of the month is
+# in NHTSA's file (receipt coverage triple, Monthly-track incident coverage
+# triple).
+COMPLETE_COVERAGE = ((1, 1, 1), (1, 1, 1))
 
-    inc_cov: dict from incident_coverage() and monthly_lag_coverage(),
-    mapping (helmer, iso_month) to (best, lo, hi) tuples.  Missing keys
-    default to (1, 1, 1).
-    coverage_by_month: {iso_month: (best, lo, hi)} receipt coverage of the
-    data-through month (release_month_coverage()). Missing months default to
-    (1, 1, 1).
-    active_months: set of ISO months to include — every master month at or
-    before the latest incident month (strictly-future master months are
-    excluded; months with VMT but no incidents stay in).
-    list_cov: preprint_coverage(), the coverage the company list gives its
-    company's lines for the month it runs through.
 
-    A row takes the coverage of whichever source holds more of its
-    incidents (row_coverage()): NHTSA's file (coverage_by_month and inc_cov)
-    or, on a row list_cov names, the company list, by the larger product of
-    the two best values (NHTSA's on a tie). So the list sets a row's coverage
-    only while NHTSA's file holds less of that month than the list does: in
-    the month the list runs through while that is NHTSA's data-through month,
-    and never once NHTSA's file has the month whole. incidents_through is the
-    date the row's incidents run through: NHTSA's receipt cutoff, or the
-    list's date on a row that takes the list's coverage.
+def month_sources(vmt, last_month, list_cov):
+    """What makes each line's crashes of a month a known set with known miles:
+    {(line, iso_month): "nhtsa" or "list"} for the line-months of <vmt>
+    (parse_vmt_values()) that enter the rates; every other line-month at or
+    before the data-through month <last_month> is pending, and the months
+    after it are ghost months.
+      "nhtsa"  NHTSA's file is complete for the line's company and month: the
+               month is before the data-through month and outside the
+               company's Monthly-report lag (month <= last_month - 1 -
+               MONTHLY_ARRIVAL_LAG[company]);
+      "list"   else, the company's own dated list covers it (<list_cov>,
+               preprint_coverage(): each line of the list's company, in the
+               list's month): the list's crashes through its date, over the
+               list's miles.
+    Stops on a list that runs through a month after <last_month> (a month
+    only a list covers has no rule), and on a line with a pending month
+    before a counted one (a lag that leaves a month pending before the month
+    a list covers: the page takes a line's counted months as one run, and
+    how to count such a month has no rule)."""
+    later = sorted({month for _line, month in list_cov if month > last_month})
+    must(not later,
+         "the company list runs through a month after NHTSA's data-through "
+         "month (how to count a month only a list covers is undecided: ask the "
+         "human; data/README.md, Each NHTSA release, step 7)",
+         listMonths=later, dataThrough=last_month, listThrough=PREPRINT_LIST["through"])
+    sources = {key: "list" for key in list_cov}
+    sources.update({(line, month): "nhtsa" for line, month in vmt
+                    if month <= month_shift(last_month, -1 - MONTHLY_ARRIVAL_LAG[SERIES_COMPANY[line]])})
+    counted_after_pending = sorted(
+        (line, pending, counted) for line, counted in sources
+        for other, pending in vmt
+        if other == line and pending < counted and (line, pending) not in sources)
+    must(not counted_after_pending,
+         "a line has a pending month before a month that counts (its "
+         "company's Monthly-report lag leaves the earlier month pending while "
+         "the company list covers the later one; how to count the earlier "
+         "month is undecided: ask the human; data/README.md, Each NHTSA "
+         "release, steps 3 and 7)",
+         lines=[{"line": line, "pending": pending, "counted": counted}
+                for line, pending, counted in counted_after_pending],
+         lag=MONTHLY_ARRIVAL_LAG, listThrough=PREPRINT_LIST["through"])
+    return sources
+
+
+def record_counted(rec, sources):
+    """Whether the lines a record names (<rec>, an in-scope incident's record:
+    its `series`) count it, under <sources> (month_sources()): on a line whose
+    month NHTSA's file completes, every in-scope incident counts; on a
+    list-covered line-month, only the list's own crashes (its Report IDs,
+    TESLA_NO_MONITOR_REPORTS: list_rows()), since only crashes inside a known
+    span count (a reviewed no-monitor addition, or a monitor-aboard report on
+    the every-mode line, is outside it; until 2026-11-21 such a crash stopped
+    the run, check_list_covered_rows(), the case then undecided); on a pending
+    line-month, none. Stops on a record counted on one line and pending on
+    another: a record is counted on every line it names, or it is pending."""
+    month = nhtsa_month_to_iso(rec["date"])
+    source = {line: sources.get((line, month)) for line in rec["series"]}
+    counted = {line: s == "nhtsa" or (s == "list" and rec["reportId"] in TESLA_NO_MONITOR_REPORTS)
+               for line, s in source.items()}
+    must(len(set(counted.values())) == 1,
+         "an incident is counted on one of its lines and pending on another "
+         "(a record counts on every line it names, or on none: ask the human)",
+         reportId=rec["reportId"], month=month, sources=source, counted=counted)
+    return all(counted.values())
+
+
+def build_vmt_csv(raw_text, sources, list_cov):
+    """data/vmt.js's analysis rows, as CSV text: the rows of the raw VMT CSV
+    text whose line-month enters the rates (<sources>, month_sources()), each
+    with its coverage columns and incidents_through.
+
+    A row NHTSA's file completes ("nhtsa") is complete: its six coverage
+    values are 1 (COMPLETE_COVERAGE) and its incidents run through NHTSA's
+    receipt cutoff. A row the company list covers ("list") takes the list's
+    coverage and date (<list_cov>, preprint_coverage()). Every other master
+    row (a pending line-month's, a ghost month's) is written by
+    ghost_vmt_csv(). (Until 2026-11-21 every row at or before the
+    data-through month was written here, the data-through month's and a
+    lagged month's with an estimated coverage, and a row took the list's
+    coverage only where that covered more of the month than NHTSA's
+    estimate did.)
     """
     rows = list(csv.reader(io.StringIO(raw_text)))
     must(len(rows) > 1, "VMT master CSV must include header and rows")
@@ -2411,59 +2391,15 @@ def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months, list_cov)
     for row in rows[1:]:
         if not any(cell.strip() for cell in row):
             continue
-        month = row[1].strip()
-        if month not in active_months:
+        key = (_canonical_helmer(row[0].strip()), row[1].strip())
+        if key not in sources:
             continue
-        line = _canonical_helmer(row[0].strip())
-        ((cov_best, cov_lo, cov_hi), (ic_best, ic_lo, ic_hi), through), _listed = row_coverage(
-            line, month, inc_cov, coverage_by_month, list_cov)
+        (cov_best, cov_lo, cov_hi), (ic_best, ic_lo, ic_hi), through = (
+            list_cov[key] if sources[key] == "list" else (*COMPLETE_COVERAGE, NHTSA_DATA_THROUGH_DATE))
         nums, rationale = _vmt_master_cells(row)
         writer.writerow([row[0], row[1], *nums, cov_best, cov_lo, cov_hi,
                          ic_best, ic_lo, ic_hi, through, rationale])
     return out_buf.getvalue().rstrip("\n")
-
-
-def row_coverage(line, month, inc_cov, coverage_by_month, list_cov):
-    """The coverage <line>'s data/vmt.js row for <month> takes (build_vmt_csv()'s
-    other arguments): ((receipt coverage triple, Monthly-track incident
-    coverage triple, the date the row's incidents run through), whether that
-    is the company list's). It is the list's (<list_cov>, preprint_coverage())
-    where the list holds more of the row's incidents than NHTSA's file does,
-    by the product of the two best values, and NHTSA's otherwise (on a tie
-    too). Until 2026-11-20 build_vmt_csv() chose by itself."""
-    nhtsa = (coverage_by_month.get(month, (1, 1, 1)),
-             inc_cov.get((SERIES_COMPANY[line], month), (1, 1, 1)),
-             NHTSA_DATA_THROUGH_DATE)
-    listed = list_cov.get((line, month), nhtsa)
-    from_list = listed[0][0] * listed[1][0] > nhtsa[0][0] * nhtsa[1][0]
-    return (listed if from_list else nhtsa), from_list
-
-
-def check_list_covered_rows(incidents, inc_cov, coverage_by_month, list_cov):
-    """Stop the run unless every incident among <incidents> (the records being
-    written) that counts on a row taking the company list's coverage
-    (row_coverage(); the other arguments build_vmt_csv()'s) is one of the
-    list's reports (TESLA_NO_MONITOR_REPORTS, its Report IDs: list_rows()).
-    That coverage fits the list's own crashes: the list's miles through its
-    date, less an allowance for the crashes its company files late. A crash
-    the list lacks there (a reviewed no-monitor addition, or a monitor-aboard
-    report on the every-mode line, whose miles that coverage counts as
-    uncovered) has no rule yet."""
-    unlisted = sorted({(series, nhtsa_month_to_iso(rec["date"]), rec["reportId"])
-                       for rec in incidents for series in rec["series"]
-                       if (series, nhtsa_month_to_iso(rec["date"])) in list_cov
-                       and rec["reportId"] not in TESLA_NO_MONITOR_REPORTS
-                       and row_coverage(series, nhtsa_month_to_iso(rec["date"]),
-                                        inc_cov, coverage_by_month, list_cov)[1]})
-    must(not unlisted,
-         "a row that takes Tesla's list's coverage (the month the list runs "
-         "through, while the list holds more of it than NHTSA's file) counts "
-         "crashes the list does not hold: that coverage fits the list's own "
-         "crashes (its miles through its date, less an allowance for crashes "
-         "Tesla files late), and how to count another crash there is undecided "
-         "(ask the human: data/README.md, Each NHTSA release, step 7)",
-         rows=[{"line": line, "month": month, "reportId": rid} for line, month, rid in unlisted],
-         listThrough=PREPRINT_LIST["through"], dataThrough=NHTSA_DATA_THROUGH_DATE)
 
 
 def _vmt_master_cells(row):
@@ -2476,23 +2412,30 @@ def _vmt_master_cells(row):
     comma without a word.
     """
     nums = [cell.strip().replace(",", "") for cell in row[2:8]]
-    must(len(row) == 9, "VMT master row must have exactly 9 cells",
+    must(len(row) == 9, "VMT master row must have exactly 9 cells "
+         "(data/README.md, Each NHTSA release, step 4)",
          helmer=row[0], month=row[1].strip(), cells=len(row))
     return nums, row[8]
 
 
-def ghost_vmt_csv(raw_text, last_month, run_month):
-    """The master rows of the ghost months, as CSV text for data/vmt.js.
+def ghost_vmt_csv(raw_text, last_month, run_month, analysis):
+    """The master rows data/vmt.js's second segment holds, as CSV text: every
+    row that is not an analysis row (<analysis>: the (line, month)s
+    build_vmt_csv() writes, month_sources()'s keys), as it stands in the
+    master. They are the pending line-months' rows (months at or before the
+    data-through month <last_month> whose reports are still arriving and that
+    no dated list covers) and the ghost months'.
 
-    A ghost month is a month after the data-through month (last_month) for
-    which the master holds rows: the month in progress, or a finished month
-    no NHTSA release has reached. The VMT charts draw these rows faded; no
-    rate uses them until a release brings the month's incidents. The master
-    must hold the month after last_month (so each release brings the next
-    month's estimate), each ghost month must carry a row for every line with
-    a row in last_month, and no row may be for a month after run_month, the
-    month slurp runs in: a VMT row records miles already driven, estimated
-    or measured (forecasts live in crashla.js's MILES_FORECAST).
+    A ghost month is a month after last_month for which the master holds
+    rows: the month in progress, or a finished month no NHTSA release has
+    reached. The VMT charts draw both kinds of row faded; no rate uses a
+    month's miles until its reports are complete or a list covers it. The
+    master must hold the month after last_month (so each release brings the
+    next month's estimate), each ghost month must carry a row for every line
+    with a row in last_month, and no row may be for a month after run_month,
+    the month slurp runs in: a VMT row records miles already driven,
+    estimated or measured (forecasts live in crashla.js's MILES_FORECAST).
+    (Until 2026-11-21 the segment held the ghost months only.)
     """
     rows = [r for r in csv.reader(io.StringIO(raw_text))
             if any(cell.strip() for cell in r)]
@@ -2519,10 +2462,15 @@ def ghost_vmt_csv(raw_text, last_month, run_month):
              "a ghost month must have a row for every line that has one in "
              "the data-through month (data/README.md, Each NHTSA release, step 4)", month=month,
              missing=sorted(lines - have), extra=sorted(have - lines))
+    must(all(month <= last_month for _line, month in analysis),
+         "an analysis row is for a month after the data-through month",
+         months=sorted({month for _line, month in analysis if month > last_month}))
     out_buf = io.StringIO()
     writer = csv.writer(out_buf, lineterminator="\n")
     writer.writerow(header)
-    for row in ghost:
+    for row in body:
+        if (_canonical_helmer(row[0].strip()), row[1].strip()) in analysis:
+            continue
         nums, rationale = _vmt_master_cells(row)
         writer.writerow([row[0], row[1], *nums, rationale])
     return out_buf.getvalue().rstrip("\n")
@@ -2578,6 +2526,48 @@ EXPECTED_SEVERITIES = {
     "Serious W/ Hospitalization",
     "Fatality",
 }
+# Each Roadway Type's class, "road" or "parking" (a parking facility): the one
+# reviewed table of them (2026-11-21; audit A11 of 2026-11-20, the human's "ok
+# on all 3"). It lists every Roadway Type on a row that passes main()'s
+# validation loop in any file of data/snapshots (Waymo's, Tesla's and Zoox's
+# in-scope crashes have filed seven of them; "Rural Road" and "Unpaved Road"
+# are on other rows the loop validates: VinFast 33257-8867, and Waymo
+# 30270-16201, filed with a test driver aboard). main() stops on a value it
+# lacks, as on a new severity, and writes the table into data/incidents.js
+# (ROADWAY_CLASS there), where crashla.js reads it: a moving crash counts in
+# the nonstationary non-parking-lot metric when its Roadway Type's class is
+# "road", and the page refuses a record whose type the table lacks. The
+# metric's human bands cover roadway crashes only (crashla.js METRIC_DEFS,
+# roadwayNonstationary), so a parking facility's crashes stay out on the AV
+# side too. Until 2026-11-21 the page left out only the literal "Parking Lot"
+# and nothing listed the values: "Parking Garage", new in NHTSA's Oct-15-2026
+# file (one out-of-scope row; five rows on Nov 16), entered the metric as a
+# road without a word (in scope: 30270-16350, AUG-2026, a garage entrance's
+# barrier arm at 1 mph, and three 0-mph crashes that no nonstationary metric
+# counts, 30270-17031, 30610-17186 and 30610-17187).
+# The filed value is taken as it is (data/README.md, pipeline step 9: no
+# Roadway Type is overridden); this table only classes it.
+ROADWAY_CLASS = {
+    "Street": "road",
+    "Intersection": "road",
+    "Highway / Freeway": "road",
+    "Traffic Circle": "road",
+    "Rural Road": "road",
+    "Unpaved Road": "road",
+    # A crash whose road type NHTSA's row leaves unknown counts as a road
+    # crash, the cautious reading (the human, 2026-11-21): on the
+    # non-parking-lot metric it can only add an incident, so it can only lower
+    # an AV's miles per incident. In scope today: 30270-9420 (NOV-2024, 3 mph,
+    # a passenger drop-off lane), which the metric counts, and 30270-15631
+    # (JUN-2026, parked in a hotel loading zone, 0 mph), which no
+    # nonstationary metric does.
+    "Unknown": "road",
+    "Parking Lot": "parking",
+    "Parking Garage": "parking",
+}
+must(set(ROADWAY_CLASS.values()) == {"road", "parking"},
+     "ROADWAY_CLASS must give each Roadway Type the class road or parking",
+     classes=sorted(set(ROADWAY_CLASS.values())))
 # All reporting entities in the NHTSA ADS CSV (current + archive).
 # Anti-Postel: if NHTSA adds a new reporting entity, we want to crash and review.
 # Being listed here only means "known to NHTSA and classified by a human" -- it
@@ -2746,6 +2736,8 @@ must(all(len(v) == 2 and set(v) <= EXPECTED_SEVERITIES and v[1] != "Unknown"
 must(all(len(v) == 2 and isinstance(v[0], str) and isinstance(v[1], bool)
          for v in AIRBAG_OVERRIDE.values()),
      "AIRBAG_OVERRIDE entries must be (reviewed filed value, deployed)")
+must(not set(AIRBAG_OVERRIDE) & set(AIRBAG_LANGUAGE_REVIEWED),
+     "a report's airbag value is both overridden and kept as filed")
 must(not set(SUPERSEDED_REPORTS) & (set(SUPERSEDED_REPORTS.values())
                                     | SPLIT_SAME_INCIDENT_REPORTS),
      "a replaced report (SUPERSEDED_REPORTS) cannot stand for another or be "
@@ -2937,12 +2929,11 @@ must(all(isinstance(entry, tuple) and len(entry) == 2
 # Tesla's no-monitor service began Jan 22, 2026; its safety page counts miles
 # and crashes from that day, so no report before this month is on the line.
 TESLA_NO_MONITOR_FROM = "2026-01"
-# Each line the page plots and the company whose reports and coverage it uses:
-# each company is its own; TeslaNoMonitor is Tesla's subset. Its data/vmt.csv
-# rows ("teslanomonitor") carry Tesla's no-monitor miles; build_vmt_csv gives
-# them Tesla's coverage (NHTSA's, or the company list's where that holds more
-# of the month: preprint_coverage()), and the pooled incident coverage counts
-# companies only.
+# Each line the page plots and the company whose reports it uses: each company
+# is its own; TeslaNoMonitor is Tesla's subset. Its data/vmt.csv rows
+# ("teslanomonitor") carry Tesla's no-monitor miles, and its months count when
+# Tesla's do: when NHTSA's file is complete for Tesla, or Tesla's list covers
+# the month (month_sources()).
 SERIES_COMPANY = {"Waymo": "Waymo", "Tesla": "Tesla", "Zoox": "Zoox",
                   "TeslaNoMonitor": "Tesla"}
 # A derived line's member reports: (company, a function giving its reviewed
@@ -3148,16 +3139,37 @@ def check_teleop_classified(row):
          narrative=row["Narrative"][:300])
 
 
+def check_passenger_reviews(filed):
+    """Stop the run unless each PASSENGER_OVERRIDE entry among <filed>
+    ({Report ID: the "Were All Passengers Belted?" value its report's latest
+    filing gives}) was reviewed against that value: a re-filing must be
+    re-read, and so must a preprint once NHTSA's row has taken its place (its
+    entry was reviewed against the list's blank, the list having no belt
+    field). One stop lists every such entry (since 2026-11-21, audit finding
+    A46 of 2026-11-20; until then reviewed_belted() stopped on the first, a
+    run for each report, and its message named a re-filing only, though at
+    the release that publishes the preprints the cause is step 7's)."""
+    changed = [{"reportId": rid, "reviewed": PASSENGER_OVERRIDE[rid][0], "filed": value}
+               for rid, value in sorted(filed.items())
+               if rid in PASSENGER_OVERRIDE and PASSENGER_OVERRIDE[rid][0] != value]
+    must(not changed,
+         "PASSENGER_OVERRIDE was reviewed against a different filed "
+         "passenger value (the report was re-filed, or NHTSA's row has "
+         "replaced a preprint, whose entry was reviewed against the list's "
+         "blank; re-read its narrative: "
+         "data/README.md, Each NHTSA release, step 6, or step 7 for a "
+         "replaced preprint)",
+         reports=changed)
+
+
 def reviewed_belted(rid, filed):
     """The passenger code to store for report <rid>, whose filing says
-    <filed>: its PASSENGER_OVERRIDE entry if it has one, else <filed>."""
-    reviewed, applied = PASSENGER_OVERRIDE.get(rid, (filed, filed))
-    must(reviewed == filed,
-         "PASSENGER_OVERRIDE was reviewed against a different filed "
-         "passenger value (the report was re-filed; re-read its narrative: "
-         "data/README.md, Each NHTSA release, step 6)",
-         reportId=rid, reviewed=reviewed, filed=filed)
-    return applied
+    <filed>: its PASSENGER_OVERRIDE entry if it has one, else <filed>. Stops
+    on an entry reviewed against another filed value
+    (check_passenger_reviews(), which main() first runs over every incident
+    at once)."""
+    check_passenger_reviews({rid: filed})
+    return PASSENGER_OVERRIDE.get(rid, (filed, filed))[1]
 
 
 def check_passengers_reviewed(incidents):
@@ -3201,6 +3213,28 @@ def check_occupancy_classified(row):
          "OCCUPANCY_LANGUAGE_REVIEWED with the words that show the filed code "
          "stands: data/README.md, Each NHTSA release, step 6)", reportId=rid, filed=filed, stated=sorted(stated),
          narrative=row["Narrative"][:300])
+
+
+def check_airbag_classified(row, crash):
+    """Stop the run on an in-scope incident whose narrative mentions an airbag
+    (AIRBAG_PATTERN) while its filed "Any Air Bags Deployed?" marks no
+    deployment (it holds no "Yes"), until a human classifies its crash's
+    report <crash> (the row's own Report ID; for a second AV's row, the report
+    that files it, as for the field overrides): an AIRBAG_OVERRIDE entry if
+    the narrative says an airbag deployed, else AIRBAG_LANGUAGE_REVIEWED with
+    the words that show the filed value stands. <row> is the incident's
+    surviving (latest) filing."""
+    mentions = [row["Narrative"][max(0, m.start() - 200):m.end() + 100]
+                for m in AIRBAG_PATTERN.finditer(row["Narrative"])]
+    flagged = len(mentions) > 0 and "Yes" not in row["Any Air Bags Deployed?"]
+    must(not flagged or crash in AIRBAG_OVERRIDE or crash in AIRBAG_LANGUAGE_REVIEWED,
+         "the narrative mentions an airbag and the filed Any Air Bags Deployed? "
+         "marks no deployment (read the narrative; if it says an airbag "
+         "deployed, in any vehicle, add an AIRBAG_OVERRIDE entry in "
+         "data/slurp.py, else list the report in AIRBAG_LANGUAGE_REVIEWED with "
+         "the words that show the filed value stands: data/README.md, Each "
+         "NHTSA release, step 6)",
+         reportId=crash, filed=row["Any Air Bags Deployed?"].strip(), mentions=mentions)
 
 
 def check_second_av_classified(row):
@@ -3278,9 +3312,11 @@ def reviewed_quotes():
     SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN), whose filed passenger code stands
     against their narrative (OCCUPANCY_LANGUAGE_REVIEWED), how many
     vehicles a crash involved (VEHICLES_INVOLVED, the words of its (count,
-    words) entries), and whether a Tesla report Tesla's latest list does not
+    words) entries), whether a Tesla report Tesla's latest list does not
     hold had a safety monitor aboard (TESLA_NO_MONITOR_ADDITIONS,
-    TESLA_MONITOR_ABOARD_REPORTS; since 2026-11-20)."""
+    TESLA_MONITOR_ABOARD_REPORTS; since 2026-11-20), and whose filed airbag
+    value stands though their narrative mentions an airbag
+    (AIRBAG_LANGUAGE_REVIEWED; since 2026-11-21)."""
     return {"TELEOP_DRIVEN_REPORTS": TELEOP_DRIVEN_REPORTS,
             "REMOTE_LANGUAGE_ADS_DRIVEN": REMOTE_LANGUAGE_ADS_DRIVEN,
             "SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN": SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN,
@@ -3289,7 +3325,8 @@ def reviewed_quotes():
                                   in VEHICLES_INVOLVED.items()},
             "TESLA_NO_MONITOR_ADDITIONS": {rid: words for rid, (words, _received)
                                            in TESLA_NO_MONITOR_ADDITIONS.items()},
-            "TESLA_MONITOR_ABOARD_REPORTS": TESLA_MONITOR_ABOARD_REPORTS}
+            "TESLA_MONITOR_ABOARD_REPORTS": TESLA_MONITOR_ABOARD_REPORTS,
+            "AIRBAG_LANGUAGE_REVIEWED": AIRBAG_LANGUAGE_REVIEWED}
 
 
 must(all(isinstance(v, tuple) and len(v) == 2 and isinstance(v[0], int)
@@ -3309,8 +3346,9 @@ def check_reviewed_quotes(rows):
     re-filing that drops them must be re-read before the entry applies again
     (TELEOP_DRIVEN_REPORTS since 2026-10-31, open question 10's
     reviewed-value rule for the table that takes reports out of scope; the
-    next four since 2026-11-02, open question 26(b) and (c); the two Tesla
-    monitor tables since 2026-11-20, audit finding A1)."""
+    next three and VEHICLES_INVOLVED since 2026-11-02, open question 26(b)
+    and (c); the two Tesla monitor tables since 2026-11-20, audit finding A1;
+    AIRBAG_LANGUAGE_REVIEWED since 2026-11-21, audit finding A7)."""
     latest = latest_filings(rows)
     stale = {name: sorted(rid for rid, words in table.items()
                           if rid not in latest or words not in latest[rid]["Narrative"])
@@ -3587,8 +3625,8 @@ def main():
     release_rows = rows
     # The preprints: the company list's rows NHTSA's files do not hold
     # (PREPRINT_LIST). They take every check below as NHTSA's rows do;
-    # release_rows, which the receipt and arrival statistics read, stays
-    # NHTSA's alone.
+    # release_rows, from which the newest submission month is read, stays
+    # NHTSA's alone, and so do the Monthly-report arrival counts.
     preprints = preprint_rows(rows)
     nhtsa_last_modified, _etag = nhtsa_headers[NHTSA_ADS_CSV_URL]
     nhtsa_modified_date = modified_date_from_last_modified(nhtsa_last_modified)
@@ -3645,22 +3683,33 @@ def main():
              "EXPECTED_SEVERITIES in data/slurp.py and in crashla.js's "
              "SEVERITY_INFO: data/README.md, Each NHTSA release, step 6)",
              row=i, value=sev, expected=sorted(EXPECTED_SEVERITIES))
+        road = r["Roadway Type"].strip()
+        must(road in ROADWAY_CLASS,
+             "unexpected Roadway Type (read the reports that file it and give "
+             "it its class, road or parking, in ROADWAY_CLASS in "
+             "data/slurp.py: data/README.md, Each NHTSA release, step 6)",
+             row=i, reportId=r["Report ID"], value=road,
+             expected=sorted(ROADWAY_CLASS))
         must(INCIDENT_DATE_RE.match(idate),
-             "unexpected Incident Date format", row=i, value=idate)
+             "unexpected Incident Date format (data/README.md, Each NHTSA release, step 6)",
+             row=i, value=idate)
         abbr = idate.split("-")[0]
         must(abbr in MONTH_ABBR_TO_NUM,
-             "unknown month abbreviation in Incident Date", row=i, value=idate)
+             "unknown month abbreviation in Incident Date (data/README.md, Each NHTSA release, step 6)",
+             row=i, value=idate)
         sub = r["Report Submission Date"].strip()
         if sub:
             must(SUBMISSION_DATE_RE.match(sub),
-                 "unexpected Report Submission Date format", row=i, value=sub)
+                 "unexpected Report Submission Date format (data/README.md, Each NHTSA release, step 6)",
+                 row=i, value=sub)
             sub_abbr = sub.split("-")[0]
             must(sub_abbr in MONTH_ABBR_TO_NUM,
-                 "unknown month abbreviation in Submission Date", row=i,
-                 value=sub)
+                 "unknown month abbreviation in Submission Date (data/README.md, Each NHTSA release, step 6)",
+                 row=i, value=sub)
         ver = r["Report Version"].strip()
         must(ver.isdigit() and int(ver) >= 1,
-             "Report Version must be positive integer", row=i, value=ver)
+             "Report Version must be positive integer (data/README.md, Each NHTSA release, step 6)",
+             row=i, value=ver)
         valid_rows.append(r)
     rows = valid_rows
     check_superseded_reviewed(rows)
@@ -3675,8 +3724,8 @@ def main():
     # (SECOND_INVOLVEMENTS; decision #47). An entry's "_crash" is the report
     # whose crash-level fields and overrides its record takes, its "_fields"
     # what the record adds: `preprint` on a company list's row (PREPRINT_LIST),
-    # `secondOf` on a second AV. The receipt and Monthly-track coverage counts
-    # read NHTSA's filings themselves (they measure when reports arrive).
+    # `secondOf` on a second AV. The Monthly-report arrival counts read
+    # NHTSA's filings themselves (they measure when reports arrive).
     in_scope = public_service_incidents(rows)
     by_incident = {r["Report ID"]: {
         "_row": r, "_crash": r["Report ID"],
@@ -3709,12 +3758,6 @@ def main():
          "covering these months to data/vmt.csv, then re-run slurp.py "
          "(data/README.md, Each NHTSA release, step 4).",
          stale_months={m: sorted(rids) for m, rids in sorted(stale.items())})
-
-    # The ghost months' rows (ghost_vmt_csv): the master's months after
-    # NHTSA's data-through month; release_month_coverage below checks that
-    # the reviewed date's month is the data's.
-    run_month = f"{run_stamp[:4]}-{run_stamp[4:6]}"
-    ghost_text = ghost_vmt_csv(vmt_raw, NHTSA_DATA_THROUGH_DATE[:7], run_month)
 
     # The fault judgments: their values (on the 0.05 grid, in range) and that
     # every row is still an in-scope incident, checked now; data/faultfrac.csv
@@ -3750,14 +3793,21 @@ def main():
          "of the release's cutoff: data/README.md, Each NHTSA release, step 1)",
          submission_month=max(submission_months), last_month=last_month)
     vmt_values = parse_vmt_values(vmt_raw)
-    track_counts = monthly_track_counts(
-        [r for r in rows if r["Report Type"].strip() != PREPRINT_REPORT_TYPE])
-    last_month_coverage = release_month_coverage(
-        NHTSA_DATA_THROUGH_DATE, last_month, track_counts, vmt_values)
-    coverage_by_month = {last_month: last_month_coverage}
-    # The months inside a helmer's extra Monthly-report lag, checked against
-    # this release (MONTHLY_ARRIVAL_LAG).
-    lag_coverage = monthly_lag_coverage(track_counts, last_month)
+    check_data_through_month(NHTSA_DATA_THROUGH_DATE, last_month)
+    # The Monthly-report arrival tables, checked against this release: each
+    # helmer's lag decides which of its months are complete (month_sources()).
+    check_monthly_arrivals(
+        monthly_track_counts([r for r in rows if r["Report Type"].strip() != PREPRINT_REPORT_TYPE]),
+        last_month)
+    # Which line-months enter the rates: those NHTSA's file completes and
+    # those the company list covers; the rest at or before the data-through
+    # month are pending. Their rows go in data/vmt.js's two segments: the
+    # analysis rows, and the pending rows with the ghost months' (the master's
+    # months after the data-through month, which ghost_vmt_csv() checks).
+    list_cov = preprint_coverage(vmt_values)
+    sources = month_sources(vmt_values, last_month, list_cov)
+    run_month = f"{run_stamp[:4]}-{run_stamp[4:6]}"
+    ghost_text = ghost_vmt_csv(vmt_raw, last_month, run_month, set(sources))
 
     window_by_incident = {}
     excluded_count = 0
@@ -3770,6 +3820,11 @@ def main():
     if excluded_count > 0:
         print(f"Excluded {excluded_count} incidents outside VMT window")
 
+    # Every PASSENGER_OVERRIDE entry reviewed against another filed value, in
+    # one stop, before the loop below reads each incident's (reviewed_belted()).
+    check_passenger_reviews({entry["_row"]["Report ID"].strip():
+                             entry["_row"]["Were All Passengers Belted?"].strip()
+                             for entry in window_by_incident.values()})
     incidents = []
     for iid, entry in window_by_incident.items():
         r = entry["_row"]
@@ -3787,11 +3842,22 @@ def main():
         rid = rec["reportId"]
         # Shorten helmer name
         rec["helmer"] = HELMER_SHORT.get(rec["helmer"], rec["helmer"])
-        # Parse speed as number
-        try:
-            rec["speed"] = int(rec["speed"])
-        except (ValueError, TypeError):
-            rec["speed"] = None
+        # The speed as a number, None where the filing gives none (the page's
+        # "unknown" bin, which counts as nonstationary). Any other value
+        # stops the run: until 2026-11-21 it was stored as None too, so a
+        # stopped AV's speed filed as "0.0" would have entered both
+        # nonstationary metrics (audit finding A23 of 2026-11-20). No row of
+        # any file in data/snapshots, of any company, files one (every speed
+        # there is blank or a whole number), and list_row() holds a company
+        # list's speed to a whole number already.
+        must(re.fullmatch(r"[0-9]*", rec["speed"]) is not None,
+             "SV Precrash Speed (MPH) is neither blank nor a whole number of "
+             "miles per hour (the page reads a missing speed as unknown, which "
+             "counts as nonstationary: read the report in the newest snapshot "
+             "and ask the human how to store its speed: data/README.md, Each "
+             "NHTSA release, step 6)",
+             reportId=rid, value=rec["speed"])
+        rec["speed"] = None if rec["speed"] == "" else int(rec["speed"])
         # Convert airbag field to boolean (any vehicle deployment), or store
         # the reviewed AIRBAG_OVERRIDE value
         filed_airbag = rec["airbagAny"]
@@ -3803,6 +3869,7 @@ def main():
              "and update the entry in data/slurp.py: data/README.md, Each "
              "NHTSA release, step 6)",
              reportId=rid, reviewed=reviewed_airbag, filed=filed_airbag)
+        check_airbag_classified(r, crash)
         nar = rec["narrative"]
         # One Tesla filing (13781-15342) arrived wrapped in "[Summary: ...]"
         # brackets; unwrap before the prefix strips below can match.
@@ -3861,7 +3928,30 @@ def main():
              "LOCATION_OVERRIDE entry in data/slurp.py with the place it "
              "names: data/README.md, Each NHTSA release, step 6)",
              reportId=rid, filed=filed_loc)
-        check_occupancy_classified(r)
+        # A severity and a narrative too (since 2026-11-21, audit finding A23
+        # of 2026-11-20): the page refuses a record with no severity, so one
+        # written here left it showing only its error banner, and a blank
+        # narrative passes every narrative review above unread. (A blank
+        # Roadway Type stops the validation loop: ROADWAY_CLASS.) No in-scope
+        # filing in data/snapshots has either blank.
+        must(rec["severity"] and rec["narrative"],
+             "in-scope incident with a blank severity or narrative (the page "
+             "refuses a record with no severity, and a blank narrative passes "
+             "every narrative review unread: read the report in the newest "
+             "snapshot; a blank severity takes a SEVERITY_OVERRIDE entry in "
+             "data/slurp.py from its narrative, as an Unknown one does; a "
+             "blank narrative has no rule: ask the human: data/README.md, "
+             "Each NHTSA release, step 6)",
+             reportId=rid, severity=rec["severity"], narrative=rec["narrative"][:300])
+        # The occupancy tripwire reads the crash's own report: its narrative
+        # against its filed code. A second AV's record (SECOND_INVOLVEMENTS)
+        # carries that report's narrative, which speaks of the reporting AV's
+        # passengers (30270-11224: "The passenger in the moving Waymo AV was
+        # not belted", the stopped Waymo's own code Unknown), under the
+        # passenger code its reviewed entry gives, so its report is read again
+        # here, not its own row (since 2026-11-21, when the tripwire took in
+        # "not belted"; until then no second AV's narrative tripped it).
+        check_occupancy_classified(by_incident[crash]["_row"])
         rec["belted"] = reviewed_belted(rid, rec["belted"])
         rec["series"] = incident_series(rec["helmer"], rid, nhtsa_month_to_iso(rec["date"]))
         rec.update(entry["_fields"])
@@ -3893,27 +3983,20 @@ def main():
         r["time"],
     ))
 
-    # Compute conditional pooled incident coverage before building VMT CSV.
-    # Compare last month's observed rate to the reference month's rate.
-    window_rows = [
-        r for r in release_rows
-        if not r.get("Incident Date", "").strip() or
-        nhtsa_month_to_iso(r["Incident Date"].strip()) in vmt_months
-    ]
     check_series_have_vmt(incidents, vmt_values)
-    inc_cov = incident_coverage(
-        window_rows, last_month, last_month_coverage[0], vmt_values)
-    must(not set(inc_cov) & set(lag_coverage),
-         "a helmer-month has both the pooled and the Monthly-lag coverage",
-         both=sorted(set(inc_cov) & set(lag_coverage)))
-    inc_cov = {**inc_cov, **lag_coverage}
-    list_cov = preprint_coverage(vmt_values)
-    check_list_covered_rows(incidents, inc_cov, coverage_by_month, list_cov)
+    # The records the rates count, and the pending ones: the in-scope
+    # incidents of pending line-months, and the crashes of a list-covered
+    # month that the list lacks (record_counted()). Both arrays are written:
+    # the pending records have had every check and rating above, so nothing
+    # changes for them at the release that completes their month.
+    counted = [rec for rec in incidents if record_counted(rec, sources)]
+    pending = [rec for rec in incidents if not record_counted(rec, sources)]
 
     # Inject data into separate JS files
-    incident_json = "\n" + json.dumps(incidents, indent=2) + "\n"
+    incident_json = "\n" + json.dumps(counted, indent=2) + "\n"
+    pending_json = "\n" + json.dumps(pending, indent=2) + "\n"
     vmt_text = build_vmt_csv(
-        vmt_raw, inc_cov, coverage_by_month, vmt_months, list_cov,
+        vmt_raw, sources, list_cov,
     ).replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
     vmt_template = "\n`" + js_template_literal(vmt_text) + "\n`\n"
     ghost_template = "\n`" + js_template_literal(ghost_text) + "\n`\n"
@@ -3939,9 +4022,16 @@ def main():
     inc_js = inject(inc_js,
                     "/* NHTSA_DATA_THROUGH_DATE_START */", "/* NHTSA_DATA_THROUGH_DATE_END */",
                     f'"{NHTSA_DATA_THROUGH_DATE}"')
+    # The page's copy of ROADWAY_CLASS, each Roadway Type's class.
+    inc_js = inject(inc_js,
+                    "/* ROADWAY_CLASS_START */", "/* ROADWAY_CLASS_END */",
+                    "\n" + json.dumps(ROADWAY_CLASS, indent=2) + "\n")
     inc_js = inject(inc_js,
                     "/* INCIDENT_DATA_START */", "/* INCIDENT_DATA_END */",
                     incident_json)
+    inc_js = inject(inc_js,
+                    "/* PENDING_INCIDENT_DATA_START */", "/* PENDING_INCIDENT_DATA_END */",
+                    pending_json)
     with open(VMT_JS) as f:
         vmt_js = f.read()
     vmt_js = inject(vmt_js,
@@ -3960,21 +4050,29 @@ def main():
         f.write(vmt_js)
 
     # Summary
-    counts = Counter(r["helmer"] for r in incidents)
-    total = len(incidents)
+    counts = Counter(r["helmer"] for r in counted)
+    total = len(counted)
     print(f"NHTSA file last modified: {nhtsa_modified_date}")
     print(f"NHTSA incident data through: {NHTSA_DATA_THROUGH_DATE}")
-    ghost_months = sorted({r[1] for r in csv.reader(io.StringIO(ghost_text))} - {"month"})
+    pending_months = sorted(f"{line} {month}" for line, month in vmt_values
+                            if month <= last_month and (line, month) not in sources)
+    print(f"Pending line-months (reports still arriving; VMT drawn faded, in no rate): {', '.join(pending_months) or 'none'}")
+    listed_months = sorted(f"{line} {month}" for (line, month), source in sources.items() if source == "list")
+    print(f"Line-months the company list covers (through {PREPRINT_LIST['through']}): {', '.join(listed_months) or 'none'}")
+    ghost_months = sorted({month for _line, month in vmt_values if month > last_month})
     print(f"Ghost months (VMT drawn faded, in no rate): {', '.join(ghost_months)}")
     print(f"Updated {relpath(INCIDENT_JS)} and {relpath(VMT_JS)}")
     print(f"Total incidents: {total}")
     for helmer, n in counts.most_common():
         print(f"  {helmer}: {n}")
+    print(f"Pending incidents (listed, counted on no line): {len(pending)}")
+    for helmer, n in Counter(r["helmer"] for r in pending).most_common():
+        print(f"  {helmer}: {n}")
 
     # Passenger occupancy summary per helmer
     print("\nPassenger occupancy at time of incident:")
     for helmer in sorted(counts):
-        co_incidents = [r for r in incidents if r["helmer"] == helmer]
+        co_incidents = [r for r in counted if r["helmer"] == helmer]
         n = len(co_incidents)
         # Same three classes as crashla.js PAX_NONE / PAX_UNKNOWN / PAX_PRESENT
         # (PAX_CLASS; both no-passenger encodings count as no passenger).

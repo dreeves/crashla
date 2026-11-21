@@ -6,8 +6,15 @@ import { appScript, dataScript } from "./load-app.mjs";
 // Master-to-app fidelity: every row of data/vmt.csv (the editable VMT master)
 // must flow through data/slurp.py into data/vmt.js and from there into the
 // rendered per-helmer charts unchanged — same central VMT, same min/max
-// range, same cumulative, same rationale. The only master rows allowed to be
-// absent from the app are future months awaiting NHTSA incident data.
+// range, same cumulative, same rationale. Every master row is in exactly one
+// of data/vmt.js's two segments: the analysis rows (the line-months the
+// rates count), or the second segment (the pending line-months, whose
+// reports are still arriving, and the ghost months after NHTSA's
+// data-through month; which row goes where is quals/pending-months.qual.mjs's
+// to check). Both reach the VMT charts, the second segment's drawn faded.
+// (Until 2026-11-21 this qual loaded the analysis rows only and allowed a
+// master row to be absent from them when its month was after the last
+// incident month; a pending row is at or before it.)
 
 // --- Minimal CSV parser (handles quoted fields with commas) ---
 function parseCsv(text) {
@@ -95,6 +102,7 @@ vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 const rendered = JSON.parse(JSON.stringify(vm.runInContext(`
 incidents = INCIDENT_DATA;
 vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
 monthRangeStart = 0;
 monthRangeEnd = Infinity;
 // Enable every ADS line (the companies and Tesla's no-monitor line) so every
@@ -115,16 +123,14 @@ vmtCumulative = false;
 ({
   months: fullMonthSeries.months,
   perHelmer,
-  vmtJsRows: vmtRows.map(r => ({
+  vmtJsRows: [...vmtRows.map(r => ({...r, segment: "analysis"})), ...ghostVmtRows.map(r => ({...r, segment: "second"}))].map(r => ({
     helmer: r.helmer, month: r.month, vmt: r.vmtBest, cume: r.vmtCume,
-    lo: r.vmtMin, hi: r.vmtMax, coverage: r.coverage, rationale: r.rationale,
+    lo: r.vmtMin, hi: r.vmtMax, rationale: r.rationale, segment: r.segment,
   })),
 })
 `, ctx)));
 
-const cutoff = rendered.months[rendered.months.length - 1];
-
-// --- 1. vmt.js rows match the master row-for-row on shared months ---
+// --- 1. vmt.js rows, of both segments, match the master row-for-row ---
 const masterByKey = Object.fromEntries(master.map(r => [`${r.helmer}|${r.month}`, r]));
 for (const r of rendered.vmtJsRows) {
   const key = `${r.helmer.toLowerCase()}|${r.month}`;
@@ -141,16 +147,15 @@ Expectata: vmt/cumulative/min/max/rationale identical after slurp.
 Resultata: master ${JSON.stringify(m)} vs generated ${JSON.stringify(r)}.`);
 }
 
-// --- 2. Master rows absent from vmt.js are strictly-future months ---
-const generatedKeys = new Set(
-  rendered.vmtJsRows.map(r => `${r.helmer.toLowerCase()}|${r.month}`));
-for (const m of master) {
-  if (generatedKeys.has(`${m.helmer}|${m.month}`)) continue;
-  assert.ok(m.month > cutoff,
-    `Replicata: find master row ${m.helmer} ${m.month} in vmt.js.
-Expectata: only months after the last incident month (${cutoff}) may be absent.
-Resultata: ${m.helmer} ${m.month} is missing despite being in range.`);
-}
+// --- 2. Every master row is in exactly one segment of vmt.js ---
+const segmentsOf = {};
+for (const r of rendered.vmtJsRows) (segmentsOf[`${r.helmer.toLowerCase()}|${r.month}`] ??= []).push(r.segment);
+const misplaced = master.map(m => `${m.helmer}|${m.month}`).filter(key => (segmentsOf[key] || []).length !== 1)
+  .map(key => `${key}: ${JSON.stringify(segmentsOf[key] || [])}`);
+assert.deepEqual(misplaced, [],
+  `Replicata: find each row of data/vmt.csv in data/vmt.js's two segments (the analysis rows and the second segment).
+Expectata: each in exactly one.
+Resultata: ${misplaced.length} rows in none or in both: ${misplaced.slice(0, 8).join(", ")}.`);
 
 // --- 3. Rendered charts show master values verbatim, in BOTH view modes ---
 // Each datapoint's tooltips open with its month, then its miles: the dot
@@ -170,8 +175,9 @@ for (const h of Object.keys(rendered.perHelmer)) parsed[h] = {
   monthly: milesByMonth(rendered.perHelmer[h].monthly),
   cumulative: milesByMonth(rendered.perHelmer[h].cumulative),
 };
-const inRange = master.filter(m => m.month <= cutoff);
-for (const m of inRange) {
+// The full history ends at the slider's last month, so each line's chart
+// runs on through its faded months: every master row is drawn.
+for (const m of master) {
   const p = parsed[adsName(m.helmer)];
   const monthlySet = p.monthly[m.month] || new Set();
   const cumSet = p.cumulative[m.month] || new Set();
@@ -195,17 +201,21 @@ Resultata: tooltips had ${JSON.stringify([...cumSet])}.`);
 // monthSeriesData() now fails loudly rather than vanishing the incident.
 const orphans = vm.runInContext(`
 (() => {
-  const keys = new Set(parseVmtCsv(VMT_CSV_TEXT).map(r => r.helmer.toLowerCase() + "|" + r.month));
+  const keysOf = rows => new Set(rows.map(r => r.helmer.toLowerCase() + "|" + r.month));
+  const analysis = keysOf(vmtRows), any = keysOf([...vmtRows, ...ghostVmtRows]);
   // An incident counts on every line in its series list (its company's, and
-  // Tesla's no-monitor line for a report on Tesla's no-monitor list).
-  return INCIDENT_DATA.flatMap(i => i.series
+  // Tesla's no-monitor line for a report on Tesla's no-monitor list): a
+  // counted one needs an analysis row there, its denominator; a pending one,
+  // which no rate counts, a row in either segment (its month's miles).
+  const lacking = (records, keys) => records.flatMap(i => i.series
     .filter(s => !keys.has(s.toLowerCase() + "|" + monthKeyFromIncidentLabel(i.date)))
     .map(s => i.reportId + " (" + s + " " + i.date + ")"));
+  return [...lacking(INCIDENT_DATA, analysis), ...lacking(PENDING_INCIDENT_DATA, any)];
 })()
 `, ctx);
 assert.equal(
   orphans.length, 0,
-  `Replicata: map every in-scope incident to its (line, month) for each line in its series list and look it up in the VMT data.
+  `Replicata: map every in-scope incident to its (line, month) for each line in its series list and look it up in the VMT data: a counted incident (INCIDENT_DATA) among the analysis rows, a pending one (PENDING_INCIDENT_DATA) among both segments' rows.
 Expectata: every incident has a VMT row for each of its lines' months (no orphan numerators).
 Resultata: ${orphans.length} orphan(s): ${orphans.slice(0, 8).join(", ")}.`);
 
@@ -226,4 +236,4 @@ assert.equal(
 Expectata: a loud "orphan" assertion failure, not a silent drop.
 Resultata: ${guardThrows}.`);
 
-console.log("qual pass: data/vmt.csv flows unchanged into vmt.js and the rendered VMT charts; no orphan incidents");
+console.log(`qual pass: data/vmt.csv flows unchanged into vmt.js (${rendered.vmtJsRows.filter(r => r.segment === "analysis").length} analysis rows, ${rendered.vmtJsRows.filter(r => r.segment === "second").length} in the second segment) and the rendered VMT charts; no orphan incidents`);

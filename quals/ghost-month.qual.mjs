@@ -14,21 +14,31 @@ import { markLabel } from "./page-text.mjs";
 // month after NHTSA's data-through month for which data/vmt.csv holds rows:
 // the month in progress, or a finished month no NHTSA release has reached.
 // slurp.py writes those rows verbatim to a second segment of data/vmt.js
-// (GHOST_VMT_CSV_TEXT), which only the VMT charts and the VMT sources table
-// read (the table since 2026-10-27). When the date window
-// ends at the newest NHTSA month, each VMT chart (a company's own and the
-// combined one) continues into the ghost months, drawn faded (class
+// (GHOST_VMT_CSV_TEXT), which only the VMT charts, the VMT sources table (since
+// 2026-10-27) and the growth charts' history points read. Since 2026-11-21
+// that segment also holds the pending line-months' rows: months at or before
+// the data-through month that no rate counts yet, because NHTSA's reports for
+// them are still arriving and no dated list covers them
+// (quals/pending-months.qual.mjs holds that rule and which rows they are);
+// the page draws both kinds the same way, each with its own note (a ghost
+// month's VMT_GHOST_NOTE, a pending month's VMT_PENDING_NOTE). When the date
+// window ends at the slider's last month (the newest month with an analysis
+// row; until 2026-11-21 that was always the data-through month), each VMT
+// chart (a company's own and the combined one) continues into the months
+// after it, drawn faded (class
 // month-ghost on the dot, the error bar and a dashed stretch of the line), in
-// both the Monthly and Cumulative views, each ghost dot's tooltip giving the
-// month's miles, its range and a note in place of an incident count. No rate,
+// both the Monthly and Cumulative views, each faded dot's tooltip giving the
+// month's miles, its range and its note in place of an incident count. No rate,
 // card, slider month or other chart sees a ghost month. slurp.py stops when
 // the month after the data-through month has no rows (so every release
 // brings the next month's estimate), when a ghost month lacks a line's row,
 // and on a row for a month that has not begun (a forecast, not miles driven).
-// In the same windows the sanity section's VMT sources table lists each ghost
+// In the same windows the sanity section's VMT sources table lists each such
 // row's rationale after its line's analysis months, headed by its month and
-// the ghost tooltip's note (rule 9: shown and marked, not left out); the note
-// is the human's English, so it sits outside the table's AI-text colour.
+// its note (rule 9: shown and marked, not left out); the ghost note
+// is the human's English, so the notes sit outside the table's AI-text colour.
+// A window that ends earlier shows only its own months: no ghost month, and a
+// pending row only where its month lies inside the window.
 
 const problems = [];
 
@@ -66,10 +76,14 @@ assert.deepEqual(ghostCsv[0], master[0],
   `Replicata: read the header of data/vmt.js's ghost segment.
 Expectata: data/vmt.csv's header (${master[0].join(",")}): the ghost rows are master rows.
 Resultata: ${JSON.stringify(ghostCsv[0])}.`);
-assert.deepEqual(ghostCsv.slice(1), wantGhost,
-  `Replicata: compare data/vmt.js's ghost segment with data/vmt.csv's rows for months after the data-through month ${dataThrough}.
+// The segment's rows after the data-through month are the ghost months'; its
+// rows at or before it are the pending line-months' (which, and that they are
+// the master's too: quals/pending-months.qual.mjs).
+const ghostPart = ghostCsv.slice(1).filter(r => r[1] > dataThrough);
+assert.deepEqual(ghostPart, wantGhost,
+  `Replicata: compare the rows of data/vmt.js's ghost segment for months after the data-through month ${dataThrough} with data/vmt.csv's.
 Expectata: the same rows, in the master's order, numbers as plain integers.
-Resultata: ${ghostCsv.length - 1} rows, want ${wantGhost.length}; first ${JSON.stringify(ghostCsv[1]?.slice(0, 8))}.`);
+Resultata: ${ghostPart.length} rows, want ${wantGhost.length}; first ${JSON.stringify(ghostPart[0]?.slice(0, 8))}.`);
 const ghostMonths = [...new Set(wantGhost.map(r => r[1]))].sort();
 const lines = [...new Set(master.slice(1).map(r => r[0]))].sort();
 assert.ok(ghostMonths.length >= 1 && ghostMonths[0] === nextMonth(dataThrough),
@@ -103,19 +117,38 @@ newest_month = max(r[1].strip() for r in list(csv.reader(io.StringIO(master)))[1
 H = 'helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,rationale'
 def row(h, m, v): return f'{h},{m},{v},{v},{v},{v},{v},{v},r'
 def text(*rows): return '\n'.join([H, *rows]) + '\n'
-def stop(raw, last, run):
+# The analysis rows of a synthetic master (ghost_vmt_csv's fourth argument,
+# since 2026-11-21: the segment holds every master row that is not one of
+# them): every line's months at or before the data-through month, but for
+# <pending>.
+def analysis(raw, last, pending=()):
+    keys = {(slurp._canonical_helmer(r[0].strip()), r[1].strip()) for r in list(csv.reader(io.StringIO(raw)))[1:] if r and r[1].strip() <= last}
+    return keys - set(pending)
+def stop(raw, last, run, pending=()):
     try:
-        slurp.ghost_vmt_csv(raw, last, run)
+        slurp.ghost_vmt_csv(raw, last, run, analysis(raw, last, pending))
     except AssertionError as e:
         return str(e)
     return ''
+vmt = slurp.parse_vmt_values(master)
+T = slurp.NHTSA_DATA_THROUGH_DATE[:7]
+real_analysis = set(slurp.month_sources(vmt, T, slurp.preprint_coverage(vmt)))
+fine = text(row('waymo', '2031-01', 5), row('zoox', '2031-01', 5), row('waymo', '2031-02', 5), row('zoox', '2031-02', 5))
+rows_of = lambda out: [r[:2] for r in list(csv.reader(io.StringIO(out)))[1:]]
 out = {
-    'real': slurp.ghost_vmt_csv(master, slurp.NHTSA_DATA_THROUGH_DATE[:7], newest_month),
+    'real': slurp.ghost_vmt_csv(master, T, newest_month, real_analysis),
     'none': stop(text(row('waymo', '2031-01', 5), row('zoox', '2031-01', 5)), '2031-01', '2031-02'),
     'partial': stop(text(row('waymo', '2031-01', 5), row('zoox', '2031-01', 5), row('waymo', '2031-02', 5)), '2031-01', '2031-02'),
     'future': stop(text(row('waymo', '2031-01', 5), row('waymo', '2031-02', 5), row('waymo', '2031-03', 5)), '2031-01', '2031-02'),
-    'fine': stop(text(row('waymo', '2031-01', 5), row('zoox', '2031-01', 5), row('waymo', '2031-02', 5), row('zoox', '2031-02', 5)), '2031-01', '2031-02'),
+    'fine': stop(fine, '2031-01', '2031-02'),
+    'fineRows': rows_of(slurp.ghost_vmt_csv(fine, '2031-01', '2031-02', analysis(fine, '2031-01'))),
+    'pendingRows': rows_of(slurp.ghost_vmt_csv(fine, '2031-01', '2031-02', analysis(fine, '2031-01', [('Zoox', '2031-01')]))),
 }
+try:
+    slurp.ghost_vmt_csv(fine, '2031-01', '2031-02', analysis(fine, '2031-01') | {('Waymo', '2031-02')})
+    out['aheadAnalysis'] = ''
+except AssertionError as e:
+    out['aheadAnalysis'] = str(e)
 print(json.dumps(out))
 `;
 const run = spawnSync("python3", ["-c", py], { cwd: new URL("..", import.meta.url), encoding: "utf8" });
@@ -130,6 +163,11 @@ if (!/2031-02/.test(guards.none)) problems.push(`no rows after the data-through 
 if (!/zoox/.test(guards.partial)) problems.push(`a ghost month without zoox's row: slurp ${guards.partial ? `stopped with ${JSON.stringify(guards.partial.slice(0, 120))}` : "passed"}, want a stop naming zoox`);
 if (!/2031-03/.test(guards.future)) problems.push(`a row for 2031-03 in a 2031-02 run: slurp ${guards.future ? `stopped with ${JSON.stringify(guards.future.slice(0, 120))}` : "passed"}, want a stop naming 2031-03`);
 if (guards.fine !== "") problems.push(`a complete ghost month: slurp stopped with ${JSON.stringify(guards.fine.slice(0, 120))}`);
+if (JSON.stringify(guards.fineRows) !== JSON.stringify([["waymo", "2031-02"], ["zoox", "2031-02"]]))
+  problems.push(`with every month through 2031-01 an analysis row, the segment holds ${JSON.stringify(guards.fineRows)}, want the 2031-02 rows`);
+if (JSON.stringify(guards.pendingRows) !== JSON.stringify([["zoox", "2031-01"], ["waymo", "2031-02"], ["zoox", "2031-02"]]))
+  problems.push(`with zoox's 2031-01 no analysis row (pending), the segment holds ${JSON.stringify(guards.pendingRows)}, want that row, then the 2031-02 rows, in the master's order`);
+if (!/2031-02/.test(guards.aheadAnalysis)) problems.push(`an analysis row for 2031-02, after the data-through month 2031-01: slurp ${guards.aheadAnalysis ? `stopped with ${JSON.stringify(guards.aheadAnalysis.slice(0, 120))}` : "passed"}, want a stop naming 2031-02`);
 
 // --- 3. The charts ----------------------------------------------------------
 class ElementStub {
@@ -167,15 +205,24 @@ vm.runInContext(`
 const app = JSON.parse(vm.runInContext(`JSON.stringify({
   lines: ADS_SERIES, all: ALL_HELMERS, months: fullMonthSeries.months, defaultStart: DEFAULT_START_MONTH,
   labels: Object.fromEntries(ADS_SERIES.map(h => [h, helmerLabel(h)])),
-  note: VMT_GHOST_NOTE, edge: VMT_RANGE_EDGE,
-  ghost: ghostVmtRows.map(r => ({helmer: r.helmer, month: r.month, best: r.vmtBest, lo: r.vmtMin, hi: r.vmtMax, cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax, rationale: r.rationale})),
+  note: VMT_GHOST_NOTE, pendingNote: VMT_PENDING_NOTE, edge: VMT_RANGE_EDGE,
+  ghost: ghostVmtRows.map(r => ({helmer: r.helmer, month: r.month, best: r.vmtBest, lo: r.vmtMin, hi: r.vmtMax, cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax, rationale: r.rationale, note: r.note})),
 })`, ctx));
+// The slider's last month: the newest month with an analysis row, at or
+// before the data-through month (the data-through month itself until
+// 2026-11-21, when it always had rows).
 const frontier = app.months[app.months.length - 1];
-if (frontier !== dataThrough) problems.push(`the slider's months end at ${frontier}, want the data-through month ${dataThrough}`);
+const newestAnalysis = analysisCsv.slice(1).map(r => r[1]).sort().at(-1);
+if (frontier !== newestAnalysis || !(frontier <= dataThrough)) problems.push(`the slider's months end at ${frontier}, want the newest month with an analysis row, ${newestAnalysis}, at or before the data-through month ${dataThrough}`);
 if (app.months.some(m => ghostMonths.includes(m))) problems.push(`the slider's months include a ghost month: ${app.months.filter(m => ghostMonths.includes(m))}`);
-const wantRows = wantGhost.map(r => `${r[0]}|${r[1]}|${r[2]}|${r[6]}|${r[7]}|${r[3]}|${r[4]}|${r[5]}`).sort();
+// The app's rows of the second segment are the segment's, each with the note
+// of its kind: a ghost month's VMT_GHOST_NOTE, a pending month's
+// VMT_PENDING_NOTE.
+const wantRows = ghostCsv.slice(1).map(r => `${r[0]}|${r[1]}|${r[2]}|${r[6]}|${r[7]}|${r[3]}|${r[4]}|${r[5]}`).sort();
 const gotRows = app.ghost.map(g => `${g.helmer.toLowerCase()}|${g.month}|${g.best}|${g.lo}|${g.hi}|${g.cume}|${g.kmin}|${g.kmax}`).sort();
-if (JSON.stringify(gotRows) !== JSON.stringify(wantRows)) problems.push(`parseGhostVmtCsv gives ${gotRows.length} rows that differ from the master's ${wantRows.length} (first ${gotRows[0]} vs ${wantRows[0]})`);
+if (JSON.stringify(gotRows) !== JSON.stringify(wantRows)) problems.push(`parseGhostVmtCsv gives ${gotRows.length} rows that differ from the segment's ${wantRows.length} (first ${gotRows[0]} vs ${wantRows[0]})`);
+const misnoted = app.ghost.filter(g => g.note !== (g.month > dataThrough ? app.note : app.pendingNote)).map(g => `${g.helmer} ${g.month}`);
+if (misnoted.length > 0 || app.note === app.pendingNote) problems.push(`second-segment rows whose note is not their kind's (VMT_GHOST_NOTE after ${dataThrough}, VMT_PENDING_NOTE at or before it): ${misnoted.join(", ")}`);
 
 const render = (cumulative, [first, final]) => JSON.parse(vm.runInContext(`(() => {
   for (const h of ALL_HELMERS) monthHelmerEnabled[h] = true;
@@ -241,20 +288,20 @@ for (const cumulative of [false, true]) {
         const want = [
           [`low end (${fmt(lo)}, ${app.edge.lo})`, t => tipIs(t, g.month, [[fmt(lo)]], app.edge.lo)],
           [`high end (${fmt(hi)}, ${app.edge.hi})`, t => tipIs(t, g.month, [[fmt(hi)]], app.edge.hi)],
-          [`dot (${fmt(best)}, range ${fmt(lo)} – ${fmt(hi)}, the ghost note)`, t => tipIs(t, g.month, [[fmt(best)], [fmt(lo), fmt(hi)]], app.note)],
+          [`dot (${fmt(best)}, range ${fmt(lo)} – ${fmt(hi)}, its note)`, t => tipIs(t, g.month, [[fmt(best)], [fmt(lo), fmt(hi)]], g.note)],
         ];
         for (const [what, is] of want) if (!targets.some(t => t.named && is(t.tip))) problems.push(`${view}, ${where}: no target for ${h} ${g.month}'s ${what}`);
         if (yTop(markup) < hi) problems.push(`${view}, ${where}: y axis tops out at ${yTop(markup)}, under ${h} ${g.month}'s high end ${hi}`);
       }
     }
     const own = at.own[h];
-    if (ghostDots(own).length !== rows.length) problems.push(`${view}, ${h}'s own chart: ${ghostDots(own).length} faded dots, want ${rows.length} (one per ghost month)`);
+    if (ghostDots(own).length !== rows.length) problems.push(`${view}, ${h}'s own chart: ${ghostDots(own).length} faded dots, want ${rows.length} (one per month of its rows in the second segment)`);
     if (ghostErrs(own) !== 3 * rows.length) problems.push(`${view}, ${h}'s own chart: ${ghostErrs(own)} faded error-bar lines, want ${3 * rows.length}`);
     const solid = solidPaths(own), dashed = ghostPaths(own);
     if (solid.length !== 1 || dashed.length !== 1) problems.push(`${view}, ${h}'s own chart: ${solid.length} solid and ${dashed.length} dashed lines, want one each`);
     else {
       const s = points(solid[0]), d = points(dashed[0]), dots = ghostDots(own);
-      if (d.length !== rows.length + 1) problems.push(`${view}, ${h}'s own chart: the dashed stretch has ${d.length} points, want ${rows.length + 1} (the newest NHTSA month's point, then each ghost month's)`);
+      if (d.length !== rows.length + 1) problems.push(`${view}, ${h}'s own chart: the dashed stretch has ${d.length} points, want ${rows.length + 1} (its newest analysis month's point, then each faded month's)`);
       else if (JSON.stringify(d[0]) !== JSON.stringify(s[s.length - 1])) problems.push(`${view}, ${h}'s own chart: the dashed stretch starts at ${d[0]}, not at the solid line's last point ${s[s.length - 1]}`);
       else if (JSON.stringify(d.slice(1)) !== JSON.stringify(dots)) problems.push(`${view}, ${h}'s own chart: the dashed stretch runs through ${JSON.stringify(d.slice(1))}, the faded dots sit at ${JSON.stringify(dots)}`);
     }
@@ -267,11 +314,14 @@ for (const cumulative of [false, true]) {
     const hit = ghostMonths.filter(m => markup.includes(m));
     if (hit.length || markup.includes("month-ghost")) problems.push(`${view}: ${what} mentions ghost month ${hit.join(", ") || "(class month-ghost)"}`);
   }
-  // A window that ends before the newest NHTSA month: no ghost month.
+  // A window that ends before the slider's last month shows only its own
+  // months: no ghost month, and of the second segment only the rows inside it
+  // (a pending month there; none on today's data).
   const before = render(cumulative, BEFORE);
-  for (const [where, markup] of [...app.lines.map(h => [`${h}'s own chart`, before.own[h]]), ["the combined chart", before.combined]]) {
-    if (markup.includes("month-ghost") || markup.includes(esc(app.note)) || ghostMonths.some(m => monthLabels(markup).includes(m)))
-      problems.push(`${view}, window ${BEFORE.join("..")}, ${where}: draws a ghost month`);
+  const inside = app.ghost.filter(g => g.month >= BEFORE[0] && g.month <= BEFORE[1]);
+  for (const [where, markup, want] of [...app.lines.map(h => [`${h}'s own chart`, before.own[h], inside.filter(g => g.helmer === h).length]), ["the combined chart", before.combined, inside.length]]) {
+    if (ghostDots(markup).length !== want || markup.includes(esc(app.note)) || monthLabels(markup).some(m => m > BEFORE[1]))
+      problems.push(`${view}, window ${BEFORE.join("..")}, ${where}: ${ghostDots(markup).length} faded dots (want ${want}, its second-segment rows inside the window), ${markup.includes(esc(app.note)) ? "a ghost note" : "no ghost note"}, month labels through ${monthLabels(markup).at(-1)}`);
   }
 }
 
@@ -311,14 +361,15 @@ const cellOf = (section, label) => {
   for (const h of app.lines) {
     const cell = cellOf(at, escText(app.labels[h]));
     const want = app.ghost.filter(g => g.helmer === h).sort((a, b) => (a.month < b.month ? -1 : 1))
-      .map(g => `${g.month} (<span class="vmt-ghost-note">${escText(app.note)}</span>): ${rationaleMarkup(g.rationale)}`);
+      .map(g => `${g.month} (<span class="vmt-ghost-note">${escText(g.note)}</span>): ${rationaleMarkup(g.rationale)}`);
     if (cell === null) problems.push(`VMT sources, window ${DEFAULT_WINDOW.join("..")}: no row for ${h}`);
     else if (!cell.endsWith(want.join("<br>")) || !cell.slice(0, cell.length - want.join("<br>").length).endsWith("<br>"))
-      problems.push(`VMT sources, window ${DEFAULT_WINDOW.join("..")}, ${h}: the cell does not end with its ghost rows' entries after its analysis months' (want ${JSON.stringify(want.join("<br>").slice(0, 120))}...)`);
+      problems.push(`VMT sources, window ${DEFAULT_WINDOW.join("..")}, ${h}: the cell does not end with its second-segment rows' entries after its analysis months' (want ${JSON.stringify(want.join("<br>").slice(0, 120))}...)`);
   }
   const before = sources(BEFORE);
-  if (before.includes("vmt-ghost-note") || ghostMonths.some(m => before.includes(`${m} (`) || before.includes(`${m}:`)))
-    problems.push(`VMT sources, window ${BEFORE.join("..")}: lists a ghost month`);
+  const inside = app.ghost.filter(g => g.month >= BEFORE[0] && g.month <= BEFORE[1]).length;
+  if ((before.match(/vmt-ghost-note/g) || []).length !== inside || ghostMonths.some(m => before.includes(`${m} (`) || before.includes(`${m}:`)))
+    problems.push(`VMT sources, window ${BEFORE.join("..")}: ${(before.match(/vmt-ghost-note/g) || []).length} noted entries (want ${inside}, the second-segment rows inside the window), or a ghost month listed`);
 }
 
 // --- 4. The faded look ------------------------------------------------------
@@ -337,17 +388,18 @@ const live = await page.evaluate(() => ({
   own: document.querySelectorAll("#chart-helmer-series .month-dot.month-ghost").length,
   combined: document.querySelectorAll("#chart-vmt-combined .month-dot.month-ghost").length,
 }));
-const shownLines = 2; // Tesla and Waymo in this view
-if (live.own !== shownLines * ghostMonths.length || live.combined !== shownLines * ghostMonths.length)
-  problems.push(`the page (default view, Tesla and Waymo): ${live.own} faded dots in the companies' charts and ${live.combined} in the combined chart, want ${shownLines * ghostMonths.length} each`);
+const shownLines = ["Tesla", "Waymo"]; // this view's companies
+const wantFaded = app.ghost.filter(g => shownLines.includes(g.helmer)).length;
+if (live.own !== wantFaded || live.combined !== wantFaded)
+  problems.push(`the page (default view, Tesla and Waymo): ${live.own} faded dots in the companies' charts and ${live.combined} in the combined chart, want ${wantFaded} each (their rows in the second segment)`);
 if (page.errors.length) problems.push(`the page threw: ${page.errors.join("; ")}`);
 await browser.close();
 await server.close();
 
 assert.deepEqual(problems, [],
   `Replicata: compare data/vmt.js's ghost segment with data/vmt.csv; call slurp.ghost_vmt_csv on synthetic masters; render the VMT charts (every line checked, Monthly and Cumulative) for the default window and for one ending a month earlier; read style.css; load the page.
-Expectata: the ghost segment holds exactly the master's rows past the data-through month ${dataThrough}, a full set of lines from the month after it, none in the analysis segment; slurp stops on a missing next month, a missing line and a not-yet-begun month; in a window ending at ${dataThrough} each VMT chart continues into ${ghostMonths.join(", ")} with a faded dot, a faded error bar and a dashed stretch of its line, its targets carrying the month's miles, range and note, and the VMT sources table lists each ghost row's rationale after its line's analysis months, headed by its month and the note (styled as the human's text); no ghost month in a window ending earlier or in any other view; .month-ghost faded and its line dashed; the page draws them at load.
+Expectata: past the data-through month ${dataThrough} the ghost segment holds exactly the master's rows, a full set of lines from the month after it, none in the analysis segment; slurp stops on a missing next month, a missing line, a not-yet-begun month and an analysis row past the data-through month, and writes a pending row with the ghost rows; in a window ending at the slider's last month (${frontier}) each VMT chart continues through ${ghostMonths.join(", ")} with a faded dot, a faded error bar and a dashed stretch of its line for each of its rows in the segment, its targets carrying the month's miles, range and note (a ghost month's or a pending month's), and the VMT sources table lists each such row's rationale after its line's analysis months, headed by its month and its note (styled as the human's text); no ghost month in a window ending earlier or in any other view; .month-ghost faded and its line dashed; the page draws them at load.
 Resultata: ${problems.length} problems:
 ${problems.slice(0, 15).join("\n")}`);
 
-console.log(`qual pass: ghost months ${ghostMonths.join(", ")} (after NHTSA's ${dataThrough}) are drawn faded on every VMT chart and listed in the VMT sources table from data/vmt.js's ghost segment, and nowhere else`);
+console.log(`qual pass: ghost months ${ghostMonths.join(", ")} (after NHTSA's ${dataThrough}) and the segment's ${app.ghost.filter(g => g.month <= dataThrough).length} pending rows are drawn faded on every VMT chart, each with its kind's note, and listed in the VMT sources table from data/vmt.js's ghost segment, and nowhere else`);

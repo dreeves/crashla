@@ -132,6 +132,7 @@ const stress = vm.runInContext(`
         mult: flip === null ? null : flip.mult === Infinity ? "Infinity" : fmtRatio(flip.mult),
         flipped: flip === null ? null : flip.flipped};
     }),
+    cohortLabel: helmerLabel("HumansAV"),
   };
 })()
 `, ctx);
@@ -151,11 +152,19 @@ const plain = JSON.parse(JSON.stringify(stress));
 // numbers?", then "sure, convert outcome pins to sanity check ranges". So no
 // verdict is required of any company now. For every line with miles and
 // every metric it has an estimate for, in both windows:
-//   - what the page derives, exactly: the ratio range is the AV's 95% CI over
-//     the human band (floor: CI low over the band's top; ceiling: CI high
-//     over the band's bottom), and the verdict follows from it (robustly
-//     safer when the floor is above 1x, robustly worse when the ceiling is
-//     below 1x, else ambiguous);
+//   - what the page derives, exactly: the human band is the metric's Humans
+//     (AV cities) band, read here from the metric itself
+//     (METRIC_BY_KEY[key].humanMPI.HumansAV: until 2026-11-21 this qual took
+//     the band from helmerHumanStress, the function under test, so a
+//     comparison against the US-average band under the table's AV-cities
+//     header passed every qual, whatever verdicts it moved; audit
+//     2026-11-20, A20; the band depends on the metric alone, so this also holds the
+//     band of every fault-flip search and of every row of the two tables
+//     checked below, which take it from the same call); the ratio range is
+//     the AV's 95% CI over that band (floor: CI low over the band's top;
+//     ceiling: CI high over the band's bottom), and the verdict follows from
+//     it (robustly safer when the floor is above 1x, robustly worse when the
+//     ceiling is below 1x, else ambiguous);
 //   - sanity ranges, wide enough that only a broken figure leaves them (a
 //     unit error, a dropped denominator, a NaN): the count is finite and not
 //     negative; the CI is positive, ordered and holds the median; the ratio
@@ -176,7 +185,8 @@ const estimates = JSON.parse(JSON.stringify(vm.runInContext(`
       for (const key of METRIC_KEYS.filter(k => row.mpiEstimates[k] !== null)) {
         const s = helmerHumanStress(row, key);
         out.push({window: name, helmer: row.helmer, key, k: s.av.k, median: s.av.postMedian, lo: s.av.lo, hi: s.av.hi,
-          human: [s.human.lo, s.human.hi], ratioLo: s.ratioLo, ratioHi: s.ratioHi, verdict: s.verdictKey});
+          human: [s.human.lo, s.human.hi], cohort: [METRIC_BY_KEY[key].humanMPI.HumansAV.lo, METRIC_BY_KEY[key].humanMPI.HumansAV.hi],
+          ratioLo: s.ratioLo, ratioHi: s.ratioHi, verdict: s.verdictKey});
       }
     }
   }
@@ -192,6 +202,7 @@ const estimateProblems = estimates.out.flatMap(e => {
     [[e.lo, e.median, e.hi].every(v => Number.isFinite(v) && v > 0) && e.lo <= e.median && e.median <= e.hi,
       `a median and 95% CI of ${e.median} [${e.lo}, ${e.hi}]`],
     [e.human.every(v => Number.isFinite(v) && v > 0) && e.human[0] <= e.human[1], `a human band of ${JSON.stringify(e.human)}`],
+    [e.human[0] === e.cohort[0] && e.human[1] === e.cohort[1], `a human band of ${JSON.stringify(e.human)}, where the metric's AV-cities band is ${JSON.stringify(e.cohort)}`],
     [e.ratioLo === e.lo / e.human[1] && e.ratioHi === e.hi / e.human[0],
       `a ratio range of ${e.ratioLo}x to ${e.ratioHi}x for a CI of [${e.lo}, ${e.hi}] over the band ${JSON.stringify(e.human)}`],
     [e.verdict === verdictOf(e.ratioLo, e.ratioHi), `the verdict ${JSON.stringify(e.verdict)} on a ratio range of ${e.ratioLo}x to ${e.ratioHi}x`],
@@ -205,7 +216,7 @@ const absent = ["default", "full"].flatMap(w => estimates.companies
   .map(h => `${w} ${h}: no All-incidents estimate on at least one incident`));
 assert.deepEqual([...estimateProblems, ...absent], [],
   `Replicata: compute helmerHumanStress for every line with miles and every metric it has an estimate for, in the default window and over the full history (${estimates.out.length} estimates).
-Expectata: each ratio range is the AV's 95% CI over the AV-cities human band and its verdict follows from it (safer above 1x, worse below 1x, else ambiguous); each figure is sane: a finite count, a positive ordered CI holding its median, a ratio floor in [${RATIO_FLOOR}] and ceiling in [${RATIO_CEILING}], and with ${ENOUGH} incidents or more a median within x${CENTRE[0]} to x${CENTRE[1]} of the human band's centre and an All-incidents median of ${ALL_MPI[0]} to ${ALL_MPI[1]} miles per incident; and each window holds ${estimates.companies.join(", ")} with an All-incidents estimate. No verdict is required of any company: a figure outside a sanity range is broken, or news worth a look before the range moves.
+Expectata: each human band is its metric's ${plain.cohortLabel} band (METRIC_BY_KEY[key].humanMPI.HumansAV), each ratio range is the AV's 95% CI over it and its verdict follows from it (safer above 1x, worse below 1x, else ambiguous); each figure is sane: a finite count, a positive ordered CI holding its median, a ratio floor in [${RATIO_FLOOR}] and ceiling in [${RATIO_CEILING}], and with ${ENOUGH} incidents or more a median within x${CENTRE[0]} to x${CENTRE[1]} of the human band's centre and an All-incidents median of ${ALL_MPI[0]} to ${ALL_MPI[1]} miles per incident; and each window holds ${estimates.companies.join(", ")} with an All-incidents estimate. No verdict is required of any company: a figure outside a sanity range is broken, or news worth a look before the range moves.
 Resultata: ${estimateProblems.length + absent.length} problems: ${[...estimateProblems, ...absent].slice(0, 8).join("; ")}.`);
 
 // The verdict rule itself, on synthetic CIs around its two thresholds, against

@@ -54,9 +54,10 @@ vm.runInContext("vmtRows = parseVmtCsv(VMT_CSV_TEXT);", ctx);
 
 // Tesla's rides derive from its (deck-anchored) cumulative miles at the
 // total-scope miles-per-ride corridor [4.7, 6.2, 8.3]: an author-set ~4-5 mi
-// average paid ride (corroborated by robotaxitracker's receipt-synced trips,
-// mean 3.81 mi ex hops, contributor-skewed low) divided by a 0.6-0.85
-// passenger-on-board share of fleet service miles (deadhead 15-40%). A history row that strays outside
+// average paid ride (corroborated by Robotaxi Tracker's receipt-synced trips,
+// https://robotaxitracker.com, mean 3.81 mi ex hops, contributor-skewed low)
+// divided by a 0.6-0.85 passenger-on-board share of fleet service miles
+// (deadhead 15-40%). A history row that strays outside
 // that corridor has come unglued from the miles data. (Repinned 2026-07-22,
 // human-approved, from [7, 14]: that corridor reconciled the miles with a
 // "~700k paid miles by late Apr 2026" figure that was actually mid-February

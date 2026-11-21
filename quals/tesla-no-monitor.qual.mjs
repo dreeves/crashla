@@ -22,6 +22,12 @@ import { parseCsv } from "./csv-parse.mjs";
 // unclassified report to stop in incident_series(); the line now also holds
 // the reviewed additions, and the unclassified stop is check_monitor_reviewed(),
 // which lists every such report at once, as the passenger review does.
+// Since 2026-11-21 an in-scope incident is counted (INCIDENT_DATA) or pending
+// (PENDING_INCIDENT_DATA: its month not fully reported yet, or, in a month
+// Tesla's list covers, a crash the list lacks; quals/pending-months.qual.mjs).
+// A record's lines and its classification are checked on both arrays (a
+// pending report is reviewed like any other); the line's crashes month by
+// month, check (4), are the counted ones.
 
 // Tesla's spreadsheet, as published Oct 20, 2026 (32 reports, May 23 to Oct 18).
 const SHEET = ["13781-15399", "13781-15400", "13781-15395", "13781-15342", "13781-15809", "13781-15808",
@@ -62,8 +68,10 @@ def stops(fn, *args):
     except AssertionError as e:
         return str(e)
 text = open('data/incidents.js').read()
-start = text.index('/* INCIDENT_DATA_START */') + len('/* INCIDENT_DATA_START */')
-records = json.loads(text[start:text.index('/* INCIDENT_DATA_END */', start)])
+def array(name):
+    start = text.index('/* %s_START */' % name) + len('/* %s_START */' % name)
+    return json.loads(text[start:text.index('/* %s_END */' % name, start)])
+records = array('INCIDENT_DATA') + array('PENDING_INCIDENT_DATA')
 out['unclassified'] = stops(slurp.check_monitor_reviewed,
                             records + [{'reportId': '13781-99999', 'helmer': 'Tesla', 'date': 'SEP-2026', 'narrative': 'The ADS had no passengers present in the vehicle.'}],
                             slurp.filed_incident_rows(slurp.newest_report_rows()))
@@ -100,7 +108,7 @@ Expectata: [Tesla, TeslaNoMonitor], [Tesla], [Tesla], [Waymo].
 Resultata: ${JSON.stringify([out.seriesNoMonitor, out.seriesAboard, out.seriesOld, out.seriesWaymo])}.`);
 assert.ok(/TESLA_NO_MONITOR_ADDITIONS/.test(out.unclassified) && /TESLA_MONITOR_ABOARD_REPORTS/.test(out.unclassified)
     && out.unclassified.includes("13781-99999") && /TESLA_NO_MONITOR_FROM/.test(out.listedTooEarly),
-  `Replicata: call slurp.check_monitor_reviewed on data/incidents.js's records plus an unclassified Tesla report of 2026-09 (with the newest snapshots' rows), and slurp.incident_series for a listed report dated before 2026-01.
+  `Replicata: call slurp.check_monitor_reviewed on data/incidents.js's records, counted and pending, plus an unclassified Tesla report of 2026-09 (with the newest snapshots' rows), and slurp.incident_series for a listed report dated before 2026-01.
 Expectata: both stop the run, naming the tables to update (the first names the report and the two reviewed tables, TESLA_NO_MONITOR_ADDITIONS and TESLA_MONITOR_ABOARD_REPORTS).
 Resultata: ${JSON.stringify([out.unclassified.slice(0, 600), out.listedTooEarly])}.`);
 
@@ -114,13 +122,15 @@ Resultata: ${JSON.stringify([out.vmtGap, out.vmtOk])}.`);
 // TESLA_NO_MONITOR_ADDITIONS, Tesla reports newer than its list whose
 // narratives name no monitor).
 const text = fs.readFileSync("data/incidents.js", "utf8");
-const data = JSON.parse(text.slice(text.indexOf("/* INCIDENT_DATA_START */") + 25,
-  text.indexOf("/* INCIDENT_DATA_END */")).trim().replace(/;$/, ""));
+const arrayOf = name => { const start = `/* ${name}_START */`; return JSON.parse(text.slice(text.indexOf(start) + start.length, text.indexOf(`/* ${name}_END */`))); };
+// The counted records, and with them the pending ones.
+const countedData = arrayOf("INCIDENT_DATA");
+const data = [...countedData, ...arrayOf("PENDING_INCIDENT_DATA")];
 const onLine = rid => SHEET.includes(rid) || out.additions.includes(rid);
 const badSeries = data.filter(r => !Array.isArray(r.series) || r.series[0] !== r.helmer
   || JSON.stringify(r.series) !== JSON.stringify(r.helmer === "Tesla" && onLine(r.reportId) ? ["Tesla", "TeslaNoMonitor"] : [r.helmer]));
 assert.deepEqual(badSeries.map(r => [r.reportId, r.series]), [],
-  `Replicata: read every data/incidents.js record's series.
+  `Replicata: read every data/incidents.js record's series, counted and pending.
 Expectata: [helmer], plus TeslaNoMonitor for in-scope Tesla reports on Tesla's spreadsheet or among the reviewed additions (${JSON.stringify(out.additions)}).
 Resultata: ${JSON.stringify(badSeries.slice(0, 5).map(r => [r.reportId, r.series]))}.`);
 const tesla2026 = data.filter(r => r.helmer === "Tesla" && r.date.endsWith("2026")).map(r => r.reportId);
@@ -153,6 +163,23 @@ assert.deepEqual(badMiles.map(p => p.slice(0, 8)), [],
   `Replicata: compare data/vmt.csv's teslanomonitor rows with Tesla's two no-monitor readings.
 Expectata: vmt = the safety page's figure; a positive lower edge at or below the lower reading (half the page's figure where the deck reads under its resolution); an upper edge at or above the higher.
 Resultata: ${JSON.stringify(badMiles.map(p => p.slice(0, 8)))}.`);
+// The line's miles are part of Tesla's every-mode miles, so in every month it
+// has a row, estimates and ghost months included, its miles and each edge of
+// its band are at or under the tesla row's (audit 2026-11-20, A15: nothing
+// required it, whatever rule a month's rows follow; the rules themselves
+// imply it month by month, quals/tesla-unsupervised-floor.qual.mjs for the
+// months Tesla's page measured whole and quals/tesla-camera-miles.qual.mjs
+// for the camera-estimated ones).
+{
+  const everyMode = Object.fromEntries(vmtCsv.slice(1).filter(p => p[0] === "tesla").map(p => [p[1], p]));
+  const figures = p => [p[2], p[6], p[7]].map(Number); // miles, band floor, band top
+  const above = lineRows.filter(p => everyMode[p[1]] === undefined || figures(p).some((v, i) => v > figures(everyMode[p[1]])[i]))
+    .map(p => ({ month: p[1], noMonitor: figures(p), tesla: everyMode[p[1]] === undefined ? null : figures(everyMode[p[1]]) }));
+  assert.deepEqual(above, [],
+    `Replicata: compare each teslanomonitor row of data/vmt.csv (${lineRows.length} months) with the tesla row of its month: miles, band floor, band top.
+Expectata: a tesla row for each month, and each of the three figures at or under the tesla row's (miles with no monitor aboard are among the miles of every mode).
+Resultata: ${JSON.stringify(above)}.`);
+}
 const vmtJs = fs.readFileSync("data/vmt.js", "utf8");
 const jsRows = parseCsv(vmtJs.slice(vmtJs.indexOf("/* VMT_CSV_START */") + 19, vmtJs.indexOf("/* VMT_CSV_END */")).replace(/^`|`$/g, "").trim());
 // A row's coverage columns, the row required (until 2026-11-04 a month
@@ -195,13 +222,13 @@ assert.ok(app.all.indexOf("TeslaNoMonitor") === app.all.indexOf("Tesla") + 1 && 
 // name the line, by their month) and the miles of its data/vmt.js row.
 const MONTH_NO = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
 const monthOf = label => `${label.slice(4)}-${String(MONTH_NO[label.slice(0, 3)]).padStart(2, "0")}`;
-const crashesIn = m => data.filter(r => r.series.includes("TeslaNoMonitor") && monthOf(r.date) === m).length;
+const crashesIn = m => countedData.filter(r => r.series.includes("TeslaNoMonitor") && monthOf(r.date) === m).length;
 const wantMonths = jsRows.filter(p => p[0] === "teslanomonitor").map(p => [p[1], crashesIn(p[1]), Number(p[2])]);
-const listed = data.filter(r => r.series.includes("TeslaNoMonitor")).length;
+const listed = countedData.filter(r => r.series.includes("TeslaNoMonitor")).length;
 assert.ok(wantMonths.length > 0 && JSON.stringify(app.months) === JSON.stringify(wantMonths) &&
     wantMonths.reduce((n, m) => n + m[1], 0) === listed,
-  `Replicata: build monthSeriesData() and read the TeslaNoMonitor line month by month; recount its crashes from data/incidents.js and read its miles from data/vmt.js.
-Expectata: ${JSON.stringify(wantMonths)} ([month, crashes, miles]), the crashes summing to the ${listed} records whose series name the line.
+  `Replicata: build monthSeriesData() and read the TeslaNoMonitor line month by month; recount its crashes from data/incidents.js's counted records (INCIDENT_DATA) and read its miles from data/vmt.js's analysis rows.
+Expectata: ${JSON.stringify(wantMonths)} ([month, crashes, miles]), the crashes summing to the ${listed} counted records whose series name the line.
 Resultata: ${JSON.stringify(app.months)}.`);
 
 // (5) Readers see the line's label, never its internal key: every chart,
@@ -256,4 +283,4 @@ assert.deepEqual(leaks.slice(0, 6), [],
 Expectata: no "TeslaNoMonitor" (the line reads as its label, ${JSON.stringify(vm.runInContext("helmerLabel('TeslaNoMonitor')", viewCtx))}).
 Resultata: ${leaks.length} occurrences, e.g. ${JSON.stringify(leaks.slice(0, 6))}.`);
 
-console.log(`qual pass: Tesla's no-monitor line holds Tesla's ${listed} in-scope crashes on its list or reviewed as no-monitor (${out.additions.length} of them reviewed additions) over its own no-monitor miles, inherits Tesla's coverage, and sits off by default beside Tesla`);
+console.log(`qual pass: Tesla's no-monitor line counts Tesla's ${listed} in-scope crashes on its list or reviewed as no-monitor (${out.additions.length} reviewed additions; ${data.length - countedData.length} records pending across all lines) over its own no-monitor miles, inherits Tesla's coverage, and sits off by default beside Tesla`);

@@ -300,8 +300,9 @@ function marginalQuantOver(comps, cdf, vLo, vMid, vHi) {
 // fault metric is the weighted sum of the per-K marginal bells. Falls back to
 // the single-component builder for integer-count metrics. Same nodes and
 // recurrence trick as the CDF: consecutive shapes differ by 1, so each node
-// costs one exp plus cheap multiplies. The returned function carries .mean,
-// the drawn curve's mean (marginalMpiMean).
+// costs one exp plus cheap multiplies. (Until 2026-11-21 the returned
+// function carried .mean, the drawn curve's mean, for the distribution
+// chart's marker tooltips: see renderDistributionChart.)
 function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
   if (comps.length === 1) {
     return makeMarginalMpiDensity(comps[0].a, vmtMin, vmtBest, vmtMax);
@@ -310,7 +311,7 @@ function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
   const a0 = comps[0].a;
   const lg0 = lgamma(a0);
   const logW = prior.w.map(w => Math.log(w)); // ln(prior weight), no alpha terms
-  const density = x => {
+  return x => {
     const lnx = Math.log(x);
     let sum = 0;
     for (let i = 0; i < prior.v.length; i++) {
@@ -325,8 +326,6 @@ function makeMixtureMarginalMpiDensity(comps, vmtMin, vmtBest, vmtMax) {
     }
     return sum;
   };
-  density.mean = marginalMpiMean(comps, prior);
-  return density;
 }
 
 // Inverse-gamma density w.r.t. log(x): f(x)·x where f is the InvGamma PDF.
@@ -375,7 +374,7 @@ function splitPriorSigmas(vmtMin, vmtBest, vmtMax) {
 }
 
 // Quadrature nodes for integrating over the two-piece VMT prior: every
-// marginal MPI CDF, density and mean on the page integrates on these.
+// marginal MPI CDF and density on the page integrates on these.
 // Simpson's rule in z = (ln VMT - mu) / sigma, on each half of the prior
 // separately, out to VMT_MARGIN_SIGMAS of that half's own sigma, so the mode
 // is a node of both halves. Until 2026-10-03 one grid spanned
@@ -502,19 +501,6 @@ function ratioPriorNodes(vmtMin, vmtBest, vmtMax, human, aMax) {
   };
 }
 
-// Mean of a marginal MPI curve: MPI | K, v ~ InvGamma(a_K, v) has mean
-// v / (a_K - 1), so E[MPI] = E[V] · sum_K w_K / (a_K - 1), infinite when a
-// component has a_K <= 1 (k = 0, or fractional fault mass reaching K = 0).
-// E[V] is the prior's mean on the curve's own nodes, so this is the mean of
-// the drawn curve. Until 2026-10-03 the distribution tooltip used v = vmtBest,
-// the mean at the prior's mode, so right-skewed curves printed mean < peak <
-// median (Tesla all incidents: 121.1K for a drawn mean of 130.7K; audit #14).
-function marginalMpiMean(comps, prior) {
-  const meanV = prior.v.reduce((s, v, i) => s + prior.w[i] * v, 0);
-  return comps.some(c => c.a <= 1) ? Infinity
-    : meanV * comps.reduce((s, c) => s + c.w / (c.a - 1), 0);
-}
-
 // Build a density function for true MPI marginalized over the VMT band. All the
 // alpha/band-dependent work (lgamma, node positions, two-piece prior weights) is
 // hoisted here so the returned closure's per-x hot loop is just one exp per node —
@@ -522,21 +508,18 @@ function marginalMpiMean(comps, prior) {
 // slider drag. Each node's exponent stays combined in a single exp (the large
 // alpha*u, lgamma, and alpha*ln(x) terms cancel) to avoid overflow at large
 // alpha, in the same order as invGammaLogDensity, so a degenerate band's single
-// node reproduces the point density bit-for-bit. The returned function carries
-// .mean, the drawn curve's mean (marginalMpiMean).
+// node reproduces the point density bit-for-bit.
 function makeMarginalMpiDensity(alpha, vmtMin, vmtBest, vmtMax) {
   const prior = vmtPriorNodes(vmtMin, vmtBest, vmtMax, alpha);
   const lg = lgamma(alpha);
   // ln(prior weight) + alpha·ln(v) − lgamma, per node
   const logW = prior.lnv.map((u, i) => Math.log(prior.w[i]) + alpha * u - lg);
-  const density = x => {
+  return x => {
     const alnx = alpha * Math.log(x);
     let sum = 0;
     for (let i = 0; i < prior.v.length; i++) sum += Math.exp(logW[i] - alnx - prior.v[i] / x);
     return sum;
   };
-  density.mean = marginalMpiMean([{a: alpha, w: 1}], prior);
-  return density;
 }
 // Convenience point-evaluator (rebuilds the closure for one x); used by quals.
 function marginalMpiLogDensity(x, alpha, vmtMin, vmtBest, vmtMax) {
@@ -558,12 +541,26 @@ function estimateMpi(k, m, massFrac) {
 // --- Data and UI ---
 
 let incidents = [];
+// A line's month enters the rates only when NHTSA's file is complete for it
+// or its company's own dated list covers it (data/slurp.py month_sources;
+// the human, 2026-11-20/21: "if we know when a helmer's crash reports end
+// then we compute the exact VMT for the crashes. if not, we don't try to
+// guess."). Every other line-month at or before NHTSA's data-through month is
+// pending (a provisional name): its reports are still arriving. Its VMT row
+// is no analysis row (vmtRows never holds it; ghostVmtRows does), and its
+// in-scope incidents, with the crashes of a list-covered month that the list
+// lacks, are the pending incidents: data/incidents.js's
+// PENDING_INCIDENT_DATA, which the incident browser lists, marked
+// (RECORD_MARKS), and nothing else reads. Until 2026-11-21 such a month
+// counted at an estimated share of its miles.
+let pendingIncidents = [];
 let vmtRows = [];
 // A ghost month is a month after NHTSA's data-through month for which
 // data/vmt.csv holds rows: the month in progress, or a finished month no NHTSA
-// release has reached. Its rows (data/vmt.js's GHOST_VMT_CSV_TEXT, read by
-// parseGhostVmtCsv) are only drawn, faded, on the VMT charts: with no NHTSA
-// reports for the month, no rate can use its miles (vmtRows never holds it).
+// release has reached. Its rows, and the pending line-months' rows
+// (data/vmt.js's GHOST_VMT_CSV_TEXT, read by parseGhostVmtCsv), are only
+// drawn, faded, on the VMT charts and the growth charts: no rate uses their
+// miles (vmtRows never holds them).
 let ghostVmtRows = [];
 let faultData = {}; // reportId -> {faultfrac, reasoning}
 let monthHelmerEnabled = {HumansAV: true, HumansUS: false, HumansRideshare: false, Tesla: true, TeslaNoMonitor: false, Waymo: true, Zoox: false};
@@ -629,8 +626,10 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // "green text = AI-generated"), and a card's [?] tooltip, plain text, opens
 // it with AI_TEXT_PREFIX (2026-11-03); a src without it renders plain, as every
 // srcNote does (both srcNotes are the human's translations; plain since
-// 2026-11-03, open question 33). Five carry it
-// (quals/ai-derivation-text.qual.mjs): the four of decision 23(b) of the
+// 2026-11-03, open question 33). Six carry it
+// (quals/ai-derivation-text.qual.mjs): the Uber/Lyft fatality band's, which
+// an agent rewrote on 2026-11-21 for that band's new counting basis (audit
+// A12 of 2026-11-20); the four of decision 23(b) of the
 // 2026-11-01 open questions (2026-11-02), namely the AV-cities fatality
 // band's, which the human committed labelled "Claude:" (2026-08-31, in place
 // of an agent's Latin of 2026-08-28; the label dropped from its text on
@@ -655,11 +654,15 @@ let sectionCollapsed = Object.fromEntries(SECTION_IDS.map(id => [id, false]));
 // Request No. 1.D requires a report within 5 days of notice for a crash
 // involving a fatality, hospital transport, a vulnerable-road-user strike,
 // an airbag deployment, or (ADS) a tow-away. Everything else rides the
-// Monthly track (Request No. 2) and gets the incident-coverage thinning for
-// the structurally incomplete data-through month, on top of the receipt-
-// coverage scaling every metric gets there, and for the months inside a
-// helmer's extra Monthly-report lag (slurp.py MONTHLY_ARRIVAL_LAG; see
-// monthSeriesData). Only metrics
+// Monthly track (Request No. 2) and gets the incident-coverage thinning in a
+// month a company's own dated list covers (a list can lack a crash its
+// company files late in a Monthly report; slurp.py preprint_coverage), on
+// top of the receipt-coverage scaling every metric gets there (the list's
+// share of the month's miles; see monthSeriesData). Until 2026-11-21 NHTSA's
+// partly reported data-through month, and the months inside a helmer's extra
+// Monthly-report lag, counted too, thinned the same two ways by estimated
+// shares; they are pending now and enter no metric (slurp.py
+// month_sources). Only metrics
 // whose counting predicate GUARANTEES a Request No. 1.D trigger get the flag
 // (fatality, hospitalization, airbag, and since 2026-09-04 seriousInjury:
 // every SSI+ severity the whitelist admits — "Serious", "Serious W/
@@ -721,6 +724,39 @@ function sourceLink(url) {
 // the human's "Add a note"): Waymo's card read "Fatality: 0.8 incidents"
 // beside a severity table counting 2 fatal crashes, with nothing saying why.
 const FRACTIONAL_DEATH_NOTE = `This count can be fractional because each fatal crash is counted as 1/(number of vehicles involved) for reasons articulated in an article by Kelsey Piper.`;
+// The inputs of the Humans (Uber/Lyft) fatality band (the fatality metric's
+// humanMPI below; quals/human-benchmark-provenance.qual.mjs holds each to
+// its source).
+// RIDESHARE_FATALITY_RATES: the two companies' own published rates, deaths
+// per 100M miles on their platforms: Uber's for 2019-2020 (its US Safety
+// Report), and Lyft's for 2021-2022, the mile-weighted average of its two
+// yearly rates (its 2020-2022 report, p. 11: 36 deaths at 0.86 in 2021 and 50
+// at 1.02 in 2022, so 86 deaths over 36/0.86 + 50/1.02 = 90.88 x 100M miles,
+// 0.946; until 2026-10-03 the src said 0.94, the plain mean, audit #71).
+// FARS_2024_FATAL_CRASHES: the vehicles involved in fatal crashes and the
+// fatal crashes of 2024 nationally (FARS 2024, NHTSA 813791): 1.543 vehicles
+// per fatal crash, the factor that puts those rates on the AV side's
+// counting basis (rideshareFatalMpi).
+const RIDESHARE_FATALITY_RATES = {uber: 0.62, lyft: (36 + 50) / (36 / 0.86 + 50 / 1.02)};
+const FARS_2024_FATAL_CRASHES = {vehicles: 56011, crashes: 36297};
+// x to n significant figures (a band edge computed from its inputs).
+function sigFigs(x, n) {
+  const p = 10 ** (Math.floor(Math.log10(x)) - (n - 1));
+  return Math.round(x / p) * p;
+}
+// Miles per fatal crash on the AV side's counting basis, from a rideshare
+// company's published deaths per 100M miles, to three significant figures.
+// The published rate counts every death in a crash involving one of the
+// platform's cars in full (Uber's 2021-2022 report, Appendix V: "Each rate is
+// double counting the same fatality"), where the AV side counts each fatal
+// crash once across its vehicles (1/vehiclesInvolved, the fatality metric
+// below); so the miles per death are multiplied by the national number of
+// vehicles per fatal crash. The companies publish no such mix of their own
+// (the assumptions list's entry humans-rideshare-fatal-basis says what that
+// leaves open).
+function rideshareFatalMpi(deathsPer100M) {
+  return sigFigs(1e8 / deathsPer100M * FARS_2024_FATAL_CRASHES.vehicles / FARS_2024_FATAL_CRASHES.crashes, 3);
+}
 const METRIC_DEFS = [
   { key: "all",
     blank: "any",
@@ -822,6 +858,10 @@ const METRIC_DEFS = [
 
     defaultEnabled: false, primary: false,
     countFn: rec => roadwayNonstationaryIncidentCount(rec),
+    // The AV side: a moving crash whose Roadway Type's class is "road" in
+    // the reviewed table (ROADWAY_CLASS: "Parking Lot" and, since
+    // 2026-11-21, "Parking Garage" are parking facilities, and "Unknown"
+    // counts as a road, the cautious reading; monthSeriesData).
     // Same bands as nonstationary: both human benchmarks already exclude
     // parking-lot crashes. CRSS samples trafficway crashes only; Kusano et
     // al.'s AV-city benchmark is state police crash data restricted to
@@ -1244,18 +1284,25 @@ const METRIC_DEFS = [
           'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
         ]},
       // The one rideshare-specific per-mile rate that is published (the
-      // safety reports otherwise cover only fatalities and assaults). Lyft's
-      // 2020-2022 report (p. 11) gives 2021 as 36 deaths at 0.86 and 2022 as
-      // 50 at 1.02 per 100M VMT: 86 deaths over 36/0.86 + 50/1.02 = 90.88 x
-      // 100M miles = 0.946 mile-weighted (0.95); until 2026-10-03 the src
-      // said 0.94, the plain mean (audit #71). lo = 1e8/0.946 = 105.7M, kept
-      // at 106M (3 significant figures; 1e8/0.94 = 106.4M rounds the same).
-      HumansRideshare: {lo: 106000000, hi: 161000000,
+      // safety reports otherwise cover only fatalities and assaults):
+      // RIDESHARE_FATALITY_RATES, above. Since 2026-11-21 the band is those
+      // rates on the AV side's counting basis (rideshareFatalMpi: each
+      // divided by FARS 2024's 1.543 vehicles per fatal crash): lo from
+      // Lyft's 0.946, 1e8/0.946 x 1.543 = 163M, hi from Uber's 0.62,
+      // 1e8/0.62 x 1.543 = 249M. Until then it took the rates as published,
+      // 106M-161M miles per death, each death counted in full for the
+      // platform's car while the AV side divided each fatal crash among its
+      // vehicles (audit A12 of 2026-11-20; the human chose the adjustment
+      // over a source note or dropping the band, 2026-11-21).
+      HumansRideshare: {lo: rideshareFatalMpi(RIDESHARE_FATALITY_RATES.lyft), hi: rideshareFatalMpi(RIDESHARE_FATALITY_RATES.uber),
         // DONE (open question 33): agent English (9f40442, 2026-06-16), rewritten by an agent in 9c41e6d (2026-09-04), its 0.94 made 0.95 by an agent on 2026-10-03; you never translated or edited it. Renders plain (rule 7 wanted Latin with a recap).
-        src: 'Uber & Lyft US Safety Reports: 0.62 (Uber, 2019-2020) to 0.95 (Lyft, 2021-2022 mile-weighted average of its 0.86 and 1.02 yearly rates) fatalities per 100M VMT',
+        // 2026-11-21 (audit A12): rewritten by an agent for the band's new counting basis; renders as AI text now (srcAiText).
+        src: 'Uber and Lyft US Safety Reports: 0.62 (Uber, 2019-2020) to 0.95 (Lyft, the 2021-2022 mile-weighted average of its 0.86 and 1.02 yearly rates) fatalities per 100M VMT. Those rates charge every death in a crash that involved a platform car to the platform in full, where the AV side splits each fatal crash among the vehicles in it, so the band divides them by 1.54, the national number of vehicles per fatal crash (FARS 2024: 56,011 vehicles in 36,297 fatal crashes).',
+        srcAiText: true,
         srcLinks: [
           'https://www.uber.com/us/en/about/reports/us-safety-report/',
           'https://www.lyft.com/blog/posts/2024-safety-transparency-report',
+          'https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813791',
         ]},
     },
   },
@@ -1266,29 +1313,32 @@ const METRIC_DEFS = [
 for (const m of METRIC_DEFS) m.label = `Miles per ${m.blank} incident`;
 
 // Humans (Uber/Lyft): a rideshare driver is NOT the generic AV-cities human
-// driver. On fatalities — the one published rideshare per-mile rate (set
-// explicitly above) — they run ~1.4x safer by geometric center (130.6M vs
-// 93.4M miles per death after the 2026-08-28 IIHS re-vintage; the sourced
-// band sits entirely above the urban band), because they're sober, working,
-// rated, and in inspected vehicles. No rideshare rate exists for non-fatal
+// driver. On fatalities — the one published rideshare per-mile rate
+// (RIDESHARE_FATALITY_RATES, above) — they run ~1.4x safer by geometric
+// center: as published, 105.7M to 161.3M miles per death, center 130.6M,
+// against the AV-cities band's 93.4M after the 2026-08-28 IIHS re-vintage,
+// and entirely above that band, because they're sober, working, rated, and
+// in inspected vehicles. (The fatality band itself has stood on the AV
+// side's counting basis since 2026-11-21, those rates over 1.543 vehicles
+// per fatal crash: 163M to 249M, center 201M, about 2.2x the AV-cities
+// band's, which counts deaths.) No rideshare rate exists for non-fatal
 // crashes, so for the general crash metrics we lean the AV-cities band safer
 // with a wide range: as bad as ~1.2x worse (heavy low-speed urban exposure and
 // in-app distraction can raise minor-crash frequency) up to ~1.5x safer (the
-// driver self-selection seen in the fatality data, whose band spans up to
-// ~1.9x; 1.5x is the 2026-06-16 judgment for NON-fatal crashes, where
-// impairment matters less). Every non-fatality metric
+// driver self-selection seen in the fatality data, whose published rates
+// span up to ~1.9x the urban band's low edge; 1.5x is the 2026-06-16 judgment
+// for NON-fatal crashes, where impairment matters less). Every non-fatality metric
 // now carries a HumansUS band (sourced or estimated), so this loop covers the
 // severity-tail metrics too; the self-selection advantage is, if anything,
 // larger for severe crashes, where impairment dominates the human baseline.
 const RIDESHARE_WORST = 1.2; // band floor: up to 1.2x MORE crashes than AV cities
 const RIDESHARE_BEST = 1.5;  // band ceiling: up to 1.5x FEWER
-const sig2 = x => { const p = 10 ** (Math.floor(Math.log10(x)) - 1); return Math.round(x / p) * p; };
 for (const m of METRIC_DEFS) {
   const h = m.humanMPI;
   if (h && h.HumansAV && h.HumansUS && !h.HumansRideshare) {
     h.HumansRideshare = {
-      lo: sig2(h.HumansAV.lo / RIDESHARE_WORST),
-      hi: sig2(h.HumansAV.hi * RIDESHARE_BEST),
+      lo: sigFigs(h.HumansAV.lo / RIDESHARE_WORST, 2),
+      hi: sigFigs(h.HumansAV.hi * RIDESHARE_BEST, 2),
       // derived from the AV-cities band, not independently sourced; the flag
       // makes these modeled-proxy bands render dashed (see derivedBandDash),
       // unlike the sourced fatality band above.
@@ -1606,34 +1656,32 @@ function parseVmtCsv(text) {
     const hit = re.exec(line);
     assert(hit !== null, "Malformed VMT sheet CSV row", {lineNo: i + 1, line});
     const miles = vmtRowMiles(hit, i + 1);
-    // Receipt coverage: the fraction of the month's five-day-track incidents
-    // present in the NHTSA release. 1 for every month except the release's
-    // data-through month (reports received through the cutoff: the 15th of
-    // the prior month, or the next business day), where slurp.py
-    // supplies the (best, lo, hi) triple it estimates from the release:
-    // observed / expected, its high edge FIVE_DAY_RECEIPT_COVERAGE_MAX
-    // (release_month_coverage; until 2026-10-31 a measured constant triple).
-    // Scales the raw VMT that five-day-track metrics (m.fiveDay) use.
-    // Since 2026-11-18 a row can take its two coverage triples from a
-    // company's own list of its crash reports instead, where that list holds
-    // more of the month than NHTSA's file does (slurp.py preprint_coverage:
-    // the list's miles over the row's, and the company's on-time share of
-    // Monthly reports); the row's incidents_through column, parsed as
-    // `through`, is the date its incidents run through, NHTSA's receipt
-    // cutoff or that list's date.
+    // Receipt coverage: the share of the month's miles whose crashes the
+    // row's source holds. 1, three times over, on a complete row, a month
+    // NHTSA's file holds whole. On a list row, a month a company's own dated
+    // list of its crash reports covers (slurp.py month_sources,
+    // preprint_coverage; since 2026-11-18), the list's miles through its
+    // date over the row's miles, best, low and high alike. Scales the raw
+    // VMT that five-day-track metrics (m.fiveDay) use. The row's
+    // incidents_through column, parsed as `through`, is the date its
+    // incidents run through: NHTSA's receipt cutoff, or that list's date.
+    // (Until 2026-11-21 NHTSA's data-through month had a row here too, its
+    // triple an estimate of the share of its five-day-track incidents the
+    // release held; that month is pending now, its row in the second
+    // segment, parseGhostVmtCsv.)
     const coverage    = Number(hit[9]);
     const coverageMin = Number(hit[10]);
     const coverageMax = Number(hit[11]);
-    // Incident reporting completeness (Poisson thinning factor).
-    // When Monthly reports are structurally absent for the last month, this
-    // is slurp.py's pooled cross-helmer rate-ratio (observed incidents vs
-    // the receipt-coverage-scaled VMT expectation from each helmer's
-    // reference month); in the months inside a helmer's extra Monthly-report
-    // lag (slurp.py MONTHLY_ARRIVAL_LAG) it is that helmer's measured 5-Day
-    // share, its Monthly reports being still to come. Multiplied into
+    // Incident reporting completeness (Poisson thinning factor): 1 on a
+    // complete row; on a list row, the share of the month's Monthly-track
+    // crashes the list is taken to hold: the company's on-time share of
+    // Monthly reports, its Wilson 95% lower bound, and 1 (slurp.py
+    // preprint_coverage). Multiplied into
     // effective VMT on top of receipt coverage so the Gamma posterior
     // reflects the thinned observation — for Monthly-track metrics only;
-    // five-day-track metrics skip it.
+    // five-day-track metrics skip it. (Until 2026-11-21 it was also an
+    // estimate for NHTSA's data-through month and a helmer's Monthly-lag
+    // months, which are pending now.)
     const incCov     = Number(hit[12]); // best estimate
     const incCovMin  = Number(hit[13]); // most pessimistic (smallest p)
     const incCovMax  = Number(hit[14]); // most optimistic (largest p)
@@ -1699,9 +1747,12 @@ function vmtRowMiles(hit, lineNo) {
   return {helmer, month: hit[2], kyoomMin, kyoomMax, vmtMin, vmtBest, vmtMax, vmtCume};
 }
 
-// The ghost months' rows (GHOST_VMT_CSV_TEXT): data/vmt.csv's rows as they
-// stand, miles columns only, since a ghost month has no NHTSA reports for a
-// coverage column to describe.
+// The rows no rate uses (GHOST_VMT_CSV_TEXT): data/vmt.csv's rows as they
+// stand, miles columns only, of the ghost months (after NHTSA's data-through
+// month) and of the pending line-months (at or before it: reports still
+// arriving, no dated list covering the month). Each carries the note its
+// marks end with wherever it is drawn (`note`): the one place the two kinds
+// are told apart, by the month.
 function parseGhostVmtCsv(text) {
   const lines = text.split(/\r?\n/).map(line => line.trimEnd());
   assert(lines[0] === "helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,rationale",
@@ -1714,24 +1765,77 @@ function parseGhostVmtCsv(text) {
     if (line === "") continue;
     const hit = re.exec(line);
     assert(hit !== null, "Malformed ghost VMT CSV row", {lineNo: i + 1, line});
-    rows.push({...vmtRowMiles(hit, i + 1), rationale: vmtRationale(hit[9], i + 1)});
+    const miles = vmtRowMiles(hit, i + 1);
+    rows.push({...miles, note: miles.month <= NHTSA_DATA_THROUGH_DATE.slice(0, 7) ? VMT_PENDING_NOTE : VMT_GHOST_NOTE,
+      rationale: vmtRationale(hit[9], i + 1)});
   }
   return rows;
 }
 
-// What slurp.py's ghost_vmt_csv guarantees of ghostVmtRows, which ghostPoints
-// relies on: at least one ghost month, every one after the newest month of
-// vmtRows, and each with a row for every line.
+// The month after an ISO month.
+function monthAfter(month) {
+  const n = Number(month.slice(0, 4)) * 12 + Number(month.slice(5, 7));
+  return `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, "0")}`;
+}
+
+// A VMT row whose month NHTSA's file completes: every coverage value 1, its
+// incidents through NHTSA's receipt cutoff. The other analysis rows are list
+// rows: a company's own dated list covers the month (slurp.py month_sources).
+function isCompleteRow(row) {
+  return [row.coverage, row.coverageMin, row.coverageMax, row.incCov, row.incCovMin, row.incCovMax].every(v => v === 1);
+}
+
+// What slurp.py guarantees of vmtRows and ghostVmtRows (month_sources,
+// build_vmt_csv, ghost_vmt_csv), which the charts and the window's VMT band
+// rely on (until 2026-11-21: at least one ghost month, every one after the
+// newest month of vmtRows, and each with a row for every line):
+//  - an analysis row is complete (its incidents through NHTSA's receipt
+//    cutoff) or a list row, whose incidents run through a date in its own
+//    month, the list's; the list rows share one month (one list), and a
+//    line's list row is its newest analysis row, so a window holds at most
+//    one partially received month per line, its last;
+//  - no analysis row is after NHTSA's data-through month, and each line has
+//    some;
+//  - each line's rows of the second segment (its pending months, then its
+//    ghost months) follow its newest analysis month, month by month, through
+//    the newest ghost month, which is after the data-through month and the
+//    same for every line.
 function checkGhostVmtRows() {
-  const months = vmtMonthList();
-  const newest = months[months.length - 1];
-  const ghostMonths = [...new Set(ghostVmtRows.map(row => row.month))].sort();
-  assert(ghostMonths.length > 0 && ghostMonths.every(month => month > newest),
-    "ghost months must exist and follow the newest NHTSA month", {newest, ghostMonths});
-  for (const month of ghostMonths) {
-    const lines = ghostVmtRows.filter(row => row.month === month).map(row => row.helmer).sort();
-    assert(JSON.stringify(lines) === JSON.stringify([...ADS_SERIES].sort()),
-      "a ghost month must have a row for every line", {month, lines});
+  const dataThrough = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
+  for (const row of vmtRows) {
+    assert(isCompleteRow(row) ? row.through === NHTSA_DATA_THROUGH_DATE : row.through.slice(0, 7) === row.month,
+      "an analysis row must be complete, its incidents through NHTSA's receipt cutoff, or a list row, its incidents through a date in its own month",
+      {helmer: row.helmer, month: row.month, through: row.through, NHTSA_DATA_THROUGH_DATE});
+  }
+  const listMonths = [...new Set(vmtRows.filter(row => !isCompleteRow(row)).map(row => row.month))];
+  assert(listMonths.length <= 1, "the list rows must share one month", {listMonths});
+  const newestGhost = ghostVmtRows.map(row => row.month).sort().pop();
+  assert(newestGhost > dataThrough, "the second segment must reach a month after NHTSA's data-through month", {dataThrough, newestGhost});
+  for (const line of ADS_SERIES) {
+    const analysis = vmtRows.filter(row => row.helmer === line).sort((a, b) => (a.month < b.month ? -1 : 1));
+    const ghost = ghostVmtRows.filter(row => row.helmer === line).map(row => row.month).sort();
+    assert(analysis.length > 0 && analysis[analysis.length - 1].month <= dataThrough,
+      "a line must have analysis rows, none after NHTSA's data-through month", {line, dataThrough});
+    assert(analysis.slice(0, -1).every(isCompleteRow), "a line's list row must be its newest analysis row", {line});
+    const months = [analysis[analysis.length - 1].month, ...ghost];
+    assert(months.every((month, i) => i === 0 || month === monthAfter(months[i - 1])) && months[months.length - 1] === newestGhost,
+      "a line's pending and ghost months must follow its newest analysis month, month by month, through the newest ghost month",
+      {line, months, newestGhost});
+  }
+}
+
+// What slurp.py guarantees of the pending incidents (record_counted): each
+// is of a month at or before NHTSA's data-through month, and on every line it
+// names its month is a pending one (a row of the second segment) or a
+// list-covered one (the list lacks the crash), never one NHTSA's file
+// completes.
+function checkPendingIncidents() {
+  for (const inc of pendingIncidents) {
+    const month = monthKeyFromIncidentLabel(inc.date);
+    const rows = inc.series.map(line => [...vmtRows, ...ghostVmtRows].find(row => row.helmer === line && row.month === month));
+    assert(month <= NHTSA_DATA_THROUGH_DATE.slice(0, 7) && rows.every(row => row !== undefined && !(vmtRows.includes(row) && isCompleteRow(row))),
+      "a pending incident must be of a pending or a list-covered month of every line it names",
+      {reportId: inc.reportId, month, series: inc.series});
   }
 }
 
@@ -1903,12 +2007,19 @@ function fmtWhole(n) {
 function vmtDotTooltip(month, miles, lo, hi, incidents) {
   return `${vmtRangeTip(month, miles, lo, hi)}\n${splur(incidents, "incident")}`;
 }
-// A ghost month's dot tooltip: its miles and range as above, and where the
-// incident count would be (NHTSA has published none for the month) a note on
-// what the month is.
+// A ghost month's dot tooltip, and a pending month's: its miles and range as
+// above, and where the incident count would be a note on what the month is
+// (the row's `note`, parseGhostVmtCsv): for a ghost month, that NHTSA has
+// published nothing for it; for a pending line-month (2026-11-21), whose
+// reports NHTSA is still receiving, the note below, since the ghost note's
+// "No NHTSA data for this month yet" is not true of it.
 const VMT_GHOST_NOTE = "No NHTSA data for this month yet; and if the month isn't over we're extrapolating/projecting the full month";
-function vmtGhostTooltip(month, miles, lo, hi) {
-  return `${vmtRangeTip(month, miles, lo, hi)}\n${VMT_GHOST_NOTE}`;
+// Say that NHTSA's reports for this month are still arriving,
+// so no crash figure on this page uses the month yet (its miles show here,
+// faded, and its crashes are listed in the incident browser, uncounted).
+const VMT_PENDING_NOTE = "Crash stats don't use this month's crashes until NHTSA reporting for it is complete";
+function vmtGhostTooltip(month, miles, lo, hi, note) {
+  return `${vmtRangeTip(month, miles, lo, hi)}\n${note}`;
 }
 function vmtRangeTip(month, miles, lo, hi) {
   return `${month}\n${fmtWhole(miles)} miles\nRange: ${fmtWhole(lo)} – ${fmtWhole(hi)}`;
@@ -1921,12 +2032,13 @@ const VMT_RANGE_EDGE = {lo: "Low end", hi: "High end"};
 function vmtEndTooltip(month, miles, edge) {
   return `${month}\n${fmtWhole(miles)} miles\n${edge}`;
 }
-// The line under a partially received month's incident count (the
-// data-through month, or a month inside a helmer's extra Monthly-report lag),
-// which holds only the reports received by the cutoff: an estimated
-// coverage x incCov of the month's eventual incidents, coverage x incCovMin
-// at worst (incCov is conditional on the receipt-coverage best, so the
-// product is the month's expected share; data/vmt.js). The VMT chart's miles are the full month's,
+// The line under a partially received month's incident count: a list row's
+// (a month a company's own dated list covers through its date; until
+// 2026-11-21 also NHTSA's data-through month and a helmer's Monthly-lag
+// months, which are pending now and have no count), which holds only the
+// crashes through the row's date: coverage x incCov of the month's eventual
+// incidents, coverage x incCovMin at worst (data/vmt.js). The VMT chart's
+// miles are the full month's,
 // so August's 10 Waymo incidents beside 20.8M miles read as a tenth of the
 // usual crash rate until 2026-10-03 (audit #60). The MPI chart's dots carry
 // it too, for the metric shown (receivedShare): until 2026-11-02 they gave the
@@ -1938,29 +2050,28 @@ function vmtEndTooltip(month, miles, edge) {
 // the reports NHTSA had received by the cutoff date shown, about X% of the
 // month's eventual incidents (worst case about Y%), so it is far below the
 // month's full count.
-// The date is the row's own (data/vmt.js incidents_through): NHTSA's receipt
-// cutoff, or, on a row whose coverage comes from a company's own list of its
-// crash reports (slurp.py preprint_coverage), the date that list runs
-// through. Until 2026-11-18 it was NHTSA's cutoff on every row.
+// The date is the row's own (data/vmt.js incidents_through): on a row whose
+// coverage comes from a company's own list of its crash reports (slurp.py
+// preprint_coverage), the only partially received rows since 2026-11-21, the
+// date that list runs through. Until 2026-11-18 it was NHTSA's cutoff on
+// every row.
 function vmtPartialNote(through, share, worst) {
   return `Count above only includes incidents received by ${through}: ~${Math.round(share * 100)}% of the month's eventual incidents (worst case ~${Math.round(worst * 100)}%)`;
 }
-// The share of a month's eventual incidents that the release holds, best and
-// worst, as the effective miles scale it (monthSeriesData): on the five-day
-// track the receipt coverage, coverage and coverageMin; on the Monthly track
-// the receipt coverage times the incident coverage, coverage x incCov and
-// coverage x incCovMin (incCov is defined given the receipt coverage's best,
-// so both edges take the receipt best; data/vmt.js). Both are 1 in every
-// fully received month.
+// The share of a month's eventual incidents that the row's source holds,
+// best and worst, as the effective miles scale it (monthSeriesData): on the
+// five-day track the receipt coverage, coverage and coverageMin; on the
+// Monthly track the receipt coverage times the incident coverage, coverage x
+// incCov and coverage x incCovMin (data/vmt.js). Both are 1 on every complete
+// row.
 function receivedShare(row, fiveDay) {
   return fiveDay ? {best: row.coverage, worst: row.coverageMin}
     : {best: row.coverage * row.incCov, worst: row.coverage * row.incCovMin};
 }
 // That note as the last line of an analysis month's dot tooltip, for a count
-// on the five-day track or on the Monthly track (fiveDay). On the five-day
-// track only the data-through month's count is partial; on the Monthly track
-// a helmer's Monthly-lag months' counts are partial too (every factor is 1
-// elsewhere). The VMT charts' count is all incidents, a Monthly-track count.
+// on the five-day track or on the Monthly track (fiveDay): a list row's count
+// is partial on both (every factor is 1 on a complete row). The VMT charts'
+// count is all incidents, a Monthly-track count.
 function partialCountLine(row, fiveDay) {
   const share = receivedShare(row, fiveDay);
   return share.worst < 0.999 ? `\n${vmtPartialNote(row.through, share.best, share.worst)}` : "";
@@ -1984,12 +2095,15 @@ function helmerMonthRows(series, helmer) {
 // if its series begins inside the window). That difference and the summed
 // month bands both bound the total, so the band is their intersection,
 // taken over the fully received months (where every metric's triple equals
-// the authored month band); the partially received months' own thinned
-// bands are then added, since their kyoom rows are full-month: the
-// data-through month (receipt coverage, plus the Monthly-track factor for
-// non-five-day metrics) and, for Monthly-track metrics, the months inside the
-// helmer's extra Monthly-report lag just before it (slurp.py
-// MONTHLY_ARRIVAL_LAG: Zoox's 2026-07 on the Sep-15-2026 release). The kyoom
+// the authored month band); a partially received month's own thinned band
+// is then added, since its kyoom row is full-month: a list row, the month a
+// company's own dated list covers through its date (the list's share of the
+// month's miles, plus the Monthly-track factor for non-five-day metrics),
+// which is its line's newest analysis month (checkGhostVmtRows), so a window
+// holds at most one, its last. (Until 2026-11-21 NHTSA's data-through month
+// and a helmer's Monthly-lag months counted too, at estimated shares, so a
+// window could end in several partially received months; such months are
+// pending now, with no row here.) The kyoom
 // difference bounds a CONTIGUOUS span only, so it applies when the fully
 // received rows cover every master month in their span (always, today; a
 // needsFault gap would fall back to the plain sum). Until 2026-09-04 the
@@ -2074,15 +2188,17 @@ function windowVmtBand(helmer, metricRows, minOf, bestOf, maxOf) {
   // (no receipt or Monthly-track factor below 1 applies to it), which is what
   // the full-month kyoom difference bounds. Testing the triple rather than
   // the receipt coverage alone keeps a month thinned by the Monthly-track
-  // factor only (a lagged month) out of the kyoom intersection.
+  // factor only (a list row whose list runs through its month's last day;
+  // until 2026-11-21 a lagged month) out of the kyoom intersection.
   const isFull = r => minOf(r) === r.vmtMonthMin && maxOf(r) === r.vmtMonthMax;
   const full = metricRows.filter(isFull);
   const partial = metricRows.filter(r => !isFull(r));
-  // Partially received months are the release frontier, so they come after
-  // every fully received one. Until 2026-10-04 this asserted at most one,
-  // the data-through month.
-  assert(partial.every(p => full.every(f => f.month < p.month)),
-    "a partially received month precedes a fully received one in a window",
+  // A partially received month is a list row, its line's newest analysis
+  // month: at most one, after every fully received one. (From 2026-10-04 to
+  // 2026-11-21 several were allowed, the data-through month and a helmer's
+  // Monthly-lag months before it; until then, as now, at most one.)
+  assert(partial.length <= 1 && partial.every(p => full.every(f => f.month < p.month)),
+    "a window holds at most one partially received month, after every fully received one",
     {helmer, partial: partial.map(r => r.month), full: full.map(r => r.month)});
   let min = full.reduce((sum, r) => sum + minOf(r), 0);
   const best = metricRows.reduce((sum, r) => sum + bestOf(r), 0);
@@ -2476,9 +2592,17 @@ function monthSeriesData() {
       rec.total += 1;
       const bin = speedBinForIncident(inc.speed);
       rec.speeds[bin] += 1;
-      assert(typeof inc.road === "string", "incident road must be string", {reportId: inc.reportId, road: inc.road});
+      // A moving crash is on a roadway when its Roadway Type's class is
+      // "road" in the reviewed table (ROADWAY_CLASS, data/incidents.js,
+      // written from data/slurp.py's): a parking facility's is "parking".
+      // Until 2026-11-21 the test was the literal "Parking Lot", which let
+      // NHTSA's new "Parking Garage" count as a road (audit A11 of
+      // 2026-11-20). A type the table lacks stops here, as at load
+      // (checkIncidentRecord).
+      assert(ROADWAY_CLASS[inc.road] === "road" || ROADWAY_CLASS[inc.road] === "parking",
+        "incident road type has no class in ROADWAY_CLASS", {reportId: inc.reportId, road: inc.road});
       rec.roadwayNonstationary += Number(
-        bin !== "0" && inc.road !== "Parking Lot",
+        bin !== "0" && ROADWAY_CLASS[inc.road] === "road",
       );
       let atFaultFrac = null;
       if (inc.fault !== null) {
@@ -2594,47 +2718,42 @@ function monthSeriesData() {
       assert(vmt.vmtMax > 0, "vmt_max must be positive", {helmer, month, vmtMax: vmt.vmtMax});
       const inc = incidentsByKey[key] || {total: 0, faultKnown: 0, speeds: emptySpeedBins(), roadwayNonstationary: 0, atFault: 0, atFaultFracs: [], atFaultInjury: 0, atFaultInjuryFracs: [], injury: 0, hospitalization: 0, airbag: 0, seriousInjury: 0, fatality: 0};
       incidentsToDate[helmer] += inc.total;
-      // Receipt coverage (vmt.coverage triple): the fraction of this month's
-      // five-day-track incidents present in the NHTSA release — 1 except for
-      // the release's data-through month, where slurp.py supplies the measured
-      // (best, lo, hi). Partial coverage anywhere else means the reviewed
-      // NHTSA_DATA_THROUGH_DATE and the data disagree (anti-Postel).
-      assert(vmt.coverage === 1 || month === NHTSA_DATA_THROUGH_DATE.slice(0, 7),
-        "partial receipt coverage outside the NHTSA data-through month",
-        {month, coverage: vmt.coverage, NHTSA_DATA_THROUGH_DATE});
-      // Incident coverage: for the data-through month the Monthly-track (SGO
-      // Request No. 2) reports are structurally absent, and in the months
-      // inside a helmer's extra Monthly-report lag (slurp.py
-      // MONTHLY_ARRIVAL_LAG) its Monthly reports have not arrived yet (there
-      // f is the helmer's 5-Day share and the receipt coverage is 1).
+      // Receipt coverage (vmt.coverage triple): the share of this month's
+      // miles whose crashes the row's source holds. 1 on a complete row
+      // (NHTSA's file holds the month whole); on a list row, the list's
+      // miles through its date over the row's miles, best, low and high
+      // alike (checkGhostVmtRows asserts at load that a row is one or the
+      // other; until 2026-11-21 NHTSA's data-through month carried an
+      // estimated triple here, and this loop asserted that no other month
+      // did).
+      // Incident coverage: on a list row, the share of the month's
+      // Monthly-track crashes the list is taken to hold, f: the company's
+      // on-time share of Monthly reports, down to that share's 95% lower
+      // bound (a list can lack a crash its company files late) and up to 1
+      // (the list may be complete); 1 on a complete row.
       // Scaling VMT by the coverage fraction f gives the posterior
       // Gamma(k+0.5, VMT*f). Since f
       // is itself uncertain, incCovMin (smallest f) widens the effective-VMT
-      // band's low edge and incCovMax (= 1.0: all Monthly-track incidents may
-      // already be in, i.e. as complete as the five-day track) its high edge.
-      // slurp.py derives f CONDITIONAL on the receipt-coverage best (the
-      // product coverage x f is invariant to the receipt choice), so the low
-      // edge pairs vmt_min with the receipt BEST and incCovMin — pairing it
-      // with the receipt lo re-applied the receipt uncertainty a second time
-      // (0.78x too low, until 2026-09-04). The high edge pairs vmt_max with
-      // the receipt hi and incCovMax = 1, which is not conditional. The
+      // band's low edge and incCovMax (= 1.0) its high edge. The low edge
+      // pairs vmt_min with the receipt best and incCovMin, the high edge
+      // vmt_max with the receipt hi and incCovMax (a list row's receipt
+      // triple has no width, so the pairing is moot there). The
       // marginal posterior treats [vmtMin, vmtMax] as the VMT prior's 95%
-      // interval, so ignorance about both fractions flows into the displayed
+      // interval, so ignorance about the fraction flows into the displayed
       // CI through the prior (not through worst-case endpoint pairing, as
       // before 2026-08-21). Five-day-track metrics (m.fiveDay, see
       // METRIC_DEFS) use the raw triple in mpiByMetric below: receipt-scaled
       // (lo/best/hi), but not thinned by the Monthly-track factor.
       const entry = {
         month,
-        coverage: vmt.coverage, // receipt coverage best (< 1 only in the data-through month)
+        coverage: vmt.coverage, // receipt coverage best (< 1 only on a list row)
         coverageMin: vmt.coverageMin, // and its low edge (receivedShare)
         through: vmt.through, // the date the row's incidents run through (vmtPartialNote)
         // Effective VMT: used for MPI computation (Poisson rate estimation)
         vmtMin: vmt.vmtMin * vmt.coverage * vmt.incCovMin,
         vmtBest: vmt.vmtBest * vmt.coverage * vmt.incCov,
         vmtMax: vmt.vmtMax * vmt.coverageMax * vmt.incCovMax,
-        // Monthly-track incident coverage (1 except in the data-through month,
-        // where it is pooled, and in a helmer's Monthly-lag months) -- the MPI
+        // Monthly-track incident coverage (1 except on a list row) -- the MPI
         // chart's incomplete-reporting fade reads these
         incCov: vmt.incCov,
         incCovMin: vmt.incCovMin,
@@ -2643,7 +2762,7 @@ function monthSeriesData() {
         vmtRawMin: vmt.vmtMin * vmt.coverageMin,
         vmtRawBest: vmt.vmtBest * vmt.coverage,
         vmtRawMax: vmt.vmtMax * vmt.coverageMax,
-        // Full-month VMT: the fleet trend charts, so the partial data-through
+        // Full-month VMT: the fleet trend charts, so a partially received
         // month doesn't draw a false cliff
         vmtMonthMin: vmt.vmtMin,
         vmtMonthBest: vmt.vmtBest,
@@ -3092,25 +3211,17 @@ function renderAllHelmersMpiChart(series) {
   // One "?" per month at the top of its column, fading in as that month's
   // reporting completeness falls (opacity 0 when complete: grayed out, not
   // suppressed): the largest incompleteness among the shown helmers' dots
-  // that month. The receipt and pooled Monthly-track factors are the same
-  // for every helmer (a helmer's Monthly-lag months add its own), so until
-  // 2026-09-26, when a "?" sat beside every helmer's dot, helmers whose dots
-  // were close overprinted each other's glyph. A run of adjacent incomplete
-  // months shares one "?", centred on the run at its largest incompleteness:
-  // on a phone a month is ~4 units wide and the glyph ~7, so with Zoox shown
-  // its lagged 2026-07 and the data-through 2026-08 read "??" until
-  // 2026-10-04 (audit #36).
-  const incomplete = series.months.map((_month, i) =>
-    Math.max(0, ...seriesRows.map(r => r.vals[i]).filter(v => v !== null).map(v => 1 - v.covRatio)));
-  const qmarkRuns = [];
-  incomplete.forEach((share, i) => {
-    if (share > 0 && i > 0 && incomplete[i - 1] > 0) qmarkRuns[qmarkRuns.length - 1].push(i);
-    else qmarkRuns.push([i]);
-  });
-  const qmarks = qmarkRuns.map(run => {
-    const x = (mapX(run[0]) + mapX(run[run.length - 1])) / 2;
-    const opacity = Math.max(...run.map(i => incomplete[i]));
-    return `<text class="month-tick" x="${x.toFixed(2)}" y="${(mTop + 12).toFixed(2)}" text-anchor="middle" style="opacity:${opacity.toFixed(3)};pointer-events:none">?</text>`;
+  // that month. Until 2026-09-26, when a "?" sat beside every helmer's dot,
+  // helmers whose dots were close overprinted each other's glyph. Only a
+  // list row is incomplete, and the list rows share one month
+  // (checkGhostVmtRows), so no two "?" sit side by side. (From 2026-10-04 to
+  // 2026-11-21 a run of adjacent incomplete months shared one "?": NHTSA's
+  // data-through month and a helmer's Monthly-lag month before it, whose
+  // glyphs read "??" on a phone, audit #36; such months are pending now and
+  // have no dot.)
+  const qmarks = series.months.map((_month, i) => {
+    const opacity = Math.max(0, ...seriesRows.map(r => r.vals[i]).filter(v => v !== null).map(v => 1 - v.covRatio));
+    return `<text class="month-tick" x="${mapX(i).toFixed(2)}" y="${(mTop + 12).toFixed(2)}" text-anchor="middle" style="opacity:${opacity.toFixed(3)};pointer-events:none">?</text>`;
   }).join("");
 
   // Fan chart: nested CI bands at 50%, 80%, 95% with decreasing opacity.
@@ -3173,7 +3284,8 @@ function renderAllHelmersMpiChart(series) {
 const DIST_VIS_FLOOR = 0.05;
 // X-range for the distribution chart: the window where some curve's density clears
 // DIST_VIS_FLOOR of the tallest peak. Coarse probe over the curves' own density
-// extents finds the tallest peak, then the visible band.
+// extents finds the tallest peak, then the visible band, which the frame
+// covers with one probe step to spare at each end.
 function distributionExtent(curves) {
   let pMin = Infinity, pMax = 0;
   for (const c of curves) { pMin = Math.min(pMin, c.xMin); pMax = Math.max(pMax, c.xMax); }
@@ -3214,9 +3326,18 @@ function distributionExtent(curves) {
   // Medians get the same one-probe margin as the peaks: covered with
   // equality, the curve with the largest median put its Median dot on the
   // frame's right edge, where the clip-path halved it (2026-09-26).
+  // So does the band, at both ends: its ends are the outermost probes at
+  // which some curve still clears the floor, so a frame that ended there cut
+  // a curve at the floor or above it at each edge, and a narrow one, which
+  // can fall from near half its height to under the floor within one probe
+  // step, at up to 28% of the tallest peak in the windows that end at the
+  // newest month (Waymo's at-fault curve with every helmer checked; audit A3
+  // of 2026-11-20) and 43% in an earlier one (Humans (AV cities) on fatality,
+  // January 2024 to April 2025). One probe further out every curve is under
+  // the floor (quals/distribution-frame.qual.mjs).
   const step = Math.exp((hi - lo) / (probe - 1));
-  return {xMin: Math.min(band.xMin, ...medians.map(m => m / step), ...peakLo),
-          xMax: Math.max(band.xMax, ...medians.map(m => m * step), ...peakHi)};
+  return {xMin: Math.min(band.xMin / step, ...medians.map(m => m / step), ...peakLo),
+          xMax: Math.max(band.xMax * step, ...medians.map(m => m * step), ...peakHi)};
 }
 
 function renderDistributionChart(series) {
@@ -3239,6 +3360,8 @@ function renderDistributionChart(series) {
   // DIST_VIS_FLOOR of the tallest peak. Frames where the curves are visibly present instead of
   // letting one heavy-tailed posterior stretch the axis to billions. With no curves it
   // falls back to a default span so the axes still draw (Anti-Magic Principle).
+  // (Since 2026-11-21 the frame runs one probe step past the band at each
+  // end, so every curve meets the frame's edge under the floor.)
   const {xMin, xMax} = distributionExtent(curves);
   assert(xMin < xMax, "distribution chart: degenerate x range", {xMin, xMax});
 
@@ -3343,9 +3466,15 @@ function renderDistributionChart(series) {
   // Two markers per curve: the visual peak ("most likely") and the posterior median.
   // They coincide for well-determined curves and separate for skewed near-zero-data
   // ones (the gap = the skew). Tooltip says which point it is plus the other central
-  // values (MLE is ∞ at k=0; the mean is the drawn curve's own, marginalMpiMean,
-  // ∞ whenever a K=0 component carries weight — fractional fault mass or k=0 —
-  // the very curves where they'd matter). No helmer name — the dot colour +
+  // values: the other marker's, and the MLE (∞ at k=0). Until 2026-11-21 it
+  // also gave the drawn curve's mean, which is infinite whenever a mixture
+  // component has shape 1 or less: for an at-fault mixture that turned on
+  // whether the 1e-12 trim of the fault weights (MIX_WEIGHT_FLOOR) kept the
+  // K = 0 component, so Waymo's at-fault injuries read "mean ∞" in the default
+  // window and "mean 15.7M" in full history (15.8M when the audit read it),
+  // the model's mean being infinite in both (audit A35 of 2026-11-20; the
+  // page's estimate is the median everywhere, and the human had the mean
+  // dropped). No helmer name — the dot colour +
   // legend identify the curve. The markers draw after the clip-path group,
   // not inside it, so the frame never cuts one (a k=0 curve's markers sit on
   // the baseline); distributionExtent puts every peak and median inside the
@@ -3358,8 +3487,7 @@ function renderDistributionChart(series) {
     const kLine = c.est.k !== null ? ` (${splur(c.est.k, "incident")})${countNoteLine(c.metric)}` : "";
     const ciLine = `${c.est.k !== null ? "95% CI" : "Range"}: ${fmtMiles(c.est.lo)} – ${fmtMiles(c.est.hi)}${kLine}`;
     const mle = c.est.k !== null ? c.est.median : NaN; // vmtBest/k, ∞ at k=0
-    const mean = c.est.k !== null ? c.densityFn.mean : NaN;
-    const tail = c.est.k !== null ? ` · mean ${infOr(mean)} · MLE ${infOr(mle)}` : "";
+    const tail = c.est.k !== null ? ` · MLE ${infOr(mle)}` : "";
     const dots = [
       ["Peak", c.peakX, `median ${fmtMiles(c.est.postMedian)}`],
       ["Median", c.est.postMedian, `peak ${fmtMiles(c.peakX)}`],
@@ -3519,7 +3647,8 @@ function logUniformGrid(lo, hi, n) {
 // Austin by Aug 1, 2027" (0.27). Until 2026-10-29: A 0.71, B 0.24, C 0.05, fit
 // to the Jan-2-2027 market (since traded down to ~6%).
 //
-// Anchors (Oct 2026): Tesla 465 car-equivalents in October (FLEET_HISTORY),
+// Anchors (Oct 2026): Tesla 465 car-equivalents in October, as FLEET_HISTORY
+// then had it (402 since 2026-11-17, on the camera estimate's miles),
 // 1,080 registered in Texas (573 Cybercab, 507 Model Y; TxDMV, Oct 28),
 // Cybercab capacity over 125,000 a year (Q3-2026 deck) with the line
 // "outpacing our deployments" (Moravy, Oct 26), a Dallas Cybercab launch "next
@@ -3543,7 +3672,8 @@ function logUniformGrid(lo, hi, n) {
 // to ~2.5% a month from late November's ~117k a day (authored as ~3% a month
 // from late October's ~107k, the rate then in hand), through a pause or
 // demand saturation, so ~120k on Jan 1, 2027 and x1.35 through 2027 on the
-// path below; 1.44M, about twice Waymo's current daily miles]. B: ~20,000 cars at
+// path below; 1.44M, about 1.8 times Waymo's daily miles in October and
+// November 2026 (805k and 817k on data/vmt.csv's rows)]. B: ~20,000 cars at
 // ~135 miles a car-day on Cybercab deployment of 300-1,000 a week: 2.7M a day
 // [0.9M with deployment capped by regulators (NHTSA AQ26002, state
 // approvals); 7.2M, ~50,000 Cybercabs, the line's ~1,000 a week through
@@ -4167,8 +4297,8 @@ function renderFleetForecastChart() {
 // car-equivalents over the month's 30 days (0.4 over the 9 days from the Jun
 // 22 launch), under the axis's floor. Until 2026-10-29 the line mixed
 // reported counts (Dec 2025 ~20; Apr 2026 ~25, the no-monitor count; Jun 2026
-// ~28 active) with robotaxitracker's count of distinct cars seen in August
-// (150 [90, 220], against its 175).
+// ~28 active) with an August point, 150 [90, 220], from the distinct cars
+// Robotaxi Tracker (https://robotaxitracker.com) had seen that month.
 // Each helmer's last row is its ghost month's (data/README.md, Ghost months;
 // since 2026-10-28, growth-ghost-month.qual.mjs): November 2026, in progress
 // when written (2026-11-17), as on a typical day of the month (mid-November).
@@ -4257,12 +4387,12 @@ function fleetMonthIso(index) {
 const RIDES_HISTORY = {
   // Tesla rides derive from the repo's (deck-anchored) cumulative VMT at a
   // total-scope miles-per-ride corridor of [4.7, 6.2, 8.3]: an author-set
-  // ~4-5 mi average paid ride (corroborated by robotaxitracker's
-  // receipt-synced trips, Nov 2025 - Jul 2026, n~2,400 ex sub-0.5-mi hops:
-  // mean 3.81 mi, contributor-skewed low; the once-cited Electrek 2026-04-30
-  // article is fleet-counts-only and never carried ride lengths) divided by a
-  // 0.6-0.85 passenger-on-board share of fleet service miles (deadhead
-  // 15-40%). Pinned by
+  // ~4-5 mi average paid ride (corroborated by Robotaxi Tracker's
+  // receipt-synced trips, https://robotaxitracker.com, Nov 2025 - Jul 2026,
+  // n~2,400 ex sub-0.5-mi hops: mean 3.81 mi, contributor-skewed low; the
+  // once-cited Electrek 2026-04-30 article is fleet-counts-only and never
+  // carried ride lengths) divided by a 0.6-0.85 passenger-on-board share of
+  // fleet service miles (deadhead 15-40%). Pinned by
   // rides-provenance.qual against the VMT master. (The old [7.6, 10, 13]
   // corridor reconciled the miles with a "~700k paid miles by late Apr 2026"
   // figure that was actually mid-February vintage; Tesla's Q1-2026 deck puts
@@ -4503,9 +4633,13 @@ function growthMetricSpec(key) {
       lanes: () => trajectoryLanes(bandForecastCurves(RIDES_FORECAST), h => RIDES_HISTORY[h], CUMULATIVE_END_MONTH)},
     miles: {label: "Miles (cumulative)", yLabel: "Cumulative miles", valueLabel: "Miles", fmt: fmtMiles,
       tipAt: milesAtSigFigs,
-      // yMin 500 keeps Tesla's first cumulative points (683 / 7k / 20k mi) and
-      // Zoox's early lower band on-plot (yMin 100000 clipped them until 2026-09-04)
-      yMin: 500, yMax: 10000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000],
+      // yMin 100 keeps Tesla's first cumulative points (683 / 9.3k / 20k mi)
+      // and their ranges on-plot, June 2025's from 200 (quals/fleet-timeseries.qual.mjs
+      // holds every view's frame to what it draws). Until 2026-11-21 it was
+      // 500, set on 2026-09-04 when that range was 614-751 (100000 had clipped
+      // those points and Zoox's early lower band); the range has reached down
+      // to 200 since 2026-10-31, and the plot cut it at the axis.
+      yMin: 100, yMax: 10000000000, yTicks: [1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000],
       note: "Cumulative miles = the top section's VMT, extrapolated forward; the solid part should match the VMT charts above.",
       lanes: () => trajectoryLanes(bandForecastCurves(MILES_FORECAST), milesHistory, CUMULATIVE_END_MONTH)},
   };
@@ -4585,12 +4719,15 @@ function historyTipFigures(spec, p) {
 
 // A lane's point list: history + the forecast endpoint at
 // endMonth, asserting lo <= best <= hi on every point and the months in
-// order. A history point in a ghost month (a month after the newest NHTSA
-// month that data/vmt.js's ghost rows cover) is flagged ghost, as the VMT
-// charts flag theirs: an estimate of the month in progress.
-function growthLanePoints(history, forecast, endMonth) {
-  const ghostMonths = new Set(ghostVmtRows.map(row => row.month));
-  const points = [...history.map(p => ({...p, ghost: ghostMonths.has(p.month)})),
+// order. A history point in a month for which data/vmt.js's second segment
+// holds the helmer's row (a ghost month, after the newest NHTSA month: an
+// estimate of the month in progress; or a pending month of that helmer, its
+// reports still arriving) is flagged ghost, as the VMT charts flag theirs,
+// and carries the row's note. (Until 2026-11-21 the flag was the month's,
+// whichever the helmer: every line's rows ended at the same month then.)
+function growthLanePoints(helmer, history, forecast, endMonth) {
+  const notes = new Map(ghostVmtRows.filter(row => row.helmer === helmer).map(row => [row.month, row.note]));
+  const points = [...history.map(p => ({...p, ghost: notes.has(p.month), note: notes.get(p.month)})),
     {month: endMonth, ...forecast, forecast: true}];
   for (const p of points) {
     assert(p.lo <= p.best && p.best <= p.hi,
@@ -4614,7 +4751,7 @@ function trajectoryLanes(curves, historyFn, endMonth) {
     assert(history.length > 0, "trajectoryLanes: empty history (vmtRows not initialized?)", {helmer: c.historyHelmer});
     return {label: c.legendLabel, helmer: c.historyHelmer, key: c.key, share: c.scenarioProb,
       color: c.color, branchOnly: !c.mainline,
-      points: growthLanePoints(c.mainline ? history : history.slice(-1),
+      points: growthLanePoints(c.historyHelmer, c.mainline ? history : history.slice(-1),
         {best: c.median, lo: c.lo90, hi: c.hi90}, endMonth)};
   });
 }
@@ -4689,10 +4826,11 @@ function renderFleetTimeSeriesChart() {
         // belongs to the forecast marker only. They are labelled by their
         // helmer: a scenario share is a forecast's (until 2026-10-03 every
         // Tesla point read "Tesla robotaxi (~95%) · ..."; audit #83). A ghost
-        // month's dot is faded (class month-ghost) and its tip ends with the
-        // VMT charts' ghost note, as on those charts.
+        // or pending month's dot is faded (class month-ghost) and its tip
+        // ends with the note its VMT chart's dot ends with, as on those
+        // charts.
         const [best, lo, hi] = historyTipFigures(spec, p);
-        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${best}\nRange: ${lo} – ${hi}${p.ghost ? `\n${VMT_GHOST_NOTE}` : ""}`;
+        const tip = `${lane.helmer} · ${p.month}\n${spec.valueLabel}: ${best}\nRange: ${lo} – ${hi}${p.ghost ? `\n${p.note}` : ""}`;
         marks.push(`<circle${p.ghost ? ' class="month-ghost"' : ""} cx="${X(p).toFixed(2)}" cy="${mapY(p.best).toFixed(2)}" r="3.3" style="fill:${color}"></circle>`);
         targets.push({x: X(p), y: mapY(p.best), tip, name: tip});
       }
@@ -4763,29 +4901,28 @@ function initGrowthMetricToggle() {
   });
 }
 
-// The ghost rows a window shows: every one when the window ends at the newest
-// NHTSA month (the newest month of vmtRows, the slider's last), none when it
-// ends earlier, since such a window is a stretch of the past. The VMT charts
-// and the VMT sources table both follow it.
-function windowGhostRows(lastMonth) {
+// The months a window shows, as a test of a month: the window's own (its
+// analysis months, <months>), and, when the window ends at the slider's last
+// month (the newest month of vmtRows), every later month too: such a window
+// runs to the present, and the months after its last are the ones no rate
+// counts yet. A window that ends earlier is a stretch of the past and shows
+// only its own months. The VMT charts and the VMT sources table follow it for
+// the second segment's rows (windowGhostRows: the pending line-months' and
+// the ghost months'), and the incident browser for the pending incidents
+// (windowPendingIncidents). Until 2026-11-21 a window ending at the newest
+// NHTSA month showed every ghost row, and another none; the ghost rows were
+// then all after every window.
+function windowShows(months) {
   const analysisMonths = vmtMonthList();
-  return lastMonth === analysisMonths[analysisMonths.length - 1] ? ghostVmtRows : [];
+  const first = months[0], last = months[months.length - 1];
+  const openEnded = last === analysisMonths[analysisMonths.length - 1];
+  return month => month >= first && (openEnded || month <= last);
 }
-
-// The ghost months a VMT chart continues into after its window's months
-// (windowGhostRows), each as a series point flagged ghost, giving every line
-// the fields a VMT chart reads from a month (helmerMonthRows); init checks
-// that each ghost month has a row for every line.
-function ghostPoints(windowSeries) {
-  const rows = windowGhostRows(windowSeries.months[windowSeries.months.length - 1]);
-  const months = [...new Set(rows.map(row => row.month))].sort();
-  return months.map(month => ({month, ghost: true, helmers: Object.fromEntries(ADS_SERIES.map(helmer => {
-    const row = rows.find(r => r.helmer === helmer && r.month === month);
-    return [helmer, {
-      vmtMonthMin: row.vmtMin, vmtMonthBest: row.vmtBest, vmtMonthMax: row.vmtMax,
-      vmtCume: row.vmtCume, kyoomMin: row.kyoomMin, kyoomMax: row.kyoomMax,
-    }];
-  }))}));
+function windowGhostRows(months) {
+  return ghostVmtRows.filter(row => windowShows(months)(row.month));
+}
+function windowPendingIncidents(months) {
+  return pendingIncidents.filter(inc => windowShows(months)(monthKeyFromIncidentLabel(inc.date)));
 }
 
 // A company's own VMT chart: its one line, on its own linear axis.
@@ -4812,31 +4949,36 @@ function renderCombinedVmtChart(globalSeries) {
 // which any of them has VMT. <figureName> names the figure from its axis
 // title; <markName> names a mark from its line and its tip.
 function renderVmtChart(globalSeries, helmers, figureName, markName) {
-  // Filter to months where any of these lines has VMT data
-  const presentIndices = [];
-  for (let i = 0; i < globalSeries.points.length; i++) {
-    if (helmers.some(helmer => globalSeries.points[i].helmers[helmer] !== null)) presentIndices.push(i);
-  }
-  // No months with data in range: fall back to the full window so the chart
-  // still renders as empty axes instead of vanishing (Anti-Magic Principle).
-  // The line/mark loops skip the resulting null rows, so it stays one path.
-  const indices = presentIndices.length > 0
-    ? presentIndices
-    : globalSeries.points.map((_, i) => i);
-  // After the window's months, the ghost months it continues into (none
-  // unless it ends at the newest NHTSA month): drawn faded, below.
-  const ghosts = ghostPoints(globalSeries);
-  const series = {
-    months: [...indices.map(i => globalSeries.months[i]), ...ghosts.map(point => point.month)],
-    points: [...indices.map(i => globalSeries.points[i]), ...ghosts],
-  };
+  // Each line's row by month: its analysis months in the window, then the
+  // rows of the second segment that the window shows (windowGhostRows: its
+  // pending months and the ghost months), each flagged ghost, with the note
+  // its dot's tooltip ends with and the fields a VMT chart reads from a month.
+  // Until 2026-11-21 a ghost month was a point of its own after the window's
+  // (ghostPoints), every line's row in it a ghost row; a pending row sits in
+  // a month in which another line can have an analysis row, so the flag is
+  // the row's.
+  const ghostRows = windowGhostRows(globalSeries.months);
+  const byMonth = helmers.map(helmer => new Map([
+    ...globalSeries.points.filter(point => point.helmers[helmer] !== null).map(point => [point.month, point.helmers[helmer]]),
+    ...ghostRows.filter(row => row.helmer === helmer).map(row => [row.month, {
+      ghost: true, note: row.note,
+      vmtMonthMin: row.vmtMin, vmtMonthBest: row.vmtBest, vmtMonthMax: row.vmtMax,
+      vmtCume: row.vmtCume, kyoomMin: row.kyoomMin, kyoomMax: row.kyoomMax,
+    }]),
+  ]));
+  // The months in which any of these lines has a row. With none in range the
+  // chart falls back to the window's months, so it still renders as empty
+  // axes instead of vanishing (Anti-Magic Principle). The line/mark loops
+  // skip the months a line has no row for, so it stays one path.
+  const present = [...new Set(byMonth.flatMap(rows => [...rows.keys()]))].sort();
+  const series = {months: present.length > 0 ? present : globalSeries.months};
   const svgW = chartViewW;
   const svgH = 250;
   const mRight = 24;
   const mTop = 14;
   const mBot = 48;
   const pH = svgH - mTop - mBot;
-  const rowsOf = helmers.map(helmer => helmerMonthRows(series, helmer));
+  const rowsOf = byMonth.map(rows => series.months.map(month => rows.get(month)));
   // Monthly vs cumulative VMT view (global toggle). Cumulative plots the kyoom
   // band, which is monotone, so its floors don't wiggle like the monthly bars.
   const best = row => vmtCumulative ? row.vmtCume : row.vmtMonthBest;
@@ -4867,51 +5009,53 @@ function renderVmtChart(globalSeries, helmers, figureName, markName) {
   // every line's) each month's targets: its range's low and high ends, then
   // its dot, so the Tab order walks month by month and the dot wins where its
   // ends lie under it.
-  // A ghost month's marks are faded (class month-ghost), grayed rather than
-  // dropped (Anti-Magic Principle).
-  const fade = i => series.points[i].ghost ? " month-ghost" : "";
+  // A pending or ghost month's marks are faded (class month-ghost), grayed
+  // rather than dropped (Anti-Magic Principle).
+  const fade = row => row.ghost ? " month-ghost" : "";
   const errs = [], vmtPaths = [], dots = [], targets = [];
   helmers.forEach((helmer, h) => {
     const rows = rowsOf[h];
     const vmtColor = HELMER_COLORS[helmer];
-    for (let i = 0; i < series.points.length; i++) {
+    for (let i = 0; i < series.months.length; i++) {
       const row = rows[i];
-      if (!row) continue; // no data for this helmer this month (empty-range fallback)
+      if (!row) continue; // no row for this helmer this month
       const cx = mapX(i);
       const yLo = mapVmtY(lo(row));
       const yHi = mapVmtY(hi(row));
       errs.push(`
-      <line class="month-err${fade(i)}" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
-      <line class="month-err${fade(i)}" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
-      <line class="month-err${fade(i)}" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <line class="month-err${fade(row)}" x1="${cx.toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${cx.toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <line class="month-err${fade(row)}" x1="${(cx - 4).toFixed(2)}" y1="${yLo.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yLo.toFixed(2)}" style="stroke:${vmtColor}"></line>
+      <line class="month-err${fade(row)}" x1="${(cx - 4).toFixed(2)}" y1="${yHi.toFixed(2)}" x2="${(cx + 4).toFixed(2)}" y2="${yHi.toFixed(2)}" style="stroke:${vmtColor}"></line>
     `);
     }
 
-    // The line through the line's months, ending at the newest NHTSA month;
-    // where the chart continues into ghost months, a faded dashed stretch
-    // runs on from that month's point through theirs.
-    const drawn = series.points.map((_, i) => i).filter(i => rows[i]);
-    const solid = drawn.filter(i => !series.points[i].ghost);
-    const ghost = drawn.filter(i => series.points[i].ghost);
+    // The line through the line's analysis months; where the chart continues
+    // into its pending and ghost months, a faded dashed stretch runs on from
+    // the last analysis month's point through theirs (from the first of
+    // theirs, in a window that holds none of the line's analysis months: the
+    // slider's last month alone, for a line pending in it).
+    const drawn = series.months.map((_, i) => i).filter(i => rows[i]);
+    const solid = drawn.filter(i => !rows[i].ghost);
+    const ghost = drawn.filter(i => rows[i].ghost);
+    assert(ghost.every(i => solid.every(j => j < i)), "a VMT chart's pending and ghost months must follow its line's analysis months", {helmer});
     const linePath = idx => idx.map((i, n) => `${n ? "L" : "M"} ${mapX(i).toFixed(2)} ${mapVmtY(best(rows[i])).toFixed(2)}`).join(" ");
     vmtPaths.push(`<path class="month-vmt-line" d="${linePath(solid)}" style="stroke:${vmtColor}"></path>`);
     if (ghost.length > 0) {
-      assert(solid.length > 0, "a VMT chart's ghost months follow no month of its line", {helmer});
-      vmtPaths.push(`<path class="month-vmt-line month-ghost" d="${linePath([solid[solid.length - 1], ...ghost])}" style="stroke:${vmtColor}"></path>`);
+      vmtPaths.push(`<path class="month-vmt-line month-ghost" d="${linePath([...solid.slice(-1), ...ghost])}" style="stroke:${vmtColor}"></path>`);
     }
 
     rows.forEach((row, i) => {
       if (!row) return;
       const x = mapX(i);
       const y = mapVmtY(best(row));
-      dots.push(`<circle class="month-dot${fade(i)}" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
+      dots.push(`<circle class="month-dot${fade(row)}" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.3" style="fill:${vmtColor}"></circle>`);
       const month = series.months[i];
-      // A ghost month has no incident count: its tooltip says what the month
-      // is instead.
+      // A pending or ghost month has no incident count: its tooltip says
+      // what the month is instead (the row's note).
       const low = vmtEndTooltip(month, lo(row), VMT_RANGE_EDGE.lo);
       const high = vmtEndTooltip(month, hi(row), VMT_RANGE_EDGE.hi);
-      const dot = series.points[i].ghost
-        ? vmtGhostTooltip(month, best(row), lo(row), hi(row))
+      const dot = row.ghost
+        ? vmtGhostTooltip(month, best(row), lo(row), hi(row), row.note)
         : vmtDotTooltip(month, best(row), lo(row), hi(row), incidentsOf(row)) + partialOf(row);
       targets.push(
         {x, y: mapVmtY(lo(row)), tip: low, name: markName(helmer, low)},
@@ -4954,7 +5098,7 @@ function renderMpiSummaryCards(series) {
   const rows = windowSummaryRows(series);
   return rows.map(row => {
     const fiveDayLabels = METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ");
-    const fiveDayLine = est => `${AI_TEXT_PREFIX}Five-day-tracked VMT denominator (${fiveDayLabels}: raw VMT times the data-through month's receipt coverage): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
+    const fiveDayLine = est => `${AI_TEXT_PREFIX}Five-day-tracked VMT denominator (${fiveDayLabels}: raw VMT, with a month that a company's own list of its crashes covers counted at the share of its miles driven through the list's date): ${fmtWhole(est.vmtBest)} (${fmtWhole(est.vmtMin)} \u2013 ${fmtWhole(est.vmtMax)}).`;
     // The tooltip states the denominators only; the per-month VMT rationales
     // are in the sanity section's VMT-sources table (embedded here they made
     // the tooltip 7,000-8,700px tall).
@@ -5997,10 +6141,25 @@ const SECOND_INVOLVEMENT_LABEL = "[Second AV in this report]";
 // yet and comes from the company's own list of the crashes it has reported
 // to NHTSA.
 const PREPRINT_LABEL = "[Via Tesla, not yet in NHTSA's data]";
+// A pending incident (pendingIncidents: data/incidents.js's
+// PENDING_INCIDENT_DATA, each record marked `pending: true` as it is loaded,
+// loadIncidents) is in NHTSA's file, or on its company's list, but its month
+// is not fully reported yet for its line, so no figure counts it. The
+// incident browser lists it after the window's counted rows, in the windows
+// that show its month (windowPendingIncidents), leads its narrative with
+// this label and grays its row (style.css tr.pending): shown and marked, not
+// held back (the human, 2026-11-21).
+// label must say that this crash is in NHTSA's file but its month is not
+// fully reported yet, so no figure above (no count, rate or chart) counts
+// it. The words are the human's (2026-11-21).
+const PENDING_LABEL = "[Not counted until the month is complete]";
 // The incident browser's record marks: a field whose presence sets a
 // record's row apart, the label the row's narrative then leads with, and the
 // class the row then takes (none for a second AV, whose label is enough).
+// The pending mark is first, so a pending row's narrative leads with it
+// whatever else the record is.
 const RECORD_MARKS = [
+  {field: "pending", label: PENDING_LABEL, rowClass: "pending"},
   {field: "secondOf", label: SECOND_INVOLVEMENT_LABEL, rowClass: ""},
   {field: "preprint", label: PREPRINT_LABEL, rowClass: "preprint"},
 ];
@@ -6080,10 +6239,13 @@ function renderHeaders() {
 
 function renderTable() {
   const tbody = byId("incidents-body");
-  const rows = activeIncidents();
-  let filtered = activeFilter === "All"
-    ? [...rows]
-    : rows.filter(r => r.helmer === activeFilter);
+  // The window's counted incidents, which the count line counts, then the
+  // pending incidents of the months the window shows, which it does not
+  // (windowPendingIncidents; their rows are marked, RECORD_MARKS): one list,
+  // under the company filter and the sort alike.
+  const shown = rows => activeFilter === "All" ? [...rows] : rows.filter(r => r.helmer === activeFilter);
+  const counted = shown(activeIncidents());
+  const filtered = [...counted, ...shown(windowPendingIncidents(activeSeries.months))];
 
   if (sortCol !== null) {
     const colDef = SORT_COLUMNS.find(c => c.key === sortCol);
@@ -6102,7 +6264,7 @@ function renderTable() {
     }
   }
 
-  byId("incident-count").textContent = splur(filtered.length, "incident");
+  byId("incident-count").textContent = splur(counted.length, "incident");
 
   tbody.innerHTML = "";
   for (const r of filtered) {
@@ -6299,6 +6461,37 @@ const PAX_UNKNOWN = new Set(["Unknown", ""]);
 // Reporting threshold table's "AV stopped" column, which read 47% beside a
 // 58% "Speed = 0 mph" share until 2026-10-03 (audit #90).
 const SV_STATIONARY = new Set(["Stopped", "Parked"]);
+// The pre-crash movement values that state no movement: a blank (a preprint:
+// Tesla's list has no movement field, data/slurp.py LIST_ABSENT_COLUMNS) and
+// NHTSA's own "Unknown" (one Waymo report today, 30270-7938). The Reporting
+// threshold table counts them in a column of their own, right after "AV
+// stopped" (since 2026-11-21: audit A6 of 2026-11-20, the human's choice of a
+// separate count). Until then they counted as not stopped without a word:
+// Tesla's row read "AV stopped: 17 (37%)" of 46 incidents, eight of them
+// preprints, three of whose narratives say the car was stopped. NHTSA's row
+// replaces a preprint at the release that publishes its report, movement
+// included, so those leave the column by themselves.
+const SV_MOVEMENT_UNKNOWN = new Set(["", "Unknown"]);
+// What the Third Amended SGO's carve-out (the Reporting threshold section's
+// note, below) can take from the at-fault metrics: what Waymo's crashes of
+// the kind it exempts carried before the month it took effect (`before`),
+// under the fault values the page has used since 2026-11-17
+// (data/faultrate.py's blind raters). The kind, as the incident fields pick
+// it out: the AV stopped or parked (SV_STATIONARY) at 0 mph, a motor vehicle
+// as the crash partner that was itself neither stopped nor parked, nobody
+// injured. Those 535 crashes average `faultPct` percent fault (8.8%), and
+// they carried `massPct` percent of Waymo's at-fault mass in the twelve
+// months before the carve-out (35.35 of 110.40, June 2024 to May 2025; 33.75
+// of 103.65 from July 2024). With the AV stopped, not parked, it is 418
+// crashes, 9.7% and 26%. Under the method before, the same crashes averaged
+// 1% fault, and until 2026-11-21 the note still called the at-fault metrics
+// "essentially immune (the exempted crashes are ~99% not the AV's fault)"
+// (audit finding A5 of 2026-11-20). The note and the assumptions entry
+// reporting-sgo-exemption print these two figures;
+// quals/assumptions-list.qual.mjs recounts both from the incidents, so a
+// re-rating that moves either turns it red until they are restated here,
+// with the date in the two texts.
+const SGO_EXEMPT_KIND = {before: "2025-06", faultPct: 9, massPct: 32};
 
 // The grayed row a company with no incidents in the window keeps in the
 // incident-count tables (Passenger presence, Severity breakdown, Reporting
@@ -6325,10 +6518,9 @@ const DISPERSION_MIN_MONTHS = 3;
 function dispersionFewMonthsNote(n) {
   return `Months in the window: ${n}. Dispersion test needs at least ${DISPERSION_MIN_MONTHS} months.`;
 }
-// The Poisson-dispersion table's assessment of a company's months: too few
-// incidents in them for the test to tell (under 20), else by the dispersion
-// index (under 0.5, under 2, under 5, and 5 or more). Named here so the quals
-// read the words from the app (2026-10-29).
+// The Poisson-dispersion table's assessments of a line's months
+// (dispersionVerdict). Named here so the quals read the words from the app
+// (2026-10-29).
 const DISPERSION_VERDICT = {
   fewIncidents: "too few incidents to tell",
   under: "underdispersed",
@@ -6336,12 +6528,37 @@ const DISPERSION_VERDICT = {
   mild: "mildly overdispersed",
   over: "overdispersed",
 };
-// The assessment's limits, named for the assumptions list (2026-11-20; until
-// then literals in the assessment's ternary chain, with the same values):
-// the fewest incidents the test tells anything from, and the dispersion index
-// below which a company's months are underdispersed, consistent with Poisson
-// and mildly overdispersed.
-const DISPERSION_LIMITS = {minIncidents: 20, under: 0.5, poisson: 2, mild: 5};
+// The assessment's limits, named for the assumptions list (2026-11-20): the
+// fewest incidents the test tells anything from, the tail of the chi-squared
+// distribution under which the test rejects the Poisson model on either
+// side, and the dispersion index under which a rejection on the high side is
+// called mild.
+const DISPERSION_LIMITS = {minIncidents: 20, alpha: 0.05, mild: 5};
+// The assessment of a line's months from their incident count, Pearson's
+// statistic X² and its degrees of freedom (the months less one): the test the
+// section names. Under the Poisson model X² is chi-squared with df degrees
+// of freedom, whose lower tail is the regularized incomplete gamma function
+// P(df/2, X²/2). Overdispersed when the upper tail is under alpha, "mildly"
+// while the index X²/df is under DISPERSION_LIMITS.mild (a word about size,
+// kept from the old labels); underdispersed when the lower tail is under
+// alpha; consistent with Poisson otherwise (the two tails sum to 1, so at
+// most one is under alpha). Until 2026-11-21 the assessment went by the
+// index alone, under 0.5, under 2, under 5, and 5 or more, whatever the
+// number of months: on that day's data, of the 2,684 window-lines with 3
+// months and 20 incidents or more, 111 contradicted the test (55 read
+// "consistent" at an upper tail under 5%, as Waymo did over the 22 months
+// from October 2023, at 0.0068; 43 read "underdispersed" and 13 "mildly
+// overdispersed" at tails over 5%; the audit, on the data before the
+// pending-month rule, counted 113 of 2,686: audit A10 of 2026-11-20, the
+// human's "ok" to labeling by the test itself).
+function dispersionVerdict(totalK, chiSq, df) {
+  assert(totalK >= 0 && chiSq >= 0 && Number.isInteger(df) && df >= 1, "dispersionVerdict: invalid input", {totalK, chiSq, df});
+  const lowerTail = gammainc(df / 2, chiSq / 2);
+  return totalK < DISPERSION_LIMITS.minIncidents ? DISPERSION_VERDICT.fewIncidents
+    : 1 - lowerTail < DISPERSION_LIMITS.alpha ? (chiSq / df < DISPERSION_LIMITS.mild ? DISPERSION_VERDICT.mild : DISPERSION_VERDICT.over)
+    : lowerTail < DISPERSION_LIMITS.alpha ? DISPERSION_VERDICT.under
+    : DISPERSION_VERDICT.poisson;
+}
 
 // --- Assumptions ----------------------------------------------------------
 // The page's list of what its figures take as given rather than measure (the
@@ -6383,15 +6600,20 @@ const DISPERSION_LIMITS = {minIncidents: 20, under: 0.5, poisson: 2, mild: 5};
 // release).
 
 // The VMT row of a line (ADS_SERIES) and month: an analysis row (vmtRows) or
-// a ghost month's (ghostVmtRows), asserted to exist.
+// a pending or ghost month's (ghostVmtRows), asserted to exist.
 function vmtRowAt(line, month) {
   const row = [...vmtRows, ...ghostVmtRows].find(r => r.helmer === line && r.month === month);
   assert(row !== undefined, "the assumptions list reads a VMT row that does not exist", {line, month});
   return row;
 }
-// A line's months in the VMT rows, ghost months included, in order.
+// A line's months in the VMT rows, pending and ghost months included, in
+// order.
 function vmtLineMonths(line) {
   return [...vmtRows, ...ghostVmtRows].filter(r => r.helmer === line).map(r => r.month).sort();
+}
+// A line's months that are in the rates (its analysis rows'), in order.
+function vmtCountedMonths(line) {
+  return vmtRows.filter(r => r.helmer === line).map(r => r.month).sort();
 }
 // Figures as the assumptions list prints them: a date ("Oct 18, 2026"), a
 // month ("June 2026"), an authored figure to its own precision, at most four
@@ -6406,30 +6628,30 @@ const fmtFigure = v => ASSUMPTION_FIGURE.format(v);
 const fmtPct1 = share => `${Math.round(share * 1000) / 10}%`;
 
 const ASSUMPTION_GROUPS = [
-  // TODO: group heading meaning "Tesla's miles"
-  {id: "tesla", title: "Milia Teslae"},
-  // TODO: group heading meaning "Waymo's miles"
-  {id: "waymo", title: "Milia Waymo"},
-  // TODO: group heading meaning "Zoox's miles"
-  {id: "zoox", title: "Milia Zoox"},
-  // TODO: group heading meaning "How completely crashes are reported"
-  {id: "reporting", title: "Quam plene collisiones nuntiantur"},
-  // TODO: group heading meaning "Which crashes count, and fault"
-  {id: "incidents", title: "Quae collisiones numerantur, et culpa"},
-  // TODO: group heading meaning "The statistical model"
-  {id: "model", title: "Exemplar statisticum"},
-  // TODO: group heading meaning "Human benchmarks"
-  {id: "humans", title: "Mensurae hominum"},
-  // TODO: group heading meaning "Growth and forecasts"
-  {id: "growth", title: "Incrementum et praedictiones"},
+  {id: "tesla", title: "Tesla's miles"},
+  {id: "waymo", title: "Waymo's miles"},
+  {id: "zoox", title: "Zoox's miles"},
+  // "How completely crashes are reported"
+  {id: "reporting", title: "Fraction of crashes reported"},
+  // "Which crashes count, and fault"
+  {id: "incidents", title: "Which crashes count; fault assignment"},
+  // "The statistical model"
+  {id: "model", title: "Statistical model"},
+  {id: "humans", title: "Human benchmarks"},
+  // "Growth and forecasts"
+  {id: "growth", title: "Forecasts"},
 ];
 const ASSUMPTION_COLUMNS = [
-  // TODO: column header meaning "Assumption"
-  "Suppositio",
-  // TODO: column header meaning "Where it is set"
-  "Ubi statuitur",
+  "Assumption",
+  // column header meaning "Where it is set"
+  "Where it's specified",
 ];
-const ASSUMPTIONS_INTRO = "Each row names something the figures on this page take as given rather than measure: its value, what it affects, and whether the page's ranges and 95% CIs allow for it.";
+// The section has no intro (since 2026-11-21: the human emptied it, "goes
+// without saying, I think"; until then a green paragraph above the tables,
+// ASSUMPTIONS_INTRO, read "Each row names something the figures on this page
+// take as given rather than measure: its value, what it affects, and whether
+// the page's ranges and 95% CIs allow for it."). renderAssumptions draws the
+// group tables alone, so no empty paragraph is left in the intro's place.
 
 const ASSUMPTIONS = [
   // --- Tesla's miles --------------------------------------------------------
@@ -6517,14 +6739,14 @@ const ASSUMPTIONS = [
   {id: "waymo-weather", group: "waymo", values: {sep: 100000, oct: 170000},
     text: v => `Weather pauses come off Waymo's estimate where Robotaxi Tracker's app-availability data ([https://robotaxitracker.com/wait-times](https://robotaxitracker.com/wait-times)) shows every pickup point in a city unavailable. They are converted to miles by judgment: about ${fmtWhole(v.sep)} in September 2026 and ${fmtWhole(v.oct)} in October. November's are not yet counted, and no range carries the conversion.`,
     where: [["data/vmt.csv", "waymo 2026-09 – 2026-10"], ["quals/waymo-vmt-model.qual.mjs", "PAUSES"]]},
-  {id: "waymo-projection", group: "waymo", values: {octAdd: 170000, novAdd: 380000},
+  {id: "waymo-projection", group: "waymo", values: {octAdd: 170000, novAdd: 380000, caDay: [316000, 323000, 324000]},
     text: v => {
       const last = vmtLineMonths("Waymo").at(-1);
       const low = MILES_FORECAST.find(f => f.helmer === "Waymo").components[0].parts[0].lo;
-      return `October and November 2026 repeat each part of September's estimate at its daily rate, with no growth, plus judged allowances for openings and added service area (about ${fmtWhole(v.octAdd)} in October and ${fmtWhole(v.novAdd)} in November), less those pauses. ${fmtMonth(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}, the newest NHTSA month, enters Waymo's rates this way; the months after it show only on the charts, and the last, ${fmtMonth(last)}, held flat, sets the low edge of Waymo's miles forecast (${fmtFigure(low)}, below).`;
+      return `October and November 2026 repeat each part of September's estimate at its daily rate, with no growth, plus judged allowances for openings and added service area (about ${fmtWhole(v.octAdd)} in October and ${fmtWhole(v.novAdd)} in November), less those pauses. Nothing is taken off November for Waymo's halt of freeway driving (California's DMV barred its driverless cars from freeways on Nov 11, 2026, and Waymo then kept its robotaxis off freeways in every market): no source gives the freeway share of its miles, and California's driverless miles a day did not fall through the freeway suspension of May 21 to late July 2026 (about ${fmtWhole(v.caDay[0])} in May, ${fmtWhole(v.caDay[1])} in June and ${fmtWhole(v.caDay[2])} in July, by CPUC's count). Waymo's rates run through ${fmtMonth(vmtCountedMonths("Waymo").at(-1))}; the months after it show only on the charts, and the last, ${fmtMonth(last)}, held flat, sets the low edge of Waymo's miles forecast (${fmtFigure(low)}, below).`;
     },
     covers: {Waymo: ["2026-10", "2026-11"]},
-    where: [["data/vmt.csv", "waymo 2026-10 – 2026-11"], ["data/README.md", "Ghost months"], ["quals/waymo-vmt-model.qual.mjs", "OPENINGS"]]},
+    where: [["data/vmt.csv", "waymo 2026-10 – 2026-11"], ["data/README.md", "Ghost months"], ["quals/waymo-vmt-model.qual.mjs", "OPENINGS, PAUSES"], ["data/waymo-ca.csv", ""]]},
   {id: "waymo-ghost-range", group: "waymo", values: {caTo: "2026-09"},
     text: v => {
       const [oct, nov] = ["2026-10", "2026-11"].map(month => vmtRowAt("Waymo", month));
@@ -6535,7 +6757,7 @@ const ASSUMPTIONS = [
 
   // --- Zoox's miles ---------------------------------------------------------
   {id: "zoox-statements", group: "zoox", values: {s0: [1250000, 1350000], s1: [1880000, 2000000], s2: [3000000, 3200000]},
-    text: v => `Zoox's four mileage statements are read as ranges: its millionth mile 'just last week' (said Monday, Dec 8, 2025) as December 1 to 7; 'approximately 1.3 million' at Dec 31, 2025 as ${fmtFigure(v.s0[0])} to ${fmtFigure(v.s0[1])}; 'nearly two million' (Mar 24, 2026) as ${fmtFigure(v.s1[0])} to ${fmtFigure(v.s1[1])}; 'more than 3 million' (Aug 5, 2026) as ${fmtFigure(v.s2[0])} to ${fmtFigure(v.s2[1])}, though the month-end ranges take only its floor. Each is taken as all-time driverless miles in every city, without safety-driver testing; every Zoox rate from June 2025 rests on them.`,
+    text: v => `Zoox's four mileage statements are read as ranges: its millionth mile, 'just last week' in Fortune's report of what its CTO said on Monday, Dec 8, 2025, as December 1 to 7; 'approximately 1.3 million' at Dec 31, 2025 as ${fmtFigure(v.s0[0])} to ${fmtFigure(v.s0[1])}; 'nearly two million' (Mar 24, 2026) as ${fmtFigure(v.s1[0])} to ${fmtFigure(v.s1[1])}; 'more than 3 million' (Aug 5, 2026) as ${fmtFigure(v.s2[0])} to ${fmtFigure(v.s2[1])}, though the month-end ranges take only its floor. Each is taken as all-time driverless miles in every city, without safety-driver testing; every Zoox rate from June 2025 rests on them.`,
     where: [["quals/zoox-vmt-model.qual.mjs", "S0, S1, S2, CROSS"], ["data/README.md", "Zoox anchors"]]},
   {id: "zoox-path", group: "zoox", values: {},
     text: () => `Zoox's miles outside California, mostly Las Vegas, follow the smoothest path those statements allow: the least month-to-month change in their daily rate from May 2025. It runs along two of the statements' edges, the most miles allowed through Nov 30, 2025 (the millionth mile not before Dec 1) and the fewest through Dec 31, 2025 (1.25 million), so June to November 2025's miles sit at the high end of what the statements allow and December 2025's, and the rate held after them, at the low end; the ranges allow the rest.`,
@@ -6555,13 +6777,13 @@ const ASSUMPTIONS = [
     where: [["quals/zoox-vmt-model.qual.mjs", "CA_2025, CA_2025_LO, CA_2025_HI"]]},
   {id: "zoox-dmv-factor", group: "zoox", values: {f: 1.19, lo: 1.05, hi: 1.33, lastCpuc: "2026-09", g: 5.1},
     text: v => `From January 2026 Zoox's California miles are CPUC's driverless pilot miles times ${v.f}, for the miles the DMV counts and CPUC does not: the middle of ${v.lo} to ${v.hi}, ${v.hi} being November 2025's measured ratio, with no 2026 ratio measured. After CPUC's last month (${fmtMonth(v.lastCpuc)}) they grow ${v.g}% a month, a prior. Only September 2026's range carries the factor's spread.`,
-    where: [["quals/zoox-vmt-model.qual.mjs", "DMV_FACTOR, GROWTH"]]},
+    where: [["quals/zoox-vmt-model.qual.mjs", "DMV_FACTOR, dmvFactorRange, GROWTH"]]},
   {id: "zoox-range-formula", group: "zoox", values: {r: 0.065, d: 0.07, n: 0.09},
     text: v => `For January to August 2026 a month's range is e^(±1.96σ) times its miles, with σ = √(${v.r}² + ${v.d}² × h + ${v.n}²): the statements' rounding, drift in the rate per square root of a month (h months from the middle of the stretch between the statements around the month) and month-to-month noise. All three numbers are priors with no data behind them, since read as ranges the statements allow one flat rate.`,
     covers: {Zoox: ["2026-01", "2026-08"]},
     where: [["quals/zoox-vmt-model.qual.mjs", "sigmaOf, Q1, W2"], ["data/README.md", "Ghost months"]]},
   {id: "zoox-no-data", group: "zoox", values: {lo: 1.05, hi: 1.33, noLo: 0.5, noHi: 2},
-    text: v => `September 2026's range is CPUC's filed California miles times ${v.lo} to ${v.hi} plus half to twice the rest. October and November, which nothing measures, take ${v.noLo} to ${v.noHi} times their whole estimate, the range this page gives months with no data, which may be too narrow at the top now that Las Vegas's vehicle cap has ended. ${fmtMonth(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}, the newest NHTSA month, enters Zoox's rates with its range.`,
+    text: v => `September 2026's range is CPUC's filed California miles times ${v.lo} to ${v.hi} plus half to twice the rest. October and November, which nothing measures, take ${v.noLo} to ${v.noHi} times their whole estimate, the range this page gives months with no data, which may be too narrow at the top now that Las Vegas's vehicle cap has ended. Zoox's rates run through ${fmtMonth(vmtCountedMonths("Zoox").at(-1))}; the months after it show only on the charts.`,
     covers: {Zoox: ["2026-09", "2026-11"]},
     where: [["quals/zoox-vmt-model.qual.mjs", "NO_DATA, LAST_STATEMENT_MONTH, RESTATED_THROUGH"]]},
   {id: "zoox-carry", group: "zoox", values: {lo: 0.7, hi: 1.3},
@@ -6569,62 +6791,57 @@ const ASSUMPTIONS = [
     where: [["data/README.md", "Zoox anchors"], ["quals/zoox-vmt-model.qual.mjs", "CARRY, JULY_FLOOR"]]},
 
   // --- How completely crashes are reported -----------------------------------
-  {id: "reporting-receipt-share", group: "reporting", values: {minRef: 3},
-    text: v => {
-      const month = NHTSA_DATA_THROUGH_DATE.slice(0, 7), row = vmtRowAt("Waymo", month);
-      assert(row.through === NHTSA_DATA_THROUGH_DATE,
-        "the assumptions list reads the release's receipt coverage from a row on NHTSA's coverage", {month, through: row.through});
-      return `NHTSA's newest release holds only reports received by ${fmtDay(NHTSA_DATA_THROUGH_DATE)}, so for its newest month (${fmtMonth(month)}) the share of the eventual five-day reports already in is estimated. The estimate is those received over the count expected at each company's crash rate per mile in its latest month with at least ${v.minRef} such reports: ${fmtPct1(row.coverage)} (${fmtPct1(row.coverageMin)} to ${fmtPct1(row.coverageMax)}). Its low edge carries only counting noise; a crash rate that changed between the two months is not carried.`;
+  // Since 2026-11-21 a month counts only when its reports are taken as all in
+  // (reporting-month-rule and its two premises, reporting-five-day and
+  // reporting-earlier-months) or a company's own dated list covers it
+  // (reporting-tesla-list and the three entries after it, which describe the
+  // one kind of row that still counts a share of its miles). Until then the
+  // group opened with four entries on the estimated shares of NHTSA's newest
+  // month (reporting-receipt-share, -receipt-top, -incident-share, -pooled),
+  // which went with the estimate.
+  {id: "reporting-month-rule", group: "reporting", values: {},
+    text: () => {
+      const month = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
+      const pending = ghostVmtRows.filter(r => r.month <= month).map(r => `${helmerLabel(r.helmer)} ${fmtMonth(r.month)}`);
+      return `A company's month enters this page's figures only when NHTSA's file is taken to hold all of its crash reports, or the company's own dated list of its crashes covers it (below). Any other month is pending: its miles and its crashes are in no count, rate or verdict, and no share of it is estimated. NHTSA's newest release holds the reports it received by ${fmtDay(NHTSA_DATA_THROUGH_DATE)}, so its newest month (${fmtMonth(month)}) is only partly reported; its file is taken as complete for every earlier month, less a company's late months (below). Pending now: ${pending.join(", ") || "none"}.`;
     },
-    where: [["data/slurp.py", "release_month_coverage, pooled_reference_rate"]]},
-  {id: "reporting-receipt-top", group: "reporting", values: {max: 0.52, record: 0.5, recordMonth: "2026-02"},
-    text: v => `That share's top, ${fmtPct1(v.max)}, is the largest share a first release has held (${fmtPct1(v.record)}, ${fmtMonth(v.recordMonth)}) plus ${Math.round(100 * (v.max - v.record))} percentage points: the reading in which the newest month's low count is real, not lagging.`,
-    where: [["data/slurp.py", "FIVE_DAY_RECEIPT_COVERAGE_MAX, FIVE_DAY_RECEIPT_OBSERVATIONS, RECEIPT_MONTHS_EXCLUDED"]]},
-  {id: "reporting-incident-share", group: "reporting", values: {record: 0.26},
-    text: v => {
-      const row = vmtRowAt("Waymo", NHTSA_DATA_THROUGH_DATE.slice(0, 7));
-      return `Monthly-track metrics (${METRIC_DEFS.filter(m => m.fiveDay !== true).map(m => m.cardLabel).join(", ")}) also take the share of the newest month's incidents of every kind already in, estimated the same way: ${fmtPct1(row.incCov)} of what the five-day share implies (${fmtPct1(row.incCovMin)} to ${fmtPct1(row.incCovMax)}), so about ${fmtPct1(row.coverage * row.incCov)} of the month's eventual incidents in all (${fmtPct1(row.coverage * row.incCovMin)} to ${fmtPct1(row.coverageMax * row.incCovMax)}). Its top, ${fmtPct1(row.incCovMax)}, assumes every Monthly-track incident may already be in, which puts the combined top at ${fmtPct1(row.coverageMax * row.incCovMax)}, against at most ${fmtPct1(v.record)} of a month's eventual incidents in any first release from December 2025 to September 2026.`;
-    },
-    where: [["data/slurp.py", "incident_coverage"]]},
-  {id: "reporting-pooled", group: "reporting", values: {},
-    text: () => `One pair of shares serves every company, pooled over Waymo, Tesla and Zoox, though their reports reach NHTSA on different schedules. Tesla's NHTSA filings count in the pool even where Tesla's own rows take its list (below), and the Tesla (no safety monitor) line takes the shares Tesla's rows take: NHTSA's, or in a month Tesla's list covers, the list's share of the line's own miles.`,
-    where: [["data/slurp.py", "pooled_reference_rate"]]},
-  {id: "reporting-earlier-months", group: "reporting", values: {month: "2026-08", late: 23, of: 43},
-    text: v => `Every month before the newest is taken as fully reported unless half or more of a company's Monthly reports for its latest checked month came a release late (none now). Yet ${v.late} of Waymo's ${v.of} ${fmtMonth(v.month)} Monthly-track reports came a release late, so a month can be counted short for one release; no range carries this.`,
-    where: [["data/slurp.py", "MONTHLY_ARRIVAL_LAG, MONTHLY_ARRIVAL_OBSERVATIONS, MONTHLY_ARRIVAL_MONTHS_EXCLUDED, FIVE_DAY_SHARE_OBSERVATIONS"]]},
-  {id: "reporting-five-day", group: "reporting", values: {},
-    text: () => `The five-day metrics (${METRIC_DEFS.filter(m => m.fiveDay === true).map(m => m.cardLabel).join(", ")}) are taken to be reported within five days of the company learning of the crash, as NHTSA requires for a death, a hospital transport, an airbag deployment, a struck pedestrian, cyclist or motorcyclist, or a tow-away, so their newest month takes only the five-day share. Some airbag crashes have in fact been first filed in Monthly reports.`,
+    where: [["data/slurp.py", "month_sources, record_counted, COMPLETE_COVERAGE"], ["crashla.js", "checkGhostVmtRows, checkPendingIncidents"]]},
+  {id: "reporting-five-day", group: "reporting", values: {from: "2025-12", late: ["2026-03"]},
+    text: v => `A crash with a death, a hospital transport, an airbag deployment, a struck pedestrian, cyclist or motorcyclist, or a tow-away must be reported within five days of the company learning of it, and a month's five-day reports are taken to be all in NHTSA's file by the release after the month's first. Among the months from ${fmtMonth(v.from)} on whose later releases are saved, that failed only for ${v.late.map(fmtMonth).join(", ")}, whose second release was cut short; a month can so be counted short for one release, and no range carries this. The five-day metrics (${METRIC_DEFS.filter(m => m.fiveDay === true).map(m => m.cardLabel).join(", ")}) rest on it in every month, though some airbag crashes have in fact been first filed in Monthly reports (below).`,
     where: [["crashla.js", "METRIC_DEFS"], ["data/slurp.py", "REPORT_TRACK"]]},
-  {id: "reporting-thinning", group: "reporting", values: {},
-    text: () => `Within a track, every metric's newest month is thinned by the same share, as if the reports already in were a random sample of the month's eventual ones.`,
-    where: [["crashla.js", "monthSeriesData"]]},
-  {id: "reporting-range-product", group: "reporting", values: {},
-    text: () => `The newest month's thinned miles range pairs the low miles with the low shares and the high miles with the high shares, and is read as a 95% range, wider than the combined uncertainty would make it.`,
-    where: [["crashla.js", "monthSeriesData, windowVmtBand"]]},
+  {id: "reporting-earlier-months", group: "reporting", values: {month: "2026-08", late: 23, of: 43},
+    text: v => `A month's Monthly reports, due on the 15th of the next month, are taken to be in NHTSA's file by that same release, unless half or more of a company's Monthly reports for its latest checked month came a release late: that company's months just before the newest are then pending too (none now). Yet ${v.late} of Waymo's ${v.of} ${fmtMonth(v.month)} Monthly-track reports came a release late, so a month can be counted short for one release; no range carries this.`,
+    where: [["data/slurp.py", "MONTHLY_ARRIVAL_LAG, MONTHLY_ARRIVAL_OBSERVATIONS, MONTHLY_ARRIVAL_MONTHS_EXCLUDED, check_monthly_arrivals"]]},
   {id: "reporting-sgo-exemption", group: "reporting", values: {},
-    text: () => `Since June 16, 2025 NHTSA has not required a report of a minor crash in which another vehicle struck the AV (under $1,000 of damage, nobody taken to a hospital, no airbag or other trigger). The page does not add such crashes back (the sanity section's note on reporting thresholds sizes the loss at roughly a quarter to a third of Waymo's property-damage reports of a stopped AV being struck), so its all-incident and nonstationary counts run low against the human benchmarks, which include them. The at-fault metrics are taken as nearly immune, since an exempt crash, another vehicle striking the AV, is taken to be almost never the AV's fault.`,
-    where: [["crashla.js", "METRIC_DEFS"]]},
+    text: () => `Since June 16, 2025 NHTSA has not required a report of a minor crash in which another vehicle struck the AV (under $1,000 of damage, nobody taken to a hospital, no airbag or other trigger). The page does not add such crashes back (the sanity section's note on reporting thresholds sizes the loss at roughly a quarter to a third of Waymo's property-damage reports of a stopped AV being struck), so its all-incident and nonstationary counts run low against the human benchmarks, which include them. The at-fault metrics lose less but are not immune, and nothing adds that back either: as rated since November 2026, Waymo's crashes of that kind before ${fmtMonth(SGO_EXEMPT_KIND.before)} (the AV stopped or parked, the other vehicle moving, nobody injured) average ${SGO_EXEMPT_KIND.faultPct}% fault and carried ${SGO_EXEMPT_KIND.massPct}% of its at-fault mass in the twelve months before the exemption, so the at-fault counts run low too, by a share that is not known and that no range carries.`,
+    where: [["crashla.js", "METRIC_DEFS, SGO_EXEMPT_KIND"]]},
   {id: "reporting-unfiled", group: "reporting", values: {},
     text: () => `Companies are taken to file every crash NHTSA requires; only when reports arrive is measured, and a crash never filed has no allowance anywhere.`,
     where: [["data/slurp.py", "MONTHLY_ARRIVAL_OBSERVATIONS"]]},
   {id: "reporting-tesla-list", group: "reporting", values: {through: "2026-10-18", miles: 1179333},
     text: v => {
-      const listed = vmtRows.filter(r => r.through !== NHTSA_DATA_THROUGH_DATE);
+      const listed = vmtRows.filter(r => !isCompleteRow(r));
       assert(JSON.stringify(listed.map(r => r.helmer).sort()) === JSON.stringify(["Tesla", "TeslaNoMonitor"]) &&
         listed.every(r => r.month === v.through.slice(0, 7) && r.through === v.through),
-        "the assumptions entry reporting-tesla-list (crashla.js ASSUMPTIONS) reads the rows whose incidents run through its values' date, Tesla's two lines in that date's month: after a release or a new list update its values, or, when no row is on a list's coverage, remove it and reporting-tesla-list-complete",
+        "the assumptions entry reporting-tesla-list (crashla.js ASSUMPTIONS) reads the rows whose incidents run through its values' date, Tesla's two lines in that date's month: after a release or a new list update its values, or, when no row is on a list's coverage, remove it and reporting-tesla-list-complete, reporting-thinning and reporting-range-product",
         {listed: listed.map(r => [r.helmer, r.month, r.through]), through: v.through});
       const [all, noMonitor] = ["Tesla", "TeslaNoMonitor"].map(line => listed.find(r => r.helmer === line));
-      return `For Tesla's ${fmtMonth(v.through.slice(0, 7))}, its own list of the crashes it has reported, through ${fmtDay(v.through)}, stands in for NHTSA's file while it holds more of the month. The share reported is the list's ${fmtWhole(v.miles)} no-monitor miles over the row's miles (${fmtPct1(noMonitor.coverage)} on the no-monitor line, ${fmtPct1(all.coverage)} on the all-modes line, whose monitor-aboard miles count as uncovered), with no range, and it scales the row's whole miles range although those miles are measured.`;
+      return `For Tesla's ${fmtMonth(v.through.slice(0, 7))}, its own list of the crashes it has reported, through ${fmtDay(v.through)}, is the source in place of NHTSA's file: the month counts the list's crashes over the miles driven through that date, a stated end date and a mileage Tesla measured (${fmtWhole(v.miles)} no-monitor miles). The share of each row's miles counted is those miles over the row's (${fmtPct1(noMonitor.coverage)} on the no-monitor line, ${fmtPct1(all.coverage)} on the all-modes line, whose monitor-aboard miles count as uncovered), with no range, and it scales the row's whole miles range although those miles are measured. A crash of that month that the list does not hold (a no-monitor crash in NHTSA's file that the list lacks, or any crash with a safety monitor aboard) is pending.`;
     },
     where: [["data/slurp.py", "PREPRINT_LIST, preprint_coverage"]]},
   {id: "reporting-tesla-list-complete", group: "reporting", values: {onTime: 17, filed: 19},
     text: v => {
-      const row = vmtRows.find(r => r.through !== NHTSA_DATA_THROUGH_DATE);
-      assert(row !== undefined, "the assumptions entry reporting-tesla-list-complete (crashla.js ASSUMPTIONS) reads a row on a list's coverage: when no row is on one, remove it and reporting-tesla-list");
+      const row = vmtRows.find(r => !isCompleteRow(r));
+      assert(row !== undefined, "the assumptions entry reporting-tesla-list-complete (crashla.js ASSUMPTIONS) reads a row on a list's coverage: when no row is on one, remove it and reporting-tesla-list, reporting-thinning and reporting-range-product");
       return `That list is taken to lack a Monthly-track crash only as often as Tesla's Monthly reports have reached NHTSA late (${v.onTime} of ${v.filed} on time), so it holds ${fmtPct1(row.incCov)} of the month's Monthly-track crashes (${fmtPct1(row.incCovMin)} to ${fmtPct1(row.incCovMax)}). Five-day metrics take the list as complete.`;
     },
     where: [["data/slurp.py", "preprint_coverage"]]},
+  {id: "reporting-thinning", group: "reporting", values: {},
+    text: () => `On a row that a company's list covers, every Monthly-track metric (${METRIC_DEFS.filter(m => m.fiveDay !== true).map(m => m.cardLabel).join(", ")}) is thinned by that same share, as if the crashes the list lacks were a random sample of its span's Monthly-track crashes.`,
+    where: [["crashla.js", "monthSeriesData"]]},
+  {id: "reporting-range-product", group: "reporting", values: {},
+    text: () => `On such a row the thinned miles range pairs the low miles with the low share and the high miles with the high share, and is read as a 95% range, wider than the combined uncertainty would make it.`,
+    where: [["crashla.js", "monthSeriesData, windowVmtBand"]]},
 
   // --- Which crashes count, and fault ---------------------------------------
   {id: "incidents-operator-scope", group: "incidents", values: {n: 3},
@@ -6634,7 +6851,7 @@ const ASSUMPTIONS = [
     text: v => `The ${v.n} Tesla crashes in which a remote operator, not the software, was driving count on no line. The miles such operators drive stay in Tesla's denominators, taken as negligible since remote takeovers are low-speed recoveries. Reports that mention a remote operator or carry its operator code (${v.remote}), or mention manual driving (${v.manual}), count: on review the software was driving at contact.`,
     where: [["data/slurp.py", "TELEOP_DRIVEN_REPORTS, REMOTE_LANGUAGE_ADS_DRIVEN, SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN"]]},
   {id: "incidents-no-monitor-list", group: "incidents", values: {teleop: 3, additions: 0},
-    text: v => `A Tesla crash counts on the Tesla (no safety monitor) line exactly when a remote operator was not driving (${v.teleop} on Tesla's list were, and count on no line) and either Tesla's own list of no-monitor crashes holds it or it is newer than that list and its narrative names no safety monitor (${v.additions} so far, each reviewed at the release that brings it until a list holds it). That second rule takes a narrative to name the monitor whenever one was aboard, as every in-scope Tesla narrative of 2026 has. Reports whose narratives put a monitor aboard count only on the all-modes line.`,
+    text: v => `A Tesla crash counts on the Tesla (no safety monitor) line exactly when a remote operator was not driving (${v.teleop} on Tesla's list were, and count on no line) and either Tesla's own list of no-monitor crashes holds it or it is newer than that list and its narrative names no safety monitor (${v.additions} so far, each reviewed at the release that brings it until a list holds it; in a month the list covers, such a crash is pending until NHTSA's file is complete for the month). That second rule takes a narrative to name the monitor whenever one was aboard, as every in-scope Tesla narrative of 2026 has. Reports whose narratives put a monitor aboard count only on the all-modes line.`,
     where: [["data/slurp.py", "TESLA_NO_MONITOR_REPORTS, TESLA_NO_MONITOR_ADDITIONS, TESLA_MONITOR_ABOARD_REPORTS, SAFETY_MONITOR_PATTERN, TESLA_NO_MONITOR_FROM"]]},
   {id: "incidents-other-files", group: "incidents", values: {n: 1},
     text: v => `Only NHTSA's files for automated driving systems are counted, plus ${splur(v.n, "report")} found misfiled in its other files and the crashes on Tesla's own list that NHTSA has not yet published (below). A report in those other files with the operator type Consumer or In-Vehicle (Commercial / Test) is taken without review as a person's driving, and one of any other type is reviewed: among the first, Tesla's own-fleet reports in the driver-assistance file, though some from Austin and Dallas in 2026 cannot be ruled out as robotaxi trips, and an alleged fatality in Austin in July 2026 coded Consumer in its OTHER file.`,
@@ -6656,8 +6873,12 @@ const ASSUMPTIONS = [
     text: () => `A report's latest version is taken as the true one, with a few reviewed exceptions: a crash split in two, and a re-filing that replaces another report.`,
     where: [["data/slurp.py", "SPLIT_SAME_INCIDENT_REPORTS, SUPERSEDED_REPORTS"]]},
   {id: "incidents-stationary", group: "incidents", values: {},
-    text: () => `An incident is stationary only when the AV's reported speed at contact is exactly 0 mph, and a missing speed counts as moving. Only the road type 'Parking Lot' marks a parking lot, so parking garages count as roadway; the nonstationary metrics rest on both.`,
-    where: [["crashla.js", "speedBinForIncident, monthSeriesData"]]},
+    text: () => {
+      const parking = Object.keys(ROADWAY_CLASS).filter(road => ROADWAY_CLASS[road] === "parking").map(road => `'${road}'`);
+      const unknown = incidents.filter(r => r.road === "Unknown").length;
+      return `An incident is stationary only when the AV's reported speed at contact is exactly 0 mph, and a missing speed counts as moving. A moving incident is on a road unless its filed road type is a parking facility (${parking.join(" or ")}), by one reviewed table of the road types; a road type filed as 'Unknown' (${splur(unknown, "incident")}) counts as a road, the reading that can only lower an AV's miles per incident. The nonstationary metrics rest on both.`;
+    },
+    where: [["crashla.js", "speedBinForIncident, monthSeriesData"], ["data/slurp.py", "ROADWAY_CLASS"]]},
   {id: "incidents-contact-areas", group: "incidents", values: {agree: 75},
     text: v => `NHTSA's current file is taken to publish its front and rear contact-area columns under rotated labels, which the page moves back. The run stops unless narratives agree with the moved labels in at least ${v.agree}% of tested cases, and NHTSA has not confirmed the rotation. Contact areas enter the cases the fault raters read.`,
     where: [["data/slurp.py", "CURRENT_FILE_CONTACT_LABEL, CONTACT_AREA_MIN_AGREEMENT"]]},
@@ -6667,14 +6888,14 @@ const ASSUMPTIONS = [
         SEVERITY_INFO["Moderate W/ Hospitalization"].hosp === true && SEVERITY_INFO["Minor"].injury === true &&
         SEVERITY_INFO["Moderate"].injury === true && SEVERITY_INFO["Minor"].hosp === undefined && SEVERITY_INFO["Moderate"].hosp === undefined,
         "the assumptions list's severity entry says 'W/ Hospitalization' and a bare 'Serious' are a hospital transport and a bare 'Minor' or 'Moderate' an injury without one; SEVERITY_INFO must say so too");
-      return `Injury, hospitalization+, serious injury+ and fatality count the severity each filing alleges for anyone in the crash: 'W/ Hospitalization' and a bare 'Serious' are read as a hospital transport, and the older bare 'Minor' and 'Moderate' as none. Where a filing's severity is Unknown or its narrative flatly contradicts it, a reviewed value from the narrative replaces it, a stated transport becoming Minor W/ Hospitalization unless a source says the injury was serious.`;
+      return `Injury, hospitalization+, serious injury+ and fatality count the severity each filing alleges for anyone in the crash: 'W/ Hospitalization' and a bare 'Serious' are read as a hospital transport, and the older bare 'Minor' and 'Moderate' as none. Where a filing's severity is Unknown or its narrative flatly contradicts it, a reviewed value from the narrative replaces it, a stated transport becoming Minor W/ Hospitalization unless a source says the injury was serious. A hospital transport the narrative states counts whatever its cause (in one crash the other driver, in a medical emergency, was taken away by ambulance), as the human benchmark counts anyone transported.`;
     },
     where: [["crashla.js", "SEVERITY_INFO"], ["data/slurp.py", "SEVERITY_OVERRIDE"]]},
   {id: "incidents-airbag", group: "incidents", values: {},
-    text: () => `An airbag deployment in any vehicle in the crash counts, and a deployment the filing leaves unknown counts as none. A few deployments a narrative states but the filing's fields cannot record are added.`,
+    text: () => `An airbag deployment in any vehicle in the crash counts, and a deployment the filing leaves unknown counts as none. A few deployments a narrative states but the filing's fields cannot record are added. Waymo's own published crash list, which disagrees with its filings on a few reports in both directions, is not used: NHTSA's field and the report's own narrative are the sources for every company.`,
     where: [["data/slurp.py", "AIRBAG_OVERRIDE"]]},
-  {id: "incidents-fatal-fraction", group: "incidents", values: {},
-    text: () => `Each fatal crash counts as 1 divided by the number of vehicles involved, read from its narrative, whoever was at fault, and the model treats that fraction as a count of incidents.`,
+  {id: "incidents-fatal-fraction", group: "incidents", values: {narrative: 6, outside: 7},
+    text: v => `Each fatal crash counts as 1 divided by the number of vehicles involved, whoever was at fault, and the model treats that fraction as a count of incidents. The number of vehicles is the one the report's own narrative gives, a floor where the narrative says 'at least': for Waymo's fatal crash of January 2025 in San Francisco the narrative gives ${v.narrative} vehicles and outside reports (firefighters, by local news) ${v.outside}, so it counts as 1/${v.narrative} of a death where 1/${v.outside} may be right. No count is taken from outside NHTSA's data: outside reporting reaches some crashes and companies more than others, and a count used only where it exists could bias the comparison.`,
     where: [["crashla.js", "FRACTIONAL_DEATH_NOTE"], ["data/slurp.py", "VEHICLES_INVOLVED"]]},
   {id: "incidents-passengers", group: "incidents", values: {},
     text: () => `For the passenger table only, Tesla's safety monitor is not a passenger, and a Tesla narrative silent on who was aboard counts as unknown.`,
@@ -6710,8 +6931,8 @@ const ASSUMPTIONS = [
     text: () => `A human benchmark range is read three ways. In the sensitivity table it is hard limits ('robustly safer' needs the AV's whole 95% CI above the range's top); in the cards' multipliers and the distribution chart it is a 95% range drawn independently of the line; and in the MPI-over-time chart's fan it is one flat band at every level. So a card can color a multiplier green where the table calls the comparison ambiguous.`,
     where: [["crashla.js", "helmerHumanStress, multiplierInterval"]]},
   {id: "model-dispersion", group: "model", values: {},
-    text: () => `The Poisson dispersion table calls fewer than ${DISPERSION_LIMITS.minIncidents} incidents too few to tell, and grades the index at ${DISPERSION_LIMITS.under}, ${DISPERSION_LIMITS.poisson} and ${DISPERSION_LIMITS.mild}; the limits are judgment and feed no other figure.`,
-    where: [["crashla.js", "DISPERSION_LIMITS"]]},
+    text: () => `The Poisson dispersion table calls fewer than ${DISPERSION_LIMITS.minIncidents} incidents too few to tell. Otherwise it reads Pearson's chi-squared statistic against its distribution with one degree of freedom fewer than the line's months: overdispersed when a statistic that large has a chance under ${100 * DISPERSION_LIMITS.alpha}% if the incidents are Poisson, underdispersed when one that small does, and consistent with Poisson otherwise; an overdispersed line is called mildly so while its index, the statistic over its degrees of freedom, is under ${DISPERSION_LIMITS.mild}. Those limits are judgment and feed no other figure. The test takes each month's miles as exact, so an error in how a line's miles are split among its months also reads as dispersion.`,
+    where: [["crashla.js", "DISPERSION_LIMITS, dispersionVerdict"]]},
 
   // --- Human benchmarks -----------------------------------------------------
   {id: "humans-all-incidents", group: "humans", values: {},
@@ -6770,10 +6991,17 @@ const ASSUMPTIONS = [
   {id: "humans-fatality-other", group: "humans", values: {},
     text: () => {
       const h = METRIC_BY_KEY.fatality.humanMPI;
-      return `Humans (US average) fatality spans FARS 2024's deaths and fatal crashes per mile (${fmtFigure(h.HumansUS.lo)} to ${fmtFigure(h.HumansUS.hi)}); Humans (Uber/Lyft) fatality spans Uber's and Lyft's own reported death rates for 2019 to 2022 (${fmtFigure(h.HumansRideshare.lo)} to ${fmtFigure(h.HumansRideshare.hi)}).`;
+      return `Humans (US average) fatality spans FARS 2024's deaths and fatal crashes per mile (${fmtFigure(h.HumansUS.lo)} to ${fmtFigure(h.HumansUS.hi)}).`;
     },
-    bands: [["fatality", "HumansUS"], ["fatality", "HumansRideshare"]],
+    bands: [["fatality", "HumansUS"]],
     where: [["crashla.js", "METRIC_DEFS"]]},
+  {id: "humans-rideshare-fatal-basis", group: "humans", values: {},
+    text: () => {
+      const h = METRIC_BY_KEY.fatality.humanMPI.HumansRideshare, rates = RIDESHARE_FATALITY_RATES, fars = FARS_2024_FATAL_CRASHES;
+      return `Humans (Uber/Lyft) fatality (${fmtFigure(h.lo)} to ${fmtFigure(h.hi)}) starts from Uber's and Lyft's own reported death rates for 2019 to 2022, ${rates.uber.toFixed(2)} to ${rates.lyft.toFixed(2)} per 100 million miles. Those rates charge every death in a crash that involved a platform car to the platform in full, where the AV side splits each fatal crash among the vehicles in it, so the band divides them by ${(fars.vehicles / fars.crashes).toFixed(2)}, the national number of vehicles per fatal crash (FARS 2024: ${fmtWhole(fars.vehicles)} vehicles in ${fmtWhole(fars.crashes)} fatal crashes). Uber and Lyft publish no such figure for their own fatal crashes; city driving has more single-vehicle crashes that kill a pedestrian, which would make the true factor smaller, so the band may sit too far toward safe. Like the AV-cities band, it counts deaths where the AV side's count sums to fatal crashes, the same small lean toward the AVs.`;
+    },
+    bands: [["fatality", "HumansRideshare"]],
+    where: [["crashla.js", "RIDESHARE_FATALITY_RATES, FARS_2024_FATAL_CRASHES, rideshareFatalMpi"], ["quals/human-benchmark-provenance.qual.mjs", "RIDESHARE_REPORTS, FARS2024_FATAL"]]},
   {id: "humans-rideshare-lean", group: "humans", values: {},
     text: () => `Every other Humans (Uber/Lyft) band is the AV-cities band leaned from ${RIDESHARE_WORST} times worse to ${RIDESHARE_BEST} times safer (sober professional drivers against heavy urban driving and app distraction). That is a judgment: the rideshare crash rates the linked papers cite are all less safe than these bands' least safe edges. These bands are drawn dashed.`,
     bands: METRIC_DEFS.filter(m => m.humanMPI.HumansRideshare.derived === true).map(m => [m.key, "HumansRideshare"]),
@@ -6873,7 +7101,7 @@ function renderAssumptions() {
     });
     return `<h3>${escHtml(group.title)}</h3><div class="table-wrap"><table class="source-table vmt-sources" id="assumptions-${group.id}"><thead><tr><th>${escHtml(ASSUMPTION_COLUMNS[0])}</th><th>${escHtml(ASSUMPTION_COLUMNS[1])}</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
   });
-  return `<p class="month-note"><span class="ai-text">${escHtml(ASSUMPTIONS_INTRO)}</span></p>${tables.join("")}`;
+  return tables.join("");
 }
 
 function buildSanityChecks() {
@@ -7094,12 +7322,9 @@ For example, if this ratio is 2, it means the Miles Per Incident (MPI) could be 
     const dispIdx = chiSq / df;
     const rates = monthData.map(r =>
       r.vmt > 0 ? (r.count / r.vmt * 1e6).toFixed(1) : "\u2014");
-    // With few total incidents the test has no power; flag that
-    const verdict = totalK < DISPERSION_LIMITS.minIncidents ? DISPERSION_VERDICT.fewIncidents
-      : dispIdx < DISPERSION_LIMITS.under ? DISPERSION_VERDICT.under
-      : dispIdx < DISPERSION_LIMITS.poisson ? DISPERSION_VERDICT.poisson
-      : dispIdx < DISPERSION_LIMITS.mild ? DISPERSION_VERDICT.mild
-      : DISPERSION_VERDICT.over;
+    // With few total incidents the test has no power, and says so; else its
+    // assessment is the chi-squared test's (dispersionVerdict).
+    const verdict = dispersionVerdict(totalK, chiSq, df);
     dispRows.push(`<tr>
       <td>${escHtml(helmerLabel(helmer))}</td>
       <td>${rates.join(", ")}</td>
@@ -7148,9 +7373,12 @@ Use the date-range slider to look at more specific time windows.
   for (const helmer of ADS_HELMERS) {
     const helmerRows = rows.filter(r => r.helmer === helmer);
     const n = helmerRows.length;
-    if (n === 0) { rptRows.push(noIncidentsRow(helmer, 5)); continue; }
+    if (n === 0) { rptRows.push(noIncidentsRow(helmer, 6)); continue; }
     const zeroMph = helmerRows.filter(r => r.speed === 0).length;
     const stopped = helmerRows.filter(r => SV_STATIONARY.has(r.svMovement)).length;
+    // No stated movement (SV_MOVEMENT_UNKNOWN): counted beside "AV stopped",
+    // which keeps its count and its denominator, the row's total.
+    const unknownMovement = helmerRows.filter(r => SV_MOVEMENT_UNKNOWN.has(r.svMovement)).length;
     const propDmgOnly = helmerRows.filter(r =>
       !INJURY_SEVERITIES.has(r.severity) &&
       !UNKNOWN_SEVERITIES.has(r.severity)).length;
@@ -7158,6 +7386,7 @@ Use the date-range slider to look at more specific time windows.
       <td>${escHtml(helmer)}</td>
       <td>${fmtCount(zeroMph)} (${Math.round(100 * zeroMph / n)}%)</td>
       <td>${fmtCount(stopped)} (${Math.round(100 * stopped / n)}%)</td>
+      <td>${fmtCount(unknownMovement)} (${escHtml(fmtShare(unknownMovement, n))})</td>
       <td>${fmtCount(propDmgOnly)} (${Math.round(100 * propDmgOnly / n)}%)</td>
       <td>${fmtCount(n)}</td>
     </tr>`);
@@ -7188,14 +7417,18 @@ Waymo's own pre/post discontinuity suggests roughly a quarter to a third of its
 stopped-AV-struck property-damage reports stopped appearing, and Waymo now calls
 the property-damage-vs-human benchmark comparison impossible.
 Within-AV comparisons stay consistent (same rules for all three companies), and
-the at-fault metrics are essentially immune (the exempted crashes are ~99% not 
-the AV's fault).
+the at-fault metrics are less exposed but not immune: as rated since November
+2026, Waymo's crashes of the exempted kind before ${fmtMonth(SGO_EXEMPT_KIND.before)}
+(the AV stopped or parked, the other vehicle moving, nobody injured) average
+${SGO_EXEMPT_KIND.faultPct}% fault and carried ${SGO_EXEMPT_KIND.massPct}% of its at-fault mass in the twelve months
+before the carve-out.
 </p>
     <div class="table-wrap"><table id="sanity-threshold">
       <thead><tr>
         <th>Company</th>
         <th>Speed = 0 mph</th>
         <th>AV stopped</th>
+        <th>Unknown</th>
         <th>Property damage only</th>
         <th>Total</th>
       </tr></thead>
@@ -7246,18 +7479,24 @@ Maybe that affects AVs too?
     </table></div>`);
 
   // --- 8. VMT sources ---
-  // A window that ends at the newest NHTSA month also lists the ghost months'
-  // rationales (rule 9: shown and marked, not left out), after each line's
-  // analysis months, each headed by its month and the ghost tooltip's note.
-  // The note is the human's English, so its span is styled as such inside the
+  // A window also lists the rationales of the pending and ghost months it
+  // shows (windowGhostRows; rule 9: shown and marked, not left out), after
+  // each line's analysis months, each headed by its month and the note its
+  // VMT chart's dot ends with. The note is the human's English, or a Latin
+  // placeholder for it, so its span is styled as the human's text inside the
   // AI-text cell. Those miles are on the VMT charts but in no rate yet. Each
   // rationale, analysis or ghost, is drawn by rationaleHtml, its links to
   // data/README.md's sections as links (since 2026-11-05).
-  const ghostVmt = windowGhostRows(series.months[series.months.length - 1]);
+  const ghostVmt = windowGhostRows(series.months);
   const vmtSrcRows = [];
   for (const helmer of ADS_SERIES) {
     const helmerVmt = vmt.filter(r => r.helmer === helmer).sort((a, b) => a.month.localeCompare(b.month));
-    if (helmerVmt.length === 0) continue;
+    const helmerGhost = ghostVmt.filter(r => r.helmer === helmer);
+    // A line with nothing to source in the window has no row (a line whose
+    // only months here are pending or ghost ones has one: since 2026-11-21 a
+    // window can show a line's faded months and none of its analysis months,
+    // the newest month alone for a company with no list).
+    if (helmerVmt.length + helmerGhost.length === 0) continue;
     // One entry per distinct rationale (the eras of a helmer's VMT series each
     // carry their own sourcing note), in month order, headed by the first and
     // last month it covers in the window (one month alone when they are the
@@ -7273,8 +7512,8 @@ Maybe that affects AVs too?
         "a VMT rationale covers two separate runs of months", {helmer, months: at.map(i => helmerVmt[i].month)});
       const span = [...new Set([helmerVmt[at[0]].month, helmerVmt[at[at.length - 1]].month])].join(" \u2013 ");
       return `${span}: ${rationaleHtml(rationale)}`;
-    }).concat(ghostVmt.filter(r => r.helmer === helmer).map(r =>
-      `${r.month} (<span class="vmt-ghost-note">${escHtml(VMT_GHOST_NOTE)}</span>): ${rationaleHtml(r.rationale)}`)).join("<br>");
+    }).concat(helmerGhost.map(r =>
+      `${r.month} (<span class="vmt-ghost-note">${escHtml(r.note)}</span>): ${rationaleHtml(r.rationale)}`)).join("<br>");
     vmtSrcRows.push(`<tr>
       <td>${escHtml(helmerLabel(helmer))}</td>
       <td class="ai-text">${ratStr}</td>
@@ -7326,9 +7565,9 @@ In general we mistrust anything Tesla says except numbers in their official repo
     }
   }
   // The rows of the table whose coverage comes from a company's own list of
-  // its crash reports: their incidents run through that list's date, not
-  // NHTSA's receipt cutoff (data/vmt.js incidents_through).
-  const listCovered = vmt.filter(r => ADS_HELMERS.includes(r.helmer) && r.through !== NHTSA_DATA_THROUGH_DATE)
+  // its crash reports (the rows that are not complete, isCompleteRow): their
+  // incidents run through that list's date (data/vmt.js incidents_through).
+  const listCovered = vmt.filter(r => ADS_HELMERS.includes(r.helmer) && !isCompleteRow(r))
     .map(r => `${r.helmer} ${r.month} (through ${r.through})`);
   sections.push(`
 <h3>Incident coverage for partial months</h3>
@@ -7337,8 +7576,8 @@ In general we mistrust anything Tesla says except numbers in their official repo
 "Incident coverage" estimates what fraction of incidents from that period have actually been reported.
 NHTSA has two reporting tracks: 5-Day (must be reported within 5 days) and Monthly (must be reported by the following month).
 Claude notes: 
-<span class="ai-text">Monthly reports for the data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}) are not in yet, so effective VMT is thinned by the incident-coverage factor for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) use the raw VMT -- but reports received through the cutoff cover only part of the data-through month's crashes (the 5-day clock runs from the company's notice), so that month's "calendar coverage" is the estimated fraction of its 5-Day-track incidents present in this release (their count over the count expected at each company's rate in its most recent earlier month with at least 3 such incidents, leaving out a company with no such month, as for incident coverage; the high end is the largest share a first release has held, padded), not a fraction of days.</span>
-<span class="ai-text">A company's own list of the crashes it has reported to NHTSA can hold more of a month than NHTSA's file does; a row then takes its coverage from that list. Its calendar coverage is the share of the month's miles driven through the date the list runs through, with no range (the list holds every crash through that date and none after), and its incident coverage is the share of the company's Monthly reports that have reached NHTSA on time, down to that share's 95% lower bound (a list can lack a crash its company files late). Rows of this table on a list's coverage: ${escHtml(listCovered.join(", ") || "none")}.</span>
+<span class="ai-text">A company's month enters this page's figures only when NHTSA's file is complete for it or the company's own dated list of its crashes covers it; no share of a partly reported month is estimated. NHTSA's file is taken as complete for the months before its data-through month (${escHtml(NHTSA_DATA_THROUGH_DATE.slice(0, 7))}), less any months a company's Monthly reports run late, and those months read 100% here. The data-through month itself, whose reports are still arriving, is pending for a company with no list: its miles and crashes are in no figure (its miles show faded on the VMT charts, and its crashes are listed, marked, in the incident browser). On a list's row the incident-coverage factor thins the miles for Monthly-track metrics only; 5-Day-track metrics (${METRIC_DEFS.filter(m => m.fiveDay).map(m => m.cardLabel.toLowerCase()).join(", ")}) take the calendar coverage alone.</span>
+<span class="ai-text">A company's own list of the crashes it has reported to NHTSA covers the month it runs through: that month's row counts the list's crashes over the miles driven through the list's date. Its calendar coverage is the share of the month's miles driven through that date, with no range (the list holds every crash through that date and none after), and its incident coverage is the share of the company's Monthly reports that have reached NHTSA on time, down to that share's 95% lower bound (a list can lack a crash its company files late). A crash of that month that the list lacks is pending too. Rows of this table on a list's coverage: ${escHtml(listCovered.join(", ") || "none")}.</span>
 </p>
     <div class="table-wrap"><table id="sanity-coverage">
       <thead><tr>
@@ -7360,11 +7599,12 @@ Claude notes:
   // ~0.40 vs Waymo's 0.71. waymo-reconciliation.qual bounds the ratios.
   const wayAll = incidents.filter(r => r.helmer === "Waymo");
   const wayVmt = vmtRows.filter(r => r.helmer === "Waymo");
-  // Receipt-coverage-scaled: the numerator holds only reports received
-  // through the data-through cutoff, so that month counts at its coverage
-  // fraction, not at full weight (until 2026-09-04 it did, ~4.5% low). Each
+  // Each month at its coverage (1 on a complete row, and Waymo's rows are
+  // all complete while it has no list of its own; until 2026-11-21 the
+  // data-through month counted at an estimated fraction, and until
+  // 2026-09-04 at full weight, ~4.5% low). Each
   // row then takes its metric's track, as the cards do: Monthly-track metrics
-  // (injury) are further thinned by that month's incident coverage; until
+  // (injury) are further thinned by a row's incident coverage; until
   // 2026-10-03 every row used the five-day denominator (audit #48).
   const wayVmtM = {
     fiveDay: wayVmt.reduce((s, r) => s + r.vmtBest * r.coverage, 0) / 1e6,
@@ -8107,78 +8347,113 @@ function loadPredmarketData() {
   void refreshPredmarkets();
 }
 
+// One incident record of data/incidents.js, counted or pending, checked as
+// data/slurp.py writes it; <all> is every record of both arrays (a second
+// AV's record names its report among them). Until 2026-11-21 these asserts
+// stood in the init block, over INCIDENT_DATA alone.
+const INCIDENT_DATE_RE = /^[A-Z]{3}-\d{4}$/;
+function checkIncidentRecord(inc, all) {
+  assert(inc !== null && typeof inc === "object", "incident must be an object");
+  assert(typeof inc.helmer === "string", "incident missing helmer");
+  assert(ADS_HELMERS.includes(inc.helmer),
+    "inline incident data has unknown helmer", {helmer: inc.helmer});
+  assert(Array.isArray(inc.series) && inc.series[0] === inc.helmer &&
+    new Set(inc.series).size === inc.series.length && inc.series.every(s => ADS_SERIES.includes(s)),
+    "incident series must start with its helmer and name distinct plotted lines",
+    {reportId: inc.reportId, series: inc.series});
+  assert(typeof inc.reportId === "string" && inc.reportId.length > 0,
+    "incident missing reportId", {helmer: inc.helmer});
+  // The incident browser builds a row's ids, the IDREFs pointing at them and
+  // its narrative's data-focus-key from the report id (renderTable), so it
+  // can hold no whitespace (an IDREF separator) and no quote or backslash
+  // (rerenderKeepingFocus's attribute selector).
+  assert(/^[^\s"'\\]+$/.test(inc.reportId),
+    "incident reportId must hold no whitespace, quote or backslash", {reportId: inc.reportId});
+  assert(typeof inc.date === "string" && INCIDENT_DATE_RE.test(inc.date),
+    "incident date must match MMM-YYYY format", {reportId: inc.reportId, date: inc.date});
+  assert(inc.speed === null || (typeof inc.speed === "number" && Number.isFinite(inc.speed) && inc.speed >= 0),
+    "incident speed must be null or non-negative number", {reportId: inc.reportId, speed: inc.speed});
+  assert(typeof inc.road === "string" && inc.road.length > 0,
+    "incident missing road type", {reportId: inc.reportId, road: inc.road});
+  // Every record's Roadway Type has its class, road or parking facility, in
+  // the reviewed table data/slurp.py writes into data/incidents.js
+  // (ROADWAY_CLASS; slurp stops on a type the table lacks): the
+  // nonstationary non-parking-lot metric counts by it (monthSeriesData).
+  assert(ROADWAY_CLASS[inc.road] === "road" || ROADWAY_CLASS[inc.road] === "parking",
+    "incident road type has no class in ROADWAY_CLASS (data/slurp.py)", {reportId: inc.reportId, road: inc.road});
+  assert(typeof inc.severity === "string" && inc.severity.length > 0,
+    "incident missing severity", {reportId: inc.reportId});
+  assert(SEVERITY_INFO[inc.severity] !== undefined,
+    "incident severity is not classified in SEVERITY_INFO — it would be " +
+    "silently dropped from the injury/hospitalization/serious-injury metrics",
+    {reportId: inc.reportId, severity: inc.severity});
+  assert(inc.fault === null || typeof inc.fault === "object",
+    "incident fault must be null or object", {reportId: inc.reportId});
+  assert(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
+    "incident vehiclesInvolved must be >= 1", {reportId: inc.reportId});
+  // Blank where the record's source gives none (a preprint); the Reporting
+  // threshold table counts a blank or "Unknown" movement in a column of its
+  // own (SV_MOVEMENT_UNKNOWN).
+  assert(typeof inc.svMovement === "string",
+    "incident svMovement must be a string", {reportId: inc.reportId, svMovement: inc.svMovement});
+  assert(typeof inc.svHit === "string",
+    "incident missing svHit", {reportId: inc.reportId});
+  assert(typeof inc.cpHit === "string",
+    "incident missing cpHit", {reportId: inc.reportId});
+  // A second AV's record (data/slurp.py SECOND_INVOLVEMENTS) names the
+  // report it shares; no other record has the field.
+  assert(inc.secondOf === undefined ||
+    (inc.secondOf !== inc.reportId && all.some(other => other.reportId === inc.secondOf)),
+    "incident secondOf must name another incident's report", {reportId: inc.reportId, secondOf: inc.secondOf});
+  // A preprint's record (data/slurp.py PREPRINT_LIST: a report its company
+  // has published and NHTSA's files do not hold yet) says so with true; no
+  // other record has the field.
+  assert(inc.preprint === undefined || inc.preprint === true,
+    "incident preprint must be true or absent", {reportId: inc.reportId, preprint: inc.preprint});
+  if (inc.fault !== null) {
+    const f = inc.fault.faultfrac;
+    assert(typeof f === "number" && f >= 0 && f <= 1,
+      "incident fault.faultfrac must be a number in [0, 1]",
+      {reportId: inc.reportId, value: f});
+    assert(typeof inc.fault.reasoning === "string",
+      "incident fault.reasoning must be a string", {reportId: inc.reportId});
+  }
+  // The data marks no record pending: the page does, for the records of the
+  // pending array (loadIncidents).
+  assert(inc.pending === undefined, "an incident record must not carry a pending field", {reportId: inc.reportId});
+}
+
+// The page's incident records, from data/incidents.js's two arrays: the
+// incidents the rates count (<counted>, INCIDENT_DATA) and the pending ones
+// (<pending>, PENDING_INCIDENT_DATA: in NHTSA's file or on a company's list,
+// their month not fully reported yet for their line), every record checked
+// alike. The pending records are kept apart (pendingIncidents), each marked
+// `pending: true` for the incident browser (RECORD_MARKS), and every
+// record's fault judgment is read (faultData): the browser shows a pending
+// row's as it shows any other's.
+function loadIncidents(counted, pending) {
+  assert(Array.isArray(counted), "INCIDENT_DATA must be an array");
+  assert(counted.length > 0, "INCIDENT_DATA must not be empty");
+  assert(Array.isArray(pending), "PENDING_INCIDENT_DATA must be an array");
+  const all = [...counted, ...pending];
+  for (const inc of all) checkIncidentRecord(inc, all);
+  incidents = counted;
+  pendingIncidents = pending.map(inc => ({...inc, pending: true}));
+  faultData = buildFaultDataFromIncidents(all);
+}
+
 // --- Init ---
 
 {
   // First, so every later failure shows (showPageError).
   window.addEventListener("error", e => showPageError(e.message));
   window.addEventListener("unhandledrejection", e => showPageError(String(e.reason)));
-  const incidentData = INCIDENT_DATA;
-  assert(Array.isArray(incidentData), "INCIDENT_DATA must be an array");
-  assert(incidentData.length > 0, "INCIDENT_DATA must not be empty");
-  const DATE_RE = /^[A-Z]{3}-\d{4}$/;
-  for (const inc of incidentData) {
-    assert(inc !== null && typeof inc === "object", "incident must be an object");
-    assert(typeof inc.helmer === "string", "incident missing helmer");
-    assert(ADS_HELMERS.includes(inc.helmer),
-      "inline incident data has unknown helmer", {helmer: inc.helmer});
-    assert(Array.isArray(inc.series) && inc.series[0] === inc.helmer &&
-      new Set(inc.series).size === inc.series.length && inc.series.every(s => ADS_SERIES.includes(s)),
-      "incident series must start with its helmer and name distinct plotted lines",
-      {reportId: inc.reportId, series: inc.series});
-    assert(typeof inc.reportId === "string" && inc.reportId.length > 0,
-      "incident missing reportId", {helmer: inc.helmer});
-    // The incident browser builds a row's ids, the IDREFs pointing at them and
-    // its narrative's data-focus-key from the report id (renderTable), so it
-    // can hold no whitespace (an IDREF separator) and no quote or backslash
-    // (rerenderKeepingFocus's attribute selector).
-    assert(/^[^\s"'\\]+$/.test(inc.reportId),
-      "incident reportId must hold no whitespace, quote or backslash", {reportId: inc.reportId});
-    assert(typeof inc.date === "string" && DATE_RE.test(inc.date),
-      "incident date must match MMM-YYYY format", {reportId: inc.reportId, date: inc.date});
-    assert(inc.speed === null || (typeof inc.speed === "number" && Number.isFinite(inc.speed) && inc.speed >= 0),
-      "incident speed must be null or non-negative number", {reportId: inc.reportId, speed: inc.speed});
-    assert(typeof inc.road === "string" && inc.road.length > 0,
-      "incident missing road type", {reportId: inc.reportId});
-    assert(typeof inc.severity === "string" && inc.severity.length > 0,
-      "incident missing severity", {reportId: inc.reportId});
-    assert(SEVERITY_INFO[inc.severity] !== undefined,
-      "incident severity is not classified in SEVERITY_INFO — it would be " +
-      "silently dropped from the injury/hospitalization/serious-injury metrics",
-      {reportId: inc.reportId, severity: inc.severity});
-    assert(inc.fault === null || typeof inc.fault === "object",
-      "incident fault must be null or object", {reportId: inc.reportId});
-    assert(typeof inc.vehiclesInvolved === "number" && inc.vehiclesInvolved >= 1,
-      "incident vehiclesInvolved must be >= 1", {reportId: inc.reportId});
-    assert(typeof inc.svHit === "string",
-      "incident missing svHit", {reportId: inc.reportId});
-    assert(typeof inc.cpHit === "string",
-      "incident missing cpHit", {reportId: inc.reportId});
-    // A second AV's record (data/slurp.py SECOND_INVOLVEMENTS) names the
-    // report it shares; no other record has the field.
-    assert(inc.secondOf === undefined ||
-      (inc.secondOf !== inc.reportId && incidentData.some(other => other.reportId === inc.secondOf)),
-      "incident secondOf must name another incident's report", {reportId: inc.reportId, secondOf: inc.secondOf});
-    // A preprint's record (data/slurp.py PREPRINT_LIST: a report its company
-    // has published and NHTSA's files do not hold yet) says so with true; no
-    // other record has the field.
-    assert(inc.preprint === undefined || inc.preprint === true,
-      "incident preprint must be true or absent", {reportId: inc.reportId, preprint: inc.preprint});
-    if (inc.fault !== null) {
-      const f = inc.fault.faultfrac;
-      assert(typeof f === "number" && f >= 0 && f <= 1,
-        "incident fault.faultfrac must be a number in [0, 1]",
-        {reportId: inc.reportId, value: f});
-      assert(typeof inc.fault.reasoning === "string",
-        "incident fault.reasoning must be a string", {reportId: inc.reportId});
-    }
-  }
-  incidents = incidentData;
+  loadIncidents(INCIDENT_DATA, PENDING_INCIDENT_DATA);
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
   ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
   checkGhostVmtRows();
   checkPreSeriesOffsets();
-  faultData = buildFaultDataFromIncidents(incidentData);
+  checkPendingIncidents();
   // Everything that is not a chart first (the URL state, the colophon, the
   // listeners, the markets), then the charts' column, then the views, which
   // build their non-chart parts before their charts (buildMonthlyViews), then
@@ -8194,7 +8469,7 @@ function loadPredmarketData() {
   // The preprints (PREPRINT_LABEL): incidents that come from a company's own
   // list and not from NHTSA's files, which the sentence before this one names
   // as the source.
-  const preprintPart = `<span class="ai-text">Incidents not yet in NHTSA's data, taken from a company's own list of its reports: ${fmtCount(incidentData.filter(r => r.preprint !== undefined).length)}.</span>`;
+  const preprintPart = `<span class="ai-text">Incidents not yet in NHTSA's data, taken from a company's own list of its reports: ${fmtCount(incidents.filter(r => r.preprint !== undefined).length)}.</span>`;
   byId("colophon").innerHTML =
     `Incident data fetched from NHTSA on ${NHTSA_FETCH_DATE}.${modifiedPart} ${throughPart} ${preprintPart} · ` +
     `<a href="https://github.com/dreeves/crashla">github.com/dreeves/crashla</a> · ` +

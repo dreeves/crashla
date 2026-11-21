@@ -41,6 +41,10 @@ const us = mpiByCohort.HumansUS;
 // urban average in the same years, so non-overlap is the data, not nonsense.
 // The old "rideshare lo must not exceed AV-cities hi" overlap requirement is
 // replaced by a magnitude bound (rideshare no more than ~2x safer).
+// Since 2026-11-21 the band is those rates on the AV side's counting basis,
+// each over FARS 2024's 1.54 vehicles per fatal crash (163M-249M; audit A12
+// of 2026-11-20): its low edge is 1.55 times the urban band's top, still
+// inside the bound.
 assert.ok(
   rideshare && rideshare.fatality &&
     rideshare.fatality.lo < 2 * av.fatality.hi && // sanity: same order of magnitude

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript } from "./load-app.mjs";
+import { chiSquaredLower, chiSquaredUpper, checkChiSquaredReference } from "./chi-squared.mjs";
 
 const ctx = vm.createContext({
   console,
@@ -49,6 +50,34 @@ for (const [expr, expected] of gammaincTests) {
     `Replicata: evaluate ${expr}.
 Expectata: ${expected}.
 Resultata: ${got} (error ${Math.abs(got - expected)}).`);
+}
+
+// --- gammainc at the chi-squared test's shapes and arguments ---
+// The Poisson dispersion table's assessment (crashla.js dispersionVerdict,
+// since 2026-11-21) reads the tails of a chi-squared statistic X² on df
+// degrees of freedom as P(df/2, X²/2) and 1 less it: shapes of a half and
+// whole numbers up to 31.5 (a line has at most 64 months, so df is at most
+// 63), arguments from nearly 0 to thousands, on both sides of x = a + 1,
+// where gammainc changes from its series to its continued fraction. The
+// reference values above cover four points; here every such shape is held to
+// the quals' own chi-squared tails (quals/chi-squared.mjs: Simpson's rule on
+// the density, checked first against the standard table), within 1e-8.
+{
+  checkChiSquaredReference();
+  const off = [];
+  let read = 0;
+  for (let df = 1; df <= 63; df++) {
+    for (const x of [1e-9 * df, 0.01, 0.05 * df, 0.3 * df, 0.7 * df, df, df + 1.9, df + 2, df + 2.1, 1.5 * df, 3 * df, 5 * df, 10 * df, 500, 5000]) {
+      const lower = run(`gammainc(${df / 2}, ${x / 2})`);
+      read++;
+      const errors = [Math.abs(lower - chiSquaredLower(x, df)), Math.abs(1 - lower - chiSquaredUpper(x, df))];
+      if (!(Math.max(...errors) < 1e-8)) off.push({ df, x, lower, wantLower: chiSquaredLower(x, df), wantUpper: chiSquaredUpper(x, df) });
+    }
+  }
+  assert.ok(read >= 900 && off.length === 0,
+    `Replicata: evaluate gammainc(df/2, x/2) for every df from 1 to 63 at fifteen x each, from nearly 0 to 5,000 and on both sides of x = df + 2 (where gammainc changes method), ${read} points.
+Expectata: the lower tail of a chi-squared with df degrees of freedom at x, and 1 less it the upper tail, each within 1e-8 of the quals' chi-squared reference (quals/chi-squared.mjs).
+Resultata: ${off.length} points off, e.g. ${JSON.stringify(off.slice(0, 4))}.`);
 }
 
 // --- gammaquant inverts gammainc (roundtrip) ---

@@ -74,10 +74,12 @@ Resultata: [${dec.kmin}, ${dec.kmax}].`);
 
 // The 1M crossing (added 2026-10-31, decision #12 of the 2026-10-04 audit;
 // since 2026-11-02 the smooth 2025 path keeps it in Dec 1-7 as a range).
-// Zoox's CTO Jesse Levinson, at Fortune Brainstorm AI in San Francisco on
-// Monday, Dec 8, 2025: "Zoox crossed the 1 million mile technical threshold
-// for autonomous rides just last week" (Fortune, Dec 8, 2025, and its Dec 9
-// newsletter), i.e. during Dec 1-7. The series counts from May 2024, so the
+// Fortune, reporting what Zoox's CTO Jesse Levinson said at Fortune
+// Brainstorm AI in San Francisco on Monday, Dec 8, 2025: "Zoox crossed the 1
+// million mile technical threshold for autonomous rides just last week,
+// Levinson said." (Fortune, Dec 8, 2025; its Dec 9 newsletter has the same
+// sentence, ending "Levinson added": Fortune's account, not a quotation of
+// him), i.e. during Dec 1-7. The series counts from May 2024, so the
 // crossing is where the cumulative plus the 40,080 pre-series driverless
 // miles passes 1,000,000, the month's miles spread evenly over its days.
 {

@@ -364,6 +364,12 @@ td.num.pair > span { white-space: nowrap; }
   /* border-collapse drops sticky-header borders while stuck; box-shadow stands in */
   border-bottom: none;
   box-shadow: 0 2px 0 var(--line);
+  /* Above the rows that scroll under it, a grayed one included: an element
+     with opacity under 1 (tr.pending, below) is painted with the positioned
+     elements, in tree order, so without this a grayed row's text showed
+     through the stuck header (found 2026-11-21, when the first grayed rows
+     entered this table). */
+  z-index: 1;
 }
 .table-scroll th:hover { background: var(--wash-deep); }
 /* A sortable header's text is a button (crashla.js renderHeaders) drawn as
@@ -382,6 +388,19 @@ tbody tr.preprint {
   background-image: repeating-linear-gradient(-45deg, transparent 0 7px, var(--line-soft) 7px 8px);
 }
 tbody tr.preprint td:first-child { box-shadow: inset 4px 0 0 var(--iffy); }
+/* A pending incident's row (crashla.js RECORD_MARKS): a crash NHTSA's file
+   holds whose month is not fully reported yet, so no figure on the page
+   counts it. Grayed like the page's other grayed elements (a row whose test
+   cannot run, a prior-only verdict), and its narrative says what it is
+   (PENDING_LABEL), so the row reads the same without the graying. It un-grays
+   while something in it holds keyboard focus (the rule for grayed elements
+   further down: a focus ring is painted at its element's opacity). */
+tbody tr.pending {
+  opacity: 0.55;
+}
+tbody tr.pending:has(:focus-visible) {
+  opacity: 1;
+}
 /* Wide generated tables pan inside their own box instead of widening the page. */
 .table-wrap { overflow-x: auto; }
 /* "VMT sources": a methodology line may break inside a long token (a URL), so

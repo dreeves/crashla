@@ -1,8 +1,8 @@
 // AI text outside the human benchmark derivations table (whose AI text
 // ai-derivation-text.qual and ai-derivation-colors.qual check): the
 // incident browser's fault reasoning, an agent's English in every row of
-// data/faultfrac.csv (judged under the faultfrac criterion), and the five AI
-// srcs (srcAiText) the human cards' [?] hints show. The human's answers of
+// data/faultfrac.csv (judged under the faultfrac criterion), and the AI srcs
+// (srcAiText; six since 2026-11-21) the human cards' [?] hints show. The human's answers of
 // 2026-11-03: the reasoning under the opened narrative renders as AI text,
 // green with a dotted underline ("yes to narratives at least"), and a
 // tooltip, plain text on a dark box, opens its AI part with the label
@@ -25,7 +25,7 @@
 //     afterwards;
 //  5. each card [?] hint's tooltip and name are a human band's src, opening
 //     with AI_TEXT_PREFIX exactly when the band carries srcAiText, and each
-//     of the five AI srcs is some hint's;
+//     AI src is some hint's;
 //  6. no fault line's AI text and no card hint's tooltip opens with the label
 //     twice (an AI src or a reasoning whose own text opened with it: the
 //     AV-cities fatality src's did until the human dropped it, 2026-11-03);

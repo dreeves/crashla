@@ -35,28 +35,30 @@
 //    "318,066,136 miles / 10 incidents" paired all-time miles with August's
 //    10);
 //  - a partially received month's count says it is partial: reports
-//    received through the cutoff, and roughly what share of the month's
+//    received through the row's date, and roughly what share of the month's
 //    incidents they hold (#60: "20,759,027 miles / 10 incidents" read as a
-//    month with a tenth of the usual crash rate). That is the data-through
-//    month and, since 2026-10-04, each month inside a helmer's extra
-//    Monthly-report lag (data/slurp.py MONTHLY_ARRIVAL_LAG: Zoox's 2026-07 on
-//    the Sep-15-2026 release), read from slurp.py by quals/monthly-lag.mjs.
+//    month with a tenth of the usual crash rate). Since 2026-11-21 the
+//    partially received rows are the list rows: a month a company's own
+//    dated list covers, its incidents through the list's date (data/vmt.js
+//    incidents_through), not NHTSA's receipt cutoff. Until then they were
+//    NHTSA's data-through month, on an estimated share, and each month
+//    inside a helmer's extra Monthly-report lag; those months are pending
+//    now and have no analysis row, so no count and no note.
 //    Since 2026-10-31 only in the monthly view (decision #35 of the
 //    2026-10-04 audit, the human's "Monthly view only"): the cumulative
 //    view's count is the running total through the month, which the note
 //    (the human's English, "~8% of the month's eventual incidents") does not
 //    describe, so there no tooltip carries it.
-//    Since the Oct-15-2026 release every lag is 0, so only the data-through
-//    month is partial in the data; Zoox's month before it gets a synthetic
-//    lag triple (0.6, 0.25, 1.0), as quals/monthly-arrival-lag.qual.mjs gives
-//    it, so a lagged month's note is checked whatever the live lags are
-//    (until 2026-10-31 that branch tested nothing: audit 2026-10-30, QT-05).
+//    So that the note is checked at a release no list covers too, the newest
+//    month of the first line with no list row gets a synthetic list row's
+//    coverage (half its miles through the 15th; incident coverage 0.9, low
+//    edge 0.7). (Until 2026-11-21 the synthetic row was a lagged month's,
+//    Zoox's month before the data-through month at (0.6, 0.25, 1.0).)
 // Empty charts draw their y axis with the single label "0" (#51: a 0..1
 // placeholder scale read "0, 0, 1, 1, 1").
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
-import { monthlyLagKeys } from "./monthly-lag.mjs";
 
 class ElementStub {
   constructor() { this._html = ""; this._attributes = {}; this.style = {}; this.children = []; }
@@ -135,9 +137,10 @@ const charts = run(`(() => {
   return out;
 })()`);
 
-// Every VMT chart drawn above ends at the newest NHTSA month, so each must
-// continue into the ghost months (data/slurp.py writes rows for the month
-// after the data-through month at every release; ghost-month.qual).
+// Every VMT chart drawn above ends at the slider's last month, so each must
+// continue into its line's faded months: at least the ghost months
+// (data/slurp.py writes rows for the month after the data-through month at
+// every release; ghost-month.qual), and its pending months before them.
 const vmtCharts = charts.filter(c => /^(?:combined )?VMT chart/.test(c.what));
 const unghosted = vmtCharts.filter(c => !c.svg.includes("month-ghost"));
 if (vmtCharts.length === 0 || unghosted.length > 0)
@@ -186,16 +189,18 @@ for (const { what, svg } of charts) {
 
 // --- 2. VMT chart tooltips --------------------------------------------------
 
-// The synthetic lagged month: Zoox's month before the data-through month.
-const monthBefore = month => {
-  const n = Number(month.slice(0, 4)) * 12 + Number(month.slice(5)) - 2;
-  return `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, "0")}`;
-};
-const LAG_HELMER = "Zoox", LAG_MONTH = monthBefore(run("NHTSA_DATA_THROUGH_DATE").slice(0, 7));
+// The synthetic list row: the newest analysis month of the first line with
+// no list row, through its 15th.
+const [SYN_LINE, SYN_MONTH] = run(`(() => {
+  const line = ADS_SERIES.find(h => vmtRows.filter(r => r.helmer === h).every(isCompleteRow));
+  assert(line !== undefined, "quals/chart-targets.qual.mjs: no line without a list row to make a synthetic one from");
+  return [line, vmtRows.filter(r => r.helmer === line).map(r => r.month).sort().at(-1)];
+})()`);
 const vmt = run(`(() => {
   const live = vmtRows;
-  const lagged = live.filter(r => r.helmer === ${JSON.stringify(LAG_HELMER)} && r.month === ${JSON.stringify(LAG_MONTH)});
-  vmtRows = live.map(r => lagged.includes(r) ? {...r, incCov: 0.6, incCovMin: 0.25, incCovMax: 1} : r);
+  const synthetic = live.filter(r => r.helmer === ${JSON.stringify(SYN_LINE)} && r.month === ${JSON.stringify(SYN_MONTH)});
+  vmtRows = live.map(r => synthetic.includes(r)
+    ? {...r, coverage: 0.5, coverageMin: 0.5, coverageMax: 0.5, incCov: 0.9, incCovMin: 0.7, incCovMax: 1, through: ${JSON.stringify(SYN_MONTH + "-15")}} : r);
   const full = monthSeriesData();
   for (const h of ALL_HELMERS) monthHelmerEnabled[h] = true;
   const out = {};
@@ -215,11 +220,11 @@ const vmt = run(`(() => {
       cume: r.vmtCume, kmin: r.kyoomMin, kmax: r.kyoomMax, coverage: r.coverage, incCov: r.incCov, incCovMin: r.incCovMin,
       through: r.through}));
   vmtRows = live;
-  return {svgs: out, counts, rows, lines: ADS_SERIES, laggedRows: lagged.length,
+  return {svgs: out, counts, rows, lines: ADS_SERIES, syntheticRows: synthetic.length,
     throughDate: NHTSA_DATA_THROUGH_DATE,
     edge: typeof VMT_RANGE_EDGE === "undefined" ? null : VMT_RANGE_EDGE};
 })()`);
-if (vmt.laggedRows !== 1) fail(`${LAG_HELMER} has ${vmt.laggedRows} VMT rows for ${LAG_MONTH}, the synthetic lagged month; want 1`);
+if (vmt.syntheticRows !== 1) fail(`${SYN_LINE} has ${vmt.syntheticRows} VMT rows for ${SYN_MONTH}, the synthetic list row's month; want 1`);
 const fmtWhole = n => Math.round(n).toLocaleString("en-US");
 // A tooltip line's figures (numbers, with their thousands separators). The
 // tooltips' words around the figures are the human's to change, so this
@@ -230,14 +235,14 @@ const fmtWhole = n => Math.round(n).toLocaleString("en-US");
 // words around the figures ("miles", "Range:", "incident(s)").
 const figures = line => line.match(/\d[\d,]*(?:\.\d+)?/g) || [];
 const sameFigures = (line, want) => JSON.stringify(figures(line)) === JSON.stringify(want);
-const throughMonth = vmt.throughDate.slice(0, 7);
-// The live lags' months (none since the Oct-15-2026 release) and the
-// synthetic one.
-const lagged = new Set([...monthlyLagKeys(throughMonth), `${LAG_HELMER}|${LAG_MONTH}`]);
+// The list rows, told apart from the complete ones by their date (a complete
+// row's incidents run through NHTSA's receipt cutoff), not by the coverage
+// values the page's note reads: the file's, and the synthetic one.
+const isListRow = r => r.through !== vmt.throughDate;
 if (vmt.edge === null || typeof vmt.edge.lo !== "string" || typeof vmt.edge.hi !== "string"
     || vmt.edge.lo.trim() === "" || vmt.edge.hi.trim() === "" || vmt.edge.lo === vmt.edge.hi)
   fail(`VMT_RANGE_EDGE must name the two range ends with two distinct labels; got ${JSON.stringify(vmt.edge)}`);
-let lagMonthsChecked = 0;
+let listRowsChecked = 0, syntheticChecked = 0;
 for (const helmer of vmt.lines) {
   const rows = vmt.rows.filter(r => r.helmer === helmer);
   let running = 0;
@@ -263,18 +268,18 @@ for (const helmer of vmt.lines) {
       });
       const partial = r.coverage * r.incCovMin < 0.999;
       const best100 = Math.round(100 * r.coverage * r.incCov), worst100 = Math.round(100 * r.coverage * r.incCovMin);
-      // The note names the row's own date: NHTSA's receipt cutoff, or the
-      // date of the company's own list on a row whose coverage that list
-      // sets (data/vmt.js incidents_through, since 2026-11-18; until then
+      // The note names the row's own date: the date of the company's own
+      // list (data/vmt.js incidents_through, since 2026-11-18; until then
       // NHTSA's cutoff on every row).
       const carries = dot[0].includes(r.through) && dot[0].includes(`~${best100}%`) && dot[0].includes(`~${worst100}%`);
       // In the cumulative view no tooltip may carry the note: there the date
       // alone gives it away.
       const noted = mode === "month" ? carries : dot[0].includes(r.through);
       const wantNote = partial && mode === "month";
-      if (mode === "month" && lagged.has(`${helmer}|${r.month}`)) lagMonthsChecked++;
-      if (noted !== wantNote || partial !== (r.month === throughMonth || lagged.has(`${helmer}|${r.month}`)))
-        fail(`${where}: ${wantNote ? `a partially received month's count (the data-through month, or a month inside the helmer's Monthly-report lag) must say it holds the reports received through ${r.through}, ~${best100}% of the month's incidents (worst case ~${worst100}%)` : partial ? "a running total through a partially received month must carry no partial-reporting note (the note describes the month's own count)" : "a fully reported month must carry no partial-reporting note"}; tooltip ${JSON.stringify(dot[0])}`);
+      if (mode === "month" && isListRow(r)) listRowsChecked++;
+      if (mode === "month" && helmer === SYN_LINE && r.month === SYN_MONTH && isListRow(r)) syntheticChecked++;
+      if (noted !== wantNote || partial !== isListRow(r))
+        fail(`${where}: ${wantNote ? `a partially received month's count (a list row's: its incidents run through ${r.through}, not NHTSA's cutoff ${vmt.throughDate}) must say it holds the reports received through ${r.through}, ~${best100}% of the month's incidents (worst case ~${worst100}%)` : partial ? "a running total through a partially received month must carry no partial-reporting note (the note describes the month's own count)" : "a fully reported month must carry no partial-reporting note"}; tooltip ${JSON.stringify(dot[0])}`);
       if (vmt.edge !== null) for (const [edge, v] of [[vmt.edge.lo, lo], [vmt.edge.hi, hi]]) {
         const end = mine.filter(t => { const l = t.split("\n"); return l.length === 3 && l[2] === edge && sameFigures(l[1], [fmtWhole(v)]); });
         if (end.length !== 1) fail(`${where}: expected one range-end tooltip giving ${fmtWhole(v)} and the end's label ${JSON.stringify(edge)}; found ${JSON.stringify(mine)}`);
@@ -282,7 +287,7 @@ for (const helmer of vmt.lines) {
     }
   }
 }
-if (lagMonthsChecked === 0) fail(`no month inside a Monthly-report lag was checked in the monthly view (the synthetic ${LAG_HELMER} ${LAG_MONTH} among them)`);
+if (syntheticChecked !== 1) fail(`the synthetic list row (${SYN_LINE} ${SYN_MONTH}) was checked ${syntheticChecked} times in the monthly view, want once (${listRowsChecked} list rows checked in all)`);
 // The combined chart (every line checked) carries exactly its lines' own
 // charts' tooltips, the ghost months' included.
 for (const mode of ["month", "cume"]) {
@@ -313,8 +318,8 @@ for (const [what, labels] of [["the MPI chart with no helmer checked", empty.mpi
 
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
-  `Replicata: render the MPI, distribution, VMT (each ADS line's own and the combined chart, continuing into the ghost months) and growth charts in vm (${charts.length} charts, ${targetsSeen} tooltip targets) and read their hit circles and tooltips, with ${LAG_HELMER}'s ${LAG_MONTH} given a synthetic Monthly-report lag; render the MPI chart with no helmer and Tesla's VMT chart before its series.
-Expectata: every target an invisible hit circle drawn after the glyphs and outside any clip-path group, its radius min(${HIT_R_MAX}, max(nearest/2, min(${HIT_R_MIN}, nearest - ${HIT_R_MIN / 2}))) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the partially received months' counts (the data-through month, and the months inside a helmer's Monthly-report lag, the synthetic one included) marked partial in the monthly view, and no tooltip of the cumulative view marked; the combined chart carrying exactly its lines' own tooltips; empty charts labelled "0" only.
+  `Replicata: render the MPI, distribution, VMT (each ADS line's own and the combined chart, continuing into the ghost months) and growth charts in vm (${charts.length} charts, ${targetsSeen} tooltip targets) and read their hit circles and tooltips, with ${SYN_LINE}'s ${SYN_MONTH} given a synthetic list row's coverage; render the MPI chart with no helmer and Tesla's VMT chart before its series.
+Expectata: every target an invisible hit circle drawn after the glyphs and outside any clip-path group, its radius min(${HIT_R_MAX}, max(nearest/2, min(${HIT_R_MIN}, nearest - ${HIT_R_MIN / 2}))) over the targets more than ${HIT_R_MIN} away and its centre its own; VMT dots giving their range and (cumulative view) the running incident count; range ends naming their end; the partially received months' counts (the list rows', the synthetic one included) marked partial in the monthly view with the row's own date and share, and no tooltip of the cumulative view marked; the combined chart carrying exactly its lines' own tooltips; empty charts labelled "0" only.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 10).join("\n")}`);
 console.log(`qual pass: ${targetsSeen} chart tooltip targets are capped invisible hit circles over the glyphs; VMT tooltips give ranges, edges, running counts and the partial-month note; empty axes read "0"`);

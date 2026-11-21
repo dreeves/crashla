@@ -110,9 +110,16 @@ for (const env of AGENT) {
 // 4. The hooks read no file and start no program but the shell's own: a hook
 //    that can break is a hook that can stop the human's commit. (A plain
 //    source check: no command substitution, no pipe, no other program.)
+//    Words inside quotes are text, not commands, so the command scan reads
+//    the code with each quoted string emptied (since 2026-11-21, when the
+//    human's message "...human-only; see AGENTS.md rule 15." put a ";"
+//    inside a string and the scan read "see" as a command); the scan for a
+//    command substitution reads the code as written, since "$(...)" runs
+//    inside double quotes too.
 for (const hook of ["reference-transaction", "pre-push"]) {
   const code = fs.readFileSync(path.join(root, HOOKS, hook), "utf8").split("\n").filter(line => !/^\s*(#|$)/.test(line)).join("\n");
-  const words = [...code.matchAll(/(?:^|[;&|]|\bthen\b|\belse\b|\bdo\b)\s*([A-Za-z_][\w-]*)/gm)].map(m => m[1]);
+  const unquoted = code.replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, '""');
+  const words = [...unquoted.matchAll(/(?:^|[;&|]|\bthen\b|\belse\b|\bdo\b)\s*([A-Za-z_][\w-]*)/gm)].map(m => m[1]);
   const allowed = new Set(["case", "esac", "echo", "exit", "if", "fi", "then", "else", "printf"]);
   const other = [...new Set(words.filter(w => !allowed.has(w)))];
   expect(other.length === 0 && !/[`$]\(|`/.test(code),

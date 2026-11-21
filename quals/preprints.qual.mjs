@@ -27,16 +27,30 @@
 //     is trusted on that record; a list that stops agreeing turns this qual
 //     red.
 // (3) Coverage. For the month the list runs through, each line of the list's
-//     company can take its coverage from the list in place of NHTSA's file:
+//     company takes its coverage from the list where NHTSA's file is not yet
+//     complete for that month:
 //     receipt coverage = the list's miles (the company's no-monitor miles of
 //     that month through the list's date) over the row's miles, and
 //     Monthly-track incident coverage = the share of the company's Monthly
 //     reports that reached NHTSA on time (MONTHLY_ARRIVAL_OBSERVATIONS, the
 //     months with both counts measured), from its Wilson 95% lower bound to
-//     1. A row takes whichever source covers more of it (the larger product
-//     of the two best values; NHTSA's on a tie), and data/vmt.js gives every
+//     1. A line-month NHTSA's file completes (a month before the
+//     data-through month, outside the company's Monthly-report lag) takes
+//     NHTSA's file whatever a list says of it: every coverage value 1. A
+//     line-month neither covers has no row: it is pending
+//     (quals/pending-months.qual.mjs). data/vmt.js gives every
 //     row the date its incidents run through (incidents_through): NHTSA's
-//     receipt cutoff, or the list's date on a row the list covers.
+//     receipt cutoff, or the list's date on a row the list covers. (Until
+//     2026-11-21 NHTSA's partly reported data-through month had an estimated
+//     coverage of its own, and a row took whichever source covered more of
+//     it, the larger product of the two best values, NHTSA's on a tie.)
+//     The list's date and miles (PREPRINT_LIST's through and miles) are
+//     Tesla's page's for the list's month, the entry of
+//     quals/tesla-page-part.mjs, the one place the quals hold that figure
+//     (since 2026-11-21, audit finding A17 of 2026-11-20: until then the
+//     expectations here came from slurp's own miles, which nothing compared
+//     with a source, so a list moved to a new date with the old miles, or
+//     miles mistyped, passed every qual).
 // (4) The run stops on a list it cannot read as described: an unknown
 //     column, weather or contact area, a speed that is no whole number, a
 //     crash dated after the list's date, a file whose name is not the list's
@@ -63,6 +77,7 @@ import { spawnSync } from "node:child_process";
 import { parseCsv } from "./csv-parse.mjs";
 import { appScript, dataScript } from "./load-app.mjs";
 import { SLURP_OFFLINE_PY } from "./slurp-offline.mjs";
+import { TESLA_PAGE_PART } from "./tesla-page-part.mjs";
 
 const API = ["PREPRINT_LIST", "PREPRINT_REPORT_TYPE", "latest_list_path", "read_list_cells", "list_row", "list_rows",
   "preprint_rows", "newest_report_rows", "preprint_coverage"];
@@ -218,17 +233,20 @@ out['rowMiles'] = {s: vmt_values.get((s, month)) for s in lines}
 out['coverage'] = {s + '|' + m: [list(v[0]), list(v[1]), v[2]] for (s, m), v in slurp.preprint_coverage(vmt_values).items()}
 out['arrivals'] = [list(v) for v in slurp.MONTHLY_ARRIVAL_OBSERVATIONS[company].values()]
 out['stops']['miles'] = stop(lambda: slurp.preprint_coverage({key: 1000 for key in vmt_values}))
-MASTER = 'helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,rationale\nwaymo,2031-01,100,100,90,110,90,110,r\n'
+# Which source a line-month takes: one line with two months, the second the
+# data-through month, and a list candidate for neither, for the data-through
+# month, and for the month before it (which NHTSA's file completes).
+MASTER = ('helmer,month,vmt,helmer_cumulative_vmt,kyoom_min,kyoom_max,vmt_min,vmt_max,rationale\n'
+          'waymo,2031-01,100,100,90,110,90,110,r\nwaymo,2031-02,100,200,180,220,90,110,r\n')
 def built(list_cov):
-    text = slurp.build_vmt_csv(MASTER, {('Waymo', '2031-01'): (0.5, 0.4, 1.0)}, {'2031-01': (0.3, 0.2, 0.5)}, {'2031-01'}, list_cov)
-    head, row = list(csv.reader(io.StringIO(text)))
-    return dict(zip(head, row))
-key = ('Waymo', '2031-01')
+    sources = slurp.month_sources(slurp.parse_vmt_values(MASTER), '2031-02', list_cov)
+    head, *rows = list(csv.reader(io.StringIO(slurp.build_vmt_csv(MASTER, sources, list_cov))))
+    return {row[head.index('month')]: dict(zip(head, row)) for row in rows}
+candidate = ((0.6, 0.6, 0.6), (0.9, 0.7, 1.0), '2031-02-18')
 out['select'] = {
     'none': built({}),
-    'more': built({key: ((0.6, 0.6, 0.6), (0.9, 0.7, 1.0), '2031-01-18')}),
-    'less': built({key: ((0.1, 0.1, 0.1), (0.9, 0.7, 1.0), '2031-01-03')}),
-    'tie': built({key: ((0.5, 0.5, 0.5), (0.3, 0.2, 1.0), '2031-01-09')}),
+    'listed': built({('Waymo', '2031-02'): candidate}),
+    'complete': built({('Waymo', '2031-01'): ((0.6, 0.6, 0.6), (0.9, 0.7, 1.0), '2031-01-18')}),
 }
 
 # (1) A run with a synthetic preprint: a copy of the newest list row NHTSA has
@@ -325,6 +343,11 @@ const onTime = measured.reduce((s, a) => s + a[0], 0), all = measured.reduce((s,
 const share = onTime / all, z = 1.96;
 const wilsonLow = (share + z * z / (2 * all) - z * Math.sqrt(share * (1 - share) / all + z * z / (4 * all * all))) / (1 + z * z / all);
 const listMonth = S.list.through.slice(0, 7);
+const pagePart = TESLA_PAGE_PART[listMonth];
+assert.ok(pagePart !== undefined && pagePart.through === S.list.through && pagePart.miles === S.list.miles,
+  `Replicata: compare data/slurp.py's PREPRINT_LIST, the date the list runs through and the company's no-monitor miles of that month through that date, with Tesla's page's figure for the list's month in quals/tesla-page-part.mjs (TESLA_PAGE_PART).
+Expectata: the same date and the same miles: the list's miles set the coverage of the month the list covers, and Tesla's page is their source (a new list takes both edits: data/README.md, Each NHTSA release, step 7).
+Resultata: PREPRINT_LIST runs through ${S.list.through} with ${S.list.miles} miles; the page's entry for ${listMonth} is ${JSON.stringify(pagePart)}.`);
 const coverageProblems = [];
 for (const line of S.lines) {
   const got = S.coverage[`${line}|${listMonth}`], c = S.list.miles / S.rowMiles[line];
@@ -340,13 +363,16 @@ assert.ok(all > 0 && coverageProblems.length === 0,
 Expectata: for ${listMonth}, one candidate per line of the list's company: receipt coverage = the list's miles over the row's miles, three times over (the list reaches its date and no further); Monthly-track incident coverage = the company's on-time share of Monthly reports over MONTHLY_ARRIVAL_OBSERVATIONS' months with both counts (${onTime} of ${all}), its Wilson 95% lower bound, and 1; and the list's date.
 Resultata: ${JSON.stringify(coverageProblems, null, 1)}.`);
 
-// (3) Which candidate a row takes.
-const picked = name => { const r = S.select[name]; return [r.coverage, r.coverage_min, r.coverage_max, r.incident_coverage, r.incident_coverage_min, r.incident_coverage_max, r.incidents_through].join(" "); };
-const nhtsaPick = `0.3 0.2 0.5 0.5 0.4 1.0 ${S.dataThrough}`;
-assert.ok(picked("none") === nhtsaPick && picked("less") === nhtsaPick && picked("tie") === nhtsaPick && picked("more") === "0.6 0.6 0.6 0.9 0.7 1.0 2031-01-18",
-  `Replicata: call slurp.build_vmt_csv on one row whose NHTSA coverage is 0.3 [0.2, 0.5] with incident coverage 0.5 [0.4, 1] (product 0.15), with no list candidate, with one covering more (0.6 x 0.9), one covering less (0.1 x 0.9) and one tying (0.5 x 0.3).
-Expectata: the row takes the list's coverage and date only when the list covers more; otherwise NHTSA's, with NHTSA's receipt cutoff (${S.dataThrough}) as its incidents_through.
-Resultata: none "${picked("none")}", more "${picked("more")}", less "${picked("less")}", tie "${picked("tie")}".`);
+// (3) Which source a line-month takes.
+const cells = r => r === undefined ? "no row" : [r.coverage, r.coverage_min, r.coverage_max, r.incident_coverage, r.incident_coverage_min, r.incident_coverage_max, r.incidents_through].join(" ");
+const completePick = `1 1 1 1 1 1 ${S.dataThrough}`;
+const picked = name => [cells(S.select[name]["2031-01"]), cells(S.select[name]["2031-02"])];
+assert.ok(JSON.stringify(picked("none")) === JSON.stringify([completePick, "no row"])
+    && JSON.stringify(picked("listed")) === JSON.stringify([completePick, "0.6 0.6 0.6 0.9 0.7 1.0 2031-02-18"])
+    && JSON.stringify(picked("complete")) === JSON.stringify([completePick, "no row"]),
+  `Replicata: call slurp.month_sources() and slurp.build_vmt_csv() on one line with rows for 2031-01 and 2031-02, the data-through month 2031-02: with no list candidate, with one for 2031-02 (0.6 three times, 0.9 [0.7, 1], through 2031-02-18), and with one for 2031-01.
+Expectata: 2031-01, which NHTSA's file completes, is a complete row (every coverage value 1, NHTSA's receipt cutoff ${S.dataThrough} as its incidents_through) in all three, whatever a list says of it; 2031-02 has a row only with its list candidate, the candidate's coverage and date.
+Resultata: none ${JSON.stringify(picked("none"))}, listed ${JSON.stringify(picked("listed"))}, complete ${JSON.stringify(picked("complete"))}.`);
 
 // (3) data/vmt.js as generated: every row's coverage and date.
 const dataCtx = vm.createContext({});
@@ -355,24 +381,22 @@ const [vmtHead, ...vmtBody] = parseCsv(vm.runInContext("VMT_CSV_TEXT", dataCtx).
 const vmtRowsNow = vmtBody.map(r => Object.fromEntries(vmtHead.map((h, i) => [h, r[i]])));
 const canon = Object.fromEntries(S.lines.map(l => [l.toLowerCase(), l]));
 const dataThroughMonth = S.dataThrough.slice(0, 7);
-const nhtsaRow = vmtRowsNow.find(r => r.month === dataThroughMonth && !(r.helmer.toLowerCase() in canon));
-const nhtsaProduct = nhtsaRow ? Number(nhtsaRow.coverage) * Number(nhtsaRow.incident_coverage) : NaN;
 const rowProblems = [];
 for (const r of vmtRowsNow) {
   const line = canon[r.helmer.toLowerCase()];
-  const cand = line && S.coverage[`${line}|${r.month}`];
-  const listWins = cand && r.month === dataThroughMonth && cand[0][0] * cand[1][0] > nhtsaProduct;
-  const want = listWins ? [...cand[0], ...cand[1], cand[2]]
-    : r.month === dataThroughMonth ? [nhtsaRow.coverage, nhtsaRow.coverage_min, nhtsaRow.coverage_max, nhtsaRow.incident_coverage, nhtsaRow.incident_coverage_min, nhtsaRow.incident_coverage_max, S.dataThrough].map((v, i) => i < 6 ? Number(v) : v)
-    : null;
+  // The list's candidate stands where NHTSA's file is not complete: at or
+  // after the data-through month (before it, the file's complete row).
+  const cand = line && r.month >= dataThroughMonth ? S.coverage[`${line}|${r.month}`] : undefined;
+  const want = cand ? [...cand[0], ...cand[1], cand[2]] : [1, 1, 1, 1, 1, 1, S.dataThrough];
   const got = [r.coverage, r.coverage_min, r.coverage_max, r.incident_coverage, r.incident_coverage_min, r.incident_coverage_max].map(Number);
-  if (want && !(got.every((v, i) => near(v, want[i])) && r.incidents_through === want[6])) rowProblems.push(`${r.helmer} ${r.month}: ${got.join(" ")} ${r.incidents_through}, want ${want.join(" ")}`);
-  if (!want && r.incidents_through !== S.dataThrough) rowProblems.push(`${r.helmer} ${r.month}: incidents_through ${r.incidents_through}, want NHTSA's ${S.dataThrough}`);
+  if (!(got.every((v, i) => near(v, want[i])) && r.incidents_through === want[6])) rowProblems.push(`${r.helmer} ${r.month}: ${got.join(" ")} ${r.incidents_through}, want ${want.join(" ")}`);
 }
-assert.ok(vmtHead.includes("incidents_through") && nhtsaRow !== undefined && rowProblems.length === 0,
-  `Replicata: read data/vmt.js's rows.
-Expectata: an incidents_through column; in the data-through month (${dataThroughMonth}) each line of the list's company takes the list's coverage and date where the list covers more than NHTSA's file does, and every other line NHTSA's coverage and receipt cutoff; every other row's incidents_through is NHTSA's receipt cutoff (${S.dataThrough}).
-Resultata: columns ${JSON.stringify(vmtHead)}; ${JSON.stringify(rowProblems.slice(0, 10), null, 1)}.`);
+const listedNow = vmtRowsNow.filter(r => r.incidents_through !== S.dataThrough || Number(r.incident_coverage_min) !== 1).map(r => `${r.helmer} ${r.month}`);
+const wantListed = Object.keys(S.coverage).filter(k => k.split("|")[1] >= dataThroughMonth).map(k => `${k.split("|")[0].toLowerCase()} ${k.split("|")[1]}`);
+assert.ok(vmtHead.includes("incidents_through") && rowProblems.length === 0 && JSON.stringify(listedNow.sort()) === JSON.stringify(wantListed.sort()),
+  `Replicata: read data/vmt.js's analysis rows.
+Expectata: an incidents_through column; each line of the list's company has, in the list's month (${listMonth}) where NHTSA's file is not complete for it (the data-through month is ${dataThroughMonth}), the list's coverage and date; every other row is complete (every coverage value 1) with NHTSA's receipt cutoff (${S.dataThrough}) as its incidents_through; the rows on a list's coverage are exactly ${JSON.stringify(wantListed)}.
+Resultata: columns ${JSON.stringify(vmtHead)}; rows on a list's coverage ${JSON.stringify(listedNow)}; ${JSON.stringify(rowProblems.slice(0, 10), null, 1)}.`);
 
 // (1) A run with a synthetic preprint, then NHTSA publishing it.
 const P = S.synthRecord, src = S.sourceRecord;
@@ -480,4 +504,4 @@ assert.ok(label && label.trim() !== "" && shown.length === 2 && shown[0] === esc
 Expectata: the record's row is as before (no class, its narrative alone); the preprint's row has a class that style.css styles on a table row, and its narrative leads with PREPRINT_LABEL.
 Resultata: label ${JSON.stringify(label)}; classes ${JSON.stringify(classes)}, styled ${styled}; narrative spans start ${JSON.stringify(shown.map(s => s && s.slice(0, 50)))}.`);
 
-console.log(`qual pass: ${S.listCount} list rows map onto NHTSA's columns, ${S.shared} agree with NHTSA's own filings (${S.shared - S.reworded.length} word for word${S.reworded.length ? `; reworded: ${S.reworded.join(", ")}` : ""}), ${S.wantPreprints.length} are preprints in the data and the page marks them; a preprint turns official when NHTSA files it; the list's coverage (${round4(share)} of Monthly reports on time, ${JSON.stringify(Object.fromEntries(S.lines.map(l => [l, round4(S.list.miles / S.rowMiles[l])])))} of ${listMonth}'s miles) is in data/vmt.js where it exceeds NHTSA's`);
+console.log(`qual pass: ${S.listCount} list rows map onto NHTSA's columns, ${S.shared} agree with NHTSA's own filings (${S.shared - S.reworded.length} word for word${S.reworded.length ? `; reworded: ${S.reworded.join(", ")}` : ""}), ${S.wantPreprints.length} are preprints in the data and the page marks them; a preprint turns official when NHTSA files it; the list's coverage (${round4(share)} of Monthly reports on time, ${JSON.stringify(Object.fromEntries(S.lines.map(l => [l, round4(S.list.miles / S.rowMiles[l])])))} of ${listMonth}'s miles) is data/vmt.js's coverage of the list's month where NHTSA's file is not complete (${JSON.stringify(wantListed)})`);

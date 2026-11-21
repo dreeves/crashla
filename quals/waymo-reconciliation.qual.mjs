@@ -17,6 +17,14 @@
 // reproduce the ratio (they showed 0.04 vs 0.01 beside a 3.6x ratio that the
 // rounded 0.01 had produced; unrounded it is 3.3x), and a note says why the
 // serious-injury+ ratio sits far from 1.
+//
+// Since 2026-11-21 Waymo's rows are all complete rows (a month counts only
+// when NHTSA's file is complete for it; Waymo has no list of its own, so its
+// data-through month is pending and in no row), so the two tracks' exposures
+// are equal today. The per-track sums stay as they were: they differ again
+// if a Waymo row ever takes a list's coverage. Until then this qual required
+// the Monthly-track sum to be strictly below the five-day one (the
+// data-through month's estimated incident coverage).
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
@@ -51,10 +59,9 @@ const pub = vm.runInContext("WAYMO_PUBLISHED_IPMM", ctx);
 const stats = vm.runInContext(`(() => {
   const way = INCIDENT_DATA.filter(r => r.helmer === "Waymo");
   const rows = vmtRows.filter(r => r.helmer === "Waymo");
-  // Receipt-coverage-scaled: the numerator holds only reports received
-  // through the data-through cutoff, so the data-through month counts at its
-  // coverage fraction, not at full weight; Monthly-track metrics are further
-  // thinned by that month's incident coverage (as on the cards).
+  // Each row at its coverage (1 on a complete row; a list row's share of its
+  // month's miles), and for Monthly-track metrics its incident coverage too
+  // (as on the cards).
   const fiveDayM = rows.reduce((s, r) => s + r.vmtBest * r.coverage, 0) / 1e6;
   const monthlyM = rows.reduce((s, r) => s + r.vmtBest * r.coverage * r.incCov, 0) / 1e6;
   const vmtFor = key => METRIC_BY_KEY[key].fiveDay === true ? fiveDayM : monthlyM;
@@ -71,8 +78,8 @@ const stats = vm.runInContext(`(() => {
   };
 })()`, ctx);
 
-assert.ok(stats.fiveDayM > 100 && stats.monthlyM < stats.fiveDayM,
-  `Replicata: sum full-history Waymo VMT on both reporting tracks.\nExpectata: > 100M mi, the Monthly-track sum below the five-day one (incident coverage < 1 in the data-through month).\nResultata: five-day ${stats.fiveDayM.toFixed(1)}M, Monthly ${stats.monthlyM.toFixed(1)}M.`);
+assert.ok(stats.fiveDayM > 100 && stats.monthlyM <= stats.fiveDayM && stats.monthlyM > 0.9 * stats.fiveDayM,
+  `Replicata: sum full-history Waymo VMT on both reporting tracks.\nExpectata: > 100M mi, the Monthly-track sum at or just below the five-day one (equal while every Waymo row is complete; below only by a list row's incident coverage).\nResultata: five-day ${stats.fiveDayM.toFixed(1)}M, Monthly ${stats.monthlyM.toFixed(1)}M.`);
 
 // [metric, published key, lo ratio, hi ratio]
 const checks = [

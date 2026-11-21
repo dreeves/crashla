@@ -11,10 +11,22 @@
 //                       the slurp module attributes in patch set for the run;
 //                       returns {'stop': the AssertionError's text or '',
 //                       'changed': the copies the run rewrote, 'incidents':
-//                       the INCIDENT_DATA it wrote, or None}
+//                       the INCIDENT_DATA it wrote, 'pending': the
+//                       PENDING_INCIDENT_DATA it wrote (the in-scope incidents
+//                       no line counts yet, since 2026-11-21), 'vmt' and
+//                       'ghost': the rows of the two segments of data/vmt.js
+//                       it built (build_vmt_csv()'s analysis rows and
+//                       ghost_vmt_csv()'s, each a dict by column), 'roadway':
+//                       the ROADWAY_CLASS table it wrote into
+//                       data/incidents.js (each Roadway Type's class, since
+//                       2026-11-21); each of the five None for a run that
+//                       stops}
 //   template(month)     a driverless Waymo 5-Day filing of <month> that slurp
-//                       counts on its own and that nothing reviewed names, so
-//                       a copy under new IDs is an ordinary new report
+//                       counts on its own and that nothing reviewed names
+//                       (no reviewed table, and no narrative tripwire once
+//                       its Report ID is new: teleoperator, safety driver,
+//                       occupancy, second AV and, since 2026-11-21, airbag),
+//                       so a copy under new IDs is an ordinary new report
 //   clone(row, rid, **fields)
 //                       that copy, with Report ID and Same Incident ID rid
 export const SLURP_OFFLINE_PY = String.raw`
@@ -31,7 +43,7 @@ _modified = _segment(TEXT['incidents.js'], '/* NHTSA_MODIFIED_DATE_START */', '/
 _lm = format_datetime(datetime.datetime.fromisoformat(_modified + 'T12:00:00+00:00'), usegmt=True)
 HEADERS = {slurp.NHTSA_ADS_CSV_URL: (_lm, None), slurp.NHTSA_ADS_ARCHIVE_URL: (_lm, None)}
 def run_main(extra=(), fault_text=None, **patch):
-    names = ('fetch_nhtsa_csv', 'INCIDENT_JS', 'VMT_JS', 'FAULT_INPUT', *patch)
+    names = ('fetch_nhtsa_csv', 'INCIDENT_JS', 'VMT_JS', 'FAULT_INPUT', 'build_vmt_csv', 'ghost_vmt_csv', *patch)
     # Each name is one data/slurp.py defines (until 2026-11-04 a patch of a
     # name it does not define was set and later restored as None, and the run
     # it was for patched nothing slurp reads).
@@ -47,6 +59,12 @@ def run_main(extra=(), fault_text=None, **patch):
         slurp.fetch_nhtsa_csv = lambda stamp: (list(ROWS) + list(extra), HEADERS)
         slurp.INCIDENT_JS, slurp.VMT_JS, slurp.FAULT_INPUT = d / 'incidents.js', d / 'vmt.js', d / 'faultfrac.csv'
         for k, v in patch.items(): setattr(slurp, k, v)
+        # The two segments of data/vmt.js as the run builds them (whatever the
+        # patch made of the two builders), recorded as they are returned
+        built = {}
+        build, ghost = slurp.build_vmt_csv, slurp.ghost_vmt_csv
+        slurp.build_vmt_csv = lambda *args: built.setdefault('vmt', build(*args))
+        slurp.ghost_vmt_csv = lambda *args: built.setdefault('ghost', ghost(*args))
         try:
             slurp.main(); stop = ''
         except AssertionError as e:
@@ -54,8 +72,12 @@ def run_main(extra=(), fault_text=None, **patch):
         finally:
             for k, v in saved.items(): setattr(slurp, k, v)
         changed = sorted(name for name, text in start.items() if (d / name).read_text() != text)
-        incidents = json.loads(_segment((d / 'incidents.js').read_text(), '/* INCIDENT_DATA_START */', '/* INCIDENT_DATA_END */')) if stop == '' else None
-    return {'stop': stop, 'changed': changed, 'incidents': incidents}
+        written = (d / 'incidents.js').read_text()
+        records = lambda name: json.loads(_segment(written, f'/* {name}_START */', f'/* {name}_END */')) if stop == '' else None
+        incidents, pending, roadway = records('INCIDENT_DATA'), records('PENDING_INCIDENT_DATA'), records('ROADWAY_CLASS')
+        rows = lambda name: list(csv.DictReader(io.StringIO(built[name]))) if stop == '' else None
+    return {'stop': stop, 'changed': changed, 'incidents': incidents, 'pending': pending, 'vmt': rows('vmt'), 'ghost': rows('ghost'),
+            'roadway': roadway}
 _filed = slurp.filed_incident_rows(ROWS)
 _versions = collections.Counter(r['Report ID'] for r in _filed)
 _reports = collections.Counter(r['Same Incident ID'] for r in _filed)
@@ -63,8 +85,8 @@ _REVIEWED = set()
 for _name in ('OPERATOR_TYPE_OVERRIDE', 'TELEOP_DRIVEN_REPORTS', 'REMOTE_LANGUAGE_ADS_DRIVEN',
               'SAFETY_DRIVER_LANGUAGE_ADS_DRIVEN', 'PASSENGER_OVERRIDE', 'OCCUPANCY_LANGUAGE_REVIEWED',
               'SPLIT_SAME_INCIDENT_REPORTS', 'SUPERSEDED_REPORTS', 'LOCATION_OVERRIDE', 'SEVERITY_OVERRIDE',
-              'AIRBAG_OVERRIDE', 'VEHICLES_INVOLVED', 'SECOND_INVOLVEMENTS', 'SECOND_AV_REVIEWED',
-              'MISFILED_ADS_REPORTS', 'NON_ADS_FILE_EXCLUDED'):
+              'AIRBAG_OVERRIDE', 'AIRBAG_LANGUAGE_REVIEWED', 'VEHICLES_INVOLVED', 'SECOND_INVOLVEMENTS',
+              'SECOND_AV_REVIEWED', 'MISFILED_ADS_REPORTS', 'NON_ADS_FILE_EXCLUDED'):
     # Each table read, never assumed (until 2026-11-04 a table data/slurp.py
     # no longer defined added no Report IDs, so template() could pick a report
     # it names).
@@ -73,8 +95,10 @@ for _name in ('OPERATOR_TYPE_OVERRIDE', 'TELEOP_DRIVEN_REPORTS', 'REMOTE_LANGUAG
     _REVIEWED |= set(getattr(slurp, _name))
 def _trips(r):
     probe = dict(r, **{'Report ID': 'synthetic-probe'})
+    # The airbag tripwire reads a row with its crash's Report ID (a second AV's
+    # row is filed under another report's); a probe is its own crash.
     for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified, slurp.check_occupancy_classified,
-                  slurp.check_second_av_classified):
+                  slurp.check_second_av_classified, lambda row: slurp.check_airbag_classified(row, row['Report ID'])):
         try: check(probe)
         except AssertionError: return True
     return False

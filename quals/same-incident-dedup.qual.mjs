@@ -29,11 +29,12 @@
 //     an entry would have turned red (review of package SLURP, the same day);
 //   - an entry takes its report out only of rows that hold its re-filing:
 //     the rows of an earlier release, from before the re-filing, still count
-//     the original (the receipt and arrival recounts read earlier releases'
+//     the original (the arrival recounts read earlier releases'
 //     snapshots with today's table). Until a second review the same day an
 //     entry dropped its report from any rows, so the first release of a
-//     month whose crash was later re-filed lost that crash, and
-//     FIVE_DAY_RECEIPT_OBSERVATIONS' recount with it.
+//     month whose crash was later re-filed lost that crash, and the recount
+//     of FIVE_DAY_RECEIPT_OBSERVATIONS (a table of first-release shares that
+//     went on 2026-11-21 with the estimate it fed) with it.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { SLURP_OFFLINE_PY } from "./slurp-offline.mjs";
@@ -138,7 +139,7 @@ Expectata: the run completes and the crash is out of scope: ${S.crash} is not co
 Resultata: ${S.refiledListed.stop === "" ? `${S.refiledListed.count} incidents, stored ${JSON.stringify(S.refiledListed.stored)}` : JSON.stringify(S.refiledListed.stop.slice(0, 300))}.`);
 assert.ok(S.entryBeforeRefiling === true && S.entryWithRefiling === false,
   `Replicata: call slurp.public_service_incidents() with SUPERSEDED_REPORTS saying 30270-99996 replaced ${S.crash}, once on the newest snapshots' rows without 30270-99996 (as an earlier release's snapshot, from before the re-filing, holds them) and once on the same rows with the re-filing.
-Expectata: an entry takes its report out only of rows that hold its re-filing: ${S.crash} is counted in the rows without 30270-99996 and not in the rows with it (quals/receipt-observations.qual.mjs, quals/receipt-coverage.qual.mjs and quals/monthly-arrival-lag.qual.mjs read earlier releases' snapshots with today's table).
+Expectata: an entry takes its report out only of rows that hold its re-filing: ${S.crash} is counted in the rows without 30270-99996 and not in the rows with it (quals/monthly-arrival-lag.qual.mjs and quals/assumptions-list.qual.mjs's recount of late five-day reports read earlier releases' snapshots with today's table).
 Resultata: counted without the re-filing: ${S.entryBeforeRefiling}; with it: ${S.entryWithRefiling}.`);
 assert.ok(S.transdev.stop === "" && S.crash in S.transdev.stored && S.transdev.count === S.baseline.count,
   `Replicata: add two Transdev filings under ${S.crash}'s Same Incident ID, version 3, submitted SEP-2026, one coded "None" and one "In-Vehicle (Commercial / Test)", and run slurp.main() offline.

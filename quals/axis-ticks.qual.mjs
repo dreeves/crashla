@@ -149,6 +149,7 @@ Resultata: ${callers} occurrences of the call, ${ladders} ladders.`,
 run(`
   incidents = INCIDENT_DATA;
   vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
   faultData = buildFaultDataFromIncidents(INCIDENT_DATA);
   activeSeries = monthSeriesData();
 `);
@@ -305,16 +306,26 @@ console.log(`qual pass: monthly axes keep >= ${GAP} units between month labels o
 // MPI chart 4, 4, 6. Counted back from the last month, every gap is one
 // stride. Checked on the MPI, VMT and growth charts at the desktop width and
 // at a phone's (a 390 px viewport leaves the charts 366 units).
+// A chart's last month is its own: the MPI chart's is the window's last; a
+// company's VMT chart runs over the company's months, which in a window
+// ending at the slider's last month (every window here) are its analysis
+// months in the window and then its faded ones (data/vmt.js's second
+// segment: its pending months and the ghost months), so its last label is
+// the newest of those. (Until 2026-11-21 every line had a row in every
+// window month, the harness loaded no ghost rows, and both charts were read
+// against the window's months.)
 const monthIndex = (labels, order) => labels.map(l => order.indexOf(l));
 const uneven = [];
 for (const viewW of [900, 366]) {
   run(`chartViewW = ${viewW}`);
   for (let len = 1; len <= months; len++) {
     const sliced = `sliceSeries(activeSeries, ${months - len}, ${months - 1})`;
-    const order = JSON.parse(run(`JSON.stringify(${sliced}.months)`));
-    for (const [what, svg] of [
-      ["MPI chart", run(`renderAllHelmersMpiChart(${sliced})`)],
-      ["Waymo VMT chart", run(`renderHelmerMonthlyChart(${sliced}, "Waymo")`)],
+    const windowMonths = JSON.parse(run(`JSON.stringify(${sliced}.months)`));
+    const waymoMonths = JSON.parse(run(`JSON.stringify([...${sliced}.points.filter(p => p.helmers.Waymo !== null).map(p => p.month),
+      ...ghostVmtRows.filter(r => r.helmer === "Waymo").map(r => r.month)].sort())`));
+    for (const [what, svg, order] of [
+      ["MPI chart", run(`renderAllHelmersMpiChart(${sliced})`), windowMonths],
+      ["Waymo VMT chart", run(`renderHelmerMonthlyChart(${sliced}, "Waymo")`), waymoMonths],
     ]) {
       const idx = monthIndex(monthTicks(svg).map(t => t.label), order);
       const steps = idx.slice(1).map((v, i) => v - idx[i]);
@@ -332,7 +343,7 @@ for (const viewW of [900, 366]) {
 run(`chartViewW = CHART_MAX_W; selectedGrowthMetric = "fleet"`);
 assert.deepEqual(uneven, [],
   `Replicata: render the MPI-over-time chart and the Waymo VMT chart on every window length 1..${months} ending at the last month, and the growth chart for each metric, at ${900} and 366 chart units (desktop; a 390 px phone), and read their month labels.
-Expectata: the last month labelled, and every gap between neighbouring labels the same number of months.
+Expectata: each chart's own last month labelled (the window's on the MPI chart; on the Waymo VMT chart the newest of Waymo's months it draws, its faded ones included), and every gap between neighbouring labels the same number of months.
 Resultata: ${uneven.length} uneven axes, e.g.:
 ${uneven.slice(0, 8).join("\n")}`);
 console.log(`qual pass: monthly axes label evenly, counting back from the last month, on the MPI, VMT and growth charts at 900 and 366 units`);
@@ -343,13 +354,20 @@ console.log(`qual pass: monthly axes label evenly, counting back from the last m
 // empty to its right (audit 2026-10-04 #70). The month columns span the
 // horizontal axis less an inset at each end, so the midpoint of the columns
 // is the axis line's.
+// The window is the month before the slider's last, alone: a window ending
+// at the slider's last month also draws each line's faded months after it
+// (data/vmt.js's second segment, loaded above as the page loads it), so its
+// VMT charts have more than one column. (Until 2026-11-21 this used the last
+// month, in a harness that loaded no ghost rows.)
 const offCentre = [];
+const single = months - 2;
+const singleMonth = run(`activeSeries.months[${single}]`);
 run(`for (const h of ALL_HELMERS) monthHelmerEnabled[h] = true; selectedMetricKey = "all";`);
 for (const viewW of [900, 366]) {
   run(`chartViewW = ${viewW}`);
   for (const [what, svg] of [
-    ["MPI chart", run(`renderAllHelmersMpiChart(sliceSeries(activeSeries, ${months - 1}, ${months - 1}))`)],
-    ...["Tesla", "Waymo", "Zoox"].map(h => [`${h} VMT chart`, run(`renderHelmerMonthlyChart(sliceSeries(activeSeries, ${months - 1}, ${months - 1}), ${JSON.stringify(h)})`)]),
+    ["MPI chart", run(`renderAllHelmersMpiChart(sliceSeries(activeSeries, ${single}, ${single}))`)],
+    ...["Tesla", "Waymo", "Zoox"].map(h => [`${h} VMT chart`, run(`renderHelmerMonthlyChart(sliceSeries(activeSeries, ${single}, ${single}), ${JSON.stringify(h)})`)]),
   ]) {
     // The horizontal axis is read, never assumed (until 2026-11-06 a chart
     // without one stopped here on a TypeError naming nothing).
@@ -357,7 +375,7 @@ for (const viewW of [900, 366]) {
       .map(m => m.slice(1).map(Number));
     const axis = axes.find(([, y1, , y2]) => y1 === y2);
     assert.ok(axis !== undefined,
-      `Replicata: render the ${what} on the one-month window ${run("activeSeries.months.at(-1)")} at ${viewW} units and find its horizontal axis line.
+      `Replicata: render the ${what} on the one-month window ${singleMonth} at ${viewW} units and find its horizontal axis line.
 Expectata: a month-axis line whose y1 equals its y2, the axis the month column centres on.
 Resultata: the chart's month-axis lines (x1, y1, x2, y2) are ${JSON.stringify(axes)}.`);
     const mid = (axis[0] + axis[2]) / 2;
@@ -368,7 +386,7 @@ Resultata: the chart's month-axis lines (x1, y1, x2, y2) are ${JSON.stringify(ax
 }
 run(`chartViewW = CHART_MAX_W; for (const h of ALL_HELMERS) monthHelmerEnabled[h] = ["HumansAV", "Tesla", "Waymo"].includes(h);`);
 assert.deepEqual(offCentre, [],
-  `Replicata: render the MPI-over-time chart (all six helmers, All incidents) and the three VMT charts on the one-month window ${run("activeSeries.months.at(-1)")}, at 900 and 366 units.
+  `Replicata: render the MPI-over-time chart (all six helmers, All incidents) and the three VMT charts on the one-month window ${singleMonth} (the month before the slider's last), at 900 and 366 units.
 Expectata: every dot and the month label at the horizontal axis's midpoint.
 Resultata: ${offCentre.join("\n")}`);
 console.log("qual pass: a one-month window's column sits at the middle of the MPI and VMT charts");

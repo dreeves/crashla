@@ -272,21 +272,28 @@ Expectata: chi-squared / df >= 0, and an assessment from DISPERSION_VERDICT ${JS
 Resultata: ${JSON.stringify(cells.slice(3))}.`);
 }
 
-// --- Reporting threshold: speed=0 count <= total for each helmer ---
+// --- Reporting threshold: each subcount <= total for each helmer ---
+// Each row: helmer, speed = 0 (%), AV stopped (%), no stated movement (%),
+// property damage only (%), total. The no-stated-movement cell, right after
+// AV stopped, came on 2026-11-21 (audit A6 of 2026-11-20: a preprint's blank
+// movement, or NHTSA's "Unknown", counted as not stopped without a word until
+// then); a record is stopped or has no stated movement, never both, so the
+// two together are at most the total. quals/sanity-windows.qual.mjs recounts
+// both cells from the data.
 const rptSection = sectionOf("sanity-threshold");
-const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)<\/td>/g;
+const rptPattern = /<tr>\s*<td>[^<]+<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)[^<]*<\/td>\s*<td>([\d,]+)<\/td>/g;
 const rptMatches = [...rptSection.matchAll(rptPattern)];
 assert.ok(rptMatches.length >= 3,
   `Replicata: reporting threshold table has helmer rows.
-Expectata: at least 3.
+Expectata: at least 3, each of six cells (company, speed = 0, AV stopped, no stated movement, property damage only, total).
 Resultata: found ${rptMatches.length}.`);
 
 for (const m of rptMatches) {
-  const [zero, stopped, propDmg, total] = [m[1], m[2], m[3], m[4]].map(count);
-  assert.ok(zero <= total && stopped <= total && propDmg <= total,
+  const [zero, stopped, noMovement, propDmg, total] = [m[1], m[2], m[3], m[4], m[5]].map(count);
+  assert.ok(zero <= total && stopped + noMovement <= total && propDmg <= total,
     `Replicata: reporting threshold subcounts <= total.
-Expectata: each metric <= ${total}.
-Resultata: zero=${zero}, stopped=${stopped}, propDmg=${propDmg}.`);
+Expectata: speed = 0, property damage only, and AV stopped with no stated movement together, each <= ${total}.
+Resultata: zero=${zero}, stopped=${stopped}, noMovement=${noMovement}, propDmg=${propDmg}.`);
 }
 
 // --- k=0 stress verdicts carry the prior-only marker ---
@@ -358,6 +365,30 @@ Expectata: an ai-text paragraph — the asymmetric sub-$1,000
 struck-by-another-vehicle exemption biases post-amendment all-incident
 comparisons against any human benchmark.
 Resultata: not found.`);
+// The note's figures (2026-11-21, audit finding A5 of 2026-11-20): every
+// percentage its ai-text paragraph states is one of crashla.js
+// SGO_EXEMPT_KIND's two, the mean fault of Waymo's crashes of the exempted
+// kind and their share of its at-fault mass, which
+// quals/assumptions-list.qual.mjs recounts from the incidents. Until then
+// the paragraph called the at-fault metrics "essentially immune (the exempted
+// crashes are ~99% not the AV's fault)", a figure of the fault values in use
+// before 2026-11-17 that nothing held to the data. No figure is required to
+// appear, and no word is read.
+{
+  const note = (rptSection.match(/<p class="ai-text">([\s\S]*?)<\/p>/) || [])[1];
+  assert.ok(typeof note === "string" && note.trim() !== "",
+    `Replicata: read the Reporting threshold disparities section's ai-text paragraph.
+Expectata: one, with text.
+Resultata: ${JSON.stringify(note)}.`);
+  const kind = JSON.parse(vm.runInContext(`JSON.stringify(typeof SGO_EXEMPT_KIND === "undefined" ? null : SGO_EXEMPT_KIND)`, ctx));
+  const stated = [...note.matchAll(/(\d+(?:\.\d+)?)\s*%/g)].map(m => Number(m[1]));
+  const sourced = kind === null ? [] : [kind.faultPct, kind.massPct];
+  const strays = stated.filter(p => !sourced.includes(p));
+  assert.deepEqual(strays, [],
+    `Replicata: list the percentages the Reporting threshold disparities section's ai-text paragraph states (${JSON.stringify(stated)}) against crashla.js SGO_EXEMPT_KIND (${JSON.stringify(kind)}).
+Expectata: each is that constant's faultPct or massPct, the two figures of Waymo's crashes of the exempted kind that quals/assumptions-list.qual.mjs recounts from the incidents.
+Resultata: ${JSON.stringify(strays)} are neither.`);
+}
 
 // --- Incident totals consistent across passenger, severity, CBI tables ---
 // Each table should have the same total per helmer

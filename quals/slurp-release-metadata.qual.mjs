@@ -6,16 +6,26 @@ import { spawnSync } from "node:child_process";
 // the month before the release, or the next business day when the 15th falls
 // on a weekend or holiday; quals/nhtsa-cutoff-date.qual.mjs). The reviewed cutoff must (1) match the data
 // by month, (2) be guarded by content (the newest submission month must be
-// the cutoff month; early Monthly filings inside it are legitimate), (3)
-// estimate the data-through month's five-day receipt coverage from the
-// release itself, observed / expected, its high edge the reviewed
-// FIVE_DAY_RECEIPT_COVERAGE_MAX at or above every measured first-release share
-// (since 2026-10-31, decision D6; quals/receipt-coverage.qual.mjs pins the
-// estimate; until then the coverage was the reviewed constant triple
-// FIVE_DAY_RECEIPT_COVERAGE), and (4) never be enforced by pinning the CSV's HTTP headers or
+// the cutoff month; early Monthly filings inside it are legitimate), and (4)
+// never be enforced by pinning the CSV's HTTP headers or
 // bytes — a narrative correction (Aug 27, 2026: NHTSA replaced the wrong
 // narrative on Stack AV 34952-11803 v1) must not break ingestion. Offline regeneration from the newest snapshots must
-// reproduce the committed payloads byte for byte.
+// reproduce the committed payloads byte for byte: the counted and the pending
+// incidents and the Roadway Type classes (data/incidents.js; the classes,
+// ROADWAY_CLASS, since 2026-11-21) and the analysis and the second segment of
+// data/vmt.js.
+//
+// Until 2026-11-21 it also (3) estimated the data-through month's five-day
+// receipt coverage from the release (observed / expected, its high edge the
+// reviewed FIVE_DAY_RECEIPT_COVERAGE_MAX at or above every measured
+// first-release share) and pooled an incident coverage over the companies,
+// and (5) required each release to add the receipt observation of the month
+// that had just become final. The human dropped the estimate that day (the
+// data-through month is pending for a company with no dated list:
+// quals/pending-months.qual.mjs), and this qual's checks of the estimate, of
+// the pooled coverage's properties and of the receipt table's upkeep went
+// with it; the month check (1) is now check_data_through_month()'s, which
+// release_month_coverage() held until then.
 
 const py = String.raw`
 import collections, csv, glob, importlib.util, pathlib, tempfile
@@ -31,92 +41,20 @@ src = pathlib.Path('data/slurp.py').read_text()
 for banned in ('NHTSA_EXPECTED_ETAG', 'NHTSA_EXPECTED_LAST_MODIFIED', 'validate_nhtsa_headers'):
     assert banned not in src, banned
 
-# (3) the reviewed high edge covers its measurements, and the release's
-# triple is observed / expected below it
-hi = slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX
-fracs = sorted(n / d for n, d in slurp.FIVE_DAY_RECEIPT_OBSERVATIONS.values())
-assert len(fracs) >= 3, fracs
-assert fracs[-1] <= hi < 1, (hi, fracs)
 month = slurp.NHTSA_DATA_THROUGH_DATE[:7]
 newest_rows = slurp.newest_snapshot_rows()
-counts = slurp.monthly_track_counts(newest_rows)
-vmt_values = slurp.parse_vmt_values(slurp.read_vmt_master())
-got = slurp.release_month_coverage(slurp.NHTSA_DATA_THROUGH_DATE, month, counts, vmt_values)
-assert 0 < got[1] < got[0] < got[2] == hi, got
 
-# (1) a new release (months advanced past the reviewed cutoff) fails loudly
+# (1) the reviewed cutoff's month is the data's newest month: accepted as it
+# is, and a release whose months have moved past it (or a cutoff ahead of the
+# data) fails loudly
+slurp.check_data_through_month(slurp.NHTSA_DATA_THROUGH_DATE, month)
 for stale in ('2026-06', '2026-08', '2027-01'):
     try:
-        slurp.release_month_coverage('2026-07-15', stale, counts, vmt_values)
+        slurp.check_data_through_month('2026-07-15', stale)
     except AssertionError:
         pass
     else:
-        raise AssertionError('release_month_coverage accepted a cutoff month that disagrees with the data')
-
-# a high edge below a measured first-release share fails loudly
-saved = slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX
-slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX = fracs[-1] - 0.05
-try:
-    slurp.release_month_coverage('2026-07-15', '2026-07', counts, vmt_values)
-except AssertionError as exc:
-    assert 'FIVE_DAY_RECEIPT_COVERAGE_MAX' in str(exc), exc
-else:
-    raise AssertionError('release_month_coverage accepted a high edge below its measurements')
-slurp.FIVE_DAY_RECEIPT_COVERAGE_MAX = saved
-
-def report(entity, rid, incident, submission, report_type='5-Day'):
-    return {
-        'Reporting Entity': entity,
-        'Driver / Operator Type': 'None',
-        'Report ID': rid,
-        'Report Version': '1',
-        'Same Incident ID': rid,
-        'Incident Date': incident,
-        'Report Submission Date': submission,
-        'Report Type': report_type,
-    }
-
-# pooled incident coverage: scale-free in the receipt coverage (the product
-# receipt * best is invariant while obs/expected stays below the 1.0 clamp —
-# eight reference incidents per fleet keep this fixture well inside that
-# regime), one factor for every fleet with VMT; consumer/no-new rows leave it
-# alone, while a Monthly row in the cutoff month IS a counted incident (it
-# raises the observed count; main()'s submission-month guard is what rejects
-# filings submitted after the cutoff)
-base_rows = []
-for entity in ['Waymo LLC', 'Tesla, Inc.']:
-    for i in range(8):
-        base_rows.append(report(entity, f'{entity}-ref-{i}', 'JUN-2026', 'JUN-2026'))
-    base_rows.append(report(entity, f'{entity}-last', 'JUL-2026', 'JUL-2026'))
-vmt = {
-    ('Waymo', '2026-06'): 100, ('Waymo', '2026-07'): 100,
-    ('Tesla', '2026-06'): 100, ('Tesla', '2026-07'): 100,
-}
-baseline = slurp.incident_coverage(base_rows, '2026-07', 0.32, vmt)
-assert set(baseline) == {('Waymo', '2026-07'), ('Tesla', '2026-07')}
-alt = slurp.incident_coverage(base_rows, '2026-07', 0.48, vmt)
-for key in baseline:
-    assert baseline[key][0] < 1 and alt[key][0] < 1, (baseline[key], alt[key])
-    assert abs(baseline[key][0] * 0.32 - alt[key][0] * 0.48) < 1e-3, (baseline[key], alt[key])
-tesla_monthly = report('Tesla, Inc.', 'tesla-monthly', 'JUL-2026', 'AUG-2026', 'Monthly')
-consumer = report('Tesla, Inc.', 'tesla-consumer', 'JUL-2026', 'AUG-2026', 'Monthly')
-consumer['Driver / Operator Type'] = 'Consumer'
-no_new = report('Waymo LLC', '', '', 'AUG-2026', 'No New or Updated Incident Reports')
-no_new['Report Version'] = ''
-no_new['Same Incident ID'] = ''
-no_new['Driver / Operator Type'] = ''
-for addition in [consumer, no_new]:
-    assert slurp.incident_coverage(base_rows + [addition], '2026-07', 0.32, vmt) == baseline
-with_monthly = slurp.incident_coverage(base_rows + [tesla_monthly], '2026-07', 0.32, vmt)
-assert set(with_monthly) == set(baseline)
-for key in baseline:
-    assert with_monthly[key][0] > baseline[key][0], (with_monthly[key], baseline[key])
-try:
-    slurp.incident_coverage([], '2026-07', 0.32, {('Waymo', '2026-06'): 100, ('Waymo', '2026-07'): 100})
-except AssertionError:
-    pass
-else:
-    raise AssertionError('zero-history helmer with VMT silently defaulted to full coverage')
+        raise AssertionError('check_data_through_month accepted a cutoff month that disagrees with the data')
 
 # (2) + byte-identical offline regeneration from the newest snapshots
 current = sorted(glob.glob('data/snapshots/nhtsa-current-*.csv'))[-1]
@@ -159,14 +97,17 @@ inc_regen, vmt_regen = regenerate(rows)
 for start, end in [
     ('/* NHTSA_MODIFIED_DATE_START */', '/* NHTSA_MODIFIED_DATE_END */'),
     ('/* NHTSA_DATA_THROUGH_DATE_START */', '/* NHTSA_DATA_THROUGH_DATE_END */'),
+    ('/* ROADWAY_CLASS_START */', '/* ROADWAY_CLASS_END */'),
     ('/* INCIDENT_DATA_START */', '/* INCIDENT_DATA_END */'),
+    ('/* PENDING_INCIDENT_DATA_START */', '/* PENDING_INCIDENT_DATA_END */'),
 ]:
     assert segment(incident_original, start, end) == segment(inc_regen, start, end), start
-assert segment(vmt_original, '/* VMT_CSV_START */', '/* VMT_CSV_END */') == segment(vmt_regen, '/* VMT_CSV_START */', '/* VMT_CSV_END */')
+for start, end in [('/* VMT_CSV_START */', '/* VMT_CSV_END */'), ('/* GHOST_VMT_CSV_START */', '/* GHOST_VMT_CSV_END */')]:
+    assert segment(vmt_original, start, end) == segment(vmt_regen, start, end), start
 
 # (2) a filing for the data-through month SUBMITTED in a later month means the
 # reviewed cutoff no longer describes the file: ingestion must stop (the
-# submission-month guard), not recompute coverage. A Monthly filing submitted
+# submission-month guard). A Monthly filing submitted
 # within the incident month (Tesla files some early) is consistent with the
 # cutoff and must pass — the pre-2026-09-04 guard wrongly rejected it.
 last_iso = slurp.NHTSA_DATA_THROUGH_DATE[:7]
@@ -174,8 +115,10 @@ last_date = datetime.date.fromisoformat(slurp.NHTSA_DATA_THROUGH_DATE)
 last_label = last_date.strftime('%b-%Y').upper()
 next_label = (last_date.replace(day=1) + datetime.timedelta(days=32)).strftime('%b-%Y').upper()
 # The clones below copy a template row under new IDs, so the template must be
-# a row slurp counts on its own: a driverless ("None") Waymo 5-Day filing of
-# the data-through month that needs no reviewed entry (none keyed by its
+# a row slurp takes in scope on its own (its month is pending since
+# 2026-11-21, which changes nothing here: a pending incident is validated,
+# deduplicated and rated as a counted one is): a driverless ("None") Waymo
+# 5-Day filing of the data-through month that needs no reviewed entry (none keyed by its
 # Report ID, which every reviewed table is keyed by since 2026-10-31, a filed
 # city and state, and no narrative tripwire firing once its Report ID is
 # new), filed once (its Report ID has one version and its Same Incident ID one
@@ -191,13 +134,15 @@ reviewed_rids = (set(slurp.OPERATOR_TYPE_OVERRIDE) | set(slurp.TELEOP_DRIVEN_REP
                  | set(slurp.PASSENGER_OVERRIDE) | set(slurp.OCCUPANCY_LANGUAGE_REVIEWED)
                  | slurp.SPLIT_SAME_INCIDENT_REPORTS | set(slurp.SUPERSEDED_REPORTS)
                  | set(slurp.SUPERSEDED_REPORTS.values()) | set(slurp.LOCATION_OVERRIDE)
-                 | set(slurp.SEVERITY_OVERRIDE) | set(slurp.AIRBAG_OVERRIDE) | set(slurp.VEHICLES_INVOLVED)
+                 | set(slurp.SEVERITY_OVERRIDE) | set(slurp.AIRBAG_OVERRIDE) | set(slurp.AIRBAG_LANGUAGE_REVIEWED)
+                 | set(slurp.VEHICLES_INVOLVED)
                  | set(slurp.SECOND_INVOLVEMENTS) | set(slurp.SECOND_AV_REVIEWED)
                  | set(slurp.MISFILED_ADS_REPORTS) | set(slurp.NON_ADS_FILE_EXCLUDED))
 def trips_unlisted(r):
     probe = dict(r, **{'Report ID': 'synthetic-probe'})
     for check in (slurp.check_teleop_classified, slurp.check_safety_driver_classified,
-                  slurp.check_occupancy_classified, slurp.check_second_av_classified):
+                  slurp.check_occupancy_classified, slurp.check_second_av_classified,
+                  lambda row: slurp.check_airbag_classified(row, row['Report ID'])):
         try: check(probe)
         except AssertionError: return True
     return False
@@ -229,33 +174,6 @@ except AssertionError as exc:
     assert 'submission month' in str(exc), exc
 else:
     raise AssertionError('slurp accepted a filing submitted after the data-through month')
-
-# (5) each release must add the receipt observation for the month that just
-# became final (its second normal release), or list it as excluded with a
-# reason: a cutoff one month past the table's last observation must stop.
-# The probe is derived from the table, not a literal (2026-10-03, audit finding
-# #46: the literal '2026-09-15' became the correct cutoff on the Oct-15
-# release day and turned this red): the last observed or excluded month + 2
-# months (an exclusion settles its month exactly as an observation does), at
-# the 15th rolled forward past weekends and MLK/Presidents' Day, NHTSA's
-# cutoff rule (quals/nhtsa-cutoff-date.qual.mjs).
-last_obs = max({*slurp.FIVE_DAY_RECEIPT_OBSERVATIONS, *slurp.RECEIPT_MONTHS_EXCLUDED})
-probe_y, probe_m = divmod(int(last_obs[:4]) * 12 + int(last_obs[5:]) - 1 + 2, 12)
-probe_m += 1
-def third_monday(y, m):
-    first = datetime.date(y, m, 1)
-    return first + datetime.timedelta(days=(7 - first.weekday()) % 7 + 14)
-holidays = {third_monday(probe_y, 1), third_monday(probe_y, 2)}
-probe = datetime.date(probe_y, probe_m, 15)
-while probe.weekday() >= 5 or probe in holidays:
-    probe += datetime.timedelta(days=1)
-try:
-    slurp.release_month_coverage(probe.isoformat(), probe.isoformat()[:7], counts, vmt_values)
-except AssertionError as exc:
-    assert 'receipt' in str(exc).lower(), exc
-else:
-    raise AssertionError('release_month_coverage accepted a cutoff with no receipt observation for the month that just became final')
-assert '2026-04' in slurp.RECEIPT_MONTHS_EXCLUDED, 'the truncated May-15-2026 release month is the documented exclusion'
 
 # (6) two in-scope Report IDs under one Same Incident ID stop the run until a
 # reviewed table says which stands (since 2026-10-31; until then the higher
@@ -294,7 +212,7 @@ const run = spawnSync("python3", ["-c", py], {
 
 assert.equal(run.status, 0,
   `Replicata: exercise slurp.py's release-frontier handling offline.
-Expectata: the reviewed cutoff is month-checked and content-guarded, the receipt-coverage triple matches its measurements, no header/byte pins exist, and regeneration from the newest snapshots reproduces the committed payloads byte for byte.
+Expectata: the reviewed cutoff is month-checked and content-guarded, no header/byte pins exist, and regeneration from the newest snapshots reproduces the committed payloads (counted and pending incidents, analysis and second VMT segments) byte for byte.
 Resultata: exit ${run.status}; stderr ${run.stderr.slice(-2000)}.`);
 
-console.log("qual pass: NHTSA release frontier is reviewed by month, content-guarded, receipt-coverage-measured, and regenerates offline byte for byte");
+console.log("qual pass: NHTSA release frontier is reviewed by month, content-guarded, and regenerates offline byte for byte (counted and pending incidents, the Roadway Type classes, both VMT segments)");

@@ -3,7 +3,7 @@
 // in the human benchmark derivations table too (decision 23(b) of the
 // 2026-11-01 open questions, the human's, 2026-11-02; audit copy-8), and the
 // human's text renders plain. A band's src (METRIC_DEFS humanMPI) is the
-// human's unless it carries srcAiText: true. Five srcs are AI text:
+// human's unless it carries srcAiText: true. Six srcs are AI text:
 //  - the AV-cities fatality band's, which the human committed labelled
 //    "Claude:" (f75b903, 2026-08-31), in place of the Latin an agent wrote
 //    on 2026-08-28 (the label dropped from its text on 2026-11-03 at the
@@ -16,7 +16,12 @@
 //    cities" -> "five areas" (9c41e6d);
 //  - the US-average fatality band's, which the human labelled "Claude:" on
 //    2026-11-03 (open question 33) and took the label off again in 80b73d9,
-//    the commit that gave it the flag.
+//    the commit that gave it the flag;
+//  - the Uber/Lyft fatality band's, which an agent rewrote on 2026-11-21 when
+//    the band moved to the AV side's counting basis (audit A12 of 2026-11-20,
+//    the human's decision; until then it was an agent's English of
+//    2026-06-16 that rendered plain, the human having reviewed it on
+//    2026-11-03 without an edit).
 // The first four are decision 23(b)'s. On 2026-11-03 the human reviewed each
 // src that day's to-do pass marked as an agent's in whole or in part (open
 // question 33; a DONE comment above each in crashla.js's METRIC_DEFS gives
@@ -31,7 +36,7 @@
 // human's answer on open question 33; until then the table wrapped every
 // srcNote in .ai-text).
 // So:
-//  1. those five bands carry srcAiText: true, and no other band does;
+//  1. those six bands carry srcAiText: true, and no other band does;
 //  2. srcAiText is absent or true, nothing else (anti-Postel: a false or a
 //     string would read as a flag and mean nothing), and srcNote is absent or
 //     a non-empty string;
@@ -73,7 +78,7 @@ vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
 const AI_WRITTEN = [["HumansAV", "injury"], ["HumansAV", "airbag"], ["HumansAV", "seriousInjury"], ["HumansAV", "fatality"],
-  ["HumansUS", "fatality"]];
+  ["HumansUS", "fatality"], ["HumansRideshare", "fatality"]];
 // The bands that may carry a srcNote, each the human's (check 5).
 const NOTED = [["HumansAV", "atfaultInjury"], ["HumansUS", "atfaultInjury"]];
 
@@ -90,7 +95,7 @@ const app = JSON.parse(vm.runInContext(`JSON.stringify({
 })`, ctx));
 
 const problems = [];
-// 1. The five AI-text srcs are flagged, and no other src is.
+// 1. The six AI-text srcs are flagged, and no other src is.
 for (const [cohort, metric] of AI_WRITTEN) {
   const b = app.bands.find(x => x.cohort === cohort && x.metric === metric);
   if (b === undefined) problems.push(`no ${cohort} ${metric} band`);
@@ -224,7 +229,7 @@ if (/\sstyle\s*=/i.test(app.table)) problems.push("the derivations table's marku
 for (const p of problems) console.error(p);
 assert.ok(problems.length === 0,
   `Replicata: render the human benchmark derivations table (renderHumanBenchmarkTable), read each band's srcAiText and srcNote, render it once more with synthetic markup in two bands' src and srcNote, and read style.css's uses of the AI ink (--ai-ink).
-Expectata: the AV-cities injury, airbag, serious-injury+ and fatality bands and the US-average fatality band, whose srcs are AI text, carry srcAiText: true, and no other band does; every band's flag is absent or true and its srcNote absent or a non-empty string; each derivation cell renders a flagged src inside one .ai-text span and an unflagged one as plain text, its links after it; each srcNote renders as plain text at its cell's end, after the links; no cell holds an .ai-text span but a flagged src's own; only the two at-fault injury bands carry a srcNote; markup in a flagged src, an unflagged src and a srcNote renders escaped; only the .ai-text rule paints the AI ink, and the table carries no inline style.
+Expectata: the AV-cities injury, airbag, serious-injury+ and fatality bands and the US-average and Uber/Lyft fatality bands, whose srcs are AI text, carry srcAiText: true, and no other band does; every band's flag is absent or true and its srcNote absent or a non-empty string; each derivation cell renders a flagged src inside one .ai-text span and an unflagged one as plain text, its links after it; each srcNote renders as plain text at its cell's end, after the links; no cell holds an .ai-text span but a flagged src's own; only the two at-fault injury bands carry a srcNote; markup in a flagged src, an unflagged src and a srcNote renders escaped; only the .ai-text rule paints the AI ink, and the table carries no inline style.
 Resultata: ${problems.length} problems, e.g.
 ${problems.slice(0, 8).join("\n")}`);
 console.log(`qual pass: ${AI_WRITTEN.length} AI-text derivation srcs render as AI text; the other ${app.bands.length - AI_WRITTEN.length} bands' srcs as plain text; ${notes} srcNotes render plain, on the ${NOTED.length} bands NOTED lists only; synthetic markup renders escaped in a flagged src, an unflagged src and a srcNote; only .ai-text paints the AI ink`);

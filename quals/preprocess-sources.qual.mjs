@@ -7,7 +7,6 @@ assert.ok(
   preprocess.includes("NHTSA_ADS_CSV_URL") &&
     preprocess.includes("NHTSA_ADS_ARCHIVE_URL") &&
     /^NHTSA_DATA_THROUGH_DATE = "\d{4}-\d{2}-\d{2}"$/m.test(preprocess) &&
-    /^FIVE_DAY_RECEIPT_COVERAGE_MAX = [0-9.]+$/m.test(preprocess) &&
     !preprocess.includes("NHTSA_EXPECTED_ETAG") &&
     !preprocess.includes("NHTSA_EXPECTED_LAST_MODIFIED") &&
     preprocess.includes('VMT_MASTER = DATA_DIR / "vmt.csv"') &&
@@ -21,8 +20,9 @@ assert.ok(
   preprocess.includes("def fetch_nhtsa_csv(stamp):") &&
     preprocess.includes("def read_vmt_master():") &&
     !preprocess.includes("def fetch_vmt_sheet_raw") &&
-    preprocess.includes("def build_vmt_csv(raw_text, inc_cov, coverage_by_month, active_months, list_cov):") &&
-    preprocess.includes("def release_month_coverage(data_through_date, last_month, counts, vmt):") &&
+    preprocess.includes("def build_vmt_csv(raw_text, sources, list_cov):") &&
+    preprocess.includes("def month_sources(vmt, last_month, list_cov):") &&
+    preprocess.includes("def check_data_through_month(data_through_date, last_month):") &&
     preprocess.includes("def snapshot_csv_if_changed(prefix, text, stamp):") &&
     preprocess.includes("urllib.request.urlopen"),
   `Replicata: inspect data/slurp.py data-loading code path.
@@ -39,6 +39,14 @@ Expectata: data/slurp.py may compare against the latest legacy current snapshot,
 Resultata: the expected legacy-snapshot bridge was missing.`,
 );
 
+// Until 2026-11-21 this qual also required the constant
+// FIVE_DAY_RECEIPT_COVERAGE_MAX and the signatures of release_month_coverage()
+// and of build_vmt_csv() with its coverage arguments: the estimate of NHTSA's
+// partly reported newest month, which the human dropped that day. What a
+// row's coverage is now comes from month_sources() (which line-months count,
+// and from which source) and the cutoff-month check is
+// check_data_through_month()'s.
+//
 // Until 2026-11-07 this qual also required six phrases of data/README.md
 // ("archival snapshots only", "fetches NHTSA data live" and four more), so a
 // correct rewording of that doc, which the human may edit, turned it red (the

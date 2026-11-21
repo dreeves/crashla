@@ -1,4 +1,4 @@
-const PREDMARKET_SNAPSHOT_DATE = "2026-10-04T01:33:27Z";
+const PREDMARKET_SNAPSHOT_DATE = "2026-11-21T11:50:53Z";
 // [SNAPSHOT VINTAGE] This checked-in snapshot is frozen at the date above and
 // applies to both POLYMARKET_SNAPSHOT and MANIFOLD_SNAPSHOT; the page renders
 // it instantly, then auto-refetches live prices on load (and via the refresh
@@ -22,13 +22,13 @@ const POLYMARKET_SNAPSHOT = [
     "title": "Musk out as Tesla CEO before 2027?",
     "slug": "musk-out-as-tesla-ceo-before-2027",
     "enabled": true,
-    "volume": 17475.932927,
+    "volume": 23864.48367,
     "markets": [
       {
         "question": "Musk out as Tesla CEO before 2027?",
         "outcomes": "[\"Yes\", \"No\"]",
-        "outcomePrices": "[\"0.032\", \"0.968\"]",
-        "volume": "17475.932927",
+        "outcomePrices": "[\"0.0365\", \"0.9635\"]",
+        "volume": "23864.48367",
         "closed": false,
         "endDate": "2027-01-01T04:59:00Z",
         "umaResolutionStatus": null
@@ -44,10 +44,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/JamesGrugett/tesla-serves-more-fully-autonomous",
     "enabled": true,
     "closeTime": 1798761540000,
-    "probability": 0.048966729404115145,
+    "probability": 0.014613310214411134,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 1052411.328061702
+    "volume": 1120966.8699851602
   },
   {
     "question": "Will we conclude Tesla launched level 4 robotaxis in summer 2025?",
@@ -55,10 +55,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/dreev/will-tesla-count-as-a-waymo-competi",
     "enabled": true,
     "closeTime": 1798765140000,
-    "probability": 0.18634589848847202,
+    "probability": 0.3789272340202015,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 107130.6877395212
+    "volume": 109778.19380230283
   },
   {
     "question": "Waymo in Portland in 2026?",
@@ -66,10 +66,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/dreev/waymo-in-portland-in-2026",
     "enabled": true,
     "closeTime": 1798761540000,
-    "probability": 0.08047072526897368,
+    "probability": 0.010760329728394339,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 1836.3881585804988
+    "volume": 4597.983913132459
   },
   {
     "question": "Will Tesla have more autonomous vehicles providing ridehailing than  Waymo on Jan 2nd 2027",
@@ -77,10 +77,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/NathanpmYoung/will-tesla-have-more-autonomous-veh",
     "enabled": true,
     "closeTime": 1798934340000,
-    "probability": 0.06363940836486504,
+    "probability": 0.05178530054057965,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 82317.31731669077
+    "volume": 82760.80731669077
   },
   {
     "question": "Waymo reaches 2 billion miles with three or fewer at-fault fatalities?",
@@ -88,10 +88,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/DavidFWatson/waymo-reaches-2-billion-miles-with-y2yyN2C5Pz",
     "enabled": true,
     "closeTime": 2209082880000,
-    "probability": 0.7593748521673012,
+    "probability": 0.8421779258292775,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 5444.034232083005
+    "volume": 5821.628031391437
   },
   {
     "question": "When will I first be able to read a book while driving a private car?",
@@ -144,10 +144,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/dreev/will-fully-autonomous-level-5-selfd",
     "enabled": true,
     "closeTime": 1893484740000,
-    "probability": 0.7888284388818848,
+    "probability": 0.7990058815464832,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 23740.48970350034
+    "volume": 23880.48970350034
   },
   {
     "question": "Millions of Teslas at level 3 autonomy in 2026?",
@@ -155,10 +155,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/dreev/millions-of-teslas-at-level-3-auton",
     "enabled": true,
     "closeTime": 1798761540000,
-    "probability": 0.03914565525152744,
+    "probability": 0.03252035408234367,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 903.5592713775942
+    "volume": 953.5592713775942
   },
   {
     "question": "Musk v Mosk: Is Tesla an Enron-style fraud?",
@@ -166,9 +166,9 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/dreev/musk-v-mosk-is-tesla-an-enronstyle",
     "enabled": true,
     "closeTime": 1798790340000,
-    "probability": 0.040985675810674416,
+    "probability": 0.036611011354011645,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 7361.859393137889
+    "volume": 8003.706784886146
   }
 ];

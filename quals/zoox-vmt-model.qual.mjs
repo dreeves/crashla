@@ -147,6 +147,17 @@ const CPUC = {
   "2026-07": 69125.74, "2026-08": 70865.34, "2026-09": 69362.69,
 };
 const DMV_FACTOR = 1.19;
+// The factor's range, which bounds the California part of a month with filed
+// California miles after the last statement (Bands, above; September 2026):
+// DMV_FACTOR is its midpoint. Named since 2026-11-21 so that
+// quals/vmt-rationale-text.qual.mjs holds the range a rationale states to it
+// (until then two literals in the band below); in lower case, as
+// waymo-vmt-model.qual's q2Ratio is. The page's list of assumptions states
+// it (crashla.js ASSUMPTIONS, zoox-dmv-factor, whose where names it), and
+// quals/assumptions-list.qual.mjs holds that entry's two edges to it (since
+// 2026-11-21; until then the low edge was held only through September 2026's
+// rounded floor, which 1.04 gives too).
+const dmvFactorRange = [1.05, 1.33];
 const GROWTH = 0.05;
 const LAST_CPUC_MONTH = Object.keys(CPUC).sort().at(-1);
 const caDay = m => m <= LAST_CPUC_MONTH ? CPUC[m] / daysIn(m)
@@ -378,7 +389,7 @@ for (const m of M26) {
   const h = Math.abs(monthMid(m) - winMid(m <= "2026-03" ? Q1 : W2)) / 30.44;
   const lv = x[i] * LV_DAYS[i];
   const [lo, hi] = m <= LAST_STATEMENT_MONTH ? [vmt * Math.exp(-1.96 * sigmaOf(h)), vmt * Math.exp(1.96 * sigmaOf(h))]
-    : m <= RESTATED_THROUGH ? [CPUC[m] * 1.05 + lv * NO_DATA[0], CPUC[m] * 1.33 + lv * NO_DATA[1]]
+    : m <= RESTATED_THROUGH ? [CPUC[m] * dmvFactorRange[0] + lv * NO_DATA[0], CPUC[m] * dmvFactorRange[1] + lv * NO_DATA[1]]
     : [vmt * NO_DATA[0], vmt * NO_DATA[1]];
   expected[m] = { vmt, vmin: round(lo, 1000), vmax: round(hi, 1000) };
 }

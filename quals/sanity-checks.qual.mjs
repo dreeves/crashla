@@ -151,26 +151,32 @@ Expectata: Tesla redacts all narratives, so table includes "100%".
 Resultata: expected content not found.`);
 */
 
-// --- Poisson dispersion: Tesla verdict tracks its sample size ---
-// Tesla crossed the 20-incident threshold in the Jul-2026 NHTSA drop (24
-// incidents after Houston inclusion), so the small-sample "too few incidents
-// to tell" branch no longer fires for any live helmer. Tesla's monthly rates
-// swing wildly (its first month with incidents, Jul 2025, at 232/M mi vs
-// ~3-40 later), so the test reads overdispersed. Re-pin if the data moves a
-// verdict tier. History:
-// X²/dof ≈ 12.3 when this was written, 5.63 ("overdispersed") until
-// 2026-10-31, when July 2025's miles were re-read from Tesla's decks and its
-// Jul 23 call (audit 2026-10-30, VMT-1: 6,317 -> 8,619, July's rate 316.6 ->
-// 232.0 per M mi), 4.43 ("mildly overdispersed") since. The assessment's
-// words are the app's, DISPERSION_VERDICT (until 2026-10-29 this qual
-// spelled them out).
-const DV = JSON.parse(vm.runInContext("JSON.stringify(DISPERSION_VERDICT)", ctx));
-const teslaDispRow = rowsOf(tableOf("sanity-dispersion") || "").find(r => r.includes(`<td>${escHtml(label("Tesla"))}</td>`)) || "";
-assert.ok(
-  teslaDispRow.includes(`<td>${DV.mild}</td>`),
-  `Replicata: check Poisson dispersion verdict for Tesla.
-Expectata: Tesla (dispersion index ~4.4 in the default window) shows the mildly overdispersed assessment, DISPERSION_VERDICT.mild (${JSON.stringify(DV.mild)}).
-Resultata: Tesla dispersion row was ${JSON.stringify(teslaDispRow)}.`);
+// --- Poisson dispersion: a row per plotted line, assessed in the app's words ---
+// Until 2026-11-21 this pinned Tesla's assessment ("mildly overdispersed", at
+// an index its message gave as ~4.4 and that had become 4.58): a figure
+// copied from the page's own output, which a correct release would have
+// turned red (a release publishing Tesla's eight preprints puts the index
+// near 6: audit A18 of 2026-11-20; the no-outcome-pins rule of 2026-11-17).
+// What a row's assessment must be, given its months, is held where the
+// months are recounted: quals/sanity-windows.qual.mjs applies the chi-squared
+// test to every drawn row of its windows, and holds the app's rule to it on
+// every slider window and at each threshold. Here, the structure only: a row
+// for every plotted line, in order, each either one cell giving a reason (a
+// line with too few months) or five cells ending in one of the app's
+// assessments, DISPERSION_VERDICT (until 2026-10-29 this qual spelled them
+// out).
+{
+  const verdicts = Object.values(JSON.parse(vm.runInContext("JSON.stringify(DISPERSION_VERDICT)", ctx)));
+  const want = JSON.parse(vm.runInContext("JSON.stringify(ADS_SERIES.map(h => helmerLabel(h)))", ctx)).map(escHtml);
+  const rows = rowsOf(tableOf("sanity-dispersion") || "").map(r => [...r.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(m => m[1]));
+  const wrong = rows.filter((cells, i) => cells[0] !== want[i] ||
+    !(cells.length === 2 ? cells[1].trim() !== "" : cells.length === 5 && verdicts.includes(cells[4])));
+  assert.ok(
+    rows.length === want.length && wrong.length === 0 && rows.some(cells => cells.length === 5),
+    `Replicata: read the Poisson dispersion table's rows (full history).
+Expectata: one row per plotted line (${JSON.stringify(want)}), in that order, each either two cells (the line and a reason) or five ending in one of DISPERSION_VERDICT's assessments ${JSON.stringify(verdicts)}; at least one of the second kind.
+Resultata: ${rows.length} rows; not so: ${JSON.stringify(wrong.map(cells => cells.map(c => c.slice(0, 40))))}.`);
+}
 
 // --- Geography: Waymo spans multiple cities ---
 // (The cities are the incidents' locations, from the data.)

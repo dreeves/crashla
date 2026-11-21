@@ -1,5 +1,42 @@
+// Coverage of data/vmt.js's analysis rows and what the page makes of it.
+// Since 2026-11-21 (the human, on NHTSA's partly reported newest month:
+// "maximum conservativeness, don't show things when they involve arbitrary
+// guesses"; "if we know when a helmer's crash reports end then we compute the
+// exact VMT for the crashes. if not, we don't try to guess") an analysis row
+// is of one of two kinds (data/slurp.py month_sources):
+//   complete: a month NHTSA's file holds whole. Receipt and incident coverage
+//     (1, 1, 1), its incidents through NHTSA's receipt cutoff, its month
+//     before the data-through month; its effective miles are its raw miles.
+//   list row: a month a company's own dated list covers. Its incidents run
+//     through the list's date, in the row's own month; its receipt coverage
+//     is one share three times over (the list's miles over the row's: no
+//     range) and its incident coverage a share with a low edge and a high
+//     edge of 1 (quals/preprints.qual.mjs recomputes both from the list).
+// NHTSA's data-through month has no row for a line no list covers: it is
+// pending (quals/pending-months.qual.mjs). Until 2026-11-21 that month had a
+// row for every line, with a receipt-coverage triple estimated from the
+// release (observed over expected five-day-track incidents, its high edge
+// FIVE_DAY_RECEIPT_COVERAGE_MAX) and a pooled incident-coverage triple, and a
+// helmer's Monthly-lag months a 5-Day-share triple; this qual required those
+// (one receipt triple shared by the lines on NHTSA's cutoff, 0 < lo < best <
+// hi < 1), and that every other row was (1, 1, 1).
+//
+// What still has a subject, and is checked on every list row and, so that it
+// is checked at a release no list covers, on one synthetic list row (the
+// newest row of a line that has none, given a list row's coverage):
+//   - the two kinds, and the orderings of both triples;
+//   - a row's effective miles: raw for a complete row; for a list row, on the
+//     Monthly track, [vmt_min x coverage x incCovMin, vmt x coverage x incCov,
+//     vmt_max x coverage_max x incCovMax], on the five-day track [vmt_min x
+//     coverage_min, vmt x coverage, vmt_max x coverage_max], and the low
+//     incident-coverage edge widens the displayed interval's low side (the
+//     synthetic row's receipt coverage has a range, so that the three values
+//     are told apart);
+//   - the five-day-track metrics (METRIC_DEFS fiveDay) take the receipt
+//     coverage alone, in a month's band and in a window's miles, and the
+//     Monthly-track metrics both factors;
+//   - the page refuses rows of any other kind (checkGhostVmtRows).
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 
@@ -14,11 +51,7 @@ const ctx = vm.createContext({
 vm.runInContext(dataScript, ctx, { filename: "data.js" });
 vm.runInContext(appScript, ctx, { filename: "crashla.js" });
 
-// --- Parse VMT CSV and verify incident_coverage fields ---
-
-const vmtData = vm.runInContext(`
-  const rows = parseVmtCsv(VMT_CSV_TEXT);
-  rows.map(r => ({
+const pick = `r => ({
     helmer: r.helmer,
     month: r.month,
     vmtBest: r.vmtBest,
@@ -31,8 +64,63 @@ const vmtData = vm.runInContext(`
     incCovMin: r.incCovMin,
     incCovMax: r.incCovMax,
     through: r.through,
-  }))
-`, ctx);
+  })`;
+// data/vmt.js's rows as the app parses them.
+const fileRows = JSON.parse(vm.runInContext(`JSON.stringify(parseVmtCsv(VMT_CSV_TEXT).map(${pick}))`, ctx));
+const nhtsaCutoff = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx);
+const dataThroughMonth = nhtsaCutoff.slice(0, 7);
+const isComplete = r => [r.coverage, r.coverageMin, r.coverageMax, r.incCov, r.incCovMin, r.incCovMax].every(v => v === 1);
+
+// --- The two kinds of row ---
+const kindProblems = [];
+for (const row of fileRows) {
+  const at = `${row.helmer} ${row.month}`;
+  if (isComplete(row)) {
+    if (row.through !== nhtsaCutoff || !(row.month < dataThroughMonth))
+      kindProblems.push(`${at}: complete, with incidents through ${row.through} (NHTSA's cutoff is ${nhtsaCutoff}; a complete month is before ${dataThroughMonth})`);
+    continue;
+  }
+  const receipt = [row.coverage, row.coverageMin, row.coverageMax], incident = [row.incCov, row.incCovMin, row.incCovMax];
+  if (!(/^\d{4}-\d{2}-\d{2}$/.test(row.through) && row.through.slice(0, 7) === row.month && row.month <= dataThroughMonth))
+    kindProblems.push(`${at}: a list row's incidents run through a date in its own month, at or before ${dataThroughMonth}; it has ${row.through}`);
+  if (!(receipt.every(v => v === receipt[0]) && receipt[0] > 0 && receipt[0] <= 1))
+    kindProblems.push(`${at}: a list row's receipt coverage is one share in (0, 1] three times over; it has ${JSON.stringify(receipt)}`);
+  if (!(row.incCovMin > 0 && row.incCovMin < 1 && row.incCovMin <= row.incCov && row.incCov <= 1 && row.incCovMax === 1))
+    kindProblems.push(`${at}: a list row's incident coverage is 0 < low <= best <= 1 with a low edge below 1 and a high edge of 1; it has ${JSON.stringify(incident)}`);
+}
+const listRows = fileRows.filter(r => !isComplete(r));
+for (const row of listRows) {
+  const later = fileRows.filter(r => r.helmer === row.helmer && r.month > row.month);
+  if (later.length > 0) kindProblems.push(`${row.helmer} ${row.month}: a list row is its line's newest analysis row; ${later.map(r => r.month).join(", ")} follow it`);
+}
+if (fileRows.some(r => r.month > dataThroughMonth)) kindProblems.push(`rows after the data-through month ${dataThroughMonth}: ${fileRows.filter(r => r.month > dataThroughMonth).map(r => `${r.helmer} ${r.month}`).join(", ")}`);
+if (!fileRows.some(isComplete)) kindProblems.push("no complete row at all");
+assert.deepEqual(kindProblems, [],
+  `Replicata: read every analysis row of data/vmt.js (NHTSA's receipt cutoff ${nhtsaCutoff}, data-through month ${dataThroughMonth}).
+Expectata: each is complete (receipt and incident coverage (1, 1, 1), incidents through the cutoff, a month before ${dataThroughMonth}) or a list row (incidents through a date in its own month; one receipt share three times over; incident coverage with a low edge below 1 and a high edge of 1; its line's newest row); none after ${dataThroughMonth}.
+Resultata: ${kindProblems.length} problems: ${kindProblems.slice(0, 8).join("; ")}.`);
+
+// --- The rows the checks below read: the file's, and one synthetic list row ---
+// The newest row of the first line with no list row, given a list row's
+// coverage (half its miles through the 15th; incident coverage 0.9, low edge
+// 0.7), so the checks of a list row run at a release no list covers too. Its
+// receipt coverage is given a range (0.45 to 0.55), which no list row of the
+// file has (the check above): the page still reads the triple's three values
+// (vmt.js's coverage, coverage_min, coverage_max), and only a row whose
+// three differ tells them apart in the compositions checked below, as the
+// data-through month's estimated triple did until 2026-11-21.
+const synthetic = vm.runInContext(`(() => {
+  loadIncidents(INCIDENT_DATA, PENDING_INCIDENT_DATA);
+  vmtRows = parseVmtCsv(VMT_CSV_TEXT);
+  ghostVmtRows = parseGhostVmtCsv(GHOST_VMT_CSV_TEXT);
+  const line = ADS_SERIES.find(h => vmtRows.filter(r => r.helmer === h).every(isCompleteRow));
+  assert(line !== undefined, "quals/incident-coverage.qual.mjs: no line without a list row to make a synthetic one from");
+  const month = vmtRows.filter(r => r.helmer === line).map(r => r.month).sort().at(-1);
+  vmtRows = vmtRows.map(r => r.helmer === line && r.month === month
+    ? {...r, coverage: 0.5, coverageMin: 0.45, coverageMax: 0.55, incCov: 0.9, incCovMin: 0.7, incCovMax: 1, through: month + "-15"} : r);
+  return line + " " + month;
+})()`, ctx);
+const vmtData = JSON.parse(vm.runInContext(`JSON.stringify(vmtRows.map(${pick}))`, ctx));
 
 // --- incCov ordering: min <= best <= max for all rows ---
 for (const row of vmtData) {
@@ -44,79 +132,24 @@ Resultata: ${row.incCovMin} <= ${row.incCov} <= ${row.incCovMax}.`);
     `incCov must be in (0, 1] for ${row.helmer} ${row.month}`);
 }
 
-// --- Receipt coverage: 1 everywhere except NHTSA's data-through month ---
-// The release holds reports RECEIVED through NHTSA_DATA_THROUGH_DATE (the
-// 15th, or the next business day when the 15th falls on a weekend or holiday;
-// quals/nhtsa-cutoff-date.qual.mjs), so that month's five-day-track incidents
-// are only partly present.
-// slurp.py estimates the fraction from the release itself, observed /
-// expected (since 2026-10-31, decision D6; quals/receipt-coverage.qual.mjs
-// recounts it), with the high edge FIVE_DAY_RECEIPT_COVERAGE_MAX, a reviewed
-// constant read here from data/slurp.py. The generated CSV must carry one
-// such triple, shared by every line whose incidents run through NHTSA's
-// cutoff, for the data-through month and (1, 1, 1) everywhere else. (Until
-// 2026-10-31 this required the literal constant FIVE_DAY_RECEIPT_COVERAGE =
-// (best, lo, hi), the median of earlier months' first-release shares and its
-// padded range.) Since 2026-11-18 a line's data-through-month row can take
-// its coverage from its company's own list of crash reports instead, where
-// that list holds more of the month (data/slurp.py preprint_coverage); such
-// a row's incidents_through is the list's date, and
-// quals/preprints.qual.mjs checks its coverage. Until then this required
-// the one triple of every line.
-const nhtsaCutoff = vm.runInContext("NHTSA_DATA_THROUGH_DATE", ctx);
-const dataThroughMonth = nhtsaCutoff.slice(0, 7);
-const onNhtsa = row => row.through === nhtsaCutoff;
-const slurpSource = readFileSync(new URL("../data/slurp.py", import.meta.url), "utf8");
-const covMatch = slurpSource.match(/^FIVE_DAY_RECEIPT_COVERAGE_MAX = ([0-9.]+)$/m);
-assert.ok(covMatch,
-  `Replicata: read FIVE_DAY_RECEIPT_COVERAGE_MAX from data/slurp.py.
-Expectata: the reviewed high edge of the receipt coverage is a literal constant.
-Resultata: not found.`);
-const covHi = Number(covMatch[1]);
-const dataThroughTriples = [...new Set(vmtData.filter(r => r.month === dataThroughMonth && onNhtsa(r))
-  .map(r => JSON.stringify([r.coverage, r.coverageMin, r.coverageMax])))];
-assert.ok(dataThroughTriples.length === 1,
-  `Replicata: read the receipt coverage, in the data-through month ${dataThroughMonth}, of every line whose incidents run through NHTSA's cutoff (${nhtsaCutoff}).
-Expectata: one triple shared by those lines (the coverage is pooled over the companies).
-Resultata: ${JSON.stringify(dataThroughTriples)}.`);
-const offCutoff = vmtData.filter(r => !onNhtsa(r) && r.month !== dataThroughMonth);
-assert.equal(offCutoff.length, 0,
-  `Replicata: list the rows whose incidents_through is not NHTSA's cutoff (${nhtsaCutoff}).
-Expectata: all in the data-through month ${dataThroughMonth}: a company's list sets a row's coverage only while NHTSA's file holds less of that month.
-Resultata: ${JSON.stringify(offCutoff.map(r => `${r.helmer} ${r.month} ${r.through}`))}.`);
-const [covBest, covLo] = JSON.parse(dataThroughTriples[0]);
-assert.ok(0 < covLo && covLo < covBest && covBest < covHi && covHi < 1,
-  `Replicata: inspect the data-through month's receipt-coverage triple.
-Expectata: 0 < lo < best < hi < 1, hi = FIVE_DAY_RECEIPT_COVERAGE_MAX (${covHi}) — the data-through month is partial and uncertain.
-Resultata: ${dataThroughTriples[0]}.`);
 for (const row of vmtData) {
   assert.ok(row.coverageMin > 0 && row.coverageMin <= row.coverage &&
       row.coverage <= row.coverageMax && row.coverageMax <= 1,
     `Replicata: check coverage ordering for ${row.helmer} ${row.month}.
 Expectata: 0 < coverage_min <= coverage <= coverage_max <= 1.
 Resultata: ${row.coverageMin} <= ${row.coverage} <= ${row.coverageMax}.`);
-  // A row on a company list's coverage keeps its own triple (preprints.qual).
-  const expected = !onNhtsa(row) ? [row.coverage, row.coverageMin, row.coverageMax]
-    : row.month === dataThroughMonth ? [covBest, covLo, covHi] : [1, 1, 1];
-  assert.deepEqual([row.coverage, row.coverageMin, row.coverageMax], expected,
-    `Replicata: compare ${row.helmer} ${row.month} receipt coverage with the data-through month's triple.
-Expectata: ${JSON.stringify(expected)} (${row.month === dataThroughMonth ? "the data-through month" : "a fully received month"}).
-Resultata: ${JSON.stringify([row.coverage, row.coverageMin, row.coverageMax])}.`);
 }
-assert.ok(vmtData.some(r => r.month === dataThroughMonth),
-  `Replicata: look for VMT rows in the NHTSA data-through month ${dataThroughMonth}.
-Expectata: at least one (the window always reaches the data-through month).
-Resultata: none.`);
 
-// Identify months with Monthly-track incompleteness: slurp.py's pooled
-// rate-ratio gives incCov = clamp(observed / expected) (0.33 for 2026-08)
-// with lo = best x exp(-1.96 SE) and hi = 1, so incCovMin < 1 marks the
-// data-through month; since 2026-10-04 it also marks each month inside a
-// helmer's Monthly-report lag (data/slurp.py MONTHLY_ARRIVAL_LAG; incCov =
-// the helmer's 5-Day share there, receipt coverage 1). quals/
-// monthly-arrival-lag.qual.mjs pins which months those are.
+// The partially received rows: the list rows (incCovMin < 1: a list can lack
+// a crash its company files late) and the synthetic one. Until 2026-11-21
+// these were NHTSA's data-through month, on its pooled rate-ratio triple,
+// and each month inside a helmer's Monthly-report lag, on its 5-Day share.
 const incompleteRows = vmtData.filter(r => r.incCovMin < 1);
 const completeRows = vmtData.filter(r => r.incCovMin === 1);
+assert.ok(incompleteRows.length === listRows.length + 1 && incompleteRows.some(r => `${r.helmer} ${r.month}` === synthetic),
+  `Replicata: list the partially received rows among the rows the app holds (data/vmt.js's, with ${synthetic} made a synthetic list row).
+Expectata: the file's ${listRows.length} list rows and the synthetic one.
+Resultata: ${JSON.stringify(incompleteRows.map(r => `${r.helmer} ${r.month}`))}.`);
 
 // All complete months must have incCov = incCovMin = incCovMax = 1
 for (const row of completeRows) {
@@ -128,12 +161,7 @@ for (const row of completeRows) {
     `incident_coverage_max for complete month ${row.helmer} ${row.month} should be 1`);
 }
 
-// --- Set up monthSeriesData for effective VMT checks ---
-
-vm.runInContext(`
-  incidents = INCIDENT_DATA;
-  vmtRows = parseVmtCsv(VMT_CSV_TEXT);
-`, ctx);
+// --- Effective VMT (monthSeriesData, on the rows set up above) ---
 
 // --- Verify effective VMT computation for all rows ---
 
@@ -144,6 +172,7 @@ const allSeriesData = vm.runInContext(`
       Object.entries(p.helmers).filter(([, d]) => d !== null && d.vmtBest > 0).map(([name, d]) => ({
         helmer: name, month: p.month,
         vmtMin: d.vmtMin, vmtBest: d.vmtBest, vmtMax: d.vmtMax,
+        vmtRawMin: d.vmtRawMin, vmtRawBest: d.vmtRawBest, vmtRawMax: d.vmtRawMax,
       }))
     );
   })()
@@ -171,10 +200,9 @@ Expectata: coverage=1, incCov=1, so effective VMT equals raw VMT.
 Resultata: effective=${eff.vmtBest}, raw=${raw.vmtBest}.`);
 }
 
-// --- Conditional tests for incomplete months (incCov < 1) ---
-// These activate when NHTSA Monthly reports haven't arrived for the last month.
+// --- The partially received rows (incCov < 1): each line's ---
 
-if (incompleteRows.length > 0) {
+{
   // Pick the first incomplete row per helmer
   const byHelmer = {};
   for (const row of incompleteRows) {
@@ -186,11 +214,12 @@ if (incompleteRows.length > 0) {
     if (!eff) continue;
 
     // The Monthly-track effective triple composes the receipt coverage and
-    // the pooled incident coverage exactly: best x best x best; the low edge
+    // the incident coverage exactly: best x best x best; the low edge
     // pairs vmt_min with the receipt BEST and incCovMin (incCovMin is the
-    // rate-ratio bound CONDITIONAL on the receipt best — pairing it with the
+    // bound CONDITIONAL on the receipt best — pairing it with the
     // receipt lo double-counted the receipt uncertainty until 2026-09-04);
     // the high edge pairs vmt_max with the receipt hi and incCovMax (= 1).
+    // On a list row the three receipt values are one share.
     const near = (a, b) => Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(b));
     assert.ok(
       near(eff.vmtMin, raw.vmtMin * raw.coverage * raw.incCovMin) &&
@@ -199,6 +228,16 @@ if (incompleteRows.length > 0) {
       `Replicata: recompose the effective VMT triple for ${helmer} ${raw.month} from the CSV row.
 Expectata: [${raw.vmtMin * raw.coverage * raw.incCovMin}, ${raw.vmtBest * raw.coverage * raw.incCov}, ${raw.vmtMax * raw.coverageMax * raw.incCovMax}] = vmt_min x coverage x incCovMin, vmt x coverage x incCov, vmt_max x coverage_max x incCovMax.
 Resultata: [${eff.vmtMin}, ${eff.vmtBest}, ${eff.vmtMax}].`);
+    // The five-day-track (raw) triple takes the receipt coverage alone, each
+    // edge its own: low with low, best with best, high with high (no qual
+    // held its edges until 2026-11-21: audit 2026-11-20, A22).
+    assert.ok(
+      near(eff.vmtRawMin, raw.vmtMin * raw.coverageMin) &&
+        near(eff.vmtRawBest, raw.vmtBest * raw.coverage) &&
+        near(eff.vmtRawMax, raw.vmtMax * raw.coverageMax),
+      `Replicata: recompose the five-day-track (raw) VMT triple for ${helmer} ${raw.month} from the CSV row.
+Expectata: [${raw.vmtMin * raw.coverageMin}, ${raw.vmtBest * raw.coverage}, ${raw.vmtMax * raw.coverageMax}] = vmt_min x coverage_min, vmt x coverage, vmt_max x coverage_max.
+Resultata: [${eff.vmtRawMin}, ${eff.vmtRawBest}, ${eff.vmtRawMax}].`);
 
     // MPI CI should be wider than it would be with incCovMin=1
     const mpiCheck = vm.runInContext(`
@@ -212,7 +251,7 @@ Resultata: [${eff.vmtMin}, ${eff.vmtBest}, ${eff.vmtMax}].`);
         // counterfactual holds incident coverage at its CENTRAL value on the
         // band's low edge (keeping vmtMin <= vmtBest ordered).
         const withCov = estimateMpiWindow(w.incidents.total, null, w.vmtMin, w.vmtBest, w.vmtMax);
-        const rawRow = parseVmtCsv(VMT_CSV_TEXT).find(
+        const rawRow = vmtRows.find(
           r => r.helmer === ${JSON.stringify(helmer)} && r.month === ${JSON.stringify(raw.month)});
         const noCovMin = rawRow.vmtMin * rawRow.coverage * rawRow.incCov;
         const withoutCov = estimateMpiWindow(w.incidents.total, null, noCovMin, w.vmtBest, w.vmtMax);
@@ -232,10 +271,11 @@ Resultata: withCovMin lo=${mpiCheck.withMin.toFixed(0)}, withoutCovMin lo=${mpiC
 // incident report within FIVE days of notice when the crash involves a
 // fatality, hospital transport, a vulnerable-road-user strike, an airbag
 // deployment, or (ADS) a tow-away; only the remaining property-damage crashes
-// ride the Monthly track (Request No. 2). incident_coverage measures the
-// Monthly batch's incompleteness, so metrics whose qualifying incidents are
+// ride the Monthly track (Request No. 2). incident_coverage measures how
+// much of a month's Monthly-track crashes a list is taken to hold (a company
+// can file one late), so metrics whose qualifying incidents are
 // STRUCTURALLY five-day-reportable must not have their effective VMT thinned
-// by it: their reports for the incomplete month are already filed.
+// by it: a list holds those through its date.
 
 const fiveDayKeys = [...vm.runInContext(
   `METRIC_DEFS.filter(m => m.fiveDay === true).map(m => m.key).sort()`, ctx)];
@@ -252,8 +292,7 @@ dictionary's "Serious Without Hospitalization", the severity whitelist
 crashes and this is a human decision again.)
 Resultata: ${JSON.stringify(fiveDayKeys)}.`);
 
-if (incompleteRows.length > 0) {
-  const raw = incompleteRows[0];
+for (const raw of incompleteRows) {
   // Month-level: for the incomplete month, a five-day metric's displayed
   // bands must come from the RAW (calendar-coverage-only) VMT triple; the
   // 'all' metric's bands must come from the incCov-thinned triple.
@@ -281,8 +320,7 @@ if (incompleteRows.length > 0) {
   assert.ok(
     close(bandCheck.fatalityGot.lo, bandCheck.fatalityRaw.lo) &&
     close(bandCheck.fatalityGot.hi, bandCheck.fatalityRaw.hi),
-    `Replicata: render the ${raw.helmer} ${raw.month} fatality band while the
-month's Monthly batch is missing (incCov=${raw.incCov}).
+    `Replicata: render the ${raw.helmer} ${raw.month} fatality band, the month a partially received (list) row (incCov=${raw.incCov}).
 Expectata: fatality is five-day-track (SGO Request No. 1.D.i), so its band
 uses the receipt-coverage-scaled raw VMT triple without Monthly-track thinning.
 Resultata: got [${bandCheck.fatalityGot.lo}, ${bandCheck.fatalityGot.hi}],
@@ -291,8 +329,7 @@ thinned band [${bandCheck.fatalityThinned.lo}, ${bandCheck.fatalityThinned.hi}].
   assert.ok(
     close(bandCheck.allGot.lo, bandCheck.allThinned.lo) &&
     close(bandCheck.allGot.hi, bandCheck.allThinned.hi),
-    `Replicata: render the ${raw.helmer} ${raw.month} all-incidents band while
-the month's Monthly batch is missing.
+    `Replicata: render the ${raw.helmer} ${raw.month} all-incidents band, the month a partially received (list) row.
 Expectata: 'all' is dominated by Monthly-track property-damage crashes, so its
 band keeps the incCov-thinned VMT triple.
 Resultata: got [${bandCheck.allGot.lo}, ${bandCheck.allGot.hi}],
@@ -333,21 +370,48 @@ Resultata: ${windowCheck.allVmtBest}.`);
 Expectata: rawSum > thinnedSum (otherwise this qual isn't exercising the split).
 Resultata: raw=${windowCheck.rawSum}, thinned=${windowCheck.thinnedSum}.`);
 
-  // Partial receipt coverage is only meaningful for the data-through month;
-  // the app must enforce that loudly (anti-Postel) rather than trust the CSV.
-  assert.ok(/assert\(vmt\.coverage === 1 \|\| month === NHTSA_DATA_THROUGH_DATE\.slice\(0, 7\)/.test(appScript),
-    `Replicata: grep crashla.js for an assert tying partial receipt coverage to
-the NHTSA data-through month.
-Expectata: an assert exists that fails loudly if any other month carries
-coverage < 1.
-Resultata: no such assert found.`);
-  // No release-date inference remains: the old NHTSA_MODIFIED_DATE >=
-  // month-end + 5 assert passed vacuously (the file's modification date is a
-  // month after its receipt cutoff) and was retired 2026-08-28.
-  assert.doesNotMatch(appScript, /fiveDayDue/,
-    `Replicata: grep crashla.js for the retired five-day-due inference.
-Expectata: absent — receipt coverage is measured, not inferred from the modification date.
-Resultata: fiveDayDue remains.`);
 }
 
-console.log("qual pass: receipt coverage (data-through month) and Monthly-track incident coverage select metric-specific effective VMT");
+// The page refuses rows of any other kind, loudly (anti-Postel), rather than
+// trust the file. Each case below differs in one thing from a set of rows the
+// page accepts: data/vmt.js's rows with every list row made complete (a
+// release no list covers), on which one line's rows are then changed.
+// (Until 2026-11-21 an assert in monthSeriesData tied partial receipt
+// coverage to the data-through month, and this qual looked for its text.)
+const refusals = JSON.parse(vm.runInContext(`(() => {
+  const file = parseVmtCsv(VMT_CSV_TEXT);
+  const attempt = rows => { const kept = vmtRows; vmtRows = rows; try { checkGhostVmtRows(); return "accepted"; } catch (e) { return String(e.message).slice(0, 200); } finally { vmtRows = kept; } };
+  const complete = {coverage: 1, coverageMin: 1, coverageMax: 1, incCov: 1, incCovMin: 1, incCovMax: 1, through: NHTSA_DATA_THROUGH_DATE};
+  const partial = {coverage: 0.5, coverageMin: 0.5, coverageMax: 0.5, incCov: 0.9, incCovMin: 0.7, incCovMax: 1};
+  const none = file.map(r => ({...r, ...complete}));
+  const line = ADS_SERIES[0], other = ADS_SERIES.at(-1);
+  const monthsOf = h => none.filter(r => r.helmer === h).map(r => r.month).sort();
+  const months = monthsOf(line);
+  const withRow = (rows, h, month, patch) => rows.map(r => r.helmer === h && r.month === month ? {...r, ...patch} : r);
+  const listRow = month => ({...partial, through: month + "-15"});
+  return JSON.stringify({
+    line, other,
+    file: attempt(file),
+    noListRow: attempt(none),
+    listRowNewest: attempt(withRow(none, line, months.at(-1), listRow(months.at(-1)))),
+    partialAfterMonth: attempt(withRow(none, line, months.at(-1), listRow(monthAfter(months.at(-1))))),
+    partialBeforeMonth: attempt(withRow(none, line, months.at(-1), listRow(months.at(-2)))),
+    partialNotNewest: attempt(withRow(none, line, months.at(-3), listRow(months.at(-3)))),
+    completeOffCutoff: attempt(withRow(none, line, months.at(-1), {through: months.at(-1) + "-14"})),
+    twoListMonths: attempt(withRow(withRow(none, line, months.at(-1), listRow(months.at(-1))), other, monthsOf(other).at(-2), listRow(monthsOf(other).at(-2)))),
+  });
+})()`, ctx));
+const refused = ["partialAfterMonth", "partialBeforeMonth", "partialNotNewest", "completeOffCutoff", "twoListMonths"];
+assert.ok(refusals.file === "accepted" && refusals.noListRow === "accepted" && refusals.listRowNewest === "accepted" && refused.every(k => refusals[k] !== "accepted"),
+  `Replicata: call the page's checkGhostVmtRows() on data/vmt.js's rows (file); on them with every list row made complete (noListRow); on those with ${refusals.line}'s newest row made a list row (listRowNewest); and on those with that row partial yet through a date in the month after its own, as NHTSA's cutoff is for the month before the data-through month, or in the month before (partialAfterMonth, partialBeforeMonth), with a partial row that is not ${refusals.line}'s newest (partialNotNewest), with its newest row complete yet through another date than NHTSA's cutoff (completeOffCutoff), and with list rows in two different months (twoListMonths: ${refusals.line}'s newest and ${refusals.other}'s second newest).
+Expectata: the first three accepted, each of the other five refused.
+Resultata: ${JSON.stringify(refusals)}.`);
+// No release-date inference remains: the old NHTSA_MODIFIED_DATE >=
+// month-end + 5 assert passed vacuously (the file's modification date is a
+// month after its receipt cutoff) and was retired 2026-08-28.
+assert.doesNotMatch(appScript, /fiveDayDue/,
+  `Replicata: grep crashla.js for the retired five-day-due inference.
+Expectata: absent.
+Resultata: fiveDayDue remains.`);
+
+console.log(`qual pass: every analysis row of data/vmt.js is complete or a list row (${listRows.map(r => `${r.helmer} ${r.month} through ${r.through}`).join(", ") || "no list row"}); a list row's receipt coverage and incident coverage select metric-specific effective VMT (checked on those and on a synthetic list row, ${synthetic}); the page refuses rows of any other kind`);

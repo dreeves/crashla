@@ -3,6 +3,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { appScript, dataScript } from "./load-app.mjs";
 import { parseCsv } from "./csv-parse.mjs";
+import { TESLA_PAGE_PART } from "./tesla-page-part.mjs";
 
 // Tesla's growth forecasts (for GROWTH_FORECAST_DATE; Jan 1, 2027 until
 // 2026-10-29, Jan 1, 2028 since) may not sit below what Tesla's own October
@@ -19,7 +20,14 @@ import { parseCsv } from "./csv-parse.mjs";
 // - Fleet: the robotaxi lane's median is at least the week to Oct 18's
 //   79,669 miles a day over the ~180 miles per vehicle-day Tesla's fleet ran
 //   in Q2 2026 (5-6k miles per vehicle-month), ~442 vehicles in service.
-const OCT_1_18 = 1179333, WEEK_TO_OCT_18 = 557694, MILES_PER_VEHICLE_DAY = 180;
+// Tesla's page figure for Oct 1-18 is read from the one place that holds it
+// (quals/tesla-page-part.mjs; until 2026-11-21 a literal here).
+const octPart = TESLA_PAGE_PART["2026-10"];
+assert.ok(octPart !== undefined && octPart.through === "2026-10-18",
+  `Replicata: read October 2026's entry of quals/tesla-page-part.mjs (TESLA_PAGE_PART).
+Expectata: Tesla's page's no-monitor miles of Oct 1-18, 2026, the stretch this qual's floor starts from.
+Resultata: ${JSON.stringify(octPart)}.`);
+const OCT_1_18 = octPart.miles, WEEK_TO_OCT_18 = 557694, MILES_PER_VEHICLE_DAY = 180;
 
 const raw = parseCsv(fs.readFileSync("data/vmt.csv", "utf8"));
 const sepRow = raw.find(p => p[0] === "tesla" && p[1] === "2026-09");

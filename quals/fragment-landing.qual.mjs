@@ -27,7 +27,8 @@
 // Also text-fragment links (#:~:text=), which no script can see in Firefox
 // or WebKit: one to a heading between the incident browser and the sanity
 // section (the markets', the summary's and, since 2026-11-20, the
-// assumptions section's), or to the growth section's heading, shows that heading, on a
+// assumptions section's), or to the growth section's heading, whose words
+// appear nowhere above it (TEXT_LINKS, below), shows that heading, on a
 // desktop and on phones, as before 2026-10-05 (with the views built after
 // the first frame, the empty box moved the first two ~700 px out of the
 // window in Firefox and WebKit, and the page grew ~13,000-29,000 px above the
@@ -57,7 +58,29 @@ const headingText = id => {
   assert.ok(m, `Replicata: read the heading of ${id} in index.html. Expectata: <h2 class="sec-head"><span class="sec-toggle">(its text)</span></h2> right after the section's opening tag. Resultata: none.`);
   return m[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").trim();
 };
-const TEXT_LINKS = ["#sec-markets", "#sec-summary", "#sec-assumptions", "#sec-fleet"].map(id => [headingText(id), id]);
+// A bare text-fragment link reaches a heading only when the heading's words
+// appear nowhere above it: a browser goes to the first match on the page,
+// ignoring case. So the links are to those of these headings whose text
+// index.html shows nowhere earlier as whole words (comments, scripts, styles
+// and noscript content are not shown), and the others are named on the pass
+// line. Since 2026-11-21, when the human's heading "Assumptions" (until then
+// the Latin placeholder "Suppositiones") also matched the abstract's
+// "Waymo-vs-humans assumptions." and its link landed there (the human: "that
+// qual change sounds correct"). The section's own link, #sec-assumptions, is
+// tested above whatever its heading says.
+const TEXT_CANDIDATES = ["#sec-markets", "#sec-summary", "#sec-assumptions", "#sec-fleet"].map(id => [headingText(id), id]);
+const SHOWN = INDEX.replace(/<!--[\s\S]*?-->/g, " ").replace(/<(script|style|noscript)\b[\s\S]*?<\/\1>/gi, " ");
+const shownAbove = id => {
+  const end = SHOWN.indexOf(`<section class="collapsible" id="${id.slice(1)}">`);
+  assert.ok(end > 0, `Replicata: find ${id} in index.html. Expectata: its section. Resultata: none.`);
+  return SHOWN.slice(SHOWN.indexOf("<body"), end).replace(/<[^>]*>/g, " ").replace(/&[#\w]+;/g, " ").replace(/\s+/g, " ");
+};
+const wordsIn = (text, shown) => new RegExp(`(^|[^\\p{L}\\p{N}])${text.replace(/\s+/g, " ").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}\\p{N}])`, "iu").test(shown);
+const TEXT_LINKS = TEXT_CANDIDATES.filter(([text, id]) => !wordsIn(text, shownAbove(id)));
+const UNREACHABLE = TEXT_CANDIDATES.filter(([text, id]) => wordsIn(text, shownAbove(id)));
+assert.ok(TEXT_LINKS.length > 0, `Replicata: read the headings ${TEXT_CANDIDATES.map(([, id]) => id).join(", ")} and the text index.html shows above each.
+Expectata: at least one heading whose words appear nowhere above it, so this qual tests a text-fragment link at all.
+Resultata: every one appears above: ${JSON.stringify(UNREACHABLE)}.`);
 // The fragment directive's own delimiters ("-" and ",", besides "&") are
 // escaped, so the heading's text is searched for whole.
 const textDirective = text => encodeURIComponent(text).replace(/-/g, "%2D");
@@ -112,8 +135,9 @@ try {
             await page.context().close();
           }
         }
-        // Text-fragment links to the two headings between the incident
-        // browser and the sanity section and to the growth section's.
+        // Text-fragment links to the headings between the incident browser
+        // and the sanity section and to the growth section's, those a bare
+        // link can reach (TEXT_LINKS).
         for (const [text, section] of TEXT_LINKS) {
           const where = `${engineName} ${what} #:~:text=${text}`;
           const page = await openPage(browser, server.url + DEF + "#:~:text=" + textDirective(text), options);
@@ -141,4 +165,4 @@ assert.ok(problems.length === 0,
 Expectata: the section's top at the top of the window (or the page scrolled as far as it goes), with the two-row table at most the room its rows leave in the box (its cap, 80vh or under a coarse pointer 50vh, minus the box's drawn height) above or below that; the default view's box drawn at its cap and the two-row one shorter; the fragment still in the address; no page error; each text-fragment link shows its heading whole in the window.
 Resultata: ${problems.length} of ${results.length} loads wrong:
 ${problems.join("\n")}`);
-console.log(`qual pass: ${results.length} links opened fresh (#sec-... and #:~:text=) land on their targets in three engines, desktop and phone (a section below a two-row incident table within the room its rows leave in its box)`);
+console.log(`qual pass: ${results.length} links opened fresh (#sec-... and #:~:text=) land on their targets in three engines, desktop and phone (a section below a two-row incident table within the room its rows leave in its box)${UNREACHABLE.length > 0 ? `; no text-fragment link to ${UNREACHABLE.map(([text, id]) => `${id} ("${text}")`).join(", ")}, whose words appear above it` : ""}`);

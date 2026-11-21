@@ -122,6 +122,10 @@ const metrics = vm.runInContext(`
       roadwayNonstationary: p.helmers[helmer].incidents.roadwayNonstationary,
     }))),
     rawIncidents: INCIDENT_DATA.map(inc => ({series: inc.series, date: inc.date, speed: inc.speed, road: inc.road})),
+    // Each Roadway Type's class, the reviewed table the page reads
+    // (data/incidents.js ROADWAY_CLASS, written from data/slurp.py's;
+    // quals/roadway-class.qual.mjs holds the two equal).
+    roadwayClass: typeof ROADWAY_CLASS === "undefined" ? null : ROADWAY_CLASS,
     summaryRows: monthlySummaryRows(series),
     airbagByHelmerMonth: Object.fromEntries(
       ADS_HELMERS.map(helmer => [
@@ -169,7 +173,7 @@ const hasAxisTitle = svg => new RegExp(`<text class="month-label"[^>]*>(?!<\\/te
 assert(
   plain.months.includes("2025-06") && plain.months.includes("2026-02"),
   `Replicata: aggregate month series from inline incident data + inline VMT sheet CSV.
-Expectata: month axis includes the NHTSA window (2025-06 through at least 2026-02; it runs to the data-through month); may extend earlier with Waymo-only VMT.
+Expectata: month axis includes the NHTSA window (2025-06 through at least 2026-02; it runs to the newest month with an analysis row); may extend earlier with Waymo-only VMT.
 Resultata: month axis was ${JSON.stringify(plain.months)}.`,
 );
 
@@ -185,7 +189,11 @@ Resultata: expected=${JSON.stringify(plain.expectedTotalByHelmer)} actual=${JSON
 // from the incidents themselves, apart from the page's own tally: a speed of
 // null is unknown, 0 is stopped, then 1-10, 11-30 and 31 or more mph; an
 // incident is nonstationary unless its speed is 0, and nonstationary on a
-// roadway when it is also not in a parking lot. Until 2026-11-17 this pinned
+// roadway when its Roadway Type's class is also the road class of the
+// reviewed table, ROADWAY_CLASS (the class of "Street"; since 2026-11-21,
+// audit A11 of 2026-11-20: until then this recount, like the page, left out
+// only the literal "Parking Lot", so neither saw NHTSA's new "Parking
+// Garage" enter the count). Until 2026-11-17 this pinned
 // January 2026's Tesla figures (one stopped, three at 1-10 mph, three
 // nonstationary, one of them on a roadway), copied from the page's output
 // and re-pinned on 2026-09-26 when a report left scope; the human: "sure,
@@ -195,6 +203,11 @@ Resultata: expected=${JSON.stringify(plain.expectedTotalByHelmer)} actual=${JSON
   const MONTH_NO = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
   const monthOf = label => `${label.slice(4)}-${String(MONTH_NO[label.slice(0, 3)]).padStart(2, "0")}`;
   const binOf = speed => speed === null ? "unknown" : speed === 0 ? "0" : speed <= 10 ? "1-10" : speed <= 30 ? "11-30" : "31+";
+  assert.ok(plain.roadwayClass !== null && typeof plain.roadwayClass.Street === "string",
+    `Replicata: read ROADWAY_CLASS, each Roadway Type's class, from the page's data (data/incidents.js).
+Expectata: a table whose "Street" has a class, the road class.
+Resultata: ${JSON.stringify(plain.roadwayClass)}.`);
+  const ROAD = plain.roadwayClass.Street;
   const recount = new Map();
   for (const inc of plain.rawIncidents) {
     for (const helmer of inc.series) {
@@ -203,7 +216,7 @@ Resultata: expected=${JSON.stringify(plain.expectedTotalByHelmer)} actual=${JSON
       rec.total += 1;
       rec.speeds[binOf(inc.speed)] += 1;
       rec.nonstationary += Number(inc.speed !== 0);
-      rec.roadwayNonstationary += Number(inc.speed !== 0 && inc.road !== "Parking Lot");
+      rec.roadwayNonstationary += Number(inc.speed !== 0 && plain.roadwayClass[inc.road] === ROAD);
       recount.set(key, rec);
     }
   }
@@ -217,7 +230,7 @@ Resultata: expected=${JSON.stringify(plain.expectedTotalByHelmer)} actual=${JSON
   const counted = plain.binsByLineMonth.reduce((n, r) => n + r.total, 0);
   assert.ok(plain.binsByLineMonth.length > 0 && counted > 0 && differ.length === 0,
     `Replicata: for every line and every month it has miles for (${plain.binsByLineMonth.length} line-months, ${counted} incident counts), read the page's speed bins, its nonstationary count and its nonstationary-roadway count, and recount them from the incidents' speeds and road types.
-Expectata: the same figures: a bin for each incident by its speed (unknown, 0, 1-10, 11-30, 31+), nonstationary every incident whose speed is not 0, nonstationary-roadway those of them not in a parking lot.
+Expectata: the same figures: a bin for each incident by its speed (unknown, 0, 1-10, 11-30, 31+), nonstationary every incident whose speed is not 0, nonstationary-roadway those of them whose Roadway Type has the road class in ROADWAY_CLASS.
 Resultata: ${differ.length} line-months differ, e.g. ${JSON.stringify(differ.slice(0, 3))}.`);
 }
 
@@ -247,7 +260,7 @@ const expTesla = JSON.parse(JSON.stringify(vm.runInContext(`
     total: inWin.length,
     nonstationary: inWin.filter(i => speedBinForIncident(i.speed) !== "0").length,
     roadway: inWin.filter(i =>
-      speedBinForIncident(i.speed) !== "0" && i.road !== "Parking Lot").length,
+      speedBinForIncident(i.speed) !== "0" && ROADWAY_CLASS[i.road] === ROADWAY_CLASS.Street).length,
   };
 })()
 `, ctx)));
@@ -578,8 +591,9 @@ Resultata: bar lengths were ${JSON.stringify(allZeroK.barLens.map(Math.round))}.
 // MLE (miles/k), pessimistically lowered by the incomplete reporting
 // (incident_coverage shrinks the effective VMT), and its dot, at the posterior
 // median, stays filled, never the k=0 hollow dot.
-// Guards the case that arrives the moment NHTSA partially reports a month that
-// had crashes (which is when the partial-coverage path actually fires for k>0).
+// Guards a partially received month that had crashes: since 2026-11-21 a
+// list row's (a month a company's own dated list covers); until then NHTSA's
+// partly reported data-through month, which is pending now and has no row.
 const partialK = vm.runInContext(`
   (() => {
     const savedMetric = selectedMetricKey;
@@ -741,27 +755,27 @@ assert.ok(vmtLines(cardOf(firstMonthCards, "HumansAV")).some(l => l.body.include
 // (b) The incomplete-reporting "?" marker is drawn per MONTH, not per helmer
 // dot (per-helmer glyphs overprinted each other wherever two dots sat close):
 // one per month, visible when a shown helmer's dot that month is incomplete.
-// The receipt and pooled incident-coverage factors are the same for every
-// helmer; the months inside a helmer's Monthly-report lag (since 2026-10-04,
-// data/slurp.py MONTHLY_ARRIVAL_LAG) are its own, so they count only while
-// that helmer is shown (Zoox, off by default).
-// Since 2026-10-04 (audit #36) a run of adjacent incomplete months shares one
-// "?" (on a phone, Zoox's lagged 2026-07 and the data-through 2026-08 drew two
-// glyphs 3.6 units apart, read as "??"): one per complete month at opacity 0,
-// plus one per run of adjacent incomplete months.
+// Since 2026-11-21 the incomplete rows are the list rows (a month a company's
+// own dated list covers), its lines' own, so the month is marked only while
+// one of those lines is shown. A line has at most one, its newest, and the
+// list rows share a month, so no two adjacent months are marked and each
+// month keeps its own marker. (From 2026-10-04, audit #36, to 2026-11-21 a
+// run of adjacent incomplete months shared one "?": Zoox's lagged 2026-07
+// and the data-through 2026-08 drew two glyphs 3.6 units apart on a phone,
+// read as "??". Lagged months and NHTSA's data-through month are pending
+// now and have no dot.)
 const windowMonthList = vm.runInContext(`(() => { const s = monthSeriesData(); return s.months.slice(s.months.indexOf(DEFAULT_START_MONTH)); })()`, ctx);
 const incompleteSet = new Set(vm.runInContext(`
   [...new Set(parseVmtCsv(VMT_CSV_TEXT).filter(r => monthHelmerEnabled[r.helmer] && (r.coverage < 1 || r.incCov < 1)).map(r => r.month))]`, ctx));
 const incompleteMonths = windowMonthList.filter(m => incompleteSet.has(m)).length;
-const incompleteRuns = windowMonthList.filter((m, i) => incompleteSet.has(m) && !(i > 0 && incompleteSet.has(windowMonthList[i - 1]))).length;
 // The markers are the month-tick texts that carry an opacity (found by that,
 // not by their glyph, since 2026-10-29).
 const qmarkOpacities = [...plain.chartMpiAll.matchAll(/<text class="month-tick"[^>]*style="opacity:([\d.]+);pointer-events:none">[^<]*<\/text>/g)].map(m => Number(m[1]));
 const visibleQmarks = qmarkOpacities.filter(o => o > 0).length;
 const windowMonths = windowMonthList.length;
-assert.ok(qmarkOpacities.every(o => o >= 0 && o <= 1) && qmarkOpacities.length === windowMonths - incompleteMonths + incompleteRuns && visibleQmarks === incompleteRuns,
+assert.ok(qmarkOpacities.every(o => o >= 0 && o <= 1) && qmarkOpacities.length === windowMonths && visibleQmarks === incompleteMonths && incompleteMonths <= 1,
   `Replicata: count "?" marker texts on the default-window MPI-over-time chart and how many are visible (opacity > 0).
-Expectata: one per complete month (${windowMonths - incompleteMonths}, at opacity 0, grayed out rather than suppressed) and one per run of adjacent incomplete months (${incompleteRuns}, visible), each with a finite opacity in [0, 1].
+Expectata: one per month (${windowMonths}): at opacity 0 for a complete month (grayed out rather than suppressed), visible for an incomplete one (${incompleteMonths}, at most one: a list row's month), each with a finite opacity in [0, 1].
 Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
 // (d) The MPI-over-time tooltip of a partially received month gives the
 // month's WHOLE completeness for the metric shown, best then worst: the share
@@ -777,23 +791,25 @@ Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
 // 2026-11-01 open questions, 2026-11-02). Until 2026-09-26 the chart derived
 // its worst case as vmtMin / vmtRawMin, i.e. (receipt best / receipt min) x
 // incCovMin = 24% for 2026-08 while the sanity table said 17.3%. Each line's
-// note is checked against its own row: since 2026-11-18 a line's
-// data-through-month row can take its coverage from its company's own list
-// of crash reports (data/slurp.py preprint_coverage), so the lines no longer
-// share one pair of figures (until then this required one pair for all).
+// note is checked against its own row. Since 2026-11-21 the rows read are
+// those of the newest month with an analysis row (the slider's last): a list
+// row there carries the note, a complete row none, and a line that is
+// pending that month has no row and no dot. (From 2026-11-18 a line's
+// data-through-month row could take its coverage from its company's own list
+// of crash reports, data/slurp.py preprint_coverage, so the lines no longer
+// shared one pair of figures; until 2026-11-21 every line had a partly
+// received row in the data-through month.)
 {
   const dt = vm.runInContext(`
-    (() => { const rows = parseVmtCsv(VMT_CSV_TEXT); const m = NHTSA_DATA_THROUGH_DATE.slice(0, 7);
-      // The month's row is read, never assumed (until 2026-11-06 a VMT CSV
-      // without one stopped here on a TypeError naming nothing). assert is
-      // crashla.js's, which throws its message with the details appended.
+    (() => { const rows = parseVmtCsv(VMT_CSV_TEXT); const m = rows.map(x => x.month).sort().at(-1);
       const r = rows.filter(x => x.month === m);
-      assert(r.length > 0, "Replicata: read data/vmt.js's analysis rows (parseVmtCsv(VMT_CSV_TEXT)) and find those for the data-through month " + m + ".\\nExpectata: one or more, each line's receipt and incident coverage the figures its coverage notes give.\\nResultata: none; the newest month there is", rows.map(x => x.month).sort().at(-1));
       return { month: m, lines: JSON.parse(JSON.stringify(Object.fromEntries(r.map(x => [x.helmer,
         { coverage: x.coverage, coverageMin: x.coverageMin, incCov: x.incCov, incCovMin: x.incCovMin }])))) }; })()`, ctx);
-  // Each line's two figures, on the Monthly track and on the five-day track.
-  const wantMonthly = h => { const x = dt.lines[h]; return [Math.round(x.coverage * x.incCov * 100), Math.round(x.coverage * x.incCovMin * 100)]; };
-  const wantFiveDay = h => { const x = dt.lines[h]; return [Math.round(x.coverage * 100), Math.round(x.coverageMin * 100)]; };
+  // Each line's two figures, on the Monthly track and on the five-day track:
+  // none on a row received whole on that track.
+  const noted = (best, worst) => worst < 0.999 ? [Math.round(best * 100), Math.round(worst * 100)] : [];
+  const wantMonthly = h => { const x = dt.lines[h]; return noted(x.coverage * x.incCov, x.coverage * x.incCovMin); };
+  const wantFiveDay = h => { const x = dt.lines[h]; return noted(x.coverage, x.coverageMin); };
   // The chart's targets and their accessible names, each the mark's company
   // label then its tip (seriesMarkName): the ADS dots are the ones named for
   // an ADS line. The coverage note gives two figures, ~best% then
@@ -811,7 +827,7 @@ Resultata: ${qmarkOpacities.length} markers, ${visibleQmarks} visible.`);
     .map(([h, t]) => `${h}: ${JSON.stringify(figuresOf(t))}, want ${JSON.stringify(wantMonthly(h))}`);
   assert.ok(adsTips.length >= 1 && monthlyOff.length === 0,
     `Replicata: read the ${dt.month} ADS dot tooltips on the default (Monthly-track) MPI chart (the targets named for an ADS line).
-Expectata: each one's coverage note gives its line's whole completeness for the month: its row's receipt coverage x incident coverage, then x the incident coverage's low edge.
+Expectata: one tooltip per shown line with a row that month; a partially received row's coverage note gives its line's whole completeness for the month (its row's receipt coverage x incident coverage, then x the incident coverage's low edge), and a complete row's tooltip no figures.
 Resultata: ${JSON.stringify(monthlyOff)} from ${adsTips.length} tooltips.`);
   const fiveDayTips = vm.runInContext(`
     (() => { const s = monthSeriesData(); const start = s.months.indexOf(DEFAULT_START_MONTH);
@@ -822,7 +838,7 @@ Resultata: ${JSON.stringify(monthlyOff)} from ${adsTips.length} tooltips.`);
     .map(([h, t]) => `${h}: ${JSON.stringify(figuresOf(t))}, want ${JSON.stringify(wantFiveDay(h))}`);
   assert.ok(lineTips(fiveDayTips).length >= 1 && fiveDayOff.length === 0,
     `Replicata: the same month's ADS dot tooltips on a five-day-track metric (fatality).
-Expectata: each one's coverage note gives its line's receipt coverage alone, best then low edge: five-day metrics carry no Monthly-track thinning, but the data hold only part of the month's five-day reports.
+Expectata: a partially received row's coverage note gives its line's receipt coverage alone, best then low edge: five-day metrics carry no Monthly-track thinning, but a list holds only the crashes through its date.
 Resultata: ${JSON.stringify(fiveDayOff)} from ${lineTips(fiveDayTips).length} tooltips, e.g. ${JSON.stringify(lineTips(fiveDayTips).slice(0, 1))}.`);
 }
 // (c) The card's Effective-VMT tooltip states the numbers only; the per-month
