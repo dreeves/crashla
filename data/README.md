@@ -1036,12 +1036,25 @@ ledger, 2026-10-27 (later)):
   growth, ×e^(±0.30 √(h/7)), with a human-set central past five weeks): for
   Oct 19-31, 2026 that gave 1,382,000 miles where the camera rate gives
   1,032,000.
-- Tesla, every operator mode: floor = the no-monitor line's floor;
-  central = the no-monitor central plus June 2026's measured monitor-aboard
-  remainder (33,000 miles); top = the central × e to the root-sum-square of
-  ln(no-monitor top / no-monitor central) and ln(1.27 × no-monitor central /
-  central), a monitor-aboard share at or below June's 21% (for July-September
-  this gives their tops within 1.2%).
+- Tesla, every operator mode (from July 2026, the months after Tesla's chart
+  of miles from every mode ended; `quals/tesla-every-mode.mjs`, which the
+  July-September rows, `quals/tesla-unsupervised-floor.qual.mjs`, and the
+  camera months, `quals/tesla-camera-miles.qual.mjs`, share): the no-monitor
+  line's miles plus the monitor-aboard miles, whose ranges combine as
+  independent errors, in quadrature, at both edges (the human, 2026-11-23,
+  "ok fine": the main unknown in the monitor-aboard miles, how much
+  monitor-aboard driving continued after June, has nothing to do with Tesla's
+  page). Central = the no-monitor central plus June 2026's measured
+  monitor-aboard remainder (33,000 miles); floor = the central × e to minus
+  the root-sum-square of ln(no-monitor central / no-monitor floor) and
+  ln(central / no-monitor central), the monitor-aboard miles falling to none;
+  top = the central × e to the root-sum-square of ln(no-monitor top /
+  no-monitor central) and ln(1.27 × no-monitor central / central), a
+  monitor-aboard share at or below June's 21%. Until 2026-11-23 only the top
+  took this rule: the floor was the no-monitor line's floor for October and
+  November 2026 and the lower of Tesla's two no-monitor readings for
+  July-September, about 3% above that line's floors (2026-11-20 spec finding
+  (c)).
 - Waymo: each term of the latest row at its per-day rate for the month's
   days, plus documented openings and pauses (for October 2026, among them
   Waymo's Oct 27 expansion, https://waymo.com/blog/shorts/more-places/);

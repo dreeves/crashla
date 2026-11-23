@@ -240,6 +240,7 @@ function constOf(file, name, chain = []) {
 }
 const CAMERA = "quals/tesla-camera-miles.qual.mjs", ZOOX = "quals/zoox-vmt-model.qual.mjs", WAYMO = "quals/waymo-vmt-model.qual.mjs";
 const PROVENANCE = "quals/tesla-vmt-provenance.qual.mjs", FLOOR = "quals/tesla-unsupervised-floor.qual.mjs";
+const EVERY_MODE = "quals/tesla-every-mode.mjs";
 const HUMANS = "quals/human-benchmark-provenance.qual.mjs", MARKET = "quals/tesla-forecast-inputs.qual.mjs";
 // The camera rule's figures (tesla-camera-miles.qual.mjs, rule 3), from its
 // consts and the newest saved camera table, whose whole weeks' Cybercab means
@@ -444,7 +445,7 @@ const INVENTORY = {
   },
   "tesla-bay-area": {},
   "tesla-drivers-seat": {},
-  "tesla-no-monitor-scope": { floorFrom: qual(() => nextMonth(constOf(PROVENANCE, "PINS").at(-1)[0])) },
+  "tesla-no-monitor-scope": { allModesFrom: qual(() => nextMonth(constOf(PROVENANCE, "PINS").at(-1)[0])) },
   "tesla-no-monitor-band": {
     pct: rel(v => Object.entries(NO_MONITOR()).flatMap(([month, [page, deck]]) => {
       const r = row("teslanomonitor", month), f = 1 + v / 100;
@@ -452,21 +453,26 @@ const INVENTORY = {
       return same([r.vmt, r.vmin, r.vmax], want) ? [] : [`teslanomonitor ${month}: vmt, vmt_min, vmt_max ${[r.vmt, r.vmin, r.vmax]}, the page and deck readings ${page} and ${deck} give ${want}`];
     })),
   },
+  // The every-mode rule's two figures, read from the module both Tesla model
+  // quals share (since 2026-11-23, when the floor joined the top in the
+  // quadrature rule; until then MONITOR_ABOARD was the camera qual's, and
+  // July-September's tops were checked against the higher no-monitor reading
+  // times the cap, which the rule gave within 1.2%).
   "tesla-monitor-aboard": {
     held: rel(v => [
-      ...(constOf(CAMERA, "MONITOR_ABOARD") === v ? [] : [`${CAMERA} MONITOR_ABOARD is ${constOf(CAMERA, "MONITOR_ABOARD")}`]),
+      ...(constOf(EVERY_MODE, "MONITOR_ABOARD") === v ? [] : [`${EVERY_MODE} MONITOR_ABOARD is ${constOf(EVERY_MODE, "MONITOR_ABOARD")}`]),
       ...span("tesla", "2026-07", "2026-09").filter(r => r.vmt !== Math.round((row("teslanomonitor", r.month).vmt + v) / 1000) * 1000).map(r => `tesla ${r.month}: vmt ${r.vmt}, not the no-monitor ${row("teslanomonitor", r.month).vmt} + ${v} to 1,000`),
       ...span("tesla", "2026-10", "2026-11").filter(r => r.vmt - row("teslanomonitor", r.month).vmt !== v).map(r => `tesla ${r.month}: vmt ${r.vmt}, not the no-monitor ${row("teslanomonitor", r.month).vmt} + ${v}`),
     ]),
+    shareTop: rel(v => {
+      const deck = row("tesla", "2026-06").vmt, page = row("teslanomonitor", "2026-06").vmt;
+      return [
+        ...(constOf(EVERY_MODE, "MONITOR_ABOARD_CAP") === v ? [] : [`${EVERY_MODE} MONITOR_ABOARD_CAP is ${constOf(EVERY_MODE, "MONITOR_ABOARD_CAP")}`]),
+        ...(round(deck / page, 2) === v ? [] : [`June 2026's all-modes miles over its no-monitor miles, ${deck} / ${page}, are ${deck / page}, not ${v} to two decimals`]),
+      ];
+    }),
   },
   "tesla-oct-nov-ranges": {
-    within: rel((v, all) => span("tesla", "2026-07", "2026-09").flatMap(r => {
-      const nm = row("teslanomonitor", r.month);
-      const top = r.vmt * Math.exp(Math.hypot(Math.log(nm.vmax / nm.vmt), Math.log(all.shareTop * nm.vmt / r.vmt)));
-      return Math.abs(top / r.vmax - 1) <= v / 100 ? [] : [`tesla ${r.month}: the combined top ${Math.round(top)} is not within ${v}% of vmt_max ${r.vmax}`];
-    })),
-    shareTop: rel(v => span("tesla", "2026-07", "2026-09").filter(r => r.vmax !== Math.ceil(Math.max(...NO_MONITOR()[r.month]) * v / 1000) * 1000)
-      .map(r => `tesla ${r.month}: vmt_max ${r.vmax}, not the higher no-monitor reading x ${v} rounded up to 1,000`)),
     gap: rel(v => {
       const gaps = Object.entries(NO_MONITOR()).filter(([m]) => m >= "2026-04").map(([, [page, deck]]) => Math.log(deck / page));
       const rms = Math.sqrt(gaps.reduce((a, g) => a + g * g, 0) / gaps.length);

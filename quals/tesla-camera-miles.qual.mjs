@@ -67,10 +67,16 @@
 //   5. The month's range is the sum of the parts' edges (plus the measured
 //      part, as is), widened on a log scale by 0.066 in quadrature for the
 //      gap between Tesla's page and its deck.
-//   6. The every-mode line: floor = the no-monitor floor; central = the
-//      no-monitor central + 33,000 (June 2026's monitor-aboard remainder);
-//      top = central x e^sqrt(ln(no-monitor top / no-monitor central)^2 +
-//      ln(1.27 x no-monitor central / central)^2).
+//   6. The every-mode line: the no-monitor line's figures plus the
+//      monitor-aboard miles, the two ranges combined in quadrature on both
+//      edges (quals/tesla-every-mode.mjs, which quals/tesla-unsupervised-floor
+//      .qual.mjs shares for July-September): central = the no-monitor
+//      central + 33,000 (June 2026's monitor-aboard remainder); floor =
+//      central x e^-sqrt(ln(no-monitor central / no-monitor floor)^2 +
+//      ln(central / no-monitor central)^2); top = central x
+//      e^sqrt(ln(no-monitor top / no-monitor central)^2 + ln(1.27 x
+//      no-monitor central / central)^2). Until 2026-11-23 the floor was the
+//      no-monitor floor (restated with the human's "ok fine").
 //   7. Figures are rounded to 1,000; cumulatives and their bands chain on the
 //      month before.
 //
@@ -79,6 +85,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { NEWEST_CAMERA_TABLE } from "./camera-table.mjs";
 import { TESLA_PAGE_PART } from "./tesla-page-part.mjs";
+import { everyMode } from "./tesla-every-mode.mjs";
 
 const TESLA_WEEKS = { "2026-09-21": 258043, "2026-09-28": 334281, "2026-10-05": 430621, "2026-10-12": 557694 };
 // The newest saved table's whole weeks (rule 4): each mean of seven days.
@@ -94,7 +101,7 @@ const CAMERA_WEEKS = Object.fromEntries(Object.entries(NEWEST_CAMERA_TABLE.weeks
 // (quals/tesla-page-part.mjs; until 2026-11-21 a literal here).
 const MEASURED = TESLA_PAGE_PART;
 const MONTHS = ["2026-10", "2026-11"];
-const MONITOR_ABOARD = 33000, PAGE_DECK_GAP = 0.066, NO_DATA = [0.5, 2];
+const PAGE_DECK_GAP = 0.066, NO_DATA = [0.5, 2];
 // The drift term (rule 3): ln per square root of a month, at 1.96 for 95%,
 // over months of 30.44 days, as Zoox's band formula has them.
 const DRIFT = 0.07, Z975 = 1.96, MONTH_DAYS = 30.44;
@@ -150,10 +157,6 @@ const noMonitor = month => {
   const c = parts.reduce((a, p) => a + p[0], 0);
   const lo = parts.reduce((a, p) => a + p[0] * p[1], 0), hi = parts.reduce((a, p) => a + p[0] * p[2], 0);
   return { c, lo: c * Math.exp(-Math.hypot(Math.log(c / lo), PAGE_DECK_GAP)), hi: c * Math.exp(Math.hypot(Math.log(hi / c), PAGE_DECK_GAP)) };
-};
-const everyMode = ({ c, lo, hi }) => {
-  const C = c + MONITOR_ABOARD;
-  return { c: C, lo, hi: C * Math.exp(Math.hypot(Math.log(hi / c), Math.log(1.27 * c / C))) };
 };
 
 // data/vmt.csv: helmer, month, vmt, cumulative, cumulative low, cumulative high, vmt low, vmt high, rationale

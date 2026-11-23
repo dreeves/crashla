@@ -4305,7 +4305,9 @@ function renderFleetForecastChart() {
 // Tesla's October and November are its miles rows' (October 465 [312, 788]
 // until 2026-11-17, on the row of before the camera estimate; October 402
 // [281, 653] and November 609 [341, 1221] until 2026-11-20, on the bands of
-// before the camera estimate's drift term). Waymo and
+// before the camera estimate's drift term; October [280, 656] and November
+// [335, 1234] until 2026-11-23, on the every-mode floors of before both edges
+// took the quadrature rule, quals/tesla-every-mode.mjs). Waymo and
 // Zoox have published no fleet count since September, so each runs
 // September's count on at a pace. Waymo: 4,300 on Sep 1, then ~280 cars a
 // month (above 2026's average of ~180 a month, as Ojai imports ramp: ~5,100
@@ -4333,8 +4335,8 @@ const FLEET_HISTORY = {
     {month: "2026-07", best: 50, lo: 35, hi: 77},
     {month: "2026-08", best: 93, lo: 65, hi: 145},
     {month: "2026-09", best: 186, lo: 132, hi: 294},
-    {month: "2026-10", best: 402, lo: 280, hi: 656},
-    {month: "2026-11", best: 609, lo: 335, hi: 1234},
+    {month: "2026-10", best: 402, lo: 281, hi: 656},
+    {month: "2026-11", best: 609, lo: 337, hi: 1234},
   ],
   Waymo: [
     {month: "2025-05", best: 1500, lo: 1300, hi: 1700},
@@ -4403,9 +4405,12 @@ const RIDES_HISTORY = {
   // 2026-10-03, audit #87), 2026-10 (added 2026-10-28) and the ghost month
   // 2026-11 (added 2026-11-17; growth-ghost-month.qual.mjs) are estimate
   // months of data/vmt.csv, so each band divides the kyoom band by the
-  // corridor's far ends, as RIDES_FORECAST does: 4,241,000 / 6.2, 4,004,800
-  // / 8.3, 4,976,000 / 4.7; 6,485,000 / 6.2, 5,934,800 / 8.3, 7,921,000 /
-  // 4.7; and 9,776,000 / 6.2, 7,930,800 / 8.3, 13,782,000 / 4.7. (2026-09
+  // corridor's far ends, as RIDES_FORECAST does: 4,241,000 / 6.2, 4,007,800
+  // / 8.3, 4,975,000 / 4.7; 6,485,000 / 6.2, 5,964,800 / 8.3, 7,920,000 /
+  // 4.7; and 9,776,000 / 6.2, 7,980,800 / 8.3, 13,781,000 / 4.7 (the
+  // cumulative bands of 2026-11-23, when both edges of the every-mode months
+  // took the quadrature rule; until then 4,004,800 and 4,976,000, 5,934,800
+  // and 7,921,000, 7,930,800 and 13,782,000). (2026-09
   // sat on September's cumulative of before the 2026-10-23 re-pin, 3,630,000
   // [3,194,800, 4,506,000], until 2026-10-28; 2026-10 on October's of before
   // the camera estimate, 6,835,000 [6,079,800, 8,611,000], until 2026-11-17;
@@ -4419,8 +4424,8 @@ const RIDES_HISTORY = {
     {month: "2026-03", best: 277000, lo: 207000, hi: 365000},
     {month: "2026-06", best: 394000, lo: 294000, hi: 519000},
     {month: "2026-09", best: 684000, lo: 483000, hi: 1059000},
-    {month: "2026-10", best: 1046000, lo: 715000, hi: 1685000},
-    {month: "2026-11", best: 1577000, lo: 956000, hi: 2932000},
+    {month: "2026-10", best: 1046000, lo: 719000, hi: 1685000},
+    {month: "2026-11", best: 1577000, lo: 962000, hi: 2932000},
   ],
   // Waymo pinned to published cumulative milestones (rides-provenance.qual):
   // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
@@ -6675,22 +6680,22 @@ const ASSUMPTIONS = [
   {id: "tesla-drivers-seat", group: "tesla", values: {},
     text: () => `From September 2025 to June 2026 the chart's miles may include trips with a safety monitor in the driver's seat (Tesla said so of highway trips in September 2025, and a rider reported routine ones in Austin in January 2026). A crash on such a trip, if it ran as FSD (Supervised), would be filed, if at all, in that driver-assistance file, and only when a Level 2 trigger such as a hospital transport or an airbag deployment applies, while its miles stay in Tesla's rates: a bias in Tesla's favor of unknown size that no range carries.`,
     where: [["data/vmt.csv", "tesla 2025-09 – 2026-06"]]},
-  {id: "tesla-no-monitor-scope", group: "tesla", values: {floorFrom: "2026-07"},
-    text: v => `Tesla's no-monitor miles are taken as Tesla defines them on its Robotaxi Safety Report page: driving with no safety monitor in the car, remote help or takeover included. Tesla does not say whether repositioning, employee rides or Cybercab testing are in them. They are the whole denominator of the Tesla (no safety monitor) line, which starts in ${fmtMonth(vmtLineMonths("TeslaNoMonitor")[0])}, and the floor of Tesla's all-modes line from ${fmtMonth(v.floorFrom)}; no range carries the question.`,
+  {id: "tesla-no-monitor-scope", group: "tesla", values: {allModesFrom: "2026-07"},
+    text: v => `Tesla's no-monitor miles are taken as Tesla defines them on its Robotaxi Safety Report page: driving with no safety monitor in the car, remote help or takeover included. Tesla does not say whether repositioning, employee rides or Cybercab testing are in them. They are the whole denominator of the Tesla (no safety monitor) line, which starts in ${fmtMonth(vmtLineMonths("TeslaNoMonitor")[0])}, and most of Tesla's all-modes miles from ${fmtMonth(v.allModesFrom)}; no range carries the question.`,
     where: [["data/vmt.csv", "teslanomonitor"], ["data/README.md", "Tesla's no-monitor line"]]},
   {id: "tesla-no-monitor-band", group: "tesla", values: {pct: 3},
     text: v => `For January to September 2026 a month's no-monitor miles are the safety page's city totals at its end, read between the page's weekly figures as if each week's miles were spread evenly over its days. Its range runs ${v.pct}% beyond the lower and the higher of the page's and the update deck's readings (its low edge at least half the page's figure), a judgment for that reading. The Tesla (no safety monitor) line's rates for those months rest on it.`,
     covers: {TeslaNoMonitor: ["2026-01", "2026-09"]},
     where: [["data/vmt.csv", "teslanomonitor 2026-01 – 2026-09"], ["quals/tesla-unsupervised-floor.qual.mjs", "NO_MONITOR"]]},
-  {id: "tesla-monitor-aboard", group: "tesla", values: {held: 33000},
+  {id: "tesla-monitor-aboard", group: "tesla", values: {held: 33000, shareTop: 1.27},
     text: v => {
       const deck = vmtRowAt("Tesla", "2026-06").vmtBest, page = vmtRowAt("TeslaNoMonitor", "2026-06").vmtBest;
-      return `From July 2026 Tesla's all-modes line adds the miles driven with a safety monitor aboard. These have not been measured since June 2026 and are held at June's remainder, ${fmtWhole(deck - page)} (the deck's ${fmtWhole(deck)} less the page's ${fmtWhole(page)}), rounded to ${fmtWhole(v.held)} a month. The line's range allows none of them at the bottom and, at the top, a monitor-aboard share up to June's ${Math.round(100 * (deck - page) / deck)}%; every all-modes rate from July 2026 rests on it.`;
+      return `From July 2026 Tesla's all-modes line adds the miles driven with a safety monitor aboard. These have not been measured since June 2026 and are held at June's remainder, ${fmtWhole(deck - page)} (the deck's ${fmtWhole(deck)} less the page's ${fmtWhole(page)}), rounded to ${fmtWhole(v.held)} a month. Their own range runs from none to a monitor-aboard share of June's ${Math.round(100 * (deck - page) / deck)}% (all-modes miles ${v.shareTop} times the no-monitor miles), and the line's range combines it with the no-monitor line's range as independent errors, in quadrature on a log scale, at both edges, the two errors having separate causes; every all-modes rate from July 2026 rests on it.`;
     },
     covers: {Tesla: ["2026-07", "2026-11"]},
-    where: [["quals/tesla-camera-miles.qual.mjs", "MONITOR_ABOARD"], ["data/vmt.csv", "tesla 2026-07 – 2026-11"]]},
-  {id: "tesla-oct-nov-ranges", group: "tesla", values: {within: 1.2, shareTop: 1.27, gap: 0.066},
-    text: v => `In October and November 2026 the all-modes top combines the no-monitor top and that June share as independent errors (the same rule gives July to September's tops, the higher no-monitor reading times ${v.shareTop}, within ${v.within}%). Both Tesla lines' ranges also widen by ${v.gap} on a log scale (about ${(100 * (Math.exp(v.gap) - 1)).toFixed(1)}%), combined as an independent error, for the gap between Tesla's safety page and its deck: 1.96 times the root mean square of their monthly gap over April to September 2026.`,
+    where: [["quals/tesla-every-mode.mjs", "MONITOR_ABOARD, MONITOR_ABOARD_CAP, everyMode"], ["data/vmt.csv", "tesla 2026-07 – 2026-11"]]},
+  {id: "tesla-oct-nov-ranges", group: "tesla", values: {gap: 0.066},
+    text: v => `In October and November 2026 both Tesla lines' ranges also widen by ${v.gap} on a log scale (about ${(100 * (Math.exp(v.gap) - 1)).toFixed(1)}%), combined as an independent error, for the gap between Tesla's safety page and its deck: 1.96 times the root mean square of their monthly gap over April to September 2026.`,
     where: [["quals/tesla-camera-miles.qual.mjs", "PAGE_DECK_GAP"], ["data/README.md", "Ghost months"]]},
   {id: "tesla-camera-ratio", group: "tesla", values: {pageThrough: "2026-10-18", readOn: "2026-11-16", K: 258938, n: 4, calFrom: "2026-09-21", calTo: "2026-10-18"},
     text: v => `Past the last day Tesla's safety page showed when last read (${fmtDay(v.pageThrough)}; read on ${fmtDay(v.readOn)}), its no-monitor miles are estimated from Robotaxi Tracker's Camera watch ([https://robotaxitracker.com/cameras](https://robotaxitracker.com/cameras)), Cybercabs per 1,000 vehicles seen on Austin's public traffic cameras. Each day gets ${fmtWhole(v.K)} miles per unit of its Monday-to-Sunday week's mean rate, over 7: the geometric mean of the ratio of Tesla's weekly miles to that rate over the ${v.n} weeks both cover (${fmtDay(v.calFrom)} to ${fmtDay(v.calTo)}). Both Tesla lines' October and November 2026 miles rest on that ratio holding, which it would not if Cybercabs' share of Tesla's miles, Austin's share or the other traffic those cameras see changed. While Tesla's own list covers October (below), October's exposure is scaled to the miles Tesla's page measured through ${fmtDay(v.pageThrough)}, so the ratio reaches October's rates only through its range.`,
