@@ -463,12 +463,47 @@ Expectata: as this qual's header (4, 5) says.
 Resultata:\n  ${problems.join("\n  ")}`);
 
 // --- 6. main() never calls the step -------------------------------------------
-assert.ok(S.mainBlocks === 1 && same(S.mainBody.slice(0, 1), ["main()"]) && S.mainBody.length === 2 && /^camera_table_step\(/.test(S.mainBody[1]) &&
+// The block first sets print_stop as the run's excepthook (since 2026-11-23,
+// the human: "can you make that error nice and clear and not spew junk all
+// over the screen?"; until then it held main() and the step alone).
+assert.ok(S.mainBlocks === 1 && same(S.mainBody.slice(0, 2), ["sys.excepthook = print_stop", "main()"]) && S.mainBody.length === 3 && /^camera_table_step\(/.test(S.mainBody[2]) &&
   same(S.stepKeywords, { terminal: "sys.stdin.isatty() and sys.stdout.isatty()", run: "subprocess.run", ask: "input", which: "shutil.which", today: "datetime.date.today()" }) &&
   S.otherNames.length === 0,
   `Replicata: read data/slurp.py's syntax tree: its if __name__ == "__main__": block, and every name camera_table_step outside it.
-Expectata: one such block, holding main() and then camera_table_step(terminal=sys.stdin.isatty() and sys.stdout.isatty(), run=subprocess.run, ask=input, which=shutil.which, today=datetime.date.today()), and the step named nowhere else but its own def.
+Expectata: one such block, holding sys.excepthook = print_stop, main() and then camera_table_step(terminal=sys.stdin.isatty() and sys.stdout.isatty(), run=subprocess.run, ask=input, which=shutil.which, today=datetime.date.today()), and the step named nowhere else but its own def.
 Resultata: ${S.mainBlocks} blocks, body ${JSON.stringify(S.mainBody)}, keywords ${JSON.stringify(S.stepKeywords)}, other uses at ${JSON.stringify(S.otherNames)}.`);
+
+// --- 6b. A stop in a run by hand prints plainly --------------------------------
+// With print_stop as the excepthook, a stop (must()'s AssertionError) ends the
+// run with exit status 1 and prints its message and each figure it names, one
+// to a line, with no traceback; any other exception, a fault in the script,
+// still prints Python's traceback. Each case runs in its own python3, the hook
+// set as the __main__ block sets it.
+{
+  const hooked = body => spawnSync("python3", ["-B", "-c", String.raw`
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("slurp", "data/slurp.py")
+slurp = importlib.util.module_from_spec(spec); spec.loader.exec_module(slurp)
+sys.excepthook = slurp.print_stop
+${body}`], { cwd: new URL("..", import.meta.url), encoding: "utf8" });
+  const stop = hooked(`slurp.must(False, "a test stop (nothing was saved)", last="Tue, Sep 15 (UTC)\\t1.54", lines=71)`);
+  const fault = hooked(`raise ValueError("a fault")`);
+  const bare = hooked(`raise AssertionError("a bare assert")`);
+  const problems = [];
+  if (stop.status !== 1) problems.push(`a stop exits ${stop.status}, not 1`);
+  if (/Traceback/.test(stop.stderr)) problems.push(`a stop prints a traceback: ${JSON.stringify(stop.stderr.slice(0, 400))}`);
+  if (!stop.stderr.includes("a test stop (nothing was saved)")) problems.push(`a stop does not print its message: ${JSON.stringify(stop.stderr.slice(0, 400))}`);
+  for (const line of ["last: Tue, Sep 15 (UTC)\t1.54", "lines: 71"])
+    if (!stop.stderr.split("\n").some(l => l.trim() === line)) problems.push(`a stop does not print the figure ${JSON.stringify(line)} on a line of its own: ${JSON.stringify(stop.stderr.slice(0, 400))}`);
+  if (fault.status !== 1 || !/Traceback \(most recent call last\)/.test(fault.stderr) || !fault.stderr.includes("ValueError: a fault"))
+    problems.push(`a fault (ValueError) exits ${fault.status} and prints ${JSON.stringify(fault.stderr.slice(-300))}, not Python's traceback`);
+  if (bare.status !== 1 || /Traceback/.test(bare.stderr) || !bare.stderr.includes("a bare assert"))
+    problems.push(`an AssertionError that is no must() exits ${bare.status} and prints ${JSON.stringify(bare.stderr.slice(0, 300))}, not its message plainly`);
+  assert.deepEqual(problems, [],
+    `Replicata: in python3, load data/slurp.py, set sys.excepthook = slurp.print_stop as its __main__ block does, then raise a stop (slurp.must(False, msg, last=..., lines=71)), a ValueError, and an AssertionError that is no must().
+Expectata: the stop and the AssertionError exit 1 and print their message plainly, with no traceback, the stop each figure it names on a line of its own; the ValueError exits 1 with Python's traceback.
+Resultata:\n  ${problems.join("\n  ")}`);
+}
 assert.equal(S.mainRun, "",
   `Replicata: run slurp.main() offline on the newest snapshots (quals/slurp-offline.mjs) with camera_table_step replaced by one that stops, under this qual's guard.
 Expectata: main() completes (it never calls the step, and reaches no process, browser or server).

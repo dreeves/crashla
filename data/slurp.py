@@ -1296,7 +1296,25 @@ SECOND_AV_REVIEWED = {
 
 def must(cond, msg, **ctx):
     if not cond:
-        raise AssertionError(f"{msg}: {ctx}")
+        err = AssertionError(f"{msg}: {ctx}")
+        err.stop = (msg, ctx)  # the message and its figures, for print_stop
+        raise err
+
+
+def print_stop(kind, err, tb):
+    """sys.excepthook for a run by hand (the __main__ block sets it; the quals,
+    which call main() themselves, see the AssertionError as raised): a stop,
+    an AssertionError, prints its message and then each figure it names, one
+    to a line, with no traceback, and the run ends with exit status 1; any
+    other exception is a fault in this script and prints as Python prints it
+    (since 2026-11-23, the human: "can you make that error nice and clear and
+    not spew junk all over the screen?")."""
+    if not issubclass(kind, AssertionError):
+        sys.__excepthook__(kind, err, tb)
+        return
+    msg, ctx = getattr(err, "stop", (str(err), {}))
+    lines = [f"\nslurp stopped: {msg}"] + [f"  {key}: {value}" for key, value in ctx.items()]
+    print("\n".join(lines), file=sys.stderr)
 
 
 # The archive CSV uses different column names for some fields.
@@ -3428,9 +3446,10 @@ def camera_table_days(text, saved_on, source):
          "quals that read it change with the human)",
          line=lines[0], header="\t".join(t["header"]))
     must(len(lines) > 2 and lines[-1] == t["caption"],
-         f"{source}: its last line is not the camera table's caption, or no day "
-         "stands between the header and the caption",
-         last=lines[-1], caption=t["caption"], lines=len(lines))
+         f"{source}: it does not end with the line under the table, or holds no "
+         "day before that line; copy the table again, from its header down "
+         "through that line",
+         copy_ends_with=lines[-1], table_ends_with=t["caption"], lines_copied=len(lines))
     rows = [line.split("\t") for line in lines[1:-1]]
     for i, row in enumerate(rows):
         must(len(row) == len(t["header"]),
@@ -4085,6 +4104,7 @@ def main():
 
 
 if __name__ == "__main__":
+    sys.excepthook = print_stop
     main()
     # After main(), never inside it (the quals run main() offline): a person
     # running slurp by hand saves Robotaxi Tracker's newest camera table once

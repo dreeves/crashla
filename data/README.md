@@ -918,10 +918,13 @@ no-monitor row's miles over the month's last stretch, the days after the
 last one Tesla's page measured or, in a month the page measured none of,
 after the camera's last whole week, plus the monitor-aboard remainder (the
 all-modes row less the no-monitor row) at its average for the month. For
-November 2026 the page had nothing, so the stretch is Nov 16-30, held at the
-last camera week's rate: the row's 3,258,000 less the 1,519,000 estimated
-for Nov 1-15, over 15 days, 115,933 a day, plus 1,100, 117,033 a day in all.
-Re-derive it with the rows.
+November 2026 the page had nothing, so the stretch is Nov 23-30, held at the
+rate of the camera's last whole week, Nov 16-22, the rate of those seven
+days too: the row's 3,169,000 less the 1,519,000 estimated for Nov 1-15,
+over Nov 16-30's 15 days, 110,000 a day, plus 1,100, 111,100 a day in all
+(with the camera table saved on 2026-11-23; until then the week of Nov 9's
+rate held from Nov 16, 117,033 a day on the row's 3,258,000). Re-derive it
+with the rows.
 `quals/growth-ghost-month.qual.mjs` pins all of it. Waymo's and Zoox's
 miles forecasts rest on their newest month too: each one's low edge in
 `MILES_FORECAST` is its newest `data/vmt.csv` month's cumulative plus that

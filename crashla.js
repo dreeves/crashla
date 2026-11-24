@@ -3763,21 +3763,23 @@ function teslaComponents(robotaxiBand, eyesOff) {
 // late-month rate, so the cumulative takes no step at the month boundary.
 // Now Dec 1, 2026, at late November's rate. Tesla's page ends at Oct 18, so
 // November's no-monitor miles are the camera estimate (data/README.md, Ghost
-// months): 1,519,000 for Nov 1-15 from the camera's weeks, then the last
-// camera week's rate held flat for Nov 16-30 (the teslanomonitor 2026-11
-// row's 3,258,000 less those 1,519,000, over 15 days: 115,933 a day; no
+// months): 1,519,000 for Nov 1-15 from the camera's weeks, then the week of
+// Nov 16 and its rate held flat for Nov 23-30 (the teslanomonitor 2026-11
+// row's 3,169,000 less those 1,519,000, over 15 days: 110,000 a day; no
 // growth is assumed past the last measured week). The monitor-aboard
-// remainder adds its November average (the tesla row's 3,291,000 less the
-// teslanomonitor row's, over 30 days): 117,033 a day in all. The cumulative
-// is the tesla row's through Nov 30 (9,776,000). growth-ghost-month.qual.mjs
-// checks all three against data/vmt.csv's newest Tesla rows. Until
+// remainder adds its November average (the tesla row's 3,202,000 less the
+// teslanomonitor row's, over 30 days): 111,100 a day in all. The cumulative
+// is the tesla row's through Nov 30 (9,687,000). growth-ghost-month.qual.mjs
+// checks all three against data/vmt.csv's newest Tesla rows. Until the camera
+// table saved on 2026-11-23 the start was 117,033 a day on 9,776,000, the
+// week of Nov 9's rate held from Nov 16 (3,258,000 no-monitor miles). Until
 // 2026-11-17 the start was Nov 1, 2026, at 107,347 a day on 6,835,000: the
 // October rows of before the camera estimate, whose projection of Oct 19-31
 // grew 21.4% a week. From 2026-10-29 to 2026-10-31 the path started at
 // October's typical day (2,594,000 / 31, mid-October), so on Nov 1 every
 // scenario edge ran 8-20% under the late-October rate.
-const TESLA_PATH_START = {day: "2026-12-01", cumulative: 9776000,
-  milesPerDay: (3258000 - 1519000) / 15 + (3291000 - 3258000) / 30};
+const TESLA_PATH_START = {day: "2026-12-01", cumulative: 9687000,
+  milesPerDay: (3169000 - 1519000) / 15 + (3202000 - 3169000) / 30};
 // Tesla's cumulative robotaxi miles through the day before the forecast date
 // for a band of daily miles on the forecast date, edge by edge: each edge's
 // path grows its daily miles at a constant rate from the start's, on its day,
@@ -4307,7 +4309,9 @@ function renderFleetForecastChart() {
 // [281, 653] and November 609 [341, 1221] until 2026-11-20, on the bands of
 // before the camera estimate's drift term; October [280, 656] and November
 // [335, 1234] until 2026-11-23, on the every-mode floors of before both edges
-// took the quadrature rule, quals/tesla-every-mode.mjs). Waymo and
+// took the quadrature rule, quals/tesla-every-mode.mjs; November 609 [337,
+// 1234] until the camera table saved on 2026-11-23, whose whole week of Nov
+// 16 replaced the week of Nov 9's rate held from Nov 16). Waymo and
 // Zoox have published no fleet count since September, so each runs
 // September's count on at a pace. Waymo: 4,300 on Sep 1, then ~280 cars a
 // month (above 2026's average of ~180 a month, as Ojai imports ramp: ~5,100
@@ -4336,7 +4340,7 @@ const FLEET_HISTORY = {
     {month: "2026-08", best: 93, lo: 65, hi: 145},
     {month: "2026-09", best: 186, lo: 132, hi: 294},
     {month: "2026-10", best: 402, lo: 281, hi: 656},
-    {month: "2026-11", best: 609, lo: 337, hi: 1234},
+    {month: "2026-11", best: 593, lo: 354, hi: 1116},
   ],
   Waymo: [
     {month: "2025-05", best: 1500, lo: 1300, hi: 1700},
@@ -4407,10 +4411,11 @@ const RIDES_HISTORY = {
   // months of data/vmt.csv, so each band divides the kyoom band by the
   // corridor's far ends, as RIDES_FORECAST does: 4,241,000 / 6.2, 4,007,800
   // / 8.3, 4,975,000 / 4.7; 6,485,000 / 6.2, 5,964,800 / 8.3, 7,920,000 /
-  // 4.7; and 9,776,000 / 6.2, 7,980,800 / 8.3, 13,781,000 / 4.7 (the
+  // 4.7; and 9,687,000 / 6.2, 8,118,800 / 8.3, 13,120,000 / 4.7 (the
   // cumulative bands of 2026-11-23, when both edges of the every-mode months
-  // took the quadrature rule; until then 4,004,800 and 4,976,000, 5,934,800
-  // and 7,921,000, 7,930,800 and 13,782,000). (2026-09
+  // took the quadrature rule, and November's the camera table saved that day
+  // gave; until then 4,004,800 and 4,976,000, 5,934,800 and 7,921,000, and
+  // November 9,776,000, 7,930,800 and 13,782,000). (2026-09
   // sat on September's cumulative of before the 2026-10-23 re-pin, 3,630,000
   // [3,194,800, 4,506,000], until 2026-10-28; 2026-10 on October's of before
   // the camera estimate, 6,835,000 [6,079,800, 8,611,000], until 2026-11-17;
@@ -4425,7 +4430,7 @@ const RIDES_HISTORY = {
     {month: "2026-06", best: 394000, lo: 294000, hi: 519000},
     {month: "2026-09", best: 684000, lo: 483000, hi: 1059000},
     {month: "2026-10", best: 1046000, lo: 719000, hi: 1685000},
-    {month: "2026-11", best: 1577000, lo: 962000, hi: 2932000},
+    {month: "2026-11", best: 1562000, lo: 978000, hi: 2791000},
   ],
   // Waymo pinned to published cumulative milestones (rides-provenance.qual):
   // 10M paid trips May 20 2025 (CNBC/Google I/O), ~20M lifetime end-2025
@@ -6661,7 +6666,7 @@ const ASSUMPTION_COLUMNS = [
 const ASSUMPTIONS = [
   // --- Tesla's miles --------------------------------------------------------
   {id: "tesla-deck-reading", group: "tesla", values: {},
-    text: () => `From July 2025 through June 2026 Tesla's miles are its own 'Cumulative Paid Robotaxi Miles' chart, read from the vector paths of its Q4-2025, Q1-2026 and Q2-2026 update decks (${fmtWhole(vmtRowAt("Tesla", "2026-06").vmtCume)} miles by June 30, 2026), and taken as every mile of its Texas robotaxi service, empty driving included, with or without a safety monitor aboard. Every all-modes Tesla rate through June 2026 rests on this reading (the Tesla (no safety monitor) line's rest on Tesla's safety page instead, below); if 'paid' means only miles with a rider aboard, the true total and Tesla's miles per incident are higher.`,
+    text: () => `From July 2025 through June 2026 Tesla's miles are its own 'Cumulative Paid Robotaxi Miles' chart, read from the vector paths of its Q4-2025, Q1-2026 and Q2-2026 update decks (${fmtWhole(vmtRowAt("Tesla", "2026-06").vmtCume)} miles by June 30, 2026), and taken as every mile of its Texas robotaxi service, empty driving included, with or without a safety monitor aboard. Tesla has not said what 'paid' counts: the chart has no footnote in any of the three decks (filed with its 8-Ks of [Jan 28, 2026](https://www.sec.gov/Archives/edgar/data/1318605/000162828026003837/exhibit991.htm), [Apr 22, 2026](https://www.sec.gov/Archives/edgar/data/1318605/000162828026026551/exhibit991.htm) and [Jul 22, 2026](https://www.sec.gov/Archives/edgar/data/1318605/000162828026049213/exhibit991.htm)), whose text says only that 'paid Robotaxi miles nearly doubled sequentially' in Q1 2026, and none of its earnings calls from October 2025 to October 2026 defines it. The reading is the one the other companies' miles take: Waymo's rider-only miles are its driving 'with no human behind the wheel' ([Waymo, 2023](https://assets.ctfassets.net/e6t5diu0txbw/3K0JwPci0fGL8j6IDu9Mo3/03a4741f5cb81c4957ef5f106a663b3e/Safety_Performance_of_Waymo_RO_at_1M_miles.pdf)), its cars 'not always occupied by a human (e.g., before or in between picking up passengers)' ([Kusano et al., 2023](https://arxiv.org/abs/2312.12675)), and the crashes NHTSA collects from every company include those with nobody aboard. Every all-modes Tesla rate through June 2026 rests on this reading (the Tesla (no safety monitor) line's rest on Tesla's safety page instead, below); if 'paid' means only miles with a rider aboard, the true total and Tesla's miles per incident are higher.`,
     covers: {Tesla: ["2025-07", "2026-06"]},
     where: [["data/vmt.csv", "tesla 2025-07 – 2026-06"], ["quals/tesla-vmt-provenance.qual.mjs", "PINS"]]},
   {id: "tesla-deck-ranges", group: "tesla", values: {cumLo: 0.97, cumHi: 1.15, monLo: 0.85, monHi: 1.25},
@@ -6704,10 +6709,10 @@ const ASSUMPTIONS = [
   {id: "tesla-camera-calibration", group: "tesla", values: {lo: 0.78, hi: 1.29, n: 4},
     text: v => `Each estimated day's range starts at ${v.lo} to ${v.hi} times its miles, the 95% prediction interval for one new week from those ${v.n} weeks' scatter, and the days' edges are added as if every day's error ran the same way.`,
     where: [["quals/tesla-camera-miles.qual.mjs", "T975"]]},
-  {id: "tesla-camera-drift", group: "tesla", values: {z: 1.96, drift: 0.07, mid: "2026-10-05", fDay: "2026-10-19", lDay: "2026-11-15", fLo: 0.76, fHi: 1.31, lLo: 0.74, lHi: 1.35},
+  {id: "tesla-camera-drift", group: "tesla", values: {z: 1.96, drift: 0.07, mid: "2026-10-05", fDay: "2026-10-19", lDay: "2026-11-22", fLo: 0.76, fHi: 1.31, lLo: 0.74, lHi: 1.36},
     text: v => `Each estimated day's range then widens for drift since those weeks, in Robotaxi Tracker's Cybercab detector, its cameras or the ratio itself: ${v.z} × ${v.drift} on a log scale times the square root of the day's distance in months from the weeks' middle (the start of ${fmtDay(v.mid)}), combined with the first part as independent errors. That gives ${v.fLo} to ${v.fHi} times on ${fmtDay(v.fDay)} and ${v.lLo} to ${v.lHi} times on ${fmtDay(v.lDay)}. The ${v.drift} is the drift allowance of Zoox's ranges (below), an assumed number with no data behind it.`,
     where: [["quals/tesla-camera-miles.qual.mjs", "DRIFT, Z975, MONTH_DAYS"]]},
-  {id: "tesla-camera-held", group: "tesla", values: {heldFrom: "2026-11-16", heldTo: "2026-11-30", noLo: 0.5, noHi: 2, heldMiles: 1739000, partFrom: "2026-11-16", partTo: "2026-11-19", weekdays: 0.794, waymo: 0.952},
+  {id: "tesla-camera-held", group: "tesla", values: {heldFrom: "2026-11-23", heldTo: "2026-11-30", noLo: 0.5, noHi: 2, heldMiles: 880000, partFrom: "2026-11-23", partTo: "2026-11-23", weekdays: 1.017, waymo: 1.117},
     text: v => `The days after the camera table's last whole week (${fmtDay(v.heldFrom)} to ${fmtDay(v.heldTo)}) are held at that week's rate, with no growth or fall, and take ${v.noLo} to ${v.noHi} times their miles, the range this page gives days with no data. The drift allowance is not added to them. They hold ${fmtWhole(v.heldMiles)} of ${fmtMonth(v.heldTo.slice(0, 7))}'s ${fmtWhole(vmtRowAt("TeslaNoMonitor", v.heldTo.slice(0, 7)).vmtBest)} no-monitor miles, and their rate starts the growth forecast's path (below). Only whole Monday-to-Sunday weeks enter. In the newest saved table's last week, whole or not (${fmtDay(v.partFrom)} to ${fmtDay(v.partTo)}), Cybercabs' rate runs ${v.weekdays} times the same weekdays' a week before, Waymo's on the same cameras ${v.waymo} times.`,
     where: [["quals/tesla-camera-miles.qual.mjs", "NO_DATA, CAMERA_WEEKS"], ["data/slurp.py", "CAMERA_TABLE"], ["data/vmt.csv", "teslanomonitor 2026-11 – 2026-11"], ["crashla.js", "TESLA_PATH_START"]]},
 
