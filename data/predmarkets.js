@@ -1,4 +1,4 @@
-const PREDMARKET_SNAPSHOT_DATE = "2026-11-21T11:50:53Z";
+const PREDMARKET_SNAPSHOT_DATE = "2026-11-28T09:01:52Z";
 // [SNAPSHOT VINTAGE] This checked-in snapshot is frozen at the date above and
 // applies to both POLYMARKET_SNAPSHOT and MANIFOLD_SNAPSHOT; the page renders
 // it instantly, then auto-refetches live prices on load (and via the refresh
@@ -22,13 +22,13 @@ const POLYMARKET_SNAPSHOT = [
     "title": "Musk out as Tesla CEO before 2027?",
     "slug": "musk-out-as-tesla-ceo-before-2027",
     "enabled": true,
-    "volume": 23864.48367,
+    "volume": 25622.257899000004,
     "markets": [
       {
         "question": "Musk out as Tesla CEO before 2027?",
         "outcomes": "[\"Yes\", \"No\"]",
-        "outcomePrices": "[\"0.0365\", \"0.9635\"]",
-        "volume": "23864.48367",
+        "outcomePrices": "[\"0.0245\", \"0.9755\"]",
+        "volume": "25622.257899000004",
         "closed": false,
         "endDate": "2027-01-01T04:59:00Z",
         "umaResolutionStatus": null
@@ -44,10 +44,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/JamesGrugett/tesla-serves-more-fully-autonomous",
     "enabled": true,
     "closeTime": 1798761540000,
-    "probability": 0.014613310214411134,
+    "probability": 0.014636290048748933,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 1120966.8699851602
+    "volume": 1121032.359591245
   },
   {
     "question": "Will we conclude Tesla launched level 4 robotaxis in summer 2025?",
@@ -55,10 +55,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/dreev/will-tesla-count-as-a-waymo-competi",
     "enabled": true,
     "closeTime": 1798765140000,
-    "probability": 0.3789272340202015,
+    "probability": 0.35255942534893386,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 109778.19380230283
+    "volume": 109868.92545732939
   },
   {
     "question": "Waymo in Portland in 2026?",
@@ -77,10 +77,10 @@ const MANIFOLD_SNAPSHOT = [
     "url": "https://manifold.markets/NathanpmYoung/will-tesla-have-more-autonomous-veh",
     "enabled": true,
     "closeTime": 1798934340000,
-    "probability": 0.05178530054057965,
+    "probability": 0.05000000000000002,
     "resolution": null,
     "resolutionProbability": null,
-    "volume": 82760.80731669077
+    "volume": 82966.96073549433
   },
   {
     "question": "Waymo reaches 2 billion miles with three or fewer at-fault fatalities?",
